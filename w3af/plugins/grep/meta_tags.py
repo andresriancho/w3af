@@ -24,10 +24,13 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.kb.info import Info
 
 ATTR_NAME = 'name'
 ATTR_VALUE = 'value'
+CONTENT = 'content'
+WHERE = 'where'
 
 
 class meta_tags(GrepPlugin):
@@ -92,7 +95,7 @@ class meta_tags(GrepPlugin):
 
                     # Now... if we found something, report it =)
                     fmt = 'The URI: "%s" sent a <meta> tag with the attribute'\
-                          ' "%s" set to "%s" which looks interesting.'
+                          ' %s set to "%s" which looks interesting.'
                     desc = fmt % (response.get_uri(), where, content)
 
                     tag_name = self._find_tag_name(tag)
@@ -104,8 +107,11 @@ class meta_tags(GrepPlugin):
                              self.get_name())
                     i.set_uri(response.get_uri())
                     i.add_to_highlight(where, content)
+                    i[CONTENT] = content
+                    i[WHERE] = where
 
-                    self.kb_append_uniq(self, 'meta_tags', i, 'URL')
+                    self.kb_append_uniq_group(self, 'meta_tags', i,
+                                              group_klass=MetaTagsInfoSet)
 
     def _find_tag_name(self, tag):
         """
@@ -124,3 +130,16 @@ class meta_tags(GrepPlugin):
         This plugin greps every page for interesting meta tags. Some interesting
         meta tags are the ones that contain : 'microsoft', 'visual', 'linux' .
         """
+
+
+class MetaTagsInfoSet(InfoSet):
+    ITAG = CONTENT
+    TEMPLATE = (
+        'The application sent a <meta> tag with the attribute {{ where }} set'
+        ' to "{{ content }}" which looks interesting and should be manually'
+        ' reviewed. The first ten URLs which sent the tag are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
