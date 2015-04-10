@@ -71,7 +71,7 @@ class TestMetaTags(PluginTest):
         joined_desc = ''.join([v.get_desc() for v in vulns])
 
         self.assertIn('linux', joined_desc)
-        self.assertIn('Google Sitemap', joined_desc)
+        self.assertIn('verify-v1', joined_desc)
 
 
 class TestMetaTagsRaw(unittest.TestCase):
