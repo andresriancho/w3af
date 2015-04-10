@@ -80,7 +80,6 @@ class profile(object):
         >>> p = profile()
         >>> p._get_real_profile_path('OWASP_TOP10', '.')
         './profiles/OWASP_TOP10.pw3af'
-
         """
         # Alias for os.path. Minor optimization
         ospath = os.path
@@ -126,9 +125,9 @@ class profile(object):
         try:
             os.unlink(self._profile_file_name)
         except Exception, e:
-            msg = 'An exception occurred while removing the profile. Exception:'
-            msg += ' "%s".' % e
-            raise BaseFrameworkException(msg)
+            msg = ('An exception occurred while removing the profile.'
+                   ' Exception: "%s".')
+            raise BaseFrameworkException(msg % e)
         else:
             return True
 
@@ -177,8 +176,8 @@ class profile(object):
             if already_enabled_plugin not in plugin_names:
                 # The plugin was disabled!
                 # I should remove the section from the config
-                self._config.remove_section(
-                    plugin_type + '.' + already_enabled_plugin)
+                section = '%s.%s' % (plugin_type, already_enabled_plugin)
+                self._config.remove_section(section)
 
         # Now enable the plugins that the user wants to run
         for plugin in plugin_names:
@@ -225,7 +224,8 @@ class profile(object):
                 { 'LICENSE_KEY':'AAAA' }
         """
         # Get the plugin defaults with their types
-        plugin_instance = factory('w3af.plugins.%s.%s' % (plugin_type, plugin_name))
+        plugin = 'w3af.plugins.%s.%s' % (plugin_type, plugin_name)
+        plugin_instance = factory(plugin)
         options_list = plugin_instance.get_options()
 
         for section in self._config.sections():
@@ -241,8 +241,10 @@ class profile(object):
                             value = self._config.get(section, option)
                         except KeyError:
                             # We should never get here...
-                            msg = 'The option "%s" is unknown for the "%s" plugin.'
-                            raise BaseFrameworkException(msg % (option, plugin_name))
+                            msg = ('The option "%s" is unknown for the'
+                                   ' "%s" plugin.')
+                            args = (option, plugin_name)
+                            raise BaseFrameworkException(msg % args)
                         else:
                             options_list[option].set_value(value)
 
