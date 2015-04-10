@@ -182,7 +182,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
                                    timeout=self.timeout)
         except ssl.SSLError, ssl_exc:
             msg = "SSL connection error occurred with protocol %s: '%s'"
-            debug(msg % (protocol, ssl_exc))
+            debug(msg % (protocol, ssl_exc.__class__.__name__))
 
             # Always close the tcp/ip connection on error
             sock.close()
