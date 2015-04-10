@@ -243,9 +243,7 @@ class analyze_cookies(GrepPlugin):
                         desc = ('The cookie "%s" with value "%s" which was'
                                 ' set over HTTPS, was then sent over an'
                                 ' insecure channel in a request to "%s".')
-                        desc = desc % (cookie_key,
-                                       cookie_value,
-                                       request.get_url())
+                        desc %= (cookie_key, cookie_value, request.get_url())
 
                         v = CookieVuln('Secure cookies over insecure channel',
                                        desc, severity.HIGH, response.id,
