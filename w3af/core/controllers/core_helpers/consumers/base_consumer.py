@@ -252,7 +252,8 @@ class BaseConsumer(Process):
         """
         return self._out_queue.get(timeout=timeout)
 
-    def handle_exception(self, phase, plugin_name, fuzzable_request, _exception):
+    def handle_exception(self, phase, plugin_name,
+                         fuzzable_request, _exception):
         """
         Get the exception information, and put it into the output queue
         then, the strategy will get the items from the output queue and
