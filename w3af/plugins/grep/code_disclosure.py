@@ -93,5 +93,5 @@ class code_disclosure(GrepPlugin):
         reports findings.
 
         Code disclosures are usually generated due to web server
-        misconfigurations, or wierd web application "features".
+        misconfigurations, or weird web application "features".
         """
