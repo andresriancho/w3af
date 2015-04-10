@@ -24,8 +24,8 @@ from w3af.core.controllers.plugins.plugin import Plugin
 
 class AuthPlugin(Plugin):
     """
-    This is the base class for auth plugins, all auth plugins should inherit from it
-    and implement the following methods:
+    This is the base class for auth plugins, all auth plugins should inherit
+    from it and implement the following methods:
         1. login(...)
         2. logout(...)
         2. is_logged(...)
