@@ -400,15 +400,15 @@ class crawl_infrastructure(BaseConsumer):
 
         :return: A list with the newly found fuzzable requests.
         """
-        om.out.debug('Called _discover_worker(%s,%s)' % (plugin.get_name(),
-                                                         fuzzable_request.get_uri()))
+        args = (plugin.get_name(), fuzzable_request.get_uri())
+        om.out.debug('Called _discover_worker(%s,%s)' % args)
 
         # Status reporting
         status = self._w3af_core.status
         status.set_running_plugin('crawl', plugin.get_name())
         status.set_current_fuzzable_request('crawl', fuzzable_request)
         om.out.debug('%s is testing "%s"' % (plugin.get_name(),
-                     fuzzable_request.get_uri()))
+                                             fuzzable_request.get_uri()))
 
         try:
             result = plugin.discover_wrapper(fuzzable_request)
