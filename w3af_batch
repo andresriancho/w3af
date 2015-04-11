@@ -95,7 +95,7 @@ def start_executor(target, profile, timeout):
         timer.join()
 
 
-def main(args):
+def main():
     """
     Execute w3af scans of args.targets in parallel.  A pool of manager
     threads is created. Each thread receives a target to scan. Manager
@@ -109,6 +109,20 @@ def main(args):
         """
         if STOPSCAN.wait():
             pool.terminate()
+
+    signal.signal(signal.SIGINT, cancel_scan)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', dest='workers', type=int,
+                        default=mp.cpu_count(),
+                        help='number of worker processes '
+                             '(default: number of CPUs)')
+    parser.add_argument('-t', default=300, dest='timeout', type=int,
+                        help='target scan timeout in seconds (default: 300)')
+    parser.add_argument('-P', dest='profile', required=True,
+                        help='builtin profile name or path to pw3af file')
+    parser.add_argument('targets', type=argparse.FileType(),
+                        help='path to file with list of targets')
+    parser.parse_args()
 
     logger.info('Begin scanning')
     pool = mpd.Pool(args.workers)
@@ -129,16 +143,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGINT, cancel_scan)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', dest='workers', type=int,
-                        default=mp.cpu_count(),
-                        help='number of worker processes '
-                             '(default: number of CPUs)')
-    parser.add_argument('-t', default=300, dest='timeout', type=int,
-                        help='target scan timeout in seconds (default: 300)')
-    parser.add_argument('-P', dest='profile', required=True,
-                        help='builtin profile name or path to pw3af file')
-    parser.add_argument('targets', type=argparse.FileType(),
-                        help='path to file with list of targets')
-    main(parser.parse_args())
+    main()
