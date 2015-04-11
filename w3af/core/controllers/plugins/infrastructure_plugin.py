@@ -25,6 +25,7 @@ from stopit import ThreadingTimeout, TimeoutException
 
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import FourOhFourDetectionException
 
 import w3af.core.controllers.output_manager as om
 
@@ -57,6 +58,13 @@ class InfrastructurePlugin(Plugin):
         try:
             with ThreadingTimeout(self.PLUGIN_TIMEOUT, swallow_exc=False):
                 return self.discover(fuzzable_request_copy)
+        except FourOhFourDetectionException, ffde:
+            # We simply ignore any exceptions we find during the 404 detection
+            # process. FYI: This doesn't break the xurllib error handling which
+            # happens at lower layers.
+            #
+            # https://github.com/andresriancho/w3af/issues/8949
+            om.out.debug('%s' % ffde)
         except TimeoutException:
             msg = '[timeout] The "%s" plugin took more than %s seconds to'\
                   ' complete the discovery of "%s", killing it!'
