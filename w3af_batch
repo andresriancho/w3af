@@ -95,6 +95,21 @@ def start_executor(target, profile, timeout):
         timer.join()
 
 
+def _process_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', dest='workers', type=int,
+                        default=mp.cpu_count(),
+                        help='number of worker processes '
+                             '(default: number of CPUs)')
+    parser.add_argument('-t', default=300, dest='timeout', type=int,
+                        help='target scan timeout in seconds (default: 300)')
+    parser.add_argument('-P', dest='profile', required=True,
+                        help='builtin profile name or path to pw3af file')
+    parser.add_argument('targets', type=argparse.FileType(),
+                        help='path to file with list of targets')
+    return parser.parse_args()
+
+
 def main():
     """
     Execute w3af scans of args.targets in parallel.  A pool of manager
@@ -111,18 +126,8 @@ def main():
             pool.terminate()
 
     signal.signal(signal.SIGINT, cancel_scan)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', dest='workers', type=int,
-                        default=mp.cpu_count(),
-                        help='number of worker processes '
-                             '(default: number of CPUs)')
-    parser.add_argument('-t', default=300, dest='timeout', type=int,
-                        help='target scan timeout in seconds (default: 300)')
-    parser.add_argument('-P', dest='profile', required=True,
-                        help='builtin profile name or path to pw3af file')
-    parser.add_argument('targets', type=argparse.FileType(),
-                        help='path to file with list of targets')
-    parser.parse_args()
+    
+    args = _process_arguments()
 
     logger.info('Begin scanning')
     pool = mpd.Pool(args.workers)
