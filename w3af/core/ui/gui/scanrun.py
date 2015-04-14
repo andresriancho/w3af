@@ -25,6 +25,7 @@ import sys
 import re
 import Queue
 import webkit
+import pprint
 import webbrowser
 
 from multiprocessing.dummy import Process, Event
@@ -406,9 +407,19 @@ class URLsGraph(gtk.VBox):
         new_widget = WrappedDotWidget()
         self._somethingnew = False
         dotcode = "graph G {%s}" % "\n".join(self.nodos_code)
-        new_widget.set_dotcode(dotcode)
-        evt.set()
-        q.put(new_widget)
+        
+        try:
+            new_widget.set_dotcode(dotcode)
+        except ValueError, ve:
+            msg = ('A ValueError exception with message "%s" was found while'
+                   ' trying to render a new dotcode. Please create a new'
+                   ' bug report at %s including the following info:\n\n%s')
+            new_issue = 'https://github.com/andresriancho/w3af/issues/new'
+            args = (ve, new_issue, pprint.pformat(self.nodos_code))
+            raise ValueError(msg % args)
+        else:
+            evt.set()
+            q.put(new_widget)
 
     def _draw_end(self, q, evt):
         if not evt:
