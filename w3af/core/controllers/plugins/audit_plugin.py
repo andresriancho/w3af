@@ -29,6 +29,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.plugin import Plugin
+from w3af.core.controllers.misc.safe_deepcopy import safe_deepcopy
 from w3af.core.data.request.variant_identification import are_variants
 from w3af.core.controllers.exceptions import FourOhFourDetectionException
 
@@ -133,7 +134,7 @@ class AuditPlugin(Plugin):
         In other words, if one plugins modified the fuzzable request object
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         """
-        fuzzable_request = copy.deepcopy(fuzzable_request)
+        fuzzable_request = safe_deepcopy(fuzzable_request)
 
         try:
             with ThreadingTimeout(self.PLUGIN_TIMEOUT, swallow_exc=False):
