@@ -1082,11 +1082,13 @@ class ExtendedUrllib(object):
         msg = ('w3af found too many consecutive errors while performing'
                ' HTTP requests. In most cases this means that the remote web'
                ' server is not reachable anymore, the network is down, or'
-               ' a WAF is blocking our tests. The last exception message '
-               'was "%s" (%s).')
+               ' a WAF is blocking our tests. The last exception message'
+               ' was "%s" (%s.%s).')
 
         reason_msg = get_exception_reason(error)
-        args = (error, error.__class__.__name__)
+        args = (error,
+                error.__class__.__module__,
+                error.__class__.__name__)
 
         # If I got a reason, it means that it is a known exception.
         if reason_msg is not None:
