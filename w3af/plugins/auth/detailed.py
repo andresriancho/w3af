@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from urllib import quote_plus
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
@@ -116,10 +118,10 @@ class detailed(AuthPlugin):
         the remote web application.
         """
         result = self.data_format
-        result = result.replace('%u', self.username_field)
-        result = result.replace('%U', self.username)
-        result = result.replace('%p', self.password_field)
-        result = result.replace('%P', self.password)
+        result = result.replace('%u', quote_plus(self.username_field))
+        result = result.replace('%U', quote_plus(self.username))
+        result = result.replace('%p', quote_plus(self.password_field))
+        result = result.replace('%P', quote_plus(self.password))
         return result
 
     def logout(self):
