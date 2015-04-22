@@ -264,6 +264,7 @@ class analyze_cookies(GrepPlugin):
         for cookie_key in cookie_keys:
             if cookie_key in self._cookie_key_failed_fingerprint:
                 cookie_keys.remove(cookie_key)
+                continue
 
             if cookie_key in self._already_reported_fingerprint:
                 cookie_keys.remove(cookie_key)
