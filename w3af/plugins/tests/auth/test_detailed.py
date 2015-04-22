@@ -225,8 +225,7 @@ class TestDetailedSquareBrackets(PluginTest):
     }
 
     def test_post_auth_xss(self):
-        self._scan(self._run_config['target'], self._run_config['plugins'],
-                   debug=True)
+        self._scan(self._run_config['target'], self._run_config['plugins'])
 
         vulns = self.kb.get('xss', 'xss')
 
@@ -235,3 +234,4 @@ class TestDetailedSquareBrackets(PluginTest):
         vuln = vulns[0]
         self.assertEquals(vuln.get_name(), 'Cross site scripting vulnerability')
         self.assertEquals(vuln.get_token_name(), 'text')
+
