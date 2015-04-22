@@ -28,8 +28,8 @@ class NamedStringIO(StringIO, str):
     def __new__(cls, *args, **kwargs):
         return super(NamedStringIO, cls).__new__(cls, args[0])
 
-    def __init__(self, thestr, name):
-        super(NamedStringIO, self).__init__(thestr)
+    def __init__(self, the_str, name):
+        super(NamedStringIO, self).__init__(the_str)
         self._name = name
 
     # pylint: disable=E0202
