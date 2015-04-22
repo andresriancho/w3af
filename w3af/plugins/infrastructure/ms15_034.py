@@ -48,9 +48,11 @@ class ms15_034(InfrastructurePlugin):
                                         headers=headers)
 
         if response.get_code() == 416:
-            desc = 'The target IIS web server is vulnerable to MS15-034'
+            desc = ('The target IIS web server is vulnerable to MS15-034 which'
+                    ' allows remote code execution due to a flaw in HTTP.sys')
 
-            v = Vuln('MS15-034', desc, severity.HIGH, response.id, self.get_name())
+            v = Vuln('MS15-034', desc, severity.HIGH, response.id,
+                     self.get_name())
             v.set_url(response.get_url())
 
             self.kb_append_uniq(self, 'ms15_034', v)
