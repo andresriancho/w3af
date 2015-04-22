@@ -69,6 +69,14 @@ class profile(object):
                 except Exception, e:
                     msg = 'Unknown error in profile: "%s". Exception: "%s"'
                     raise BaseFrameworkException(msg % (profname, e))
+                else:
+                    if self.get_name():
+                        return
+
+                    msg = ('The profile with name "%s" does NOT contain a'
+                           '[profile] section with the "name" attribute.')
+                    raise BaseFrameworkException(msg % (profname,))
+
 
         # Save the profname variable
         self.profile_file_name = profname
@@ -451,12 +459,14 @@ class profile(object):
             if not file_name:
                 raise BaseFrameworkException('Error saving profile, profile'
                                              ' file name is required.')
-            else:  # The user's specified a file_name!
+            else:
+                # The user's specified a file_name!
                 if not file_name.endswith(self.EXTENSION):
                     file_name += self.EXTENSION
 
             if os.path.sep not in file_name:
                 file_name = os.path.join(get_home_dir(), 'profiles', file_name)
+
             self.profile_file_name = file_name
 
         try:
