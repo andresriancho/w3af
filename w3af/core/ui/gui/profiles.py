@@ -456,9 +456,8 @@ class ProfileList(gtk.TreeView):
         if not self.w3af.mainwin.save_state_to_core(relaxedTarget=True):
             return
         self.w3af.profiles.save_current_to_profile(profile_obj.get_name(),
-                                                prof_desc=profile_obj.get_desc(
-                                                ),
-                                                prof_path=profile_obj.get_profile_file())
+                                                   prof_desc=profile_obj.get_desc(),
+                                                   prof_path=profile_obj.get_profile_file())
         self.w3af.mainwin.sb(_("Profile saved"))
         path = self.get_cursor()[0]
         row = self.liststore[path]

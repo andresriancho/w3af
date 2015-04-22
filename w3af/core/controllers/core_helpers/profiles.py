@@ -219,25 +219,28 @@ class w3af_core_profiles(object):
 
         """
         profile_home = os.path.join(directory, 'profiles')
-        str_profile_list = get_file_list(profile_home, extension='.pw3af')
+        str_profile_list = get_file_list(profile_home,
+                                         extension=profile.EXTENSION)
 
         instance_list = []
         invalid_profiles = []
 
         for profile_name in str_profile_list:
-            profile_filename = os.path.join(
-                profile_home, profile_name + '.pw3af')
+            profile_filename = os.path.join(profile_home,
+                                            profile_name + profile.EXTENSION)
             try:
                 profile_instance = profile(profile_filename)
             except BaseFrameworkException:
                 invalid_profiles.append(profile_filename)
             else:
                 instance_list.append(profile_instance)
+
         return instance_list, invalid_profiles
 
     def remove_profile(self, profile_name):
         """
-        :return: True if the profile was successfully removed. Else, raise a BaseFrameworkException.
+        :return: True if the profile was successfully removed.
+                 Else, raise a BaseFrameworkException.
         """
         profile_inst = profile(profile_name)
         profile_inst.remove()
