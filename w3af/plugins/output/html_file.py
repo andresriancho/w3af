@@ -198,10 +198,23 @@ class html_file(OutputPlugin):
         """
         severity_icon = functools.partial(get_severity_icon, self.template_root)
 
-        jinja2_env = Environment(undefined=StrictUndefined,
-                                 trim_blocks=True,
-                                 autoescape=True,
-                                 lstrip_blocks=True)
+        env_config = {'undefined': StrictUndefined,
+                      'trim_blocks': True,
+                      'autoescape': True,
+                      'lstrip_blocks': True}
+
+        try:
+            jinja2_env = Environment(**env_config)
+        except TypeError:
+            # Kali uses a different jinja2 version, which doesn't have the same
+            # Environment kwargs, so we first try with the version we expect
+            # to have available, and then if it doesn't work apply this
+            # workaround for Kali
+            #
+            # https://github.com/andresriancho/w3af/issues/9552
+            env_config.pop('lstrip_blocks')
+            jinja2_env = Environment(**env_config)
+
         jinja2_env.filters['render_markdown'] = render_markdown
         jinja2_env.filters['request'] = request_dump
         jinja2_env.filters['response'] = response_dump
