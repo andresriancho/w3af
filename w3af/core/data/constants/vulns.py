@@ -221,6 +221,7 @@ VULNS = {
          'HTTP load balancer detected': None,
          'Information disclosure via .NET errors': 73,
          'Potential virtual host misconfiguration': None,
+         'MS15-034': None,
          
          # Bruteforce
          'Guessable credentials': None,

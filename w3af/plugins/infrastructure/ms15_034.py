@@ -30,7 +30,7 @@ from w3af.core.data.kb.vuln import Vuln
 
 class ms15_034(InfrastructurePlugin):
     """
-    Detect MS15-034
+    Detect MS15-034 - Remote code execution in HTTP.sys
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
