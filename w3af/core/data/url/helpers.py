@@ -25,6 +25,7 @@ import socket
 import urllib
 import urllib2
 import httplib
+import OpenSSL
 
 from errno import (ECONNREFUSED, EHOSTUNREACH, ECONNRESET, ENETDOWN,
                    ENETUNREACH, ETIMEDOUT, ENOSPC)
@@ -36,6 +37,13 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
+
+# Known reason errors. See errno module for more info on these errors
+EUNKNSERV = -2      # Name or service not known error
+EINVHOSTNAME = -5   # No address associated with hostname
+KNOWN_SOCKET_ERRORS = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH, ECONNRESET,
+                       ENETDOWN, ENETUNREACH, EINVHOSTNAME, ETIMEDOUT,
+                       ENOSPC)
 
 
 def new_no_content_resp(uri, add_id=False):
@@ -94,13 +102,7 @@ def get_socket_exception_reason(error):
     if not isinstance(error, socket.error):
         return
 
-    # Known reason errors. See errno module for more info on these errors
-    EUNKNSERV = -2      # Name or service not known error
-    EINVHOSTNAME = -5   # No address associated with hostname
-    known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH, ECONNRESET,
-                    ENETDOWN, ENETUNREACH, EINVHOSTNAME, ETIMEDOUT, ENOSPC)
-
-    if error[0] in known_errors:
+    if error[0] in KNOWN_SOCKET_ERRORS:
         return str(error)
 
     return
@@ -123,6 +125,10 @@ def get_exception_reason(error):
 
         if isinstance(reason_err, socket.error):
             return get_socket_exception_reason(error)
+
+    if isinstance(error, OpenSSL.SSL.SysCallError):
+        if error[0] in KNOWN_SOCKET_ERRORS:
+            return str(error[1])
 
     if isinstance(error, (ssl.SSLError, socket.sslerror)):
         socket_reason = get_socket_exception_reason(error)

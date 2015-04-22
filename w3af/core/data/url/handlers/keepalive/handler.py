@@ -26,10 +26,10 @@ modifications are:
     reads, and added a hack for the HEAD method.
   - SNI support for SSL
 """
+import threading
 import urllib2
 import httplib
 import socket
-import threading
 import time
 
 import OpenSSL
