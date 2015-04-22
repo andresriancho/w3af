@@ -183,3 +183,55 @@ class TestDetailedRedirectLoop(PluginTest):
 
         # Send the POST to login
         self.assertIn('/auth/login_form.py', all_paths)
+
+
+class TestDetailedSquareBrackets(PluginTest):
+    """
+    :see: https://github.com/andresriancho/w3af/issues/5593
+    """
+    target_url = get_moth_http('/auth/')
+
+    auth_url = URL(get_moth_http('/auth/auth_2/square_bracket_login_form.py'))
+    check_url = URL(get_moth_http('/auth/auth_1/post_auth_xss.py'))
+    check_string = 'or read your input'
+    data_format = '%u=%U&%p=%P&Login=Login'
+
+    _run_config = {
+        'target': target_url,
+        'plugins': {
+        'crawl': (
+            PluginConfig('web_spider',
+                         ('only_forward', True, PluginConfig.BOOL),
+                         ('ignore_regex', '.*logout.*', PluginConfig.STR)),
+
+            ),
+            'audit': (PluginConfig('xss',),),
+            'auth': (PluginConfig('detailed',
+                                 ('username', 'user@mail.com', PluginConfig.STR),
+                                 ('password', 'passw0rd', PluginConfig.STR),
+                                 # Check this foo[user] setting! This is what we
+                                 # want to test
+                                 ('username_field', 'foo[user]', PluginConfig.STR),
+                                 ('password_field', 'password', PluginConfig.STR),
+                                 ('data_format', data_format, PluginConfig.STR),
+                                 ('auth_url', auth_url, PluginConfig.URL),
+                                 ('method', 'POST', PluginConfig.STR),
+                                 ('check_url', check_url, PluginConfig.URL),
+                                 ('check_string', check_string, PluginConfig.STR),
+                                 ('follow_redirects', False, PluginConfig.BOOL),
+                                  ),
+                         ),
+        }
+    }
+
+    def test_post_auth_xss(self):
+        self._scan(self._run_config['target'], self._run_config['plugins'],
+                   debug=True)
+
+        vulns = self.kb.get('xss', 'xss')
+
+        self.assertEquals(len(vulns), 1, vulns)
+
+        vuln = vulns[0]
+        self.assertEquals(vuln.get_name(), 'Cross site scripting vulnerability')
+        self.assertEquals(vuln.get_token_name(), 'text')

@@ -32,7 +32,9 @@ from w3af.core.data.url.handlers.redirect import GET_HEAD_CODES
 
 
 class detailed(AuthPlugin):
-    """Detailed authentication plugin."""
+    """
+    Detailed authentication plugin.
+    """
 
     MAX_REDIRECTS = 10
 
