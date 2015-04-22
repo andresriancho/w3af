@@ -52,12 +52,12 @@ class generic(AuthPlugin):
                                                             self.password)
         om.out.debug(msg)
 
+        data = urlencode({self.username_field: self.username,
+                          self.password_field: self.password})
+
         try:
             # TODO Why we don't use FuzzableRequest+send_mutant here?
-            self._uri_opener.POST(self.auth_url, urlencode({
-                self.username_field: self.username,
-                self.password_field: self.password,
-            }))
+            self._uri_opener.POST(self.auth_url, data=data)
             if not self.is_logged():
                 raise Exception("Can't login into web application as %s/%s"
                                 % (self.username, self.password))
