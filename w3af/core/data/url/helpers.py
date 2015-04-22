@@ -112,35 +112,33 @@ def get_exception_reason(error):
     :return: The reason/message associated with that exception (if known)
              else we return None.
     """
-    reason_msg = None
-
     if isinstance(error, URLTimeoutError):
         # New exception type raised by keepalive handler
-        reason_msg = error.message
+        return error.message
 
     # Exceptions may be of type httplib.HTTPException or socket.error
     # We're interested on handling them in different ways
-    elif isinstance(error, urllib2.URLError):
+    if isinstance(error, urllib2.URLError):
         reason_err = error.reason
 
         if isinstance(reason_err, socket.error):
-            reason_msg = get_socket_exception_reason(error)
+            return get_socket_exception_reason(error)
 
-    elif isinstance(error, (ssl.SSLError, socket.sslerror)):
+    if isinstance(error, (ssl.SSLError, socket.sslerror)):
         socket_reason = get_socket_exception_reason(error)
         if socket_reason:
-            reason_msg = 'SSL Error: %s' % socket_reason
+            return 'SSL Error: %s' % socket_reason
 
-    elif isinstance(error, socket.error):
-        reason_msg = get_socket_exception_reason(error)
+    if isinstance(error, socket.error):
+        return get_socket_exception_reason(error)
 
-    elif isinstance(error, HTTPRequestException):
-        reason_msg = error.value
+    if isinstance(error, HTTPRequestException):
+        return error.value
 
-    elif isinstance(error, httplib.BadStatusLine):
-        reason_msg = 'Bad HTTP response status line: %s' % error.line
+    if isinstance(error, httplib.BadStatusLine):
+        return 'Bad HTTP response status line: %s' % error.line
 
-    elif isinstance(error, httplib.HTTPException):
+    if isinstance(error, httplib.HTTPException):
         #
         # Here we catch:
         #
@@ -151,7 +149,7 @@ def get_exception_reason(error):
         #
         #    TODO: Maybe we're being TOO generic in this isinstance?
         #
-        reason_msg = '%s: %s' % (error.__class__.__name__,
-                                 error.args)
+        return '%s: %s' % (error.__class__.__name__, error.args)
 
-    return reason_msg
+    # Unknown reason
+    return None
