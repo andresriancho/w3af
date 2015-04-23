@@ -17,7 +17,7 @@ back
 back
 
 target
-set target http://moth/w3af/crawl/web_spider/follow_links/1.html
+set target http://127.0.0.1:8000/crawl/web_spider/test_case_01/
 back
 
 start
