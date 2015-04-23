@@ -375,7 +375,6 @@ class w3afCore(object):
         remove_temp_dir(ignore_errors=True)
         # Stop the parser subprocess
         parser_cache.dpc.stop_workers()
-        parser_cache.dpc.shutdown()
 
     def pause(self, pause_yes_no):
         """
