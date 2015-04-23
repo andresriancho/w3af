@@ -36,7 +36,6 @@ class grep(BaseConsumer):
 
     def __init__(self, grep_plugins, w3af_core):
         """
-        :param in_queue: The input queue that will feed the grep plugins
         :param grep_plugins: Instances of grep plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         """

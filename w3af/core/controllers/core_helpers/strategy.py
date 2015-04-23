@@ -122,7 +122,7 @@ class w3af_core_strategy(object):
         Consume (without processing) all queues with data which are in
         the consumers and then send a poison-pill to that queue.
         """
-        consumers = {'grep', 'audit', 'auth', 'discovery', 'bruteforce'}
+        consumers = {'discovery', 'audit', 'auth', 'bruteforce', 'grep'}
 
         for consumer in consumers:
 
