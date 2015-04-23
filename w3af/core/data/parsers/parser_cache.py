@@ -28,6 +28,7 @@ import atexit
 import threading
 import multiprocessing
 
+from multiprocessing.managers import SyncManager
 from darts.lib.utils.lru import SynchronizedLRUDict
 from tblib.decorators import Error
 
@@ -52,9 +53,10 @@ class ParserCache(object):
     """
     LRU_LENGTH = 40
     MAX_CACHEABLE_BODY_LEN = 1024 * 1024
-    PARSER_TIMEOUT = 60 # in seconds
     DEBUG = core_profiling_is_enabled()
     MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
+    # in seconds
+    PARSER_TIMEOUT = 60
 
     def __init__(self):
         self._cache = SynchronizedLRUDict(self.LRU_LENGTH)
@@ -104,6 +106,12 @@ class ParserCache(object):
 
         # We don't need the parsers anymore
         self._cache.clear()
+
+    def shutdown(self):
+        self.stop_workers()
+
+        # to be safe -- explicitly shutting down the manager
+        manager.shutdown()
 
     def get_hit_rate(self):
         """
@@ -324,6 +332,17 @@ def init_worker(log_queue):
     start_profiling_no_core()
 
 
+def init_manager():
+    """
+    Initializer for SyncManager
+    :see: https://jtushman.github.io/blog/2014/01/14/python-%7C-multiprocessing-and-interrupts/
+    """
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+manager = None
+
 if is_main_process():
-    manager = multiprocessing.Manager()
+    manager = SyncManager()
+    manager.start(init_manager)
     dpc = ParserCache()

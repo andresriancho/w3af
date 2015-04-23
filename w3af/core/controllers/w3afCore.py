@@ -375,6 +375,7 @@ class w3afCore(object):
         remove_temp_dir(ignore_errors=True)
         # Stop the parser subprocess
         parser_cache.dpc.stop_workers()
+        parser_cache.dpc.shutdown()
 
     def pause(self, pause_yes_no):
         """
@@ -429,8 +430,6 @@ class w3afCore(object):
         finally:
             self.exploit_phase_prerequisites()
 
-            self.status.stop()
-
             # Remove all references to plugins from memory
             self.plugins.zero_enabled_plugins()
             
@@ -442,6 +441,8 @@ class w3afCore(object):
 
             # Stop the parser subprocess
             parser_cache.dpc.stop_workers()
+
+            self.status.stop()
 
     def exploit_phase_prerequisites(self):
         """
