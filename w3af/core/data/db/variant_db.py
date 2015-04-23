@@ -25,7 +25,7 @@ import copy
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.db.disk_dict import DiskDict
 
-DEFAULT_MAX_VARIANTS = 5
+DEFAULT_MAX_VARIANTS = 10
 
 
 class VariantDB(object):
