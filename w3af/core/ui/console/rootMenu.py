@@ -78,11 +78,11 @@ class rootMenu(menu):
         # Check if the console output plugin is enabled or not, and warn.
         output_plugins = self._w3af.plugins.get_enabled_plugins('output')
         if 'console' not in output_plugins:
-            msg = "\nWarning: You disabled the console output plugin. If you"\
-                  " start a new scan, the discovered vulnerabilities won\'t be"\
-                  " printed to the console, we advise you to enable at least"\
-                  " one output plugin in order to be able to actually see the"\
-                  " the scan output."
+            msg = ("\nWarning: You disabled the console output plugin. If you"
+                   " start a new scan, the discovered vulnerabilities won\'t be"
+                   " printed to the console, we advise you to enable at least"
+                   " one output plugin in order to be able to actually see the"
+                   " the scan output.")
             print msg
 
         # Note that I'm NOT starting this in a new multiprocess Process
@@ -96,13 +96,15 @@ class rootMenu(menu):
         
         # let the core thread start
         time.sleep(1)
-        
+
         try:
-            if self._w3af.status.get_status() != 'Not running.':
-                self.show_progress_on_request()
+            self.show_progress_on_request()
         except KeyboardInterrupt:
-            om.out.console('User pressed Ctrl+C, stopping scan.')
-            self._w3af.stop()
+            self.handle_scan_stop()
+
+    def handle_scan_stop(self, *args):
+        om.out.console('User pressed Ctrl+C, stopping scan.')
+        self._w3af.stop()
 
     def _cmd_cleanup(self, params):
         """
@@ -151,10 +153,14 @@ class rootMenu(menu):
             # read from sys.stdin with a 0.5 second timeout
             if sys.platform != 'win32':
                 # linux
-                rfds, wfds, efds = select.select([sys.stdin], [], [], 0.5)
-                if rfds:
-                    if len(sys.stdin.readline()):
-                        user_press_enter = True
+                try:
+                    rfds, wfds, efds = select.select([sys.stdin], [], [], 0.5)
+                except select.error:
+                    continue
+                else:
+                    if rfds:
+                        if len(sys.stdin.readline()):
+                            user_press_enter = True
             else:
                 # windows
                 import msvcrt
