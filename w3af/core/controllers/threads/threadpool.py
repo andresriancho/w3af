@@ -31,7 +31,6 @@ from multiprocessing import cpu_count
 
 from .pool276 import ThreadPool, RUN
 
-
 __all__ = ['Pool']
 
 
@@ -175,8 +174,8 @@ class Pool(ThreadPool):
                 self._outqueue.qsize() == 0 and
                 self._taskqueue.qsize() == 0):
                 break
-            else:
-                time.sleep(delay)
+
+            time.sleep(delay)
 
         self.terminate()
         self.join()
