@@ -266,7 +266,7 @@ class w3afCore(object):
 
         if not self._worker_pool.is_running():
             # Clean-up the old worker pool
-            self._worker_pool.terminate_join()
+            self._worker_pool.finish()
 
             # Create a new one
             self._worker_pool = Pool(self.WORKER_THREADS,
@@ -364,7 +364,7 @@ class w3afCore(object):
         om.out.debug(msg)
 
         # Finally we terminate+join the worker pool
-        self.worker_pool.terminate_join()
+        self.worker_pool.finish()
     
     def quit(self):
         """
@@ -416,7 +416,7 @@ class w3afCore(object):
         # returning from strategy.start call), so this terminate and join call
         # should return really quick:
         #
-        self.worker_pool.terminate_join()
+        self.worker_pool.finish()
 
         try:
             # Close the output manager, this needs to be done BEFORE the end()
