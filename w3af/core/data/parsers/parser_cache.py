@@ -28,7 +28,7 @@ import atexit
 import threading
 import multiprocessing
 
-from multiprocessing.managers import SyncManager
+from multiprocessing.managers import SyncManager, State
 from darts.lib.utils.lru import SynchronizedLRUDict
 from tblib.decorators import Error
 
@@ -76,8 +76,12 @@ class ParserCache(object):
         """
         with self._start_lock:
             if self._pool is None:
-                # Keep track of which pid is processing which http response
+
+                if not manager.started:
+                    manager.start(init_manager)
+
                 # pylint: disable=E1101
+                # Keep track of which pid is processing which http response
                 self._processes = manager.dict()
                 # pylint: enable=E1101
 
@@ -340,9 +344,15 @@ def init_manager():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
+class ExtendedSyncManager(SyncManager):
+
+    @property
+    def started(self):
+        return self._state.value == State.STARTED
+
 manager = None
 
 if is_main_process():
-    manager = SyncManager()
+    manager = ExtendedSyncManager()
     manager.start(init_manager)
     dpc = ParserCache()
