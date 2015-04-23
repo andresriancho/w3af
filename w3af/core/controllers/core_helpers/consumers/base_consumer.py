@@ -72,9 +72,9 @@ class BaseConsumer(Process):
     """
 
     def __init__(self, consumer_plugins, w3af_core, thread_name,
-                  create_pool=True):
+                 create_pool=True):
         """
-        :param base_consumer_plugins: Instances of base_consumer plugins in a list
+        :param consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param thread_name: How to name the current thread
         :param create_pool: True to create a worker pool for this consumer
@@ -88,9 +88,10 @@ class BaseConsumer(Process):
         self._w3af_core = w3af_core
         
         self._tasks_in_progress = {}
-        
+        self._poison_pill_sent = False
+
         self._threadpool = None
-         
+
         if create_pool:
             self._threadpool = Pool(10, worker_names='%sWorker' % thread_name)
 
@@ -99,10 +100,17 @@ class BaseConsumer(Process):
         Consume the queue items, sending them to the plugins which are then
         going to find vulnerabilities, new URLs, etc.
         """
-
         while True:
 
-            work_unit = self.in_queue.get()
+            try:
+                work_unit = self.in_queue.get()
+            except KeyboardInterrupt:
+                # https://github.com/andresriancho/w3af/issues/9587
+                #
+                # If we don't do this, the thread will die and will never
+                # process the POISON_PILL, which will end up in an endless
+                # wait for .join()
+                continue
 
             if work_unit == POISON_PILL:
 
@@ -110,7 +118,7 @@ class BaseConsumer(Process):
                 self._threadpool.close()
                 self._threadpool.join()
                 del self._threadpool
-                
+
                 self._teardown()
 
                 # Finish this consumer and everyone consuming the output
@@ -120,8 +128,10 @@ class BaseConsumer(Process):
 
             else:
                 # pylint: disable=E1120
-                self._consume_wrapper(work_unit)
-                self.in_queue.task_done()
+                try:
+                    self._consume_wrapper(work_unit)
+                finally:
+                    self.in_queue.task_done()
 
     def _teardown(self):
         raise NotImplementedError
@@ -211,11 +221,10 @@ class BaseConsumer(Process):
 
     @property
     def out_queue(self):
-        #
-        #    This output queue can contain one of the following:
-        #        * POISON_PILL
-        #        * (plugin_name, fuzzable_request, AsyncResult)
-        #        * An ExceptionData instance
+        # This output queue can contain one of the following:
+        #    * POISON_PILL
+        #    * (plugin_name, fuzzable_request, AsyncResult)
+        #    * An ExceptionData instance
         return self._out_queue
 
     def in_queue_size(self):
@@ -231,7 +240,11 @@ class BaseConsumer(Process):
             # https://github.com/andresriancho/w3af/issues/1172
             return
 
-        self.in_queue_put(POISON_PILL)
+        if not self._poison_pill_sent:
+            # https://github.com/andresriancho/w3af/issues/9587
+            self._poison_pill_sent = True
+            self.in_queue_put(POISON_PILL)
+
         self.in_queue.join()
 
     def terminate(self):

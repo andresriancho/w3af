@@ -21,10 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import Queue
 
-from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
-                                                                        task_decorator)
-from w3af.core.controllers.core_helpers.consumers.constants import (POISON_PILL,
-                                                                    FORCE_LOGIN)
+from .base_consumer import BaseConsumer, task_decorator
+from .constants import POISON_PILL, FORCE_LOGIN
 
 
 class auth(BaseConsumer):
@@ -34,10 +32,6 @@ class auth(BaseConsumer):
 
     def __init__(self, auth_plugins, w3af_core, timeout):
         """
-        :param in_queue: A queue that's used to communicate with the thread.
-                         Items that might appear in this queue are:
-                             * POISON_PILL
-                             * FORCE_LOGIN
         :param auth_plugins: Instances of auth plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param timeout: The time to wait between each login check
@@ -56,6 +50,13 @@ class auth(BaseConsumer):
 
             try:
                 action = self.in_queue.get(timeout=self._timeout)
+            except KeyboardInterrupt:
+                # https://github.com/andresriancho/w3af/issues/9587
+                #
+                # If we don't do this, the thread will die and will never
+                # process the POISON_PILL, which will end up in an endless
+                # wait for .join()
+                continue
             except Queue.Empty:
                 # pylint: disable=E1120
                 self._login()
@@ -72,8 +73,10 @@ class auth(BaseConsumer):
 
                 elif action == FORCE_LOGIN:
                     # pylint: disable=E1120
-                    self._login()
-                    self.in_queue.task_done()
+                    try:
+                        self._login()
+                    finally:
+                        self.in_queue.task_done()
                     # pylint: enable=E1120
 
     # Adding task here because we want to let the rest of the world know

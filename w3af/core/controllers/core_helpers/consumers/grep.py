@@ -49,35 +49,55 @@ class grep(BaseConsumer):
         """
         while True:
 
-            work_unit = self.in_queue.get()
+            try:
+                work_unit = self.in_queue.get()
+            except KeyboardInterrupt:
+                # https://github.com/andresriancho/w3af/issues/9587
+                #
+                # If we don't do this, the thread will die and will never
+                # process the POISON_PILL, which will end up in an endless
+                # wait for .join()
+                continue
 
             if work_unit == POISON_PILL:
-
-                for plugin in self._consumer_plugins:
-                    plugin.end()
-
-                self.in_queue.task_done()
-
-                break
+                try:
+                    self._teardown()
+                finally:
+                    self.in_queue.task_done()
+                    break
 
             else:
-                request, response = work_unit
-                
-                if not self.should_grep(request, response):
+                try:
+                    self._consume(work_unit)
+                finally:
                     self.in_queue.task_done()
-                    continue
-                
-                # Note that I'm NOT processing the grep plugin data in different
-                # threads. This is because it makes no sense (these are all CPU
-                # bound).
-                for plugin in self._consumer_plugins:
-                    try:
-                        plugin.grep_wrapper(request, response)
-                    except Exception, e:
-                        self.handle_exception('grep', plugin.get_name(),
-                                              request, e)
 
-                self.in_queue.task_done()
+    def _teardown(self):
+        """
+        Handle POISON_PILL
+        """
+        for plugin in self._consumer_plugins:
+            plugin.end()
+
+    def _consume(self, work_unit):
+        """
+        Handle a request/response that needs to be analyzed
+        :param work_unit: Request and response in a tuple
+        :return: None
+        """
+        request, response = work_unit
+
+        if not self.should_grep(request, response):
+            return
+
+        # Note that I'm NOT processing the grep plugin data in different
+        # threads. This is because it makes no sense (these are all CPU
+        # bound).
+        for plugin in self._consumer_plugins:
+            try:
+                plugin.grep_wrapper(request, response)
+            except Exception, e:
+                self.handle_exception('grep', plugin.get_name(), request, e)
 
     def should_grep(self, request, response):
         """

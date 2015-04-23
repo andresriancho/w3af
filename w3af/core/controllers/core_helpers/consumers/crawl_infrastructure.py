@@ -71,14 +71,24 @@ class crawl_infrastructure(BaseConsumer):
         Consume the queue items, sending them to the plugins which are then
         going to find vulnerabilities, new URLs, etc.
         """
-
         while True:
 
             try:
                 work_unit = self.in_queue.get(timeout=0.1)
+            except KeyboardInterrupt:
+                # https://github.com/andresriancho/w3af/issues/9587
+                #
+                # If we don't do this, the thread will die and will never
+                # process the POISON_PILL, which will end up in an endless
+                # wait for .join()
+                continue
+
             except Queue.Empty:
                 # pylint: disable=E1120
-                self._route_all_plugin_results()
+                try:
+                    self._route_all_plugin_results()
+                except KeyboardInterrupt:
+                    continue
                 # pylint: enable=E1120
             else:
                 if work_unit == POISON_PILL:
@@ -96,12 +106,22 @@ class crawl_infrastructure(BaseConsumer):
                     break
 
                 else:
-                    self._consume(work_unit)
-                    self.in_queue.task_done()
+                    # With specific error/success handling just for debugging
+                    try:
+                        self._consume(work_unit)
+                    except KeyboardInterrupt:
+                        self.in_queue.task_done()
+                    except:
+                        self.in_queue.task_done()
+                    else:
+                        self.in_queue.task_done()
+
                     work_unit = None
 
     def _teardown(self, plugin=None):
-        """End plugins"""
+        """
+        End plugins
+        """
         if plugin is None:
             to_teardown = self._consumer_plugins
         else:
