@@ -96,18 +96,23 @@ class w3af_core_strategy(object):
             self._seed_discovery()
 
             self._fuzzable_request_router()
-
-            self.join_all_consumers()
+        except Exception, e:
+            # Terminate the consumers, exceptions at this level stop the scan
+            self.terminate()
 
             # While the consumers might have finished, they certainly queue
             # tasks in the core's worker_pool, which need to be processed too
             self._w3af_core.worker_pool.finish()
 
-        except Exception, e:
-            self.terminate()
-
             om.out.debug('strategy.start() is raising exception "%s"' % e)
             raise
+        else:
+            # Wait for all consumers to finish
+            self.join_all_consumers()
+
+            # While the consumers might have finished, they certainly queue
+            # tasks in the core's worker_pool, which need to be processed too
+            self._w3af_core.worker_pool.finish()
 
     def stop(self):
         self.terminate()
