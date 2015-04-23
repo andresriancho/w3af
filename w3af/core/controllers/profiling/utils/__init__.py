@@ -35,7 +35,12 @@ def dump_data_every_thread(func, delay_minutes, save_thread_ptr):
     """
     This is a thread target which every X minutes
     """
-    func()
+    try:
+        func()
+    except KeyboardInterrupt:
+        # Ok, this one failed because the user was playing with Ctrl+C, but we
+        # queue the next run in the lines below
+        pass
 
     save_thread = threading.Timer(delay_minutes * 60,
                                   dump_data_every_thread,
