@@ -68,7 +68,8 @@ class TestVariantDB(unittest.TestCase):
             self.vdb.append(url)
 
         self.assertFalse(
-            self.vdb.need_more_variants(URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1, DEFAULT_MAX_VARIANTS + 1))))
+            self.vdb.need_more_variants(URL(url_fmt % (DEFAULT_MAX_VARIANTS + 1,
+                                                       DEFAULT_MAX_VARIANTS + 1))))
 
     def test_db_int_str(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=%s'
