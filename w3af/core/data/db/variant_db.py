@@ -25,15 +25,18 @@ import copy
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.db.disk_dict import DiskDict
 
-DEFAULT_MAX_VARIANTS = 10
+PARAMS_MAX_VARIANTS = 10
+PATH_MAX_VARIANTS = 50
 
 
 class VariantDB(object):
 
-    def __init__(self, max_variants=DEFAULT_MAX_VARIANTS):
+    def __init__(self, params_max_variants=PARAMS_MAX_VARIANTS,
+                 path_max_variants=PATH_MAX_VARIANTS):
         self._disk_dict = DiskDict(table_prefix='variant_db')
         self._db_lock = threading.RLock()
-        self.max_variants = max_variants
+        self.params_max_variants = params_max_variants
+        self.path_max_variants = path_max_variants
 
     def append(self, reference):
         """
@@ -73,31 +76,28 @@ class VariantDB(object):
         :return: True if there are not enough variants associated with
         this reference in the DB.
         """
-        clean_reference = self._clean_reference(reference)
-        has_qs = reference.has_query_string()
-
-        # I believe this is atomic enough...
-        count = self._disk_dict.get(clean_reference, 0)
-
-        # When we're analyzing a path (without QS), we just need 1
-        max_variants = self.max_variants if has_qs else 1
-
-        if count >= max_variants:
-            return False
-        else:
-            return True
+        dict_key = self._clean_reference(reference)
+        return self._internal_need_more_check(dict_key, reference)
 
     def need_more_variants_for_fr(self, fuzzable_request):
         """
         :return: True if there are not enough variants associated with
         this reference in the DB.
         """
-        clean_fuzzable_request = self._clean_fuzzable_request(fuzzable_request)
+        dict_key = self._clean_fuzzable_request(fuzzable_request)
+        url = fuzzable_request.get_uri()
 
+        return self._internal_need_more_check(dict_key, url)
+
+    def _internal_need_more_check(self, dict_key, url):
         # I believe this is atomic enough...
-        count = self._disk_dict.get(clean_fuzzable_request, 0)
+        count = self._disk_dict.get(dict_key, 0)
+        has_qs = url.has_query_string()
 
-        if count >= self.max_variants:
+        # When we're analyzing a path (without QS), we just need 1
+        max_variants = self.params_max_variants if has_qs else 1
+
+        if count >= max_variants:
             return False
         else:
             return True
@@ -126,18 +126,26 @@ class VariantDB(object):
 
     def _clean_data_container(self, data_container):
         """
-        A simplified/serialized version of the query string
+        A simplified/serialized version of the data container. Every data
+        container is serialized to query string format, but we don't lose info
+        since we just want to keep the keys and value types.
+
+        This simplification allows us to store and compare complex data
+        containers which might have unique ids (such as multipart).
         """
+        result = []
         dc = copy.deepcopy(data_container)
 
         for key, value, path, setter in dc.iter_setters():
 
             if value.isdigit():
-                setter('number')
+                _type = 'number'
             else:
-                setter('string')
+                _type = 'string'
 
-        return str(dc)
+            result.append('%s=%s' % (key, _type))
+
+        return '&'.join(result)
 
     def _clean_fuzzable_request(self, fuzzable_request):
         """
