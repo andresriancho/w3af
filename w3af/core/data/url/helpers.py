@@ -30,6 +30,7 @@ import OpenSSL
 from errno import (ECONNREFUSED, EHOSTUNREACH, ECONNRESET, ENETDOWN,
                    ENETUNREACH, ETIMEDOUT, ENOSPC)
 
+from w3af.core.data.misc.encoding import smart_unicode, PERCENT_ENCODE
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.constants.response_codes import NO_CONTENT
@@ -80,16 +81,27 @@ def get_clean_body(mutant, response):
     :param response: The HTTPResponse object to clean
     :return: A string that represents the "cleaned" response body.
     """
-
     body = response.body
 
     if response.is_text_or_html():
         mod_value = mutant.get_token_value()
 
-        body = body.replace(mod_value, '')
-        body = body.replace(urllib.unquote_plus(mod_value), '')
-        body = body.replace(cgi.escape(mod_value), '')
-        body = body.replace(cgi.escape(urllib.unquote_plus(mod_value)), '')
+        # Since the body is already in unicode, when we call body.replace() all
+        # arguments are converted to unicode by python. If there are special
+        # chars in the mod_value then we end up with an UnicodeDecodeError, so
+        # I convert it myself with some error handling
+        #
+        # https://github.com/andresriancho/w3af/issues/8953
+        mod_value = smart_unicode(mod_value, errors=PERCENT_ENCODE)
+
+        empty = u''
+        unquoted = urllib.unquote_plus(mod_value)
+        cgi_escape = cgi.escape
+
+        body = body.replace(mod_value, empty)
+        body = body.replace(unquoted, empty)
+        body = body.replace(cgi_escape(mod_value), empty)
+        body = body.replace(cgi_escape(unquoted), empty)
 
     return body
 
