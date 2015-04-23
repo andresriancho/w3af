@@ -70,13 +70,10 @@ class profile(object):
                     msg = 'Unknown error in profile: "%s". Exception: "%s"'
                     raise BaseFrameworkException(msg % (profname, e))
                 else:
-                    if self.get_name():
-                        return
-
-                    msg = ('The profile with name "%s" does NOT contain a'
-                           '[profile] section with the "name" attribute.')
-                    raise BaseFrameworkException(msg % (profname,))
-
+                    if not self.get_name():
+                        msg = ('The profile with name "%s" does NOT contain a'
+                               '[profile] section with the "name" attribute.')
+                        raise BaseFrameworkException(msg % (profname,))
 
         # Save the profname variable
         self.profile_file_name = profname
