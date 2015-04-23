@@ -314,7 +314,7 @@ class w3afCore(object):
 
         # Not calling:
         # self.plugins.zero_enabled_plugins()
-        # because I wan't to keep the selected plugins and configurations
+        # because I want to keep the selected plugins and configurations
 
     def stop(self):
         """
@@ -379,7 +379,7 @@ class w3afCore(object):
     def pause(self, pause_yes_no):
         """
         Pauses/Un-Pauses scan.
-        :param trueFalse: True if the UI wants to pause the scan.
+        :param pause_yes_no: True if the UI wants to pause the scan.
         """
         self.status.pause(pause_yes_no)
         self.strategy.pause(pause_yes_no)
@@ -399,12 +399,13 @@ class w3afCore(object):
         if not cf.cf.get('targets'):
             raise BaseFrameworkException('No target URI configured.')
 
-        if not len(self.plugins.get_enabled_plugins('audit'))\
-        and not len(self.plugins.get_enabled_plugins('crawl'))\
-        and not len(self.plugins.get_enabled_plugins('infrastructure'))\
-        and not len(self.plugins.get_enabled_plugins('grep')):
-            raise BaseFrameworkException(
-                'No audit, grep or crawl plugins configured to run.')
+        if not len(self.plugins.get_enabled_plugins('audit')) \
+           and not len(self.plugins.get_enabled_plugins('crawl')) \
+           and not len(self.plugins.get_enabled_plugins('infrastructure')) \
+           and not len(self.plugins.get_enabled_plugins('grep')):
+
+            msg = 'No audit, grep or crawl plugins configured to run.'
+            raise BaseFrameworkException(msg)
 
     def scan_end_hook(self):
         """
