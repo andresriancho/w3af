@@ -383,20 +383,23 @@ class crawl_infrastructure(BaseConsumer):
         #       - http://host.tld/?id=payload1&action=remove
         #       - http://host.tld/?id=payload1&action=remove
         #
-        if self._variant_db.need_more_variants_for_fr(fuzzable_request):
-            self._variant_db.append_fr(fuzzable_request)
+        if not self._variant_db.need_more_variants_for_fr(fuzzable_request):
+            msg = 'Ignoring reference "%s" (it is simply a variant).'
+            msg %= fuzzable_request.get_uri()
+            om.out.debug(msg)
+            return False
 
-            # Log the new finding to the user, without dups
-            # https://github.com/andresriancho/w3af/issues/8496
-            url = fuzzable_request.get_url()
-            if self._reported_found_urls.add(url):
-                msg = 'New URL found by %s plugin: "%s"'
-                args = (plugin.get_name(), url)
-                om.out.information(msg % args)
+        self._variant_db.append_fr(fuzzable_request)
 
-            return True
+        # Log the new finding to the user, without dups
+        # https://github.com/andresriancho/w3af/issues/8496
+        url = fuzzable_request.get_url()
+        if self._reported_found_urls.add(url):
+            msg = 'New URL found by %s plugin: "%s"'
+            args = (plugin.get_name(), url)
+            om.out.information(msg % args)
 
-        return False
+        return True
 
     @task_decorator
     def _discover_worker(self, function_id, plugin, fuzzable_request):

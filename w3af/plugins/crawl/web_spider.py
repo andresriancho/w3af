@@ -34,7 +34,6 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from w3af.core.data.db.variant_db import VariantDB
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.factory import dc_from_form_params
@@ -67,7 +66,6 @@ class web_spider(CrawlPlugin):
         self._first_run = True
         self._target_urls = []
         self._target_domain = None
-        self._known_variants = VariantDB()
         self._already_filled_form = ScalableBloomFilter()
 
         # User configured variables
@@ -290,14 +288,7 @@ class web_spider(CrawlPlugin):
             if not self._is_forward(ref):
                 return False
 
-        # Work with the parsed references and report broken
-        # links. Then work with the regex references and DO NOT
-        # report broken links
-        if self._need_more_variants(ref):
-            self._known_variants.append(ref)
-            return True
-
-        return False
+        return True
 
     def _extract_links_and_verify(self, resp, fuzzable_req):
         """
@@ -310,34 +301,6 @@ class web_spider(CrawlPlugin):
         self.worker_pool.map_multi_args(
             self._verify_reference,
             self._urls_to_verify_generator(resp, fuzzable_req))
-
-    def _need_more_variants(self, new_reference):
-        """
-        :param new_reference: The new URL that we want to see if its a variant
-            of at most MAX_VARIANTS references stored in self._already_crawled.
-
-        :return: True if I need more variants of ref.
-
-        Basically, the idea is to crawl the whole website, but if we are
-        crawling a site like youtube.com that has A LOT of links with the form:
-            - http://www.youtube.com/watch?v=xwLNu5MHXFs
-            - http://www.youtube.com/watch?v=JEzjwifH4ts
-            - ...
-            - http://www.youtube.com/watch?v=something_here
-
-        Then we don't actually want to follow all the links to all the videos!
-        So we are going to follow a decent number of variant URLs (in this
-        case, video URLs) to see if we can find something interesting in those
-        links, but after a fixed number of variants, we will start ignoring all
-        those variants.
-        """
-        if self._known_variants.need_more_variants(new_reference):
-            return True
-        else:
-            msg = ('Ignoring reference "%s" (it is simply a variant).'
-                   % new_reference)
-            om.out.debug(msg)
-            return False
 
     def _verify_reference(self, reference, original_request,
                           original_response, possibly_broken,
@@ -531,7 +494,8 @@ class web_spider(CrawlPlugin):
 
         By default ignore_regex is an empty string (nothing is ignored) and
         follow_regex is '.*' (everything is followed). Both regular expressions
-        are normal regular expressions that are compiled with Python's re module.
+        are normal regular expressions that are compiled with Python's re
+        module.
 
         The regular expressions are applied to the URLs that are found using the
         match function.
