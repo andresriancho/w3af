@@ -673,11 +673,9 @@ class URL(DiskItem):
 
     def get_path_without_file(self):
         """
-        :return: Returns the path for the url:
+        :return: Returns the path for the url without the filename part
         """
-        path = self.get_path()
-        filename = self.get_file_name()
-        return path.replace(filename, '', 1)
+        return self.path[:self.path.rfind('/') + 1]
 
     def get_path_qs(self):
         """
