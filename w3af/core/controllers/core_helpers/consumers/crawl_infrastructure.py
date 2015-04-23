@@ -47,8 +47,6 @@ class crawl_infrastructure(BaseConsumer):
     def __init__(self, crawl_infrastructure_plugins, w3af_core,
                  max_discovery_time):
         """
-        :param in_queue: The input queue that will feed the crawl_infrastructure
-                         plugins
         :param crawl_infrastructure_plugins: Instances of crawl_infrastructure
                                              plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
