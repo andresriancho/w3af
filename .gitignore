@@ -92,3 +92,4 @@ debian/w3af.substvars
 debian/w3af/
 docker/kali-debootstrap
 *.deb
+/.idea/
