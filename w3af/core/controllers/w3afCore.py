@@ -176,8 +176,8 @@ class w3afCore(object):
         except Exception, e:
             error = ('verify_environment() raised an exception: "%s". This'
                      ' should never happen. Are you (UI developer) sure that'
-                     ' you called verify_environment() *before* start() ?' % e)
-            om.out.error(error)
+                     ' you called verify_environment() *before* start() ?')
+            om.out.error(error % e)
             raise
 
         # Let the output plugins know what kind of plugins we're
@@ -217,12 +217,12 @@ class w3afCore(object):
             #
             raise
         except ScanMustStopException, wmse:
-            error = '\n**IMPORTANT** The following error was detected by'\
-                    ' w3af and couldn\'t be resolved:\n%s\n' % wmse
-            om.out.error(error)
+            error = ('\n**IMPORTANT** The following error was detected by'
+                     ' w3af and couldn\'t be resolved:\n%s\n')
+            om.out.error(error % wmse)
         except Exception:
-            om.out.error('\nUnhandled error, traceback: %s\n' %
-                         traceback.format_exc())
+            msg = '\nUnhandled error, traceback: %s\n'
+            om.out.error(msg % traceback.format_exc())
             raise
         finally:
 
