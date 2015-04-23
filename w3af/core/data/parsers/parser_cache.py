@@ -77,9 +77,6 @@ class ParserCache(object):
         with self._start_lock:
             if self._pool is None:
 
-                if not manager.started:
-                    manager.start(init_manager)
-
                 # pylint: disable=E1101
                 # Keep track of which pid is processing which http response
                 self._processes = manager.dict()
@@ -344,15 +341,19 @@ def init_manager():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-class ExtendedSyncManager(SyncManager):
+def Manager():
+    """
+    Returns a manager associated with a running server process
 
-    @property
-    def started(self):
-        return self._state.value == State.STARTED
+    The managers methods such as `Lock()`, `Condition()` and `Queue()`
+    can be used to create shared objects.
+    """
+    from multiprocessing.managers import SyncManager
+    m = SyncManager()
+    m.start(init_manager)
+    return m
 
-manager = None
 
 if is_main_process():
-    manager = ExtendedSyncManager()
-    manager.start(init_manager)
+    manager = Manager()
     dpc = ParserCache()
