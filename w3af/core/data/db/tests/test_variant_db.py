@@ -28,9 +28,9 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.url import URL
-from w3af.core.data.db.variant_db import (VariantDB,
-                                          PARAMS_MAX_VARIANTS,
-                                          PATH_MAX_VARIANTS)
+from w3af.core.data.db.variant_db import (VariantDB, PARAMS_MAX_VARIANTS,
+                                          PATH_MAX_VARIANTS, FILENAME_TOKEN,
+                                          PATH_TOKEN)
 
 
 class TestVariantDB(unittest.TestCase):
@@ -114,12 +114,12 @@ class TestVariantDB(unittest.TestCase):
     def test_clean_reference_file(self):
         self.assertEqual(
             self.vdb._clean_reference(URL('http://w3af.org/index.php')),
-            u'(GET)-http://w3af.org/index.php')
+            u'(GET)-http://w3af.org/%s.php' % FILENAME_TOKEN)
 
     def test_clean_reference_directory_file(self):
         self.assertEqual(
             self.vdb._clean_reference(URL('http://w3af.org/foo/index.php')),
-            u'(GET)-http://w3af.org/foo/index.php')
+            u'(GET)-http://w3af.org/foo/%s.php' % FILENAME_TOKEN)
 
     def test_clean_reference_directory_file_int(self):
         self.assertEqual(
@@ -144,6 +144,21 @@ class TestVariantDB(unittest.TestCase):
             self.vdb._clean_reference(url),
             u'(GET)-http://w3af.org/index.php?id=number&foo=string&spam=string')
 
+    def test_clean_reference_directory_file_no_params(self):
+        self.assertEqual(
+            self.vdb._clean_reference(URL('http://w3af.org/foo/index.php')),
+            u'(GET)-http://w3af.org/foo/%s.php' % FILENAME_TOKEN)
+
+    def test_clean_reference_directory(self):
+        self.assertEqual(
+            self.vdb._clean_reference(URL('http://w3af.org/foo/')),
+            u'(GET)-http://w3af.org/%s/' % PATH_TOKEN)
+
+    def test_clean_reference_directory_parent_path(self):
+        self.assertEqual(
+            self.vdb._clean_reference(URL('http://w3af.org/spam/foo/')),
+            u'(GET)-http://w3af.org/spam/%s/' % PATH_TOKEN)
+
     def test_clean_form_fuzzable_request(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"),
                              headers=Headers([('Host', 'www.w3af.com')]),
@@ -167,3 +182,133 @@ class TestVariantDB(unittest.TestCase):
         expected = u'(POST)-http://example.com/' \
                    u'?id=number!username=string&address=string'
         self.assertEqual(self.vdb._clean_fuzzable_request(fr), expected)
+
+    def test_db_many_files_in_root(self):
+        url_fmt = 'http://w3af.org/foo%s.htm'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+    def test_db_many_files_in_root_without_extension(self):
+        url_fmt = 'http://w3af.org/foo%s'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+    def test_db_many_files_different_extensions_in_root(self):
+        url_fmt = 'http://w3af.org/foo%s.htm'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+        #
+        #   Now a different extension
+        #
+        url_fmt = 'http://w3af.org/foo%s.jpeg'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+    def test_db_many_paths_in_root(self):
+        url_fmt = 'http://w3af.org/foo%s/'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+    def test_db_many_paths_in_other_directories(self):
+        url_fmt = 'http://w3af.org/foo/bar%s/'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+        #
+        #   Now a different parent directory
+        #
+        url_fmt = 'http://w3af.org/spam/bar%s/'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+    def test_db_many_files_other_directories(self):
+        url_fmt = 'http://w3af.org/spam/foo%s.htm'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+        #
+        #   Now a different parent path and the same extension
+        #
+        url_fmt = 'http://w3af.org/eggs/foo%s.htm'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+    def test_db_many_files_different_path_length_directories(self):
+        url_fmt = 'http://w3af.org/spam/foo%s.htm'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
+
+        #
+        #   Now a different parent path and the same extension
+        #
+        #   Note the /bar/ here! This is what makes this test different
+        url_fmt = 'http://w3af.org/eggs/bar/foo%s.htm'
+
+        for i in xrange(PATH_MAX_VARIANTS):
+            url = URL(url_fmt % i)
+            self.assertTrue(self.vdb.need_more_variants(url))
+            self.vdb.append(url)
+
+        extra_url = URL(url_fmt % (PATH_MAX_VARIANTS + 1,))
+        self.assertFalse(self.vdb.need_more_variants(extra_url))
