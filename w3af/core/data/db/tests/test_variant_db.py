@@ -93,17 +93,15 @@ class TestVariantDB(unittest.TestCase):
             url = URL(url_fmt % (i, 'abc' * i))
             self.assertTrue(self.vdb.append(fr(url)))
 
-        # Please note that in this case I'm asking for (int, int) and I added
-        # (int, str) before
-        url = URL(url_fmt % (PARAMS_MAX_VARIANTS + 1, PARAMS_MAX_VARIANTS + 1))
-        self.assertTrue(self.vdb.append(fr(url)))
-
         # Add (int, int)
         for i in xrange(PARAMS_MAX_VARIANTS):
             url = URL(url_fmt % (i, i))
             self.assertTrue(self.vdb.append(fr(url)))
 
         url = URL(url_fmt % (PARAMS_MAX_VARIANTS + 1, PARAMS_MAX_VARIANTS + 1))
+        self.assertFalse(self.vdb.append(fr(url)))
+
+        url = URL(url_fmt % (PARAMS_MAX_VARIANTS + 1, 'spameggs'))
         self.assertFalse(self.vdb.append(fr(url)))
 
     def test_clean_fuzzable_request_simple(self):

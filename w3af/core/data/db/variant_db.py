@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.misc.encoding import smart_str
 from w3af.core.data.db.disk_dict import DiskDict
 
 #
@@ -87,24 +86,6 @@ def clean_data_container(data_container):
     return '&'.join(result)
 
 
-def serialize_data_container(data_container):
-    """
-    A simplified/serialized version of the data container. Every data
-    container is serialized to query string format, but we don't lose info
-    since we just want to keep the keys and value types.
-
-    This simplification allows us to store and compare complex data
-    containers which might have unique ids (such as multipart).
-    """
-    result = []
-
-    for key, value, path, setter in data_container.iter_setters():
-        value = smart_str(value, errors='ignore')
-        result.append('%s=%s' % (key, value))
-
-    return '&'.join(result)
-
-
 class VariantDB(object):
     """
     See the notes on PARAMS_MAX_VARIANTS and PATH_MAX_VARIANTS above. Also
@@ -130,46 +111,46 @@ class VariantDB(object):
                  False if no more variants are required for this fuzzable
                  request.
         """
-        serial_dict_key = self._serialize_fuzzable_request(fuzzable_request)
-        already_seen = self._disk_dict.get(serial_dict_key, False)
+        #
+        # Is the fuzzable request already known to us? (exactly the same)
+        #
+        request_hash = fuzzable_request.get_request_hash()
+        already_seen = self._disk_dict.get(request_hash, False)
         if already_seen:
             return False
 
-        self._disk_dict[serial_dict_key] = True
+        # Store it to avoid duplicated fuzzable requests in our framework
+        self._disk_dict[request_hash] = True
 
+        #
+        # Do we need more variants of the fuzzable request? (similar match)
+        #
         clean_dict_key = self._clean_fuzzable_request(fuzzable_request)
-        url = fuzzable_request.get_uri()
-        has_params = url.has_query_string() or fuzzable_request.get_raw_data()
-
-        # I believe this is atomic enough...
-        count = self._disk_dict.get(clean_dict_key, None)
-        print clean_dict_key
-        # Choose which max_variants to use
-        if has_params:
-            max_variants = self.params_max_variants
-        else:
-            max_variants = self.path_max_variants
 
         with self._db_lock:
+
+            count = self._disk_dict.get(clean_dict_key, None)
+
             if count is None:
                 self._disk_dict[clean_dict_key] = 1
                 return True
 
-            elif count >= max_variants:
+            # We've seen at least one fuzzable request with this pattern...
+            url = fuzzable_request.get_uri()
+            has_params = url.has_query_string() or fuzzable_request.get_raw_data()
+
+            # Choose which max_variants to use
+            if has_params:
+                max_variants = self.params_max_variants
+            else:
+                max_variants = self.path_max_variants
+
+            if count >= max_variants:
                 return False
 
             else:
                 self._disk_dict[clean_dict_key] = count + 1
                 return True
-
-    def _serialize_fuzzable_request(self, fuzzable_request):
-        """
-        :return: A serialized version of the reference, useful for comparing
-                 with other URLs. Doesn't have any data loss
-                 (_clean_fuzzable_request does).
-        """
-        return self._clean_fuzzable_request(fuzzable_request,
-                                            dc_handler=serialize_data_container)
 
     def _clean_fuzzable_request(self, fuzzable_request,
                                 dc_handler=clean_data_container):
@@ -202,16 +183,6 @@ class VariantDB(object):
         :param url: URL instance
         :return: A "clean" representation of the URL
         """
-        # FIXME: ugly
-        if dc_handler == serialize_data_container:
-            res = url.get_domain_path().url_string.encode(DEFAULT_ENCODING)
-            res += url.get_file_name().encode(DEFAULT_ENCODING)
-
-            if url.has_query_string():
-                res += '?' + dc_handler(url.querystring)
-
-            return res
-
         res = url.base_url().url_string.encode(DEFAULT_ENCODING)
 
         if url.has_query_string():
