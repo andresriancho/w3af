@@ -394,20 +394,20 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     def set_referer(self, referer):
         self._headers['Referer'] = str(referer)
 
-    def set_cookie(self, c):
+    def set_cookie(self, cookie):
         """
         :param cookie: A Cookie object as defined in core.data.dc.cookie,
             or a string.
         """
-        if isinstance(c, Cookie):
-            self._cookie = c
-        elif isinstance(c, basestring):
-            self._cookie = Cookie(c)
-        elif c is None:
+        if isinstance(cookie, Cookie):
+            self._cookie = cookie
+        elif isinstance(cookie, basestring):
+            self._cookie = Cookie(cookie)
+        elif cookie is None:
             self._cookie = Cookie()
         else:
             fmt = '[FuzzableRequest error] set_cookie received: "%s": "%s".'
-            error_str = fmt % (type(c), repr(c))
+            error_str = fmt % (type(cookie), repr(cookie))
             om.out.error(error_str)
             raise BaseFrameworkException(error_str)
 
