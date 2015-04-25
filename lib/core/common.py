@@ -1306,7 +1306,7 @@ def parseTargetUrl():
         debugMsg = "setting the HTTP Referer header to the target URL"
         logger.debug(debugMsg)
         conf.httpHeaders = filter(lambda (key, value): key != HTTP_HEADER.REFERER, conf.httpHeaders)
-        conf.httpHeaders.append((HTTP_HEADER.REFERER, conf.url))
+        conf.httpHeaders.append((HTTP_HEADER.REFERER, conf.url.replace(CUSTOM_INJECTION_MARK_CHAR, "")))
 
     if not conf.host and (intersect(HOST_ALIASES, conf.testParameter, True) or conf.level >= 5):
         debugMsg = "setting the HTTP Host header to the target URL"
@@ -1578,7 +1578,6 @@ def safeExpandUser(filepath):
         _ = locale.getdefaultlocale()
         retVal = getUnicode(os.path.expanduser(filepath.encode(_[1] if _ and len(_) > 1 else UNICODE_ENCODING)))
 
-    print retVal
     return retVal
 
 def safeStringFormat(format_, params):
@@ -2664,7 +2663,7 @@ def parseSqliteTableSchema(value):
         table = {}
         columns = {}
 
-        for match in re.finditer(r"(\w+)\s+(TEXT|NUMERIC|INTEGER|REAL|NONE)\b", value, re.I):
+        for match in re.finditer(r"(\w+)\s+(INT|INTEGER|TINYINT|SMALLINT|MEDIUMINT|BIGINT|UNSIGNED BIG INT|INT2|INT8|INTEGER|CHARACTER|VARCHAR|VARYING CHARACTER|NCHAR|NATIVE CHARACTER|NVARCHAR|TEXT|CLOB|TEXT|BLOB|NONE|REAL|DOUBLE|DOUBLE PRECISION|FLOAT|REAL|NUMERIC|DECIMAL|BOOLEAN|DATE|DATETIME|NUMERIC)\b", value, re.I):
             columns[match.group(1)] = match.group(2)
 
         table[conf.tbl] = columns

@@ -1136,21 +1136,63 @@ def _setHTTPProxy():
 
     proxyHandler.__init__(proxyHandler.proxies)
 
-def _setSafeUrl():
+def _setSafeVisit():
     """
-    Check and set the safe URL options.
+    Check and set the safe visit options.
     """
-    if not conf.safUrl:
+    if not any ((conf.safeUrl, conf.safeReqFile)):
         return
 
-    if not re.search("^http[s]*://", conf.safUrl):
-        if ":443/" in conf.safUrl:
-            conf.safUrl = "https://" + conf.safUrl
-        else:
-            conf.safUrl = "http://" + conf.safUrl
+    if conf.safeReqFile:
+        checkFile(conf.safeReqFile)
 
-    if conf.saFreq <= 0:
-        errMsg = "please provide a valid value (>0) for safe frequency (--safe-freq) while using safe URL feature"
+        raw = readCachedFileContent(conf.safeReqFile)
+        match = re.search(r"\A([A-Z]+) ([^ ]+) HTTP/[0-9.]+\Z", raw[:raw.find('\n')])
+
+        if match:
+            kb.safeReq.method = match.group(1)
+            kb.safeReq.url = match.group(2)
+            kb.safeReq.headers = {}
+
+            for line in raw[raw.find('\n') + 1:].split('\n'):
+                line = line.strip()
+                if line and ':' in line:
+                    key, value = line.split(':', 1)
+                    value = value.strip()
+                    kb.safeReq.headers[key] = value
+                    if key == HTTP_HEADER.HOST:
+                        if not value.startswith("http"):
+                            scheme = "http"
+                            if value.endswith(":443"):
+                                scheme = "https"
+                            value = "%s://%s" % (scheme, value)
+                        kb.safeReq.url = urlparse.urljoin(value, kb.safeReq.url)
+                else:
+                    break
+
+            post = None
+
+            if '\r\n\r\n' in raw:
+                post = raw[raw.find('\r\n\r\n') + 4:]
+            elif '\n\n' in raw:
+                post = raw[raw.find('\n\n') + 2:]
+
+            if post and post.strip():
+                kb.safeReq.post = post
+            else:
+                kb.safeReq.post = None
+        else:
+            errMsg = "invalid format of a safe request file"
+            raise SqlmapSyntaxException, errMsg
+    else:
+        if not re.search("^http[s]*://", conf.safeUrl):
+            if ":443/" in conf.safeUrl:
+                conf.safeUrl = "https://" + conf.safeUrl
+            else:
+                conf.safeUrl = "http://" + conf.safeUrl
+
+    if conf.safeFreq <= 0:
+        errMsg = "please provide a valid value (>0) for safe frequency (--safe-freq) while using safe visit features"
         raise SqlmapSyntaxException(errMsg)
 
 def _setPrefixSuffix():
@@ -1791,6 +1833,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.responseTimes = []
     kb.resumeValues = True
     kb.safeCharEncode = False
+    kb.safeReq = AttribDict()
     kb.singleLogFlags = set()
     kb.reduceTests = None
     kb.stickyDBMS = False
@@ -2234,6 +2277,13 @@ def _basicOptionValidation():
             errMsg = "invalid regular expression '%s' ('%s')" % (conf.regexp, ex)
             raise SqlmapSyntaxException(errMsg)
 
+    if conf.crawlExclude:
+        try:
+            re.compile(conf.crawlExclude)
+        except re.error, ex:
+            errMsg = "invalid regular expression '%s' ('%s')" % (conf.crawlExclude, ex)
+            raise SqlmapSyntaxException(errMsg)
+
     if conf.dumpTable and conf.dumpAll:
         errMsg = "switch '--dump' is incompatible with switch '--dump-all'"
         raise SqlmapSyntaxException(errMsg)
@@ -2248,6 +2298,22 @@ def _basicOptionValidation():
 
     if conf.forms and not any((conf.url, conf.googleDork, conf.bulkFile, conf.sitemapUrl)):
         errMsg = "switch '--forms' requires usage of option '-u' ('--url'), '-g', '-m' or '-x'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.crawlExclude and not conf.crawlDepth:
+        errMsg = "option '--crawl-exclude' requires usage of switch '--crawl'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.safePost and not conf.safeUrl:
+        errMsg = "option '--safe-post' requires usage of option '--safe-url'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.safeFreq and not any((conf.safeUrl, conf.safeReqFile)):
+        errMsg = "option '--safe-freq' requires usage of option '--safe-url' or '--safe-req'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.safeReqFile and any((conf.safeUrl, conf.safePost)):
+        errMsg = "option '--safe-req' is incompatible with option '--safe-url' and option '--safe-post'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.csrfUrl and not conf.csrfToken:
@@ -2397,7 +2463,7 @@ def init():
         _setHTTPAuthentication()
         _setHTTPProxy()
         _setDNSCache()
-        _setSafeUrl()
+        _setSafeVisit()
         _setGoogleDorking()
         _setBulkMultipleTargets()
         _setSitemapTargets()
