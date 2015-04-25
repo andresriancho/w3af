@@ -76,18 +76,31 @@ def _split_vars_files(data):
 
 
 def get_boundary():
-    m = hashlib.md5()
-    m.update(mimetools.choose_boundary())
-    return m.hexdigest()
+    """
+    Before I used:
+        boundary = mimetools.choose_boundary()
+
+    But that returned some "private" information:
+        '127.0.0.1.1000.6267.1173556103.828.1'
+
+    Now I simply return a fixed string which I generated once and now re-use
+    all the time.
+
+    There is a reason for having a fixed boundary! When comparing two fuzzable
+    requests it's easier to do it if the boundaries are static. This allows
+    get_request_hash() to work as expected.
+
+    The problem with fixed boundaries is that they might be used to fingerprint
+    w3af, or that they might appear in the data we send to the wire and break
+    the request.
+
+    :return:
+    """
+    return 'b08c02-53d780-e2bc43-1d5278-a3c0d9-a5c0d9'
 
 
 def multipart_encode(_vars, files, boundary=None, _buffer=None):
     if boundary is None:
-        # Before:
-        #     boundary = mimetools.choose_boundary()
-        #     '127.0.0.1.1000.6267.1173556103.828.1'
-        # This contains my IP address, I don't like that...
-        # Now:
         boundary = get_boundary()
 
     if _buffer is None:
