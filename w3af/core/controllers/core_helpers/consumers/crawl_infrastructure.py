@@ -383,13 +383,11 @@ class crawl_infrastructure(BaseConsumer):
         #       - http://host.tld/?id=payload1&action=remove
         #       - http://host.tld/?id=payload1&action=remove
         #
-        if not self._variant_db.need_more_variants_for_fr(fuzzable_request):
+        if not self._variant_db.append(fuzzable_request):
             msg = 'Ignoring reference "%s" (it is simply a variant).'
             msg %= fuzzable_request.get_uri()
             om.out.debug(msg)
             return False
-
-        self._variant_db.append_fr(fuzzable_request)
 
         # Log the new finding to the user, without dups
         # https://github.com/andresriancho/w3af/issues/8496
