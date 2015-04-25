@@ -185,10 +185,16 @@ def cmdLineParser():
         request.add_option("--randomize", dest="rParam",
                            help="Randomly change value for given parameter(s)")
 
-        request.add_option("--safe-url", dest="safUrl",
+        request.add_option("--safe-url", dest="safeUrl",
                            help="URL address to visit frequently during testing")
 
-        request.add_option("--safe-freq", dest="saFreq", type="int",
+        request.add_option("--safe-post", dest="safePost",
+                           help="POST data to send to a safe URL")
+
+        request.add_option("--safe-req", dest="safeReqFile",
+                           help="Load safe HTTP request from a file")
+
+        request.add_option("--safe-freq", dest="safeFreq", type="int",
                            help="Test requests between two visits to a given safe URL")
 
         request.add_option("--skip-urlencode", dest="skipUrlEncode",
@@ -294,7 +300,7 @@ def cmdLineParser():
                                   "default %d)" % defaults.level)
 
         detection.add_option("--risk", dest="risk", type="int",
-                             help="Risk of tests to perform (0-3, "
+                             help="Risk of tests to perform (1-3, "
                                   "default %d)" % defaults.level)
 
         detection.add_option("--string", dest="string",
@@ -606,7 +612,10 @@ def cmdLineParser():
                             help="Force character encoding used for data retrieval")
 
         general.add_option("--crawl", dest="crawlDepth", type="int",
-                                  help="Crawl the website starting from the target URL")
+                            help="Crawl the website starting from the target URL")
+
+        general.add_option("--crawl-exclude", dest="crawlExclude",
+                           help="Regexp to exclude pages from crawling (e.g. \"logout\")")
 
         general.add_option("--csv-del", dest="csvDel",
                                   help="Delimiting character used in CSV output "

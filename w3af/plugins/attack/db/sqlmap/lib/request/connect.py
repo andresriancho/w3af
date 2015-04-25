@@ -332,7 +332,7 @@ class Connect(object):
             if HTTP_HEADER.ACCEPT not in headers:
                 headers[HTTP_HEADER.ACCEPT] = HTTP_ACCEPT_HEADER_VALUE
 
-            if HTTP_HEADER.HOST not in headers:
+            if HTTP_HEADER.HOST not in headers or not target:
                 headers[HTTP_HEADER.HOST] = getHostHeader(url)
 
             if HTTP_HEADER.ACCEPT_ENCODING not in headers:
@@ -971,11 +971,13 @@ class Connect(object):
                     warnMsg += "10 or more)"
                     logger.critical(warnMsg)
 
-
-        if conf.safUrl and conf.saFreq > 0:
+        if conf.safeFreq > 0:
             kb.queryCounter += 1
-            if kb.queryCounter % conf.saFreq == 0:
-                Connect.getPage(url=conf.safUrl, cookie=cookie, direct=True, silent=True, ua=ua, referer=referer, host=host)
+            if kb.queryCounter % conf.safeFreq == 0:
+                if conf.safeUrl:
+                    Connect.getPage(url=conf.safeUrl, post=conf.safePost, cookie=cookie, direct=True, silent=True, ua=ua, referer=referer, host=host)
+                elif kb.safeReq:
+                    Connect.getPage(url=kb.safeReq.url, post=kb.safeReq.post, method=kb.safeReq.method, auxHeaders=kb.safeReq.headers)
 
         start = time.time()
 
