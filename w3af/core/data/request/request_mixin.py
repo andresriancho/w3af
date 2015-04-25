@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import hashlib
 
 CR = '\r'
 LF = '\n'
@@ -37,8 +38,14 @@ class RequestMixIn(object):
                  such as an image content.
         """
         data = self.get_data() or ''
-        return "%s%s%s" % (self.dump_request_head().encode('utf-8'),
+        return '%s%s%s' % (self.dump_request_head().encode('utf-8'),
                            CRLF, data)
+
+    def get_request_hash(self):
+        """
+        :return: Hash the request (as it would be sent to the wire) and return
+        """
+        return hashlib.md5(self.dump()).hexdigest()
 
     def get_request_line(self):
         """Return request line."""
