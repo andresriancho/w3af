@@ -198,15 +198,15 @@
                     </thead>
                     <tbody>
                         {% for timestamp, level, message in debug_log %}
-                            <tr {% if level == 'error' %}
-                                    class="danger"
-                                {% endif %}>
-                                <td>{{ timestamp }}</th>
-                                <td>
-                                    {{ level }}
-                                </th>
-                                <td>{{ message }}</th>
-                            </tr>
+                            {% if level == 'error' %}
+                                <tr class="danger">
+                            {% else %}
+                                <tr>
+                            {% endif %}
+                                    <td>{{ timestamp }}</td>
+                                    <td>{{ level }}</td>
+                                    <td>{{ message }}</td>
+                                </tr>
                         {% endfor %}
                     </tbody>
                 </table>
