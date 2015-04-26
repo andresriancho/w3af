@@ -29,8 +29,9 @@ from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.url import URL
 from w3af.core.data.db.variant_db import (VariantDB, PARAMS_MAX_VARIANTS,
-                                          PATH_MAX_VARIANTS, FILENAME_TOKEN,
-                                          PATH_TOKEN)
+                                          PATH_MAX_VARIANTS)
+from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
+                                        FILENAME_TOKEN, PATH_TOKEN)
 
 
 def fr(url):
@@ -106,61 +107,61 @@ class TestVariantDB(unittest.TestCase):
 
     def test_clean_fuzzable_request_simple(self):
         u = 'http://w3af.org/'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/'
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_file(self):
         u = 'http://w3af.org/index.php'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/%s.php' % FILENAME_TOKEN
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_directory_file(self):
         u = 'http://w3af.org/foo/index.php'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/foo/%s.php' % FILENAME_TOKEN
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_directory_file_int(self):
         u = 'http://w3af.org/foo/index.php?id=2'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/foo/index.php?id=number'
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_int(self):
         u = 'http://w3af.org/index.php?id=2'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/index.php?id=number'
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_int_str(self):
         u = 'http://w3af.org/index.php?id=2&foo=bar'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/index.php?id=number&foo=string'
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_int_str_empty(self):
         u = 'http://w3af.org/index.php?id=2&foo=bar&spam='
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/index.php?id=number&foo=string&spam=string'
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_directory_file_no_params(self):
         u = 'http://w3af.org/foo/index.php'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/foo/%s.php' % FILENAME_TOKEN
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_directory(self):
         u = 'http://w3af.org/foo/'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/%s/' % PATH_TOKEN
         self.assertEqual(s, e)
 
     def test_clean_fuzzable_request_directory_parent_path(self):
         u = 'http://w3af.org/spam/foo/'
-        s = self.vdb._clean_fuzzable_request(fr(URL(u)))
+        s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/spam/%s/' % PATH_TOKEN
         self.assertEqual(s, e)
 
@@ -171,7 +172,7 @@ class TestVariantDB(unittest.TestCase):
                              post_data=KeyValueContainer(init_val=[('data', ['23'])]))
 
         expected = u'(POST)-http://www.w3af.com/!data=number'
-        self.assertEqual(self.vdb._clean_fuzzable_request(fr), expected)
+        self.assertEqual(clean_fuzzable_request(fr), expected)
 
     def test_clean_form_fuzzable_request_form(self):
         form_params = FormParameters()
@@ -186,7 +187,7 @@ class TestVariantDB(unittest.TestCase):
 
         expected = u'(POST)-http://example.com/' \
                    u'?id=number!username=string&address=string'
-        self.assertEqual(self.vdb._clean_fuzzable_request(fr), expected)
+        self.assertEqual(clean_fuzzable_request(fr), expected)
 
     def test_db_many_files_in_root(self):
         url_fmt = 'http://w3af.org/foo%s.htm'
