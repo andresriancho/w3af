@@ -23,7 +23,6 @@ import threading
 
 from mock import Mock
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
