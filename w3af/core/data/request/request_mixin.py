@@ -28,7 +28,7 @@ SP = ' '
 
 
 class RequestMixIn(object):
-    def dump(self):
+    def dump(self, ignore_headers=()):
         """
         :return: The HTTP request as it would be sent to the wire.
 
@@ -38,14 +38,17 @@ class RequestMixIn(object):
                  such as an image content.
         """
         data = self.get_data() or ''
-        return '%s%s%s' % (self.dump_request_head().encode('utf-8'),
-                           CRLF, data)
 
-    def get_request_hash(self):
+        request_head = self.dump_request_head(ignore_headers=ignore_headers)
+        request_head = request_head.encode('utf-8')
+
+        return '%s%s%s' % (request_head, CRLF, data)
+
+    def get_request_hash(self, ignore_headers=()):
         """
         :return: Hash the request (as it would be sent to the wire) and return
         """
-        return hashlib.md5(self.dump()).hexdigest()
+        return hashlib.md5(self.dump(ignore_headers=ignore_headers)).hexdigest()
 
     def get_request_line(self):
         """
@@ -55,19 +58,30 @@ class RequestMixIn(object):
                                       self.get_uri().url_encode(),
                                       CRLF)
 
-    def dump_request_head(self):
+    def dump_request_head(self, ignore_headers=()):
         """
         :return: A string with the head of the request
         """
-        return u"%s%s" % (self.get_request_line(), self.dump_headers())
+        return u"%s%s" % (self.get_request_line(),
+                          self.dump_headers(ignore_headers=ignore_headers))
 
-    def dump_headers(self):
+    def dump_headers(self, ignore_headers=()):
         """
         :return: A string representation of the headers.
         """
         try:
             # For FuzzableRequest
-            return unicode(self.get_all_headers())
+            headers = self.get_all_headers()
         except AttributeError:
             # For HTTPRequest
-            return unicode(self.get_headers())
+            headers = self.get_headers()
+
+        # Ignore the headers specified in the kwarg parameter
+        for header_name in ignore_headers:
+            try:
+                headers.idel(header_name)
+            except KeyError:
+                # That's fine, if it doesn't exist we just continue
+                continue
+
+        return unicode(headers)

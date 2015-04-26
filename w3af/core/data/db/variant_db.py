@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import threading
 
-import w3af.core.controllers.output_manager as om
-
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.db.clean_dc import clean_fuzzable_request
 
@@ -86,6 +84,10 @@ class VariantDB(object):
 
         self._db_lock = threading.RLock()
 
+    def cleanup(self):
+        self._variants_eq.cleanup()
+        self._variants.cleanup()
+
     def append(self, fuzzable_request):
         """
         :return: True if we added a new fuzzable request variant to the DB,
@@ -99,18 +101,13 @@ class VariantDB(object):
             request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
             already_seen = self._variants_eq.get(request_hash, False)
             if already_seen:
-                #args = (self.TAG, fuzzable_request)
-                #om.out.debug('%s %s was seen before' % args)
                 return False
-
-            #args = (self.TAG, fuzzable_request)
-            #om.out.debug('%s %s is a new fuzzable request' % args)
 
             # Store it to avoid duplicated fuzzable requests in our framework
             self._variants_eq[request_hash] = True
 
             #
-            # Do we need more variants of the fuzzable request? (similar match)
+            # Do we need more variants for the fuzzable request? (similar match)
             #
             clean_dict_key = clean_fuzzable_request(fuzzable_request)
             count = self._variants.get(clean_dict_key, None)

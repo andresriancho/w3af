@@ -255,6 +255,8 @@ class crawl_infrastructure(BaseConsumer):
         self._disabled_plugins = set()
         self._consumer_plugins = []
 
+        self._variant_db.cleanup()
+
     def show_summary(self):
         """
         This method is called after the crawl and infrastructure phases finishes
@@ -388,6 +390,9 @@ class crawl_infrastructure(BaseConsumer):
             msg %= fuzzable_request.get_uri()
             om.out.debug(msg)
             return False
+
+        msg = 'New fuzzable request identified: "%s"'
+        om.out.debug(msg % fuzzable_request)
 
         # Log the new finding to the user, without dups
         # https://github.com/andresriancho/w3af/issues/8496

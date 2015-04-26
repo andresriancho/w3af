@@ -32,6 +32,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
+from w3af.core.data.db.variant_db import VariantDB
 from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.disk_set import DiskSet
@@ -67,6 +68,7 @@ class web_spider(CrawlPlugin):
         self._target_urls = []
         self._target_domain = None
         self._already_filled_form = ScalableBloomFilter()
+        self._variant_db = VariantDB()
 
         # User configured variables
         self._ignore_regex = ''
@@ -177,7 +179,7 @@ class web_spider(CrawlPlugin):
                               self._headers_url_generator(resp, fuzzable_req))
         
         for ref, fuzzable_req, original_resp, possibly_broken in gen:
-            if self._should_output_extracted_url(ref, original_resp):
+            if self._should_verify_extracted_url(ref, original_resp):
                 yield ref, fuzzable_req, original_resp, possibly_broken
 
     def _headers_url_generator(self, resp, fuzzable_req):
@@ -262,7 +264,7 @@ class web_spider(CrawlPlugin):
                 possibly_broken = resp_is_404 or (ref in only_re_refs)
                 yield ref, fuzzable_req, resp, possibly_broken
 
-    def _should_output_extracted_url(self, ref, resp):
+    def _should_verify_extracted_url(self, ref, resp):
         """
         :param ref: A newly found URL
         :param resp: The HTTP response where the URL was found
@@ -288,7 +290,25 @@ class web_spider(CrawlPlugin):
             if not self._is_forward(ref):
                 return False
 
-        return True
+        #
+        # I tried to have only one VariantDB in the framework instead of two,
+        # but after some tests and architecture considerations it was better
+        # to duplicated the data.
+        #
+        # In the future I'll run plugins in different processes than the core,
+        # so it makes sense to have independent plugins.
+        #
+        # If I remove the web_spider VariantDB and just leave the one in the
+        # core the framework keeps working but this method
+        # (_should_verify_extracted_url) will return True much more often, which
+        # leads to extra HTTP requests for URLs which we already checked and the
+        # core will dismiss anyway
+        #
+        fuzzable_request = FuzzableRequest(ref)
+        if self._variant_db.append(fuzzable_request):
+            return True
+
+        return False
 
     def _extract_links_and_verify(self, resp, fuzzable_req):
         """
