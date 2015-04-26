@@ -77,10 +77,14 @@ class VariantDB(object):
 
     def __init__(self, params_max_variants=PARAMS_MAX_VARIANTS,
                  path_max_variants=PATH_MAX_VARIANTS):
-        self._disk_dict = DiskDict(table_prefix='variant_db')
-        self._db_lock = threading.RLock()
+
+        self._variants_eq = DiskDict(table_prefix='variant_db_eq')
+        self._variants = DiskDict(table_prefix='variant_db')
+
         self.params_max_variants = params_max_variants
         self.path_max_variants = path_max_variants
+
+        self._db_lock = threading.RLock()
 
     def append(self, fuzzable_request):
         """
@@ -93,26 +97,26 @@ class VariantDB(object):
             # Is the fuzzable request already known to us? (exactly the same)
             #
             request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
-            already_seen = self._disk_dict.get(request_hash, False)
+            already_seen = self._variants_eq.get(request_hash, False)
             if already_seen:
-                #args = (self.TAG, fuzzable_request.dump())
+                #args = (self.TAG, fuzzable_request)
                 #om.out.debug('%s %s was seen before' % args)
                 return False
 
-            #args = (self.TAG, fuzzable_request.dump())
+            #args = (self.TAG, fuzzable_request)
             #om.out.debug('%s %s is a new fuzzable request' % args)
 
             # Store it to avoid duplicated fuzzable requests in our framework
-            self._disk_dict[request_hash] = True
+            self._variants_eq[request_hash] = True
 
             #
             # Do we need more variants of the fuzzable request? (similar match)
             #
             clean_dict_key = clean_fuzzable_request(fuzzable_request)
-            count = self._disk_dict.get(clean_dict_key, None)
+            count = self._variants.get(clean_dict_key, None)
 
             if count is None:
-                self._disk_dict[clean_dict_key] = 1
+                self._variants[clean_dict_key] = 1
                 return True
 
             # We've seen at least one fuzzable request with this pattern...
@@ -129,7 +133,7 @@ class VariantDB(object):
                 return False
 
             else:
-                self._disk_dict[clean_dict_key] = count + 1
+                self._variants[clean_dict_key] = count + 1
                 return True
 
 
