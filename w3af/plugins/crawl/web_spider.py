@@ -368,7 +368,7 @@ class web_spider(CrawlPlugin):
                 t = (resp.get_url(), original_request.get_uri())
                 self._broken_links.add(t)
         else:
-            msg = 'Adding reference "%s" to the result.'
+            msg = '[web_spider] Sending link to w3af core: "%s"'
             om.out.debug(msg % reference)
 
             fuzz_req = FuzzableRequest(reference, headers=headers)
