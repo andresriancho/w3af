@@ -44,7 +44,7 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      # https://github.com/andresriancho/w3af/issues/8339
                      PIPDependency('pyasn1', 'pyasn1', '0.1.3'),
 
-                     PIPDependency('lxml', 'lxml', '2.3.2'),
+                     PIPDependency('lxml', 'lxml', '3.4.4'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
                      PIPDependency('guess_language', 'guess-language', '0.2'),
                      PIPDependency('cluster', 'cluster', '1.1.1b3'),
