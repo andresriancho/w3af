@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import threading
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.db.clean_dc import clean_fuzzable_request
 
@@ -70,6 +72,9 @@ class VariantDB(object):
         need_more_variants('http://foo.com/abc?id=32')      --> False
 
     """
+    HASH_IGNORE_HEADERS = ('referer',)
+    TAG = '[variant_db]'
+
     def __init__(self, params_max_variants=PARAMS_MAX_VARIANTS,
                  path_max_variants=PATH_MAX_VARIANTS):
         self._disk_dict = DiskDict(table_prefix='variant_db')
@@ -83,24 +88,27 @@ class VariantDB(object):
                  False if no more variants are required for this fuzzable
                  request.
         """
-        #
-        # Is the fuzzable request already known to us? (exactly the same)
-        #
-        request_hash = fuzzable_request.get_request_hash()
-        already_seen = self._disk_dict.get(request_hash, False)
-        if already_seen:
-            return False
-
-        # Store it to avoid duplicated fuzzable requests in our framework
-        self._disk_dict[request_hash] = True
-
-        #
-        # Do we need more variants of the fuzzable request? (similar match)
-        #
-        clean_dict_key = clean_fuzzable_request(fuzzable_request)
-
         with self._db_lock:
+            #
+            # Is the fuzzable request already known to us? (exactly the same)
+            #
+            request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
+            already_seen = self._disk_dict.get(request_hash, False)
+            if already_seen:
+                #args = (self.TAG, fuzzable_request.dump())
+                #om.out.debug('%s %s was seen before' % args)
+                return False
 
+            #args = (self.TAG, fuzzable_request.dump())
+            #om.out.debug('%s %s is a new fuzzable request' % args)
+
+            # Store it to avoid duplicated fuzzable requests in our framework
+            self._disk_dict[request_hash] = True
+
+            #
+            # Do we need more variants of the fuzzable request? (similar match)
+            #
+            clean_dict_key = clean_fuzzable_request(fuzzable_request)
             count = self._disk_dict.get(clean_dict_key, None)
 
             if count is None:
