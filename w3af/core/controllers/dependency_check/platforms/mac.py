@@ -82,7 +82,7 @@ class MacOSX(Platform):
     # https://github.com/andresriancho/w3af/issues/485
     MAC_CORE_PIP_PACKAGES = CORE_PIP_PACKAGES[:]
     MAC_CORE_PIP_PACKAGES.remove(PIPDependency('pybloomfilter',
-                                               'pybloomfiltermmap', '0.3.11'))
+                                               'pybloomfiltermmap', '0.3.14'))
 
     MAC_GUI_PIP_PACKAGES = MAC_CORE_PIP_PACKAGES[:]
     MAC_GUI_PIP_PACKAGES.extend(GUI_PIP_EXTRAS)
