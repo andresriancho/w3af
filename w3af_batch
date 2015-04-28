@@ -1,0 +1,151 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+
+import logging
+import argparse
+import signal
+import threading as th
+import multiprocessing as mp
+import multiprocessing.dummy as mpd
+
+
+WAIT_TIMEOUT = 30  # in seconds
+STOPSCAN = mp.Event()
+logger = logging.getLogger(__name__)
+
+
+def cancel_scan(*args):
+    """
+    Dummy SIGINT hanlder which stops target list processing.
+    """
+    STOPSCAN.set()
+    raise KeyboardInterrupt('Scan is terminated by user request')
+
+
+def execute_scan(target, profile, timeout):
+    """
+    Execute w3af scan. Try to stop it after timeout seconds.
+    """
+    def stop_scan(scanner):
+        """
+        Stop w3af scan after timeout.
+        """
+        if scanner.status.is_running():
+            scanner.stop()
+            logger.info('Stop scan of %s because of configured timeout',
+                        target)
+
+    from w3af.core.controllers.w3afCore import w3afCore
+    from w3af.core.data.kb.knowledge_base import kb
+    from w3af.core.controllers.exceptions import BaseFrameworkException
+
+    try:
+        scanner = w3afCore()
+        scanner.profiles.use_profile(profile)
+        option_list = scanner.target.get_options()
+        option_list['target'].set_value(target)
+        scanner.target.set_options(option_list)
+        scanner.plugins.init_plugins()
+    except BaseFrameworkException, e:
+        logger.warn('Failed to initialize scanner: %s' % e)
+        return
+
+    timer = th.Timer(timeout, stop_scan, (scanner,))
+    timer.start()
+    try:
+        scanner.start()
+    except BaseFrameworkException, e:
+        logger.warn('Failed to execute scan: %s' % e)
+    if timer.is_alive():
+        timer.cancel()
+        timer.join()
+        logger.debug('Target %s has %s vulnerabilities',
+                     target, len(kb.get_all_vulns()))
+
+
+def start_executor(target, profile, timeout):
+    """
+    Start w3af scan in a separate process. Terminate child process after
+    WAIT_TIMEOUT seconds.
+
+    :param target: Target uri
+    :param profile: Profile's internal name of path to pw3af file
+    :param timeout: Scan timeout
+    """
+    def stop_executor(executor, target):
+        """
+        Force stop of w3af scanner process after WAIT_TIMEOUT.
+        """
+        if executor.is_alive():
+            executor.terminate()
+            logger.info('Terminate scan proccess of %s '
+                        'after waiting for w3afCore.stop()',
+                        target)
+
+    executor = mp.Process(target=execute_scan,
+                          name='Executor',
+                          args=(target, profile, timeout))
+    timer = th.Timer(timeout + WAIT_TIMEOUT, stop_executor, (executor, target))
+    timer.start()
+    executor.start()
+    executor.join()
+    if timer.is_alive():
+        timer.cancel()
+        timer.join()
+
+
+def _process_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', dest='workers', type=int,
+                        default=mp.cpu_count(),
+                        help='number of worker processes '
+                             '(default: number of CPUs)')
+    parser.add_argument('-t', default=300, dest='timeout', type=int,
+                        help='target scan timeout in seconds (default: 300)')
+    parser.add_argument('-P', dest='profile', required=True,
+                        help='builtin profile name or path to pw3af file')
+    parser.add_argument('targets', type=argparse.FileType(),
+                        help='path to file with list of targets')
+    return parser.parse_args()
+
+
+def main():
+    """
+    Execute w3af scans of args.targets in parallel.  A pool of manager
+    threads is created. Each thread receives a target to scan. Manager
+    thread executes scan in a separate process. Scanner process will
+    try to stop w3af after timeout seconds. In addition manager thread
+    will terminate the child process after WAIT_TIMEOUT seconds.
+    """
+    def terminate_scan(pool):
+        """
+        Terminate processing of pool tasks in case of SIGINT.
+        """
+        if STOPSCAN.wait():
+            pool.terminate()
+
+    signal.signal(signal.SIGINT, cancel_scan)
+    
+    args = _process_arguments()
+
+    logger.info('Begin scanning')
+    pool = mpd.Pool(args.workers)
+    controller = th.Thread(target=terminate_scan,
+                           name='Controller',
+                           args=(pool,))
+    controller.start()
+    for line in args.targets:
+        target_uri = line.rstrip()
+        pool.apply_async(start_executor,
+                         (target_uri, args.profile, args.timeout))
+    pool.close()
+    pool.join()
+    if not STOPSCAN.is_set():
+        STOPSCAN.set()
+        controller.join()
+    logger.info('Finish scanning')
+
+
+if __name__ == '__main__':
+    main()
