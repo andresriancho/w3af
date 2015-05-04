@@ -139,8 +139,8 @@ class ConsoleUI(object):
                     ctx = self._context
                 else:
                     ctx = None
-                self._context = callbackMenu(
-                    name, self, self._w3af, ctx, callback)
+                self._context = callbackMenu(name, self, self._w3af,
+                                             ctx, callback)
             else:
                 self._context = rootMenu(name, self, self._w3af)
 
@@ -180,9 +180,9 @@ class ConsoleUI(object):
             return 0
 
     def _executePending(self):
-        while (self._commands):
-            curCmd, self._commands = self._commands[0], self._commands[1:]
-            self._paste(curCmd)
+        while self._commands:
+            curent_cmd, self._commands = self._commands[0], self._commands[1:]
+            self._paste(curent_cmd)
             self._onEnter()
 
     def write(self, s):
@@ -257,15 +257,10 @@ class ConsoleUI(object):
             self._position -= 1
             del self._line[self._position]
             term.moveBack(1)
-#            lenToErase = len(self._line[:self._position])+1
-#            term.write (' ' * lenToErase)
-#            term.moveBack (lenToErase)
 
-#            term.eraseLine()
             self._line.append(' ')
             self._showTail()
             del self._line[-1]
-#            term.write(' ')
 
     def _clearScreen(self):
         """Clears the screen"""
@@ -453,8 +448,6 @@ class ConsoleUI(object):
             return result
 
     def _paste(self, text):
-
-#        term.savePosition()
         tail = self._line[self._position:]
         for c in text:
             self._line.insert(self._position, c)
@@ -462,7 +455,6 @@ class ConsoleUI(object):
 
         term.write(text)
         term.write(''.join(tail))
-#        term.restorePosition()
         term.moveBack(len(tail))
 
     def _showPrompt(self):

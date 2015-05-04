@@ -166,10 +166,10 @@ class w3afCore(object):
                 do your error handling!
         """
         om.out.debug('Called w3afCore.start()')
-        
+
         self.scan_start_hook()
         self.status.start()
-        
+
         try:
             # Just in case the GUI / Console forgot to do this...
             self.verify_environment()
