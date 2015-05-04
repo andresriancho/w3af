@@ -49,6 +49,8 @@ class rootMenu(menu):
     Main menu
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     """
+    # Wait at most 20 seconds for the core to start the scan
+    MAX_WAIT_FOR_START = 20
 
     def __init__(self, name, console, core, parent=None):
         menu.__init__(self, name, console, core, parent)
@@ -95,12 +97,27 @@ class rootMenu(menu):
         self._scan_thread.start()
         
         # let the core thread start
-        time.sleep(1)
+        scan_started = self.wait_for_start()
+        if not scan_started:
+            om.out.console('The scan failed to start.')
+            self._w3af.stop()
+            return
 
         try:
             self.show_progress_on_request()
         except KeyboardInterrupt:
             self.handle_scan_stop()
+
+    def wait_for_start(self):
+        delay = 0.1
+
+        for _ in xrange(int(self.MAX_WAIT_FOR_START / delay)):
+            if self._w3af.status.is_running():
+                return True
+
+            time.sleep(delay)
+
+        return False
 
     def handle_scan_stop(self, *args):
         om.out.console('User pressed Ctrl+C, stopping scan.')
