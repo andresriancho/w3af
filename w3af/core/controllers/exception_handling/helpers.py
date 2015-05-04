@@ -83,7 +83,7 @@ def get_versions():
 
 
 def create_crash_file(exception):
-    filename = "w3af_crash-" + rand_alnum(5) + ".txt"
+    filename = "w3af-crash-" + rand_alnum(5) + ".txt"
     filename = os.path.join(gettempdir(), filename)
     crash_dump = file(filename, "w")
     crash_dump.write(_('Submit this bug here: https://github.com/andresriancho/w3af/issues/new \n'))
