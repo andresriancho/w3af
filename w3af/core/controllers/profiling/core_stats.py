@@ -69,12 +69,18 @@ def dump_data(w3af_core):
     try:
         data = {'Requests sent': consecutive_number_generator.get(),
                 'Requests per minute': s.get_rpm(),
-                'Crawl queue input speed': s.get_crawl_input_speed(),
-                'Crawl queue output speed': s.get_crawl_output_speed(),
-                'Crawl queue size': s.get_crawl_qsize(),
-                'Audit queue input speed': s.get_audit_input_speed(),
-                'Audit queue output speed': s.get_audit_output_speed(),
-                'Audit queue size': s.get_audit_qsize(),
+
+                'Crawl input queue input speed': s.get_crawl_input_speed(),
+                'Crawl input queue output speed': s.get_crawl_output_speed(),
+                'Crawl input queue size': s.get_crawl_qsize(),
+                'Crawl output queue size': s.get_crawl_output_qsize(),
+
+                'Audit input queue input speed': s.get_audit_input_speed(),
+                'Audit input queue output speed': s.get_audit_output_speed(),
+                'Audit input queue size': s.get_audit_qsize(),
+
+                'Grep input queue size': s.get_audit_qsize(),
+
                 'Cache stats': get_parser_cache_stats()}
     except Exception, e:
         exc_type, exc_value, exc_tb = sys.exc_info()

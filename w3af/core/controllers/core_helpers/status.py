@@ -199,6 +199,14 @@ class w3af_core_status(object):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else dc.in_queue.qsize()
 
+    def get_crawl_output_qsize(self):
+        dc = self._w3af_core.strategy._discovery_consumer
+        return None if dc is None else dc._out_queue.qsize()
+
+    def get_grep_qsize(self):
+        dc = self._w3af_core.strategy._grep_consumer
+        return None if dc is None else dc.in_queue.qsize()
+
     def get_crawl_current_fr(self):
         return self.get_current_fuzzable_request('crawl')
 
