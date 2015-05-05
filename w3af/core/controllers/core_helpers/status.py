@@ -205,7 +205,7 @@ class w3af_core_status(object):
 
     def get_crawl_worker_pool_queue_size(self):
         dc = self._w3af_core.strategy._discovery_consumer
-        return None if dc is None else dc._threadpool.qsize()
+        return None if dc is None else dc._threadpool._inqueue.qsize()
 
     def get_grep_qsize(self):
         dc = self._w3af_core.strategy._grep_consumer
@@ -246,7 +246,7 @@ class w3af_core_status(object):
 
     def get_audit_worker_pool_queue_size(self):
         ac = self._w3af_core.strategy._audit_consumer
-        return None if ac is None else ac._threadpool.qsize()
+        return None if ac is None else ac._threadpool._inqueue.qsize()
 
     def get_core_worker_pool_queue_size(self):
         return self._w3af_core.worker_pool._inqueue.qsize()
