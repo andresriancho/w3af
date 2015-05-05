@@ -167,8 +167,8 @@ class w3afCore(object):
         """
         om.out.debug('Called w3afCore.start()')
 
-        self.scan_start_hook()
         self.status.start()
+        self.scan_start_hook()
 
         try:
             # Just in case the GUI / Console forgot to do this...
