@@ -126,6 +126,11 @@ class w3afCore(object):
         
         :return: None
         """
+        # Create this again just to clear the internal states
+        scans_completed = self.status.scans_completed
+        self.status = w3af_core_status(self, scans_completed=scans_completed)
+        self.status.start()
+
         start_profiling(self)
 
         if not self._first_scan:
@@ -147,10 +152,6 @@ class w3afCore(object):
         # strategy which might still have data stored in it and create a new
         # one  
         self.strategy = w3af_core_strategy(self)
-        
-        # And create this again just to clear the internal states
-        scans_completed = self.status.scans_completed
-        self.status = w3af_core_status(self, scans_completed=scans_completed)
 
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)
@@ -167,7 +168,6 @@ class w3afCore(object):
         """
         om.out.debug('Called w3afCore.start()')
 
-        self.status.start()
         self.scan_start_hook()
 
         try:
