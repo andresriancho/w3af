@@ -203,6 +203,10 @@ class w3af_core_status(object):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else dc._out_queue.qsize()
 
+    def get_crawl_worker_pool_queue_size(self):
+        dc = self._w3af_core.strategy._discovery_consumer
+        return None if dc is None else dc._threadpool.qsize()
+
     def get_grep_qsize(self):
         dc = self._w3af_core.strategy._grep_consumer
         return None if dc is None else dc.in_queue.qsize()
@@ -239,6 +243,13 @@ class w3af_core_status(object):
     def get_audit_qsize(self):
         ac = self._w3af_core.strategy._audit_consumer
         return None if ac is None else ac.in_queue.qsize()
+
+    def get_audit_worker_pool_queue_size(self):
+        ac = self._w3af_core.strategy._audit_consumer
+        return None if ac is None else ac._threadpool.qsize()
+
+    def get_core_worker_pool_queue_size(self):
+        return self._w3af_core.worker_pool._inqueue.qsize()
 
     def get_audit_current_fr(self):
         return self.get_current_fuzzable_request('audit')

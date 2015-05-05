@@ -74,12 +74,16 @@ def dump_data(w3af_core):
                 'Crawl input queue output speed': s.get_crawl_output_speed(),
                 'Crawl input queue size': s.get_crawl_qsize(),
                 'Crawl output queue size': s.get_crawl_output_qsize(),
+                'Crawl worker pool input queue size': s.get_crawl_worker_pool_queue_size(),
 
                 'Audit input queue input speed': s.get_audit_input_speed(),
                 'Audit input queue output speed': s.get_audit_output_speed(),
                 'Audit input queue size': s.get_audit_qsize(),
+                'Audit worker pool input queue size': s.get_audit_worker_pool_queue_size(),
 
                 'Grep input queue size': s.get_audit_qsize(),
+
+                'Core worker pool input queue size': s.get_core_worker_pool_queue_size(),
 
                 'Cache stats': get_parser_cache_stats()}
     except Exception, e:
