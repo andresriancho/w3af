@@ -41,7 +41,7 @@ in various Linux distributions, Mac OSX, FreeBSD and OpenBSD.
 
 .. note::
 
-   The platform used for development and running our continuous integration tests
+   The platform used for development is Ubuntu 14.04 and running our continuous integration tests
    is Ubuntu 12.04 LTS.
 
 .. warning::
