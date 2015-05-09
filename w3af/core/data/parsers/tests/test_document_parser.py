@@ -139,3 +139,6 @@ class DelayedParser(object):
     @staticmethod
     def can_parse(*args):
         return True
+
+    def clear(self):
+        return True
