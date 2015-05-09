@@ -180,6 +180,41 @@ class ParserCache(object):
         """
         return DocumentParser(http_response)
 
+    def _kill_parser_process(self, hash_string, http_response):
+        """
+        Kill the process that's handling the parsing of http_response which
+        can be identified by hash_string
+
+        :param hash_string: The hash for the http_response
+        :param http_response: The HTTP response which is being parsed
+        :return: None
+        """
+        # Near the timeout error, so we make sure that the pid is still
+        # running our "buggy" input
+        pid = self._processes.pop(hash_string, None)
+        if pid is not None:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError, ose:
+                msg = 'An error occurred while killing the parser' \
+                      ' process: "%s"'
+                om.out.debug(msg % ose)
+
+        msg = '[timeout] The parser took more than %s seconds to complete'\
+              ' parsing of "%s", killed it!'
+
+        om.out.debug(msg % (self.PARSER_TIMEOUT, http_response.get_url()))
+
+    def _spawn_new_parser_process(self):
+        """
+        The process pool doesn't know how to handle the fact that one of the
+        workers was abruptly killed, so we help the Pool recover
+
+        :see: https://github.com/andresriancho/w3af/issues/9713
+        :return: None
+        """
+        pass
+
     def _parse_http_response_in_worker(self, http_response, hash_string):
         """
         This parses the http_response in a pool worker. This has two features:
@@ -205,22 +240,8 @@ class ParserCache(object):
         try:
             parser_output = result.get(timeout=self.PARSER_TIMEOUT)
         except multiprocessing.TimeoutError:
-            # Near the timeout error, so we make sure that the pid is still
-            # running our "buggy" input
-            pid = self._processes.pop(hash_string, None)
-            if pid is not None:
-                try:
-                    os.kill(pid, signal.SIGTERM)
-                except OSError, ose:
-                    msg = 'An error occurred while killing the parser' \
-                          ' process: "%s"'
-                    om.out.debug(msg % ose)
-
-            msg = '[timeout] The parser took more than %s seconds'\
-                  ' to complete parsing of "%s", killed it!'
-
-            om.out.debug(msg % (self.PARSER_TIMEOUT,
-                                http_response.get_url()))
+            self._kill_parser_process(hash_string, http_response)
+            self._spawn_new_parser_process()
 
             # Act just like when there is no parser
             msg = 'There is no parser for "%s".' % http_response.get_url()

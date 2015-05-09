@@ -88,6 +88,7 @@ class TestParserCache(unittest.TestCase):
 
         with patch(modc % 'om.out') as om_mock,\
              patch(modc % 'ParserCache.PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
+             patch(modc % 'ParserCache.MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
              patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
 
             #
@@ -97,6 +98,7 @@ class TestParserCache(unittest.TestCase):
             http_resp = _build_http_response(html, u'text/html')
 
             timeout_mock.return_value = 1
+            max_workers_mock.return_value = 1
             parsers_mock.return_value = [DelayedParser, HTMLParser]
 
             try:
