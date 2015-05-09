@@ -72,7 +72,7 @@ class BaseConsumer(Process):
     """
 
     def __init__(self, consumer_plugins, w3af_core, thread_name,
-                 create_pool=True):
+                 create_pool=True, max_pool_queued_tasks=0):
         """
         :param consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
@@ -93,7 +93,8 @@ class BaseConsumer(Process):
         self._threadpool = None
 
         if create_pool:
-            self._threadpool = Pool(10, worker_names='%sWorker' % thread_name)
+            self._threadpool = Pool(10, worker_names='%sWorker' % thread_name,
+                                    max_queued_tasks=max_pool_queued_tasks)
 
     def run(self):
         """
