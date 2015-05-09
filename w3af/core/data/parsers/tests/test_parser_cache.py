@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
+import time
 import unittest
 import multiprocessing
 
@@ -32,8 +33,7 @@ from w3af.core.data.parsers.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.html import HTMLParser
-from w3af.core.data.parsers.tests.test_document_parser import (DelayedParser,
-                                                               _build_http_response)
+from w3af.core.data.parsers.tests.test_document_parser import _build_http_response
 
 
 class TestParserCache(unittest.TestCase):
@@ -90,11 +90,14 @@ class TestParserCache(unittest.TestCase):
              patch(modc % 'ParserCache.PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
              patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
 
-            timeout_mock.return_value = 1
-            parsers_mock.return_value = [DelayedParser]
-
-            html = '<html>foo!</html>'
+            #
+            #   Test the timeout
+            #
+            html = '<html>DelayedParser!</html>'
             http_resp = _build_http_response(html, u'text/html')
+
+            timeout_mock.return_value = 1
+            parsers_mock.return_value = [DelayedParser, HTMLParser]
 
             try:
                 self.dpc.get_document_parser_for(http_resp)
@@ -108,6 +111,18 @@ class TestParserCache(unittest.TestCase):
                 self.assertIn(call.debug(error), om_mock.mock_calls)
             else:
                 self.assertTrue(False)
+
+            #
+            #   We now want to make sure that after we kill the process the Pool
+            #   creates a new process for handling our tasks
+            #
+            #   https://github.com/andresriancho/w3af/issues/9713
+            #
+            html = '<html>foo-</html>'
+            http_resp = _build_http_response(html, u'text/html')
+
+            doc_parser = self.dpc.get_document_parser_for(http_resp)
+            self.assertIsInstance(doc_parser._parser, HTMLParser)
 
     def test_daemon_child(self):
         """
@@ -172,3 +187,26 @@ def daemon_child(queue):
         queue.put(True)
     else:
         queue.put(False)
+
+
+class DelayedParser(object):
+    def __init__(self, http_response):
+        """
+        According to the stopit docs it can't kill a thread running an
+        atomic python function such as time.sleep() , so I have to
+        create a function like this. I don't mind, since it's realistic
+        with what we do in w3af anyways.
+        """
+        self.http_response = http_response
+
+        total_delay = 3.0
+
+        for _ in xrange(100):
+            time.sleep(total_delay/100)
+
+    @staticmethod
+    def can_parse(http_response):
+        return 'DelayedParser' in http_response.get_body()
+
+    def clear(self):
+        return True
