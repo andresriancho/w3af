@@ -126,7 +126,8 @@ def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
     return r
 
 
-def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
+def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING,
+             safe_chars=QueryString.DEFAULT_SAFE_CHARS):
     """
     Parse a url encoded string (a=b&c=d) into a QueryString object.
 
@@ -136,7 +137,7 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     if not isinstance(qstr, basestring):
         raise TypeError('parse_qs requires a basestring as input.')
     
-    qs = QueryString(encoding=encoding)
+    qs = QueryString(encoding=encoding, safe_chars=safe_chars)
 
     if qstr:
         # convert to string if unicode
@@ -317,11 +318,12 @@ class URL(DiskItem):
             self._querystr = qs
         elif isinstance(qs, basestring):
             self._querystr = parse_qs(qs, ignore_exc=True,
-                                      encoding=self.encoding)
+                                      encoding=self.encoding,
+                                      safe_chars=QueryString.DEFAULT_SAFE_CHARS)
         else:
             # This might fail because of the type-check performed in QueryString
             # __init__, but that's ok.
-            self._querystr = QueryString(qs)
+            self._querystr = QueryString(qs, safe_chars=self.SAFE_CHARS)
 
     querystring = property(get_querystring, set_querystring)
 

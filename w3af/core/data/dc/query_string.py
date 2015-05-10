@@ -34,8 +34,13 @@ class QueryString(KeyValueContainer):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
+
+    DEFAULT_SAFE_CHARS = ''
+
+    def __init__(self, init_val=(), encoding=DEFAULT_ENCODING,
+                 safe_chars=DEFAULT_SAFE_CHARS):
         super(QueryString, self).__init__(init_val, encoding)
+        self.safe_chars = safe_chars
 
     def get_type(self):
         return 'Query string'
@@ -44,7 +49,8 @@ class QueryString(KeyValueContainer):
         """
         :return: string representation of the QueryString object.
         """
-        return enc_dec.urlencode(self, encoding=self.encoding, safe='')
+        return enc_dec.urlencode(self, encoding=self.encoding,
+                                 safe=self.safe_chars)
 
     def __setitem__(self, key, value):
         if not isinstance(value, (list, tuple)):
