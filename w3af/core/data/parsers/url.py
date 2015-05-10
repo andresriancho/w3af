@@ -319,7 +319,7 @@ class URL(DiskItem):
         elif isinstance(qs, basestring):
             self._querystr = parse_qs(qs, ignore_exc=True,
                                       encoding=self.encoding,
-                                      safe_chars=QueryString.DEFAULT_SAFE_CHARS)
+                                      safe_chars=self.SAFE_CHARS)
         else:
             # This might fail because of the type-check performed in QueryString
             # __init__, but that's ok.
