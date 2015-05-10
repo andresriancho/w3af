@@ -113,4 +113,6 @@ def get_parser_cache_stats():
     return {'hit_rate': parser_cache.dpc.get_hit_rate(),
             'max_lru_items': parser_cache.dpc.get_max_lru_items(),
             'current_lru_size': parser_cache.dpc.get_current_lru_items(),
-            'total_cache_queries': parser_cache.dpc.get_total_queries()}
+            'total_cache_queries': parser_cache.dpc.get_total_queries(),
+            'Parser pool worker size': parser_cache.dpc._pool._processes,
+            'Parser pool input queue size': parser_cache.dpc._pool._inqueue.qsize()}

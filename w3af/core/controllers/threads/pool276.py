@@ -287,9 +287,9 @@ class Pool(object):
             self._repopulate_pool()
 
     def _setup_queues(self):
-        from multiprocessing.queues import SimpleQueue
-        self._inqueue = SimpleQueue()
-        self._outqueue = SimpleQueue()
+        from .queues import SimpleQueueWithSize
+        self._inqueue = SimpleQueueWithSize()
+        self._outqueue = SimpleQueueWithSize()
         self._quick_put = self._inqueue._writer.send
         self._quick_get = self._outqueue._reader.recv
 
