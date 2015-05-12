@@ -54,7 +54,9 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('darts.lib.utils', 'darts.util.lru', '0.5'),
                      PIPDependency('jinja2', 'Jinja2', '2.7.3'),
                      PIPDependency('vulndb', 'vulndb', '0.0.17'),
-                     PIPDependency('markdown', 'markdown', '2.6.1')]
+                     PIPDependency('markdown', 'markdown', '2.6.1'),
+
+                     PIPDependency('cyordereddict', 'cyordereddict', '0.2.2')]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
 

@@ -26,7 +26,7 @@ import base64
 from xml.sax.handler import ContentHandler
 
 from w3af.core.data.dc.utils.token import DataToken
-from collections import OrderedDict
+from cyordereddict import OrderedDict
 
 
 BASE_64 = 'base64'

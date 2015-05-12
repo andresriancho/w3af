@@ -28,7 +28,7 @@ import urlparse
 from functools import wraps
 
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
-from collections import OrderedDict
+from cyordereddict import OrderedDict
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.misc.encoding import smart_str, PERCENT_ENCODE
