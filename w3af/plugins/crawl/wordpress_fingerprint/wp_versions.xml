@@ -4,13 +4,16 @@
   This file contains identification data to identify WordPress versions.
   http://wordpress.org/download/release-archive/
 
-  Position is important, DO NOT change anything unless you know what you are doing
+  Position is important, DO NOT change anything unless you know what you are doing :p
 -->
 
 <wp-versions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:noNamespaceSchemaLocation="wp_versions.xsd">
 
   <file src="readme.html">
+    <hash md5="ce78b2213f70701834658c9007f0c947">
+      <version>4.1.1</version>
+    </hash>
     <hash md5="321aad4ba63043f888cb072cedf9ef78">
       <version>4.1</version>
     </hash>
@@ -98,6 +101,9 @@
   </file>
 
   <file src="wp-includes/js/tinymce/wp-tinymce.js.gz">
+    <hash md5="64fd6a9dd5366830074362d07d205018">
+      <version>4.1.1</version>
+    </hash>
     <hash md5="66ff6b408c58c3207ff4b20e75ec5e68">
       <version>4.1</version>
     </hash>
