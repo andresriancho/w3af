@@ -448,7 +448,7 @@ class FormParameters(OrderedDict):
     def deepish_copy(self):
         """
         This method returns a deep copy of the Form instance. I'm NOT using
-        copy.deepcopy(self) here because its very slow!
+        copy.deepcopy(self) here because it's very slow!
 
         :return: A copy of myself.
         """
