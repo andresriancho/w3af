@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
+import sys
 
 from multiprocessing import TimeoutError
 
@@ -96,16 +97,28 @@ class w3af_core_strategy(object):
             self._seed_discovery()
 
             self._fuzzable_request_router()
+
         except Exception, e:
-            # Terminate the consumers, exceptions at this level stop the scan
-            self.terminate()
 
-            # While the consumers might have finished, they certainly queue
-            # tasks in the core's worker_pool, which need to be processed too
-            self._w3af_core.worker_pool.finish()
+            om.out.debug('strategy.start() found exception "%s"' % e)
+            exc_info = sys.exc_info()
 
-            om.out.debug('strategy.start() is raising exception "%s"' % e)
-            raise
+            try:
+                # Terminate the consumers, exceptions at this level stop the
+                # scan
+                self.terminate()
+
+                # While the consumers might have finished, they certainly queue
+                # tasks in the core's worker_pool, which need to be processed
+                # too
+                self._w3af_core.worker_pool.finish()
+            except Exception, e:
+                msg = 'strategy.start() found exception while terminating' \
+                      ' workers "%s"'
+                om.out.debug(msg % e)
+
+            raise exc_info[0], exc_info[1], exc_info[2]
+
         else:
             # Wait for all consumers to finish
             self.join_all_consumers()
