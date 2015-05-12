@@ -87,6 +87,20 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         return self._to_str_with_separators(u'=', u'&', errors='percent_encode')
 
+    def __reduce__(self):
+        """
+        :return: Return state information for pickling
+        """
+        init_val = [[k, self[k]] for k in self]
+        encoding = self.encoding
+
+        token = self.token
+
+        return self.__class__, (init_val, encoding), {'token': token}
+
+    def __setstate__(self, state):
+        self.token = state['token']
+
     def iter_setters(self):
         """
         :yield: Tuples containing:
