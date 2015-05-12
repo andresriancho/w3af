@@ -60,8 +60,8 @@ url = "http://www.w3af.org/"
 data = "a=1&a=2"
 headers = {
     "Host" : "www.w3af.org",
-    "Foo" : "spam, eggs",
-    "Content-Type" : "application/x-www-form-urlencoded"
+    "Content-Type" : "application/x-www-form-urlencoded",
+    "Foo" : "spam, eggs"
 }
 
 request = urllib2.Request(url, data, headers)
@@ -105,6 +105,7 @@ class TestPythonExport(unittest.TestCase):
                        '\n' \
                        'a=1&a=2'
         python_code = python_export(http_request)
+
         self.assertTrue(
             compiler.compile(python_code, 'python_export.tmp', 'exec'))
         self.assertEquals(python_code, EXPECTED_POST_REPEATED)
