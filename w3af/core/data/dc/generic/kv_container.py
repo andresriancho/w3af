@@ -74,9 +74,8 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         :return: Return state information for pickling
         """
-        init_val = [[k, self[k]] for k in self]
+        init_val = self.items()
         encoding = self.encoding
-
         token = self.token
 
         return self.__class__, (init_val, encoding), {'token': token}
