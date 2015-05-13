@@ -27,7 +27,7 @@ class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2  # slower, but takes up less memory
     LARGE_SET_GROWTH = 4  # faster, but takes up more memory faster
 
-    def __init__(self, initial_capacity=10000, error_rate=0.001,
+    def __init__(self, initial_capacity=15000, error_rate=0.00001,
                  mode=SMALL_SET_GROWTH, filter_impl=BloomFilter):
         """Implements a space-efficient probabilistic data structure that
         grows as more items are added while maintaining a steady false
