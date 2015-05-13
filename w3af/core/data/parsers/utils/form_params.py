@@ -27,7 +27,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.utils.multipart import is_file_like
-from collections import OrderedDict
+from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.parsers.url import URL
 
 
