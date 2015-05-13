@@ -61,8 +61,8 @@ url = URI.parse("http://www.w3af.org/")
 data = "a=1&a=2"
 headers = {
     "Host" => "www.w3af.org",
-    "Content-Type" => "application/x-www-form-urlencoded",
-    "Foo" => "spam, eggs"
+    "Foo" => "spam, eggs",
+    "Content-Type" => "application/x-www-form-urlencoded"
 }
 res = Net::HTTP.start(url.host, url.port) do |http|
     http.use_ssl = false
