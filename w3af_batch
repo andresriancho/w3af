@@ -95,7 +95,7 @@ class Manager(object):
     @staticmethod
     def _stopper(subject, finished):
         while True:
-            if finished.wait(0.2):
+            if finished.wait(0.1):
                 break
             if STOPSCAN.is_set():
                 subject.terminate()
@@ -133,7 +133,6 @@ class Pool(object):
 
     @staticmethod
     def _signal_handler(*args):
-        print time.time(), "Caught signal"
         STOPSCAN.set()
 
 
