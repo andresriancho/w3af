@@ -126,7 +126,7 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
 
     def __setstate__(self, state):
         self.token = state['token']
-
+        
     def get_short_printable_repr(self):
         """
         :return: A string with a short printable representation of self
