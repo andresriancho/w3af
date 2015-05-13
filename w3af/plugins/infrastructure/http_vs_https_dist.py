@@ -21,9 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import socket
 
-from scapy.all import traceroute
-from scapy.error import Scapy_Exception
-
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
@@ -43,7 +40,8 @@ PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_" \
 
 class http_vs_https_dist(InfrastructurePlugin):
     """
-    Determines the network distance between the http and https ports for a target.
+    Determines the network distance between the http and https ports for a target
+
     :author: Javier Andalia <jandalia =at= gmail.com>
     """
 
@@ -85,6 +83,10 @@ class http_vs_https_dist(InfrastructurePlugin):
                 https_port = port
             else:  # it has to be 'http'
                 http_port = port
+
+        # Import things from scapy when I need them in order to reduce memory
+        # usage (which is specially big in scapy module, just when importing)
+        from scapy.all import traceroute
 
         try:
             # First try with httpS
@@ -146,6 +148,11 @@ class http_vs_https_dist(InfrastructurePlugin):
         Return boolean value that indicates if the user running w3af has
         enough privileges to exec 'traceroute'
         """
+        # Import things from scapy when I need them in order to reduce memory
+        # usage (which is specially big in scapy module, just when importing)
+        from scapy.all import traceroute
+        from scapy.error import Scapy_Exception
+
         try:
             traceroute('127.0.0.1', maxttl=1)
         except socket.error:
