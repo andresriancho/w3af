@@ -174,6 +174,16 @@ class URL(DiskItem):
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
 
+    __slots__ = ('_querystr',
+                 '_cache',
+                 '_encoding',
+                 'scheme',
+                 'netloc',
+                 'path',
+                 'params',
+                 'querystring',
+                 'fragment')
+
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         """
         :param data: Either a string representing a URL or a 6-elems tuple
@@ -872,8 +882,13 @@ class URL(DiskItem):
         return ['url_string']
 
     def __getstate__(self):
+        state = {k: getattr(self, k) for k in self.__slots__}
+        state.pop('_cache')
+        return state
+
+    def __setstate__(self, state):
+        [setattr(self, k, v) for k, v in state.iteritems()]
         self._cache = {}
-        return self.__dict__
 
     def copy(self):
         self._cache = {}
