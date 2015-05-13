@@ -110,9 +110,16 @@ def stop_core_profiling(w3af_core):
 def get_parser_cache_stats():
     import w3af.core.data.parsers.parser_cache as parser_cache
     
-    return {'hit_rate': parser_cache.dpc.get_hit_rate(),
-            'max_lru_items': parser_cache.dpc.get_max_lru_items(),
-            'current_lru_size': parser_cache.dpc.get_current_lru_items(),
-            'total_cache_queries': parser_cache.dpc.get_total_queries(),
-            'Parser pool worker size': parser_cache.dpc._pool._processes,
-            'Parser pool input queue size': parser_cache.dpc._pool._inqueue.qsize()}
+    r = {'hit_rate': parser_cache.dpc.get_hit_rate(),
+         'max_lru_items': parser_cache.dpc.get_max_lru_items(),
+         'current_lru_size': parser_cache.dpc.get_current_lru_items(),
+         'total_cache_queries': parser_cache.dpc.get_total_queries()}
+
+    if parser_cache.dpc._pool is not None:
+        r['Parser pool worker size'] = parser_cache.dpc._pool._processes
+        r['Parser pool input queue size'] = parser_cache.dpc._pool._inqueue.qsize()
+    else:
+        r['Parser pool worker size'] = 0
+        r['Parser pool input queue size'] = 0
+
+    return r
