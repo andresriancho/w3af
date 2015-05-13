@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 
@@ -44,7 +45,7 @@ class rnd_param(EvasionPlugin):
         :return: The modified request
         """
         # First we mangle the URL
-        qs = request.url_object.querystring.copy()
+        qs = copy.deepcopy(request.url_object.querystring)
         qs = self._mutate(qs)
 
         # Finally, we set all the mutants to the request in order to return it
