@@ -24,7 +24,7 @@ from functools import partial
 
 from w3af.core.data.misc.encoding import smart_unicode
 
-from cyordereddict import OrderedDict
+from collections import OrderedDict
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
