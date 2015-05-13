@@ -185,12 +185,12 @@ class TestHTTPResponse(unittest.TestCase):
         loaded_resp = HTTPResponse.from_dict(loaded_dict)
         
         self.assertEqual(orig_resp, loaded_resp)
-        
-        orig_resp.__dict__.pop('_body_lock')
-        loaded_resp.__dict__.pop('_body_lock')
-        
-        self.assertEqual(orig_resp.__dict__.values(),
-                         loaded_resp.__dict__.values())
+
+        cmp_attrs = list(orig_resp.__slots__)
+        cmp_attrs.remove('_body_lock')
+
+        self.assertEqual({k: getattr(orig_resp, k) for k in cmp_attrs},
+                         {k: getattr(loaded_resp, k) for k in cmp_attrs})
     
     def test_from_dict_encodings(self):
         for body, charset in TEST_RESPONSES.values():
