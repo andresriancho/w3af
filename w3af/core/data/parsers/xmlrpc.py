@@ -24,9 +24,9 @@ import cgi
 import base64
 
 from xml.sax.handler import ContentHandler
+from ruamel.ordereddict import ordereddict as OrderedDict
 
 from w3af.core.data.dc.utils.token import DataToken
-from w3af.core.controllers.misc.ordereddict import OrderedDict
 
 
 BASE_64 = 'base64'

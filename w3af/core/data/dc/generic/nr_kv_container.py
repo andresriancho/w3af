@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from functools import partial
+from ruamel.ordereddict import ordereddict as OrderedDict
 
 from w3af.core.data.misc.encoding import smart_unicode
 
-from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
@@ -46,9 +46,9 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, init_val=(), encoding=UTF8):
+    def __init__(self, init_val=(), encoding=UTF8, relaxed_order=False):
         DataContainer.__init__(self, encoding=encoding)
-        OrderedDict.__init__(self)
+        OrderedDict.__init__(self, relax=relaxed_order)
 
         if isinstance(init_val, NonRepeatKeyValueContainer):
             self.update(init_val)
@@ -69,6 +69,20 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                     raise TypeError(ERR_MSG_NO_REP % init_val)
 
                 self[key] = val
+
+    def __reduce__(self):
+        """
+        :return: Return state information for pickling
+        """
+        init_val = [[k, self[k]] for k in self]
+        encoding = self.encoding
+
+        token = self.token
+
+        return self.__class__, (init_val, encoding), {'token': token}
+
+    def __setstate__(self, state):
+        self.token = state['token']
 
     def get_type(self):
         return 'Generic non-repeat key value container'

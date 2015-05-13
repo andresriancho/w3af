@@ -35,7 +35,10 @@ class Headers(NonRepeatKeyValueContainer):
     """
     def __init__(self, init_val=(), encoding=UTF8):
         cleaned_vals = self.clean_values(init_val)
-        super(Headers, self).__init__(cleaned_vals, encoding)
+
+        super(Headers, self).__init__(cleaned_vals,
+                                      encoding,
+                                      relaxed_order=True)
 
     def get_type(self):
         return 'Headers'
