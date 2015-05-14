@@ -51,7 +51,7 @@ class ParserCache(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    CACHE_SIZE = 40
+    CACHE_SIZE = 10
     MAX_CACHEABLE_BODY_LEN = 1024 * 1024
     DEBUG = core_profiling_is_enabled()
     MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
