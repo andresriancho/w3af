@@ -71,7 +71,7 @@ class SQLiteDBMS(object):
 
         super(SQLiteDBMS, self).__init__()
         
-        in_queue = Queue()
+        in_queue = Queue(100)
         self.sql_executor = SQLiteExecutor(in_queue)
         self.sql_executor.start()
         

@@ -22,7 +22,7 @@ import copy
 import unittest
 
 from nose.plugins.attrib import attr
-from mock import MagicMock, Mock, create_autospec
+from mock import MagicMock, Mock
 from mock import patch, call
 
 import w3af.plugins.infrastructure.http_vs_https_dist as hvshsdist
@@ -63,11 +63,22 @@ class test_http_vs_https_dist(unittest.TestCase):
         tracedict1 = copy.deepcopy(self.tracedict)
         tracedict2 = copy.deepcopy(self.tracedict)
         tracedict2['localhost'][3] = ('200.200.0.0', False)
-        self._mock_traceroute(tracedict1, tracedict2)
 
         # Mock output manager. Ensure that is called with the proper desc.
         om.out.information = MagicMock(return_value=True)
-        plugininst.discover(fuzz_req)
+
+        with patch('scapy.all.traceroute') as traceroute_mock:
+            https_tracerout_obj_1 = Mock()
+            https_tracerout_obj_1.get_trace = MagicMock(return_value=tracedict1)
+            resp_tuple_1 = (https_tracerout_obj_1, None)
+
+            https_tracerout_obj_2 = Mock()
+            https_tracerout_obj_2.get_trace = MagicMock(return_value=tracedict2)
+            resp_tuple_2 = (https_tracerout_obj_2, None)
+
+            traceroute_mock.side_effect = [resp_tuple_1, resp_tuple_2]
+
+            plugininst.discover(fuzz_req)
 
         result = ('Routes to target "host.tld" using ports 80 and 4444 are different:\n'\
                   '  TCP trace to host.tld:80\n    0 192.168.1.1\n    1 200.200.0.0\n    2 207.46.47.14\n'\
@@ -84,12 +95,22 @@ class test_http_vs_https_dist(unittest.TestCase):
         # HTTPS and HTTP responses, with the same hops
         tracedict1 = copy.deepcopy(self.tracedict)
         tracedict2 = copy.deepcopy(self.tracedict)
-        self._mock_traceroute(tracedict1, tracedict2)
 
         # Mock output manager. Ensure that is called with the proper desc.
-        om.out.information = MagicMock(
-            side_effect=ValueError('Unexpected call.'))
-        plugininst.discover(fuzz_req)
+        om.out.information = MagicMock(side_effect=ValueError('Unexpected call.'))
+
+        with patch('scapy.all.traceroute') as traceroute_mock:
+            https_tracerout_obj_1 = Mock()
+            https_tracerout_obj_1.get_trace = MagicMock(return_value=tracedict1)
+            resp_tuple_1 = (https_tracerout_obj_1, None)
+
+            https_tracerout_obj_2 = Mock()
+            https_tracerout_obj_2.get_trace = MagicMock(return_value=tracedict2)
+            resp_tuple_2 = (https_tracerout_obj_2, None)
+
+            traceroute_mock.side_effect = [resp_tuple_1, resp_tuple_2]
+
+            plugininst.discover(fuzz_req)
 
         infos = kb.kb.get('http_vs_https_dist', 'http_vs_https_dist')
         self.assertEqual(len(infos), 1)
@@ -109,11 +130,22 @@ class test_http_vs_https_dist(unittest.TestCase):
         tracedict1 = copy.deepcopy(self.tracedict)
         tracedict2 = copy.deepcopy(self.tracedict)
         tracedict2['localhost'][3] = ('200.200.0.0', False)
-        self._mock_traceroute(tracedict1, tracedict2)
 
         # Mock output manager. Ensure that is called with the proper desc.
         om.out.information = MagicMock(return_value=True)
-        plugininst.discover(fuzz_req)
+
+        with patch('scapy.all.traceroute') as traceroute_mock:
+            https_tracerout_obj_1 = Mock()
+            https_tracerout_obj_1.get_trace = MagicMock(return_value=tracedict1)
+            resp_tuple_1 = (https_tracerout_obj_1, None)
+
+            https_tracerout_obj_2 = Mock()
+            https_tracerout_obj_2.get_trace = MagicMock(return_value=tracedict2)
+            resp_tuple_2 = (https_tracerout_obj_2, None)
+
+            traceroute_mock.side_effect = [resp_tuple_1, resp_tuple_2]
+
+            plugininst.discover(fuzz_req)
 
         result = ('Routes to target "host.tld" using ports 80 and 443 are different:\n'\
                   '  TCP trace to host.tld:80\n    0 192.168.1.1\n    1 200.200.0.0\n    2 207.46.47.14\n'\
@@ -141,21 +173,6 @@ class test_http_vs_https_dist(unittest.TestCase):
             plugininst.discover(None)
             ecall = call.error(hvshsdist.PERM_ERROR_MSG)
             self.assertIn(ecall, om_mock.mock_calls)
-
-    def _mock_traceroute(self, trace_resp_1, trace_resp_2):
-        """
-        Helper method: Mocks scapy 'traceroute' function
-        """
-        https_tracerout_obj_1 = Mock()
-        https_tracerout_obj_1.get_trace = MagicMock(return_value=trace_resp_1)
-        resp_tuple_1 = (https_tracerout_obj_1, None)
-
-        https_tracerout_obj_2 = Mock()
-        https_tracerout_obj_2.get_trace = MagicMock(return_value=trace_resp_2)
-        resp_tuple_2 = (https_tracerout_obj_2, None)
-
-        hvshsdist.traceroute = create_autospec(hvshsdist.traceroute,
-                                               side_effect=[resp_tuple_1, resp_tuple_2])
 
 
 class TestHTTPvsHTTPS(PluginTest):

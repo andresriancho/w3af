@@ -29,7 +29,7 @@ from w3af.core.data.bloomfilter.wrappers import GenericBloomFilter
 class TestCMmapBloomfilterLarge(GenericFilterTest):
 
     CAPACITY = 20000
-    ERROR_RATE = 0.001
+    ERROR_RATE = 0.00001
 
     def setUp(self):
         super(TestCMmapBloomfilterLarge, self).setUp()
@@ -41,7 +41,7 @@ class TestCMmapBloomfilterLarge(GenericFilterTest):
 class TestCMmapBloomfilterSmall(GenericFilterTest):
 
     CAPACITY = 500
-    ERROR_RATE = 0.001
+    ERROR_RATE = 0.00001
 
     def setUp(self):
         super(TestCMmapBloomfilterSmall, self).setUp()

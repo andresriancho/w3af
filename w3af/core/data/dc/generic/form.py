@@ -93,6 +93,16 @@ class Form(KeyValueContainer):
     def get_action(self):
         return self.form_params.get_action()
 
+    def iteritems(self):
+        for k, v in self.form_params.iteritems():
+            yield k, v
+
+    def items(self):
+        return self.form_params.items()
+
+    def update(self, *args, **kwargs):
+        return self.form_params.update(*args, **kwargs)
+
     def __str__(self):
         """
         Each form subclass (URLEncoded and Multipart form) need to implement
@@ -123,6 +133,9 @@ class Form(KeyValueContainer):
 
     def __reduce__(self):
         return self.__class__, (self.form_params,), {'token': self.token}
+
+    def __setstate__(self, state):
+        self.token = state['token']
 
     def get_type(self):
         """

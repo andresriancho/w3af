@@ -26,11 +26,10 @@ import urllib
 import urlparse
 
 from functools import wraps
+from ruamel.ordereddict import ordereddict as OrderedDict
 
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
-from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.controllers.exceptions import BaseFrameworkException
-
 from w3af.core.data.misc.encoding import smart_str, PERCENT_ENCODE
 from w3af.core.data.misc.encoding import is_known_encoding
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
