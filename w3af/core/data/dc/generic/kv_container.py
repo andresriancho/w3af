@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from functools import partial
+from ruamel.ordereddict import ordereddict as OrderedDict
 
 from w3af.core.data.misc.encoding import smart_unicode
 
-from w3af.core.controllers.misc.ordereddict import OrderedDict
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.parsers.encode_decode import urlencode
@@ -70,6 +70,19 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
                 self[key] = val
 
+    def __reduce__(self):
+        """
+        :return: Return state information for pickling
+        """
+        init_val = self.items()
+        encoding = self.encoding
+        token = self.token
+
+        return self.__class__, (init_val, encoding), {'token': token}
+
+    def __setstate__(self, state):
+        self.token = state['token']
+
     def get_type(self):
         return 'Generic key value container'
 
@@ -95,7 +108,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
                     * The token path
                     * The setter to modify the value
         """
-        for k, v in self.items():
+        for k, v in self.iteritems():
             for idx, ele in enumerate(v):
 
                 token_path = (k, idx)

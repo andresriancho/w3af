@@ -119,4 +119,4 @@ class GenericFilterTest(unittest.TestCase):
                              abs((len(self.filter) / float(count)) - 1.0),
                              self.filter.error_rate
                              )
-        
+
