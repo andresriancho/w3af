@@ -67,6 +67,14 @@ class FuzzableRequest(RequestMixIn, DiskItem):
     # going to store and these won't be updated.
     REMOVE_HEADERS = ('content-length',)
 
+    __slots__ = ('_method',
+                 '_cookie',
+                 '_post_data',
+                 '_headers',
+                 '_uri',
+                 '_url',
+                 '_sent_info_comp')
+
     def __init__(self, uri, method='GET', headers=None, cookie=None,
                  post_data=None):
         super(FuzzableRequest, self).__init__()
@@ -96,6 +104,13 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Set the internal variables
         self._sent_info_comp = None
+
+    def __getstate__(self):
+        state = {k: getattr(self, k) for k in self.__slots__}
+        return state
+
+    def __setstate__(self, state):
+        [setattr(self, k, v) for k, v in state.iteritems()]
 
     def get_default_headers(self):
         """

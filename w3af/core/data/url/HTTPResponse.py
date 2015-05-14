@@ -60,6 +60,26 @@ class HTTPResponse(object):
     DOC_TYPE_IMAGE = 'DOC_TYPE_IMAGE'
     DOC_TYPE_OTHER = 'DOC_TYPE_OTHER'
 
+    __slots__ = ('_code',
+                 '_charset',
+                 '_headers',
+                 '_body',
+                 '_raw_body',
+                 '_content_type',
+                 '_dom',
+                 'id',
+                 '_from_cache',
+                 '_info',
+                 '_realurl',
+                 '_uri',
+                 '_redirected_url',
+                 '_redirected_uri',
+                 '_msg',
+                 '_time',
+                 '_alias',
+                 '_doc_type',
+                 '_body_lock')
+
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
                  charset=None):
@@ -656,10 +676,10 @@ class HTTPResponse(object):
         return copy.deepcopy(self)
 
     def __getstate__(self):
-        state = self.__dict__.copy()
+        state = {k: getattr(self, k) for k in self.__slots__}
         state.pop('_body_lock')
         return state
     
     def __setstate__(self, state):
-        self.__dict__ = state
+        [setattr(self, k, v) for k, v in state.iteritems()]
         self._body_lock = threading.RLock()

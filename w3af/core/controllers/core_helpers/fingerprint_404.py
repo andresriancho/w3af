@@ -300,9 +300,9 @@ class fingerprint_404(object):
                         self._404_responses.append(http_response)
                         self._fingerprinted_paths.add(domain_path)
 
-                        msg = '"%s" (id:%s) is a 404 (similarity_index > %s).'\
-                              ' Adding new knowledge to the 404_bodies database'\
-                              ' (length=%s).'
+                        msg = ('"%s" (id:%s) is a 404 (similarity_index > %s).'
+                               ' Adding new knowledge to the 404_bodies'
+                               ' database (length=%s).')
                         fmt = (http_response.get_url(), http_response.id,
                                IS_EQUAL_RATIO, len(self._404_responses))
                         om.out.debug(msg % fmt)
@@ -450,7 +450,7 @@ def is_404(http_response):
 
 def get_clean_body(response):
     """
-    @see: BlindSqliResponseDiff.get_clean_body()
+    :see: BlindSqliResponseDiff.get_clean_body()
 
     Definition of clean in this method:
         - input:

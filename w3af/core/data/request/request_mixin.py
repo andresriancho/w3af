@@ -28,6 +28,9 @@ SP = ' '
 
 
 class RequestMixIn(object):
+
+    __slots__ = ()
+
     def dump(self, ignore_headers=()):
         """
         :return: The HTTP request as it would be sent to the wire.

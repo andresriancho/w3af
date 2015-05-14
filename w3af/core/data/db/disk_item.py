@@ -28,5 +28,7 @@ class DiskItem(object):
     "get_eq_attrs" method which returns a list with the names of the attributes
     that make this object "unique".
     """
+    __slots__ = ()
+
     def get_eq_attrs(self):
         raise NotImplementedError
