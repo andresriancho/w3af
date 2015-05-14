@@ -51,7 +51,7 @@ class ParserCache(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    LRU_LENGTH = 40
+    CACHE_SIZE = 40
     MAX_CACHEABLE_BODY_LEN = 1024 * 1024
     DEBUG = core_profiling_is_enabled()
     MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
@@ -59,7 +59,7 @@ class ParserCache(object):
     PARSER_TIMEOUT = 60
 
     def __init__(self):
-        self._cache = SynchronizedLRUDict(self.LRU_LENGTH)
+        self._cache = SynchronizedLRUDict(self.CACHE_SIZE)
         self._pool = None
         self._processes = None
         self._parser_finished_events = {}
@@ -127,7 +127,7 @@ class ParserCache(object):
         """
         :note: Only returns useful information if debugging is enabled
         """
-        return self.LRU_LENGTH
+        return self.CACHE_SIZE
 
     def get_current_lru_items(self):
         """
