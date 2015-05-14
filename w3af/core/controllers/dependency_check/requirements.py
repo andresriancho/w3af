@@ -51,7 +51,7 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('msgpack', 'msgpack-python', '0.4.4'),
                      PIPDependency('ntlm', 'python-ntlm', '1.0.1'),
                      PIPDependency('Halberd', 'halberd', '0.2.4'),
-                     PIPDependency('darts.lib.utils', 'darts.util.lru', '0.5'),
+                     PIPDependency('lru', 'lru-dict', '1.1.1'),
                      PIPDependency('jinja2', 'Jinja2', '2.7.3'),
                      PIPDependency('vulndb', 'vulndb', '0.0.17'),
 

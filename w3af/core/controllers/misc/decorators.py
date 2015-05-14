@@ -27,7 +27,7 @@ import functools
 from functools import wraps
 
 import w3af.core.controllers.output_manager as om
-from darts.lib.utils.lru import SynchronizedLRUDict
+from lru import LRU as SynchronizedLRUDict
 
 
 def runonce(exc_class=Exception):
@@ -128,7 +128,7 @@ class memoized(object):
     If called later with the same arguments, the cached value is returned
     (not reevaluated).
     """
-    def __init__(self, func, lru_size=100):
+    def __init__(self, func, lru_size=10):
         self.func = func
         self.cache = SynchronizedLRUDict(lru_size)
 

@@ -30,7 +30,7 @@ from collections import deque, namedtuple
 from functools import wraps
 from itertools import izip_longest
 
-from darts.lib.utils.lru import SynchronizedLRUDict
+from lru import LRU as SynchronizedLRUDict
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
@@ -97,7 +97,7 @@ class fingerprint_404(object):
         self._fingerprinted_paths = set() #ScalableBloomFilter()
         self._directory_uses_404_codes = ScalableBloomFilter()
 
-        # It is OK to store 200 here, I'm only storing path+filename as the key,
+        # It is OK to store 200+ here, I'm only storing path+filename as the key
         # and bool as the value.
         self.is_404_LRU = SynchronizedLRUDict(250)
 
