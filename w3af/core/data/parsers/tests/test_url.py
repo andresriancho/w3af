@@ -968,7 +968,12 @@ class TestURLParser(unittest.TestCase):
     def test_can_be_pickled_with_qs(self):
         # Pickle a URL object that contains a query string
         u = URL('http://www.w3af.com/?id=1')
-        cPickle.dumps(u)
+
+        pickled_url = cPickle.dumps(u)
+        unpickled_url = cPickle.loads(pickled_url)
+
+        self.assertEqual(unpickled_url, u)
+        self.assertEqual(str(unpickled_url.get_querystring()), 'id=1')
 
     def test_can_pickle_via_queue(self):
         """

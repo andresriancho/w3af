@@ -100,6 +100,13 @@ class Form(KeyValueContainer):
     def items(self):
         return self.form_params.items()
 
+    def keys(self):
+        return self.form_params.keys()
+
+    def iterkeys(self):
+        for k in self.form_params.iterkeys():
+            yield k
+
     def update(self, *args, **kwargs):
         return self.form_params.update(*args, **kwargs)
 
