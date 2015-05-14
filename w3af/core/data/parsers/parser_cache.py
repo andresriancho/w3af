@@ -28,7 +28,8 @@ import atexit
 import threading
 import multiprocessing
 
-from lru import LRU as SynchronizedLRUDict
+from multiprocessing.managers import SyncManager, State
+from darts.lib.utils.lru import SynchronizedLRUDict
 from tblib.decorators import Error
 
 import w3af.core.controllers.output_manager as om
@@ -101,7 +102,7 @@ class ParserCache(object):
             self._processes = None
 
         # Make sure the parsers clear all resources
-        for parser in self._cache.items():
+        for parser in self._cache.itervalues():
             parser.clear()
 
         # We don't need the parsers anymore

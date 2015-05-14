@@ -181,6 +181,7 @@ class Plugin(Configurable):
     def get_type(self):
         return 'plugin'
 
+    @memoized
     def get_name(self):
         return self.__class__.__name__
 

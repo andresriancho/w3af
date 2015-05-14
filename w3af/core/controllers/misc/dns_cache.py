@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket
 
-from lru import LRU as SynchronizedLRUDict
+from darts.lib.utils.lru import SynchronizedLRUDict
 
 import w3af.core.controllers.output_manager as om
 
