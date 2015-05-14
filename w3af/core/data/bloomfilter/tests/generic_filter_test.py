@@ -112,7 +112,7 @@ class GenericFilterTest(unittest.TestCase):
         
         self.assertGreater(self.filter.capacity, count)
         
-        self.assertEqual(self.filter.capacity, 50000)
+        self.assertEqual(self.filter.capacity, 15000)
         self.assertLessEqual(len(self.filter), count)
         
         self.assertLessEqual(
