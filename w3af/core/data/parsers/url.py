@@ -45,7 +45,7 @@ def set_changed(meth):
     """
     @wraps(meth)
     def changed_wrapper(self, *args, **kwargs):
-        self._cache = {}
+        self._cache.clear()
         return meth(self, *args, **kwargs)
 
     return changed_wrapper
@@ -886,7 +886,8 @@ class URL(DiskItem):
         return state
 
     def __setstate__(self, state):
-        [setattr(self, k, v) for k, v in state.iteritems()]
+        for k, v in state.iteritems():
+            setattr(self, k, v)
         self._cache = {}
 
     def copy(self):
