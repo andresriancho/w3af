@@ -113,7 +113,8 @@ def get_parser_cache_stats():
     r = {'hit_rate': parser_cache.dpc.get_hit_rate(),
          'max_lru_items': parser_cache.dpc.get_max_lru_items(),
          'current_lru_size': parser_cache.dpc.get_current_lru_items(),
-         'total_cache_queries': parser_cache.dpc.get_total_queries()}
+         'total_cache_queries': parser_cache.dpc.get_total_queries(),
+         'do_not_cache': parser_cache.dpc.get_do_not_cache()}
 
     if parser_cache.dpc._pool is not None:
         r['Parser pool worker size'] = parser_cache.dpc._pool._processes

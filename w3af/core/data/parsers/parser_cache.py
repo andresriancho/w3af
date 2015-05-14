@@ -67,6 +67,7 @@ class ParserCache(object):
 
         # These are here for debugging:
         self._from_LRU = 0.0
+        self._do_not_cache = 0.0
         self._total = 0.0
 
     def start_workers(self):
@@ -137,6 +138,9 @@ class ParserCache(object):
 
     def get_total_queries(self):
         return self._total
+
+    def get_do_not_cache(self):
+        return self._do_not_cache
 
     def get_cache_key(self, http_response):
         """
@@ -280,11 +284,6 @@ class ParserCache(object):
         """
         hash_string = self.get_cache_key(http_response)
 
-        if not self.should_cache(http_response):
-            # Just return the document parser, no need to cache
-            return self._parse_http_response_in_worker(http_response,
-                                                       hash_string)
-
         parser_finished = self._parser_finished_events.get(hash_string, None)
         if parser_finished is not None:
             # There is one subprocess already processing this http response
@@ -299,6 +298,12 @@ class ParserCache(object):
 
         # metric increase
         self._total += 1
+
+        if not self.should_cache(http_response):
+            # Just return the document parser, no need to cache
+            self._debug_handle_no_cache(hash_string)
+            return self._parse_http_response_in_worker(http_response,
+                                                       hash_string)
 
         parser = self._cache.get(hash_string, None)
         if parser is not None:
@@ -321,6 +326,11 @@ class ParserCache(object):
     def _debug_handle_cache_miss(self, hash_string):
         if self.DEBUG:
             om.out.debug('[parser_cache] Miss for %s' % hash_string)
+
+    def _debug_handle_no_cache(self, hash_string):
+        if self.DEBUG:
+            om.out.debug('[parser_cache] DO NOT CACHE %s' % hash_string)
+            self._do_not_cache += 1
 
 
 class ProcessDocumentParser(DocumentParser):
