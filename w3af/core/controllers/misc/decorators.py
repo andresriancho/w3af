@@ -128,7 +128,7 @@ class memoized(object):
     If called later with the same arguments, the cached value is returned
     (not reevaluated).
     """
-    def __init__(self, func, lru_size=100):
+    def __init__(self, func, lru_size=10):
         self.func = func
         self.cache = SynchronizedLRUDict(lru_size)
 

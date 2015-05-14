@@ -415,9 +415,7 @@ class HTTPResponse(object):
 
         The only thing that changes is the header name.
         """
-        regular_headers = self.headers.iteritems()
-        lcase_headers = dict((k.lower(), v) for k, v in regular_headers)
-        return Headers(lcase_headers.items())
+        return Headers([(k.lower(), v) for k, v in self.headers.iteritems()])
 
     def set_url(self, url):
         """
