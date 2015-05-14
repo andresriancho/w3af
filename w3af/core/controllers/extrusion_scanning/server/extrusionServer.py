@@ -68,6 +68,10 @@ class extrusionServer(object):
         Determine if the user running w3af can sniff packets on the configured
         interface.
         """
+        # Import things from scapy when I need them in order to reduce memory
+        # usage (which is specially big in scapy module, just when importing)
+        from scapy.all import sniff
+
         try:
             p = sniff(filter='port 53', iface=self._iface, timeout=0.3)
         except Exception:

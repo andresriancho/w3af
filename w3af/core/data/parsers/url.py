@@ -886,9 +886,9 @@ class URL(DiskItem):
         return state
 
     def __setstate__(self, state):
+        self._cache = {}
         for k, v in state.iteritems():
             setattr(self, k, v)
-        self._cache = {}
 
     def copy(self):
         self._cache = {}

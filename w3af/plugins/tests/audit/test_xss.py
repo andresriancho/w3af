@@ -75,8 +75,17 @@ class TestXSS(PluginTest):
             - Vulnerable parameter
             - All parameters that were sent
         """
-        kb_data = [(str(m.get_url()), m.get_token_name(), tuple(sorted(m.get_dc().keys())))
-                   for m in (xv.get_mutant() for xv in xss_vulns)]
+        kb_data = []
+
+        for xss_vuln in xss_vulns:
+            mutant = xss_vuln.get_mutant()
+
+            data = (str(mutant.get_url()),
+                    mutant.get_token_name(),
+                    tuple(sorted(mutant.get_dc().keys())))
+
+            kb_data.append(data)
+
         return kb_data
 
     def normalize_expected_data(self, target_url, expected):
