@@ -26,7 +26,7 @@ import thread
 import urllib
 import string
 
-from collections import deque, namedtuple
+from collections import namedtuple
 from functools import wraps
 from itertools import izip_longest
 
@@ -37,6 +37,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.data.db.disk_deque import DiskDeque
 
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.misc.decorators import retry
@@ -92,7 +93,7 @@ class fingerprint_404(object):
         #   Internal variables
         #
         self._already_analyzed = False
-        self._404_responses = deque(maxlen=MAX_404_RESPONSES)
+        self._404_responses = DiskDeque(maxsize=MAX_404_RESPONSES)
         self._lock = thread.allocate_lock()
         self._fingerprinted_paths = set() #ScalableBloomFilter()
         self._directory_uses_404_codes = ScalableBloomFilter()

@@ -78,6 +78,19 @@ class TestParserCache(unittest.TestCase):
         response = HTTPResponse(200, all_chars, self.headers, self.url, self.url)
         self.dpc.get_document_parser_for(response)
 
+    def test_no_parser_for_images(self):
+        body = ''
+        url = URL('http://w3af.com/foo.jpg')
+        headers = Headers([(u'content-type', u'image/jpeg')])
+        resp = HTTPResponse(200, body, headers, url, url)
+
+        try:
+            self.dpc.get_document_parser_for(resp)
+        except Exception, e:
+            self.assertEqual(str(e), 'There is no parser for images.')
+        else:
+            self.assertTrue(False, 'Expected exception!')
+
     def test_parser_timeout(self):
         """
         Test to verify fix for https://github.com/andresriancho/w3af/issues/6723

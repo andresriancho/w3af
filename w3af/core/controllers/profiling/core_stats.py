@@ -26,6 +26,7 @@ import os
 
 from functools import partial
 
+import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
 
@@ -84,6 +85,8 @@ def dump_data(w3af_core):
                 'Grep input queue size': s.get_audit_qsize(),
 
                 'Core worker pool input queue size': s.get_core_worker_pool_queue_size(),
+
+                'Output manager input queue size': om.manager.get_in_queue().qsize(),
 
                 'Cache stats': get_parser_cache_stats()}
     except Exception, e:
