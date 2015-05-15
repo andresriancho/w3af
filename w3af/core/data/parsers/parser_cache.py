@@ -233,7 +233,7 @@ class ParserCache(object):
         # Start the worker processes if needed
         self.start_workers()
 
-        apply_args = (ProcessDocumentParser,
+        apply_args = (process_document_parser,
                       http_response,
                       self._processes,
                       hash_string)
@@ -333,28 +333,34 @@ class ParserCache(object):
             self._do_not_cache += 1
 
 
-class ProcessDocumentParser(DocumentParser):
+def process_document_parser(http_resp, processes, hash_string):
     """
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
-    def __init__(self, http_resp, processes, hash_string):
-        pid = multiprocessing.current_process().pid
+    pid = multiprocessing.current_process().pid
 
-        msg = 'PID %s is starting to parse %s'
-        args = (pid, http_resp.get_url())
-        om.out.debug(msg % args)
+    msg = 'PID %s is starting to parse %s'
+    args = (pid, http_resp.get_url())
+    om.out.debug(msg % args)
 
-        # Save this for tracking
-        processes[hash_string] = pid
+    # Save this for tracking
+    processes[hash_string] = pid
 
+    try:
         # Parse
-        super(ProcessDocumentParser, self).__init__(http_resp)
-
-        # Extra debugging
+        document_parser = DocumentParser(http_resp)
+    except Exception, e:
+        msg = 'PID %s finished parsing %s with exception: "%s"'
+        args = (pid, http_resp.get_url(), e)
+        om.out.debug(msg % args)
+        raise
+    else:
         msg = 'PID %s finished parsing %s without any exception'
         args = (pid, http_resp.get_url())
         om.out.debug(msg % args)
+
+    return document_parser
 
 
 @atexit.register
