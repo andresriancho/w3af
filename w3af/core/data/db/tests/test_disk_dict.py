@@ -75,6 +75,13 @@ class TestDiskDict(unittest.TestCase):
 
         self.assertEqual(set(disk_dict.keys()), set(['a', 'b', 'c']))
 
+    def test_del(self):
+        disk_dict = DiskDict()
+        disk_dict['a'] = 'abc'
+
+        del disk_dict['a']
+        self.assertNotIn('a', disk_dict)
+
     def test_iterkeys(self):
         disk_dict = DiskDict()
 
