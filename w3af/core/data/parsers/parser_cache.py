@@ -340,9 +340,21 @@ class ProcessDocumentParser(DocumentParser):
     """
     def __init__(self, http_resp, processes, hash_string):
         pid = multiprocessing.current_process().pid
+
+        msg = 'PID %s is starting to parse %s'
+        args = (pid, http_resp.get_url())
+        om.out.debug(msg % args)
+
+        # Save this for tracking
         processes[hash_string] = pid
-        
+
+        # Parse
         super(ProcessDocumentParser, self).__init__(http_resp)
+
+        # Extra debugging
+        msg = 'PID %s finished parsing %s without any exception'
+        args = (pid, http_resp.get_url())
+        om.out.debug(msg % args)
 
 
 @atexit.register
