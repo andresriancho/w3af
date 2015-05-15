@@ -50,7 +50,8 @@ class phishing_vector(AuditPlugin):
         # case sensitive filters
         self._test_urls = ('hTtp://w3af.org/',
                            'htTps://w3af.org/',
-                           'fTp://w3af.org/')
+                           'fTp://w3af.org/',
+                           '//w3af.org')
 
     def audit(self, freq, orig_response):
         """
