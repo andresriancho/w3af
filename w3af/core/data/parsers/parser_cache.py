@@ -340,7 +340,7 @@ def process_document_parser(http_resp, processes, hash_string):
     """
     pid = multiprocessing.current_process().pid
 
-    msg = 'PID %s is starting to parse %s'
+    msg = '[parser_cache] PID %s is starting to parse %s'
     args = (pid, http_resp.get_url())
     om.out.debug(msg % args)
 
@@ -351,12 +351,12 @@ def process_document_parser(http_resp, processes, hash_string):
         # Parse
         document_parser = DocumentParser(http_resp)
     except Exception, e:
-        msg = 'PID %s finished parsing %s with exception: "%s"'
+        msg = '[parser_cache] PID %s finished parsing %s with exception: "%s"'
         args = (pid, http_resp.get_url(), e)
         om.out.debug(msg % args)
         raise
     else:
-        msg = 'PID %s finished parsing %s without any exception'
+        msg = '[parser_cache] PID %s finished parsing %s without any exception'
         args = (pid, http_resp.get_url())
         om.out.debug(msg % args)
 
