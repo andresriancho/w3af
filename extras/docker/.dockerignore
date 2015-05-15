@@ -1,6 +1,20 @@
 .git
 .dockerignore
 
+### CircleCI specific ###
+Dockerfile
+circle.yml
+nohup.out
+parsetab.py
+parsetab.pyc
+php-moth
+pico-wavsep
+sqlmap-testenv
+venv
+wivet
+xpresser
+
+
 ### Python ###
 
 # Byte-compiled / optimized / DLL files
