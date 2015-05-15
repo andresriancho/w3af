@@ -42,6 +42,8 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.ci.detect import is_running_on_ci
 from w3af.core.controllers.threads.decorators import apply_with_return_error
 from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
+from w3af.core.controllers.profiling.memory_usage import user_wants_memory_profiling
+from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemalloc
 from w3af.core.data.parsers.document_parser import DocumentParser
 
 
@@ -200,12 +202,18 @@ class ParserCache(object):
             try:
                 os.kill(pid, signal.SIGTERM)
             except OSError, ose:
-                msg = 'An error occurred while killing the parser' \
-                      ' process: "%s"'
+                msg = ('An error occurred while killing the parser'
+                       ' process: "%s"')
                 om.out.debug(msg % ose)
 
-        msg = '[timeout] The parser took more than %s seconds to complete'\
-              ' parsing of "%s", killed it!'
+        msg = ('[timeout] The parser took more than %s seconds to complete'
+               ' parsing of "%s", killed it!')
+
+        if user_wants_memory_profiling() or user_wants_pytracemalloc():
+            msg += (' Keep in mind that you\'re profiling memory usage and'
+                    ' there is a known bug where memory profilers break the'
+                    ' parser cache. See issue #9713 for more information'
+                    ' https://github.com/andresriancho/w3af/issues/9713')
 
         om.out.debug(msg % (self.PARSER_TIMEOUT, http_response.get_url()))
 
@@ -233,10 +241,11 @@ class ParserCache(object):
         # Start the worker processes if needed
         self.start_workers()
 
-        apply_args = (ProcessDocumentParser,
+        apply_args = (process_document_parser,
                       http_response,
                       self._processes,
-                      hash_string)
+                      hash_string,
+                      self.DEBUG)
 
         # Push the task to the workers
         result = self._pool.apply_async(apply_with_return_error, (apply_args,))
@@ -333,28 +342,39 @@ class ParserCache(object):
             self._do_not_cache += 1
 
 
-class ProcessDocumentParser(DocumentParser):
+def process_document_parser(http_resp, processes, hash_string, debug):
     """
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
-    def __init__(self, http_resp, processes, hash_string):
-        pid = multiprocessing.current_process().pid
+    pid = multiprocessing.current_process().pid
 
-        msg = 'PID %s is starting to parse %s'
+    if debug:
+        msg = '[parser_cache] PID %s is starting to parse %s'
         args = (pid, http_resp.get_url())
         om.out.debug(msg % args)
 
-        # Save this for tracking
-        processes[hash_string] = pid
+    # Save this for tracking
+    processes[hash_string] = pid
 
+    try:
         # Parse
-        super(ProcessDocumentParser, self).__init__(http_resp)
+        document_parser = DocumentParser(http_resp)
+    except Exception, e:
+        if debug:
+            msg = ('[parser_cache] PID %s finished parsing %s with'
+                   ' exception: "%s"')
+            args = (pid, http_resp.get_url(), e)
+            om.out.debug(msg % args)
+        raise
+    else:
+        if debug:
+            msg = ('[parser_cache] PID %s finished parsing %s without any'
+                   ' exception')
+            args = (pid, http_resp.get_url())
+            om.out.debug(msg % args)
 
-        # Extra debugging
-        msg = 'PID %s finished parsing %s without any exception'
-        args = (pid, http_resp.get_url())
-        om.out.debug(msg % args)
+    return document_parser
 
 
 @atexit.register
