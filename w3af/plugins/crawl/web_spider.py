@@ -105,6 +105,10 @@ class web_spider(CrawlPlugin):
         if resp.get_code() == http_constants.UNAUTHORIZED:
             return
 
+        # Nothing to do here...
+        if resp.is_image():
+            return
+
         # And we don't trust what comes from the core, check if 404
         if is_404(resp):
             return
