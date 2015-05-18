@@ -174,6 +174,7 @@ class URL(DiskItem):
     """
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
+    QS_SAFE_CHARS = QueryString.DEFAULT_SAFE_CHARS
 
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         """
@@ -319,11 +320,11 @@ class URL(DiskItem):
         elif isinstance(qs, basestring):
             self._querystr = parse_qs(qs, ignore_exc=True,
                                       encoding=self.encoding,
-                                      safe_chars=self.SAFE_CHARS)
+                                      safe_chars=self.QS_SAFE_CHARS)
         else:
             # This might fail because of the type-check performed in QueryString
             # __init__, but that's ok.
-            self._querystr = QueryString(qs, safe_chars=self.SAFE_CHARS)
+            self._querystr = QueryString(qs, safe_chars=self.QS_SAFE_CHARS)
 
     querystring = property(get_querystring, set_querystring)
 
