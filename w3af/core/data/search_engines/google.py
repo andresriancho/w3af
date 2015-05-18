@@ -297,8 +297,8 @@ class GStandardSearch(GoogleAPISearch):
             response = self._do_GET(google_url_instance, with_rand_ua=False)
 
             # Remember that HTTPResponse objects have a faster "__in__" than
-            # the one in strings; so string in response.get_body() is slower than
-            # string in response
+            # the one in strings; so string in response.get_body() is slower
+            # than string in response
             if GOOGLE_SORRY_PAGE in response:
                 msg = 'Google is telling us to stop doing automated tests.'
                 raise BaseFrameworkException(msg)
