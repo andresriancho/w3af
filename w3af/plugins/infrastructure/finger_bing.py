@@ -87,10 +87,11 @@ class finger_bing(InfrastructurePlugin):
                   ' finger_bing, error description: "%s"'
             om.out.debug(msg % w3)
         else:
-
             # I have the response object!
+            get_document_parser_for = parser_cache.dpc.get_document_parser_for
+
             try:
-                document_parser = parser_cache.dpc.get_document_parser_for(response)
+                document_parser = get_document_parser_for(response, cache=False)
             except BaseFrameworkException:
                 # Failed to find a suitable parser for the document
                 pass

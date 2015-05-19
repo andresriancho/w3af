@@ -284,7 +284,7 @@ class ParserCache(object):
 
         return parser_output
 
-    def get_document_parser_for(self, http_response):
+    def get_document_parser_for(self, http_response, cache=True):
         """
         Get a document parser for http_response using the cache if required
 
@@ -308,7 +308,7 @@ class ParserCache(object):
         # metric increase
         self._total += 1
 
-        if not self.should_cache(http_response):
+        if not self.should_cache(http_response) or not cache:
             # Just return the document parser, no need to cache
             self._debug_handle_no_cache(hash_string)
             return self._parse_http_response_in_worker(http_response,
