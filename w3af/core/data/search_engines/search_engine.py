@@ -124,7 +124,8 @@ class SearchEngine(object):
 
     def search(self, query, start, count=10):
         """
-        This method is meant to be overriden by the subclasses of SearchEngine.py
+        This method is meant to be overriden by the subclasses of
+        SearchEngine.py
 
         This method searches the web and returns a list of URLs.
 
@@ -137,9 +138,10 @@ class SearchEngine(object):
 
     def page_search(self, query, start, count=10):
         """
-        This method is meant to be overriden by the subclasses of SearchEngine.py
+        This method is meant to be overriden by the subclasses of
+        SearchEngine.py
 
-        This method searches the web and returns a list of http response objects.
+        This method searches the web and returns a list of http response objects
 
         :param query: The query that we want to perform in the search engine
         :param start: The first result item

@@ -127,8 +127,10 @@ class finger_google(InfrastructurePlugin):
         """
         Parses the HTML and adds the mail addresses to the kb.
         """
+        get_document_parser_for = parser_cache.dpc.get_document_parser_for
+
         try:
-            document_parser = parser_cache.dpc.get_document_parser_for(response)
+            document_parser = get_document_parser_for(response, cache=False)
         except BaseFrameworkException:
             # Failed to find a suitable parser for the document
             pass
