@@ -1,1 +1,0 @@
-w3af_batch

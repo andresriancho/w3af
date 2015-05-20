@@ -1,7 +1,29 @@
 # coding: utf-8
+"""
+test_w3af_batch.py
+
+Copyright 2015 Andres Riancho
+
+This file is part of w3af, http://w3af.org/ .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+"""
 import os
 import unittest
 import multiprocessing as mp
+
 from time import time
 from time import sleep
 from StringIO import StringIO
@@ -11,9 +33,9 @@ from multiprocessing import Queue
 from threading import Event
 from threading import Timer
 
-from w3af_batch import Worker
-from w3af_batch import Manager
-from w3af_batch import Pool
+from w3af.core.ui.batch.main import Worker
+from w3af.core.ui.batch.main import Manager
+from w3af.core.ui.batch.main import Pool
 
 
 def _send_interrupt(pid):
@@ -24,6 +46,8 @@ class Job(object):
     """Create Job object that lasts execution_time seconds.
 
     Do not cancel job if ignore_stop is set. It is used simulate hanging job.
+
+    :author: https://github.com/skoval00
     """
 
     def __init__(self, target=None, execution_time=0, ignore_stop=False):
@@ -56,7 +80,10 @@ class Job(object):
 
 
 class BaseTest(unittest.TestCase):
-    """Base class for Worker and Starter test classes."""
+    """Base class for Worker and Starter test classes.
+
+    :author: https://github.com/skoval00
+    """
 
     def setUp(self):
         self.queue = Queue()
@@ -95,8 +122,8 @@ class WorkerTest(BaseTest):
         """Test if worker stops after timeout."""
         execution_time = 2
         timeout = 1
-        run_time = self._run_helper(
-            execution_time=execution_time, timeout=timeout)
+        run_time = self._run_helper(execution_time=execution_time,
+                                    timeout=timeout)
         self.assertAlmostEqual(run_time, timeout)
 
     def test_worker_sends_result(self):
