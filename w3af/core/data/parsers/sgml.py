@@ -156,7 +156,7 @@ class SGMLParser(BaseParser):
             # This handles the case where we have:
             # <script><!-- code(); --></script>
             return
-        
+
         self._comments_in_doc.append(str(text))
 
     def close(self):
