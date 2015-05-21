@@ -88,7 +88,7 @@ class ParserCache(object):
                 # The pool
                 log_queue = om.manager.get_in_queue()
                 self._pool = ProcessPool(self.MAX_WORKERS,
-                                         maxtasksperchild=25,
+                                         maxtasksperchild=20,
                                          initializer=init_worker,
                                          initargs=(log_queue,))
 
