@@ -31,6 +31,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.misc.decorators import memoized
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
 class SGMLParser(BaseParser):
@@ -165,24 +166,14 @@ class SGMLParser(BaseParser):
         """
         Parse the HTTP response body
         """
-        resp_body = http_resp.body
-        encoding = http_resp.charset
-
         try:
-            self._parse_response_body_as_string(resp_body, encoding)
-        except ValueError:
-            # Sometimes we get XMLs in the response. lxml fails to parse them
-            # when an encoding header is specified and the text is unicode. So
-            # we better make an exception and convert it to string. Note that
-            # yet the parsed elems will be unicode.
-            resp_body = resp_body.encode(http_resp.charset, 'xmlcharrefreplace')
-            self._parse_response_body_as_string(resp_body, encoding)
+            self._parse_response_body_as_string(http_resp.body)
         except etree.XMLSyntaxError, xse:
-            msg = 'An error occurred while parsing "%s",'\
-                  ' original exception: "%s"'
+            msg = ('An error occurred in "_parse" while parsing "%s", original'
+                   ' exception: "%s"')
             om.out.debug(msg % (http_resp.get_url(), xse))
 
-    def _parse_response_body_as_string(self, resp_body, encoding):
+    def _parse_response_body_as_string(self, resp_body):
         """
         Parse the HTTP response body
         """
@@ -195,7 +186,7 @@ class SGMLParser(BaseParser):
             # body which is empty).
             return
 
-        body_io = StringIO.StringIO(resp_body.encode('utf-8'))
+        body_io = StringIO.StringIO(resp_body.encode(DEFAULT_ENCODING))
         event_map = {'start': self.start,
                      'end': self.end,
                      'comment': self.comment}
@@ -214,7 +205,7 @@ class SGMLParser(BaseParser):
                                   tag=self.PARSE_TAGS,
                                   html=True,
                                   recover=True,
-                                  encoding=encoding,
+                                  encoding=DEFAULT_ENCODING,
                                   huge_tree=False)
 
         for event, elem in context:
