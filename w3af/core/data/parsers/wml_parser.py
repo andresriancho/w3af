@@ -35,6 +35,8 @@ class WMLParser(SGMLParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    PARSE_TAGS = SGMLParser.TAGS_WITH_URLS.union({'go', 'postfield'})
+
     def __init__(self, http_response):
         self._select_tag_name = ""
         SGMLParser.__init__(self, http_response)
@@ -57,7 +59,7 @@ class WMLParser(SGMLParser):
 
         return False
 
-    def _handle_go_tag_start(self, tag, attrs):
+    def _handle_go_tag_start(self, tag, tag_name, attrs):
 
         # Find method
         method = attrs.get('method', 'GET').upper()
@@ -81,7 +83,7 @@ class WMLParser(SGMLParser):
     def _handle_go_tag_end(self, tag):
         self._inside_form = False
 
-    def _handle_input_tag_start(self, tag, attrs):
+    def _handle_input_tag_start(self, tag, tag_name, attrs):
         if self._inside_form:
             # We are working with the last form
             f = self._forms[-1]
@@ -90,7 +92,7 @@ class WMLParser(SGMLParser):
     _handle_postfield_tag_start = \
         _handle_setvar_tag_start = _handle_input_tag_start
 
-    def _handle_select_tag_start(self, tag, attrs):
+    def _handle_select_tag_start(self, tag, tag_name, attrs):
         if self._inside_form:
             self._select_tag_name = select_name = attrs.get('name', '') or \
                 attrs.get('id', '')
@@ -101,7 +103,7 @@ class WMLParser(SGMLParser):
                              'name attr !')
                 self._inside_select = False
 
-    def _handle_option_tag_start(self, tag, attrs):
+    def _handle_option_tag_start(self, tag, tag_name, attrs):
         if self._inside_form and self._inside_select:
             # Working with the last form in the list
             f = self._forms[-1]

@@ -495,7 +495,7 @@ class Tag(PageElement):
 
     XML_SPECIAL_CHARS_TO_ENTITIES = _invert(XML_ENTITIES_TO_SPECIAL_CHARS)
 
-    def _convertEntities(self, match):
+    def attrib_convertEntities(self, match):
         """Used in a call to re.sub to replace HTML, XML, and numeric
         entities with the appropriate Unicode characters. If HTML
         entities are being converted, any unrecognized entities are

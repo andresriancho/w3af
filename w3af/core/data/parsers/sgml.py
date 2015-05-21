@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib
 import re
 import traceback
+import StringIO
 
 from lxml import etree
 
@@ -56,6 +57,9 @@ class SGMLParser(BaseParser):
     }
 
     URL_ATTRS = {'href', 'src', 'data', 'action', 'manifest', 'link', 'uri'}
+
+    # Configure which tags will be analyzed by the parser
+    PARSE_TAGS = TAGS_WITH_URLS.union({'meta'})
 
     # I don't want to inject into Apache's directory indexing parameters
     APACHE_INDEXING = {"?C=N;O=A", "?C=M;O=A", "?C=S;O=A", "?C=D;O=D",
@@ -99,12 +103,16 @@ class SGMLParser(BaseParser):
         om.out.error(msg % (where, ex))
         om.out.error('Error traceback: %s' % traceback.format_exc())
 
-    def start(self, tag, attrs):
+    def start(self, tag):
         """
         Called by the parser on element open.
         """
+        # Get the important info
+        attrs = dict(tag.attrib)
+        tag_name = tag.tag
+
         # Call start_tag handler method
-        handler = '_handle_%s_tag_start' % tag
+        handler = '_handle_%s_tag_start' % tag_name
 
         try:
             method = getattr(self, handler)
@@ -112,13 +120,13 @@ class SGMLParser(BaseParser):
             pass
         else:
             try:
-                method(tag, attrs)
+                method(tag, tag_name, attrs)
             except Exception, ex:
-                self._handle_exception('parsing %s tag' % tag, ex)
+                self._handle_exception('parsing %s tag' % tag_name, ex)
 
         try:
-            if tag in self.TAGS_WITH_URLS:
-                self._find_references(tag, attrs)
+            if tag_name in self.TAGS_WITH_URLS:
+                self._find_references(tag, tag_name, attrs)
         except Exception, ex:
             self._handle_exception('extracting references', ex)
 
@@ -126,8 +134,8 @@ class SGMLParser(BaseParser):
             # Before I defined TAGS_WITH_MAILTO = {'a'} at the class level, but
             # since it had only one item, and this doesn't change often (ever?)
             # changed it to this for performance
-            if tag == 'a':
-                self._find_emails(tag, attrs)
+            if tag_name == 'a':
+                self._find_emails(tag, tag_name, attrs)
         except Exception, ex:
             self._handle_exception('finding emails', ex)
 
@@ -137,17 +145,11 @@ class SGMLParser(BaseParser):
         """
         # Call handler method if exists
         try:
-            method = getattr(self, '_handle_%s_tag_end' % tag)
+            method = getattr(self, '_handle_%s_tag_end' % tag.tag)
         except AttributeError:
             return
         else:
             return method(tag)
-
-    def data(self, data):
-        """
-        Called by the parser when a text node is found.
-        """
-        pass
 
     def comment(self, text):
         if self._inside_script:
@@ -175,12 +177,34 @@ class SGMLParser(BaseParser):
             # body which is empty).
             return
 
-        parser = etree.HTMLParser(target=self, recover=True)
+        body_io = StringIO.StringIO(resp_body.encode('utf-8'))
+        event_map = {'start': self.start,
+                     'end': self.end,
+                     'comment': self.comment}
 
         try:
             # Note: Given that the parser has target != None, this call does not
             # return a DOM instance!
-            etree.fromstring(resp_body, parser)
+            context = etree.iterparse(body_io,
+                                      events=('start', 'end', 'comment'),
+                                      tag=self.PARSE_TAGS,
+                                      html=True,
+                                      recover=True)
+            for event, elem in context:
+                event_map[event](elem)
+
+                # Memory usage reduction
+                elem.clear()
+                while elem.getprevious() is not None:
+                    del elem.getparent()[0]
+
+            # Memory usage reduction
+            del context
+
+            # This was called when using etree.fromstring, and I used it so
+            # let's keep calling it
+            self.close()
+
         except ValueError:
             # Sometimes we get XMLs in the response. lxml fails to parse them
             # when an encoding header is specified and the text is unicode. So
@@ -255,11 +279,11 @@ class SGMLParser(BaseParser):
         else:
             return self._emails
 
-    def _find_emails(self, tag, attrs):
+    def _find_emails(self, tag, tag_name, attrs):
         """
         Extract "mailto:" email addresses
 
-        :param tag: The tag which is being parsed
+        :param tag_name: The tag which is being parsed
         :param attrs: The attributes for that tag
         :return: Store the emails in self._emails
         """
@@ -286,7 +310,7 @@ class SGMLParser(BaseParser):
         else:
             raise ValueError('Invalid email address "%s"' % email)
 
-    def _find_references(self, tag, attrs):
+    def _find_references(self, tag, tag_name, attrs):
         """
         Find references inside the document.
         """
@@ -310,7 +334,7 @@ class SGMLParser(BaseParser):
                 # url.normalize_url()
 
                 # Save url
-                self._tag_and_url.add((tag, url))
+                self._tag_and_url.add((tag_name, url))
 
     def _fill_forms(self, tag, attrs):
         raise NotImplementedError('This method must be overridden by a subclass')
@@ -399,14 +423,14 @@ class SGMLParser(BaseParser):
         return [x[1] for x in self._tag_and_url if x[0] == tag_type]
 
     ## Methods for tags handling ##
-    def _handle_base_tag_start(self, tag, attrs):
+    def _handle_base_tag_start(self, tag, tag_name, attrs):
         # Override base url
         try:
             self._base_url = self._base_url.url_join(attrs.get('href', ''))
         except ValueError:
             pass
 
-    def _handle_meta_tag_start(self, tag, attrs):
+    def _handle_meta_tag_start(self, tag, tag_name, attrs):
         self._meta_tags.append(attrs)
 
         has_HTTP_EQUIV = attrs.get('http-equiv', '') == 'refresh'
@@ -426,25 +450,25 @@ class SGMLParser(BaseParser):
                 url = URL(url, encoding=self._encoding)
                 self._tag_and_url.add(('meta', url))
 
-    def _handle_form_tag_start(self, tag, attrs):
+    def _handle_form_tag_start(self, tag, tag_name, attrs):
         self._inside_form = True
 
     def _handle_form_tag_end(self, tag):
         self._inside_form = False
 
-    def _handle_script_tag_start(self, tag, attrs):
+    def _handle_script_tag_start(self, tag, tag_name, attrs):
         self._inside_script = True
 
     def _handle_script_tag_end(self, tag):
         self._inside_script = False
 
-    def _handle_select_tag_start(self, tag, attrs):
+    def _handle_select_tag_start(self, tag, tag_name, attrs):
         self._inside_select = True
 
     def _handle_select_tag_end(self, tag):
         self._inside_select = False
 
-    def _handle_textarea_tag_start(self, tag, attrs):
+    def _handle_textarea_tag_start(self, tag, tag_name, attrs):
         self._inside_textarea = True
 
     def _handle_textarea_tag_end(self, tag):

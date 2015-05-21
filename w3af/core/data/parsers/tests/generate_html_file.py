@@ -64,6 +64,12 @@ def main():
         write('</p>')
         write('</div>')
 
+    #
+    #   Some scripts at the end
+    #
+    for i in xrange(50):
+        write('<script><!-- code(); --></script>')
+
     write('</body>')
     write('</html>')
 

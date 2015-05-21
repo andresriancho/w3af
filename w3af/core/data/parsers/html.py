@@ -42,14 +42,17 @@ class HTMLParser(SGMLParser):
     SPECIFIC_ACCEPT_CONTENT_TYPES = ('text/html', 'application/hta',
                                      'application/xhtml+xml', 'application/xml')
 
+    PARSE_TAGS = SGMLParser.PARSE_TAGS.union({'form', 'input', 'textarea',
+                                              'select', 'option'})
+
     def __init__(self, http_resp):
         # An internal list to be used to save input tags found
         # outside of the scope of a form tag.
         self._saved_inputs = []
 
         # For <textarea> elems parsing
-        self._textarea_tag_name = ""
-        self._textarea_data = ""
+        self._textarea_tag_name = ''
+        self._textarea_data = ''
 
         # For <select> elems parsing
         self._selects = []
@@ -104,17 +107,14 @@ class HTMLParser(SGMLParser):
 
         return False
 
-    def data(self, data):
+    def _handle_script_tag_start(self, tag, tag_name, attrs):
         """
-        Overriding parent's. Called by the main parser when a text node
-        is found
+        Handle the script tags
         """
-        if self._inside_textarea:
-            self._textarea_data = data.strip()
+        SGMLParser._handle_script_tag_start(self, tag, tag_name, attrs)
 
-        elif self._inside_script:
-            re_extract = ReExtract(data.strip(), self._base_url, self._encoding)
-            self._re_urls.update(re_extract.get_references())
+        re_extract = ReExtract(tag.text.strip(), self._base_url, self._encoding)
+        self._re_urls.update(re_extract.get_references())
 
     @property
     def references(self):
@@ -125,22 +125,21 @@ class HTMLParser(SGMLParser):
         parsed_urls = [url for tag, url in self._tag_and_url]
         return parsed_urls, list(self._re_urls - set(parsed_urls))
 
-    def _form_elems_generic_handler(self, tag, attrs):
+    def _form_elems_generic_handler(self, tag, tag_name, attrs):
         side = 'inside' if self._inside_form else 'outside'
         default = lambda *args: None
-        handler = '_handle_%s_tag_%s_form' % (tag, side)
+        handler = '_handle_%s_tag_%s_form' % (tag_name, side)
         meth = getattr(self, handler, default)
-        meth(tag, attrs)
+        meth(tag, tag_name, attrs)
 
-    ## <form> handler methods
-    def _handle_form_tag_start(self, tag, attrs):
+    def _handle_form_tag_start(self, tag, tag_name, attrs):
         """
         Handle the form tags.
 
         This method also looks if there are "pending inputs" in the
         self._saved_inputs list and parses them.
         """
-        SGMLParser._handle_form_tag_start(self, tag, attrs)
+        SGMLParser._handle_form_tag_start(self, tag, tag_name, attrs)
 
         # Get the 'method'
         method = attrs.get('method', 'GET').upper()
@@ -173,20 +172,27 @@ class HTMLParser(SGMLParser):
 
         # Now I verify if there are any input tags that were found
         # outside the scope of a form tag
-        for inputattrs in self._saved_inputs:
+        for input_attrs in self._saved_inputs:
             # Parse them just like if they were found AFTER the
             # form tag opening
-            if isinstance(inputattrs, dict):
-                self._handle_input_tag_inside_form('input', inputattrs)
+            self._handle_input_tag_inside_form(tag, 'input', input_attrs)
 
         # All parsed, remove them.
+        self._saved_inputs = []
+
+    def close(self):
+        """
+        Called by the parser when it ends
+        """
+        SGMLParser.close(self)
+
+        # Cleanup
         self._saved_inputs = []
 
     ## <input> handler methods
     _handle_input_tag_start = _form_elems_generic_handler
 
-    def _handle_input_tag_inside_form(self, tag, attrs):
-
+    def _handle_input_tag_inside_form(self, tag, tag_name, attrs):
         # We are working with the last form
         form_params = self._forms[-1]
         _type = attrs.get('type', '').lower()
@@ -206,8 +212,9 @@ class HTMLParser(SGMLParser):
             # Simply add all the other input types
             form_params.add_input(items)
 
-    def _handle_input_tag_outside_form(self, tag, attrs):
-        # I'm going to use this ruleset:
+    def _handle_input_tag_outside_form(self, tag, tag_name, attrs):
+        # I'm going to use this rule set:
+        #
         # - If there is an input tag outside a form, and there is
         #   no form in self._forms then I'm going to "save" the input
         #   tag until I find a form, and then I'll put it there.
@@ -218,20 +225,18 @@ class HTMLParser(SGMLParser):
         if not self._forms:
             self._saved_inputs.append(attrs)
         else:
-            self._handle_input_tag_inside_form(tag, attrs)
+            self._handle_input_tag_inside_form(tag, tag_name, attrs)
 
     ## <textarea> handler methods
     _handle_textarea_tag_start = _form_elems_generic_handler
 
-    def _handle_textarea_tag_inside_form(self, tag, attrs):
+    def _handle_textarea_tag_inside_form(self, tag, tag_name, attrs):
         """
         Handler for textarea tag inside a form
         """
-        # Reset data
-        self._textarea_data = ""
-        # Get the name
-        self._textarea_tag_name = attrs.get('name', '') or \
-            attrs.get('id', '')
+        # Set the data and name
+        self._textarea_data = tag.text
+        self._textarea_tag_name = attrs.get('name', '') or attrs.get('id', '')
 
         if not self._textarea_tag_name:
             om.out.debug('HTMLParser found a textarea tag without a '
@@ -273,7 +278,7 @@ class HTMLParser(SGMLParser):
             # Reset selects container
             self._selects = []
 
-    def _handle_select_tag_inside_form(self, tag, attrs):
+    def _handle_select_tag_inside_form(self, tag, tag_name, attrs):
         """
         Handler for select tag inside a form
         """
@@ -293,7 +298,7 @@ class HTMLParser(SGMLParser):
     ## <option> handler methods
     _handle_option_tag_start = _form_elems_generic_handler
 
-    def _handle_option_tag_inside_form(self, tag, attrs):
+    def _handle_option_tag_inside_form(self, tag, tag_name, attrs):
         """
         Handler for option tag inside a form
         """
