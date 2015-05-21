@@ -26,12 +26,14 @@ import time
 import os
 
 from nose.plugins.attrib import attr
+from memory_profiler import profile
 
 from w3af import ROOT_PATH
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.html import HTMLParser
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.tests.generate_html_file import OUTPUT_FILE
 
 
 class TestHTMLParserPerformance(unittest.TestCase):
@@ -88,3 +90,26 @@ class TestHTMLParserPerformance(unittest.TestCase):
         self_pid = psutil.Process()
         # pylint: disable=E1101
         print self_pid.memory_info()
+
+
+@profile
+def test():
+    """
+    Run using:
+        python -m memory_profiler w3af/core/data/parsers/tests/test_htmlparser_performance.py
+
+    That will activate the profiler.
+    """
+    body = file(OUTPUT_FILE).read()
+    url = URL('http://www.clarin.com.ar/')
+    headers = Headers()
+    headers['content-type'] = 'text/html'
+    response = HTTPResponse(200, body, headers, url, url, charset='utf-8')
+
+    p = HTMLParser(response)
+    print('The')
+    print('End')
+
+
+if __name__ == '__main__':
+    test()
