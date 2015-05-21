@@ -30,7 +30,7 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopException)
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.constants import severity
-from w3af.core.data.parsers.doc import http_request_parser
+from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 from w3af.core.data.visualization.string_representation import StringRepresentation
 from w3af.core.ui.gui.entries import RememberingVPaned
 from w3af.core.ui.gui.entries import RememberingWindow
