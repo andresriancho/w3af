@@ -22,3 +22,4 @@ SimpleCV==1.3
 futures==2.1.5
 fabric==1.8.0
 yolk==0.4.3
+memory_profiler==0.32
