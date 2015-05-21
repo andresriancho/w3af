@@ -89,18 +89,15 @@ FORM_MULTILINE_TAGS = u"""
 """
 
 # Textarea templates
-TEXTAREA_WITH_NAME_AND_DATA = u"""
-<textarea name="sample_name">
-    sample_value
-</textarea>"""
-TEXTAREA_WITH_ID_AND_DATA = u"""
-<textarea id="sample_id">
-    sample_value
-</textarea>"""
-TEXTAREA_WITH_NAME_ID_AND_DATA = u"""
-<textarea name="sample_name" id="sample_id">
-    sample_value
-</textarea>"""
+TEXTAREA_WITH_NAME_AND_DATA = u"""\
+<textarea name="sample_name">sample_value</textarea>"""
+
+TEXTAREA_WITH_ID_AND_DATA = u"""\
+<textarea id="sample_id">sample_value</textarea>"""
+
+TEXTAREA_WITH_NAME_ID_AND_DATA = u"""\
+<textarea name="sample_name" id="sample_id">sample_value</textarea>"""
+
 TEXTAREA_WITH_NAME_EMPTY = u'<textarea name=""></textarea>'
 
 # Input templates
@@ -275,10 +272,10 @@ class TestSGMLParser(unittest.TestCase):
             assert il, "'%s' is not lowered-case" % s
             return il
 
-        def start_wrapper(orig_start, tag, attrs):
-            islower(tag)
-            islower(attrs)
-            return orig_start(tag, attrs)
+        def start_wrapper(orig_start, tag):
+            islower(tag.tag)
+            islower(tag.attrib)
+            return orig_start(tag)
 
         tags = (A_LINK_ABSOLUTE, INPUT_CHECKBOX_WITH_NAME, SELECT_WITH_NAME,
                 TEXTAREA_WITH_ID_AND_DATA, INPUT_HIDDEN)
@@ -456,6 +453,9 @@ class _HTMLParser(HTMLParser):
         # Restore it
         self._parse = orig_parse
 
+    def _handle_exception(self, where, ex):
+        raise ex
+
 
 @attr('smoke')
 class TestHTMLParser(unittest.TestCase):
@@ -557,6 +557,20 @@ class TestHTMLParser(unittest.TestCase):
         p = _HTMLParser(resp)
         p._parse(resp)
 
+        # Only one form
+        self.assertTrue(len(p.forms) == 1)
+        # Ensure that parsed inputs actually belongs to the form and
+        # have the expected values
+        f = p.forms[0]
+
+        self.assertEquals(['bar'], f['foo1'])  # text input
+        self.assertEquals(['bar'], f['foo2'])  # text input
+        self.assertEquals([''], f['foo3'])     # file input
+        self.assertEquals([''], f['foo5'])     # radio input
+        self.assertEquals([''], f['foo6'])     # checkbox input
+        self.assertEquals(['bar'], f['foo7'])  # hidden input
+        self.assertEquals('', f._submit_map['foo4'])  # submit input
+
         # 2nd body
         body2 = HTML_DOC % \
             {'head': '',
@@ -571,19 +585,6 @@ class TestHTMLParser(unittest.TestCase):
         resp2 = _build_http_response(URL_INST, body2)
         p2 = _HTMLParser(resp2)
         p2._parse(resp2)
-
-        # Only one form
-        self.assertTrue(len(p.forms) == 1)
-        # Ensure that parsed inputs actually belongs to the form and
-        # have the expected values
-        f = p.forms[0]
-        self.assertEquals(['bar'], f['foo1'])  # text input
-        self.assertEquals(['bar'], f['foo2'])  # text input
-        self.assertEquals([''], f['foo3'])  # file input
-        self.assertEquals([''], f['foo5'])  # radio input
-        self.assertEquals([''], f['foo6'])  # checkbox input
-        self.assertEquals(['bar'], f['foo7'])  # hidden input
-        self.assertEquals('', f._submit_map['foo4'])  # submit input
 
         # Finally assert that the parsed forms are equals
         self.assertEquals(f, p2.forms[0])

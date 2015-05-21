@@ -22,9 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from itertools import chain
 from lxml import etree
 
-import w3af.core.controllers.output_manager as om
-import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
 

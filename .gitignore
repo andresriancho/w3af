@@ -92,3 +92,5 @@ debian/w3af.substvars
 debian/w3af/
 docker/kali-debootstrap
 *.deb
+
+w3af/core/data/parsers/tests/data/huge.html
