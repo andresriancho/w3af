@@ -167,7 +167,26 @@ class SGMLParser(BaseParser):
         Parse the HTTP response body
         """
         resp_body = http_resp.body
+        encoding = http_resp.charset
 
+        try:
+            self._parse_response_body_as_string(resp_body, encoding)
+        except ValueError:
+            # Sometimes we get XMLs in the response. lxml fails to parse them
+            # when an encoding header is specified and the text is unicode. So
+            # we better make an exception and convert it to string. Note that
+            # yet the parsed elems will be unicode.
+            resp_body = resp_body.encode(http_resp.charset, 'xmlcharrefreplace')
+            self._parse_response_body_as_string(resp_body, encoding)
+        except etree.XMLSyntaxError, xse:
+            msg = 'An error occurred while parsing "%s",'\
+                  ' original exception: "%s"'
+            om.out.debug(msg % (http_resp.get_url(), xse))
+
+    def _parse_response_body_as_string(self, resp_body, encoding):
+        """
+        Parse the HTTP response body
+        """
         # HTML Parser raises XMLSyntaxError on empty response body #8695
         # https://github.com/andresriancho/w3af/issues/8695
         if not resp_body:
@@ -182,44 +201,42 @@ class SGMLParser(BaseParser):
                      'end': self.end,
                      'comment': self.comment}
 
-        try:
-            # Note: Given that the parser has target != None, this call does not
-            # return a DOM instance!
-            context = etree.iterparse(body_io,
-                                      events=('start', 'end', 'comment'),
-                                      tag=self.PARSE_TAGS,
-                                      html=True,
-                                      recover=True)
-            for event, elem in context:
-                event_map[event](elem)
+        # Performance notes:
+        #
+        #   * recover=True doesn't have any impact on memory usage
+        #
+        #   * huge_tree=False is related with security, if there is a huge tree
+        #     lxml will refuse to parse it, and that's OK
+        #
+        #   * tag=self.PARSE_TAGS makes sure that we only go to python code when
+        #     strictly required (CPU usage reduction)
+        context = etree.iterparse(body_io,
+                                  events=event_map.keys(),
+                                  tag=self.PARSE_TAGS,
+                                  html=True,
+                                  recover=True,
+                                  encoding=encoding,
+                                  huge_tree=False)
 
-                # Memory usage reduction
-                elem.clear()
-                while elem.getprevious() is not None:
-                    del elem.getparent()[0]
+        for event, elem in context:
+            event_map[event](elem)
 
             # Memory usage reduction
-            del context
+            #
+            # Performance notes:
+            #
+            #   * These lines actually make a difference, they reduce memory
+            #     usage from ~270MB to ~230MB when parsing a huge HTML document
+            elem.clear()
+            while elem.getprevious() is not None:
+                del elem.getparent()[0]
 
-            # This was called when using etree.fromstring, and I used it so
-            # let's keep calling it
-            self.close()
+        # Memory usage reduction
+        del context
 
-        except ValueError:
-            # Sometimes we get XMLs in the response. lxml fails to parse them
-            # when an encoding header is specified and the text is unicode. So
-            # we better make an exception and convert it to string. Note that
-            # yet the parsed elems will be unicode.
-            resp_body = resp_body.encode(http_resp.charset,
-                                         'xmlcharrefreplace')
-            parser = etree.HTMLParser(target=self,
-                                      recover=True,
-                                      encoding=http_resp.charset)
-            etree.fromstring(resp_body, parser)
-        except etree.XMLSyntaxError, xse:
-            msg = 'An error occurred while parsing "%s",'\
-                  ' original exception: "%s"'
-            om.out.debug(msg % (http_resp.get_url(), xse))
+        # This was called when using etree.fromstring, and I used it so
+        # let's keep calling it
+        self.close()
 
     def get_dom(self):
         """
@@ -335,9 +352,6 @@ class SGMLParser(BaseParser):
 
                 # Save url
                 self._tag_and_url.add((tag_name, url))
-
-    def _fill_forms(self, tag, attrs):
-        raise NotImplementedError('This method must be overridden by a subclass')
 
     ## Properties ##
     @property

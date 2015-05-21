@@ -107,9 +107,7 @@ def test():
     response = HTTPResponse(200, body, headers, url, url, charset='utf-8')
 
     p = HTMLParser(response)
-    print('The')
-    print('End')
-
+    del p
 
 if __name__ == '__main__':
     test()
