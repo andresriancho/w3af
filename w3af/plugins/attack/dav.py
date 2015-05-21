@@ -24,7 +24,7 @@ import w3af.plugins.attack.payloads.shell_handler as shell_handler
 
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.kb.exec_shell import ExecShell
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 

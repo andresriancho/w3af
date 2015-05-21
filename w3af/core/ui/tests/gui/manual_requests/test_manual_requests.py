@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
+from w3af.core.data.parsers.doc import http_request_parser
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
 from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
-
 from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
-from w3af.core.data.parsers.http_request_parser import http_request_parser
+
 
 # TODO: Code duplication
 #

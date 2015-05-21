@@ -23,7 +23,7 @@ import unittest
 import json
 import copy
 
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.json_mutant import JSONMutant
 from w3af.core.data.dc.json_container import JSONContainer

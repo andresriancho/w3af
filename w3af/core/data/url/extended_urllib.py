@@ -24,18 +24,17 @@ import urllib
 import socket
 import urllib2
 import httplib
-import OpenSSL
 import threading
 import traceback
 import functools
-
 from contextlib import contextmanager
 from collections import deque
+
+import OpenSSL
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import opener_settings
-
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException,
                                               HTTPRequestException,
@@ -43,7 +42,7 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopByKnownReasonExc,
                                               ScanMustStopByUserRequest)
 from w3af.core.data.parsers.http_request_parser import http_request_parser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest

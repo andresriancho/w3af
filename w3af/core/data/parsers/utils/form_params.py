@@ -26,10 +26,9 @@ import random
 from ruamel.ordereddict import ordereddict as OrderedDict
 
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.utils.multipart import is_file_like
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 DEFAULT_FORM_ENCODING = 'application/x-www-form-urlencoded'

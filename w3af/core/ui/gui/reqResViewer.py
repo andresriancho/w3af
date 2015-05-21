@@ -21,20 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import threading
 import signal
+
 import gtk
 import gobject
-
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               HTTPRequestException,
                                               ScanMustStopException)
-
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.constants import severity
-from w3af.core.data.parsers.http_request_parser import http_request_parser
+from w3af.core.data.parsers.doc import http_request_parser
 from w3af.core.data.visualization.string_representation import StringRepresentation
-
 from w3af.core.ui.gui.entries import RememberingVPaned
 from w3af.core.ui.gui.entries import RememberingWindow
 from w3af.core.ui.gui.entries import SemiStockButton

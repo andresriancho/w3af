@@ -21,22 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import time
-import clamd
-
-from nose.plugins.attrib import attr
 from itertools import repeat
 from functools import wraps
+
+import clamd
 from mock import patch, Mock
 from nose.plugins.skip import SkipTest
 
 import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.plugins.grep.clamav import clamav
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.ci.moth import get_moth_http
 

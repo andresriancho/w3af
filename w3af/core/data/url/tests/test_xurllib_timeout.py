@@ -24,7 +24,6 @@ import unittest
 import SocketServer
 
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 from mock import Mock
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -34,8 +33,7 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT, DEFAULT_TIMEOUT,
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon
 from w3af.core.data.url.tests.test_xurllib import TimeoutTCPHandler
-from w3af.core.data.parsers.url import URL
-
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.exceptions import (HTTPRequestException,
                                               ScanMustStopException)
 

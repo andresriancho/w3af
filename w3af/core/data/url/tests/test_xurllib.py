@@ -25,24 +25,22 @@ import time
 import Queue
 import types
 import unittest
-import httpretty
 import SocketServer
-
 from multiprocessing.dummy import Process
+
+import httpretty
 from nose.plugins.attrib import attr
 from mock import patch
 
 from w3af import ROOT_PATH
-
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.constants import MAX_ERROR_COUNT
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon, SSLServer
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import DEFAULT_WAIT_TIME
-
 from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.misc.temp_dir import get_temp_dir

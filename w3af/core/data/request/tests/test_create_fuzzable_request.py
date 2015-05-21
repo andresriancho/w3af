@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from w3af.core.data.url.HTTPRequest import HTTPRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers

@@ -24,7 +24,8 @@ import cPickle
 
 from w3af.core.data.parsers.utils.form_params import (FormParameters,
                                                       DEFAULT_FORM_ENCODING)
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
+
 
 form_with_radio = [
     {'tagname': 'input', 'name': 'sex', 'type': 'radio', 'value': 'male'},

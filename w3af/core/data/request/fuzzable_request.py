@@ -22,13 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import csv
 import string
 import cStringIO
-
 from urllib import unquote
 from itertools import chain
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
-
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.generic.data_container import DataContainer
@@ -36,9 +34,10 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.dc.factory import dc_from_hdrs_post
 from w3af.core.data.db.disk_item import DiskItem
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+
 
 ALL_CHARS = ''.join(chr(i) for i in xrange(256))
 TRANS_TABLE = string.maketrans(ALL_CHARS, ALL_CHARS)

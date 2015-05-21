@@ -27,7 +27,7 @@ from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.db.variant_db import (VariantDB, PARAMS_MAX_VARIANTS,
                                           PATH_MAX_VARIANTS)
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,

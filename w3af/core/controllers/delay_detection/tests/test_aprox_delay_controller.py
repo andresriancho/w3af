@@ -27,7 +27,7 @@ from mock import MagicMock, Mock
 from w3af.core.controllers.delay_detection.aprox_delay_controller import AproxDelayController
 from w3af.core.controllers.delay_detection.aprox_delay import AproxDelay
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 

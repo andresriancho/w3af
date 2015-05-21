@@ -25,7 +25,7 @@ import copy
 from mock import patch
 
 from w3af.core.data.constants.file_templates.file_templates import get_template_with_payload
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import (FileContentMutant,
                                                               OnlyTokenFilesMultipartContainer)

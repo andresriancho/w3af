@@ -28,9 +28,9 @@ from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.html import HTMLParser
-from w3af.core.data.parsers.pdf import PDFParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.html import HTMLParser
+from w3af.core.data.parsers.doc.pdf import PDFParser
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.document_parser import (document_parser_factory,
                                                     DocumentParser)
 
@@ -46,11 +46,11 @@ def _build_http_response(body_content, content_type):
 
 class TestDocumentParserFactory(unittest.TestCase):
 
-    PDF_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                            'data', 'links.pdf')
+    PDF_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                            'tests', 'data', 'links.pdf')
     
-    HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                             'data', 'sharepoint-pl.html')
+    HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                             'tests', 'data', 'sharepoint-pl.html')
 
     def test_html_ok(self):
         mime_types = ['text/html', 'TEXT/HTML', 'TEXT/plain',

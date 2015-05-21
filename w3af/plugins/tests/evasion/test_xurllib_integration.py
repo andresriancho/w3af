@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-
-from nose.plugins.attrib import attr
 from unittest.case import skip
 
-from w3af.core.data.parsers.url import URL
+from nose.plugins.attrib import attr
+
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.plugins.evasion.self_reference import self_reference
 

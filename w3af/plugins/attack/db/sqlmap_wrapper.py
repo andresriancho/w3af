@@ -26,9 +26,8 @@ import tempfile
 import subprocess
 
 import w3af.core.controllers.output_manager as om
-
 from w3af import ROOT_PATH
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.daemons.proxy import Proxy
 
 

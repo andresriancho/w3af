@@ -29,8 +29,8 @@ from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.url import parse_qs
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import parse_qs
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.vuln import Vuln
 
 

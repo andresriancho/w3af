@@ -28,9 +28,8 @@ import StringIO
 from lxml import etree
 
 import w3af.core.controllers.output_manager as om
-
-from w3af.core.data.parsers.baseparser import BaseParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.baseparser import BaseParser
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.misc.decorators import memoized
 
 

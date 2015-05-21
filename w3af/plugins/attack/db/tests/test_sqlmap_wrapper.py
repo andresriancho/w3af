@@ -28,7 +28,7 @@ from nose.plugins.skip import SkipTest
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper, Target
 from w3af.core.data.url.tests.test_xurllib_proxy import TODO_183
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 

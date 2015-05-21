@@ -24,14 +24,14 @@ import re
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
-
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info_set import InfoSet
-from w3af.core.data.parsers.cookie_parser import parse_cookie, COOKIE_HEADERS
+from w3af.core.data.parsers.doc.cookie_parser import parse_cookie, COOKIE_HEADERS
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.constants.cookies import COOKIE_FINGERPRINT
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
+
 
 COOKIE_KEYS = 'cookie_keys'
 COOKIE_OBJECT = 'cookie_object'

@@ -25,8 +25,8 @@ import unittest
 from mock import patch, Mock, _Call
 
 from w3af.core.data.url.HTTPRequest import HTTPRequest
-from w3af.core.data.url.handlers.cache import CacheHandler, SQLCachedResponse
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.url.handlers.cache import CacheHandler
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 
 

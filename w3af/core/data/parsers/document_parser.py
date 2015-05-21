@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.parsers.html import HTMLParser
-from w3af.core.data.parsers.pdf import PDFParser
-from w3af.core.data.parsers.swf import SWFParser
-from w3af.core.data.parsers.wml_parser import WMLParser
-from w3af.core.data.parsers.javascript import JavaScriptParser
+from w3af.core.data.parsers.doc.html import HTMLParser
+from w3af.core.data.parsers.doc.pdf import PDFParser
+from w3af.core.data.parsers.doc.swf import SWFParser
+from w3af.core.data.parsers.doc.wml_parser import WMLParser
+from w3af.core.data.parsers.doc.javascript import JavaScriptParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 

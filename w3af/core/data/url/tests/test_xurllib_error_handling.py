@@ -32,7 +32,7 @@ from w3af.core.data.url.tests.helpers.upper_daemon import ThreadingUpperDaemon
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.tests.test_xurllib import (EmptyTCPHandler,
                                                    TimeoutTCPHandler)
 

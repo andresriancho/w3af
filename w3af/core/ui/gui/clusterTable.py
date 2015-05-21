@@ -18,11 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import gtk
-import gobject
 import threading
 
+import gtk
+import gobject
 from w3af.core.ui.gui import helpers, entries
+
 
 # The clustering stuff
 from cluster import HierarchicalClustering
@@ -453,7 +454,7 @@ def main():
 
 if __name__ == "__main__":
 
-    from w3af.core.data.parsers.url import URL
+    from w3af.core.data.parsers.doc.url import URL
     url_instance = URL('http://a/index.html')
 
     #    We create the data

@@ -26,8 +26,8 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFSyntaxError
 
-from w3af.core.data.parsers.baseparser import BaseParser
-from w3af.core.data.parsers.sgml import SGMLParser
+from w3af.core.data.parsers.doc.baseparser import BaseParser
+from w3af.core.data.parsers.doc.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 

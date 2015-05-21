@@ -21,16 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import cPickle
-import msgpack
-
 from random import choice
 
+import msgpack
 from nose.plugins.attrib import attr
 
 from w3af.core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
+
 
 TEST_RESPONSES = {
     'hebrew': (u'ולהכיר טוב יותר את המוסכמות, האופי', 'Windows-1255'),

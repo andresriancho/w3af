@@ -24,12 +24,10 @@ from nose.plugins.attrib import attr
 from mock import patch, call
 
 import w3af.core.data.constants.severity as severity
-
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.ghdb import GoogleHack, google
-
 from w3af.core.data.search_engines.google import GoogleResult
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.misc.file_utils import days_since_file_update
 
 

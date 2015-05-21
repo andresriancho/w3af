@@ -24,7 +24,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest
 from w3af.plugins.crawl.phishtank import phishtank
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.severity import MEDIUM
 from w3af.core.data.misc.file_utils import days_since_file_update
 

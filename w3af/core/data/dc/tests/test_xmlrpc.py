@@ -23,7 +23,7 @@ import unittest
 import copy
 
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
-from w3af.core.data.parsers.tests.test_xmlrpc import (XML_WITH_FUZZABLE,
+from w3af.core.data.parsers.doc.tests.test_xmlrpc import (XML_WITH_FUZZABLE,
                                                       XML_WITHOUT_FUZZABLE)
 
 

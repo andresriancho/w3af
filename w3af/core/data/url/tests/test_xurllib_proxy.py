@@ -26,8 +26,7 @@ from nose.plugins.skip import SkipTest
 
 from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.parsers.url import URL
-
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 

@@ -26,10 +26,9 @@ import Queue
 import traceback
 
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.parsers.http_request_parser import http_request_parser
+from w3af.core.data.parsers.doc import http_request_parser
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 

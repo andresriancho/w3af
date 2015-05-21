@@ -23,7 +23,7 @@ import urllib
 import re
 
 from w3af.core.data.search_engines.search_engine import SearchEngine
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 class bing(SearchEngine):

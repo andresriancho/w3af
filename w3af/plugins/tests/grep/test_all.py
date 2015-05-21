@@ -23,16 +23,16 @@ import unittest
 import os
 import cProfile
 import random
-
-from mock import patch
 from itertools import repeat
 
-from w3af import ROOT_PATH 
+from mock import patch
+
+from w3af import ROOT_PATH
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 class test_all(unittest.TestCase):

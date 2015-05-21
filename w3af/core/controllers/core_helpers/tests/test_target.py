@@ -24,14 +24,14 @@ import os
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.config as cf
-
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.target import w3af_core_target
-from w3af.core.data.parsers.url import URL as URL_KLASS
+from w3af.core.data.parsers.doc.url import URL as URL_KLASS
 from w3af.core.data.options.option_types import (BOOL, INT, FLOAT, STRING, URL,
                                                  IPPORT, LIST, REGEX, COMBO,
                                                  INPUT_FILE, OUTPUT_FILE, PORT,
                                                  URL_LIST)
+
 
 OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
                 INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST)

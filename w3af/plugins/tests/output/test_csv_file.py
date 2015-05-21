@@ -25,7 +25,7 @@ import json
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant

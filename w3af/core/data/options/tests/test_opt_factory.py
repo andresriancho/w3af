@@ -23,7 +23,7 @@ import unittest
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.parsers.url import URL as URL_KLASS
+from w3af.core.data.parsers.doc.url import URL as URL_KLASS
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import (
     BOOL, INT, POSITIVE_INT, FLOAT, STRING, IPPORT, LIST,

@@ -29,10 +29,10 @@ from mock import patch, call, PropertyMock
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.parser_cache import ParserCache
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.html import HTMLParser
+from w3af.core.data.parsers.doc.html import HTMLParser
 from w3af.core.data.parsers.tests.test_document_parser import _build_http_response
 
 

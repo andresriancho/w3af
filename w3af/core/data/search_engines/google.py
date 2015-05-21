@@ -25,10 +25,9 @@ import json
 
 from w3af.core.controllers import output_manager as om
 from w3af.core.controllers.exceptions import BaseFrameworkException
-
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.search_engines.search_engine import SearchEngine
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 
 

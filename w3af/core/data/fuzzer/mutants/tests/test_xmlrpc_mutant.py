@@ -22,13 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.fuzzer.mutants.xmlrpc_mutant import XmlRpcMutant
 from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.parsers.tests.test_xmlrpc import (XML_WITH_FUZZABLE,
-                                                      XML_WITHOUT_FUZZABLE)
+from w3af.core.data.parsers.doc.tests.test_xmlrpc import (XML_WITH_FUZZABLE)
 
 
 class TestXMLRPCMutant(unittest.TestCase):

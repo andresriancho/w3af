@@ -23,15 +23,15 @@ import socket
 import unittest
 import time
 import urllib2
-import psutil
 import os
 
+import psutil
 from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.url.HTTPRequest import HTTPRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
                                                    ConnectionManager,

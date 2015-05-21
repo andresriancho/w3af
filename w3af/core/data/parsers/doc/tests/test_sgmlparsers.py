@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 import cPickle
-
 from functools import partial
 from itertools import combinations
 from random import choice
@@ -33,9 +32,9 @@ from nose.plugins.skip import SkipTest
 
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.utils.form_params import FormParameters
-from w3af.core.data.parsers.html import HTMLParser
-from w3af.core.data.parsers.sgml import SGMLParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.html import HTMLParser
+from w3af.core.data.parsers.doc.sgml import SGMLParser
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.tests.test_HTTPResponse import TEST_RESPONSES
 from w3af.core.data.dc.headers import Headers

@@ -29,18 +29,18 @@ import shelve
 import time
 import re
 import gzip
-
 from string import printable
 from cStringIO import StringIO
 
 from nose.plugins.skip import SkipTest
 
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.controllers.core_helpers.fingerprint_404 import (IS_EQUAL_RATIO,
                                                                 get_clean_body)
+
 
 FAILED_FILENAME = 'not-ex1st.html'
 
