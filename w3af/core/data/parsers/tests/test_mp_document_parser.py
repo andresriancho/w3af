@@ -27,6 +27,7 @@ import multiprocessing
 from mock import patch, call, PropertyMock
 
 from w3af import ROOT_PATH
+from w3af.core.data.parsers.doc.sgml import Tag
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.mp_document_parser import MultiProcessingDocumentParser
 from w3af.core.data.parsers.doc.url import URL
@@ -169,6 +170,18 @@ class TestMPDocumentParser(unittest.TestCase):
 
         parser = self.mpdoc.get_document_parser_for(resp)
         self.assertIsInstance(parser._parser, HTMLParser)
+
+    def test_get_tags_by_filter(self):
+        body = '<html><a href="/abc">foo</a><b>bar</b></html>'
+        url = URL('http://www.w3af.com/')
+        headers = Headers()
+        headers['content-type'] = 'text/html'
+        resp = HTTPResponse(200, body, headers, url, url, charset='utf-8')
+
+        tags = self.mpdoc.get_tags_by_filter(resp, ('a', 'b'), yield_text=True)
+
+        self.assertEqual([Tag('a', {'href': '/abc'}, 'foo'),
+                          Tag('b', {}, 'bar')], tags)
 
 
 def daemon_child(queue):

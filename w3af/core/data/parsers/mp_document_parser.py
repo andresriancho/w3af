@@ -130,16 +130,22 @@ class MultiProcessingDocumentParser(object):
 
         om.out.debug(msg % (self.PARSER_TIMEOUT, http_response.get_url()))
 
-    def _parse_http_response_in_worker(self, http_response, hash_string):
+    def get_document_parser_for(self, http_response):
         """
-        This parses the http_response in a pool worker. This has two features:
+        Get a document parser for http_response
+
+        This parses the http_response in a pool worker. This method has two
+        features:
             * We can kill the worker if the parser is taking too long
             * We can have different parsers
 
-        :return: The DocumentParser instance
+        :param http_response: The http response instance
+        :return: An instance of DocumentParser
         """
         # Start the worker processes if needed
         self.start_workers()
+
+        hash_string = get_request_unique_id(http_response, prepend='parser')
 
         apply_args = (process_document_parser,
                       http_response,
@@ -168,15 +174,89 @@ class MultiProcessingDocumentParser(object):
 
         return parser_output
 
-    def get_document_parser_for(self, http_response):
+    def get_tags_by_filter(self, http_response, tags, yield_text=False):
         """
-        Get a document parser for http_response
+        Return Tag instances for the tags which match the `tags` filter,
+        parsing and all lxml stuff is done in another process and the Tag
+        instances are sent to the main process (the one calling this method)
+        through a pipe
 
-        :param http_response: The http response instance
-        :return: An instance of DocumentParser
+        Some things to note:
+            * Not all responses can be parsed, so I need to call DocumentParser
+              and handle exceptions
+
+            * The parser selected by DocumentParser might not have tags, and
+              it might not have get_tags_by_filter. In this case just return an
+              empty list
+
+            * Just like get_document_parser_for we have a timeout in place,
+              when we hit the timeout just return an empty list, this is not
+              the best thing to do, but makes the plugin code easier to write
+              (plugins would ignore this anyways)
+
+        :param tags: The filter
+        :param yield_text: Should we yield the tag text?
+        :return: A list of Tag instances as defined in sgml.py
+
+        :see: SGMLParser.get_tags_by_filter
         """
-        hash_string = get_request_unique_id(http_response)
-        return self._parse_http_response_in_worker(http_response, hash_string)
+        # Start the worker processes if needed
+        self.start_workers()
+
+        hash_string = get_request_unique_id(http_response, prepend='tags')
+
+        apply_args = (process_get_tags_by_filter,
+                      http_response,
+                      tags,
+                      yield_text,
+                      self._processes,
+                      hash_string,
+                      self.DEBUG)
+
+        # Push the task to the workers
+        result = self._pool.apply_async(apply_with_return_error, (apply_args,))
+
+        try:
+            filtered_tags = result.get(timeout=self.PARSER_TIMEOUT)
+        except multiprocessing.TimeoutError:
+            self._kill_parser_process(hash_string, http_response)
+
+            # We hit a timeout, return an empty list
+            return []
+        else:
+            # There was an exception in the parser, maybe the HTML was really
+            # broken, or it wasn't an HTML at all.
+            if isinstance(filtered_tags, Error):
+                return []
+
+        finally:
+            # Just remove it so it doesn't use memory
+            self._processes.pop(hash_string, None)
+
+        return filtered_tags
+
+
+def process_get_tags_by_filter(http_resp, tags, yield_text,
+                               processes, hash_string, debug):
+    """
+    Simple wrapper to get the current process id and store it in a shared object
+    so we can kill the process if needed.
+    """
+    # Save this for tracking
+    pid = multiprocessing.current_process().pid
+    processes[hash_string] = pid
+
+    document_parser = DocumentParser(http_resp)
+
+    # Not all parsers have tags
+    if not hasattr(document_parser, 'get_tags_by_filter'):
+        return []
+
+    filtered_tags = []
+    for tag in document_parser.get_tags_by_filter(tags, yield_text=yield_text):
+        filtered_tags.append(tag)
+
+    return filtered_tags
 
 
 def process_document_parser(http_resp, processes, hash_string, debug):
@@ -184,15 +264,14 @@ def process_document_parser(http_resp, processes, hash_string, debug):
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
+    # Save this for tracking
     pid = multiprocessing.current_process().pid
+    processes[hash_string] = pid
 
     if debug:
         msg = '[mp_document_parser] PID %s is starting to parse %s'
         args = (pid, http_resp.get_url())
         om.out.debug(msg % args)
-
-    # Save this for tracking
-    processes[hash_string] = pid
 
     try:
         # Parse
