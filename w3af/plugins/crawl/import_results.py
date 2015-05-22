@@ -37,7 +37,7 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.parsers.http_request_parser import http_request_parser
+from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 
 
 class import_results(CrawlPlugin):
