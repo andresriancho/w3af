@@ -19,9 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from lxml import etree
-
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
+from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.kb.info import Info
 
 
@@ -31,6 +30,7 @@ class feeds(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    TAGS = ('rss', 'feed', 'opml')
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -38,9 +38,6 @@ class feeds(GrepPlugin):
                             'feed': 'OPML',  # <feed version="..."
                             'opml': 'OPML'  # <opml version="...">
                             }
-        
-        # Compile the XPATH
-        self._tag_xpath = etree.XPath('//rss | //feed | //opml')
 
     def grep(self, request, response):
         """
@@ -50,26 +47,18 @@ class feeds(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         """
-        dom = response.get_dom()
         uri = response.get_uri()
 
-        # In some strange cases, we fail to normalize the document
-        if dom is None:
-            return
+        for tag in mp_doc_parser.get_tags_by_filter(response, self.TAGS):
 
-        # Find all feed tags
-        element_list = self._tag_xpath(dom)
-
-        for element in element_list:
-
-            feed_tag = element.tag
+            feed_tag = tag.name
             feed_type = self._feed_types[feed_tag.lower()]
-            version = element.attrib.get('version', 'unknown')
+            version = tag.attrib.get('version', 'unknown')
 
             fmt = 'The URL "%s" is a %s version %s feed.'
             desc = fmt % (uri, feed_type, version)
-            i = Info('Content feed resource', desc, response.id,
-                     self.get_name())
+
+            i = Info('Content feed resource', desc, response.id, self.get_name())
             i.set_uri(uri)
             i.add_to_highlight(feed_type)
             
@@ -81,7 +70,7 @@ class feeds(GrepPlugin):
         """
         return """
         This plugin greps every page and finds rss, atom, opml feeds on them.
-        This may be usefull for determining the feed generator and with that,
+        This may be useful for determining the feed generator and with that,
         the framework being used. Also this will be helpful for testing feed
         injection.
         """
