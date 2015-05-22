@@ -30,7 +30,7 @@ from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af import ROOT_PATH
-from w3af.core.data.parsers.doc.sgml import SGMLParser
+from w3af.core.data.parsers.doc.sgml import SGMLParser, Tag
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.tests.test_HTTPResponse import TEST_RESPONSES
@@ -287,10 +287,10 @@ class TestTagsByFilter(unittest.TestCase):
         resp = HTTPResponse(200, body, headers, url, url, charset='utf-8')
 
         p = SGMLParser(resp)
-        tags = p.get_tags_by_filter(('a',))
+        tags = p.get_tags_by_filter(('a',), yield_text=True)
         tags = list(tags)
 
-        self.assertEqual([('a', {'href': '/abc'}, 'foo')], tags)
+        self.assertEqual([Tag('a', {'href': '/abc'}, 'foo')], tags)
 
     def test_two(self):
         body = '<html><a href="/abc">foo</a><b>bar</b></html>'
@@ -300,11 +300,11 @@ class TestTagsByFilter(unittest.TestCase):
         resp = HTTPResponse(200, body, headers, url, url, charset='utf-8')
 
         p = SGMLParser(resp)
-        tags = p.get_tags_by_filter(('a', 'b'))
+        tags = p.get_tags_by_filter(('a', 'b'), yield_text=True)
         tags = list(tags)
 
-        self.assertEqual([('a', {'href': '/abc'}, 'foo'),
-                          ('b', {}, 'bar')], tags)
+        self.assertEqual([Tag('a', {'href': '/abc'}, 'foo'),
+                          Tag('b', {}, 'bar')], tags)
 
     def test_nested_with_text(self):
         body = '<html><a href="/abc">foo<div>bar</div></a></html>'
@@ -314,10 +314,10 @@ class TestTagsByFilter(unittest.TestCase):
         resp = HTTPResponse(200, body, headers, url, url, charset='utf-8')
 
         p = SGMLParser(resp)
-        tags = p.get_tags_by_filter(('a', 'b'))
+        tags = p.get_tags_by_filter(('a', 'b'), yield_text=True)
         tags = list(tags)
 
-        self.assertEqual([('a', {'href': '/abc'}, 'foo')], tags)
+        self.assertEqual([Tag('a', {'href': '/abc'}, 'foo')], tags)
 
     def test_none(self):
         body = '<html><a href="/abc">foo<div>bar</div></a></html>'
@@ -329,6 +329,6 @@ class TestTagsByFilter(unittest.TestCase):
         p = SGMLParser(resp)
         tags = p.get_tags_by_filter(None)
         tags = list(tags)
-        tag_names = [tag[0] for tag in tags]
+        tag_names = [tag.name for tag in tags]
 
         self.assertEqual(tag_names, ['html', 'body', 'a', 'div'])

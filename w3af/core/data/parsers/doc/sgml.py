@@ -26,11 +26,15 @@ import traceback
 import StringIO
 
 from lxml import etree
+from collections import namedtuple
 
 import w3af.core.controllers.output_manager as om
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+
+
+Tag = namedtuple('Tag', ('name', 'attrib', 'text'))
 
 
 class SGMLParser(BaseParser):
@@ -261,7 +265,7 @@ class SGMLParser(BaseParser):
             if yield_text:
                 text = elem.text
 
-            yield elem.tag, dict(elem.attrib), text
+            yield Tag(elem.tag, dict(elem.attrib), text)
 
             # Performance notes, see "_parse_response_body_as_string"
             elem.clear()
