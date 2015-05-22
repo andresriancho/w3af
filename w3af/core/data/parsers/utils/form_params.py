@@ -33,6 +33,30 @@ from w3af.core.data.parsers.doc.url import URL
 
 DEFAULT_FORM_ENCODING = 'application/x-www-form-urlencoded'
 
+INPUT_TYPE_FILE = 'file'
+INPUT_TYPE_CHECKBOX = 'checkbox'
+INPUT_TYPE_RADIO = 'radio'
+INPUT_TYPE_TEXT = 'text'
+INPUT_TYPE_HIDDEN = 'hidden'
+INPUT_TYPE_SUBMIT = 'submit'
+INPUT_TYPE_SELECT = 'select'
+INPUT_TYPE_PASSWD = 'password'
+
+ALL_INPUT_TYPES = (INPUT_TYPE_FILE, INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
+                   INPUT_TYPE_TEXT, INPUT_TYPE_HIDDEN, INPUT_TYPE_SUBMIT,
+                   INPUT_TYPE_SELECT, INPUT_TYPE_PASSWD)
+
+
+class FormField(object):
+
+    __slots__ = ('input_type', 'name', 'value', 'autocomplete')
+
+    def __init__(self, input_type, name, value, autocomplete=False):
+        self.input_type = input_type
+        self.name = name
+        self.value = value
+        self.autocomplete = autocomplete
+
 
 class FormParameters(OrderedDict):
     """
@@ -46,17 +70,12 @@ class FormParameters(OrderedDict):
     MAX_VARIANTS_TOTAL = 10 ** 9
     SEED = 1
 
-    INPUT_TYPE_FILE = 'file'
-    INPUT_TYPE_CHECKBOX = 'checkbox'
-    INPUT_TYPE_RADIO = 'radio'
-    INPUT_TYPE_TEXT = 'text'
-    INPUT_TYPE_HIDDEN = 'hidden'
-    INPUT_TYPE_SUBMIT = 'submit'
-    INPUT_TYPE_SELECT = 'select'
-    INPUT_TYPE_PASSWD = 'password'
+    AVOID_FILLING_FORM_TYPES = {INPUT_TYPE_CHECKBOX,
+                                INPUT_TYPE_RADIO,
+                                INPUT_TYPE_SELECT}
 
-    AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
-    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
+    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX,
+                            INPUT_TYPE_RADIO,
                             INPUT_TYPE_SELECT}
 
     # This is used for processing checkboxes
@@ -69,11 +88,8 @@ class FormParameters(OrderedDict):
         # Form method defaults to GET if not found
         self._method = 'GET'
         self._action = None
-        self._types = {}
-        self._file_vars = []
-        self._file_names = {}
-        self._selects = {}
-        self._submit_map = {}
+        self._autocomplete = None
+
         # Two completely different types of encoding, first the enctype for the
         # form: multipart/urlencoded, then the charset encoding (UTF-8, etc.)
         self._form_encoding = DEFAULT_FORM_ENCODING
@@ -103,6 +119,21 @@ class FormParameters(OrderedDict):
             raise TypeError(msg)
         self._action = action
 
+    def get_autocomplete(self):
+        return self._autocomplete
+
+    def set_autocomplete(self, autocomplete):
+        self._autocomplete = autocomplete
+
+    def get_method(self):
+        """
+        :return: The Form method.
+        """
+        return self._method
+
+    def set_method(self, method):
+        self._method = method.upper()
+
     def get_file_name(self, pname, default=None):
         """
         When the form is created by parsing an HTTP request which contains a
@@ -116,15 +147,6 @@ class FormParameters(OrderedDict):
 
     def set_file_name(self, pname, fname):
         self._file_names[pname] = fname
-
-    def get_method(self):
-        """
-        :return: The Form method.
-        """
-        return self._method
-
-    def set_method(self, method):
-        self._method = method.upper()
 
     def get_file_vars(self):
         """
@@ -390,9 +412,9 @@ class FormParameters(OrderedDict):
                     for row, vector in enumerate(matrix):
                         # Create new 3-length vector
                         if len(vector) > 3:
-                            new_vector = [vector[0]]
-                            new_vector.append(vector[len(vector) / 2])
-                            new_vector.append(vector[-1])
+                            new_vector = [vector[0],
+                                          vector[len(vector) / 2],
+                                          vector[-1]]
                             matrix[row] = new_vector
 
                     # New variants total

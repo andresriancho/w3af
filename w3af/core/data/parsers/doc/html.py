@@ -143,17 +143,12 @@ class HTMLParser(SGMLParser):
         """
         SGMLParser._handle_form_tag_start(self, tag, tag_name, attrs)
 
-        # Get the 'method'
         method = attrs.get('method', 'GET').upper()
-
-        # Get the action
         action = attrs.get('action', None)
-        missing_action = action is None
-
-        # Get the encoding
         form_encoding = attrs.get('enctype', DEFAULT_FORM_ENCODING)
+        autocomplete = attrs.get('autocomplete', None)
 
-        if missing_action:
+        if action is None:
             action = self._source_url
         else:
             action = self._decode_url(action)
@@ -170,6 +165,8 @@ class HTMLParser(SGMLParser):
         form_params.set_method(method)
         form_params.set_action(action)
         form_params.set_form_encoding(form_encoding)
+        form_params.set_autocomplete(autocomplete)
+
         self._forms.append(form_params)
 
         # Now I verify if there are any input tags that were found
@@ -197,17 +194,17 @@ class HTMLParser(SGMLParser):
     def _handle_input_tag_inside_form(self, tag, tag_name, attrs):
         # We are working with the last form
         form_params = self._forms[-1]
-        _type = attrs.get('type', '').lower()
+        input_type = attrs.get('type', '').lower()
         items = attrs.items()
 
-        if _type == 'file':
+        if input_type == 'file':
             # Let the form know, that this is a file input
             form_params.add_file_input(items)
 
-        elif _type == 'radio':
+        elif input_type == 'radio':
             form_params.add_radio(items)
 
-        elif _type == 'checkbox':
+        elif input_type == 'checkbox':
             form_params.add_check_box(items)
 
         else:
