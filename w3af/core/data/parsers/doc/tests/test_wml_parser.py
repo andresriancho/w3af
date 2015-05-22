@@ -39,9 +39,10 @@ class TestWMLParser(unittest.TestCase):
                     <postfield name="tipdat" value="D"/>
                 </go>"""
         
-        response = HTTPResponse( 200, form, Headers(), self.url, self.url)
+        response = HTTPResponse(200, form, Headers(), self.url, self.url)
         
         w = WMLParser(response)
+        w.parse()
         forms = w.get_forms()
         
         self.assertEqual(len(forms), 1)
@@ -58,6 +59,7 @@ class TestWMLParser(unittest.TestCase):
         response = HTTPResponse(200, '<a href="/index.aspx">ASP.NET</a>',
                                 Headers(), self.url, self.url)
         w = WMLParser(response)
+        w.parse()
         re, parsed = w.get_references()
         
         # TODO: Shouldn't this be the other way around?!

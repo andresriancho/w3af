@@ -50,6 +50,7 @@ class TestSWFParser(unittest.TestCase):
                                 _id=1)
         
         parser = SWFParser(response)
+        parser.parse()
         return parser
     
     def test_swf_parser_wivet(self):

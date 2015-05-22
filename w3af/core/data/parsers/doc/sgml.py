@@ -30,7 +30,6 @@ from lxml import etree
 import w3af.core.controllers.output_manager as om
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.controllers.misc.decorators import memoized
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
@@ -42,7 +41,7 @@ class SGMLParser(BaseParser):
     :author: Javier Andalia (jandalia =at= gmail.com)
              Andres Riancho (andres.riancho@gmail.com)
     """
-    ANY_TAG_MATCH = re.compile('(<.*?>)')
+    ANY_TAG_MATCH = re.compile('(<.*?>)', re.UNICODE)
 
     EMAIL_RE = re.compile(
         '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
@@ -82,10 +81,9 @@ class SGMLParser(BaseParser):
         self._meta_tags = []
         self._emails = set()
 
-        # Parse!
-        self._parse(http_resp)
-
     def clear(self):
+        super(SGMLParser, self).clear()
+
         # Internal containers
         self._tag_and_url.clear()
         self._forms = []
@@ -93,10 +91,6 @@ class SGMLParser(BaseParser):
         self._meta_redirs = []
         self._meta_tags = []
         self._emails.clear()
-
-        if self._dom is not None:
-            self._dom.clear()
-            self._dom = None
 
     def _handle_exception(self, where, ex):
         msg = 'An exception occurred while %s: "%s"'
@@ -162,10 +156,12 @@ class SGMLParser(BaseParser):
     def close(self):
         pass
 
-    def _parse(self, http_resp):
+    def parse(self):
         """
         Parse the HTTP response body
         """
+        http_resp = self.get_http_response()
+
         try:
             self._parse_response_body_as_string(http_resp.body)
         except etree.XMLSyntaxError, xse:
@@ -176,6 +172,8 @@ class SGMLParser(BaseParser):
     def _parse_response_body_as_string(self, resp_body):
         """
         Parse the HTTP response body
+
+        :param resp_body: A unicode version of the response body byte-string
         """
         # HTML Parser raises XMLSyntaxError on empty response body #8695
         # https://github.com/andresriancho/w3af/issues/8695
@@ -228,43 +226,50 @@ class SGMLParser(BaseParser):
         # let's keep calling it
         self.close()
 
-    def get_dom(self):
+    def get_tags_by_filter(self, tags, yield_text=False):
         """
-        :return: The DOM instance
+        :param tags: A tuple with the tag names to yield
+
+        :return: Yield tuples with (tag_name, tag_attrs, tag_text)
+
+        :see: https://github.com/andresriancho/w3af/issues/9990
+        :see: _parse_response_body_as_string for more/better docs
         """
-        if self._dom is None:
-            http_resp = self.get_http_response()
-            resp_body = http_resp.get_body()
+        resp_body = self.get_http_response().body
 
-            # HTML Parser raises XMLSyntaxError on empty response body #8695
-            # https://github.com/andresriancho/w3af/issues/8695
-            if not resp_body:
-                # Simply return None, don't even try to parse this response,
-                # it's empty anyways
-                return self._dom
+        # HTML Parser raises XMLSyntaxError on empty response body #8695
+        # https://github.com/andresriancho/w3af/issues/8695
+        if not resp_body:
+            # Don't even try to parse this response, it's empty anyways.
+            raise StopIteration
 
-            # Start parsing, using a parser without target so we get the DOM
-            # instance as result of our call to fromstring
-            parser = etree.HTMLParser(recover=True)
+        body_io = StringIO.StringIO(resp_body.encode(DEFAULT_ENCODING))
 
-            try:
-                self._dom = etree.fromstring(resp_body, parser)
-            except ValueError:
-                # Sometimes we get XMLs in the response. lxml fails to parse
-                # them when an encoding header is specified and the text is
-                # unicode. So we better make an exception and convert it to
-                # string. Note that yet the parsed elems will be unicode.
-                resp_body = resp_body.encode(http_resp.charset,
-                                             'xmlcharrefreplace')
-                parser = etree.HTMLParser(recover=True,
-                                          encoding=http_resp.charset)
-                self._dom = etree.fromstring(resp_body, parser)
-            except etree.XMLSyntaxError, xse:
-                msg = 'An error occurred while parsing "%s",'\
-                      ' original exception: "%s"'
-                om.out.debug(msg % (http_resp.get_url(), xse))
+        # Performance notes, see "_parse_response_body_as_string"
+        context = etree.iterparse(body_io,
+                                  events=('start',),
+                                  tag=tags,
+                                  html=True,
+                                  recover=True,
+                                  encoding=DEFAULT_ENCODING,
+                                  huge_tree=False)
 
-        return self._dom
+        for event, elem in context:
+
+            # We do this to save some memory
+            text = None
+            if yield_text:
+                text = elem.text
+
+            yield elem.tag, dict(elem.attrib), text
+
+            # Performance notes, see "_parse_response_body_as_string"
+            elem.clear()
+            while elem.getprevious() is not None:
+                del elem.getparent()[0]
+
+        # Memory usage reduction
+        del context
 
     def _filter_ref(self, attr):
         key = attr[0]
@@ -399,25 +404,13 @@ class SGMLParser(BaseParser):
     def get_meta_tags(self):
         return self.meta_tags
 
-    @memoized
     def get_clear_text_body(self):
         """
         :return: A clear text representation of the HTTP response body.
         """
-        dom = self.get_dom()
-
-        if dom is None:
-            # Well, we don't have a DOM for this response, so lets apply regex
-            return self.ANY_TAG_MATCH.sub('',
-                                          self.get_http_response().get_body())
-
-        # DOM was calculated, lets do some magic
-        try:
-            return ''.join(dom.itertext())
-        except UnicodeDecodeError, ude:
-            msg = 'UnicodeDecodeError found while iterating the DOM. Original'\
-                  ' exception was: "%s".'
-            raise Exception(msg % ude)
+        body = self.get_http_response().get_body()
+        clear_text = self.ANY_TAG_MATCH.sub(u'', body)
+        return clear_text
 
     def get_references_of_tag(self, tag_type):
         """

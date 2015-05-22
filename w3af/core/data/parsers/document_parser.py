@@ -56,6 +56,7 @@ class DocumentParser(object):
         for parser in self.PARSERS:
             if parser.can_parse(http_resp):
                 self._parser = parser(http_resp)
+                self._parser.parse()
                 self._response_repr = repr(http_resp)
                 break
 
@@ -115,12 +116,13 @@ class DocumentParser(object):
         """
         return self._parser.get_meta_tags()
 
-    def get_dom(self):
+    def get_tags_by_filter(self, tags, yield_text=False):
         """
-        :return: The DOM which holds the HTML. Not all parsers return something
-                 here. In some cases (like the PDF parser) this returns None.
+        :param tags: The tag filter
+        :return: Yield tags which match the filter
         """
-        return self._parser.get_dom()
+        for i in self._parser.get_tags_by_filter(tags, yield_text=yield_text):
+            yield i
 
     def get_clear_text_body(self):
         """

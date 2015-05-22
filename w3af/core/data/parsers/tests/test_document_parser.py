@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-test_sgmlparsers.py
+test_sgml.py
 
 Copyright 2011 Andres Riancho
 
@@ -62,16 +62,6 @@ class TestDocumentParserFactory(unittest.TestCase):
             self.assertIsInstance(parser, DocumentParser)
             self.assertIsInstance(parser._parser, HTMLParser)
             self.assertEqual(parser.get_clear_text_body(), 'body')
-
-    def test_dom_is_not_None(self):
-        resp = _build_http_response('<html>body</html>', 'text/html')
-        parser = document_parser_factory(resp)
-
-        dom1 = parser.get_dom()
-        dom2 = parser.get_dom()
-
-        self.assertIsNotNone(dom1)
-        self.assertIs(dom1, dom2)
 
     def test_html_upper(self):
         parser = document_parser_factory(_build_http_response('', u'TEXT/HTML'))

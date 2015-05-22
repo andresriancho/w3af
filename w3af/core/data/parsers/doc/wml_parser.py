@@ -35,7 +35,9 @@ class WMLParser(SGMLParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    PARSE_TAGS = SGMLParser.TAGS_WITH_URLS.union({'go', 'postfield'})
+    PARSE_TAGS = SGMLParser.TAGS_WITH_URLS.union({'go', 'postfield',
+                                                  'setvar', 'input',
+                                                  'select', 'option'})
 
     def __init__(self, http_response):
         self._select_tag_name = ""

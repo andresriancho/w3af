@@ -38,7 +38,6 @@ class SWFParser(BaseParser):
         BaseParser.__init__(self, http_response)
 
         self._re_urls = set()
-        self._parse(http_response)
 
     @staticmethod
     def can_parse(http_resp):
@@ -84,15 +83,13 @@ class SWFParser(BaseParser):
             # more carefully?
             return uncompressed_data
 
-    def _parse(self, http_response):
+    def parse(self):
         """
         Parse the SWF bytecode.
         For now... don't decompile anything, just apply regular
         expressions to it.
-
-        :param http_response: The HTTP response to parse
         """
-        swf_body = http_response.get_body()
+        swf_body = self.get_http_response().get_body()
 
         if self._is_compressed(swf_body):
             try:
@@ -109,6 +106,7 @@ class SWFParser(BaseParser):
         Get the URLs using a regex
         """
         re_extract = ReExtract(swf_body, self._base_url, self._encoding)
+        re_extract.parse()
         self._re_urls.update(re_extract.get_references())
 
     def _0x83_getURL_parse(self, swf_body):

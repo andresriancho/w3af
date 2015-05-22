@@ -43,6 +43,7 @@ class TestJavaScriptParser(unittest.TestCase):
                                 _id=1)
 
         parser = JavaScriptParser(response)
+        parser.parse()
         return parser
 
     def test_false_positives(self):

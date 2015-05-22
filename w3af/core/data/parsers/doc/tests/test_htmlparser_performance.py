@@ -57,7 +57,7 @@ class TestHTMLParserPerformance(unittest.TestCase):
 
         for _ in xrange(40):
             p = HTMLParser(response)
-            p.get_dom()
+            p.parse()
             #parsers.append(p)
 
         # Clear any reference to the parser

@@ -281,18 +281,6 @@ class HTTPResponse(object):
 
     body = property(get_body, set_body)
 
-    def get_dom(self):
-        """
-        Just a shortcut to get the dom (if any)
-        :return: A DOM instance from lxml
-        """
-        parser = self.get_parser()
-        if parser is not None:
-            return parser.get_dom()
-
-        # No DOM for this response
-        return None
-
     def get_clear_text_body(self):
         """
         Just a shortcut to get the clear text body

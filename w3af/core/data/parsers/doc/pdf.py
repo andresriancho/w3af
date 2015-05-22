@@ -42,7 +42,6 @@ class PDFParser(BaseParser):
         super(PDFParser, self).__init__(http_response)
 
         self._re_urls = set()
-        self._parse(http_response.body)
 
     @staticmethod
     def can_parse(http_resp):
@@ -73,12 +72,13 @@ class PDFParser(BaseParser):
 
         return False
 
-    def _parse(self, resp_body):
+    def parse(self):
         """
         Get the URLs using a regex
         """
-        doc_string = pdf_to_text(resp_body)
+        doc_string = pdf_to_text(self.get_http_response().get_body())
         re_extract = ReExtract(doc_string, self._base_url, self._encoding)
+        re_extract.parse()
         self._re_urls = re_extract.get_references()
 
     def get_clear_text_body(self):
