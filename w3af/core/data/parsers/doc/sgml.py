@@ -232,7 +232,8 @@ class SGMLParser(BaseParser):
 
     def get_tags_by_filter(self, tags, yield_text=False):
         """
-        :param tags: A tuple with the tag names to yield
+        :param tags: A tuple with the tag names to yield. Use None if you want
+                     all tags to be returned.
 
         :return: Yield tuples with (tag_name, tag_attrs, tag_text)
 
