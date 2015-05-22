@@ -30,7 +30,7 @@ from w3af.core.controllers.threads.is_main_process import is_main_process
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
 from w3af.core.data.parsers.utils.request_uniq_id import get_request_unique_id
-from w3af.core.data.parsers.mp_document_parser import MultiProcessingDocumentParser
+from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.parsers.utils.cache_stats import CacheStats
 
 
@@ -49,7 +49,6 @@ class ParserCache(CacheStats):
         
         self._cache = SynchronizedLRUDict(self.CACHE_SIZE)
         self._parser_finished_events = {}
-        self._mp_doc_parser = MultiProcessingDocumentParser()
 
     def clear(self):
         """
@@ -57,7 +56,7 @@ class ParserCache(CacheStats):
         :return: None
         """
         # Stop any workers
-        self._mp_doc_parser.stop_workers()
+        mp_doc_parser.stop_workers()
 
         # Make sure the parsers clear all resources
         for parser in self._cache.itervalues():
@@ -89,13 +88,12 @@ class ParserCache(CacheStats):
             # There is one subprocess already processing this http response
             # body, the best thing to do here is to make this thread wait
             # until that process has finished
-            timeout = MultiProcessingDocumentParser.PARSER_TIMEOUT
             try:
-                parser_finished.wait(timeout=timeout)
+                parser_finished.wait(timeout=mp_doc_parser.PARSER_TIMEOUT)
             except:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s". Waited more than %s sec.'
-                args = (http_response.get_url(), timeout)
+                args = (http_response.get_url(), mp_doc_parser.PARSER_TIMEOUT)
                 raise BaseFrameworkException(msg % args)
 
         # metric increase
@@ -112,10 +110,9 @@ class ParserCache(CacheStats):
             # Create a new instance of DocumentParser, add it to the cache
             event = threading.Event()
             self._parser_finished_events[hash_string] = event
-            get_parser = self._mp_doc_parser.get_document_parser_for
 
             try:
-                parser = get_parser(http_response)
+                parser = mp_doc_parser.get_document_parser_for(http_response)
             except:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s".' % http_response.get_url()
