@@ -112,9 +112,12 @@ class HTMLParser(SGMLParser):
         Handle the script tags
         """
         SGMLParser._handle_script_tag_start(self, tag, tag_name, attrs)
-
-        re_extract = ReExtract(tag.text.strip(), self._base_url, self._encoding)
-        self._re_urls.update(re_extract.get_references())
+        
+        if tag.text is not None:
+            re_extract = ReExtract(tag.text.strip(),
+                                   self._base_url,
+                                   self._encoding)
+            self._re_urls.update(re_extract.get_references())
 
     @property
     def references(self):
