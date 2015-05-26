@@ -113,10 +113,14 @@ class HTMLParser(SGMLParser):
         """
         SGMLParser._handle_script_tag_start(self, tag, tag_name, attrs)
 
-        re_extract = ReExtract(tag.text.strip(), self._base_url, self._encoding)
-        re_extract.parse()
+        if tag.text is not None:
+            re_extract = ReExtract(tag.text.strip(),
+                                   self._base_url,
+                                   self._encoding)
+            re_extract.parse()
+            references = re_extract.get_references()
 
-        self._re_urls.update(re_extract.get_references())
+            self._re_urls.update(references)
 
     @property
     def references(self):
