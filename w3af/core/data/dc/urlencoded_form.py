@@ -81,7 +81,6 @@ class URLEncodedForm(Form):
         """
         d = dict()
         d.update(self.items())
-        d.update(self.get_form_params().get_submit_map())
 
         for key in d:
             key_type = self.get_parameter_type(key, default=None)

@@ -194,22 +194,10 @@ class HTMLParser(SGMLParser):
     def _handle_input_tag_inside_form(self, tag, tag_name, attrs):
         # We are working with the last form
         form_params = self._forms[-1]
-        input_type = attrs.get('type', '').lower()
         items = attrs.items()
 
-        if input_type == 'file':
-            # Let the form know, that this is a file input
-            form_params.add_file_input(items)
-
-        elif input_type == 'radio':
-            form_params.add_radio(items)
-
-        elif input_type == 'checkbox':
-            form_params.add_check_box(items)
-
-        else:
-            # Simply add all the other input types
-            form_params.add_input(items)
+        # Simply add all the other input types
+        form_params.add_input(items)
 
     def _handle_input_tag_outside_form(self, tag, tag_name, attrs):
         # I'm going to use this rule set:
