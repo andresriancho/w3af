@@ -31,7 +31,10 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.baseparser import BaseParser
 from w3af.core.data.parsers.url import URL
+from w3af.core.data.misc.encoding import smart_unicode
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.controllers.misc.decorators import memoized
+from w3af.core.controllers.exceptions import ParserException
 
 
 class SGMLParser(BaseParser):
@@ -151,13 +154,14 @@ class SGMLParser(BaseParser):
         else:
             return method(tag)
 
-    def comment(self, text):
+    def comment(self, elem):
         if self._inside_script:
             # This handles the case where we have:
             # <script><!-- code(); --></script>
             return
 
-        self._comments_in_doc.append(str(text))
+        if elem.text is not None:
+            self._comments_in_doc.append(smart_unicode(elem.text))
 
     def close(self):
         pass
@@ -166,24 +170,23 @@ class SGMLParser(BaseParser):
         """
         Parse the HTTP response body
         """
-        resp_body = http_resp.body
-        encoding = http_resp.charset
+        resp_body = http_resp.get_body()
 
         try:
-            self._parse_response_body_as_string(resp_body, encoding)
+            self._parse_response_body_as_string(resp_body)
+        except etree.XMLSyntaxError, xse:
+            msg = ('An error occurred while parsing "%s",'
+                   ' original exception: "%s"')
+            om.out.debug(msg % (http_resp.get_url(), xse))
         except ValueError:
             # Sometimes we get XMLs in the response. lxml fails to parse them
             # when an encoding header is specified and the text is unicode. So
             # we better make an exception and convert it to string. Note that
             # yet the parsed elems will be unicode.
-            resp_body = resp_body.encode(http_resp.charset, 'xmlcharrefreplace')
-            self._parse_response_body_as_string(resp_body, encoding)
-        except etree.XMLSyntaxError, xse:
-            msg = 'An error occurred while parsing "%s",'\
-                  ' original exception: "%s"'
-            om.out.debug(msg % (http_resp.get_url(), xse))
+            self._parse_response_body_as_string(resp_body,
+                                                errors='xmlcharrefreplace')
 
-    def _parse_response_body_as_string(self, resp_body, encoding):
+    def _parse_response_body_as_string(self, resp_body, errors='strict'):
         """
         Parse the HTTP response body
         """
@@ -196,7 +199,8 @@ class SGMLParser(BaseParser):
             # body which is empty).
             return
 
-        body_io = StringIO.StringIO(resp_body.encode('utf-8'))
+        resp_body = resp_body.encode(DEFAULT_ENCODING, errors=errors)
+        body_io = StringIO.StringIO(resp_body)
         event_map = {'start': self.start,
                      'end': self.end,
                      'comment': self.comment}
@@ -215,11 +219,17 @@ class SGMLParser(BaseParser):
                                   tag=self.PARSE_TAGS,
                                   html=True,
                                   recover=True,
-                                  encoding=encoding,
+                                  encoding=DEFAULT_ENCODING,
                                   huge_tree=False)
 
         for event, elem in context:
-            event_map[event](elem)
+            try:
+                event_map[event](elem)
+            except Exception, e:
+                msg = ('Found a parser exception while handling tag "%s" with'
+                       ' event "%s". The exception was: "%s"')
+                args = (elem.tag, event, e)
+                raise ParserException(msg % args)
 
             # Memory usage reduction
             #
@@ -229,7 +239,12 @@ class SGMLParser(BaseParser):
             #     usage from ~270MB to ~230MB when parsing a huge HTML document
             elem.clear()
             while elem.getprevious() is not None:
-                del elem.getparent()[0]
+                try:
+                    del elem.getparent()[0]
+                except TypeError:
+                    # TypeError: 'NoneType' object does not support item deletion
+                    # Happens when elem.getparent() returns None
+                    pass
 
         # Memory usage reduction
         del context
