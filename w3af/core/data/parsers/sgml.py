@@ -231,12 +231,25 @@ class SGMLParser(BaseParser):
                 args = (elem.tag, event, e)
                 raise ParserException(msg % args)
 
-            # Memory usage reduction
-            #
-            # Performance notes:
+            # Memory usage improvements notes:
             #
             #   * These lines actually make a difference, they reduce memory
             #     usage from ~270MB to ~230MB when parsing a huge HTML document
+            #
+            # But... these lines also create a horrible monster:
+            #
+            #   ***
+            #   Error in `python': malloc(): memory corruption (fast):
+            #   0x00007f13a40d5f70
+            #   ***
+            #
+            # Which is 100% related to the lines below, so I better remove them
+            # leaving the comment as a reminder to future devs which want to
+            # improve the parser's memory usage
+            #
+            # Maybe with a future version of lxml this doesn't happen?
+            # Comment date: 26 May 2015
+            """
             elem.clear()
             while elem.getprevious() is not None:
                 try:
@@ -245,6 +258,7 @@ class SGMLParser(BaseParser):
                     # TypeError: 'NoneType' object does not support item deletion
                     # Happens when elem.getparent() returns None
                     pass
+            """
 
         # Memory usage reduction
         del context
