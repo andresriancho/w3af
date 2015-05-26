@@ -149,13 +149,14 @@ class SGMLParser(BaseParser):
         else:
             return method(tag)
 
-    def comment(self, text):
+    def comment(self, elem):
         if self._inside_script:
             # This handles the case where we have:
             # <script><!-- code(); --></script>
             return
 
-        self._comments_in_doc.append(str(text))
+        if elem.text is not None:
+            self._comments_in_doc.append(smart_unicode(elem.text))
 
     def close(self):
         pass
@@ -164,20 +165,25 @@ class SGMLParser(BaseParser):
         """
         Parse the HTTP response body
         """
-        http_resp = self.get_http_response()
+        resp_body = http_resp.get_body()
 
         try:
-            self._parse_response_body_as_string(http_resp.body)
+            self._parse_response_body_as_string(resp_body)
         except etree.XMLSyntaxError, xse:
-            msg = ('An error occurred in "_parse" while parsing "%s", original'
-                   ' exception: "%s"')
+            msg = ('An error occurred while parsing "%s",'
+                   ' original exception: "%s"')
             om.out.debug(msg % (http_resp.get_url(), xse))
+        except ValueError:
+            # Sometimes we get XMLs in the response. lxml fails to parse them
+            # when an encoding header is specified and the text is unicode. So
+            # we better make an exception and convert it to string. Note that
+            # yet the parsed elems will be unicode.
+            self._parse_response_body_as_string(resp_body,
+                                                errors='xmlcharrefreplace')
 
-    def _parse_response_body_as_string(self, resp_body):
+    def _parse_response_body_as_string(self, resp_body, errors='strict'):
         """
         Parse the HTTP response body
-
-        :param resp_body: A unicode version of the response body byte-string
         """
         # HTML Parser raises XMLSyntaxError on empty response body #8695
         # https://github.com/andresriancho/w3af/issues/8695
@@ -188,7 +194,8 @@ class SGMLParser(BaseParser):
             # body which is empty).
             return
 
-        body_io = StringIO.StringIO(resp_body.encode(DEFAULT_ENCODING))
+        resp_body = resp_body.encode(DEFAULT_ENCODING, errors=errors)
+        body_io = StringIO.StringIO(resp_body)
         event_map = {'start': self.start,
                      'end': self.end,
                      'comment': self.comment}
@@ -211,17 +218,42 @@ class SGMLParser(BaseParser):
                                   huge_tree=False)
 
         for event, elem in context:
-            event_map[event](elem)
+            try:
+                event_map[event](elem)
+            except Exception, e:
+                msg = ('Found a parser exception while handling tag "%s" with'
+                       ' event "%s". The exception was: "%s"')
+                args = (elem.tag, event, e)
+                raise ParserException(msg % args)
 
-            # Memory usage reduction
-            #
-            # Performance notes:
+            # Memory usage improvements notes:
             #
             #   * These lines actually make a difference, they reduce memory
             #     usage from ~270MB to ~230MB when parsing a huge HTML document
+            #
+            # But... these lines also create a horrible monster:
+            #
+            #   ***
+            #   Error in `python': malloc(): memory corruption (fast):
+            #   0x00007f13a40d5f70
+            #   ***
+            #
+            # Which is 100% related to the lines below, so I better remove them
+            # leaving the comment as a reminder to future devs which want to
+            # improve the parser's memory usage
+            #
+            # Maybe with a future version of lxml this doesn't happen?
+            # Comment date: 26 May 2015
+            """
             elem.clear()
             while elem.getprevious() is not None:
-                del elem.getparent()[0]
+                try:
+                    del elem.getparent()[0]
+                except TypeError:
+                    # TypeError: 'NoneType' object does not support item deletion
+                    # Happens when elem.getparent() returns None
+                    pass
+            """
 
         # Memory usage reduction
         del context

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.parsers.doc.sgml import SGMLParser
+from w3af.core.data.parsers.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 from w3af.core.data.parsers.utils.form_params import (FormParameters,
                                                       DEFAULT_FORM_ENCODING)
@@ -112,15 +112,12 @@ class HTMLParser(SGMLParser):
         Handle the script tags
         """
         SGMLParser._handle_script_tag_start(self, tag, tag_name, attrs)
-
+        
         if tag.text is not None:
             re_extract = ReExtract(tag.text.strip(),
                                    self._base_url,
                                    self._encoding)
-            re_extract.parse()
-            references = re_extract.get_references()
-
-            self._re_urls.update(references)
+            self._re_urls.update(re_extract.get_references())
 
     @property
     def references(self):
