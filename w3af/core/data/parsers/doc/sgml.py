@@ -32,6 +32,8 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.misc.encoding import smart_unicode
+from w3af.core.controllers.exceptions import ParserException
 
 
 Tag = namedtuple('Tag', ('name', 'attrib', 'text'))
@@ -165,6 +167,7 @@ class SGMLParser(BaseParser):
         """
         Parse the HTTP response body
         """
+        http_resp = self.get_http_response()
         resp_body = http_resp.get_body()
 
         try:
