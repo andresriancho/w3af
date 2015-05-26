@@ -27,41 +27,18 @@ from ruamel.ordereddict import ordereddict as OrderedDict
 
 import w3af.core.controllers.output_manager as om
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.dc.utils.multipart import is_file_like
 from w3af.core.data.parsers.doc.url import URL
-
-
-DEFAULT_FORM_ENCODING = 'application/x-www-form-urlencoded'
-
-INPUT_TYPE_FILE = 'file'
-INPUT_TYPE_CHECKBOX = 'checkbox'
-INPUT_TYPE_RADIO = 'radio'
-INPUT_TYPE_TEXT = 'text'
-INPUT_TYPE_HIDDEN = 'hidden'
-INPUT_TYPE_SUBMIT = 'submit'
-INPUT_TYPE_SELECT = 'select'
-INPUT_TYPE_PASSWD = 'password'
-
-ALL_INPUT_TYPES = (INPUT_TYPE_FILE, INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
-                   INPUT_TYPE_TEXT, INPUT_TYPE_HIDDEN, INPUT_TYPE_SUBMIT,
-                   INPUT_TYPE_SELECT, INPUT_TYPE_PASSWD)
-
-MODE_ALL = 'all'
-MODE_TB = 'tb'
-MODE_TMB = 'tmb'
-MODE_T = 't'
-MODE_B = 'b'
-
-
-class FormField(object):
-
-    __slots__ = ('input_type', 'name', 'value', 'autocomplete')
-
-    def __init__(self, input_type, name, value, autocomplete=False):
-        self.input_type = input_type
-        self.name = name
-        self.value = value
-        self.autocomplete = autocomplete
+from w3af.core.data.parsers.utils.form_fields import (FileFormField,
+                                                      get_value_by_key,
+                                                      form_field_factory)
+from w3af.core.data.parsers.utils.form_constants import (DEFAULT_FORM_ENCODING,
+                                                         INPUT_TYPE_CHECKBOX,
+                                                         INPUT_TYPE_RADIO,
+                                                         INPUT_TYPE_TEXT,
+                                                         INPUT_TYPE_SELECT,
+                                                         MODE_ALL, MODE_TB,
+                                                         MODE_TMB, MODE_T,
+                                                         MODE_B)
 
 
 class FormParameters(OrderedDict):
@@ -77,6 +54,10 @@ class FormParameters(OrderedDict):
     SEED = 1
 
     AVOID_FILLING_FORM_TYPES = {INPUT_TYPE_CHECKBOX,
+                                INPUT_TYPE_RADIO,
+                                INPUT_TYPE_SELECT}
+
+    OPTION_MATRIX_FORM_TYPES = {INPUT_TYPE_CHECKBOX,
                                 INPUT_TYPE_RADIO,
                                 INPUT_TYPE_SELECT}
 
@@ -146,12 +127,16 @@ class FormParameters(OrderedDict):
         This method returns the name of the file being uploaded given the
         parameter name (pname) where it was sent.
         """
-        #TODO
-        return self._file_names.get(pname, default)
+        form_field = self.get(pname, default)
 
-    def set_file_name(self, pname, fname):
-        #TODO
-        self._file_names[pname] = fname
+        if form_field is default:
+            return default
+
+        return form_field.file_name
+
+    def set_file_name(self, pname, file_name):
+        form_field = self.get(pname)
+        form_field.file_name = file_name
 
     def get_file_vars(self):
         """
@@ -159,9 +144,9 @@ class FormParameters(OrderedDict):
         """
         file_keys = []
 
-        for k, v_lst in self.items():
+        for k, v_lst in self.iteritems():
             for v in v_lst:
-                if is_file_like(v):
+                if isinstance(v, FileFormField):
                     file_keys.append(k)
 
         return file_keys
@@ -173,7 +158,7 @@ class FormParameters(OrderedDict):
         form_fields = self.setdefault(form_name, [])
         form_fields.append(form_field)
 
-    def add_input(self, attrs):
+    def add_field_by_attrs(self, attrs):
         """
         Adds an input to the Form object. Input examples:
             <INPUT type="text" name="email"><BR>
@@ -182,30 +167,17 @@ class FormParameters(OrderedDict):
         :param attrs: attrs=[("class", "screen")]
         """
         input_name = get_value_by_key(attrs, 'name', 'id')
+        same_name_fields = self.get(input_name, [])
 
-        if not input_name:
-            # Nothing to add
-            return '', ''
+        form_field = form_field_factory(attrs, same_name_fields)
+        if not form_field:
+            return
 
-        # Find the attr type and value, setting the default type to text (if
-        # missing in the tag) and the default value to an empty string (if
-        # missing)
-        input_type = self.get_value_by_key(attrs, 'type') or self.INPUT_TYPE_TEXT
-        input_type = input_type.lower()
+        # Save the form field
+        self.setdefault_var(form_field.name, form_field)
 
-        input_value = get_value_by_key(attrs, 'value') or ''
-
-        autocomplete = get_value_by_key(attrs, 'autocomplete') or None
-        autocomplete = False if autocomplete.lower() == 'off' else True
-
-        form_field = FormField(input_type, input_name, input_value,
-                               autocomplete=autocomplete)
-
-        # Save the attr_type
-        self[input_name] = form_field
-
-        # Return what we've saved
-        return input_name, input_value
+        # Return what we've created/saved
+        return form_field
 
     def get_parameter_type(self, input_name, default=INPUT_TYPE_TEXT):
         """
@@ -215,39 +187,55 @@ class FormParameters(OrderedDict):
         if form_field is None:
             return default
 
-        return form_field.input_type
+        return form_field[0].input_type
+
+    def get_option_names(self):
+        option_names = []
+        for form_field_list in self.itervalues():
+            for form_field in form_field_list:
+                if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
+                    option_names.append(form_field.name)
+        return option_names
+
+    def get_option_matrix(self):
+        option_matrix = []
+        for form_field_list in self.itervalues():
+            for form_field in form_field_list:
+                if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
+                    option_matrix.append(form_field.values)
+        return option_matrix
 
     def get_variants(self, mode=MODE_TMB):
         """
-        Generate all Form's variants by mode:
-          "all" - all values
-          "tb" - only top and bottom values
-          "tmb" - top, middle and bottom values
-          "t" - top values
-          "b" - bottom values
+        Generate all FormParams' variants by mode:
+          'all' - all values
+          'tb'  - only top and bottom values
+          'tmb' - top, middle and bottom values
+          't'   - top values
+          'b'   - bottom values
         """
         if mode not in (MODE_ALL, MODE_TB, MODE_TMB, MODE_T, MODE_B):
-            raise ValueError('Invalid mode')
+            raise ValueError('Invalid variants mode')
 
         yield self
 
+        option_names = self.get_option_names()
+
         # Nothing to do
-        if not self._selects:
+        if not option_names:
             return
 
-        secret_value = self.SECRET_VALUE
-        sel_names = self._selects.keys()
-        matrix = self._selects.values()
+        matrix = self.get_option_matrix()
 
         # Build self variant based on `sample_path`
         for sample_path in self._get_sample_paths(mode, matrix):
             # Clone self, don't use copy.deepcopy b/c of perf
             self_variant = self.deepish_copy()
 
-            for row_index, col_index in enumerate(sample_path):
-                sel_name = sel_names[row_index]
+            for option_name_index, option_value_index in enumerate(sample_path):
+                option_name = option_names[option_name_index]
                 try:
-                    value = matrix[row_index][col_index]
+                    value = matrix[option_name_index][option_value_index]
                 except IndexError:
                     """
                     This handles "select" tags that have no options inside.
@@ -260,27 +248,23 @@ class FormParameters(OrderedDict):
                     """
                     value = ''
 
-                if value != secret_value:
-                    # FIXME: Needs to support repeated parameter names
-                    self_variant[sel_name] = [value]
-                else:
-                    # FIXME: Is it solution good? Simply delete unwanted
-                    #        send checkboxes?
-                    #
-                    # We might had removed it before
-                    if self_variant.get(sel_name):
-                        del self_variant[sel_name]
+                # FIXME: Needs to support repeated parameter names
+                self_variant[option_name].set_value(value)
 
             yield self_variant
 
     def _get_sample_paths(self, mode, matrix):
-
+        """
+        :param mode: One of the variant modes, as specified by the user
+        :param matrix: The form select/radio matrix
+        :return: Yield the paths to be used to generate the variants
+        """
         if mode in [MODE_T, MODE_TB]:
             yield [0] * len(matrix)
 
         if mode in [MODE_B, MODE_TB]:
             yield [-1] * len(matrix)
-        # mode in [MODE_TMB, MODE_ALL]
+
         elif mode in [MODE_TMB, MODE_ALL]:
 
             variants_total = self._get_variants_count(matrix, mode)
@@ -352,7 +336,7 @@ class FormParameters(OrderedDict):
         is the index to select from vector given by matrix[i].
 
         Diego Buthay (dbuthay@gmail.com) made a significant contribution to
-        the used algorithm.
+        the this algorithm.
 
         :param path: integer
         :param matrix: list of lists
@@ -360,7 +344,8 @@ class FormParameters(OrderedDict):
         """
         # Hack to make the algorithm work.
         matrix.append([1])
-        get_count = lambda i: reduce(operator.mul, map(len, matrix[i + 1:]))
+
+        get_count = lambda y: reduce(operator.mul, map(len, matrix[y + 1:]))
         remainder = path
         decoded_path = []
 
@@ -376,9 +361,8 @@ class FormParameters(OrderedDict):
 
     def _get_variants_count(self, matrix, mode):
         """
-
-        :param matrix:
-        :param tmb:
+        :param mode: One of the variant modes, as specified by the user
+        :param matrix: The form select/radio matrix
         """
         if mode in [MODE_T, MODE_B]:
             return 1
@@ -396,8 +380,7 @@ class FormParameters(OrderedDict):
         :return: A copy of myself.
         """
         init_val = deepish_copy(self).items()
-        copy = FormParameters()
-        copy.update(init_val)
+        copy = FormParameters(init_vals=init_val)
 
         # Internal variables
         copy._method = self._method
@@ -409,7 +392,7 @@ class FormParameters(OrderedDict):
         return copy
 
     def __reduce__(self):
-        items = [[k, self[k]] for k in self]
+        items = [(k, self[k]) for k in self]
         inst_dict = vars(self).copy()
         inst_dict.pop('_keys', None)
 
@@ -417,9 +400,9 @@ class FormParameters(OrderedDict):
 
         return self.__class__, (items, encoding), inst_dict
 
-    #def __repr__(self):
-    #    args = (id(self), self._method, self._action, self.keys())
-    #    return '<FormParams(%s) %s %s %s>' % args
+    def __repr__(self):
+        args = (id(self), self._method, self._action, self.keys())
+        return '<FormParams(%s) %s %s %s>' % args
 
     def get_parameter_type_count(self):
         passwd = text = other = 0
@@ -427,7 +410,7 @@ class FormParameters(OrderedDict):
         #
         # Count the parameter types
         #
-        for _, form_field in self.items():
+        for _, form_field in self.iteritems():
 
             if form_field.input_type == self.INPUT_TYPE_PASSWD:
                 passwd += 1
@@ -479,15 +462,15 @@ class FormParameters(OrderedDict):
         return False
 
 
-def deepish_copy(org):
+def deepish_copy(original):
     """
     Much, much faster than deepcopy, for a dict of the simple python types.
 
     http://writeonly.wordpress.com/2009/05/07/deepcopy-is-a-pig-for-simple-data/
     """
-    out = OrderedDict().fromkeys(org)
+    out = OrderedDict().fromkeys(original)
 
-    for k, v in org.iteritems():
+    for k, v in original.iteritems():
         try:
             out[k] = v.copy()   # dicts, sets
         except AttributeError:
@@ -497,18 +480,3 @@ def deepish_copy(org):
                 out[k] = v      # ints
 
     return out
-
-
-def get_value_by_key(attrs, *args):
-    """
-    Helper to get attributes
-
-    :param attrs: The attributes for input
-    :param args: The attributes we want to query
-    :return: The first value for the attribute specified in args
-    """
-    for search_attr_key in args:
-        for attr in attrs:
-            if attr[0] == search_attr_key:
-                return attr[1]
-    return None

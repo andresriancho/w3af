@@ -32,6 +32,11 @@ from w3af.core.data.parsers.doc.tests.test_sgml import build_http_response
 from w3af.core.data.parsers.doc.tests.data.constants import *
 
 
+class RaiseHTMLParser(HTMLParser):
+    def _handle_exception(self, where, ex):
+        raise ex
+
+
 @attr('smoke')
 class TestHTMLParser(unittest.TestCase):
     
@@ -44,7 +49,7 @@ class TestHTMLParser(unittest.TestCase):
                      FORM_WITHOUT_ACTION % {'form_content': ''}
              }
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
         self.assertEquals(2, len(p.forms))
 
@@ -56,7 +61,7 @@ class TestHTMLParser(unittest.TestCase):
                       TEXTAREA_WITH_ID_AND_DATA + INPUT_FILE_WITH_NAME)
              }
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
         self.assertEquals(0, len(p.forms))
 
@@ -69,7 +74,7 @@ class TestHTMLParser(unittest.TestCase):
                      'body': FORM_WITHOUT_METHOD % {'form_content': ''}
              }
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
         self.assertEquals('GET', p.forms[0].get_method())
 
@@ -82,7 +87,7 @@ class TestHTMLParser(unittest.TestCase):
                      'body': FORM_WITHOUT_ACTION % {'form_content': ''}
              }
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
         self.assertEquals(self.url, p.forms[0].get_action())
 
@@ -96,7 +101,7 @@ class TestHTMLParser(unittest.TestCase):
             </form>
         </html>"""
         r = build_http_response(self.url, body)
-        p = HTMLParser(r)
+        p = RaiseHTMLParser(r)
         p.parse()
         self.assertEquals(self.url, p.forms[0].get_action())
 
@@ -105,7 +110,7 @@ class TestHTMLParser(unittest.TestCase):
         Found this form on the wild and was unable to parse it.
         """
         resp = build_http_response(self.url, FORM_MULTILINE_TAGS)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
 
         self.assertEqual(1, len(p.forms))
@@ -131,7 +136,7 @@ class TestHTMLParser(unittest.TestCase):
                       INPUT_HIDDEN)
              }
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
 
         # Only one form
@@ -160,7 +165,7 @@ class TestHTMLParser(unittest.TestCase):
              }
              }
         resp2 = build_http_response(self.url, body2)
-        p2 = HTMLParser(resp2)
+        p2 = RaiseHTMLParser(resp2)
         p2.parse()
 
         # Finally assert that the parsed forms are equals
@@ -176,13 +181,14 @@ class TestHTMLParser(unittest.TestCase):
                  TEXTAREA_WITH_NAME_EMPTY)
              }
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
 
         # textarea are parsed as regular inputs
         f = p.forms[0]
-        self.assertTrue(f.get('sample_id') == f.get('sample_name') ==
-                        ['sample_value'])
+        self.assertEqual(f.get('sample_id'), f.get('sample_name'))
+        self.assertEqual(f.get('sample_id'), ['sample_value'])
+
         # Last <textarea> with empty name wasn't parsed
         self.assertEquals(2, len(f))
 
@@ -198,23 +204,25 @@ class TestHTMLParser(unittest.TestCase):
                  '<select><option value="xxx"/><option value="yyy"/></select>')
              }
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
 
         # No pending parsed selects
-        self.assertEquals(0, len(p._selects))
+        self.assertEquals(0, len(p._select_option_values))
 
         # Only 1 select (2 have the same name); the last one is not parsed as
         # it has no name/id
         f = p.forms[0]
-        self.assertEquals(1, len(f._selects))
-        vehicles = f._selects['vehicle']
-        self.assertTrue(vehicles.count("car") == vehicles.count("plane") ==
-                        vehicles.count("bike") == 2)
 
-        # "xxx" and "yyy" options were not parsed
-        self.assertFalse("xxx" in f._selects.values())
-        self.assertFalse("yyy" in f._selects.values())
+        select_values = f['vehicle'][0].values
+        self.assertIn('car', select_values)
+        self.assertIn('plane', select_values)
+        self.assertIn('bike', select_values)
+
+        # "xxx" and "yyy" options were not parsed because they are outside the
+        # form tag and doesn't have a name attribute
+        self.assertNotIn('xxx', f.get_option_names())
+        self.assertNotIn('yyy', f.get_option_names())
 
     def test_form_with_repeated_parameter_names(self):
         # Setup
@@ -223,7 +231,7 @@ class TestHTMLParser(unittest.TestCase):
         body = HTML_DOC % {'head': '',
                            'body': form}
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
 
         # Run the parser
         p.parse()
@@ -239,7 +247,7 @@ class TestHTMLParser(unittest.TestCase):
     def test_a_link_absolute(self):
         headers = Headers([('content-type', 'text/html')])
         resp = build_http_response(self.url, A_LINK_ABSOLUTE, headers=headers)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
 
         self.assertEquals([URL('http://w3af.com/home.php')], p.references[0])
@@ -247,7 +255,7 @@ class TestHTMLParser(unittest.TestCase):
     def test_script_tag_link_extraction(self):
         body = '''<script>window.location = "http://w3af.com/";</script>'''
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
 
         self.assertEquals([URL('http://w3af.com/')], p.references[1])
@@ -255,7 +263,7 @@ class TestHTMLParser(unittest.TestCase):
     def test_script_tag_link_extraction_relative(self):
         body = '''<script>window.location = "/foo.php";</script>'''
         resp = build_http_response(self.url, body)
-        p = HTMLParser(resp)
+        p = RaiseHTMLParser(resp)
         p.parse()
 
         self.assertEquals([URL('http://w3af.com/foo.php')], p.references[1])

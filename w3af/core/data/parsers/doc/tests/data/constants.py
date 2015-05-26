@@ -106,6 +106,7 @@ SELECT_WITH_NAME = u"""
     <option value="bike"></option>
     </option>
 </select>"""
+
 SELECT_WITH_ID = u"""
 <select id="vehicle">
     <option value="car"/>

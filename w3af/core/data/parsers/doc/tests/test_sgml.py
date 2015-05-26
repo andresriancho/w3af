@@ -111,7 +111,7 @@ class TestSGMLParser(unittest.TestCase):
         # Assert parser has these attrs correctly initialized
         self.assertFalse(getattr(p, '_inside_form'))
         self.assertFalse(getattr(p, '_inside_select'))
-        self.assertFalse(getattr(p, '_inside_textarea'))
+        self.assertFalse(getattr(p, '_inside_text_area'))
         self.assertFalse(getattr(p, '_inside_script'))
 
         self.assertEquals(set(), getattr(p, '_tag_and_url'))

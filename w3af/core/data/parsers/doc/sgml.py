@@ -77,7 +77,7 @@ class SGMLParser(BaseParser):
         # Internal state variables
         self._inside_form = False
         self._inside_select = False
-        self._inside_textarea = False
+        self._inside_text_area = False
         self._inside_script = False
 
         self._tag_and_url = set()
@@ -508,7 +508,7 @@ class SGMLParser(BaseParser):
         self._inside_select = False
 
     def _handle_textarea_tag_start(self, tag, tag_name, attrs):
-        self._inside_textarea = True
+        self._inside_text_area = True
 
     def _handle_textarea_tag_end(self, tag):
-        self._inside_textarea = False
+        self._inside_text_area = False

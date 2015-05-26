@@ -23,7 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.parsers.utils.encode_decode import urlencode
 from w3af.core.data.parsers.doc.url import parse_qs
-from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_CHECKBOX,
+                                                         INPUT_TYPE_RADIO,
+                                                         INPUT_TYPE_SELECT)
 
 
 class URLEncodedForm(Form):
@@ -36,9 +38,9 @@ class URLEncodedForm(Form):
     ENCODING = 'application/x-www-form-urlencoded'
 
     AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
-    AVOID_STR_DUPLICATES = {FormParameters.INPUT_TYPE_CHECKBOX,
-                            FormParameters.INPUT_TYPE_RADIO,
-                            FormParameters.INPUT_TYPE_SELECT}
+    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX,
+                            INPUT_TYPE_RADIO,
+                            INPUT_TYPE_SELECT}
 
     @staticmethod
     def is_urlencoded(headers):

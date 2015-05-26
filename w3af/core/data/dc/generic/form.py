@@ -24,6 +24,11 @@ from w3af.core.data.fuzzer.form_filler import smart_fill, smart_fill_file
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_CHECKBOX,
+                                                         INPUT_TYPE_RADIO,
+                                                         INPUT_TYPE_SELECT,
+                                                         INPUT_TYPE_TEXT,
+                                                         INPUT_TYPE_PASSWD)
 
 
 class Form(KeyValueContainer):
@@ -34,9 +39,9 @@ class Form(KeyValueContainer):
              Javier Andalia (jandalia =at= gmail.com)
     """
     AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
-    AVOID_STR_DUPLICATES = {FormParameters.INPUT_TYPE_CHECKBOX,
-                            FormParameters.INPUT_TYPE_RADIO,
-                            FormParameters.INPUT_TYPE_SELECT}
+    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX,
+                            INPUT_TYPE_RADIO,
+                            INPUT_TYPE_SELECT}
 
     def __init__(self, form_params=None):
         """
@@ -60,7 +65,7 @@ class Form(KeyValueContainer):
     def get_form_params(self):
         return self.form_params
 
-    def get_parameter_type(self, var_name, default=FormParameters.INPUT_TYPE_TEXT):
+    def get_parameter_type(self, var_name, default=INPUT_TYPE_TEXT):
         return self.form_params.get_parameter_type(var_name, default=default)
 
     def get_file_vars(self):
@@ -215,7 +220,7 @@ class Form(KeyValueContainer):
         assert text == 1, 'Login form with username is required'
 
         for k, v, path, setter in self.iter_setters():
-            if self.get_parameter_type(k).lower() == FormParameters.INPUT_TYPE_TEXT:
+            if self.get_parameter_type(k).lower() == INPUT_TYPE_TEXT:
                 setter(username)
 
     def set_login_password(self, password):
@@ -225,5 +230,5 @@ class Form(KeyValueContainer):
         assert self.is_login_form(), 'Login form is required'
 
         for k, v, path, setter in self.iter_setters():
-            if self.get_parameter_type(k).lower() == FormParameters.INPUT_TYPE_PASSWD:
+            if self.get_parameter_type(k).lower() == INPUT_TYPE_PASSWD:
                 setter(password)
