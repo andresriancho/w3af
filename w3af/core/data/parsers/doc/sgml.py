@@ -301,9 +301,11 @@ class SGMLParser(BaseParser):
             yield Tag(elem.tag, dict(elem.attrib), text)
 
             # Performance notes, see "_parse_response_body_as_string"
+            """
             elem.clear()
             while elem.getprevious() is not None:
                 del elem.getparent()[0]
+            """
 
         # Memory usage reduction
         del context
