@@ -95,7 +95,7 @@ class TestHttpRequestParser(unittest.TestCase):
         exp_headers = Headers([('Host', 'www.w3af.org'),
                                ('Content-Type',
                                 'application/x-www-form-urlencoded'),
-                               ('Foo', 'spam, eggs'),])
+                               ('Foo', 'spam, eggs')])
 
         self.assertEqual(fr.get_headers(), exp_headers)
         self.assertEquals(fr.get_data(), post_data)

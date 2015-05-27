@@ -135,6 +135,9 @@ class ChooseFormField(FormFieldMixin):
         super(ChooseFormField, self).__init__(None, name, None)
         self.values = values
 
+        if values:
+            self.value = values[0]
+
     def set_value(self, value):
         self.value = value
 

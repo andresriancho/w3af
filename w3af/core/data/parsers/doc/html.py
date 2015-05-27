@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.parsers.doc.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
+from w3af.core.data.parsers.utils.form_fields import get_value_by_key
 from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_TEXTAREA,
                                                          INPUT_TYPE_SELECT)
-from w3af.core.data.parsers.utils.form_fields import get_value_by_key
 from w3af.core.data.parsers.utils.form_params import (FormParameters,
                                                       DEFAULT_FORM_ENCODING)
 
@@ -273,7 +273,7 @@ class HTMLParser(SGMLParser):
             return
 
         attrs = {'name': self._select_input_name,
-                 'values': self._select_option_values,
+                 'values': list(self._select_option_values),
                  'type': INPUT_TYPE_SELECT}
 
         # Work with the last form

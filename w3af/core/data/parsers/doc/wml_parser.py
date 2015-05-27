@@ -19,11 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
-
 from w3af.core.data.parsers.doc.sgml import SGMLParser
-from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.parsers.utils.form_fields import get_value_by_key
 
 
 WML_HEADER = '<!DOCTYPE wml PUBLIC'.lower()
@@ -40,7 +38,9 @@ class WMLParser(SGMLParser):
                                                   'select', 'option'})
 
     def __init__(self, http_response):
-        self._select_tag_name = ""
+        self._select_tag_name = ''
+        self._source_url = http_response.get_url()
+
         SGMLParser.__init__(self, http_response)
 
     @staticmethod
@@ -62,52 +62,62 @@ class WMLParser(SGMLParser):
         return False
 
     def _handle_go_tag_start(self, tag, tag_name, attrs):
-
-        # Find method
+        self._inside_form = True
         method = attrs.get('method', 'GET').upper()
+        action = attrs.get('href', None)
 
-        # Find action
-        action = attrs.get('href', '')
-        if action:
-            self._inside_form = True
-            action = unicode(self._base_url.url_join(action))
-            action = URL(self._decode_url(action),
-                         encoding=self._encoding)
-            # Create the form
-            f = FormParameters(encoding=self._encoding)
-            f.set_method(method)
-            f.set_action(action)
-            self._forms.append(f)
+        if action is None:
+            action = self._source_url
         else:
-            om.out.debug('WMLParser found a form without an action. '
-                         'Javascript is being used.')
+            action = self._decode_url(action)
+            try:
+                action = self._base_url.url_join(action, encoding=self._encoding)
+            except ValueError:
+                # The URL in the action is invalid, the best thing we can do
+                # is to guess, and our best guess is that the URL will be the
+                # current one.
+                action = self._source_url
+
+        # Create the form
+        f = FormParameters(encoding=self._encoding)
+        f.set_method(method)
+        f.set_action(action)
+
+        self._forms.append(f)
 
     def _handle_go_tag_end(self, tag):
         self._inside_form = False
 
     def _handle_input_tag_start(self, tag, tag_name, attrs):
-        if self._inside_form:
-            # We are working with the last form
-            f = self._forms[-1]
-            f.add_input(attrs.items())
+        if not self._inside_form:
+            return
 
-    _handle_postfield_tag_start = \
-        _handle_setvar_tag_start = _handle_input_tag_start
+        # We are working with the last form
+        f = self._forms[-1]
+        f.add_field_by_attrs(attrs)
 
     def _handle_select_tag_start(self, tag, tag_name, attrs):
-        if self._inside_form:
-            self._select_tag_name = select_name = attrs.get('name', '') or \
-                attrs.get('id', '')
-            if select_name:
-                self._inside_select = True
-            else:
-                om.out.debug('WMLParser found a select tag without a '
-                             'name attr !')
-                self._inside_select = False
+        if not self._inside_form:
+            return
+
+        self._select_tag_name = get_value_by_key(attrs, 'name', 'id')
+
+        if self._select_tag_name:
+            self._inside_select = True
+        else:
+            self._inside_select = False
 
     def _handle_option_tag_start(self, tag, tag_name, attrs):
-        if self._inside_form and self._inside_select:
-            # Working with the last form in the list
-            f = self._forms[-1]
-            attrs['name'] = self._select_tag_name
-            f.add_input(attrs.items())
+        if not self._inside_form:
+            return
+
+        if not self._inside_select:
+            return
+
+        # Working with the last form in the list
+        f = self._forms[-1]
+        attrs['name'] = self._select_tag_name
+        f.add_field_by_attrs(attrs)
+
+    _handle_postfield_tag_start = _handle_input_tag_start
+    _handle_setvar_tag_start = _handle_input_tag_start

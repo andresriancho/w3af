@@ -203,9 +203,9 @@ class Form(KeyValueContainer):
 
             ptype = self.get_parameter_type(token.get_name()).lower()
 
-            if ptype == FormParameters.INPUT_TYPE_PASSWD:
+            if ptype == INPUT_TYPE_PASSWD:
                 pass_token = token
-            elif ptype == FormParameters.INPUT_TYPE_TEXT:
+            elif ptype == INPUT_TYPE_TEXT:
                 user_token = token
 
         return user_token, pass_token

@@ -23,8 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.parsers.utils.encode_decode import urlencode
 from w3af.core.data.parsers.doc.url import parse_qs
+from w3af.core.data.parsers.utils.form_fields import GenericFormField
 from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_CHECKBOX,
                                                          INPUT_TYPE_RADIO,
+                                                         INPUT_TYPE_TEXT,
                                                          INPUT_TYPE_SELECT)
 
 
@@ -64,9 +66,14 @@ class URLEncodedForm(Form):
         if not URLEncodedForm.can_parse(post_data):
             raise ValueError('Failed to parse post_data as Form.')
 
-        data = parse_qs(post_data)
+        parsed_data = parse_qs(post_data)
+
+        init_values = []
+        for key, value in parsed_data.iteritems():
+            init_values.append(GenericFormField(INPUT_TYPE_TEXT, key, value))
+
         urlencoded_form = cls()
-        urlencoded_form.update(data.items())
+        urlencoded_form.update(init_values)
 
         return urlencoded_form
 
