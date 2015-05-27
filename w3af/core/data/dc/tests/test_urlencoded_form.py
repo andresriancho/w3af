@@ -133,7 +133,7 @@ class TestURLEncodedForm(unittest.TestCase):
                       'value': 'ñçÑÇ'}]
 
         form_params = create_form_params_helper(form_data)
-        form_params.add_submit('address', 'bsas')
+        form_params.add_field_by_attrs({'name': 'address', 'value': 'bsas'})
 
         form = URLEncodedForm(form_params)
 
@@ -143,7 +143,7 @@ class TestURLEncodedForm(unittest.TestCase):
     def test_form_str_radio_select(self):
         form_dict = form_with_radio + form_with_checkbox + form_select_cars
         form = URLEncodedForm(create_form_params_helper(form_dict))
-        self.assertEqual(str(form), 'cars=fiat&vehicle=Bike&sex=male')
+        self.assertEqual(str(form), 'cars=volvo&vehicle=Bike&sex=male')
 
     def test_form_copy(self):
         headers = Headers([('content-type', URLEncodedForm.ENCODING)])

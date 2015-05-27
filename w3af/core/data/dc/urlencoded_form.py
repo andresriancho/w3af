@@ -67,13 +67,12 @@ class URLEncodedForm(Form):
             raise ValueError('Failed to parse post_data as Form.')
 
         parsed_data = parse_qs(post_data)
-
-        init_values = []
-        for key, value in parsed_data.iteritems():
-            init_values.append(GenericFormField(INPUT_TYPE_TEXT, key, value))
-
         urlencoded_form = cls()
-        urlencoded_form.update(init_values)
+
+        for key, value_list in parsed_data.iteritems():
+            for value in value_list:
+                form_field = GenericFormField(INPUT_TYPE_TEXT, key, value)
+                urlencoded_form.add_form_field(form_field)
 
         return urlencoded_form
 

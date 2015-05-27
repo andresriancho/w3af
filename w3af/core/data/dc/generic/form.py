@@ -65,6 +65,9 @@ class Form(KeyValueContainer):
     def get_form_params(self):
         return self.form_params
 
+    def add_form_field(self, form_field):
+        return self.form_params.add_form_field(form_field)
+
     def get_parameter_type(self, var_name, default=INPUT_TYPE_TEXT):
         return self.form_params.get_parameter_type(var_name, default=default)
 
