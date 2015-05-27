@@ -231,8 +231,8 @@ class FormParameters(OrderedDict):
         :param attrs: attrs=[("class", "screen")]
         """
         should_add_new, form_field = self.form_field_factory(attrs)
-        if not form_field:
-            return
+        if form_field is None:
+            return None
 
         # Save the form field
         if should_add_new:
@@ -252,7 +252,7 @@ class FormParameters(OrderedDict):
         input_name = get_value_by_key(attributes, 'name', 'id')
 
         if input_name is None:
-            return None
+            return False, None
 
         # shortcut
         snf = same_name_fields = self.meta.get(input_name, [])
