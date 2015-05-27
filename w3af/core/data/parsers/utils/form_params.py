@@ -28,6 +28,8 @@ from ruamel.ordereddict import ordereddict as OrderedDict
 from types import NoneType
 
 import w3af.core.controllers.output_manager as om
+
+from w3af.core.data.dc.utils.multipart import is_file_like
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_fields import (FileFormField,
@@ -161,8 +163,11 @@ class FormParameters(OrderedDict):
 
         return default
 
-    def set_file_name(self, pname, file_name):
-        form_field_list = self.meta.get(pname)
+    def set_file_name(self, parameter_name, file_name):
+        form_field_list = self.meta.get(parameter_name)
+
+        if form_field_list is None:
+            raise KeyError('Parameter "%s" not found in form' % parameter_name)
 
         for form_field in form_field_list:
             if isinstance(form_field, FileFormField):
@@ -175,14 +180,19 @@ class FormParameters(OrderedDict):
         """
         :return: The name of the variables which are of file type
         """
-        file_keys = []
+        file_keys = set()
 
         for k, v_lst in self.meta.iteritems():
             for v in v_lst:
                 if isinstance(v, FileFormField):
-                    file_keys.append(k)
+                    file_keys.add(k)
 
-        return file_keys
+        for k, v_lst in self.items():
+            for v in v_lst:
+                if is_file_like(v):
+                    file_keys.add(k)
+
+        return list(file_keys)
 
     def add_form_field(self, form_field):
         """
