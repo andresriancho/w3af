@@ -132,7 +132,8 @@ class FormParameters(OrderedDict):
         return self._autocomplete
 
     def set_autocomplete(self, autocomplete):
-        self._autocomplete = autocomplete
+        autocomplete = '' if autocomplete is None else autocomplete
+        self._autocomplete = False if autocomplete.lower() == 'off' else True
 
     def get_method(self):
         """

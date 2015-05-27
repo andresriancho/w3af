@@ -19,23 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from itertools import chain
-from lxml import etree
+import w3af.core.data.parsers.parser_cache as parser_cache
 
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
+from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_PASSWD
 from w3af.core.data.kb.info import Info
-
-# Find all form elements that don't include the 'autocomplete' attribute;
-# otherwise (if included) not equals 'off'
-AUTOCOMPLETE_FORMS_XPATH = ("//form[not(@autocomplete) or "
-                            "translate(@autocomplete,'OF','of')!='off']")
-
-# Find all input elements which type's lower-case value
-# equals-case-sensitive 'password'
-PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
-
-# All 'text' input elements
-TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
 
 class form_autocomplete(GrepPlugin):
@@ -44,16 +33,8 @@ class form_autocomplete(GrepPlugin):
     containing password-type inputs.
 
     :author: Javier Andalia (jandalia =at= gmail.com)
+    :author: Andres Riancho (andres.riancho =at= gmail.com)
     """
-
-    def __init__(self):
-        GrepPlugin.__init__(self)
-
-        # Internal variables
-        self._autocomplete_forms_xpath = etree.XPath(AUTOCOMPLETE_FORMS_XPATH)
-        self._pwd_input_xpath = etree.XPath(PWD_INPUT_XPATH)
-        self._text_input_xpath = etree.XPath(TEXT_INPUT_XPATH)
-
     def grep(self, request, response):
         """
         Plugin entry point, test existence of HTML auto-completable forms
@@ -64,40 +45,41 @@ class form_autocomplete(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         """
-        url = response.get_url()
-        dom = response.get_dom()
-
-        if not response.is_text_or_html() or dom is None:
+        if not response.is_text_or_html():
             return
 
-        autocompletable = lambda inp: inp.get('autocomplete', 'on').lower() != 'off'
+        try:
+            doc_parser = parser_cache.dpc.get_document_parser_for(response)
+        except BaseFrameworkException:
+            return
 
-        # Loop through "auto-completable" forms
-        for form in self._autocomplete_forms_xpath(dom):
+        for form in doc_parser.get_forms():
 
-            passwd_inputs = self._pwd_input_xpath(form)
+            # Only analyze forms which have autocomplete enabled at <form>
+            if form.get_autocomplete() is False:
+                continue
 
-            # Test existence of password-type inputs and verify that
-            # all inputs are autocompletable
-            if passwd_inputs and all(map(autocompletable,
-                                         chain(passwd_inputs,
-                                               self._text_input_xpath(form)))):
+            for form_field_list in form.meta.itervalues():
+                for form_field in form_field_list:
+                    if form_field.input_type != INPUT_TYPE_PASSWD:
+                        continue
 
-                form_str = etree.tostring(form)
-                to_highlight = form_str[:form_str.find('>') + 1]
+                    if not form_field.autocomplete:
+                        continue
 
-                desc = ('The URL: "%s" has a "<form>" element with '
-                        'auto-complete enabled.')
-                desc %= url
+                    url = response.get_url()
+                    desc = ('The URL: "%s" has a "<form>" element with '
+                            'auto-complete enabled.')
+                    desc %= url
 
-                i = Info('Auto-completable form', desc, response.id,
-                         self.get_name())
-                i.set_url(url)
-                i.add_to_highlight(to_highlight)
+                    i = Info('Auto-completable form', desc, response.id,
+                             self.get_name())
+                    i.add_to_highlight('autocomplete')
+                    i.set_url(url)
 
-                self.kb_append_uniq(self, 'form_autocomplete', i,
-                                    filter_by='URL')
-                break
+                    self.kb_append_uniq(self, 'form_autocomplete', i,
+                                        filter_by='URL')
+                    break
 
     def get_long_desc(self):
         """

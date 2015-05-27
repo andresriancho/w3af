@@ -65,6 +65,9 @@ class Form(KeyValueContainer):
     def get_form_params(self):
         return self.form_params
 
+    def get_autocomplete(self):
+        return self.form_params.get_autocomplete()
+
     def add_form_field(self, form_field):
         return self.form_params.add_form_field(form_field)
 

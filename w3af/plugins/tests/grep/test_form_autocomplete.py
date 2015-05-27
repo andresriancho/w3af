@@ -47,11 +47,10 @@ class TestFormAutocomplete(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('form_autocomplete', 'form_autocomplete')
 
-        expected_results = ["form-default.html",
-                            "form-on.html",
-                            "form-on-field-on.html"]
-
-        self.assertEquals(3, len(vulns))
+        expected_results = ['form-default.html',
+                            'form-on.html',
+                            'form-on-field-on.html',
+                            'form-two-fields.html']
 
         filenames = [vuln.get_url().get_file_name() for vuln in vulns]
         filenames.sort()
