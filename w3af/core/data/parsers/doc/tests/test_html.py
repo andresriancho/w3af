@@ -151,11 +151,7 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals([''], f['foo6'])            # checkbox input
         self.assertEquals(['bar'], f['foo7'])         # hidden input
         self.assertEquals([''], f['foo4'])            # submit input
-
-        # file input assertions
-        file_input = f['foo3'][0]
-        self.assertEquals(None, file_input.value)
-        self.assertEquals(None, file_input.file_name)
+        self.assertEquals([None],  f['foo3'])         # file input
 
         # 2nd body
         body2 = HTML_DOC % \
@@ -190,11 +186,8 @@ class TestHTMLParser(unittest.TestCase):
 
         # textarea are parsed as regular inputs
         f = p.forms[0]
-        self.assertEqual(f.get('sample_id')[0].value,
-                         f.get('sample_name')[0].value)
-
-        self.assertEqual(f.get('sample_id')[0].value,
-                         'sample_value')
+        self.assertEqual(f.get('sample_id'), f.get('sample_name'))
+        self.assertEqual(f.get('sample_id'), ['sample_value'])
 
         # Last <textarea> with empty name wasn't parsed
         self.assertEquals(2, len(f))
@@ -221,10 +214,14 @@ class TestHTMLParser(unittest.TestCase):
         # it has no name/id
         f = p.forms[0]
 
-        select_values = f['vehicle'][0].values
+        # meta has all the values
+        select_values = f.meta['vehicle'][0].values
         self.assertIn('car', select_values)
         self.assertIn('plane', select_values)
         self.assertIn('bike', select_values)
+
+        # The "current" value is the first that was found
+        self.assertEqual(f['vehicle'], ['car'])
 
         # "xxx" and "yyy" options were not parsed because they are outside the
         # form tag and doesn't have a name attribute

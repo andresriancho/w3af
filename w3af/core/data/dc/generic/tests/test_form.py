@@ -28,6 +28,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.dc.generic.form import Form
+from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_PASSWD
 from w3af.core.data.parsers.utils.form_params import FormParameters
 
 
@@ -47,8 +48,8 @@ class TestForm(unittest.TestCase):
 
     def test_mutant_smart_fill_simple(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attrs({'name': 'username', 'value': ''})
+        form_params.add_field_by_attrs({'name': 'address', 'value': ''})
         form_params['username'][0] = DataToken('username', '', ('username', 0))
 
         form = Form(form_params)
@@ -62,10 +63,10 @@ class TestForm(unittest.TestCase):
 
     def test_mutant_iter_bound_tokens(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"),
-                               ("value", ""),
-                               ("type", "password")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attrs({'name': 'username',
+                                        'value': '',
+                                        'type': 'password'})
+        form_params.add_field_by_attrs({'name': 'address', 'value': ''})
 
         form = Form(form_params)
 
@@ -73,13 +74,13 @@ class TestForm(unittest.TestCase):
             self.assertIsInstance(form_copy, Form)
             self.assertEquals(form_copy.items(), form.items())
             self.assertEquals(form_copy.get_parameter_type('username'),
-                              FormParameters.INPUT_TYPE_PASSWD)
+                              INPUT_TYPE_PASSWD)
 
     def test_mutant_smart_fill_with_file(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
-        form_params.add_file_input([("name", "file"), ("type", "file")])
+        form_params.add_field_by_attrs({'name': 'username', 'value': ''})
+        form_params.add_field_by_attrs({'name': 'address', 'value': ''})
+        form_params.add_field_by_attrs({'name': 'file', 'type': 'file'})
 
         form = Form(form_params)
         form['username'][0] = DataToken('username', '', ('username', 0))
@@ -97,8 +98,8 @@ class TestForm(unittest.TestCase):
 
     def test_login_form_utils(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("type", "text")])
-        form_params.add_input([("name", "pwd"), ("type", "password")])
+        form_params.add_field_by_attrs({'name': 'username', 'type': 'text'})
+        form_params.add_field_by_attrs({'name': 'pwd', 'type': 'password'})
 
         form = Form(form_params)
 
@@ -126,8 +127,8 @@ class TestForm(unittest.TestCase):
 
     def test_cpickle_simple(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("type", "text")])
-        form_params.add_input([("name", "pwd"), ("type", "password")])
+        form_params.add_field_by_attrs({'name': 'username', 'type': 'text'})
+        form_params.add_field_by_attrs({'name': 'pwd', 'type': 'password'})
 
         form = Form(form_params)
 
@@ -137,8 +138,8 @@ class TestForm(unittest.TestCase):
 
     def test_cpickle_unsync(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("type", "text")])
-        form_params.add_input([("name", "pwd"), ("type", "password")])
+        form_params.add_field_by_attrs({'name': 'username', 'type': 'text'})
+        form_params.add_field_by_attrs({'name': 'pwd', 'type': 'password'})
 
         form = Form(form_params)
         form['xyz'] = ['1', '2']
@@ -149,8 +150,8 @@ class TestForm(unittest.TestCase):
 
     def test_keep_sync(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("type", "text")])
-        form_params.add_input([("name", "pwd"), ("type", "password")])
+        form_params.add_field_by_attrs({'name': 'username', 'type': 'text'})
+        form_params.add_field_by_attrs({'name': 'pwd', 'type': 'password'})
 
         form = Form(form_params)
 
@@ -179,8 +180,8 @@ class TestForm(unittest.TestCase):
 
     def test_form_copy(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("type", "text")])
-        form_params.add_input([("name", "pwd"), ("type", "password")])
+        form_params.add_field_by_attrs({'name': 'username', 'type': 'text'})
+        form_params.add_field_by_attrs({'name': 'pwd', 'type': 'password'})
 
         form = Form(form_params)
         form.set_token(('username', 0))

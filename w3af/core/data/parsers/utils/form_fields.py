@@ -26,13 +26,13 @@ from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_SELECT,
                                                          INPUT_TYPE_FILE)
 
 
-def form_field_factory(attributes, same_name_fields):
+def form_field_factory(attributes, form_meta_data):
     """
     Create a new form field (in most cases) or update an existing FormField
     instance.
 
     :param attributes: The tag attributes for the newly found form input
-    :param same_name_fields: The form fields which have the same name
+    :param form_meta_data: The form fields
     :return: The newly created / updated form field
     """
     input_name = get_value_by_key(attributes, 'name', 'id')
@@ -41,7 +41,7 @@ def form_field_factory(attributes, same_name_fields):
         return None
 
     # shortcut
-    snf = same_name_fields
+    snf = same_name_fields = form_meta_data.get(input_name, [])
 
     # Find the attr type and value, setting the default type to text (if
     # missing in the tag) and the default value to an empty string (if

@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.fuzzer.form_filler import smart_fill, smart_fill_file
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
-from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_CHECKBOX,
                                                          INPUT_TYPE_RADIO,
                                                          INPUT_TYPE_SELECT,
@@ -161,6 +161,8 @@ class Form(KeyValueContainer):
         :return: Fills all the empty parameters (which should be filled)
                  using the smart_fill function.
         """
+        file_variables = self.get_file_vars()
+
         for var_name, value, path, setter in self.iter_setters():
             if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
                 continue
@@ -173,7 +175,7 @@ class Form(KeyValueContainer):
             # The basic idea here is that if the form has files in it, we'll
             # need to fill that input with a file (gif, txt, html) in order
             # to go through the form validations
-            if var_name in self.get_file_vars():
+            if var_name in file_variables:
                 file_name = self.get_file_name(var_name, None)
                 setter(smart_fill_file(var_name, file_name))
 

@@ -93,16 +93,17 @@ class TestFormParams(unittest.TestCase):
             new_form = create_form_params_helper(form_data)
 
             for elem in form_data:
-                ename = elem['name']
-                form_field_list = new_form.get(ename)
+                elem_name = elem.get('name', None)
+                elem_type = elem.get('type', None)
 
-                for form_field in form_field_list:
-                    input_type = elem.get('type', None)
-                    self.assertEqual(form_field.input_type, input_type)
+                values = new_form.get(elem_name)
 
-                if elem['type'] == INPUT_TYPE_SELECT:
-                    self.assertEqual(form_field.values, elem['values'])
-                    self.assertIn(form_field.value, elem['values'])
+                form_input_type = new_form.get_parameter_type(elem_name)
+                self.assertEqual(form_input_type, elem_type)
+
+                for value in values:
+                    if elem_type == INPUT_TYPE_SELECT:
+                        self.assertIn(value, elem['values'])
 
     def test_variants_do_not_modify_original(self):
         bigform_data = form_with_radio + form_select_misc
@@ -171,21 +172,21 @@ class TestFormParams(unittest.TestCase):
 
         # Please note that this depends completely in form.SEED AND
         # form.TOP_VARIANTS
-        RANDOM_PICKS = {1: ('volvo', 'black', 'h', 'male'),
-                        2: ('volvo', 'green', 'c', 'male'),
-                        3: ('volvo', 'yellow', 'l', 'male'),
-                        4: ('volvo', 'black', 'n', 'male'),
-                        5: ('volvo', 'blue', 'k', 'male'),
-                        6: ('volvo', 'blue', 'i', 'male'),
-                        7: ('volvo', 'yellow', 'd', 'male'),
-                        8: ('volvo', 'yellow', 'j', 'male'),
-                        9: ('volvo', 'black', 'e', 'male'),
-                        10: ('volvo', 'black', 'b', 'male'),
-                        11: ('volvo', 'yellow', 'i', 'male'),
-                        12: ('volvo', 'blue', 'e', 'male'),
-                        13: ('volvo', 'yellow', 'e', 'male'),
+        RANDOM_PICKS = {1: ('volvo', 'black', 'd', 'female'),
+                        2: ('volvo', 'blue', 'i', 'male'),
+                        3: ('volvo', 'blue', 'f', 'female'),
+                        4: ('volvo', 'black', 'g', 'female'),
+                        5: ('volvo', 'black', 'm', 'male'),
+                        6: ('volvo', 'black', 'l', 'male'),
+                        7: ('volvo', 'blue', 'b', 'female'),
+                        8: ('volvo', 'blue', 'e', 'female'),
+                        9: ('volvo', 'black', 'c', 'male'),
+                        10: ('volvo', 'black', 'a', 'female'),
+                        11: ('volvo', 'blue', 'e', 'male'),
+                        12: ('volvo', 'black', 'j', 'male'),
+                        13: ('volvo', 'blue', 'c', 'male'),
                         14: ('volvo', 'black', 'a', 'male'),
-                        15: ('volvo', 'blue', 'd', 'male')}
+                        15: ('volvo', 'black', 'i', 'female')}
 
         for i, form_variant in enumerate(variants):
 
@@ -196,8 +197,8 @@ class TestFormParams(unittest.TestCase):
 
             option = []
             for name, values in clean_data.items():
-                form_field = form_variant[name][0]
-                option.append(form_field.value)
+                form_value = form_variant[name][0]
+                option.append(form_value)
 
             current_option = RANDOM_PICKS[i]
             self.assertEqual(tuple(option), current_option)

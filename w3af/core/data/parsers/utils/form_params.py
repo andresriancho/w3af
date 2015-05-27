@@ -46,7 +46,20 @@ from w3af.core.data.parsers.utils.form_constants import (DEFAULT_FORM_ENCODING,
 
 class FormParameters(OrderedDict):
     """
-    This class represents an HTML form.
+    This class represents an HTML form, the information is stored as follows:
+
+        * Instance keys are the form parameter names
+
+        * The value for each key is a list containing one or more values for
+          the parameter name. This list exists to support repeated parameter
+          names.
+
+        * The form meta-data is stored in a different in-memory dict "meta",
+          where we store the form parameter type, multiple values (in the case
+          of radio/checkbox/select inputs), etc.
+
+    The current value for each parameter is only stored in the main instance,
+    not in the "meta" attribute.
 
     :author: Andres Riancho (andres.riancho@gmail.com) |
              Javier Andalia (jandalia =at= gmail.com)
@@ -68,8 +81,11 @@ class FormParameters(OrderedDict):
                             INPUT_TYPE_RADIO,
                             INPUT_TYPE_SELECT}
 
-    def __init__(self, init_vals=(), encoding=DEFAULT_ENCODING):
+    def __init__(self, init_vals=(), meta=None, encoding=DEFAULT_ENCODING):
         super(FormParameters, self).__init__(init_vals)
+
+        # Form parameter meta-data
+        self.meta = meta if meta is not None else {}
 
         # Internal variables
         # Form method defaults to GET if not found
@@ -130,7 +146,7 @@ class FormParameters(OrderedDict):
         This method returns the name of the file being uploaded given the
         parameter name (pname) where it was sent.
         """
-        form_field = self.get(pname, default)
+        form_field = self.meta.get(pname, default)
 
         if form_field is default:
             return default
@@ -138,7 +154,7 @@ class FormParameters(OrderedDict):
         return form_field.file_name
 
     def set_file_name(self, pname, file_name):
-        form_field = self.get(pname)
+        form_field = self.meta.get(pname)
         form_field.file_name = file_name
 
     def get_file_vars(self):
@@ -147,7 +163,7 @@ class FormParameters(OrderedDict):
         """
         file_keys = []
 
-        for k, v_lst in self.iteritems():
+        for k, v_lst in self.meta.iteritems():
             for v in v_lst:
                 if isinstance(v, FileFormField):
                     file_keys.append(k)
@@ -158,8 +174,11 @@ class FormParameters(OrderedDict):
         """
         Auxiliary setter for name=value with support repeated parameter names
         """
-        form_fields = self.setdefault(form_field.name, [])
+        form_fields = self.meta.setdefault(form_field.name, [])
         form_fields.append(form_field)
+
+        form_values = self.setdefault(form_field.name, [])
+        form_values.append(form_field.value)
 
     def add_field_by_attrs(self, attrs):
         """
@@ -169,10 +188,7 @@ class FormParameters(OrderedDict):
 
         :param attrs: attrs=[("class", "screen")]
         """
-        input_name = get_value_by_key(attrs, 'name', 'id')
-        same_name_fields = self.get(input_name, [])
-
-        should_add_new, form_field = form_field_factory(attrs, same_name_fields)
+        should_add_new, form_field = form_field_factory(attrs, self.meta)
         if not form_field:
             return
 
@@ -187,7 +203,7 @@ class FormParameters(OrderedDict):
         """
         :return: The input_type for the parameter name
         """
-        form_field = self.get(input_name, None)
+        form_field = self.meta.get(input_name, None)
         if form_field is None:
             return default
 
@@ -196,7 +212,7 @@ class FormParameters(OrderedDict):
     def get_option_names(self):
         option_names = []
 
-        for form_field_list in self.itervalues():
+        for form_field_list in self.meta.itervalues():
             for form_field in form_field_list:
                 if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
                     option_names.append(form_field.name)
@@ -206,7 +222,7 @@ class FormParameters(OrderedDict):
     def get_option_matrix(self):
         option_matrix = []
 
-        for form_field_list in self.itervalues():
+        for form_field_list in self.meta.itervalues():
             for form_field in form_field_list:
                 if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
                     option_matrix.append(form_field.values)
@@ -257,7 +273,7 @@ class FormParameters(OrderedDict):
                     value = ''
 
                 # FIXME: Needs to support repeated parameter names
-                self_variant[option_name][0].set_value(value)
+                self_variant[option_name] = [value]
 
             yield self_variant
 
@@ -387,16 +403,8 @@ class FormParameters(OrderedDict):
 
         :return: A copy of myself.
         """
-        init_val = []
-
-        for k, form_field_list in self.iteritems():
-            form_field_list_copy = []
-            for form_field in form_field_list:
-                form_field_list_copy.append(copy.deepcopy(form_field))
-
-            init_val.append((k, form_field_list_copy))
-
-        self_copy = FormParameters(init_vals=init_val)
+        init_val = copy.deepcopy(self.items())
+        self_copy = FormParameters(init_vals=init_val, meta=self.meta)
 
         # Internal variables
         self_copy.set_method(self.get_method())
@@ -419,9 +427,9 @@ class FormParameters(OrderedDict):
     def __repr__(self):
         items = []
 
-        for key, form_field_list in self.iteritems():
-            for form_field in form_field_list:
-                kv = "'%s': '%s'" % (key, form_field.value)
+        for key, value_list in self.iteritems():
+            for value in value_list:
+                kv = "'%s': '%s'" % (key, value)
                 items.append(kv)
 
         data = ', '.join(items)
@@ -435,7 +443,7 @@ class FormParameters(OrderedDict):
         #
         # Count the parameter types
         #
-        for form_field_list in self.itervalues():
+        for form_field_list in self.meta.itervalues():
             for form_field in form_field_list:
 
                 if form_field.input_type == INPUT_TYPE_PASSWD:
