@@ -326,7 +326,6 @@ class TestFormParams(unittest.TestCase):
         self.assertEqual(form.items(), copy.items())
         self.assertEqual(form._method, copy._method)
         self.assertEqual(form._action, copy._action)
-        self.assertEqual(form._autocomplete, copy._autocomplete)
 
         self.assertIsNot(form, copy)
         self.assertEquals(copy.get_parameter_type('sex'), INPUT_TYPE_RADIO)

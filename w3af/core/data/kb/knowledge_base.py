@@ -396,7 +396,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             return obj.get_uniq_id()
         else:
             if isinstance(obj, collections.Iterable):
-                concat_all = ''.join([str(i) for i in obj])
+                concat_all = ''.join([str(hash(i)) for i in obj])
                 return str(hash(concat_all))
             else:
                 return str(hash(obj))
