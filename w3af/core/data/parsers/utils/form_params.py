@@ -150,16 +150,26 @@ class FormParameters(OrderedDict):
         This method returns the name of the file being uploaded given the
         parameter name (pname) where it was sent.
         """
-        form_field = self.meta.get(pname, default)
+        form_field_list = self.meta.get(pname, None)
 
-        if form_field is default:
+        if form_field_list is None:
             return default
 
-        return form_field.file_name
+        for form_field in form_field_list:
+            if isinstance(form_field, FileFormField):
+                return form_field.file_name
+
+        return default
 
     def set_file_name(self, pname, file_name):
-        form_field = self.meta.get(pname)
-        form_field.file_name = file_name
+        form_field_list = self.meta.get(pname)
+
+        for form_field in form_field_list:
+            if isinstance(form_field, FileFormField):
+                form_field.file_name = file_name
+                return True
+
+        return False
 
     def get_file_vars(self):
         """

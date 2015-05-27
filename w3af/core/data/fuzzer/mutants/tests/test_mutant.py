@@ -161,7 +161,7 @@ class TestMutant(unittest.TestCase):
         form_params = FormParameters()
         form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
         form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
-        form_params.add_file_input([("name", "image"), ("type", "file")])
+        form_params.add_field_by_attr_items([("name", "image"), ("type", "file")])
 
         form = MultipartContainer(form_params)
         freq = FuzzableRequest(self.url, post_data=form)

@@ -138,7 +138,7 @@ class TestPostDataMutant(unittest.TestCase):
     def test_mutant_creation_file(self):
         form_params = FormParameters()
         form_params.add_field_by_attr_items([("name", "username"), ("value", "default")])
-        form_params.add_file_input([("name", "file_upload")])
+        form_params.add_field_by_attr_items([("name", "file_upload"), ("type", "file")])
 
         form = MultipartContainer(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/upload'),
