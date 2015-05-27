@@ -151,11 +151,11 @@ class FormParameters(OrderedDict):
 
         return file_keys
 
-    def setdefault_var(self, form_name, form_field):
+    def add_form_field(self, form_field):
         """
         Auxiliary setter for name=value with support repeated parameter names
         """
-        form_fields = self.setdefault(form_name, [])
+        form_fields = self.setdefault(form_field.name, [])
         form_fields.append(form_field)
 
     def add_field_by_attrs(self, attrs):
@@ -174,7 +174,7 @@ class FormParameters(OrderedDict):
             return
 
         # Save the form field
-        self.setdefault_var(form_field.name, form_field)
+        self.add_form_field(form_field)
 
         # Return what we've created/saved
         return form_field
@@ -191,18 +191,22 @@ class FormParameters(OrderedDict):
 
     def get_option_names(self):
         option_names = []
+
         for form_field_list in self.itervalues():
             for form_field in form_field_list:
                 if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
                     option_names.append(form_field.name)
+
         return option_names
 
     def get_option_matrix(self):
         option_matrix = []
+
         for form_field_list in self.itervalues():
             for form_field in form_field_list:
                 if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
                     option_matrix.append(form_field.values)
+
         return option_matrix
 
     def get_variants(self, mode=MODE_TMB):
@@ -215,7 +219,7 @@ class FormParameters(OrderedDict):
           'b'   - bottom values
         """
         if mode not in (MODE_ALL, MODE_TB, MODE_TMB, MODE_T, MODE_B):
-            raise ValueError('Invalid variants mode')
+            raise ValueError('Invalid variants mode: "%s"' % mode)
 
         yield self
 

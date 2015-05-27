@@ -145,13 +145,17 @@ class TestHTMLParser(unittest.TestCase):
         # have the expected values
         f = p.forms[0]
 
-        self.assertEquals(['bar'], f['foo1'])  # text input
-        self.assertEquals(['bar'], f['foo2'])  # text input
-        self.assertEquals([''], f['foo3'])     # file input
-        self.assertEquals([''], f['foo5'])     # radio input
-        self.assertEquals([''], f['foo6'])     # checkbox input
-        self.assertEquals(['bar'], f['foo7'])  # hidden input
-        self.assertEquals('', f._submit_map['foo4'])  # submit input
+        self.assertEquals(['bar'], f['foo1'])         # text input
+        self.assertEquals(['bar'], f['foo2'])         # text input
+        self.assertEquals([''], f['foo5'])            # radio input
+        self.assertEquals([''], f['foo6'])            # checkbox input
+        self.assertEquals(['bar'], f['foo7'])         # hidden input
+        self.assertEquals([''], f['foo4'])            # submit input
+
+        # file input assertions
+        file_input = f['foo3'][0]
+        self.assertEquals(None, file_input.value)
+        self.assertEquals(None, file_input.file_name)
 
         # 2nd body
         body2 = HTML_DOC % \
@@ -186,8 +190,11 @@ class TestHTMLParser(unittest.TestCase):
 
         # textarea are parsed as regular inputs
         f = p.forms[0]
-        self.assertEqual(f.get('sample_id'), f.get('sample_name'))
-        self.assertEqual(f.get('sample_id'), ['sample_value'])
+        self.assertEqual(f.get('sample_id')[0].value,
+                         f.get('sample_name')[0].value)
+
+        self.assertEqual(f.get('sample_id')[0].value,
+                         'sample_value')
 
         # Last <textarea> with empty name wasn't parsed
         self.assertEquals(2, len(f))

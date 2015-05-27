@@ -99,7 +99,7 @@ class FormFieldMixin(object):
         return fmt % (self.input_type.title(), self.name, self.value)
 
     def __str__(self):
-        return self.value
+        return str(self.value)
 
     def __eq__(self, other):
         if isinstance(other, basestring):
@@ -221,9 +221,6 @@ class FileFormField(FormFieldMixin):
         super(FileFormField, self).__init__(None, name, value)
         self.input_type = INPUT_TYPE_FILE
         self.file_name = file_name
-
-    def __str__(self):
-        return str(self.value)
 
 
 def get_value_by_key(attrs, *args):

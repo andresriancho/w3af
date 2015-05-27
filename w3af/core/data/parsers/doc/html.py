@@ -156,7 +156,8 @@ class HTMLParser(SGMLParser):
         else:
             action = self._decode_url(action)
             try:
-                action = self._base_url.url_join(action, encoding=self._encoding)
+                action = self._base_url.url_join(action,
+                                                 encoding=self._encoding)
             except ValueError:
                 # The URL in the action is invalid, the best thing we can do
                 # is to guess, and our best guess is that the URL will be the
@@ -227,20 +228,23 @@ class HTMLParser(SGMLParser):
         """
         Handler for textarea tag inside a form
         """
+        SGMLParser._handle_textarea_tag_start(self, tag, tag_name, attrs)
+
         # Set the data and name
         self._text_area_data = tag.text
         self._text_area_tag_name = get_value_by_key(attrs, 'name', 'id')
-
-        if self._text_area_tag_name is None:
-            self._inside_text_area = False
-        else:
-            self._inside_text_area = True
 
     def _handle_textarea_tag_end(self, tag):
         """
         Handler for textarea end tag
         """
         SGMLParser._handle_textarea_tag_end(self, tag)
+
+        if not self._text_area_tag_name:
+            return
+
+        if not self._text_area_data:
+            return
 
         attrs = {'name': self._text_area_tag_name,
                  'value': self._text_area_data,
@@ -252,15 +256,16 @@ class HTMLParser(SGMLParser):
             form_params = self._forms[-1]
             form_params.add_field_by_attrs(attrs)
 
+        self._text_area_tag_name = None
+        self._text_area_data = None
+
     def _handle_select_tag_inside_form(self, tag, tag_name, attrs):
         """
         Handler for select tag inside a form
         """
         select_name = get_value_by_key(attrs, 'name', 'id')
 
-        if select_name is None:
-            self._inside_select = False
-        else:
+        if select_name:
             self._select_input_name = select_name
 
     def _handle_select_tag_end(self, tag):
@@ -270,6 +275,9 @@ class HTMLParser(SGMLParser):
         SGMLParser._handle_select_tag_end(self, tag)
 
         if not self._forms:
+            return
+
+        if not self._select_input_name:
             return
 
         attrs = {'name': self._select_input_name,
@@ -282,6 +290,7 @@ class HTMLParser(SGMLParser):
 
         # Reset selects container
         self._select_option_values = set()
+        self._select_input_name = None
 
     def _handle_option_tag_inside_form(self, tag, tag_name, attrs):
         """
