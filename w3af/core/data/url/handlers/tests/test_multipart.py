@@ -60,7 +60,7 @@ class TestMultipartPostUpload(unittest.TestCase):
 
     def test_multipart_without_file(self):
         form_params = FormParameters()
-        form_params.add_file_input([('name', 'uploadedfile')])
+        form_params.add_field_by_attr_items([('name', 'uploadedfile')])
         form_params['uploadedfile'][0] = 'this is not a file'
         form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                        ('type', 'hidden'),
@@ -86,7 +86,7 @@ class TestMultipartPostUpload(unittest.TestCase):
 
     def upload_file(self, _file):
         form_params = FormParameters()
-        form_params.add_file_input([('name', 'uploadedfile')])
+        form_params.add_field_by_attr_items([('name', 'uploadedfile')])
         form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                                ('type', 'hidden'),
                                ('value', '10000')])
@@ -101,7 +101,7 @@ class TestMultipartPostUpload(unittest.TestCase):
 
     def test_upload_file_using_fuzzable_request(self):
         form_params = FormParameters()
-        form_params.add_file_input([('name', 'uploadedfile')])
+        form_params.add_field_by_attr_items([('name', 'uploadedfile')])
         form_params['uploadedfile'][0] = NamedStringIO('file content', name='test.txt')
         form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                        ('type', 'hidden'),

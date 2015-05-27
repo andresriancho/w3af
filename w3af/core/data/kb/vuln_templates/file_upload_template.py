@@ -64,7 +64,7 @@ class FileUploadTemplate(BaseTemplate):
 
         form_params = FormParameters()
         for file_var in self.file_vars:
-            form_params.add_file_input([("name", file_var), ("type", "file")])
+            form_params.add_field_by_attr_items([("name", file_var), ("type", "file")])
 
         for token in self.data.iter_tokens():
             if token.get_name() in self.file_vars:

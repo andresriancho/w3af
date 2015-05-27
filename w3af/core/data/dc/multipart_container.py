@@ -80,7 +80,7 @@ class MultipartContainer(Form):
                                            ('value', key.file.read())])
                 else:
                     form_params.set_file_name(key.name, key.filename)
-                    form_params.add_file_input([('name', key.name)])
+                    form_params.add_field_by_attr_items([('name', key.name)])
 
             return cls(form_params)
 

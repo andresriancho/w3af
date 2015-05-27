@@ -49,7 +49,7 @@ class TestFileContentMutant(unittest.TestCase):
         form_params.set_action(self.url)
         form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
         form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
-        form_params.add_file_input([("name", "file"), ("type", "file")])
+        form_params.add_field_by_attr_items([("name", "file"), ("type", "file")])
 
         form = container_klass(form_params)
         freq = FuzzableRequest.from_form(form)
@@ -123,7 +123,7 @@ class TestFileContentMutant(unittest.TestCase):
         form_params.set_action(self.url)
         form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
         form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
-        form_params.add_file_input([("name", "image"), ("type", "file")])
+        form_params.add_field_by_attr_items([("name", "image"), ("type", "file")])
 
         form = MultipartContainer(form_params)
         freq = FuzzableRequest.from_form(form)

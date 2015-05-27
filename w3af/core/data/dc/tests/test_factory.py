@@ -103,7 +103,7 @@ class TestDCFactory(unittest.TestCase):
         form_params = FormParameters()
 
         form_params.set_file_name('b', 'hello.txt')
-        form_params.add_file_input([('name', 'b')])
+        form_params.add_field_by_attr_items([('name', 'b')])
         form_params.add_field_by_attr_items([('name', 'a'),
                                ('type', 'text'),
                                ('value', 'bcd')])
