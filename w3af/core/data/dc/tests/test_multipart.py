@@ -129,7 +129,7 @@ class TestMultipartContainer(unittest.TestCase):
                                              ('type', 'text'),
                                              ('value', 'bcd')])
         form_params.set_file_name('b', 'hello.txt')
-        
+
         mpc = MultipartContainer(form_params)
 
         self.assertIsInstance(mpc, MultipartContainer)

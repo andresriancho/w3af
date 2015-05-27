@@ -102,11 +102,12 @@ class TestDCFactory(unittest.TestCase):
     def test_dc_from_form_params_with_files(self):
         form_params = FormParameters()
 
-        form_params.set_file_name('b', 'hello.txt')
-        form_params.add_field_by_attr_items([('name', 'b')])
+        form_params.add_field_by_attr_items([('name', 'b'),
+                                             ('type', 'file')])
         form_params.add_field_by_attr_items([('name', 'a'),
-                               ('type', 'text'),
-                               ('value', 'bcd')])
+                                             ('type', 'text'),
+                                             ('value', 'bcd')])
+        form_params.set_file_name('b', 'hello.txt')
 
         mpdc = dc_from_form_params(form_params)
 
