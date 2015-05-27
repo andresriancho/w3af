@@ -70,7 +70,7 @@ class FileUploadTemplate(BaseTemplate):
             if token.get_name() in self.file_vars:
                 continue
 
-            form_params.add_input([("name", token.get_name()),
+            form_params.add_field_by_attr_items([("name", token.get_name()),
                                    ("type", "text"),
                                    ("value", token.get_value())])
 

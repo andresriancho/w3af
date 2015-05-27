@@ -150,7 +150,7 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
                                         post_data=post_data, method='POST')
 
         form_params = FormParameters()
-        form_params.add_input([('name', 'a'),
+        form_params.add_field_by_attr_items([('name', 'a'),
                                ('type', 'text'),
                                ('value', 'bcd')])
 

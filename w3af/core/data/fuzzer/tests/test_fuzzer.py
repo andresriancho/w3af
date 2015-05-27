@@ -323,8 +323,8 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', False)
 
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
 
         form = URLEncodedForm(form_params)
 

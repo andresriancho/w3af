@@ -37,8 +37,8 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_found_at(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
 
         form = URLEncodedForm(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
@@ -53,8 +53,8 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
 
         form = URLEncodedForm(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
@@ -101,8 +101,8 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_mutant_creation_repeated_parameter_name(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "id"), ("value", "")])
-        form_params.add_input([("name", "id"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "id"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "id"), ("value", "")])
 
         form = URLEncodedForm(form_params)
         freq = FuzzableRequest(URL('http://w3af.com/?foo=3'), post_data=form,
@@ -137,7 +137,7 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_mutant_creation_file(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "default")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "default")])
         form_params.add_file_input([("name", "file_upload")])
 
         form = MultipartContainer(form_params)

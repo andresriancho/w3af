@@ -159,8 +159,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_post_data(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.add_file_input([("name", "image"), ("type", "file")])
 
         form = MultipartContainer(form_params)
@@ -295,8 +295,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_qs_and_postdata(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "password"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "password"), ("value", "")])
 
         url = URL('http://moth/foo.bar?action=login')
 

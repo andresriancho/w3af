@@ -136,7 +136,7 @@ class TestCSRF(PluginTest):
         # True, items in DC, POST (passes strict mode) and cookies
         url = URL('http://moth/')
         form_params = FormParameters()
-        form_params.add_input([('name', 'test'), ('type', 'text')])
+        form_params.add_field_by_attr_items([('name', 'test'), ('type', 'text')])
         form = URLEncodedForm(form_params)
         req = FuzzableRequest(url, method='POST', post_data=form)
         suitable = self.csrf_plugin._is_suitable(req)

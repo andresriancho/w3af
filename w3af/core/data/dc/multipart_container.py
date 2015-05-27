@@ -75,7 +75,7 @@ class MultipartContainer(Form):
 
             for key in fs.list:
                 if key.filename is None:
-                    form_params.add_input([('name', key.name),
+                    form_params.add_field_by_attr_items([('name', key.name),
                                            ('type', 'text'),
                                            ('value', key.file.read())])
                 else:

@@ -62,7 +62,7 @@ class TestMultipartPostUpload(unittest.TestCase):
         form_params = FormParameters()
         form_params.add_file_input([('name', 'uploadedfile')])
         form_params['uploadedfile'][0] = 'this is not a file'
-        form_params.add_input([('name', 'MAX_FILE_SIZE'),
+        form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                        ('type', 'hidden'),
                        ('value', '10000')])
 
@@ -87,7 +87,7 @@ class TestMultipartPostUpload(unittest.TestCase):
     def upload_file(self, _file):
         form_params = FormParameters()
         form_params.add_file_input([('name', 'uploadedfile')])
-        form_params.add_input([('name', 'MAX_FILE_SIZE'),
+        form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                                ('type', 'hidden'),
                                ('value', '10000')])
 
@@ -103,7 +103,7 @@ class TestMultipartPostUpload(unittest.TestCase):
         form_params = FormParameters()
         form_params.add_file_input([('name', 'uploadedfile')])
         form_params['uploadedfile'][0] = NamedStringIO('file content', name='test.txt')
-        form_params.add_input([('name', 'MAX_FILE_SIZE'),
+        form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                        ('type', 'hidden'),
                        ('value', '10000')])
 
