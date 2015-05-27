@@ -32,13 +32,17 @@ from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_fields import (FileFormField,
                                                       get_value_by_key,
-                                                      form_field_factory)
+                                                      SelectFormField,
+                                                      GenericFormField,
+                                                      RadioFormField,
+                                                      CheckboxFormField)
 from w3af.core.data.parsers.utils.form_constants import (DEFAULT_FORM_ENCODING,
                                                          INPUT_TYPE_CHECKBOX,
                                                          INPUT_TYPE_RADIO,
                                                          INPUT_TYPE_TEXT,
                                                          INPUT_TYPE_SELECT,
                                                          INPUT_TYPE_PASSWD,
+                                                         INPUT_TYPE_FILE,
                                                          MODE_ALL, MODE_TB,
                                                          MODE_TMB, MODE_T,
                                                          MODE_B)
@@ -178,7 +182,18 @@ class FormParameters(OrderedDict):
         form_fields.append(form_field)
 
         form_values = self.setdefault(form_field.name, [])
-        form_values.append(form_field.value)
+        form_values.append(form_field.value or '')
+
+    def add_field_by_attr_items(self, attr_items):
+        """
+        This method exists for historical reasons only, use add_field_by_attrs
+        whenever possible.
+
+        :param attr_items: Items for attr
+        :return: The same as add_field_by_attrs
+        """
+        attrs = dict(attr_items)
+        return self.add_field_by_attrs(attrs)
 
     def add_field_by_attrs(self, attrs):
         """
@@ -188,7 +203,7 @@ class FormParameters(OrderedDict):
 
         :param attrs: attrs=[("class", "screen")]
         """
-        should_add_new, form_field = form_field_factory(attrs, self.meta)
+        should_add_new, form_field = self.form_field_factory(attrs)
         if not form_field:
             return
 
@@ -198,6 +213,68 @@ class FormParameters(OrderedDict):
 
         # Return what we've created/saved
         return form_field
+
+    def form_field_factory(self, attributes):
+        """
+        Create a new form field (in most cases) or update an existing FormField
+        instance.
+
+        :param attributes: The tag attributes for the newly found form input
+        :return: The newly created / updated form field
+        """
+        input_name = get_value_by_key(attributes, 'name', 'id')
+
+        if input_name is None:
+            return None
+
+        # shortcut
+        snf = same_name_fields = self.meta.get(input_name, [])
+
+        # Find the attr type and value, setting the default type to text (if
+        # missing in the tag) and the default value to an empty string (if
+        # missing)
+        input_type = get_value_by_key(attributes, 'type') or INPUT_TYPE_TEXT
+        input_type = input_type.lower()
+
+        input_value = get_value_by_key(attributes, 'value') or ''
+
+        autocomplete = get_value_by_key(attributes, 'autocomplete') or ''
+        autocomplete = False if autocomplete.lower() == 'off' else True
+
+        should_add_new = True
+
+        if input_type == INPUT_TYPE_SELECT:
+            input_values = get_value_by_key(attributes, 'values') or []
+            form_field = SelectFormField(input_name, input_values)
+
+        elif input_type == INPUT_TYPE_RADIO:
+            match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_RADIO]
+
+            if match_fields:
+                form_field = match_fields[-1]
+                form_field.values.append(input_value)
+                should_add_new = False
+            else:
+                form_field = RadioFormField(input_name, [input_value])
+
+        elif input_type == INPUT_TYPE_CHECKBOX:
+            match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_CHECKBOX]
+
+            if match_fields:
+                form_field = match_fields[-1]
+                form_field.values.append(input_value)
+                should_add_new = False
+            else:
+                form_field = CheckboxFormField(input_name, [input_value])
+
+        elif input_type == INPUT_TYPE_FILE:
+            form_field = FileFormField(input_name)
+
+        else:
+            form_field = GenericFormField(input_type, input_name, input_value,
+                                          autocomplete=autocomplete)
+
+        return should_add_new, form_field
 
     def get_parameter_type(self, input_name, default=INPUT_TYPE_TEXT):
         """
