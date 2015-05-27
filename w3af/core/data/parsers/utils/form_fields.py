@@ -54,6 +54,8 @@ def form_field_factory(attributes, same_name_fields):
     autocomplete = get_value_by_key(attributes, 'autocomplete') or ''
     autocomplete = False if autocomplete.lower() == 'off' else True
 
+    should_add_new = True
+
     if input_type == INPUT_TYPE_SELECT:
         input_values = get_value_by_key(attributes, 'values') or []
         form_field = SelectFormField(input_name, input_values)
@@ -62,8 +64,9 @@ def form_field_factory(attributes, same_name_fields):
         match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_RADIO]
 
         if match_fields:
-            form_field = match_fields[0]
+            form_field = match_fields[-1]
             form_field.values.append(input_value)
+            should_add_new = False
         else:
             form_field = RadioFormField(input_name, [input_value])
 
@@ -71,8 +74,9 @@ def form_field_factory(attributes, same_name_fields):
         match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_CHECKBOX]
 
         if match_fields:
-            form_field = match_fields[0]
+            form_field = match_fields[-1]
             form_field.values.append(input_value)
+            should_add_new = False
         else:
             form_field = CheckboxFormField(input_name, [input_value])
 
@@ -83,7 +87,7 @@ def form_field_factory(attributes, same_name_fields):
         form_field = GenericFormField(input_type, input_name, input_value,
                                       autocomplete=autocomplete)
 
-    return form_field
+    return should_add_new, form_field
 
 
 class FormFieldMixin(object):
@@ -111,6 +115,14 @@ class FormFieldMixin(object):
         return (self.input_type == other.input_type and
                 self.name == other.name and
                 self.value == other.value)
+
+    def __getstate__(self):
+        state = {k: getattr(self, k) for k in self.__slots__}
+        return state
+
+    def __setstate__(self, state):
+        for k, v in state.iteritems():
+            setattr(self, k, v)
 
 
 class GenericFormField(FormFieldMixin):

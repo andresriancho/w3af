@@ -22,8 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import operator
 import random
+import copy
 
 from ruamel.ordereddict import ordereddict as OrderedDict
+from types import NoneType
 
 import w3af.core.controllers.output_manager as om
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
@@ -36,6 +38,7 @@ from w3af.core.data.parsers.utils.form_constants import (DEFAULT_FORM_ENCODING,
                                                          INPUT_TYPE_RADIO,
                                                          INPUT_TYPE_TEXT,
                                                          INPUT_TYPE_SELECT,
+                                                         INPUT_TYPE_PASSWD,
                                                          MODE_ALL, MODE_TB,
                                                          MODE_TMB, MODE_T,
                                                          MODE_B)
@@ -98,8 +101,8 @@ class FormParameters(OrderedDict):
         return self._action
 
     def set_action(self, action):
-        if not isinstance(action, URL):
-            msg = 'The action of a Form must be of url.URL type.'
+        if not isinstance(action, (URL, NoneType)):
+            msg = 'The action of a Form must be of URL type.'
             raise TypeError(msg)
         self._action = action
 
@@ -169,12 +172,13 @@ class FormParameters(OrderedDict):
         input_name = get_value_by_key(attrs, 'name', 'id')
         same_name_fields = self.get(input_name, [])
 
-        form_field = form_field_factory(attrs, same_name_fields)
+        should_add_new, form_field = form_field_factory(attrs, same_name_fields)
         if not form_field:
             return
 
         # Save the form field
-        self.add_form_field(form_field)
+        if should_add_new:
+            self.add_form_field(form_field)
 
         # Return what we've created/saved
         return form_field
@@ -253,7 +257,7 @@ class FormParameters(OrderedDict):
                     value = ''
 
                 # FIXME: Needs to support repeated parameter names
-                self_variant[option_name].set_value(value)
+                self_variant[option_name][0].set_value(value)
 
             yield self_variant
 
@@ -310,7 +314,7 @@ class FormParameters(OrderedDict):
                 # >>>
                 variants_total = min(variants_total, self.MAX_VARIANTS_TOTAL)
 
-                for path in rand.sample(xrange(variants_total),
+                for path in rand.sample(range(variants_total),
                                         self.TOP_VARIANTS):
                     yield self._decode_path(path, matrix)
 
@@ -383,17 +387,25 @@ class FormParameters(OrderedDict):
 
         :return: A copy of myself.
         """
-        init_val = deepish_copy(self).items()
-        copy = FormParameters(init_vals=init_val)
+        init_val = []
+
+        for k, form_field_list in self.iteritems():
+            form_field_list_copy = []
+            for form_field in form_field_list:
+                form_field_list_copy.append(copy.deepcopy(form_field))
+
+            init_val.append((k, form_field_list_copy))
+
+        self_copy = FormParameters(init_vals=init_val)
 
         # Internal variables
-        copy._method = self._method
-        copy._action = self._action
-        copy._autocomplete = self._autocomplete
-        copy._form_encoding = self._form_encoding
-        copy._encoding = self._encoding
+        self_copy.set_method(self.get_method())
+        self_copy.set_action(self.get_action())
+        self_copy.set_autocomplete(self.get_autocomplete())
+        self_copy.set_form_encoding(self.get_form_encoding())
+        self_copy.set_encoding(self.get_encoding())
 
-        return copy
+        return self_copy
 
     def __reduce__(self):
         items = [(k, self[k]) for k in self]
@@ -405,8 +417,17 @@ class FormParameters(OrderedDict):
         return self.__class__, (items, encoding), inst_dict
 
     def __repr__(self):
-        args = (id(self), self._method, self._action, self.keys())
-        return '<FormParams(%s) %s %s %s>' % args
+        items = []
+
+        for key, form_field_list in self.iteritems():
+            for form_field in form_field_list:
+                kv = "'%s': '%s'" % (key, form_field.value)
+                items.append(kv)
+
+        data = ', '.join(items)
+
+        args = (self._method, self._action, data)
+        return '<FormParams (%s %s {%s})>' % args
 
     def get_parameter_type_count(self):
         passwd = text = other = 0
@@ -414,14 +435,15 @@ class FormParameters(OrderedDict):
         #
         # Count the parameter types
         #
-        for _, form_field in self.iteritems():
+        for form_field_list in self.itervalues():
+            for form_field in form_field_list:
 
-            if form_field.input_type == self.INPUT_TYPE_PASSWD:
-                passwd += 1
-            elif form_field.input_type == self.INPUT_TYPE_TEXT:
-                text += 1
-            else:
-                other += 1
+                if form_field.input_type == INPUT_TYPE_PASSWD:
+                    passwd += 1
+                elif form_field.input_type == INPUT_TYPE_TEXT:
+                    text += 1
+                else:
+                    other += 1
 
         return text, passwd, other
 
@@ -464,23 +486,3 @@ class FormParameters(OrderedDict):
             return True
 
         return False
-
-
-def deepish_copy(original):
-    """
-    Much, much faster than deepcopy, for a dict of the simple python types.
-
-    http://writeonly.wordpress.com/2009/05/07/deepcopy-is-a-pig-for-simple-data/
-    """
-    out = OrderedDict().fromkeys(original)
-
-    for k, v in original.iteritems():
-        try:
-            out[k] = v.copy()   # dicts, sets
-        except AttributeError:
-            try:
-                out[k] = v[:]   # lists, tuples, strings, unicode
-            except TypeError:
-                out[k] = v      # ints
-
-    return out
