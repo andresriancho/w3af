@@ -151,7 +151,7 @@ class TestURLParser(unittest.TestCase):
                ' add a "print self.querystring" at the end of URL.__init__'
                ' it shows the problem: id=1%2B2 and then id=1%202')
         raise SkipTest(msg)
-        
+
         qs_value = self.decode_get_qs(u'http://w3af.com/?id=1%2B2')
         expected = u'1+2'
         self.assertEqual(qs_value, expected)
