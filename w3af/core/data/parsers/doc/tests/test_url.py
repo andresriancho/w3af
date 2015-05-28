@@ -310,20 +310,20 @@ class TestURLParser(unittest.TestCase):
 
     def test_parse_qs_case01(self):
         self.assertEqual(parse_qs('id=3'),
-                         QueryString([(u'id', [u'3']),] ))
+                         QueryString([(u'id', [u'3'])]))
     
     def test_parse_qs_case02(self):
         self.assertEqual(parse_qs('id=3+1'),
-                         QueryString([(u'id', [u'3+1']),] ))
+                         QueryString([(u'id', [u'3+1'])]))
     
     def test_parse_qs_repeated_parameter_names(self):
         self.assertEqual(parse_qs('id=3&id=4'),
-                         QueryString([(u'id', [u'3', u'4']),] ))
+                         QueryString([(u'id', [u'3', u'4'])]))
 
     def test_url_with_repeated_parameter_names(self):
         u = URL('http://w3af.com/?id=3&id=4')
         self.assertEqual(u.get_querystring(),
-                         QueryString([(u'id', [u'3', u'4']),] ))
+                         QueryString([(u'id', [u'3', u'4'])]))
 
     def test_parse_qs_case04(self):
         self.assertEqual(parse_qs('id=3&ff=4&id=5'),
@@ -332,7 +332,7 @@ class TestURLParser(unittest.TestCase):
     
     def test_parse_qs_case05(self):
         self.assertEqual(parse_qs('pname'),
-                         QueryString([(u'pname', [u'']),] ))
+                         QueryString([(u'pname', [u''])]))
     
     def test_parse_qs_case06(self):
         expected_parsed_url = QueryString([(u'\u9834\u82f1',
