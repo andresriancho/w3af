@@ -2,7 +2,6 @@
 .dockerignore
 
 ### CircleCI specific ###
-Dockerfile
 circle.yml
 nohup.out
 parsetab.py
