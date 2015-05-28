@@ -22,22 +22,50 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import operator
 import random
+import copy
 
 from ruamel.ordereddict import ordereddict as OrderedDict
+from types import NoneType
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.utils.multipart import is_file_like
-from w3af.core.data.parsers.url import URL
-
-
-DEFAULT_FORM_ENCODING = 'application/x-www-form-urlencoded'
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.parsers.utils.form_fields import (FileFormField,
+                                                      get_value_by_key,
+                                                      SelectFormField,
+                                                      GenericFormField,
+                                                      RadioFormField,
+                                                      CheckboxFormField)
+from w3af.core.data.parsers.utils.form_constants import (DEFAULT_FORM_ENCODING,
+                                                         INPUT_TYPE_CHECKBOX,
+                                                         INPUT_TYPE_RADIO,
+                                                         INPUT_TYPE_TEXT,
+                                                         INPUT_TYPE_SELECT,
+                                                         INPUT_TYPE_PASSWD,
+                                                         INPUT_TYPE_FILE,
+                                                         MODE_ALL, MODE_TB,
+                                                         MODE_TMB, MODE_T,
+                                                         MODE_B)
 
 
 class FormParameters(OrderedDict):
     """
-    This class represents an HTML form.
+    This class represents an HTML form, the information is stored as follows:
+
+        * Instance keys are the form parameter names
+
+        * The value for each key is a list containing one or more values for
+          the parameter name. This list exists to support repeated parameter
+          names.
+
+        * The form meta-data is stored in a different in-memory dict "meta",
+          where we store the form parameter type, multiple values (in the case
+          of radio/checkbox/select inputs), etc.
+
+    The current value for each parameter is only stored in the main instance,
+    not in the "meta" attribute.
 
     :author: Andres Riancho (andres.riancho@gmail.com) |
              Javier Andalia (jandalia =at= gmail.com)
@@ -47,34 +75,30 @@ class FormParameters(OrderedDict):
     MAX_VARIANTS_TOTAL = 10 ** 9
     SEED = 1
 
-    INPUT_TYPE_FILE = 'file'
-    INPUT_TYPE_CHECKBOX = 'checkbox'
-    INPUT_TYPE_RADIO = 'radio'
-    INPUT_TYPE_TEXT = 'text'
-    INPUT_TYPE_HIDDEN = 'hidden'
-    INPUT_TYPE_SUBMIT = 'submit'
-    INPUT_TYPE_SELECT = 'select'
-    INPUT_TYPE_PASSWD = 'password'
+    AVOID_FILLING_FORM_TYPES = {INPUT_TYPE_CHECKBOX,
+                                INPUT_TYPE_RADIO,
+                                INPUT_TYPE_SELECT}
 
-    AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
-    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
+    OPTION_MATRIX_FORM_TYPES = {INPUT_TYPE_CHECKBOX,
+                                INPUT_TYPE_RADIO,
+                                INPUT_TYPE_SELECT}
+
+    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX,
+                            INPUT_TYPE_RADIO,
                             INPUT_TYPE_SELECT}
 
-    # This is used for processing checkboxes
-    SECRET_VALUE = "3_!21#47w@"
-
-    def __init__(self, init_vals=(), encoding=DEFAULT_ENCODING):
+    def __init__(self, init_vals=(), meta=None, encoding=DEFAULT_ENCODING):
         super(FormParameters, self).__init__(init_vals)
+
+        # Form parameter meta-data
+        self.meta = meta if meta is not None else {}
 
         # Internal variables
         # Form method defaults to GET if not found
         self._method = 'GET'
         self._action = None
-        self._types = {}
-        self._file_vars = []
-        self._file_names = {}
-        self._selects = {}
-        self._submit_map = {}
+        self._autocomplete = None
+
         # Two completely different types of encoding, first the enctype for the
         # form: multipart/urlencoded, then the charset encoding (UTF-8, etc.)
         self._form_encoding = DEFAULT_FORM_ENCODING
@@ -99,24 +123,23 @@ class FormParameters(OrderedDict):
         return self._action
 
     def set_action(self, action):
-        if not isinstance(action, URL):
-            msg = 'The action of a Form must be of url.URL type.'
+        if not isinstance(action, (URL, NoneType)):
+            msg = 'The action of a Form must be of URL type.'
             raise TypeError(msg)
         self._action = action
 
-    def get_file_name(self, pname, default=None):
-        """
-        When the form is created by parsing an HTTP request which contains a
-        multipart/form, it is possible to know the name of the file which is
-        being uploaded.
+    def get_autocomplete(self):
+        return self._autocomplete
 
-        This method returns the name of the file being uploaded given the
-        parameter name (pname) where it was sent.
-        """
-        return self._file_names.get(pname, default)
+    def set_autocomplete(self, autocomplete):
+        if autocomplete in (False, True):
+            self._autocomplete = autocomplete
+            return
 
-    def set_file_name(self, pname, fname):
-        self._file_names[pname] = fname
+        if autocomplete is None:
+            autocomplete = 'on'
+
+        self._autocomplete = False if autocomplete.lower() == 'off' else True
 
     def get_method(self):
         """
@@ -127,63 +150,79 @@ class FormParameters(OrderedDict):
     def set_method(self, method):
         self._method = method.upper()
 
+    def get_file_name(self, pname, default=None):
+        """
+        When the form is created by parsing an HTTP request which contains a
+        multipart/form, it is possible to know the name of the file which is
+        being uploaded.
+
+        This method returns the name of the file being uploaded given the
+        parameter name (pname) where it was sent.
+        """
+        form_field_list = self.meta.get(pname, None)
+
+        if form_field_list is None:
+            return default
+
+        for form_field in form_field_list:
+            if isinstance(form_field, FileFormField):
+                return form_field.file_name
+
+        return default
+
+    def set_file_name(self, parameter_name, file_name):
+        form_field_list = self.meta.get(parameter_name)
+
+        if form_field_list is None:
+            raise KeyError('Parameter "%s" not found in form' % parameter_name)
+
+        for form_field in form_field_list:
+            if isinstance(form_field, FileFormField):
+                form_field.file_name = file_name
+                return True
+
+        return False
+
     def get_file_vars(self):
         """
-        :return: The name of the variables which are of file type. Since these
-                 might have been change by a call to __setitem__ where the
-                 developer did not update self._file_vars, I'm also updating
-                 the self._file_vars attribute on each call.
+        :return: The name of the variables which are of file type
         """
-        file_keys = []
+        file_keys = set()
+
+        for k, v_lst in self.meta.iteritems():
+            for v in v_lst:
+                if isinstance(v, FileFormField):
+                    file_keys.add(k)
 
         for k, v_lst in self.items():
             for v in v_lst:
                 if is_file_like(v):
-                    file_keys.append(k)
+                    file_keys.add(k)
 
-        self._file_vars.extend(file_keys)
-        self._file_vars = list(set(self._file_vars))
-        return self._file_vars
+        return list(file_keys)
 
-    def get_value_by_key(self, attrs, *args):
-        for search_attr_key in args:
-            for attr in attrs:
-                if attr[0] == search_attr_key:
-                    return attr[1]
-        return None
-
-    def setdefault_var(self, name, value):
+    def add_form_field(self, form_field):
         """
         Auxiliary setter for name=value with support repeated parameter names
         """
-        vals = self.setdefault(name, [])
-        vals.append(value)
+        form_fields = self.meta.setdefault(form_field.name, [])
+        form_fields.append(form_field)
 
-    def add_file_input(self, attrs):
+        form_values = self.setdefault(form_field.name, [])
+        form_values.append(form_field.value or '')
+
+    def add_field_by_attr_items(self, attr_items):
         """
-        Adds a file input to the Form
-        :param attrs: attrs=[("class", "screen")]
+        This method exists for historical reasons only, use add_field_by_attrs
+        whenever possible.
+
+        :param attr_items: Items for attr
+        :return: The same as add_field_by_attrs
         """
-        name = self.get_value_by_key(attrs, 'name', 'id')
+        attrs = dict(attr_items)
+        return self.add_field_by_attrs(attrs)
 
-        if name:
-            self._file_vars.append(name)
-            self.setdefault_var(name, '')
-            # TODO: This does not work if there are different parameters in a
-            # form with the same name, and different types
-            self._types[name] = self.INPUT_TYPE_FILE
-
-    def add_submit(self, name, value):
-        """
-        This is something I hadn't thought about !
-            <input type="submit" name="b0f" value="Submit Request">
-        """
-        self._submit_map[name] = value
-
-    def get_submit_map(self):
-        return self._submit_map
-
-    def add_input(self, attrs):
+    def add_field_by_attrs(self, attrs):
         """
         Adds an input to the Form object. Input examples:
             <INPUT type="text" name="email"><BR>
@@ -191,121 +230,140 @@ class FormParameters(OrderedDict):
 
         :param attrs: attrs=[("class", "screen")]
         """
-        name = self.get_value_by_key(attrs, 'name', 'id')
+        should_add_new, form_field = self.form_field_factory(attrs)
+        if form_field is None:
+            return None
 
-        if not name:
-            return '', ''
+        # Save the form field
+        if should_add_new:
+            self.add_form_field(form_field)
+
+        # Return what we've created/saved
+        return form_field
+
+    def form_field_factory(self, attributes):
+        """
+        Create a new form field (in most cases) or update an existing FormField
+        instance.
+
+        :param attributes: The tag attributes for the newly found form input
+        :return: The newly created / updated form field
+        """
+        input_name = get_value_by_key(attributes, 'name', 'id')
+
+        if input_name is None:
+            return False, None
+
+        # shortcut
+        snf = same_name_fields = self.meta.get(input_name, [])
 
         # Find the attr type and value, setting the default type to text (if
         # missing in the tag) and the default value to an empty string (if
         # missing)
-        attr_type = self.get_value_by_key(attrs, 'type') or self.INPUT_TYPE_TEXT
-        attr_type = attr_type.lower()
+        input_type = get_value_by_key(attributes, 'type') or INPUT_TYPE_TEXT
+        input_type = input_type.lower()
 
-        value = self.get_value_by_key(attrs, 'value') or ''
+        input_value = get_value_by_key(attributes, 'value') or ''
 
-        if attr_type == self.INPUT_TYPE_SUBMIT:
-            self.add_submit(name, value)
+        autocomplete = get_value_by_key(attributes, 'autocomplete') or ''
+        autocomplete = False if autocomplete.lower() == 'off' else True
+
+        should_add_new = True
+
+        if input_type == INPUT_TYPE_SELECT:
+            input_values = get_value_by_key(attributes, 'values') or []
+            form_field = SelectFormField(input_name, input_values)
+
+        elif input_type == INPUT_TYPE_RADIO:
+            match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_RADIO]
+
+            if match_fields:
+                form_field = match_fields[-1]
+                form_field.values.append(input_value)
+                should_add_new = False
+            else:
+                form_field = RadioFormField(input_name, [input_value])
+
+        elif input_type == INPUT_TYPE_CHECKBOX:
+            match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_CHECKBOX]
+
+            if match_fields:
+                form_field = match_fields[-1]
+                form_field.values.append(input_value)
+                should_add_new = False
+            else:
+                form_field = CheckboxFormField(input_name, [input_value])
+
+        elif input_type == INPUT_TYPE_FILE:
+            form_field = FileFormField(input_name)
+
         else:
-            self.setdefault_var(name, value)
+            form_field = GenericFormField(input_type, input_name, input_value,
+                                          autocomplete=autocomplete)
 
-        # Save the attr_type
-        self._types[name] = attr_type
-        return name, value
+        return should_add_new, form_field
 
-    def get_parameter_type(self, name, default=INPUT_TYPE_TEXT):
-        return self._types.get(name, default)
-
-    def add_check_box(self, attrs):
+    def get_parameter_type(self, input_name, default=INPUT_TYPE_TEXT):
         """
-        Adds checkbox field
+        :return: The input_type for the parameter name
         """
-        name, value = self.add_input(attrs)
+        form_field = self.meta.get(input_name, None)
+        if form_field is None:
+            return default
 
-        if not name:
-            return
+        return form_field[0].input_type
 
-        if name not in self._selects:
-            self._selects[name] = []
+    def get_option_names(self):
+        option_names = []
 
-        if value not in self._selects[name]:
-            self._selects[name].append(value)
-            self._selects[name].append(self.SECRET_VALUE)
+        for form_field_list in self.meta.itervalues():
+            for form_field in form_field_list:
+                if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
+                    option_names.append(form_field.name)
 
-        self._types[name] = self.INPUT_TYPE_CHECKBOX
+        return option_names
 
-    def add_radio(self, attrs):
+    def get_option_matrix(self):
+        option_matrix = []
+
+        for form_field_list in self.meta.itervalues():
+            for form_field in form_field_list:
+                if form_field.input_type in self.OPTION_MATRIX_FORM_TYPES:
+                    option_matrix.append(form_field.values)
+
+        return option_matrix
+
+    def get_variants(self, mode=MODE_TMB):
         """
-        Adds radio field
+        Generate all FormParams' variants by mode:
+          'all' - all values
+          'tb'  - only top and bottom values
+          'tmb' - top, middle and bottom values
+          't'   - top values
+          'b'   - bottom values
         """
-        name, value = self.add_input(attrs)
-
-        if not name:
-            return
-
-        self._types[name] = self.INPUT_TYPE_RADIO
-
-        if name not in self._selects:
-            self._selects[name] = []
-
-        #
-        # FIXME: how do you maintain the same value in self._selects[name]
-        # and in self[name] ?
-        #
-        if value not in self._selects[name]:
-            self._selects[name].append(value)
-
-    def add_select(self, name, options):
-        """
-        Adds one more select field with options
-        Options is list of options attrs (tuples)
-        """
-        if not name:
-            return
-
-        self._selects.setdefault(name, [])
-        self._types[name] = self.INPUT_TYPE_SELECT
-
-        value = ""
-        for option in options:
-            for attr in option:
-                if attr[0].lower() == "value":
-                    value = attr[1]
-                    self._selects[name].append(value)
-
-        self.setdefault_var(name, value)
-
-    def get_variants(self, mode="tmb"):
-        """
-        Generate all Form's variants by mode:
-          "all" - all values
-          "tb" - only top and bottom values
-          "tmb" - top, middle and bottom values
-          "t" - top values
-          "b" - bottom values
-        """
-        if mode not in ("all", "tb", "tmb", "t", "b"):
-            raise ValueError("mode must be in ('all', 'tb', 'tmb', 't', 'b')")
+        if mode not in (MODE_ALL, MODE_TB, MODE_TMB, MODE_T, MODE_B):
+            raise ValueError('Invalid variants mode: "%s"' % mode)
 
         yield self
 
+        option_names = self.get_option_names()
+
         # Nothing to do
-        if not self._selects:
+        if not option_names:
             return
 
-        secret_value = self.SECRET_VALUE
-        sel_names = self._selects.keys()
-        matrix = self._selects.values()
+        matrix = self.get_option_matrix()
 
         # Build self variant based on `sample_path`
         for sample_path in self._get_sample_paths(mode, matrix):
             # Clone self, don't use copy.deepcopy b/c of perf
             self_variant = self.deepish_copy()
 
-            for row_index, col_index in enumerate(sample_path):
-                sel_name = sel_names[row_index]
+            for option_name_index, option_value_index in enumerate(sample_path):
+                option_name = option_names[option_name_index]
                 try:
-                    value = matrix[row_index][col_index]
+                    value = matrix[option_name_index][option_value_index]
                 except IndexError:
                     """
                     This handles "select" tags that have no options inside.
@@ -318,28 +376,24 @@ class FormParameters(OrderedDict):
                     """
                     value = ''
 
-                if value != secret_value:
-                    # FIXME: Needs to support repeated parameter names
-                    self_variant[sel_name] = [value]
-                else:
-                    # FIXME: Is it solution good? Simply delete unwanted
-                    #        send checkboxes?
-                    #
-                    # We might had removed it before
-                    if self_variant.get(sel_name):
-                        del self_variant[sel_name]
+                # FIXME: Needs to support repeated parameter names
+                self_variant[option_name] = [value]
 
             yield self_variant
 
     def _get_sample_paths(self, mode, matrix):
-
-        if mode in ["t", "tb"]:
+        """
+        :param mode: One of the variant modes, as specified by the user
+        :param matrix: The form select/radio matrix
+        :return: Yield the paths to be used to generate the variants
+        """
+        if mode in [MODE_T, MODE_TB]:
             yield [0] * len(matrix)
 
-        if mode in ["b", "tb"]:
+        if mode in [MODE_B, MODE_TB]:
             yield [-1] * len(matrix)
-        # mode in ["tmb", "all"]
-        elif mode in ["tmb", "all"]:
+
+        elif mode in [MODE_TMB, MODE_ALL]:
 
             variants_total = self._get_variants_count(matrix, mode)
 
@@ -348,11 +402,12 @@ class FormParameters(OrderedDict):
             # matrix by using `SEED` in the random generation
             if variants_total > self.TOP_VARIANTS:
                 # Inform user
-                om.out.debug("w3af found an HTML form that has several"
-                             " checkbox, radio and select input tags inside."
-                             " Testing all combinations of those values would"
-                             " take too much time, the framework will only"
-                             " test %s randomly distributed variants." % self.TOP_VARIANTS)
+                msg = ('w3af found an HTML form that has several'
+                       'checkbox, radio and select input tags inside.'
+                       ' Testing all combinations of those values would'
+                       ' take too much time, the framework will only'
+                       ' test %s randomly distributed variants.')
+                om.out.debug(msg % self.TOP_VARIANTS)
 
                 # Init random object. Set our seed so we get the same variants
                 # in two runs. This is important for users because they expect
@@ -377,23 +432,22 @@ class FormParameters(OrderedDict):
                 # >>> xrange(10**9)
                 # xrange(1000000000)
                 # >>>
-
                 variants_total = min(variants_total, self.MAX_VARIANTS_TOTAL)
 
-                for path in rand.sample(xrange(variants_total),
+                for path in rand.sample(range(variants_total),
                                         self.TOP_VARIANTS):
                     yield self._decode_path(path, matrix)
 
             # Less than TOP_VARIANTS elems in matrix
             else:
                 # Compress matrix dimensions to (N x Mc) where 1 <= Mc <=3
-                if mode == "tmb":
+                if mode == MODE_TMB:
                     for row, vector in enumerate(matrix):
                         # Create new 3-length vector
                         if len(vector) > 3:
-                            new_vector = [vector[0]]
-                            new_vector.append(vector[len(vector) / 2])
-                            new_vector.append(vector[-1])
+                            new_vector = [vector[0],
+                                          vector[len(vector) / 2],
+                                          vector[-1]]
                             matrix[row] = new_vector
 
                     # New variants total
@@ -410,7 +464,7 @@ class FormParameters(OrderedDict):
         is the index to select from vector given by matrix[i].
 
         Diego Buthay (dbuthay@gmail.com) made a significant contribution to
-        the used algorithm.
+        the this algorithm.
 
         :param path: integer
         :param matrix: list of lists
@@ -418,7 +472,8 @@ class FormParameters(OrderedDict):
         """
         # Hack to make the algorithm work.
         matrix.append([1])
-        get_count = lambda i: reduce(operator.mul, map(len, matrix[i + 1:]))
+
+        get_count = lambda y: reduce(operator.mul, map(len, matrix[y + 1:]))
         remainder = path
         decoded_path = []
 
@@ -434,16 +489,15 @@ class FormParameters(OrderedDict):
 
     def _get_variants_count(self, matrix, mode):
         """
-
-        :param matrix:
-        :param tmb:
+        :param mode: One of the variant modes, as specified by the user
+        :param matrix: The form select/radio matrix
         """
-        if mode in ["t", "b"]:
+        if mode in [MODE_T, MODE_B]:
             return 1
-        elif mode == "tb":
+        elif mode == MODE_TB:
             return 2
         else:
-            len_fun = (lambda x: min(len(x), 3)) if mode == "tmb" else len
+            len_fun = (lambda x: min(len(x), 3)) if mode == MODE_TMB else len
             return reduce(operator.mul, map(len_fun, matrix))
 
     def deepish_copy(self):
@@ -453,24 +507,20 @@ class FormParameters(OrderedDict):
 
         :return: A copy of myself.
         """
-        init_val = deepish_copy(self).items()
-        copy = FormParameters()
-        copy.update(init_val)
+        init_val = copy.deepcopy(self.items())
+        self_copy = FormParameters(init_vals=init_val, meta=self.meta)
 
         # Internal variables
-        copy._method = self._method
-        copy._action = self._action
-        copy._types = self._types
-        copy._file_vars = self._file_vars
-        copy._file_names = self._file_names
-        copy._selects = self._selects
-        copy._submit_map = self._submit_map
-        copy._form_encoding = self._form_encoding
+        self_copy.set_method(self.get_method())
+        self_copy.set_action(self.get_action())
+        self_copy.set_autocomplete(self.get_autocomplete())
+        self_copy.set_form_encoding(self.get_form_encoding())
+        self_copy.set_encoding(self.get_encoding())
 
-        return copy
+        return self_copy
 
     def __reduce__(self):
-        items = [[k, self[k]] for k in self]
+        items = [(k, self[k]) for k in self]
         inst_dict = vars(self).copy()
         inst_dict.pop('_keys', None)
 
@@ -478,9 +528,18 @@ class FormParameters(OrderedDict):
 
         return self.__class__, (items, encoding), inst_dict
 
-    #def __repr__(self):
-    #    args = (id(self), self._method, self._action, self.keys())
-    #    return '<FormParams(%s) %s %s %s>' % args
+    def __repr__(self):
+        items = []
+
+        for key, value_list in self.iteritems():
+            for value in value_list:
+                kv = "'%s': '%s'" % (key, value)
+                items.append(kv)
+
+        data = ', '.join(items)
+
+        args = (self._method, self._action, data)
+        return '<FormParams (%s %s {%s})>' % args
 
     def get_parameter_type_count(self):
         passwd = text = other = 0
@@ -488,14 +547,15 @@ class FormParameters(OrderedDict):
         #
         # Count the parameter types
         #
-        for _, ptype in self._types.items():
+        for form_field_list in self.meta.itervalues():
+            for form_field in form_field_list:
 
-            if ptype == self.INPUT_TYPE_PASSWD:
-                passwd += 1
-            elif ptype == self.INPUT_TYPE_TEXT:
-                text += 1
-            else:
-                other += 1
+                if form_field.input_type == INPUT_TYPE_PASSWD:
+                    passwd += 1
+                elif form_field.input_type == INPUT_TYPE_TEXT:
+                    text += 1
+                else:
+                    other += 1
 
         return text, passwd, other
 
@@ -538,23 +598,3 @@ class FormParameters(OrderedDict):
             return True
 
         return False
-
-
-def deepish_copy(org):
-    """
-    Much, much faster than deepcopy, for a dict of the simple python types.
-
-    http://writeonly.wordpress.com/2009/05/07/deepcopy-is-a-pig-for-simple-data/
-    """
-    out = OrderedDict().fromkeys(org)
-
-    for k, v in org.iteritems():
-        try:
-            out[k] = v.copy()   # dicts, sets
-        except AttributeError:
-            try:
-                out[k] = v[:]   # lists, tuples, strings, unicode
-            except TypeError:
-                out[k] = v      # ints
-
-    return out

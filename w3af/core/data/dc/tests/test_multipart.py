@@ -123,11 +123,12 @@ class TestMultipartContainer(unittest.TestCase):
     def test_multipart_from_form_params(self):
         form_params = FormParameters()
 
+        form_params.add_field_by_attr_items([('name', 'b'),
+                                             ('type', 'file')])
+        form_params.add_field_by_attr_items([('name', 'a'),
+                                             ('type', 'text'),
+                                             ('value', 'bcd')])
         form_params.set_file_name('b', 'hello.txt')
-        form_params.add_file_input([('name', 'b')])
-        form_params.add_input([('name', 'a'),
-                               ('type', 'text'),
-                               ('value', 'bcd')])
 
         mpc = MultipartContainer(form_params)
 

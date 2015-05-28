@@ -31,7 +31,7 @@ from w3af.core.controllers.misc.decorators import runonce
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 
 # Cohny changed the original http://w3af/spider_man?terminate

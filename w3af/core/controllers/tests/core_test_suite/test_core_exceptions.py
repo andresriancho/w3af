@@ -23,7 +23,7 @@ import unittest
 from mock import patch, call
 from nose.plugins.attrib import attr
 
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.factory import factory

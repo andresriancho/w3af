@@ -21,9 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.dc.generic.form import Form
-from w3af.core.data.parsers.encode_decode import urlencode
-from w3af.core.data.parsers.url import parse_qs
-from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.parsers.utils.encode_decode import urlencode
+from w3af.core.data.parsers.doc.url import parse_qs
+from w3af.core.data.parsers.utils.form_fields import GenericFormField
+from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_CHECKBOX,
+                                                         INPUT_TYPE_RADIO,
+                                                         INPUT_TYPE_TEXT,
+                                                         INPUT_TYPE_SELECT)
 
 
 class URLEncodedForm(Form):
@@ -36,9 +40,9 @@ class URLEncodedForm(Form):
     ENCODING = 'application/x-www-form-urlencoded'
 
     AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
-    AVOID_STR_DUPLICATES = {FormParameters.INPUT_TYPE_CHECKBOX,
-                            FormParameters.INPUT_TYPE_RADIO,
-                            FormParameters.INPUT_TYPE_SELECT}
+    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX,
+                            INPUT_TYPE_RADIO,
+                            INPUT_TYPE_SELECT}
 
     @staticmethod
     def is_urlencoded(headers):
@@ -62,9 +66,13 @@ class URLEncodedForm(Form):
         if not URLEncodedForm.can_parse(post_data):
             raise ValueError('Failed to parse post_data as Form.')
 
-        data = parse_qs(post_data)
+        parsed_data = parse_qs(post_data)
         urlencoded_form = cls()
-        urlencoded_form.update(data.items())
+
+        for key, value_list in parsed_data.iteritems():
+            for value in value_list:
+                form_field = GenericFormField(INPUT_TYPE_TEXT, key, value)
+                urlencoded_form.add_form_field(form_field)
 
         return urlencoded_form
 
@@ -81,7 +89,6 @@ class URLEncodedForm(Form):
         """
         d = dict()
         d.update(self.items())
-        d.update(self.get_form_params().get_submit_map())
 
         for key in d:
             key_type = self.get_parameter_type(key, default=None)

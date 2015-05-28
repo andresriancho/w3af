@@ -26,8 +26,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.exceptions import BaseFrameworkException
-
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.options.bool_option import BoolOption
 
 

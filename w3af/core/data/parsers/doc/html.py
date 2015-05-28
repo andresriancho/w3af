@@ -19,10 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
-
-from w3af.core.data.parsers.sgml import SGMLParser
+from w3af.core.data.parsers.doc.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
+from w3af.core.data.parsers.utils.form_fields import get_value_by_key
+from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_TEXTAREA,
+                                                         INPUT_TYPE_SELECT)
 from w3af.core.data.parsers.utils.form_params import (FormParameters,
                                                       DEFAULT_FORM_ENCODING)
 
@@ -51,16 +52,16 @@ class HTMLParser(SGMLParser):
         self._saved_inputs = []
 
         # For <textarea> elems parsing
-        self._textarea_tag_name = ''
-        self._textarea_data = ''
-
-        # For <select> elems parsing
-        self._selects = []
+        self._text_area_tag_name = None
+        self._text_area_data = None
 
         # Save for using in form parsing
         self._source_url = http_resp.get_url()
-
         self._re_urls = set()
+
+        # For <select> and <option> parsing
+        self._select_option_values = set()
+        self._select_input_name = None
 
         # Call parent's __init__
         SGMLParser.__init__(self, http_resp)
@@ -112,11 +113,12 @@ class HTMLParser(SGMLParser):
         Handle the script tags
         """
         SGMLParser._handle_script_tag_start(self, tag, tag_name, attrs)
-        
+
         if tag.text is not None:
             re_extract = ReExtract(tag.text.strip(),
                                    self._base_url,
                                    self._encoding)
+            re_extract.parse()
             self._re_urls.update(re_extract.get_references())
 
     @property
@@ -144,22 +146,18 @@ class HTMLParser(SGMLParser):
         """
         SGMLParser._handle_form_tag_start(self, tag, tag_name, attrs)
 
-        # Get the 'method'
         method = attrs.get('method', 'GET').upper()
-
-        # Get the action
         action = attrs.get('action', None)
-        missing_action = action is None
-
-        # Get the encoding
         form_encoding = attrs.get('enctype', DEFAULT_FORM_ENCODING)
+        autocomplete = attrs.get('autocomplete', None)
 
-        if missing_action:
+        if action is None:
             action = self._source_url
         else:
             action = self._decode_url(action)
             try:
-                action = self._base_url.url_join(action, encoding=self._encoding)
+                action = self._base_url.url_join(action,
+                                                 encoding=self._encoding)
             except ValueError:
                 # The URL in the action is invalid, the best thing we can do
                 # is to guess, and our best guess is that the URL will be the
@@ -171,6 +169,8 @@ class HTMLParser(SGMLParser):
         form_params.set_method(method)
         form_params.set_action(action)
         form_params.set_form_encoding(form_encoding)
+        form_params.set_autocomplete(autocomplete)
+
         self._forms.append(form_params)
 
         # Now I verify if there are any input tags that were found
@@ -189,31 +189,25 @@ class HTMLParser(SGMLParser):
         """
         SGMLParser.close(self)
 
-        # Cleanup
-        self._saved_inputs = []
+        # Don't call clear() here! That would call clear() on SGMLParser and
+        # remove all the forms, references, etc.
+        self._html_internals_clear()
 
-    ## <input> handler methods
-    _handle_input_tag_start = _form_elems_generic_handler
+    def _html_internals_clear(self):
+        self._saved_inputs = []
+        self._select_option_values = set()
+        self._select_input_name = None
+        self._text_area_tag_name = None
+        self._text_area_data = None
+
+    def clear(self):
+        super(HTMLParser, self).clear()
+        self._html_internals_clear()
 
     def _handle_input_tag_inside_form(self, tag, tag_name, attrs):
         # We are working with the last form
         form_params = self._forms[-1]
-        _type = attrs.get('type', '').lower()
-        items = attrs.items()
-
-        if _type == 'file':
-            # Let the form know, that this is a file input
-            form_params.add_file_input(items)
-
-        elif _type == 'radio':
-            form_params.add_radio(items)
-
-        elif _type == 'checkbox':
-            form_params.add_check_box(items)
-
-        else:
-            # Simply add all the other input types
-            form_params.add_input(items)
+        form_params.add_field_by_attrs(attrs)
 
     def _handle_input_tag_outside_form(self, tag, tag_name, attrs):
         # I'm going to use this rule set:
@@ -230,82 +224,87 @@ class HTMLParser(SGMLParser):
         else:
             self._handle_input_tag_inside_form(tag, tag_name, attrs)
 
-    ## <textarea> handler methods
-    _handle_textarea_tag_start = _form_elems_generic_handler
-
     def _handle_textarea_tag_inside_form(self, tag, tag_name, attrs):
         """
         Handler for textarea tag inside a form
         """
+        SGMLParser._handle_textarea_tag_start(self, tag, tag_name, attrs)
+
         # Set the data and name
-        self._textarea_data = tag.text
-        self._textarea_tag_name = attrs.get('name', '') or attrs.get('id', '')
-
-        if not self._textarea_tag_name:
-            om.out.debug('HTMLParser found a textarea tag without a '
-                         'name attr, IGNORING!')
-            self._inside_textarea = False
-        else:
-            self._inside_textarea = True
-
-    _handle_textarea_tag_outside_form = _handle_textarea_tag_inside_form
+        self._text_area_data = tag.text
+        self._text_area_tag_name = get_value_by_key(attrs, 'name', 'id')
 
     def _handle_textarea_tag_end(self, tag):
         """
         Handler for textarea end tag
         """
         SGMLParser._handle_textarea_tag_end(self, tag)
-        attrs = {'name': self._textarea_tag_name,
-                 'value': self._textarea_data}
+
+        if not self._text_area_tag_name:
+            return
+
+        if not self._text_area_data:
+            return
+
+        attrs = {'name': self._text_area_tag_name,
+                 'value': self._text_area_data,
+                 'type': INPUT_TYPE_TEXTAREA}
+
         if not self._forms:
             self._saved_inputs.append(attrs)
         else:
             form_params = self._forms[-1]
-            form_params.add_input(attrs.items())
+            form_params.add_field_by_attrs(attrs)
 
-    ## <select> handler methods
-    _handle_select_tag_start = _form_elems_generic_handler
+        self._text_area_tag_name = None
+        self._text_area_data = None
+
+    def _handle_select_tag_inside_form(self, tag, tag_name, attrs):
+        """
+        Handler for select tag inside a form
+        """
+        select_name = get_value_by_key(attrs, 'name', 'id')
+
+        if select_name:
+            self._select_input_name = select_name
 
     def _handle_select_tag_end(self, tag):
         """
         Handler for select end tag
         """
         SGMLParser._handle_select_tag_end(self, tag)
-        if self._forms:
-            form_params = self._forms[-1]
-            for sel_name, optvalues in self._selects:
-                # First convert  to list of tuples before passing it as arg
-                optvalues = [tuple(attrs.items()) for attrs in optvalues]
-                form_params.add_select(sel_name, optvalues)
 
-            # Reset selects container
-            self._selects = []
+        if not self._forms:
+            return
 
-    def _handle_select_tag_inside_form(self, tag, tag_name, attrs):
-        """
-        Handler for select tag inside a form
-        """
-        # Get the name
-        select_name = attrs.get('name', '') or attrs.get('id', '')
+        if not self._select_input_name:
+            return
 
-        if not select_name:
-            om.out.debug('HTMLParser found a select tag without a '
-                         'name attr, IGNORING!')
-            self._inside_select = False
-        else:
-            self._selects.append((select_name, []))
-            self._inside_select = True
+        attrs = {'name': self._select_input_name,
+                 'values': list(self._select_option_values),
+                 'type': INPUT_TYPE_SELECT}
 
-    _handle_select_tag_outside_form = _handle_select_tag_inside_form
+        # Work with the last form
+        form_params = self._forms[-1]
+        form_params.add_field_by_attrs(attrs)
 
-    ## <option> handler methods
-    _handle_option_tag_start = _form_elems_generic_handler
+        # Reset selects container
+        self._select_option_values = set()
+        self._select_input_name = None
 
     def _handle_option_tag_inside_form(self, tag, tag_name, attrs):
         """
         Handler for option tag inside a form
         """
-        if self._inside_select:
-            self._selects[-1][1].append(attrs)
+        option_value = get_value_by_key(attrs, 'value')
 
+        if option_value:
+            self._select_option_values.add(option_value)
+
+    _handle_input_tag_start = _form_elems_generic_handler
+    _handle_textarea_tag_start = _form_elems_generic_handler
+    _handle_textarea_tag_outside_form = _handle_textarea_tag_inside_form
+
+    _handle_select_tag_start = _form_elems_generic_handler
+    _handle_option_tag_start = _form_elems_generic_handler
     _handle_option_tag_outside_form = _handle_option_tag_inside_form

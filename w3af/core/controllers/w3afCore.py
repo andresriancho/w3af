@@ -301,7 +301,7 @@ class w3afCore(object):
         kb.cleanup()
 
         # Stop the parser subprocess
-        parser_cache.dpc.stop_workers()
+        parser_cache.dpc.clear()
 
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
@@ -374,7 +374,7 @@ class w3afCore(object):
         self.uri_opener.end()
         remove_temp_dir(ignore_errors=True)
         # Stop the parser subprocess
-        parser_cache.dpc.stop_workers()
+        parser_cache.dpc.clear()
 
     def pause(self, pause_yes_no):
         """
@@ -439,7 +439,7 @@ class w3afCore(object):
             stop_profiling(self)
 
             # Stop the parser subprocess
-            parser_cache.dpc.stop_workers()
+            parser_cache.dpc.clear()
 
             self.status.stop()
 

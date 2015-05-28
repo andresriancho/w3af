@@ -25,6 +25,8 @@ import StringIO
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.utils.multipart import get_boundary, encode_as_multipart
 from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_TEXT,
+                                                         INPUT_TYPE_FILE)
 
 
 class MultipartContainer(Form):
@@ -75,12 +77,16 @@ class MultipartContainer(Form):
 
             for key in fs.list:
                 if key.filename is None:
-                    form_params.add_input([('name', key.name),
-                                           ('type', 'text'),
-                                           ('value', key.file.read())])
+                    attrs = {'type': INPUT_TYPE_TEXT,
+                             'name': key.name,
+                             'value': key.file.read()}
+                    form_params.add_field_by_attrs(attrs)
                 else:
+                    attrs = {'type': INPUT_TYPE_FILE,
+                             'name': key.name,
+                             'value': key.file.read()}
+                    form_params.add_field_by_attrs(attrs)
                     form_params.set_file_name(key.name, key.filename)
-                    form_params.add_file_input([('name', key.name)])
 
             return cls(form_params)
 

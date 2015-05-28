@@ -31,7 +31,7 @@ from w3af.plugins.crawl.web_spider import web_spider
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wivet import get_wivet_http
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 

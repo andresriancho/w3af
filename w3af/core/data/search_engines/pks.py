@@ -22,10 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.data.search_engines.search_engine import SearchEngine
-from w3af.core.data.parsers.sgml import SGMLParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.sgml import SGMLParser
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.exceptions import (HTTPRequestException,
                                               BaseFrameworkException)
 

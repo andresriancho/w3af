@@ -27,19 +27,17 @@ from lxml import etree
 from lxml.etree import XMLSyntaxError
 
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
-
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
-from w3af.core.data.parsers.url import URL
-from w3af.core.data.parsers.http_request_parser import http_request_parser
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 
 
 class import_results(CrawlPlugin):

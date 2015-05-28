@@ -26,9 +26,8 @@ import csv
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
-
 from w3af import ROOT_PATH
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.esmre.esm_multi_in import esm_multi_in
 from w3af.core.data.request.fuzzable_request import FuzzableRequest

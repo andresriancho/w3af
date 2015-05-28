@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.controllers.bruteforce.bruteforcer import (password_bruteforcer,
                                                      user_password_bruteforcer)
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 class test_password_bruteforcer(unittest.TestCase):

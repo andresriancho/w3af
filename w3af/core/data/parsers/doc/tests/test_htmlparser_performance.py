@@ -31,9 +31,9 @@ from memory_profiler import profile
 from w3af import ROOT_PATH
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.html import HTMLParser
-from w3af.core.data.parsers.url import URL
-from w3af.core.data.parsers.tests.generate_html_file import OUTPUT_FILE
+from w3af.core.data.parsers.doc.html import HTMLParser
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.parsers.doc.tests.generate_html_file import OUTPUT_FILE
 
 
 class TestHTMLParserPerformance(unittest.TestCase):
@@ -57,7 +57,7 @@ class TestHTMLParserPerformance(unittest.TestCase):
 
         for _ in xrange(40):
             p = HTMLParser(response)
-            p.get_dom()
+            p.parse()
             #parsers.append(p)
 
         # Clear any reference to the parser

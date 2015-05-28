@@ -30,7 +30,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.url.handlers.cookie_handler import CookieHandler
 from w3af.core.data.url.HTTPRequest import HTTPRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 

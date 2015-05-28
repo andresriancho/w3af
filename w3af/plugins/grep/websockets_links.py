@@ -20,14 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
-from lxml import etree
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.parsers.javascript import JavaScriptParser
+from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
+from w3af.core.data.parsers.doc.javascript import JavaScriptParser
 from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.kb.info import Info
-
 import w3af.core.controllers.output_manager as om
+
 
 WS_URL = "ws://"
 WSS_URL = "wss://"
@@ -36,7 +36,6 @@ WEBSOCKETS_URL_RE = re.compile('["|\']{1}wss?:\/\/'
                                '(\.[a-z\.]{2,6})?'
                                '(\:\d{1,5})?'
                                '([\da-z\.-\_\/])*["|\']{1}', re.U | re.I)
-SCRIPT_TAG_XPATH = "//script"
 
 
 def find_websockets_links(text):
@@ -81,16 +80,11 @@ class websockets_links(GrepPlugin):
             ws_links = find_websockets_links(response.body)
         else:
             # if it is html we should search inside <script> tags only
-            dom = response.get_dom()
-
-            if dom is None:
-                return
-
             ws_links = set()
-            script_tag_xpath = etree.XPath(SCRIPT_TAG_XPATH)
+            get_tags = mp_doc_parser.get_tags_by_filter
 
-            for script in script_tag_xpath(dom):
-                for ws_link in find_websockets_links(script.text):
+            for tag in get_tags(response, ('script',), yield_text=True):
+                for ws_link in find_websockets_links(tag.text):
                     ws_links.add(ws_link)
 
         # if we didn't find any link manual inspection is needed

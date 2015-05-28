@@ -103,7 +103,7 @@ class TestStrategy(unittest.TestCase):
         core.scan_start_hook()
         
         strategy = w3af_core_strategy(core)
-        strategy.join_all_consumers = Mock(side_effect=Exception)
+        strategy._fuzzable_request_router = Mock(side_effect=Exception)
         
         strategy.terminate = Mock(wraps=strategy.terminate)
         
@@ -127,7 +127,7 @@ class TestStrategy(unittest.TestCase):
         target['target'].set_value(INVALID_TARGET)
         core.target.set_options(target)
         
-        core.plugins.set_plugins(['sqli',], 'audit')        
+        core.plugins.set_plugins(['sqli'], 'audit')
         core.plugins.init_plugins()
         
         core.verify_environment()

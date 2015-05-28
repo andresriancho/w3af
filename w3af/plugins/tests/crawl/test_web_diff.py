@@ -24,7 +24,7 @@ from nose.plugins.attrib import attr
 from mock import patch, call
 
 from w3af import ROOT_PATH
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 

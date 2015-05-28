@@ -27,7 +27,7 @@ from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.db.variant_db import (VariantDB, PARAMS_MAX_VARIANTS,
                                           PATH_MAX_VARIANTS)
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
@@ -176,8 +176,8 @@ class TestVariantDB(unittest.TestCase):
 
     def test_clean_form_fuzzable_request_form(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "abc")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 

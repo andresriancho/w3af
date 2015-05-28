@@ -26,9 +26,9 @@ from w3af.core.ui.gui import helpers
 from w3af.core.ui.gui.constants import W3AF_ICON
 from w3af.core.ui.gui.user_help.open_help import open_help
 
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.options.preferences import Preferences
-from w3af.core.data.parsers.sgml import SGMLParser
+from w3af.core.data.parsers.doc.sgml import SGMLParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 

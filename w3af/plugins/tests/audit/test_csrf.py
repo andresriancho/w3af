@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from nose.plugins.attrib import attr
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-
 from w3af.plugins.audit.csrf import csrf
-
 from w3af.core.data.url.HTTPResponse import HTTPResponse
-from w3af.core.data.parsers.url import URL, parse_qs
+from w3af.core.data.parsers.doc.url import URL, parse_qs
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -137,7 +136,7 @@ class TestCSRF(PluginTest):
         # True, items in DC, POST (passes strict mode) and cookies
         url = URL('http://moth/')
         form_params = FormParameters()
-        form_params.add_input([('name', 'test'), ('type', 'text')])
+        form_params.add_field_by_attr_items([('name', 'test'), ('type', 'text')])
         form = URLEncodedForm(form_params)
         req = FuzzableRequest(url, method='POST', post_data=form)
         suitable = self.csrf_plugin._is_suitable(req)

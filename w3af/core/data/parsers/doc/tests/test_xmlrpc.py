@@ -23,7 +23,8 @@ import unittest
 import xml.sax
 import cgi
 
-from w3af.core.data.parsers.xmlrpc import XmlRpcReadHandler, XmlRpcWriteHandler
+from w3af.core.data.parsers.doc.xmlrpc import XmlRpcReadHandler, XmlRpcWriteHandler
+
 
 XML_WITH_FUZZABLE = """\
 <methodCall>

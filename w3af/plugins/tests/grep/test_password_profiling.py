@@ -23,7 +23,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.grep.password_profiling import password_profiling
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 class TestPasswordProfiling(PluginTest):

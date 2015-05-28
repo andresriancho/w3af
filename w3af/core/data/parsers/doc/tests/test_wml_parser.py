@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.parsers.wml_parser import WMLParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.wml_parser import WMLParser
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
 from w3af.core.data.dc.headers import Headers
 
@@ -39,9 +39,10 @@ class TestWMLParser(unittest.TestCase):
                     <postfield name="tipdat" value="D"/>
                 </go>"""
         
-        response = HTTPResponse( 200, form, Headers(), self.url, self.url)
+        response = HTTPResponse(200, form, Headers(), self.url, self.url)
         
         w = WMLParser(response)
+        w.parse()
         forms = w.get_forms()
         
         self.assertEqual(len(forms), 1)
@@ -58,6 +59,7 @@ class TestWMLParser(unittest.TestCase):
         response = HTTPResponse(200, '<a href="/index.aspx">ASP.NET</a>',
                                 Headers(), self.url, self.url)
         w = WMLParser(response)
+        w.parse()
         re, parsed = w.get_references()
         
         # TODO: Shouldn't this be the other way around?!

@@ -20,13 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import re
+from cStringIO import StringIO
 
 from lxml import etree
-from cStringIO import StringIO
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.kb.tests.test_vuln import MockVuln
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.db.history import HistoryItem
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.dc.headers import Headers

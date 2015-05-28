@@ -28,7 +28,7 @@ from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.factory import dc_from_form_params
@@ -192,8 +192,8 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_sent_post_data(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", """d'z"0""")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", """d'z"0""")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
 
         form = dc_from_form_params(form_params)
 
@@ -202,8 +202,8 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_from_form_POST(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "abc")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 
@@ -218,8 +218,8 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_from_form_GET(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "abc")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/'))
         form_params.set_method('GET')
 
@@ -239,8 +239,8 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_from_form_default(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "abc")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/'))
         # Without a method
         #form_params.set_method('GET')
@@ -277,8 +277,8 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def create_simple_fuzzable_request(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "abc")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 

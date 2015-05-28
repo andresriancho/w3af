@@ -28,7 +28,7 @@ from nose.plugins.attrib import attr
 from vulndb.db_vuln import Reference, DBVuln
 
 from w3af.core.data.kb.info import Info
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant

@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 import gobject
 import pango
+from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 
 from w3af.core.ui.gui.httpeditor import HttpEditor
 from w3af.core.ui.gui.entries import RememberingVPaned
-from w3af.core.data.parsers.http_request_parser import http_request_parser
 
 CR = '\r'
 LF = '\n'

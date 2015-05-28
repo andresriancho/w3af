@@ -22,8 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.fuzzer.form_filler import smart_fill, smart_fill_file
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
-from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.parsers.utils.form_constants import (INPUT_TYPE_CHECKBOX,
+                                                         INPUT_TYPE_RADIO,
+                                                         INPUT_TYPE_SELECT,
+                                                         INPUT_TYPE_TEXT,
+                                                         INPUT_TYPE_PASSWD)
 
 
 class Form(KeyValueContainer):
@@ -34,9 +39,9 @@ class Form(KeyValueContainer):
              Javier Andalia (jandalia =at= gmail.com)
     """
     AVOID_FILLING_FORM_TYPES = {'checkbox', 'radio', 'select'}
-    AVOID_STR_DUPLICATES = {FormParameters.INPUT_TYPE_CHECKBOX,
-                            FormParameters.INPUT_TYPE_RADIO,
-                            FormParameters.INPUT_TYPE_SELECT}
+    AVOID_STR_DUPLICATES = {INPUT_TYPE_CHECKBOX,
+                            INPUT_TYPE_RADIO,
+                            INPUT_TYPE_SELECT}
 
     def __init__(self, form_params=None):
         """
@@ -60,7 +65,13 @@ class Form(KeyValueContainer):
     def get_form_params(self):
         return self.form_params
 
-    def get_parameter_type(self, var_name, default=FormParameters.INPUT_TYPE_TEXT):
+    def get_autocomplete(self):
+        return self.form_params.get_autocomplete()
+
+    def add_form_field(self, form_field):
+        return self.form_params.add_form_field(form_field)
+
+    def get_parameter_type(self, var_name, default=INPUT_TYPE_TEXT):
         return self.form_params.get_parameter_type(var_name, default=default)
 
     def get_file_vars(self):
@@ -156,6 +167,8 @@ class Form(KeyValueContainer):
         :return: Fills all the empty parameters (which should be filled)
                  using the smart_fill function.
         """
+        file_variables = self.get_file_vars()
+
         for var_name, value, path, setter in self.iter_setters():
             if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
                 continue
@@ -168,7 +181,7 @@ class Form(KeyValueContainer):
             # The basic idea here is that if the form has files in it, we'll
             # need to fill that input with a file (gif, txt, html) in order
             # to go through the form validations
-            if var_name in self.get_file_vars():
+            if var_name in file_variables:
                 file_name = self.get_file_name(var_name, None)
                 setter(smart_fill_file(var_name, file_name))
 
@@ -198,9 +211,9 @@ class Form(KeyValueContainer):
 
             ptype = self.get_parameter_type(token.get_name()).lower()
 
-            if ptype == FormParameters.INPUT_TYPE_PASSWD:
+            if ptype == INPUT_TYPE_PASSWD:
                 pass_token = token
-            elif ptype == FormParameters.INPUT_TYPE_TEXT:
+            elif ptype == INPUT_TYPE_TEXT:
                 user_token = token
 
         return user_token, pass_token
@@ -215,7 +228,7 @@ class Form(KeyValueContainer):
         assert text == 1, 'Login form with username is required'
 
         for k, v, path, setter in self.iter_setters():
-            if self.get_parameter_type(k).lower() == FormParameters.INPUT_TYPE_TEXT:
+            if self.get_parameter_type(k).lower() == INPUT_TYPE_TEXT:
                 setter(username)
 
     def set_login_password(self, password):
@@ -225,5 +238,5 @@ class Form(KeyValueContainer):
         assert self.is_login_form(), 'Login form is required'
 
         for k, v, path, setter in self.iter_setters():
-            if self.get_parameter_type(k).lower() == FormParameters.INPUT_TYPE_PASSWD:
+            if self.get_parameter_type(k).lower() == INPUT_TYPE_PASSWD:
                 setter(password)

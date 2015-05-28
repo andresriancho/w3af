@@ -30,14 +30,13 @@ from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.misc.cpickle_dumps import cpickle_dumps
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.shell import Shell
 from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.constants.severity import INFORMATION, LOW, MEDIUM, HIGH
-from weakref import WeakValueDictionary
 
 
 class BasicKnowledgeBase(object):
@@ -397,7 +396,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             return obj.get_uniq_id()
         else:
             if isinstance(obj, collections.Iterable):
-                concat_all = ''.join([str(i) for i in obj])
+                concat_all = ''.join([str(hash(i)) for i in obj])
                 return str(hash(concat_all))
             else:
                 return str(hash(obj))

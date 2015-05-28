@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.constants.severity as severity
 
+from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_PASSWD
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -32,9 +33,6 @@ class form_cleartext_password(GrepPlugin):
     Finds forms with password inputs on every page and checks if they are secure
     :author: Dmitry Roshchin (nixwizard@gmail.com)
     """
-    def __init__(self):
-        GrepPlugin.__init__(self)
-
     def grep(self, request, response):
         """
         Plugin entry point, test existence of HTML forms containing
@@ -44,45 +42,48 @@ class form_cleartext_password(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         """
-        url = request.get_url()
-        proto = url.get_protocol()
-        url_string = url.url_string
-
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
         except BaseFrameworkException:
             # Failed to find a suitable parser for the document
             return
 
-        for form in dp.get_forms():
-            for p in form.keys():
-                type = form._types.get(p)
-                if type == 'password':
-                    action = form.get_action()
-                    action_proto = action.get_protocol()
-                    # form is to be submitted over http
-                    if action_proto == 'http':
-                        desc = 'The URL: "%s" contains a <form> tag' \
-                               ' which submits credentials over HTTP'
-                        desc = desc % url_string
-                        v = Vuln('Insecure password submission over HTTP', desc,
-                                 severity.MEDIUM, response.id, self.get_name())
-                        v.set_url(response.get_url())
-                        self.kb_append_uniq(self, 'form_cleartext_password', v)
-                        break
+        url = request.get_url()
+        proto = url.get_protocol()
+        url_string = url.url_string
 
-                    else:
-                        # form was received over http
-                        if proto == 'http':
-                            desc = 'The URL: "%s" was delivered over the' \
-                                   ' insecure HTTP protocol and has <form>' \
-                                   ' which contains a password input'
-                            desc = desc % url_string
-                            v = Vuln('Insecure password form access over HTTP',
-                                     desc, severity.MEDIUM, response.id,
-                                     self.get_name())
-                            self.kb_append_uniq(self, 'form_cleartext_password', v)
-                            break
+        for form in dp.get_forms():
+
+            action = form.get_action()
+            action_proto = action.get_protocol()
+
+            for p in form.keys():
+                input_type = form.get_parameter_type(p)
+                if input_type != INPUT_TYPE_PASSWD:
+                    continue
+
+                # form is to be submitted over http
+                if action_proto == 'http':
+                    desc = ('The URL: "%s" contains a <form> tag'
+                            ' which submits credentials over HTTP')
+                    desc %= url_string
+                    v = Vuln('Insecure password submission over HTTP', desc,
+                             severity.MEDIUM, response.id, self.get_name())
+                    v.set_url(response.get_url())
+                    self.kb_append_uniq(self, 'form_cleartext_password', v)
+                    break
+
+                # form was received over http
+                if proto == 'http':
+                    desc = ('The URL: "%s" was delivered over the'
+                            ' insecure HTTP protocol and has <form>'
+                            ' which contains a password input')
+                    desc %= url_string
+                    v = Vuln('Insecure password form access over HTTP',
+                             desc, severity.MEDIUM, response.id,
+                             self.get_name())
+                    self.kb_append_uniq(self, 'form_cleartext_password', v)
+                    break
 
     def get_long_desc(self):
         """

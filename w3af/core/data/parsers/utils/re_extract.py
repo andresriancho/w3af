@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
-from w3af.core.data.parsers.baseparser import BaseParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.baseparser import BaseParser
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers import URL_RE, RELATIVE_URL_RE
 
 
@@ -47,17 +47,17 @@ class ReExtract(BaseParser):
         self._encoding = encoding
         self._base_url = base_url
         self._require_quotes = require_quotes
+        self._doc_string = doc_string
+        self._relative = relative
 
-        self._parse(doc_string, relative)
-
-    def _parse(self, doc_string, relative):
+    def parse(self):
         """
         Get the URLs using a regex
         """
-        self._extract_full_urls(doc_string)
+        self._extract_full_urls(self._doc_string)
 
-        if relative:
-            self._extract_relative_urls(doc_string)
+        if self._relative:
+            self._extract_relative_urls(self._doc_string)
 
     def _is_quoted(self, url_mo, doc_string):
         start, end = url_mo.span()

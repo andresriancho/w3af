@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.parsers.baseparser import BaseParser
+from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 
 
@@ -33,7 +33,6 @@ class JavaScriptParser(BaseParser):
         super(JavaScriptParser, self).__init__(http_response)
 
         self._re_urls = set()
-        self._parse(http_response)
 
     @staticmethod
     def can_parse(http_resp):
@@ -52,13 +51,14 @@ class JavaScriptParser(BaseParser):
 
         return False
 
-    def _parse(self, http_response):
+    def parse(self):
         """
         Get the URLs using a regex
         """
-        doc_string = http_response.get_body()
-        re_extract = ReExtract(doc_string, self._base_url, self._encoding,
+        re_extract = ReExtract(self.get_http_response().get_body(),
+                               self._base_url, self._encoding,
                                require_quotes=True)
+        re_extract.parse()
         self._re_urls = re_extract.get_references()
 
     def get_references(self):

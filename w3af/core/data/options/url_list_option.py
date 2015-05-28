@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.list_option import ListOption 
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.options.option_types import URL_LIST
 
 

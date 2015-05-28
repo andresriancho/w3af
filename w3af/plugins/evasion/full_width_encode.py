@@ -23,7 +23,7 @@ import urllib
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
-from w3af.core.data.parsers.url import parse_qs
+from w3af.core.data.parsers.doc.url import parse_qs
 
 
 class full_width_encode(EvasionPlugin):

@@ -23,22 +23,18 @@ import itertools
 import os.path
 import re
 import codecs
-
 from collections import namedtuple
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
-
 from w3af import ROOT_PATH
-
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-
 from w3af.core.data.fuzzer.utils import rand_alnum
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE, BOOL, LIST
 from w3af.core.data.options.option_list import OptionList

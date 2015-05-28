@@ -25,11 +25,9 @@ import urllib2
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.config as cf
-
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.controllers.ci.moth import get_moth_http
-
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.HTTPRequest import HTTPRequest

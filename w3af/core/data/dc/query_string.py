@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.data.parsers.encode_decode as enc_dec
+import w3af.core.data.parsers.utils.encode_decode as enc_dec
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer

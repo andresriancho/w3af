@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_TEXT
 from w3af.core.data.parsers.utils.tests.test_form_params import (form_with_radio,
                                                                  form_with_checkbox,
                                                                  form_select_cars,
@@ -64,11 +64,8 @@ class TestURLEncodedForm(unittest.TestCase):
         self.assertFalse(form.is_password_change_form())
         self.assertFalse(form.is_registration_form())
 
-        self.assertEqual(form.get_parameter_type('a'),
-                         FormParameters.INPUT_TYPE_TEXT)
-
-        self.assertEqual(form.get_parameter_type('b'),
-                         FormParameters.INPUT_TYPE_TEXT)
+        self.assertEqual(form.get_parameter_type('a'), INPUT_TYPE_TEXT)
+        self.assertEqual(form.get_parameter_type('b'), INPUT_TYPE_TEXT)
 
     def test_form_with_plus_value(self):
         """
@@ -136,7 +133,7 @@ class TestURLEncodedForm(unittest.TestCase):
                       'value': 'ñçÑÇ'}]
 
         form_params = create_form_params_helper(form_data)
-        form_params.add_submit('address', 'bsas')
+        form_params.add_field_by_attrs({'name': 'address', 'value': 'bsas'})
 
         form = URLEncodedForm(form_params)
 
@@ -146,7 +143,7 @@ class TestURLEncodedForm(unittest.TestCase):
     def test_form_str_radio_select(self):
         form_dict = form_with_radio + form_with_checkbox + form_select_cars
         form = URLEncodedForm(create_form_params_helper(form_dict))
-        self.assertEqual(str(form), 'cars=fiat&vehicle=Bike&sex=male')
+        self.assertEqual(str(form), 'cars=volvo&vehicle=Bike&sex=male')
 
     def test_form_copy(self):
         headers = Headers([('content-type', URLEncodedForm.ENCODING)])

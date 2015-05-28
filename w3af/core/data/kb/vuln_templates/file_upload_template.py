@@ -25,7 +25,7 @@ from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
 from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 class FileUploadTemplate(BaseTemplate):
@@ -64,13 +64,13 @@ class FileUploadTemplate(BaseTemplate):
 
         form_params = FormParameters()
         for file_var in self.file_vars:
-            form_params.add_file_input([("name", file_var), ("type", "file")])
+            form_params.add_field_by_attr_items([("name", file_var), ("type", "file")])
 
         for token in self.data.iter_tokens():
             if token.get_name() in self.file_vars:
                 continue
 
-            form_params.add_input([("name", token.get_name()),
+            form_params.add_field_by_attr_items([("name", token.get_name()),
                                    ("type", "text"),
                                    ("value", token.get_value())])
 

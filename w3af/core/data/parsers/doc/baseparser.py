@@ -50,13 +50,9 @@ class BaseParser(object):
             url = redir_url
 
         self._base_url = url
-        self._baseDomain = url.get_domain()
-        self._rootDomain = url.get_root_domain()
+        self._base_domain = url.get_domain()
+        self._root_domain = url.get_root_domain()
         self._encoding = http_response.get_charset()
-
-        # Not all parsers have a DOM, but we'll over-generalize just to avoid
-        # having extra if statements all around the code.
-        self._dom = None
 
         # Store the http response, this shouldn't be so bad since we're only
         # storing ParserCache.LRU_LENGTH in memory and not storing responses
@@ -195,20 +191,6 @@ class BaseParser(object):
         """
         raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_clear_text_body')
 
-    def set_dom(self, dom_inst):
-        """
-        Set the dom attribute
-        :return: None
-        """
-        self._dom = dom_inst
-
-    def get_dom(self):
-        """
-        :return: The DOM, or None if the HTML normalization failed or this is
-                 not a SGML document.
-        """
-        return self._dom
-
     def clear(self):
         """
         Called when the parser won't be used anymore, it should clear all the
@@ -216,4 +198,8 @@ class BaseParser(object):
 
         :return: None
         """
-        pass
+        self._base_url = None
+        self._base_domain = None
+        self._root_domain = None
+        self._encoding = None
+        self._http_response = None

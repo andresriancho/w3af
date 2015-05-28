@@ -21,10 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement
 
-from lxml import etree
-
 import w3af.core.data.constants.severity as severity
 
+from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.kb.vuln import Vuln
@@ -37,11 +36,10 @@ class phishing_vector(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
+    TAGS = ('iframe', 'frame')
+
     def __init__(self):
         AuditPlugin.__init__(self)
-
-        # Some internal vars
-        self._tag_xpath = etree.XPath('//iframe | //frame')
 
         # I test this with different URL handlers because the developer may have
         # blacklisted http:// and https:// but missed ftp://.
@@ -74,30 +72,26 @@ class phishing_vector(AuditPlugin):
 
         if self._has_bug(mutant):
             return
-        
-        dom = response.get_dom()
-        if dom is None:
-            return
 
-        for element in self._tag_xpath(dom):
-
-            src_attr = element.attrib.get('src', None)
+        for tag in mp_doc_parser.get_tags_by_filter(response, self.TAGS):
+            src_attr = tag.attrib.get('src', None)
             if src_attr is None:
                 continue
 
             for url in self._test_urls:
-                if src_attr.startswith(url):
-                    # Vuln vuln!
-                    desc = 'A phishing vector was found at: %s'
-                    desc %= mutant.found_at()
+                if not src_attr.startswith(url):
+                    continue
 
-                    v = Vuln.from_mutant('Phishing vector', desc,
-                                         severity.LOW, response.id,
-                                         self.get_name(), mutant)
+                # Vuln vuln!
+                desc = 'A phishing vector was found at: %s'
+                desc %= mutant.found_at()
 
-                    v.add_to_highlight(src_attr)
-                    self.kb_append_uniq(self, 'phishing_vector', v)
-                    break
+                v = Vuln.from_mutant('Phishing vector', desc, severity.LOW,
+                                     response.id, self.get_name(), mutant)
+
+                v.add_to_highlight(src_attr)
+                self.kb_append_uniq(self, 'phishing_vector', v)
+                break
 
     def get_long_desc(self):
         """

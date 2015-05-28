@@ -24,15 +24,13 @@ import urlparse
 import cookielib
 
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.config import cf as cfg
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.constants import MAX_HTTP_RETRIES, USER_AGENT
-
 from w3af.core.data.url.director import CustomOpenerDirector, build_opener
 from w3af.core.data.url.handlers.ntlm_auth import HTTPNtlmAuthHandler
 from w3af.core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
@@ -44,7 +42,7 @@ from w3af.core.data.url.handlers.output_manager import OutputManagerHandler
 from w3af.core.data.url.handlers.redirect import HTTP30XHandler
 from w3af.core.data.url.handlers.url_parameter import URLParameterHandler
 from w3af.core.data.url.handlers.cache import CacheHandler
-from w3af.core.data.url.handlers.blacklist import BlacklistHandler 
+from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler

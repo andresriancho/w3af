@@ -29,7 +29,7 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -60,9 +60,9 @@ class TestMultipartPostUpload(unittest.TestCase):
 
     def test_multipart_without_file(self):
         form_params = FormParameters()
-        form_params.add_file_input([('name', 'uploadedfile')])
+        form_params.add_field_by_attr_items([('name', 'uploadedfile')])
         form_params['uploadedfile'][0] = 'this is not a file'
-        form_params.add_input([('name', 'MAX_FILE_SIZE'),
+        form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                        ('type', 'hidden'),
                        ('value', '10000')])
 
@@ -86,8 +86,8 @@ class TestMultipartPostUpload(unittest.TestCase):
 
     def upload_file(self, _file):
         form_params = FormParameters()
-        form_params.add_file_input([('name', 'uploadedfile')])
-        form_params.add_input([('name', 'MAX_FILE_SIZE'),
+        form_params.add_field_by_attr_items([('name', 'uploadedfile')])
+        form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                                ('type', 'hidden'),
                                ('value', '10000')])
 
@@ -101,9 +101,9 @@ class TestMultipartPostUpload(unittest.TestCase):
 
     def test_upload_file_using_fuzzable_request(self):
         form_params = FormParameters()
-        form_params.add_file_input([('name', 'uploadedfile')])
+        form_params.add_field_by_attr_items([('name', 'uploadedfile')])
         form_params['uploadedfile'][0] = NamedStringIO('file content', name='test.txt')
-        form_params.add_input([('name', 'MAX_FILE_SIZE'),
+        form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
                        ('type', 'hidden'),
                        ('value', '10000')])
 

@@ -21,10 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-
 from urlparse import parse_qs
 
-from w3af.core.data.parsers.encode_decode import htmldecode, urlencode
+from w3af.core.data.parsers.utils.encode_decode import htmldecode, urlencode
 
 
 class TestHTMLDecode(unittest.TestCase):

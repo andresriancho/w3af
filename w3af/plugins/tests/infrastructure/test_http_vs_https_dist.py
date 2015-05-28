@@ -28,9 +28,8 @@ from mock import patch, call
 import w3af.plugins.infrastructure.http_vs_https_dist as hvshsdist
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.plugins.tests.helper import onlyroot

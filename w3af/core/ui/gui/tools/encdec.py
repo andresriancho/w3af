@@ -20,15 +20,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import gtk
 import threading
-import gobject
 import urllib
 import base64
 import hashlib
 import random
 
-import w3af.core.data.parsers.encode_decode as encode_decode
+import gtk
+import gobject
+import w3af.core.data.parsers.utils.encode_decode as encode_decode
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.ui.gui import entries
 

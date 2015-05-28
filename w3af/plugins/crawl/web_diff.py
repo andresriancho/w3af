@@ -22,18 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
-
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, STRING, LIST
 from w3af.core.data.options.option_types import URL as URL_OPTION_TYPE
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 

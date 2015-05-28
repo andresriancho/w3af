@@ -102,11 +102,12 @@ class TestDCFactory(unittest.TestCase):
     def test_dc_from_form_params_with_files(self):
         form_params = FormParameters()
 
+        form_params.add_field_by_attr_items([('name', 'b'),
+                                             ('type', 'file')])
+        form_params.add_field_by_attr_items([('name', 'a'),
+                                             ('type', 'text'),
+                                             ('value', 'bcd')])
         form_params.set_file_name('b', 'hello.txt')
-        form_params.add_file_input([('name', 'b')])
-        form_params.add_input([('name', 'a'),
-                               ('type', 'text'),
-                               ('value', 'bcd')])
 
         mpdc = dc_from_form_params(form_params)
 
@@ -118,7 +119,7 @@ class TestDCFactory(unittest.TestCase):
         form_params = FormParameters()
 
         form_params.set_form_encoding('multipart/form-data')
-        form_params.add_input([('name', 'a'),
+        form_params.add_field_by_attr_items([('name', 'a'),
                                ('type', 'text'),
                                ('value', 'bcd')])
 
@@ -131,7 +132,7 @@ class TestDCFactory(unittest.TestCase):
     def test_dc_from_form_params_without_files_nor_enctype(self):
         form_params = FormParameters()
 
-        form_params.add_input([('name', 'a'),
+        form_params.add_field_by_attr_items([('name', 'a'),
                                ('type', 'text'),
                                ('value', 'bcd')])
 

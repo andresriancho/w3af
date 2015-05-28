@@ -24,10 +24,9 @@ import unittest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
-
 from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 @attr('moth')

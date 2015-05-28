@@ -23,17 +23,15 @@ from itertools import chain, repeat, izip
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
-
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.exceptions import BaseFrameworkException
-
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.info import Info
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
@@ -171,7 +169,7 @@ class url_fuzzer(CrawlPlugin):
         :return: A list of URL's that mutate the original url passed
                  as parameter.
 
-        >>> from w3af.core.data.parsers.url import URL
+        >>> from w3af.core.data.parsers.doc.url import URL
         >>> u = url_fuzzer()
         >>> url = URL('http://www.w3af.com/')
         >>> mutants = list(u._mutate_domain_name(url))
@@ -207,7 +205,7 @@ class url_fuzzer(CrawlPlugin):
         :return: A list of URL's that mutate the original url passed
                  as parameter.
 
-        >>> from w3af.core.data.parsers.url import URL
+        >>> from w3af.core.data.parsers.doc.url import URL
         >>> u = url_fuzzer()
         >>> url = URL( 'http://www.w3af.com/' )
         >>> mutants = u._mutate_by_appending( url )
@@ -249,7 +247,7 @@ class url_fuzzer(CrawlPlugin):
         :param url: A URL to transform.
         :return: A list of URL's that mutate the original url passed as parameter.
 
-        >>> from w3af.core.data.parsers.url import URL
+        >>> from w3af.core.data.parsers.doc.url import URL
         >>> u = url_fuzzer()
         >>> list(u._mutate_file_type(URL('http://www.w3af.com/')))
         []
@@ -279,7 +277,7 @@ class url_fuzzer(CrawlPlugin):
         :return: A list of URL's that mutate the original url passed
                  as parameter.
 
-        >>> from w3af.core.data.parsers.url import URL
+        >>> from w3af.core.data.parsers.doc.url import URL
         >>> u = url_fuzzer()
         >>> url = URL( 'http://www.w3af.com/' )
         >>> list(u._mutate_path(url))

@@ -25,7 +25,7 @@ import copy
 from mock import patch
 
 from w3af.core.data.constants.file_templates.file_templates import get_template_with_payload
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.filecontent_mutant import (FileContentMutant,
                                                               OnlyTokenFilesMultipartContainer)
@@ -47,9 +47,9 @@ class TestFileContentMutant(unittest.TestCase):
         form_params = FormParameters()
         form_params.set_method('POST')
         form_params.set_action(self.url)
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
-        form_params.add_file_input([("name", "file"), ("type", "file")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "file"), ("type", "file")])
 
         form = container_klass(form_params)
         freq = FuzzableRequest.from_form(form)
@@ -121,9 +121,9 @@ class TestFileContentMutant(unittest.TestCase):
         form_params = FormParameters()
         form_params.set_method('POST')
         form_params.set_action(self.url)
-        form_params.add_input([("name", "username"), ("value", "")])
-        form_params.add_input([("name", "address"), ("value", "")])
-        form_params.add_file_input([("name", "image"), ("type", "file")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "image"), ("type", "file")])
 
         form = MultipartContainer(form_params)
         freq = FuzzableRequest.from_form(form)

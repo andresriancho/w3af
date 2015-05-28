@@ -24,18 +24,18 @@ import unittest
 import os
 
 from w3af import ROOT_PATH
-from w3af.core.data.parsers.pdf import pdf_to_text, PDFParser
+from w3af.core.data.parsers.doc.pdf import pdf_to_text, PDFParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 class TestPDF(unittest.TestCase):
     
-    SIMPLE_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                                 'data', 'simple.pdf')
-    LINKS_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                                'data', 'links.pdf')
+    SIMPLE_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                                 'tests', 'data', 'simple.pdf')
+    LINKS_SAMPLE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                                'tests', 'data', 'links.pdf')
     
     def test_pdf_to_text(self):
         text = pdf_to_text(file(self.SIMPLE_SAMPLE).read())
@@ -55,12 +55,10 @@ class TestPDF(unittest.TestCase):
                                 _id=1)        
         
         parser = PDFParser(response)
+        parser.parse()
         parsed, re_refs = parser.get_references()
         
         self.assertEqual(parsed, [])
         self.assertEqual(re_refs, [URL('http://moth/pdf/')])
-
-        # We have no DOM
-        self.assertIsNone(parser.get_dom())
         self.assertEqual(parser.get_clear_text_body().strip(),
                          'http://moth/pdf/')

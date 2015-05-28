@@ -21,7 +21,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.parsers.http_request_parser import http_request_parser
+from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 
 
 def ruby_escape_string(str_in):

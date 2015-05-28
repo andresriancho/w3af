@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.parsers.html import HTMLParser
-from w3af.core.data.parsers.pdf import PDFParser
-from w3af.core.data.parsers.swf import SWFParser
-from w3af.core.data.parsers.wml_parser import WMLParser
-from w3af.core.data.parsers.javascript import JavaScriptParser
+from w3af.core.data.parsers.doc.html import HTMLParser
+from w3af.core.data.parsers.doc.pdf import PDFParser
+from w3af.core.data.parsers.doc.swf import SWFParser
+from w3af.core.data.parsers.doc.wml_parser import WMLParser
+from w3af.core.data.parsers.doc.javascript import JavaScriptParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
@@ -56,6 +56,7 @@ class DocumentParser(object):
         for parser in self.PARSERS:
             if parser.can_parse(http_resp):
                 self._parser = parser(http_resp)
+                self._parser.parse()
                 self._response_repr = repr(http_resp)
                 break
 
@@ -115,12 +116,13 @@ class DocumentParser(object):
         """
         return self._parser.get_meta_tags()
 
-    def get_dom(self):
+    def get_tags_by_filter(self, tags, yield_text=False):
         """
-        :return: The DOM which holds the HTML. Not all parsers return something
-                 here. In some cases (like the PDF parser) this returns None.
+        :param tags: The tag filter
+        :return: Yield tags which match the filter
         """
-        return self._parser.get_dom()
+        for i in self._parser.get_tags_by_filter(tags, yield_text=yield_text):
+            yield i
 
     def get_clear_text_body(self):
         """

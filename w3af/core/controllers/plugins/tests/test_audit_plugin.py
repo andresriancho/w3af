@@ -30,10 +30,9 @@ from w3af.core.data.url.tests.test_xurllib import TimeoutTCPHandler
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.kb.knowledge_base import kb
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
-
 from w3af.plugins.tests.helper import PluginTest, MockResponse
 
 

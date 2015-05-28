@@ -24,15 +24,15 @@ import unittest
 import os
 
 from w3af import ROOT_PATH
-from w3af.core.data.parsers.swf import SWFParser
+from w3af.core.data.parsers.doc.swf import SWFParser
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 
 
 class TestSWFParser(unittest.TestCase):
 
-    SAMPLE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'parsers',
+    SAMPLE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
                               'tests', 'data')
 
     WIVET_SAMPLE = os.path.join(SAMPLE_DIR, 'wivet1.swf')
@@ -50,6 +50,7 @@ class TestSWFParser(unittest.TestCase):
                                 _id=1)
         
         parser = SWFParser(response)
+        parser.parse()
         return parser
     
     def test_swf_parser_wivet(self):

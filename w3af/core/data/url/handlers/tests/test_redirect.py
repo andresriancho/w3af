@@ -26,8 +26,7 @@ from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.controllers.ci.moth import get_moth_http
-
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.response_codes import FOUND
 from w3af.core.data.url.handlers.redirect import HTTP30XHandler
 from w3af.core.data.url.HTTPRequest import HTTPRequest

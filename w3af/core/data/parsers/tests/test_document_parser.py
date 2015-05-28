@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-test_sgmlparsers.py
+test_sgml.py
 
 Copyright 2011 Andres Riancho
 
@@ -28,9 +28,9 @@ from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.html import HTMLParser
-from w3af.core.data.parsers.pdf import PDFParser
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.html import HTMLParser
+from w3af.core.data.parsers.doc.pdf import PDFParser
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.document_parser import (document_parser_factory,
                                                     DocumentParser)
 
@@ -46,11 +46,11 @@ def _build_http_response(body_content, content_type):
 
 class TestDocumentParserFactory(unittest.TestCase):
 
-    PDF_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                            'data', 'links.pdf')
+    PDF_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                            'tests', 'data', 'links.pdf')
     
-    HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'tests',
-                             'data', 'sharepoint-pl.html')
+    HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                             'tests', 'data', 'sharepoint-pl.html')
 
     def test_html_ok(self):
         mime_types = ['text/html', 'TEXT/HTML', 'TEXT/plain',
@@ -62,16 +62,6 @@ class TestDocumentParserFactory(unittest.TestCase):
             self.assertIsInstance(parser, DocumentParser)
             self.assertIsInstance(parser._parser, HTMLParser)
             self.assertEqual(parser.get_clear_text_body(), 'body')
-
-    def test_dom_is_not_None(self):
-        resp = _build_http_response('<html>body</html>', 'text/html')
-        parser = document_parser_factory(resp)
-
-        dom1 = parser.get_dom()
-        dom2 = parser.get_dom()
-
-        self.assertIsNotNone(dom1)
-        self.assertIs(dom1, dom2)
 
     def test_html_upper(self):
         parser = document_parser_factory(_build_http_response('', u'TEXT/HTML'))

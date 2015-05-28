@@ -26,7 +26,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.parsers.utils.form_params import FormParameters
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.db.dbms import get_default_temp_db_instance
@@ -154,8 +154,8 @@ class test_DiskSet(unittest.TestCase):
 
     def test_store_fuzzable_request(self):
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "abc")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 
@@ -180,8 +180,8 @@ class test_DiskSet(unittest.TestCase):
 
         # Add a fr with post-data
         form_params = FormParameters()
-        form_params.add_input([("name", "username"), ("value", "abc")])
-        form_params.add_input([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 

@@ -24,29 +24,28 @@ import os
 import re
 import unittest
 import urllib2
-import httpretty
 import tempfile
 import pprint
 import time
-
 from functools import wraps
+
+import httpretty
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from w3af.core.controllers.misc.decorators import retry
-
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import URL_LIST
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.url import URL
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.read_shell import ReadShell
 from w3af.core.data.kb.info_set import InfoSet
+
 
 os.chdir(W3AF_LOCAL_PATH)
 RE_COMPILE_TYPE = type(re.compile(''))

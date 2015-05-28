@@ -23,12 +23,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib2
 import cPickle
-
 from multiprocessing.queues import SimpleQueue
+
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
-from w3af.core.data.parsers.url import URL, parse_qs
+from w3af.core.data.parsers.doc.url import URL, parse_qs
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 

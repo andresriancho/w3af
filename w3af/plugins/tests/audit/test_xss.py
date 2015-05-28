@@ -209,7 +209,7 @@ class TestXSS(PluginTest):
 
             # Form with GET method
             # https://github.com/andresriancho/w3af/issues/3149
-            ('simple_xss_GET_form.py', 'text', ['text']),
+            ('simple_xss_GET_form.py', 'text', ['Submit', 'text']),
 
             # Form with multipart enctype
             # https://github.com/andresriancho/w3af/issues/3149
@@ -223,11 +223,11 @@ class TestXSS(PluginTest):
             ('lower_str_xss.py', 'text', ['text']),
 
             # Forms with POST
-            ('simple_xss_form.py', 'text', ['text']),
-            ('two_inputs_form.py', 'address', ['address', 'name']),
+            ('simple_xss_form.py', 'text', ['Submit', 'text']),
+            ('two_inputs_form.py', 'address', ['Submit', 'address', 'name']),
 
             # Persistent XSS
-            ('persistent_xss_form.py', 'text', ['text']),
+            ('persistent_xss_form.py', 'text', ['Submit', 'text']),
             
             # XSS with CSP
             ('xss_with_safe_csp.py', 'text', ['text']),
