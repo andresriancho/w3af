@@ -210,7 +210,7 @@ class w3af_core_plugins(object):
             __import__('w3af.plugins.' + plugin_type)
             aModule = sys.modules['w3af.plugins.' + plugin_type]
         except Exception:
-            raise BaseFrameworkException('Unknown plugin type: "' + plugin_type + '".')
+            raise BaseFrameworkException('Unknown plugin type: "%s".' % plugin_type)
         else:
             return aModule.get_long_description()
 
