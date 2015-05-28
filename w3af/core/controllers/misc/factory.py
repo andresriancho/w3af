@@ -19,10 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from __future__ import print_function
+
+import os
 import sys
 import traceback
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af import ROOT_PATH
 
 
 def factory(module_name, *args):
@@ -39,32 +43,53 @@ def factory(module_name, *args):
     :param module_name: Which plugin do you need?
     :return: An instance.
     """
+    module_path = module_name.replace('.', '/')
+    module_path = module_path.replace('w3af/', '')
+    module_path = '%s.py' % module_path
+    module_path = os.path.join(ROOT_PATH, module_path)
+
+    if not os.path.exists(module_path):
+        msg = 'The %s plugin does not exist.'
+        raise BaseFrameworkException(msg % module_name)
+
     try:
         __import__(module_name)
-    except ImportError, ie:
-        msg = 'There was an error while importing %s: "%s".'
-        raise BaseFrameworkException(msg % (module_name, ie))
+    except SyntaxError:
+        # Useful for development
+        raise
+    except ImportError:
+        # Useful for development and users which failed to install all
+        # dependencies
+        #
+        # https://github.com/andresriancho/w3af/issues/9688
+        msg = ('It seems that your Python installation doesn\'t have all the'
+               ' modules required by the w3af framework. For more information'
+               ' about how to install and debug dependency issues please browse'
+               ' to http://docs.w3af.org/en/latest/install.html')
+        print(msg)
+
+        # Raise so the user sees the whole traceback
+        raise
     except Exception, e:
         msg = 'There was an error while importing %s: "%s".'
         raise BaseFrameworkException(msg % (module_name, e))
-    else:
 
-        class_name = module_name.split('.')[-1]
+    # Now that we have the module imported get the class and instance
+    class_name = module_name.split('.')[-1]
 
-        try:
-            module_inst = sys.modules[module_name]
-            a_class = getattr(module_inst, class_name)
-        except Exception, e:
-            msg = 'The requested plugin ("%s") doesn\'t have a correct' \
-                  ' format: "%s".'
-            raise BaseFrameworkException(msg % (module_name, e))
-        else:
-            try:
-                inst = a_class(*args)
-            except Exception, e:
-                msg = 'Failed to get an instance of "%s". Original exception:'\
-                      ' "%s". Traceback for this error: %s'
-                msg = msg % (class_name, e, traceback.format_exc())
-                raise BaseFrameworkException(msg)
+    try:
+        module_inst = sys.modules[module_name]
+        a_class = getattr(module_inst, class_name)
+    except Exception, e:
+        msg = 'The requested plugin (%s) doesn\'t have a correct format: "%s".'
+        raise BaseFrameworkException(msg % (module_name, e))
 
-            return inst
+    try:
+        inst = a_class(*args)
+    except Exception, e:
+        msg = ('Failed to get an instance of "%s". Original exception:'
+               ' "%s". Traceback for this error:\n%s')
+        msg = msg % (class_name, e, traceback.format_exc())
+        raise BaseFrameworkException(msg)
+
+    return inst
