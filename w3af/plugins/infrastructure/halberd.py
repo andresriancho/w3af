@@ -44,10 +44,6 @@ class halberd(InfrastructurePlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        InfrastructurePlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
@@ -80,7 +76,13 @@ class halberd(InfrastructurePlugin):
         scantask.out = temp_output.name
 
         halberd_logger.setError()
-        scantask.readConf()
+        try:
+            scantask.readConf()
+        except halberd_scan_task.ConfError, e:
+            # halberd: 'unable to create a default conf. file'
+            # https://github.com/andresriancho/w3af/issues/9988
+            om.out.error('Failed to initialize Halberd configuration: "%s"' % e)
+            return
 
         # UniScan
         scantask.url = url
@@ -91,14 +93,16 @@ class halberd(InfrastructurePlugin):
             s = scanner(scantask)
         except halberd_shell.ScanError, msg:
             om.out.error('Halberd error: %s' % msg)
-        else:
-            # The scantask initialization worked, we can start the actual scan!
-            try:
-                s.execute()
-            except halberd_shell.ScanError, msg:
-                om.out.debug('Halberd error: %s' % msg)
-            else:
-                self._report(s.task, temp_output.name)
+            return
+
+        # The scantask initialization worked, we can start the actual scan!
+        try:
+            s.execute()
+        except halberd_shell.ScanError, msg:
+            om.out.debug('Halberd error: %s' % msg)
+            return
+
+        self._report(s.task, temp_output.name)
 
     def _report(self, scantask, report_file):
         """
