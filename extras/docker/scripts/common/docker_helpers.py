@@ -19,7 +19,7 @@ def start_container(tag):
     if tag is not None:
         docker_run = DOCKER_RUN + ':%s' % tag
     else:
-        docker_run = DOCKER_RUN
+        docker_run = DOCKER_RUN + ':stable'
 
     try:
         container_id = subprocess.check_output(docker_run, shell=True)
