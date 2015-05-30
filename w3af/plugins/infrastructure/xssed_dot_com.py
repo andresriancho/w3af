@@ -125,7 +125,7 @@ class xssed_dot_com(InfrastructurePlugin):
                 verb = 'contained'
 
             desc_fmt = ('According to xssed.com the target domain %s a XSS'
-                        'vulnerability, see %s for more information')
+                        ' vulnerability, see %s for more information')
             desc = desc_fmt % (verb, xss_report_response.get_url())
             v = Vuln('Potential XSS vulnerability', desc,
                      vuln_severity, xss_report_response.id, self.get_name())
