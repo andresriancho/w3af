@@ -115,7 +115,7 @@ class w3af_core_plugins(object):
         Get the options for a plugin.
 
         IMPORTANT NOTE: This method only returns the options for a plugin
-        that was previously configured using set_plugin_options. If you wan't
+        that was previously configured using set_plugin_options. If you want
         to get the default options for a plugin, get a plugin instance and
         perform a plugin.get_options()
 
