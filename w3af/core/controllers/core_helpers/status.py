@@ -29,8 +29,8 @@ from w3af.core.controllers.misc.number_generator import consecutive_number_gener
 class w3af_core_status(object):
     """
     This class maintains the status of the w3afCore. During scan the different
-    phases of the process will change the status (set) and the UI will be calling
-    the different methods to (get) the information required.
+    phases of the process will change the status (set) and the UI will be
+    calling the different methods to (get) the information required.
     """
     def __init__(self, w3af_core, scans_completed=0):
         # Store the core to be able to access the queues to get status
@@ -217,18 +217,21 @@ class w3af_core_status(object):
     def get_crawl_eta(self):
         input_speed = self.get_crawl_input_speed()
         output_speed = self.get_crawl_output_speed()
-        
+        current_size = self.get_crawl_qsize()
+
         if input_speed is None or output_speed is None:
             return None
             
         if input_speed >= output_speed:
             return None
-        
+
+        if current_size is None:
+            return None
+
         # The speed is in URLs per minute that are processed by the framework
         speed = output_speed - input_speed
-        current_size = self.get_crawl_qsize()
-        
         eta_minutes = current_size / speed
+
         # TODO: Show this in h/m/s
         return '%s minutes' % eta_minutes
 
