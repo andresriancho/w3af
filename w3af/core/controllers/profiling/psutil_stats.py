@@ -110,7 +110,8 @@ def dump_psutil():
                    'Swap memory': psutil.swap_memory()._asdict(),
                    'Network': netinfo,
                    'Processes': process_info,
-                   'ps_mem': ps_mem_data}
+                   'ps_mem': ps_mem_data,
+                   'Thread CPU usage': get_threads_cpu_percent()}
     
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
 
@@ -132,6 +133,21 @@ def ps_mem_to_json(sorted_cmds, shareds, count, total):
     return result
 
 
+def get_threads_cpu_percent(interval=0.1):
+    proc = psutil.Process()
+    total_percent = proc.get_cpu_percent(interval)
+    total_time = sum(proc.cpu_times())
+
+    result = {}
+    for thread in proc.get_threads():
+        thread_time = thread.system_time + thread.user_time
+        thread_percent = total_percent * (thread_time/total_time)
+        result[thread.id] = {'Thread total time': thread_time,
+                             'Thread CPU usage %': thread_percent}
+
+    return result
+
+
 @should_dump_psutil
 def stop_psutil_dump():
     """
@@ -139,4 +155,3 @@ def stop_psutil_dump():
     """
     cancel_thread(SAVE_PSUTIL_PTR)
     dump_psutil()
-

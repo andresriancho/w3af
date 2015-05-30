@@ -15,7 +15,7 @@ coveralls==0.2
 
 # Other
 mock==1.0.1
-psutil==1.2.1
+psutil==2.2.1
 SOAPpy==0.12.5
 Pillow==1.7.8
 SimpleCV==1.3
