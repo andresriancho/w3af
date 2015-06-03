@@ -372,7 +372,14 @@ class w3afCore(object):
         """
         self.stop()
         self.uri_opener.end()
+
+        # Remove the xurllib cache, bloom filters, DiskLists, etc.
+        #
+        # This needs to be done here and not in stop() because we want to keep
+        # these files (mostly the HTTP request/response data) for the user to
+        # analyze in the GUI after the scan has finished
         remove_temp_dir(ignore_errors=True)
+
         # Stop the parser subprocess
         parser_cache.dpc.clear()
 
