@@ -73,6 +73,12 @@ class DiskDict(object):
         for r in pickled_keys:
             yield cPickle.loads(r[0])
 
+    def iteritems(self):
+        pickled_keys = self.db.select('SELECT key, value FROM %s' % self.table_name)
+
+        for r in pickled_keys:
+            yield cPickle.loads(r[0]), cPickle.loads(r[1])
+
     def __contains__(self, key):
         """
         :return: True if the value is in keys
