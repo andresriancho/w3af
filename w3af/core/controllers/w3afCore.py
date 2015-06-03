@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from __future__ import print_function
+
 import os
 import sys
 import time
@@ -60,6 +62,14 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.kb.knowledge_base import kb
+
+
+NO_MEMORY_MSG = ('The operating system was unable to allocate memory for'
+                 ' the Python interpreter (MemoryError). This usually happens'
+                 ' when the OS does not have a mounted swap disk, the'
+                 ' hardware where w3af is running has less than 1GB RAM,'
+                 ' there are many processes running and consuming memory,'
+                 ' or w3af is using more memory than expected.')
 
 
 class w3afCore(object):
@@ -192,15 +202,17 @@ class w3afCore(object):
         try:
             self.strategy.start()
         except MemoryError:
-            msg = ('The operating system was unable to allocate memory for'
-                   ' the Python interpreter (MemoryError). This usually happens'
-                   ' when the OS does not have a mounted swap disk, the'
-                   ' hardware where w3af is running has less than 1GB RAM,'
-                   ' there are many processes running and consuming memory,'
-                   ' or w3af is using more memory than expected.')
-            om.out.error(msg)
-            print(msg)
-            raise
+            print(NO_MEMORY_MSG)
+            om.out.error(NO_MEMORY_MSG)
+
+        except OSError, os_err:
+            # https://github.com/andresriancho/w3af/issues/10186
+            # OSError: [Errno 12] Cannot allocate memory
+            if os_err.errno == errno.ENOMEM:
+                print(NO_MEMORY_MSG)
+                om.out.error(NO_MEMORY_MSG)
+            else:
+                raise
 
         except IOError as (error_id, error_msg):
             # https://github.com/andresriancho/w3af/issues/9653
@@ -211,8 +223,8 @@ class w3afCore(object):
                        ' size, overall disk usage and start the scan again.')
                 msg %= get_home_dir()
 
-                om.out.error(msg)
                 print(msg)
+                om.out.error(msg)
             else:
                 raise
 
