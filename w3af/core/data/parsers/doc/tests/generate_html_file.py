@@ -2,7 +2,7 @@
 import sys
 
 SOME_TEXT = 'This is placeholder text'
-OUTPUT_FILE = 'w3af/core/data/parsers/tests/data/huge.html'
+OUTPUT_FILE = 'w3af/core/data/parsers/doc/tests/data/huge.html'
 
 
 def main():

@@ -23,7 +23,7 @@ import threading
 import Queue
 import time
 
-from functools import partial
+from functools import partial, wraps
 
 from multiprocessing.dummy import Process
 from multiprocessing.util import Finalize
@@ -41,6 +41,10 @@ class one_to_many(object):
     """
     def __init__(self, func):
         self.func = func
+
+        # Similar to functools wraps
+        self.__name__ = func.__name__
+        self.__doc__ = func.__doc__
 
     def __call__(self, args):
         return self.func(*args)
