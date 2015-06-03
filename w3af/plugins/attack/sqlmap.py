@@ -196,6 +196,12 @@ class RunFunctor(Process):
         
     def run(self):
         cmd, process = apply(self.functor, self.params)
+
+        if process is None:
+            # Something really bad happen with sqlmap
+            om.out.console('Failed to start the sqlmap subprocess')
+            return
+        
         self.process = process
         
         om.out.information('Wrapped SQLMap command: %s' % cmd)

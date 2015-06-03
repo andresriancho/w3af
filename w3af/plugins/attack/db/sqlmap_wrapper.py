@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import re
 import sys
+import errno
 import shlex
 import tempfile
 import subprocess
@@ -110,6 +111,10 @@ class SQLMapWrapper(object):
         params = ['--batch']
         
         full_command, stdout, stderr = self.run_sqlmap(params)
+
+        if full_command is None:
+            # Something really bad happen with sqlmap
+            return False
                 
         if self.VULN_STR in stdout and self.NOT_VULN_STR not in stdout:
             self.verified_vulnerable = True
@@ -143,18 +148,33 @@ class SQLMapWrapper(object):
         if self.debug:
             all_params += self.DEBUG_ARGS
 
-        process = subprocess.Popen(args=all_params,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=False,
-                                   universal_newlines=True,
-                                   cwd=self.SQLMAP_LOCATION)
-        
-        full_command = ' '.join(all_params)
-        self.last_command = full_command
+        try:
+            process = subprocess.Popen(args=all_params,
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE,
+                                       shell=False,
+                                       universal_newlines=True,
+                                       cwd=self.SQLMAP_LOCATION)
+        except OSError, os_err:
+            # https://github.com/andresriancho/w3af/issues/10186
+            # OSError: [Errno 12] Cannot allocate memory
+            if os_err.errno == errno.ENOMEM:
+                msg = ('The operating system is running low on memory and'
+                       ' failed to start the sqlmap process.')
+                om.out.error(msg)
 
-        return process
+                # This tells the rest of the world that the command failed
+                self.last_command = None
+                return None
+            else:
+                # Let me discover/handle other errors
+                raise
+
+        else:
+            full_command = ' '.join(all_params)
+            self.last_command = full_command
+            return process
     
     def run_sqlmap(self, custom_params):
         """
@@ -165,9 +185,15 @@ class SQLMapWrapper(object):
                               
         :return: Runs sqlmap and returns a tuple containing:
                     (last command run,
-                     stdout, sterr)
+                     stdout,
+                     stderr)
         """
         process = self._run(custom_params)
+
+        # Error handling for sqlmap problems
+        if process is None:
+            return None, None, None
+
         self.last_stdout, self.last_stderr = process.communicate()
 
         om.out.debug('[sqlmap_wrapper] %s' % self.last_command)
@@ -191,16 +217,23 @@ class SQLMapWrapper(object):
                  This is very useful for using with w3af's output manager.
         """
         process = self._run(custom_params)
+
+        # Error handling for sqlmap problems
+        if process is None:
+            return None, None
+
         return self.last_command, process
     
     def direct(self, params):
         
         if isinstance(params, basestring):
             extra_params = shlex.split(params)
+        else:
+            extra_params = params
             
         return self.run_sqlmap_with_pipes(extra_params)
     
-    def get_wrapper_params(self, extra_params=[]):
+    def get_wrapper_params(self, extra_params=None):
         # TODO: This one will disappear the day I add stdin handling support
         #       for the wrapper. Please remember that this support will have to
         #       take care of stdin and all other inputs from other UIs
@@ -211,8 +244,9 @@ class SQLMapWrapper(object):
         
         if self.local_proxy_url is not None:
             params.append('--proxy=%s' % self.local_proxy_url)
-        
-        params.extend(extra_params)
+
+        if extra_params is not None:
+            params.extend(extra_params)
         
         return params
     
@@ -226,6 +260,11 @@ class SQLMapWrapper(object):
                      .stderr, .stdin attributes)
         """
         process = self._run(custom_params)
+
+        # Error handling for sqlmap problems
+        if process is None:
+            return None, None
+
         return self.last_command, process
         
     def dbs(self):
