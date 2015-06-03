@@ -135,7 +135,7 @@ def ps_mem_to_json(sorted_cmds, shareds, count, total):
 
 def get_threads_cpu_percent(interval=0.1):
     proc = psutil.Process()
-    total_percent = proc.get_cpu_percent(interval)
+    total_percent = proc.get_cpu_percent(interval=interval)
     total_time = sum(proc.cpu_times())
 
     result = {}
