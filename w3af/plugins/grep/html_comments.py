@@ -67,7 +67,7 @@ class html_comments(GrepPlugin):
 
         # Internal variables
         self._comments = DiskDict(table_prefix='html_comments')
-        self._already_reported_interesting = ScalableBloomFilter()
+        self._already_reported = ScalableBloomFilter()
 
     def grep(self, request, response):
         """
@@ -101,97 +101,106 @@ class html_comments(GrepPlugin):
         Find interesting words in HTML comments
         """
         comment = comment.lower()
-        for word in self._multi_in.query(comment):
-            if (word, response.get_url()) not in self._already_reported_interesting:
-                desc = 'A comment with the string "%s" was found in: "%s".'\
-                       ' This could be interesting.'
-                desc = desc % (word, response.get_url())
 
-                i = Info.from_fr('Interesting HTML comment', desc, response.id,
-                                 self.get_name(), request)
-                i.add_to_highlight(word)
+        for word in self._multi_in.query(comment):
+            if (word, response.get_url()) in self._already_reported:
+                continue
+
+            desc = ('A comment with the string "%s" was found in: "%s".'
+                    ' This could be interesting.')
+            desc %= (word, response.get_url())
+
+            i = Info.from_fr('Interesting HTML comment', desc, response.id,
+                             self.get_name(), request)
+            i.add_to_highlight(word)
+
+            kb.kb.append(self, 'interesting_comments', i)
+            om.out.information(i.get_desc())
                 
-                kb.kb.append(self, 'interesting_comments', i)
-                om.out.information(i.get_desc())
-                
-                self._already_reported_interesting.add((word,
-                                                        response.get_url()))
+            self._already_reported.add((word, response.get_url()))
 
     def _html_in_comment(self, comment, request, response):
         """
         Find HTML code in HTML comments
         """
         html_in_comment = self.HTML_RE.search(comment)
-        
-        if html_in_comment and \
-        (comment, response.get_url()) not in self._already_reported_interesting:
-            # There is HTML code in the comment.
-            comment = comment.strip()
-            comment = comment.replace('\n', '')
-            comment = comment.replace('\r', '')
-            comment = comment[:40]
-            desc = 'A comment with the string "%s" was found in: "%s".'\
-                   ' This could be interesting.'
-            desc = desc % (comment, response.get_url())
 
-            i = Info.from_fr('HTML comment contains HTML code', desc,
-                             response.id, self.get_name(), request)
-            i.set_uri(response.get_uri())
-            i.add_to_highlight(html_in_comment.group(0))
-            
-            kb.kb.append(self, 'html_comment_hides_html', i)
-            om.out.information(i.get_desc())
-            self._already_reported_interesting.add((comment,
-                                                    response.get_url()))
+        if html_in_comment is None:
+            return
+
+        if (comment, response.get_url()) in self._already_reported:
+            return
+
+        # There is HTML code in the comment.
+        comment = comment.strip()
+        comment = comment.replace('\n', '')
+        comment = comment.replace('\r', '')
+        comment = comment[:40]
+
+        desc = ('A comment with the string "%s" was found in: "%s".'
+                ' This could be interesting.')
+        desc %= (comment, response.get_url())
+
+        i = Info.from_fr('HTML comment contains HTML code', desc, response.id,
+                         self.get_name(), request)
+        i.set_uri(response.get_uri())
+        i.add_to_highlight(html_in_comment.group(0))
+
+        kb.kb.append(self, 'html_comment_hides_html', i)
+        om.out.information(i.get_desc())
+        self._already_reported.add((comment, response.get_url()))
 
     def _is_new(self, comment, response):
         """
-        Make sure that we perform a thread safe check on the self._comments dict,
-        in order to avoid duplicates.
+        Make sure that we perform a thread safe check on the self._comments
+        dict, in order to avoid duplicates.
         """
         with self._plugin_lock:
             
             #pylint: disable=E1103
             comment_data = self._comments.get(comment, None)
-            
+            response_url = response.get_url()
+
             if comment_data is None:
-                self._comments[comment] = [(response.get_url(), response.id), ]
+                self._comments[comment] = [(response_url, response.id)]
                 return True
             else:
-                if response.get_url() not in [x[0] for x in comment_data]:
-                    comment_data.append((response.get_url(), response.id))
+                for saved_url, response_id in comment_data:
+                    if response_url == saved_url:
+                        return False
+                else:
+                    comment_data.append((response_url, response.id))
                     self._comments[comment] = comment_data
                     return True
             #pylint: enable=E1103
-            
-        return False
 
     def end(self):
         """
         This method is called when the plugin wont be used anymore.
         :return: None
         """
-        inform = []
-        for comment in self._comments.iterkeys():
-            urls_with_this_comment = self._comments[comment]
+        for comment, url_request_id_lst in self._comments.iteritems():
+
             stick_comment = ' '.join(comment.split())
+
             if len(stick_comment) > 40:
-                msg = 'A comment with the string "%s..." (and %s more bytes)'\
-                      ' was found on these URL(s):'
-                om.out.information(
-                    msg % (stick_comment[:40], str(len(stick_comment) - 40)))
+                msg = ('A comment with the string "%s..." (and %s more bytes)'
+                       ' was found on these URL(s):')
+                args = (stick_comment[:40], str(len(stick_comment) - 40))
+                om.out.information(msg % args)
             else:
                 msg = 'A comment containing "%s" was found on these URL(s):'
-                om.out.information(msg % (stick_comment))
+                om.out.information(msg % stick_comment)
 
-            for url, request_id in urls_with_this_comment:
-                inform.append('- ' + url +
-                              ' (request with id: ' + str(request_id) + ')')
+            inform = []
 
-            inform.sort()
-            for i in inform:
+            for url, request_id in url_request_id_lst:
+                msg = '- %s (request with id: %s)'
+                inform.append(msg % (url, request_id))
+
+            for i in sorted(inform):
                 om.out.information(i)
-        
+
         self._comments.cleanup()
 
     def get_long_desc(self):
