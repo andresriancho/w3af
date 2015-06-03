@@ -25,6 +25,7 @@ import time
 import threading
 import traceback
 import pprint
+import errno
 
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
@@ -38,6 +39,7 @@ from w3af.core.controllers.core_helpers.strategy import w3af_core_strategy
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.misc.homeDir import get_home_dir
 
 from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
                                                   log_sink_factory)
@@ -190,24 +192,46 @@ class w3afCore(object):
         try:
             self.strategy.start()
         except MemoryError:
-            msg = 'Python threw a MemoryError, this means that your'\
-                  ' OS is running very low in memory. w3af is going'\
-                  ' to stop.'
+            msg = ('The operating system was unable to allocate memory for'
+                   ' the Python interpreter (MemoryError). This usually happens'
+                   ' when the OS does not have a mounted swap disk, the'
+                   ' hardware where w3af is running has less than 1GB RAM,'
+                   ' there are many processes running and consuming memory,'
+                   ' or w3af is using more memory than expected.')
             om.out.error(msg)
+            print(msg)
             raise
+
+        except IOError as (error_id, error_msg):
+            # https://github.com/andresriancho/w3af/issues/9653
+            # IOError: [Errno 28] No space left on device
+            if error_id == errno.ENOSPC:
+                msg = ('The w3af scan will stop because the file system'
+                       ' is running low on free space. Check the "%s" directory'
+                       ' size, overall disk usage and start the scan again.')
+                msg %= get_home_dir()
+
+                om.out.error(msg)
+                print(msg)
+            else:
+                raise
+
         except threading.ThreadError, te:
             handle_threading_error(self.status.scans_completed, te)
+
         except HTTPRequestException, hre:
             # TODO: These exceptions should never reach this level
             #       adding the exception handler to raise them and fix any
             #       instances where it happens.
             raise
+
         except ScanMustStopByUserRequest, sbur:
             # I don't have to do anything here, since the user is the one that
             # requested the scanner to stop. From here the code continues at the
             # "finally" clause, which simply shows a message saying that the
             # scan finished.
             om.out.information('%s' % sbur)
+
         except ScanMustStopByUnknownReasonExc:
             #
             # If the extended_urllib module raises this type of exception we'll
@@ -216,20 +240,22 @@ class w3afCore(object):
             # tracker
             #
             raise
-        except ScanMustStopException, wmse:
-            error = ('\n**IMPORTANT** The following error was detected by'
-                     ' w3af and couldn\'t be resolved:\n%s\n')
-            om.out.error(error % wmse)
-        except Exception:
-            msg = '\nUnhandled error, traceback: %s\n'
-            om.out.error(msg % traceback.format_exc())
-            raise
-        finally:
 
+        except ScanMustStopException, wmse:
+            error = ('The following error was detected and could not be'
+                     ' resolved:\n%s\n')
+            om.out.error(error % wmse)
+
+        except Exception, e:
+            msg = 'Unhandled exception "%s", traceback:\n%s'
+            om.out.error(msg % (e, traceback.format_exc()))
+            raise
+
+        finally:
             time_spent = self.status.get_scan_time()
             
-            self._safe_message_print('Scan finished in %s' % time_spent)
-            self._safe_message_print('Stopping the core...')
+            om.out.information('Scan finished in %s' % time_spent)
+            om.out.information('Stopping the core...')
 
             self.strategy.stop()
             self.scan_end_hook()
@@ -237,22 +263,6 @@ class w3afCore(object):
             # Make sure this line is the last one. This avoids race conditions
             # https://github.com/andresriancho/w3af/issues/1487
             self.status.scan_finished()
-
-    def _safe_message_print(self, msg):
-        """
-        In some cases we get here after a disk full exception where the output
-        manager can't even write a log message to disk and/or the console. Seen
-        this happen many times in LiveCDs like Backtrack that don't have "real
-        disk space"
-        """
-        try:
-            om.out.information(msg)
-        except:
-            # In some cases we get here after a disk full exception
-            # where the output manager can't even write a log message
-            # to disk and/or the console. Seen this happen many times
-            # in LiveCDs like Backtrack that don't have "real disk space"
-            print(msg)
 
     @property
     def worker_pool(self):
@@ -488,7 +498,7 @@ class w3afCore(object):
 
     def _tmp_directory(self):
         """
-        Handle the creation of the tmp directory, where a lot of stuff is stored.
+        Handle the creation of the tmp directory, where a lot of stuff is stored
         Usually it's something like /tmp/w3af/<pid>/
         """
         try:
@@ -496,7 +506,7 @@ class w3afCore(object):
         except Exception:
             msg = ('The w3af tmp directory "%s" is not writable. Please set '
                    'the correct permissions and ownership.' % TEMP_DIR)
-            print msg
+            print(msg)
             sys.exit(-3)
 
 
@@ -514,8 +524,8 @@ def handle_threading_error(scans_completed, threading_error):
     
     pprint_threads = nice_thread_repr(threading.enumerate())
     
-    msg = 'A "%s" threading error was found.\n'\
-          ' The current process has a total of %s active threads and has'\
-          ' completed %s scans. The complete list of threads follows:\n\n%s'
+    msg = ('A "%s" threading error was found.\n'
+           ' The current process has a total of %s active threads and has'
+           ' completed %s scans. The complete list of threads follows:\n\n%s')
     raise Exception(msg % (threading_error, active_threads,
                            scans_completed, pprint_threads))
