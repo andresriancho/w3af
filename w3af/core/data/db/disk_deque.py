@@ -13,7 +13,7 @@ class DiskDeque(object):
     def __init__(self, iterable=(), maxsize=-1):
         if not hasattr(self, 'data'):
             self.left = self.right = 0
-            self.data = DiskDict()
+            self.data = DiskDict(table_prefix='deque')
         self.maxsize = maxsize
         self.extend(iterable)
 
@@ -107,7 +107,7 @@ class DiskDeque(object):
         return r
 
     def __getstate__(self):
-        return (tuple(self),)
+        return tuple(self)
 
     def __setstate__(self, s):
         self.__init__(s[0])
