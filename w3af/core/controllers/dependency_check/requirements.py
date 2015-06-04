@@ -54,11 +54,12 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('darts.lib.utils', 'darts.util.lru', '0.5'),
                      PIPDependency('jinja2', 'Jinja2', '2.7.3'),
                      PIPDependency('vulndb', 'vulndb', '0.0.17'),
+                     PIPDependency('markdown', 'markdown', '2.6.1'),
 
                      # https://gist.github.com/andresriancho/cf2fa1ce239b30f37bd9
                      PIPDependency('ruamel.ordereddict',
                                    'ruamel.ordereddict',
-                                   '0.4.6')]
+                                   '0.4.8')]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
 
