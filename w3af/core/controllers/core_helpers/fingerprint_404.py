@@ -120,8 +120,8 @@ class fingerprint_404(object):
         #    the object in order to use it.
         #
         if self._uri_opener is None:
-            msg = '404 fingerprint database was incorrectly initialized.'\
-                  ' URL opener is None.'
+            msg = ('404 fingerprint database was incorrectly initialized.'
+                   ' URL opener is None.')
             raise RuntimeError(msg)
 
         # Get the filename extension and create a 404 for it
