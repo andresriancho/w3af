@@ -73,6 +73,29 @@ class phpinfo(CrawlPlugin):
 
             self.worker_pool.map_multi_args(self._check_and_analyze, args)
 
+    def _get_potential_phpinfos(self):
+        """
+        :return: Filename of the php info file.
+        """
+        res = ['phpinfo.php', 'PhpInfo.php', 'PHPinfo.php', 'PHPINFO.php',
+               'phpInfo.php', 'info.php', 'test.php?mode=phpinfo',
+               'index.php?view=phpinfo', 'index.php?mode=phpinfo',
+               'TEST.php?mode=phpinfo', '?mode=phpinfo', '?view=phpinfo',
+               'install.php?mode=phpinfo', 'INSTALL.php?mode=phpinfo',
+               'admin.php?mode=phpinfo', 'phpversion.php', 'phpVersion.php',
+               'test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php',
+               'PHPversion.php', 'x.php', 'xx.php', 'xxx.php']
+
+        identified_os = kb.kb.raw_read('fingerprint_os', 'operating_system_str')
+
+        if not isinstance(identified_os, basestring):
+            identified_os = cf.cf.get('target_os')
+
+        if 'windows' in identified_os.lower():
+            res = list(set([path.lower() for path in res]))
+
+        return res
+
     def _check_and_analyze(self, domain_path, php_info_filename):
         """
         Check if a php_info_filename exists in the domain_path.
@@ -526,29 +549,6 @@ class phpinfo(CrawlPlugin):
             
             kb.kb.append(self, 'phpinfo', i)
             om.out.information(i.get_desc())
-
-    def _get_potential_phpinfos(self):
-        """
-        :return: Filename of the php info file.
-        """
-        res = ['phpinfo.php', 'PhpInfo.php', 'PHPinfo.php', 'PHPINFO.php',
-               'phpInfo.php', 'info.php', 'test.php?mode=phpinfo',
-               'index.php?view=phpinfo', 'index.php?mode=phpinfo',
-               'TEST.php?mode=phpinfo', '?mode=phpinfo', '?view=phpinfo',
-               'install.php?mode=phpinfo', 'INSTALL.php?mode=phpinfo',
-               'admin.php?mode=phpinfo', 'phpversion.php', 'phpVersion.php',
-               'test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php',
-               'PHPversion.php', 'x.php', 'xx.php', 'xxx.php']
-
-        identified_os = kb.kb.raw_read('fingerprint_os', 'operating_system_str')
-
-        if not isinstance(identified_os, basestring):
-            identified_os = cf.cf.get('target_os')
-
-        if 'windows' in identified_os.lower():
-            res = list(set([path.lower() for path in res]))
-
-        return res
 
     def end(self):
         self._analyzed_dirs.cleanup()
