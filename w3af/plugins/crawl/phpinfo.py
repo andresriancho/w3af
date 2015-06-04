@@ -91,8 +91,10 @@ class phpinfo(CrawlPlugin):
         if not isinstance(identified_os, basestring):
             identified_os = cf.cf.get('target_os')
 
+        # pylint: disable=E1103
         if 'windows' in identified_os.lower():
             res = list(set([path.lower() for path in res]))
+        # pylint: enable=E1103
 
         return res
 
