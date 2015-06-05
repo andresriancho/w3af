@@ -59,7 +59,7 @@ class ConnectionPoolException(HTTPRequestException):
 class RunOnce(Exception):
     """
     A small class that defines an exception to be raised by plugins that
-    don't want to be run anymore.
+    run only once and then are useless
     """
     def __init__(self, value=''):
         Exception.__init__(self)
@@ -67,6 +67,14 @@ class RunOnce(Exception):
 
     def __str__(self):
         return self.value
+
+
+class NoMoreCalls(RunOnce):
+    """
+    A small class that defines an exception to be raised by plugins that
+    don't want to be run anymore.
+    """
+    pass
 
 
 class ScanMustStopException(Exception):

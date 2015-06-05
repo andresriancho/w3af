@@ -31,8 +31,7 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.exceptions import RunOnce
+from w3af.core.controllers.exceptions import NoMoreCalls
 from w3af.core.controllers.threads.threadpool import one_to_many
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
@@ -57,7 +56,7 @@ class php_eggs(InfrastructurePlugin):
         # Already analyzed extensions
         self._already_analyzed_ext = ScalableBloomFilter()
 
-        # User configured parameters
+        # Internal DB
         self._db_file = os.path.join(ROOT_PATH, 'plugins', 'infrastructure',
                                      'php_eggs', 'eggs.json')
 
@@ -92,7 +91,6 @@ class php_eggs(InfrastructurePlugin):
 
         return egg_db
 
-    @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
         Nothing strange, just do some GET requests to the eggs and analyze the
@@ -121,6 +119,7 @@ class php_eggs(InfrastructurePlugin):
             if self._are_php_eggs(query_results):
                 # analyze the info to see if we can identify the version
                 self._extract_version_from_egg(query_results)
+                raise NoMoreCalls
 
     def _get_php_eggs(self, fuzzable_request, ext):
         """
@@ -159,6 +158,7 @@ class php_eggs(InfrastructurePlugin):
         """
         images = 0
         not_images = 0
+
         for query_result in query_results:
             response = query_result.http_response
             content_type, _ = response.get_headers().iget('content-type', '')
@@ -172,10 +172,10 @@ class php_eggs(InfrastructurePlugin):
             # The remote web server has expose_php = On. Report all the findings
             #
             for query_result in query_results:
-                desc = 'The PHP framework running on the remote server has a'\
-                       ' "%s" easter egg, access to the PHP egg is possible'\
-                       ' through the URL: "%s".'
-                desc = desc % (query_result.egg_desc, query_result.egg_URL)
+                desc = ('The PHP framework running on the remote server has a'
+                        ' "%s" easter egg, access to the PHP egg is possible'
+                        ' through the URL: "%s".')
+                desc %= (query_result.egg_desc, query_result.egg_URL)
                 
                 i = Info('PHP Egg', desc, query_result.http_response.id,
                          self.get_name())
@@ -216,13 +216,13 @@ class php_eggs(InfrastructurePlugin):
             if matching_versions:
 
                 if len(matching_versions) > 1:
-                    desc = 'A PHP easter egg was found that matches several'\
-                           ' different versions of PHP. The PHP framework'\
-                           ' version running on the remote server was'\
-                           ' identified as one of the following:\n- %s'
+                    desc = ('A PHP easter egg was found that matches several'
+                            ' different versions of PHP. The PHP framework'
+                            ' version running on the remote server was'
+                            ' identified as one of the following:\n- %s')
                 else:
-                    desc = 'The PHP framework version running on the remote'\
-                           ' server was identified as:\n- %s'
+                    desc = ('The PHP framework version running on the remote'
+                            ' server was identified as:\n- %s')
 
                 versions = '\n- '.join(matching_versions)
                 desc %= versions
@@ -240,17 +240,23 @@ class php_eggs(InfrastructurePlugin):
                 version = 'unknown'
                 powered_by_headers = kb.kb.raw_read('server_header',
                                                     'powered_by_string')
-                try:
-                    for v in powered_by_headers:
-                        if 'php' in v.lower():
-                            version = v.split('/')[1]
-                except:
-                    pass
-                
-                msg = 'The PHP version could not be identified using PHP eggs,'\
-                      ', please send this signature and the PHP version to the'\
-                      ' w3af project develop mailing list. Signature:'\
-                      ' EGG_DB[\'%s\'] = %r\n'
+                for v in powered_by_headers:
+                    if not isinstance(v, basestring):
+                        continue
+
+                    if 'php' not in v.lower():
+                        continue
+
+                    try:
+                        version = v.split('/')[1]
+                        break
+                    except IndexError:
+                        pass
+
+                msg = ('The PHP version could not be identified using PHP eggs,'
+                       ' please send this signature and the PHP version to the'
+                       ' w3af project develop mailing list. Signature:'
+                       ' EGG_DB[\'%s\'] = %r\n')
                 msg = msg % (version, desc_hashes)
                 om.out.information(msg)
 
