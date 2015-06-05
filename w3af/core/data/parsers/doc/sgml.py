@@ -313,14 +313,6 @@ class SGMLParser(BaseParser):
         # Memory usage reduction
         del context
 
-    def _filter_ref(self, attr):
-        key = attr[0]
-        value = attr[1]
-
-        return key in self.URL_ATTRS and value \
-            and not value.startswith('#') \
-            and not value in self.APACHE_INDEXING
-
     def get_emails(self, domain=None):
         """
         :param domain: Indicates what email addresses I want to retrieve.
@@ -363,6 +355,21 @@ class SGMLParser(BaseParser):
             return email
         else:
             raise ValueError('Invalid email address "%s"' % email)
+
+    def _filter_ref(self, attr):
+        """
+        :param attr: An attribute key/value
+        :return: True if the attribute value is a valid link
+        """
+        key = attr[0]
+        value = attr[1]
+
+        return (value
+                and key in self.URL_ATTRS
+                and not value.startswith('#')
+                and not value.startswith('tel:')
+                and not value.startswith('callto:')
+                and not value in self.APACHE_INDEXING)
 
     def _find_references(self, tag, tag_name, attrs):
         """

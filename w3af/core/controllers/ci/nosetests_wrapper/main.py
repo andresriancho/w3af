@@ -2,8 +2,9 @@
 
 from __future__ import print_function
 
-import sys
 import os
+import sys
+import time
 import logging
 
 # Need this hack in order to be able to re-add the current path to the
@@ -63,6 +64,7 @@ if __name__ == '__main__':
     future_list = []
     done_list = []
     queued_run_ids = []
+    start_time = time.time()
 
     configure_logging(LOG_FILE)
 
@@ -78,7 +80,8 @@ if __name__ == '__main__':
             future_list.append(future)
         
         total_tests = len(future_list)
-        print_status(done_list, total_tests, queued_run_ids, executor)
+        print_status(start_time, done_list, total_tests, queued_run_ids,
+                     executor)
         
         while future_list:
             try:
@@ -95,7 +98,7 @@ if __name__ == '__main__':
                         done_list.append(future)
                         queued_run_ids.remove(future.run_id)
 
-                        print_status(done_list, total_tests,
+                        print_status(start_time, done_list, total_tests,
                                      queued_run_ids, executor)
 
                         if exit_code != 0:
@@ -106,7 +109,8 @@ if __name__ == '__main__':
             except futures.TimeoutError:
                 logging.debug('Hit futures.as_completed timeout.')
                 logging.warning('Waiting...')
-                print_status(done_list, total_tests, queued_run_ids, executor)
+                print_status(start_time, done_list, total_tests, queued_run_ids,
+                             executor)
             
             # Filter future_list to avoid issues with tasks which are already
             # finished/done

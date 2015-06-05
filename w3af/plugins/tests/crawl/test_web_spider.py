@@ -296,9 +296,7 @@ class TestRelativePathsIn404(PluginTest):
         # Define the expected/desired output
         expected_files = ['',
                           '/galeria/',
-                          '/galeria/assets/ico/',
                           '/i18n/setlang/',
-                          '/galeria/assets/ico/tel:982560987',
                           '/reserva/resumen/']
         expected_urls = set(URL(self.target_url).url_join(end).url_string for end
                             in expected_files)
