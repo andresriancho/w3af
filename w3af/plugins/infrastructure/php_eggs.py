@@ -167,7 +167,7 @@ class php_eggs(InfrastructurePlugin):
             else:
                 not_images += 1
 
-        if images == 3 and not_images == 1:
+        if images >= 2 and not_images == 1:
             #
             # The remote web server has expose_php = On. Report all the findings
             #
@@ -191,12 +191,13 @@ class php_eggs(InfrastructurePlugin):
     def _extract_version_from_egg(self, query_results):
         """
         Analyzes the eggs and tries to deduce a PHP version number
-        ( which is then saved to the kb ).
+        (which is then saved to the kb).
         """
         if not query_results:
             return None
         else:
             desc_hashes = {}
+
             for query_result in query_results:
                 body = query_result.http_response.get_body()
                 hash_str = md5_hash(body)
