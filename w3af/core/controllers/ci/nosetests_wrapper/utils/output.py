@@ -56,8 +56,7 @@ def get_run_id(first, last):
 
 def humanize_time(secs):
     mins, secs = divmod(secs, 60)
-    hours, mins = divmod(mins, 60)
-    return '%02d h %02d m %02d s' % (hours, mins, secs)
+    return '%02dm %02ds' % (mins, secs)
 
 
 def print_status(start_time, done_list, total_tests, queued_run_ids, executor):
