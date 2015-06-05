@@ -633,23 +633,22 @@ class PluginConfigBody(gtk.VBox):
     def _buildpan(self, profileDescription=None):
         """Builds the panel."""
         pan = entries.RememberingHPaned(self.w3af, "pane-plugconfigbody", 250)
-        leftpan = entries.RememberingVPaned(
-            self.w3af, "pane-plugconfigleft", 320)
+        leftpan = entries.RememberingVPaned(self.w3af, "pane-plugconfigleft", 320)
         self.config_panel = ConfigPanel(profileDescription)
 
         # upper left
         scrollwin1u = gtk.ScrolledWindow()
         scrollwin1u.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.std_plugin_tree = PluginTree(
-            self.w3af, "standard", self.config_panel)
+        self.std_plugin_tree = PluginTree(self.w3af, "standard",
+                                          self.config_panel)
         scrollwin1u.add(self.std_plugin_tree)
         scrollwin1u.show()
 
         # lower left
         scrollwin1l = gtk.ScrolledWindow()
         scrollwin1l.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.out_plugin_tree = PluginTree(
-            self.w3af, "output", self.config_panel)
+        self.out_plugin_tree = PluginTree(self.w3af, "output",
+                                          self.config_panel)
         scrollwin1l.add(self.out_plugin_tree)
         scrollwin1l.show()
 
@@ -731,7 +730,7 @@ class PluginConfigBody(gtk.VBox):
             # Launch the editor
             treeToUse._handleEditPluginEvent(None, pname, ptype, path)
 
-    def reload(self, profileDescription):
+    def reload(self, profile_description):
         """Reloads all the configurations."""
         # target url
         configurable_obj = self.w3af.target
@@ -746,7 +745,7 @@ class PluginConfigBody(gtk.VBox):
 
         # replace panel
         pan = self.get_children()[0]
-        newpan = self._buildpan(profileDescription)
+        newpan = self._buildpan(profile_description)
         self.remove(self.pan)
         self.pack_start(newpan)
         self.pan = newpan
