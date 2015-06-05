@@ -138,17 +138,26 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
                 len(v)
             except TypeError:
                 v = [(v if v is None else str(v))]
+
         for ele in v:
             if not ele:
-                toapp = k + '='
+                to_append = k + '='
             else:
                 if is_unicode(ele):
-                    ele = ele.encode(encoding)
+                    # https://github.com/andresriancho/w3af/issues/10267
+                    #
+                    # Forced to use "ignore" here because there is not better
+                    # choice. I could try to encode it with strict and if it
+                    # fails then encode it with utf-8, but that might break
+                    # decoding on the server side and the whole string would
+                    # be ignored by the server. Thus I just ignore the offending
+                    # char(s) and continue with the rest of the ele content
+                    ele = ele.encode(encoding, errors='ignore')
                 else:
                     ele = str(ele)
 
-                toapp = k + '=' + urllib.quote(ele, safe)
+                to_append = k + '=' + urllib.quote(ele, safe)
                 
-            l.append(toapp)
+            l.append(to_append)
 
     return '&'.join(l)
