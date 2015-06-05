@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import time
 import logging
 import hashlib
 
@@ -53,7 +54,13 @@ def get_run_id(first, last):
     return '%s-%s-%s' % (_first, _last, _hash)
 
 
-def print_status(done_list, total_tests, queued_run_ids, executor):
+def humanize_time(secs):
+    mins, secs = divmod(secs, 60)
+    hours, mins = divmod(mins, 60)
+    return '%02d h %02d m %02d s' % (hours, mins, secs)
+
+
+def print_status(start_time, done_list, total_tests, queued_run_ids, executor):
     msg = 'Status: (%s/%s) ' % (len(done_list), total_tests)
     logging.warning(msg)
 
@@ -62,8 +69,12 @@ def print_status(done_list, total_tests, queued_run_ids, executor):
         for qri in queued_run_ids:
             logging.warning('    - %s' % qri)
 
-        msg = 'Running in %s threads, task queue size is %s'
-        logging.warning(msg % (len(executor._threads),
+        elapsed_time = time.time() - start_time
+
+        msg = ('Tests have been running for %s in %s threads. The current'
+               ' task queue size is %s')
+        logging.warning(msg % (humanize_time(elapsed_time),
+                               len(executor._threads),
                                executor._work_queue.qsize()))
 
     if len(done_list) > total_tests:
