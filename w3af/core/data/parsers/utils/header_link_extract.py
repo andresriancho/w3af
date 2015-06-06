@@ -44,6 +44,9 @@ def extract_link_from_header_simple(http_response, header_name, header_value):
     :return: Yield URL instances
     :see: https://github.com/andresriancho/w3af/issues/9493
     """
+    if not header_value:
+        raise StopIteration
+
     try:
         yield http_response.get_url().url_join(header_value)
     except ValueError:
@@ -72,6 +75,9 @@ def extract_link_from_link_header(http_response, header_name, header_value):
         try:
             url_str = re_match.group(1)
         except IndexError:
+            raise StopIteration
+
+        if not url_str:
             raise StopIteration
 
         try:

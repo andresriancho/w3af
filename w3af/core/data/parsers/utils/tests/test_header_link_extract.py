@@ -75,3 +75,19 @@ class TestHeaderURLGenerator(unittest.TestCase):
                           '__cfduid=...; path=/x; domain=.w3af.org; HttpOnly')]
         self.assertEqual(self.get_urls(extra_headers),
                          [URL('http://www.w3af.org/x')])
+
+    def test_link_invalid_format(self):
+        extra_headers = [('link', 'xyz')]
+        self.assertEqual(self.get_urls(extra_headers), [])
+
+    def test_set_cookie_invalid_format(self):
+        extra_headers = [('set-cookie', 'xyz')]
+        self.assertEqual(self.get_urls(extra_headers), [])
+
+    def test_set_cookie_empty(self):
+        extra_headers = [('set-cookie', '')]
+        self.assertEqual(self.get_urls(extra_headers), [])
+
+    def test_x_pingback_invalid(self):
+        extra_headers = [('x-pingback', '')]
+        self.assertEqual(self.get_urls(extra_headers), [])
