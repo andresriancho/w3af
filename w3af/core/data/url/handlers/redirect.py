@@ -23,7 +23,7 @@ import urllib2
 
 
 GET_HEAD_CODES = {301, 302, 303, 307}
-GET_HEAD = {"GET", "HEAD"}
+GET_HEAD = {'GET', 'HEAD'}
 
 POST_CODES = {301, 302, 303}
 POST = 'POST'
