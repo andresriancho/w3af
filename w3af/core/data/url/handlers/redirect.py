@@ -23,7 +23,7 @@ import urllib2
 
 
 GET_HEAD_CODES = {301, 302, 303, 307}
-GET_HEAD = {"GET", "HEAD"}
+GET_HEAD = {'GET', 'HEAD'}
 
 POST_CODES = {301, 302, 303}
 POST = 'POST'
@@ -40,7 +40,7 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
     If the user/plugin needs to follow a redirect he needs to do it manually.
     In cases such as the web_spider.py this is not an issue since it will
     perform an HTTP request and then create the fuzzable requests in
-    _headers_url_generator
+    headers_url_generator
     """
     def http_error_default(self, req, resp, code, msg, hdrs):
         

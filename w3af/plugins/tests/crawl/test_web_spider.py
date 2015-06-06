@@ -87,38 +87,6 @@ class TestWebSpider(PluginTest):
         self.generic_scan(config, self.follow_links_url,
                           start_url, expected_files)
 
-    def test_redirect_location(self):
-        ws = web_spider()
-        body = ''
-        url = URL('http://www.w3af.org')
-        redir_url = 'http://www.w3af.org/redir'
-        headers = Headers([('content-type', 'text/html'),
-                           ('location', redir_url)])
-        resp = HTTPResponse(200, body, headers, url, url)
-
-        gen = ws._headers_url_generator(resp, None)
-
-        extracted_data = [i for i in gen]
-        expected_data = [(URL(redir_url), None, resp, False)]
-
-        self.assertEqual(extracted_data, expected_data)
-
-    def test_redirect_uri_relative(self):
-        ws = web_spider()
-        body = ''
-        url = URL('http://www.w3af.org')
-        redir_url = '/redir'
-        headers = Headers([('content-type', 'text/html'),
-                           ('uri', redir_url)])
-        resp = HTTPResponse(200, body, headers, url, url)
-
-        gen = ws._headers_url_generator(resp, None)
-
-        extracted_data = [i for i in gen]
-        expected_data = [(url.url_join(redir_url), None, resp, False)]
-
-        self.assertEqual(extracted_data, expected_data)
-
     def test_utf8_urls(self):
         config = self._run_configs['basic']
         expected_files = [u'vúlnerable.py',
