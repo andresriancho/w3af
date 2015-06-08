@@ -102,8 +102,8 @@ class BaseTemplate(Configurable):
             raise ValueError(msg)
 
         if self.vulnerable_parameter not in self.data:
-            msg = 'The vulnerable parameter was not found in the configured data'\
-                  ' field. Please enter one of the following values: %s.'
+            msg = ('The vulnerable parameter was not found in the configured'
+                   ' data field. Please enter one of the following values: %s.')
             raise ValueError(msg % ', '.join(self.data))
 
         try:
@@ -143,11 +143,11 @@ class BaseTemplate(Configurable):
 
     def create_base_vuln(self):
         """
-        :return: A vulnerability with some preconfigured settings
+        :return: A vulnerability with some pre-configured settings
         """
         desc = 'This vulnerability was added to the knowledge-base by the'\
                ' user and represents a "%s" vulnerability.'
-        desc = desc % self.get_vulnerability_name()
+        desc %= self.get_vulnerability_name()
         
         v = Vuln('Manually added vulnerability', desc, severity.HIGH,
                  self.get_vuln_id(), 'manual')

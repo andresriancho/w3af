@@ -145,8 +145,8 @@ class xpath(AttackPlugin):
         except BaseFrameworkException, e:
             return 'Error "%s".' % e
         else:
-            if is_error_resp(false_resp.get_body()) and\
-            not is_error_resp(true_resp.get_body()):
+            if (is_error_resp(false_resp.get_body())
+                and not is_error_resp(true_resp.get_body())):
                 return True, is_error_resp
         
         return False, None
@@ -180,8 +180,8 @@ class xpath(AttackPlugin):
             except BaseFrameworkException, e:
                 om.out.debug('Error "%s"' % e)
             else:
-                if is_error_resp(false_resp.get_body()) and\
-                not is_error_resp(true_resp.get_body()):
+                if (is_error_resp(false_resp.get_body())
+                    and not is_error_resp(true_resp.get_body())):
                     return str_delim
         else:
             msg = 'Failed to identify XPATH injection string delimiter.'
