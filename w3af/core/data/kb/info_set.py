@@ -338,8 +338,9 @@ class InfoSet(object):
         """
         assert self.ITAG is not None, 'Need to specify unique id tag'
 
-        return self.get_attribute(self.ITAG) == self.get_attribute(self.ITAG) \
-               and info.get_name() == self.get_name()
+        return (info.get(self.ITAG, None) is not None and
+                info.get(self.ITAG) == self.get_attribute(self.ITAG)
+                and info.get_name() == self.get_name())
 
     def has_db_details(self):
         return self.first_info.has_db_details()

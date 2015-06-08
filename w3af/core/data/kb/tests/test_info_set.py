@@ -164,10 +164,24 @@ class TestInfoSet(unittest.TestCase):
         itag_2 = 'world'
         i2 = MockInfo(ids=2)
         i2[itag_2] = 2
-        iset_2 = InfoSet([i2])
-        iset_2.ITAG = itag_2
 
-        iset_1.match(iset_2)
+        self.assertFalse(iset_1.match(i2))
+
+    def test_match_same_itag(self):
+        """
+        https://github.com/andresriancho/w3af/issues/10286
+        """
+        itag_1 = 'hello'
+        i1 = MockInfo(ids=1)
+        i1[itag_1] = 1
+        iset_1 = InfoSet([i1])
+        iset_1.ITAG = itag_1
+
+        i2 = MockInfo(ids=2)
+        i2[itag_1] = 1
+
+        self.assertTrue(iset_1.match(i2))
+
 
 class TemplatedInfoSet(InfoSet):
     TEMPLATE = '''\
