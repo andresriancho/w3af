@@ -34,12 +34,9 @@ class XPathTemplate(BaseTemplate):
     def create_vuln(self):
         v = super(XPathTemplate, self).create_vuln()
         
-        original_value = self.data[self.vulnerable_parameter][0]
-        
         mutant = self.create_mutant_from_params()
         mutant.set_dc(self.data)
         mutant.set_token((self.vulnerable_parameter, 0))
-        mutant.set_token_original_value(original_value)
 
         v.set_mutant(mutant)
         
