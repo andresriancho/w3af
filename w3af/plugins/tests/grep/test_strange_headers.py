@@ -68,14 +68,14 @@ class TestStrangeHeaders(unittest.TestCase):
 
         url_1 = URL('http://www.w3af.com/1')
         headers_1 = Headers([('content-type', 'text/html'),
-                           ('hello-world', 'yes!')])
+                             ('hello-world', 'yes!')])
         request_1 = FuzzableRequest(url_1, method='GET')
         resp_1 = HTTPResponse(200, body, headers_1, url_1, url_1, _id=1)
         self.plugin.grep(request_1, resp_1)
 
         url_2 = URL('http://www.w3af.com/2')
         headers_2 = Headers([('content-type', 'text/html'),
-                           ('bye-bye', 'chau')])
+                             ('bye-bye', 'chau')])
         request_2 = FuzzableRequest(url_2, method='GET')
         resp_2 = HTTPResponse(200, body, headers_2, url_2, url_2, _id=2)
         self.plugin.grep(request_2, resp_2)
