@@ -40,11 +40,13 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 
 # Known reason errors. See errno module for more info on these errors
-EUNKNSERV = -2      # Name or service not known error
-EINVHOSTNAME = -5   # No address associated with hostname
+EUNKNSERV = -2        # Name or service not known error
+EINVHOSTNAME = -5     # No address associated with hostname
+EUNEXPECTEDEOF = -1   # https://github.com/andresriancho/w3af/issues/10290
+
 KNOWN_SOCKET_ERRORS = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH, ECONNRESET,
                        ENETDOWN, ENETUNREACH, EINVHOSTNAME, ETIMEDOUT,
-                       ENOSPC)
+                       ENOSPC, EUNEXPECTEDEOF)
 
 
 def new_no_content_resp(uri, add_id=False):
