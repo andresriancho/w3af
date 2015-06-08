@@ -337,8 +337,9 @@ class InfoSet(object):
         :return: True if they do match
         """
         assert self.ITAG is not None, 'Need to specify unique id tag'
-        return info[self.ITAG] == self.get_attribute(self.ITAG) and \
-               info.get_name() == self.get_name()
+
+        return self.get_attribute(self.ITAG) == self.get_attribute(self.ITAG) \
+               and info.get_name() == self.get_name()
 
     def has_db_details(self):
         return self.first_info.has_db_details()
