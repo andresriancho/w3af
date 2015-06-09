@@ -47,7 +47,6 @@ timeout = 0
 user_agent = w3af.org
 basic_auth_user = 
 basic_auth_passwd = 
-byDirectoryAndExtension404 = False
 string_match_404 = 
 cookie_jar_file = 
 ntlm_auth_domain = 
