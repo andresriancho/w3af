@@ -78,3 +78,10 @@ GUI documentation
    :maxdepth: 3
 
    gui/index
+
+Advanced tips and tricks
+------------------------
+.. toctree::
+   :maxdepth: 2
+
+   advanced-tips-tricks
