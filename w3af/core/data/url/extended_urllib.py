@@ -334,9 +334,9 @@ class ExtendedUrllib(object):
 
             # Logging
             error_sleep = SOCKET_ERROR_DELAY * error_rate
-            msg = 'Sleeping for %s seconds before sending HTTP request to' \
-                  ' "%s" after receiving URL/socket error. The ExtendedUrllib' \
-                  ' error rate is at %s%%.'
+            msg = ('Sleeping for %s seconds before sending HTTP request to'
+                   ' "%s" after receiving URL/socket error. The ExtendedUrllib'
+                   ' error rate is at %s%%.')
             args = (error_sleep, request.url_object, error_rate)
             om.out.debug(msg % args)
 
@@ -694,18 +694,18 @@ class ExtendedUrllib(object):
                 if resource_length.isdigit():
                     resource_length = int(resource_length)
                 else:
-                    msg = 'The content length header value of the response'\
-                          ' wasn\'t an integer, this is strange... The value'\
-                          ' is: "%s".'
+                    msg = ('The content length header value of the response'
+                           ' wasn\'t an integer, this is strange... The value'
+                           ' is: "%s".')
                     om.out.error(msg % res.get_headers()[i])
                     raise HTTPRequestException(msg, request=req)
 
         if resource_length is not None:
             return resource_length
         else:
-            msg = 'The response didn\'t contain a content-length header.'\
-                  ' Unable to return the remote file size of request with'\
-                  ' id: %s' % res.id
+            msg = ('The response didn\'t contain a content-length header.'
+                   ' Unable to return the remote file size of request with'
+                   ' id: %s' % res.id)
             om.out.debug(msg)
             # I prefer to fetch the file, before this om.out.debug was a
             # "raise BaseFrameworkException", but this didn't make much sense
