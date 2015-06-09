@@ -82,7 +82,7 @@ class OptionList(object):
                     return o
             else:
                 msg = ('The OptionList doesn\'t contain an option with the'
-                       'name: "%s"')
+                       ' name: "%s"')
                 raise BaseFrameworkException(msg % item_name)
         else:
             # An integer
