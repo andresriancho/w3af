@@ -110,6 +110,8 @@ class w3af_core_profiles(object):
                                        problem, or the plugins are incorrectly
                                        configured.
         """
+        error_messages = []
+
         # Clear all enabled plugins if profile_name is None
         if profile_name is None:
             self._w3af_core.plugins.zero_enabled_plugins()
@@ -125,18 +127,32 @@ class w3af_core_profiles(object):
         self._w3af_core.target.set_options(profile_inst.get_target())
 
         # Set the misc and http settings
-        #
-        # IGNORE the following parameters from the profile:
-        #   - misc_settings.local_ip_address
-        #
-        profile_misc_settings = profile_inst.get_misc_settings()
-        if 'local_ip_address' in profile_inst.get_misc_settings():
-            profile_misc_settings['local_ip_address'].set_value(get_local_ip())
+        try:
+            profile_misc_settings = profile_inst.get_misc_settings()
+        except BaseFrameworkException, e:
+            msg = ('Setting the framework misc-settings raised an exception'
+                   ' due to unknown or invalid configuration parameters. %s')
+            error_messages.append(msg % e)
+        else:
+            #
+            # IGNORE the following parameters from the profile:
+            #   - misc_settings.local_ip_address
+            #
+            if 'local_ip_address' in profile_inst.get_misc_settings():
+                local_ip = get_local_ip()
+                profile_misc_settings['local_ip_address'].set_value(local_ip)
 
-        misc_settings = MiscSettings()
-        misc_settings.set_options(profile_misc_settings)
-        self._w3af_core.uri_opener.settings.set_options(
-            profile_inst.get_http_settings())
+            misc_settings = MiscSettings()
+            misc_settings.set_options(profile_misc_settings)
+
+        try:
+            http_settings = profile_inst.get_http_settings()
+        except BaseFrameworkException, e:
+            msg = ('Setting the framework http-settings raised an exception'
+                   ' due to unknown or invalid configuration parameters. %s')
+            error_messages.append(msg % e)
+        else:
+            self._w3af_core.uri_opener.settings.set_options(http_settings)
 
         #
         #    Handle plugin options
@@ -158,7 +174,6 @@ class w3af_core_profiles(object):
                      ' message. If this warning does not disappear you can'
                      ' manually edit the profile file to fix it.')
 
-        error_messages = []
         core_set_plugins = self._w3af_core.plugins.set_plugins
 
         for plugin_type in self._w3af_core.plugins.get_plugin_types():
@@ -170,14 +185,14 @@ class w3af_core_profiles(object):
                 unknown_plugins = core_set_plugins(plugin_names, plugin_type,
                                                    raise_on_error=False)
             except KeyError:
-                msg = 'The profile references the "%s" plugin type which is'\
-                      ' unknown to the w3af framework.'
+                msg = ('The profile references the "%s" plugin type which is'
+                       ' unknown to the w3af framework.')
                 error_messages.append(msg % plugin_type)
                 continue
                 
             for unknown_plugin in unknown_plugins:
-                msg = 'The profile references the "%s.%s" plugin which is' \
-                      ' unknown in the current framework version.'
+                msg = ('The profile references the "%s.%s" plugin which is'
+                       ' unknown in the current framework version.')
                 error_messages.append(msg % (plugin_type, unknown_plugin))
 
             # Now we set the plugin options, which can also trigger errors with
@@ -193,9 +208,9 @@ class w3af_core_profiles(object):
                                                                plugin_name,
                                                                plugin_options)
                 except BaseFrameworkException, w3e:
-                    msg = 'Setting the options for plugin "%s.%s" raised an' \
-                          ' exception due to unknown or invalid configuration' \
-                          ' parameters. %s'
+                    msg = ('Setting the options for plugin "%s.%s" raised an'
+                           ' exception due to unknown or invalid configuration'
+                           ' parameters. %s')
                     error_messages.append(msg % (plugin_type, plugin_name, w3e))
 
         if error_messages:
@@ -207,7 +222,8 @@ class w3af_core_profiles(object):
         :param directory: The directory from which profiles are loaded
 
         :return: Two different lists:
-            - One that contains the instances of the valid profiles that were loaded
+            - One that contains the instances of the valid profiles that were
+              loaded
             - One with the file names of the profiles that are invalid
 
         >>> HOME_DIR = '.'
