@@ -25,10 +25,11 @@ import os
 from itertools import repeat, starmap
 from random import choice
 
-from w3af.core.controllers.exceptions import DBException
-from w3af.core.controllers.misc.temp_dir import (get_temp_dir, create_temp_dir,
-                                            remove_temp_dir)
 from w3af.core.data.db.dbms import SQLiteDBMS, get_default_temp_db_instance
+from w3af.core.controllers.exceptions import DBException
+from w3af.core.controllers.misc.temp_dir import (get_temp_dir,
+                                                 create_temp_dir,
+                                                 remove_temp_dir)
 
 
 def get_temp_filename():
@@ -36,6 +37,7 @@ def get_temp_filename():
     fname = ''.join(starmap(choice, repeat((string.letters,), 18)))
     filename = os.path.join(temp_dir, fname + '.w3af.temp_db')
     return filename
+
 
 class TestDBMS(unittest.TestCase):
     
@@ -55,8 +57,8 @@ class TestDBMS(unittest.TestCase):
         
         db.execute('INSERT INTO TEST VALUES (1,"a")').result()
         
-        self.assertIn( ('1', 'a'), db.select('SELECT * from TEST'))
-        self.assertEqual( ('1', 'a'), db.select_one('SELECT * from TEST'))
+        self.assertIn(('1', 'a'), db.select('SELECT * from TEST'))
+        self.assertEqual(('1', 'a'), db.select_one('SELECT * from TEST'))
 
     def test_default_db(self):
         db = get_default_temp_db_instance()
@@ -64,8 +66,8 @@ class TestDBMS(unittest.TestCase):
         
         db.execute('INSERT INTO TEST VALUES (1,"a")').result()
         
-        self.assertIn( ('1', 'a'), db.select('SELECT * from TEST'))
-        self.assertEqual( ('1', 'a'), db.select_one('SELECT * from TEST'))
+        self.assertIn(('1', 'a'), db.select('SELECT * from TEST'))
+        self.assertEqual(('1', 'a'), db.select_one('SELECT * from TEST'))
 
     def test_simple_db_with_pk(self):
         db = SQLiteDBMS(get_temp_filename())
@@ -104,6 +106,7 @@ class TestDBMS(unittest.TestCase):
         db = SQLiteDBMS(get_temp_filename())
         db.close()
         db.close()
+
 
 class TestDefaultDB(unittest.TestCase):
     def test_get_default_temp_db_instance(self):
