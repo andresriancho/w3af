@@ -77,9 +77,9 @@ class DataToken(object):
 
     def __eq__(self, other):
         if isinstance(other, DataToken):
-            return self.get_name() == other.get_name() and\
-                   self.get_value() == other.get_value() and\
-                   self.get_path() == other.get_path()
+            return (self.get_name() == other.get_name() and
+                    self.get_value() == other.get_value() and
+                    self.get_path() == other.get_path())
 
         elif isinstance(other, basestring):
             return self.get_value() == other

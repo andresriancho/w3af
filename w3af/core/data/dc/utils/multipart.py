@@ -19,10 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import mimetools
-import mimetypes
-import hashlib
 import os
+import mimetypes
 
 from w3af.core.controllers.misc.io import is_file_like
 from w3af.core.data.misc.encoding import smart_str
