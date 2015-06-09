@@ -192,8 +192,8 @@ class MiscSettings(Configurable):
         return ol
 
     def get_desc(self):
-        return 'This section is used to configure misc settings that affect'\
-               ' the core and all plugins.'
+        return ('This section is used to configure misc settings that affect'
+                ' the core and all plugins.')
 
     def set_options(self, options_list):
         """
@@ -209,6 +209,7 @@ class MiscSettings(Configurable):
                    'fuzzable_headers', 'interface', 'local_ip_address',
                    'msf_location', 'stop_on_first_exception',
                    'non_targets')
+
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())
 

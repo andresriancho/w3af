@@ -58,7 +58,8 @@ class OptionList(object):
 
     def __getitem__(self, item_name):
         """
-        This method is used when on any configurable object the developer does something like:
+        This method is used when on any configurable object the developer does
+        something like:
 
         def set_options( self, optionsList ):
             self._check_persistent = optionsList['check_persistent']
@@ -80,7 +81,8 @@ class OptionList(object):
                 if o.get_name() == item_name:
                     return o
             else:
-                msg = 'The OptionList doesn\'t contain an option with the name: "%s"'
+                msg = ('The OptionList doesn\'t contain an option with the'
+                       'name: "%s"')
                 raise BaseFrameworkException(msg % item_name)
         else:
             # An integer
