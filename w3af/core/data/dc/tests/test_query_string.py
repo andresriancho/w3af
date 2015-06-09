@@ -80,3 +80,9 @@ class TestQueryString(unittest.TestCase):
         self.assertEqual(dc.keys(), unpickled_qs.keys())
         self.assertEqual(dc.keys(), ['a'])
         self.assertEqual(dc.get_token().get_name(), 'a')
+
+    def test_encoding_special_unicode(self):
+        qs = QueryString([('a', [u'✓'])])
+        qs.set_token(('a', 0))
+
+        self.assertEqual(str(qs), 'a=%E2%9C%93')
