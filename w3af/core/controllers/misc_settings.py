@@ -26,7 +26,7 @@ from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_net_iface import get_net_iface
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.options.option_types import URL_LIST, COMBO
+from w3af.core.data.options.option_types import URL_LIST, COMBO, BOOL, LIST
 
 
 class MiscSettings(Configurable):
@@ -85,38 +85,38 @@ class MiscSettings(Configurable):
 
         ######## Fuzzer parameters ########
         d = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
-        opt = opt_factory('fuzz_cookies', cf.cf.get('fuzz_cookies'), d, 'boolean',
+        opt = opt_factory('fuzz_cookies', cf.cf.get('fuzz_cookies'), d, BOOL,
                           tabid='Fuzzer parameters')
         ol.add(opt)
 
-        d = 'Indicates if w3af plugins will send payloads in the content of'\
-            ' multipart/post form files.'
-        h = 'If enabled, and multipart/post forms with files are found, w3af'\
-            'will fill those file inputs with pseudo-files containing the' \
-            'payloads required to identify vulnerabilities.'
+        d = ('Indicates if w3af plugins will send payloads in the content of'
+             ' multipart/post form files.')
+        h = ('If enabled, and multipart/post forms with files are found, w3af'
+             'will fill those file inputs with pseudo-files containing the'
+             'payloads required to identify vulnerabilities.')
         opt = opt_factory('fuzz_form_files', cf.cf.get('fuzz_form_files'), d,
                           'boolean', tabid='Fuzzer parameters', help=h)
         ol.add(opt)
 
-        d = 'Indicates if w3af plugins will send fuzzed file names in order to'\
-            ' find vulnerabilities'
-        h = 'For example, if the discovered URL is http://test/filename.php,'\
-            ' and fuzz_url_filenames is enabled, w3af will request among'\
-            ' other things: http://test/file\'a\'a\'name.php in order to'\
-            ' find SQL injections. This type of vulns are getting more '\
-            ' common every day!'
+        d = ('Indicates if w3af plugins will send fuzzed file names in order to'
+             ' find vulnerabilities')
+        h = ('For example, if the discovered URL is http://test/filename.php,'
+             ' and fuzz_url_filenames is enabled, w3af will request among'
+             ' other things: http://test/file\'a\'a\'name.php in order to'
+             ' find SQL injections. This type of vulns are getting more '
+             ' common every day!')
         opt = opt_factory('fuzz_url_filenames', cf.cf.get('fuzz_url_filenames'),
-                          d, 'boolean', help=h, tabid='Fuzzer parameters')
+                          d, BOOL, help=h, tabid='Fuzzer parameters')
         ol.add(opt)
 
-        desc = 'Indicates if w3af plugins will send fuzzed URL parts in order'\
-               ' to find vulnerabilities'
-        h = 'For example, if the discovered URL is http://test/foo/bar/123,'\
-            ' and fuzz_url_parts is enabled, w3af will request among other '\
-            ' things: http://test/bar/<script>alert(document.cookie)</script>'\
-            ' in order to find XSS.'
+        desc = ('Indicates if w3af plugins will send fuzzed URL parts in order'
+                ' to find vulnerabilities')
+        h = ('For example, if the discovered URL is http://test/foo/bar/123,'
+             ' and fuzz_url_parts is enabled, w3af will request among other '
+             ' things: http://test/bar/<script>alert(document.cookie)</script>'
+             ' in order to find XSS.')
         opt = opt_factory('fuzz_url_parts', cf.cf.get('fuzz_url_parts'), desc,
-                          'boolean', help=h, tabid='Fuzzer parameters')
+                          BOOL, help=h, tabid='Fuzzer parameters')
         ol.add(opt)
 
         desc = 'Indicates the extension to use when fuzzing file content'
@@ -127,15 +127,15 @@ class MiscSettings(Configurable):
 
         desc = 'A list with all fuzzable header names'
         opt = opt_factory('fuzzable_headers', cf.cf.get('fuzzable_headers'),
-                          desc, 'list', tabid='Fuzzer parameters')
+                          desc, LIST, tabid='Fuzzer parameters')
         ol.add(opt)
 
-        d = 'Indicates what HTML form combo values w3af plugins will use:'\
-            ' all, tb, tmb, t, b'
-        h = 'Indicates what HTML form combo values, e.g. select options values,'\
-            ' w3af plugins will use: all (All values), tb (only top and bottom '\
-            ' values), tmb (top, middle and bottom values), t (top values), b'\
-            ' (bottom values).'
+        d = ('Indicates what HTML form combo values w3af plugins will use:'
+             ' all, tb, tmb, t, b')
+        h = ('Indicates what HTML form combo values, e.g. select options values,'
+             ' w3af plugins will use: all (All values), tb (only top and bottom'
+             ' values), tmb (top, middle and bottom values), t (top values), b'
+             ' (bottom values).')
         options = ['tmb', 'all', 'tb', 't', 'b']
         opt = opt_factory('form_fuzzing_mode', options, d, COMBO, help=h,
                           tabid='Fuzzer parameters')
@@ -143,20 +143,20 @@ class MiscSettings(Configurable):
 
         ######## Core parameters ########
         desc = 'Stop scan after first unhandled exception'
-        h = 'This feature is only useful for developers that want their scan'\
-            ' to stop on the first exception that is raised by a plugin.'\
-            'Users should leave this as False in order to get better '\
-            'exception handling from w3af\'s core.'
+        h = ('This feature is only useful for developers that want their scan'
+             ' to stop on the first exception that is raised by a plugin.'
+             ' Users should leave this as False in order to get better'
+             ' exception handling from w3af\'s core.')
         opt = opt_factory('stop_on_first_exception',
                           cf.cf.get('stop_on_first_exception'),
-                          desc, 'boolean', help=h, tabid='Core settings')
+                          desc, BOOL, help=h, tabid='Core settings')
         ol.add(opt)
 
         desc = 'Maximum crawl time (minutes)'
-        h = 'Many users tend to enable numerous plugins without actually'\
-            ' knowing what they are and the potential time they will take'\
-            ' to run. By using this parameter, users will be able to set'\
-            ' the maximum amount of time the crawl phase will run.'
+        h = ('Many users tend to enable numerous plugins without actually'
+             ' knowing what they are and the potential time they will take'
+             ' to run. By using this parameter, users will be able to set'
+             ' the maximum amount of time the crawl phase will run.')
         opt = opt_factory('max_discovery_time', cf.cf.get('max_discovery_time'),
                           desc, 'integer', help=h, tabid='Core settings')
         ol.add(opt)
@@ -174,16 +174,17 @@ class MiscSettings(Configurable):
         ol.add(opt)
 
         ######### Misc ###########
-        desc = 'A comma separated list of URLs that w3af should completely ignore'
-        h = 'Sometimes it\'s a good idea to ignore some URLs and test them'\
-            ' manually'
+        desc = ('A comma separated list of URLs that w3af should completely'
+                ' ignore')
+        h = ('Sometimes it\'s a good idea to ignore some URLs and test them'
+             ' manually')
         opt = opt_factory('non_targets', cf.cf.get('non_targets'), desc,
                           URL_LIST, help=h, tabid='Misc settings')
         ol.add(opt)
 
         ######### Metasploit ###########
-        desc = 'Full path of Metasploit framework binary directory (%s in '\
-               'most linux installs)' % cf.cf.get('msf_location')
+        desc = ('Full path of Metasploit framework binary directory (%s in '
+                'most linux installs)' % cf.cf.get('msf_location'))
         opt = opt_factory('msf_location', cf.cf.get('msf_location'),
                           desc, 'string', tabid='Metasploit')
         ol.add(opt)
