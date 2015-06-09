@@ -51,8 +51,10 @@ class ExceptionHandler(object):
     """
 
     MAX_EXCEPTIONS_PER_PLUGIN = 3
-    NO_HANDLING = (MemoryError, ScanMustStopByUnknownReasonExc,
-                   ScanMustStopException, ScanMustStopByUserRequest,
+    NO_HANDLING = (MemoryError, OSError, IOError,
+                   ScanMustStopByUnknownReasonExc,
+                   ScanMustStopException,
+                   ScanMustStopByUserRequest,
                    HTTPRequestException)
 
     if DEBUG:
