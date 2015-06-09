@@ -296,6 +296,10 @@ class SQLiteExecutor(Process):
         #
         # https://github.com/andresriancho/w3af/issues/4937
         #
+        # It doesn't seem to help because I'm still getting malformed database
+        # files, but I'll keep it anyways because I'm assuming that it's going
+        # to reduce (not to zero, but reduce) these issues.
+        #
         #self.cursor.execute('PRAGMA synchronous=OFF')
     
     def run(self):
