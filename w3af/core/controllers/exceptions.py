@@ -161,6 +161,10 @@ class DBException(BaseFrameworkException):
     pass
 
 
+class NoSuchTableException(DBException):
+    pass
+
+
 class FileException(BaseFrameworkException):
     pass
 

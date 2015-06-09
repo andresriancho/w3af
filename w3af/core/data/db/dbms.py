@@ -31,7 +31,7 @@ from concurrent.futures import Future
 from multiprocessing.dummy import Queue, Process
 
 from w3af.core.data.misc.file_utils import replace_file_special_chars
-from w3af.core.controllers.exceptions import DBException
+from w3af.core.controllers.exceptions import DBException, NoSuchTableException
 from w3af.core.controllers.misc.temp_dir import get_temp_dir, create_temp_dir
 
 # Constants
@@ -343,9 +343,21 @@ class SQLiteExecutor(Process):
                                     
                 try:
                     result = handler(*args, **kwds)
+                except sqlite3.OperationalError, e:
+                    # I don't like this string match, but it seems that the
+                    # exception doesn't have any error code to match
+                    if 'no such table' in e.message:
+                        dbe = NoSuchTableException(str(e))
+                        future.set_exception(dbe)
+                    else:
+                        # More specific exceptions to be added here later...
+                        dbe = DBException(str(e))
+                        future.set_exception(dbe)
+
                 except Exception, e:
                     dbe = DBException(str(e))
                     future.set_exception(dbe)
+
                 else:
                     future.set_result(result)
 

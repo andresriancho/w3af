@@ -26,7 +26,7 @@ from itertools import repeat, starmap
 from random import choice
 
 from w3af.core.data.db.dbms import SQLiteDBMS, get_default_temp_db_instance
-from w3af.core.controllers.exceptions import DBException
+from w3af.core.controllers.exceptions import DBException, NoSuchTableException
 from w3af.core.controllers.misc.temp_dir import (get_temp_dir,
                                                  create_temp_dir,
                                                  remove_temp_dir)
@@ -59,6 +59,11 @@ class TestDBMS(unittest.TestCase):
         
         self.assertIn(('1', 'a'), db.select('SELECT * from TEST'))
         self.assertEqual(('1', 'a'), db.select_one('SELECT * from TEST'))
+
+    def test_select_non_exist_table(self):
+        db = SQLiteDBMS(get_temp_filename())
+
+        self.assertRaises(NoSuchTableException, db.select, 'SELECT * from TEST')
 
     def test_default_db(self):
         db = get_default_temp_db_instance()
