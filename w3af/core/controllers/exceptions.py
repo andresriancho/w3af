@@ -165,6 +165,10 @@ class NoSuchTableException(DBException):
     pass
 
 
+class MalformedDBException(DBException):
+    pass
+
+
 class FileException(BaseFrameworkException):
     pass
 

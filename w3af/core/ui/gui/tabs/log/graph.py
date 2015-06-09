@@ -28,8 +28,10 @@ import itertools
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.ui.gui.output.message_consumer import MessageConsumer
-from w3af.core.controllers.exceptions import NoSuchTableException
 from w3af.core.data.db.disk_list import DiskList
+from w3af.core.controllers.exceptions import (NoSuchTableException,
+                                              MalformedDBException)
+
 
 # margins (they have to be > 10)
 MIZQ = 20
@@ -132,6 +134,8 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
             len_all_messages = len(self.all_messages)
         except NoSuchTableException:
             # See method comment on why we yield True
+            yield True
+        except MalformedDBException:
             yield True
 
         # do we have enough data to start?
