@@ -26,6 +26,7 @@ import sys
 
 from htmlentitydefs import name2codepoint
 
+from w3af.core.data.dc.utils.token import DataToken
 from w3af.core.data.misc.encoding import HTML_ENCODE
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
@@ -101,7 +102,6 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
         parameters in the output will match the order of parameters in the
         input.
     """
-
     if hasattr(query, "items"):
         # mapping objects
         query = query.items()
@@ -123,11 +123,10 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
             raise TypeError, msg, tb
 
     l = []
-    is_unicode = lambda x: isinstance(x, unicode)
 
     for k, v in query:
         # first work with keys
-        k = k.encode(encoding) if is_unicode(k) else str(k)
+        k = to_encodable_string(k, encoding)
         k = urllib.quote(k, safe)
 
         if isinstance(v, basestring):
@@ -143,21 +142,42 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
             if not ele:
                 to_append = k + '='
             else:
-                if is_unicode(ele):
-                    # https://github.com/andresriancho/w3af/issues/10267
-                    #
-                    # Forced to use "ignore" here because there is not better
-                    # choice. I could try to encode it with strict and if it
-                    # fails then encode it with utf-8, but that might break
-                    # decoding on the server side and the whole string would
-                    # be ignored by the server. Thus I just ignore the offending
-                    # char(s) and continue with the rest of the ele content
-                    ele = ele.encode(encoding, errors='ignore')
-                else:
-                    ele = str(ele)
-
+                ele = to_encodable_string(ele, encoding)
                 to_append = k + '=' + urllib.quote(ele, safe)
                 
             l.append(to_append)
 
     return '&'.join(l)
+
+
+def to_encodable_string(obj, encoding):
+    """
+    This makes an extra effort to return a string which can be url-encoded from
+    an object that can be one of:
+        * Byte-String
+        * Unicode
+        * DataToken
+
+    And in all cases it might have invalid encoding
+
+    :param obj: See above
+    :param encoding: The encoding name (eg. utf-8)
+    :return: A byte-string
+    """
+    if isinstance(obj, DataToken):
+        obj = obj.get_value()
+
+    if isinstance(obj, unicode):
+        # https://github.com/andresriancho/w3af/issues/10267
+        #
+        # Forced to use "ignore" here because there is not better
+        # choice. I could try to encode it with strict and if it
+        # fails then encode it with utf-8, but that might break
+        # decoding on the server side and the whole string would
+        # be ignored by the server. Thus I just ignore the offending
+        # char(s) and continue with the rest of the ele content
+        obj = obj.encode(encoding, errors='ignore')
+    else:
+        obj = str(obj)
+
+    return obj
