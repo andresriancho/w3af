@@ -28,6 +28,7 @@ import itertools
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.ui.gui.output.message_consumer import MessageConsumer
+from w3af.core.controllers.exceptions import NoSuchTableException
 from w3af.core.data.db.disk_list import DiskList
 
 # margins (they have to be > 10)
@@ -85,6 +86,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         if self.flags() & gtk.MAPPED:
             if self._redraw_gen is None:
                 self._redraw_gen = self._redraw_all()
+
             reset = self._redraw_gen.next()
             if reset:
                 self._redraw_gen = None
@@ -110,13 +112,30 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
     def _redraw_all(self):
         """
         Redraws all the graph.
+
+        This implements a generator which has a rather strange protocol
+        implemented in "draw_handler".
+
+            * When the generator yields True a new generator is created and we
+            start calling that one, so all the code after a "yield True" is run
+            won't be called
+
+            * When the generator yields False it will be called again
         """
         if self.gc is None:
             # sorry, not exposed yet...
             yield True
 
+        # Handle the case where the DBMS has been stopped and the tables cleared
+        # https://github.com/andresriancho/w3af/issues/5107
+        try:
+            len_all_messages = len(self.all_messages)
+        except NoSuchTableException:
+            # See method comment on why we yield True
+            yield True
+
         # do we have enough data to start?
-        if len(self.all_messages) < 2:
+        if len_all_messages < 2:
             yield True
 
         try:
