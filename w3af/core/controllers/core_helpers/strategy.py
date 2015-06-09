@@ -43,7 +43,7 @@ from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               ScanMustStopByUserRequest)
 
 
-class w3af_core_strategy(object):
+class CoreStrategy(object):
     """
     This is the simplest scan strategy which follows this logic:
 
@@ -113,8 +113,8 @@ class w3af_core_strategy(object):
                 # too
                 self._w3af_core.worker_pool.finish()
             except Exception, e:
-                msg = 'strategy.start() found exception while terminating' \
-                      ' workers "%s"'
+                msg = ('strategy.start() found exception while terminating'
+                       ' workers "%s"')
                 om.out.debug(msg % e)
 
             raise exc_info[0], exc_info[1], exc_info[2]
@@ -259,8 +259,8 @@ class w3af_core_strategy(object):
                     # Safety check, I need these to be FuzzableRequest objects
                     # if not, the url_producer is doing something wrong and I
                     # don't want to do anything with this data
-                    fmt = '%s is returning objects of class %s instead of'\
-                          ' FuzzableRequest.'
+                    fmt = ('%s is returning objects of class %s instead of'
+                           ' FuzzableRequest.')
                     assert isinstance(fuzzable_request_inst, FuzzableRequest),\
                            fmt % (url_producer, type(fuzzable_request_inst))
 
