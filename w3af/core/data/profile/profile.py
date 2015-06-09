@@ -72,7 +72,7 @@ class profile(object):
                 else:
                     if not self.get_name():
                         msg = ('The profile with name "%s" does NOT contain a'
-                               '[profile] section with the "name" attribute.')
+                               ' [profile] section with the "name" attribute.')
                         raise BaseFrameworkException(msg % (profname,))
 
         # Save the profname variable
