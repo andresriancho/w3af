@@ -7,15 +7,10 @@
 [grep.blank_body]
 
 [misc-settings]
-maxThreads = 15
 form_fuzzing_mode = tmb
 fuzzed_files_extension = gif
-autoDependencies = True
-demo = False
 max_discovery_time = 120
 fuzzable_headers = 
-showProgressBar = True
-fuzzCookie = False
 fuzz_form_files = True
 fuzz_url_filenames = False
 interface = ppp0
@@ -97,7 +92,6 @@ proxy_port = 8080
 url_parameter = 
 never_404 = 
 basic_auth_domain = 
-maxFileSize = 400000
 proxy_address = 
 headers_file = 
 always_404 = 

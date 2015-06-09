@@ -6,13 +6,9 @@ name = web_infrastructure
 result_limit = 300
 
 [misc-settings]
-maxThreads = 15
 form_fuzzing_mode = tmb
 fuzzed_files_extension = gif
-autoDependencies = True
-demo = False
 fuzzable_headers = 
-fuzzCookie = False
 fuzz_form_files = True
 fuzz_url_filenames = False
 max_discovery_time = 120
@@ -37,7 +33,6 @@ proxy_port = 8080
 url_parameter = 
 never_404 = 
 headers_file = 
-maxFileSize = 400000
 proxy_address = 
 basic_auth_domain = 
 always_404 = 

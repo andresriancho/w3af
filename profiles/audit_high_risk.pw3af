@@ -14,13 +14,9 @@ listen_address =
 listen_port = 44449
 
 [misc-settings]
-maxThreads = 15
 form_fuzzing_mode = tmb
 fuzzed_files_extension = gif
-autoDependencies = True
-demo = False
 fuzzable_headers = 
-fuzzCookie = False
 fuzz_url_filenames = False
 fuzz_form_files = True
 max_discovery_time = 120
@@ -40,7 +36,6 @@ proxy_port = 8080
 url_parameter = 
 never_404 = 
 basic_auth_domain = 
-maxFileSize = 400000
 always_404 = 
 headers_file = 
 proxy_address = 
