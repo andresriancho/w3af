@@ -229,7 +229,8 @@ class ConsoleUI(object):
             else:
                 self._paste(key)
         except Exception, e:
-            traceback.print_exc()  # TODO
+            # TODO
+            traceback.print_exc()
 
     def _backOrExit(self):
         exit = len(self._trace) == 0

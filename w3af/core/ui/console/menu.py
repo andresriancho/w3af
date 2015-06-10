@@ -219,9 +219,9 @@ class menu(object):
         small_locals = {'kb': kb, 'w3af_core': self._w3af}
         small_globals = {}
 
-        evalVariable = ' '.join(params)
+        eval_variable = ' '.join(params)
         try:
-            res = eval(evalVariable, small_globals, small_locals)
+            res = eval(eval_variable, small_globals, small_locals)
         except:
             om.out.console('Unknown variable.')
         else:
