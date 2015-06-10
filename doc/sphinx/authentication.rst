@@ -1,12 +1,14 @@
 Authentication
 ==============
-w3af supports these types of authentication credentials that a user can provide
-in order for the scanner to keep a session open to scan the target web application:
+These types of authentication schemes are supported by w3af:
 
  * HTTP Basic authentication
  * NTLM authentication
  * Form authentication
  * Setting an HTTP cookie
+
+If the user provides credentials ``w3af`` will make sure that the scan is run
+using an active user session.
 
 HTTP Basic and NTLM authentication are two types of HTTP level authentication
 usually provided by the web server, while the form and cookie authentication
@@ -46,6 +48,13 @@ Please note the two different configuration sections for basic HTTP authenticati
 and NTLM authentication. Enter your preferred settings and then ``save``. The scanner
 is now ready to start an authenticated scan, the next step would be to enable
 specific plugins and start the scan.
+
+.. note::
+
+    NTML and basic authentication usually require usernames with the ``\`` character,
+    which needs to be entered as `\\` in the w3af-console. For example to use
+    `domain\user` as the user use ``set basic_auth_user domain\\user``.
+
 
 Form authentication
 -------------------
