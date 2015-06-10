@@ -52,8 +52,8 @@ specific plugins and start the scan.
 .. note::
 
     NTML and basic authentication usually require usernames with the ``\`` character,
-    which needs to be entered as `\\` in the w3af-console. For example to use
-    `domain\user` as the user use ``set basic_auth_user domain\\user``.
+    which needs to be entered as `\\\\` in the w3af-console. For example to use
+    `domain\\user` as the user use ``set basic_auth_user domain\\user``.
 
 
 Form authentication
