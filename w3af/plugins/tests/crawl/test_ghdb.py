@@ -114,8 +114,6 @@ class TestGHDB(PluginTest):
         ghdb_file = ghdb_inst._ghdb_file
         is_older = days_since_file_update(ghdb_file, 30)
 
-        today = datetime.datetime.today()
-
         msg = ('The GHDB database is too old, please update it by running the'
                ' following command:'
                '\n'
@@ -125,4 +123,4 @@ class TestGHDB(PluginTest):
                '\n'
                'Also remember to run this unittest again to verify that the'
                ' downloaded file can be parsed by the plugin.')
-        self.assertFalse(is_older, msg % (today.month, today.day, today.year))
+        self.assertFalse(is_older, msg)
