@@ -376,12 +376,12 @@ class ProfileList(gtk.TreeView):
     def _use_profile(self, widget=None):
         """Uses the selected profile."""
         profile_obj = self._getProfile()
-        profileName = self._getProfileName()
-        if profileName == self.selectedProfile:
+        profile_name = self._getProfileName()
+        if profile_name == self.selectedProfile:
             return
 
         # Changed the profile in the UI
-        self.selectedProfile = profileName
+        self.selectedProfile = profile_name
 
         try:
             self.w3af.profiles.use_profile(profile_obj.get_profile_file())
