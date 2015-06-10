@@ -148,8 +148,8 @@ class AuditPlugin(Plugin):
             om.out.debug('%s' % ffde)
 
         except TimeoutException:
-            msg = '[timeout] The "%s" plugin took more than %s seconds to'\
-                  ' complete the analysis of "%s", killing it!'
+            msg = ('[timeout] The "%s" plugin took more than %s seconds to'
+                   ' complete the analysis of "%s", killing it!')
 
             om.out.debug(msg % (self.get_name(),
                                 self.PLUGIN_TIMEOUT,

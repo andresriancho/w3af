@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import copy
-
 from stopit import ThreadingTimeout, TimeoutException
 
 from w3af.core.controllers.plugins.plugin import Plugin
@@ -64,8 +62,8 @@ class InfrastructurePlugin(Plugin):
             # https://github.com/andresriancho/w3af/issues/8949
             om.out.debug('%s' % ffde)
         except TimeoutException:
-            msg = '[timeout] The "%s" plugin took more than %s seconds to'\
-                  ' complete the discovery of "%s", killing it!'
+            msg = ('[timeout] The "%s" plugin took more than %s seconds to'
+                   ' complete the discovery of "%s", killing it!')
 
             om.out.debug(msg % (self.get_name(),
                                 self.PLUGIN_TIMEOUT,
