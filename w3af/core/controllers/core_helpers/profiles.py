@@ -112,9 +112,14 @@ class w3af_core_profiles(object):
         """
         error_messages = []
 
-        # Clear all enabled plugins if profile_name is None
+        # Clear all the current configuration before loading a new profile
+        self._w3af_core.plugins.zero_enabled_plugins()
+        MiscSettings().set_default_values()
+        self._w3af_core.uri_opener.settings.set_default_values()
+
         if profile_name is None:
-            self._w3af_core.plugins.zero_enabled_plugins()
+            # If the profile name is None, I just clear the enabled plugins and
+            # return
             return
 
         # This might raise an exception (which we don't want to handle) when

@@ -26,7 +26,8 @@ from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_net_iface import get_net_iface
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.options.option_types import URL_LIST, COMBO, BOOL, LIST
+from w3af.core.data.options.option_types import (URL_LIST, COMBO, BOOL, LIST,
+                                                 STRING, INT)
 
 
 class MiscSettings(Configurable):
@@ -39,43 +40,50 @@ class MiscSettings(Configurable):
         """
         Set the defaults and save them to the config dict.
         """
-        #
-        # User configured variables
-        #
-        if cf.cf.get('fuzz_cookies') is None:
+        if not self.is_configured():
             # It's the first time I'm run
-            cf.cf.save('fuzz_cookies', False)
-            cf.cf.save('fuzz_form_files', True)
-            cf.cf.save('fuzzed_files_extension', 'gif')
-            cf.cf.save('fuzz_url_filenames', False)
-            cf.cf.save('fuzz_url_parts', False)
-            cf.cf.save('fuzzable_headers', [])
+            self.set_default_values()
 
-            cf.cf.save('form_fuzzing_mode', 'tmb')
+    def is_configured(self):
+        return cf.cf.get('fuzz_cookies') is not None
 
-            cf.cf.save('max_discovery_time', 120)
+    def set_default_values(self):
+        """
+        Load all the default settings
+        :return: None
+        """
+        cf.cf.save('fuzz_cookies', False)
+        cf.cf.save('fuzz_form_files', True)
+        cf.cf.save('fuzzed_files_extension', 'gif')
+        cf.cf.save('fuzz_url_filenames', False)
+        cf.cf.save('fuzz_url_parts', False)
+        cf.cf.save('fuzzable_headers', [])
 
-            cf.cf.save('msf_location', '/opt/metasploit3/bin/')
+        cf.cf.save('form_fuzzing_mode', 'tmb')
 
-            #
-            #
-            #
-            ifname = get_net_iface()
-            cf.cf.save('interface', ifname)
+        cf.cf.save('max_discovery_time', 120)
 
-            #
-            # This doesn't send any packets, and gives you a nice default
-            # setting. In most cases, it is the "public" IP address, which will
-            # work perfectly in all plugins that need a reverse connection
-            # (rfi_proxy)
-            #
-            local_address = get_local_ip()
-            if not local_address:
-                local_address = '127.0.0.1'  # do'h!
+        cf.cf.save('msf_location', '/opt/metasploit3/bin/')
 
-            cf.cf.save('local_ip_address', local_address)
-            cf.cf.save('non_targets', [])
-            cf.cf.save('stop_on_first_exception', False)
+        #
+        # The network interface configuration (for advanced exploits)
+        #
+        ifname = get_net_iface()
+        cf.cf.save('interface', ifname)
+
+        #
+        # This doesn't send any packets, and gives you a nice default
+        # setting. In most cases, it is the "public" IP address, which will
+        # work perfectly in all plugins that need a reverse connection
+        # (rfi_proxy)
+        #
+        local_address = get_local_ip()
+        if not local_address:
+            local_address = '127.0.0.1'  # do'h!
+
+        cf.cf.save('local_ip_address', local_address)
+        cf.cf.save('non_targets', [])
+        cf.cf.save('stop_on_first_exception', False)
 
     def get_options(self):
         """
@@ -95,7 +103,7 @@ class MiscSettings(Configurable):
              'will fill those file inputs with pseudo-files containing the'
              'payloads required to identify vulnerabilities.')
         opt = opt_factory('fuzz_form_files', cf.cf.get('fuzz_form_files'), d,
-                          'boolean', tabid='Fuzzer parameters', help=h)
+                          BOOL, tabid='Fuzzer parameters', help=h)
         ol.add(opt)
 
         d = ('Indicates if w3af plugins will send fuzzed file names in order to'
@@ -121,7 +129,7 @@ class MiscSettings(Configurable):
 
         desc = 'Indicates the extension to use when fuzzing file content'
         opt = opt_factory('fuzzed_files_extension',
-                          cf.cf.get('fuzzed_files_extension'), desc, 'string',
+                          cf.cf.get('fuzzed_files_extension'), desc, STRING,
                           tabid='Fuzzer parameters')
         ol.add(opt)
 
@@ -158,19 +166,19 @@ class MiscSettings(Configurable):
              ' to run. By using this parameter, users will be able to set'
              ' the maximum amount of time the crawl phase will run.')
         opt = opt_factory('max_discovery_time', cf.cf.get('max_discovery_time'),
-                          desc, 'integer', help=h, tabid='Core settings')
+                          desc, INT, help=h, tabid='Core settings')
         ol.add(opt)
 
         ######## Network parameters ########
         desc = 'Local interface name to use when sniffing, doing reverse'\
                ' connections, etc.'
         opt = opt_factory('interface', cf.cf.get('interface'), desc,
-                          'string', tabid='Network settings')
+                          STRING, tabid='Network settings')
         ol.add(opt)
 
         desc = 'Local IP address to use when doing reverse connections'
         opt = opt_factory('local_ip_address', cf.cf.get('local_ip_address'),
-                          desc, 'string', tabid='Network settings')
+                          desc, STRING, tabid='Network settings')
         ol.add(opt)
 
         ######### Misc ###########
@@ -186,7 +194,7 @@ class MiscSettings(Configurable):
         desc = ('Full path of Metasploit framework binary directory (%s in '
                 'most linux installs)' % cf.cf.get('msf_location'))
         opt = opt_factory('msf_location', cf.cf.get('msf_location'),
-                          desc, 'string', tabid='Metasploit')
+                          desc, STRING, tabid='Metasploit')
         ol.add(opt)
 
         return ol
