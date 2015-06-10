@@ -49,8 +49,22 @@ class bruteforce(BaseConsumer):
             except BaseFrameworkException, e:
                 om.out.error(str(e))
 
+    def _run_observers(self, fuzzable_request):
+        """
+        Run the observers handling any exception that they might raise
+        :return: None
+        """
+        try:
+            for observer in self._observers:
+                observer.bruteforce(fuzzable_request)
+        except Exception, e:
+            self.handle_exception('bruteforce',
+                                  'bruteforce._run_observers()',
+                                  'bruteforce._run_observers()', e)
+
     @task_decorator
     def _consume(self, function_id, work_unit):
+        self._run_observers(work_unit)
 
         for plugin in self._consumer_plugins:
             stats = '%s plugin is testing: "%s"'

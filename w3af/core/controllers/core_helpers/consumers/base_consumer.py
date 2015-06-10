@@ -86,7 +86,8 @@ class BaseConsumer(Process):
         
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
-        
+        self._observers = []
+
         self._tasks_in_progress = {}
         self._poison_pill_sent = False
 
@@ -288,3 +289,6 @@ class BaseConsumer(Process):
         exception_data = ExceptionData(status, _exception, tb,
                                        enabled_plugins)
         self._out_queue.put(exception_data)
+
+    def add_observer(self, observer):
+        self._observers.append(observer)

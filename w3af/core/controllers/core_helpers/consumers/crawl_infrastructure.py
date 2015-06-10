@@ -152,6 +152,7 @@ class crawl_infrastructure(BaseConsumer):
             om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(),
                                                          work_unit))
 
+            self._run_observers(work_unit)
 
             # TODO: unittest what happens if an exception (which is not handled
             #       by the exception handler) is raised. Who's doing a .get()
@@ -162,6 +163,19 @@ class crawl_infrastructure(BaseConsumer):
             # pylint: disable=E1120
             self._route_all_plugin_results()
             # pylint: enable=E1120
+
+    def _run_observers(self, fuzzable_request):
+        """
+        Run the observers handling any exception that they might raise
+        :return: None
+        """
+        try:
+            for observer in self._observers:
+                observer.crawl(fuzzable_request)
+        except Exception, e:
+            self.handle_exception('crawl_infrastructure',
+                                  'crawl_infrastructure._run_observers()',
+                                  'crawl_infrastructure._run_observers()', e)
 
     @task_decorator
     def _plugin_finished_cb(self,
@@ -217,8 +231,10 @@ class crawl_infrastructure(BaseConsumer):
                     # Update the list / set that lives in the KB
                     kb.kb.add_fuzzable_request(fuzzable_request)
 
-                    self._out_queue.put((plugin.get_name(), None,
+                    self._out_queue.put((plugin.get_name(),
+                                         None,
                                          fuzzable_request))
+
             finally:
                 # Should I continue with the crawl phase? If not, simply call
                 # terminate() to clear the input queue and put a POISON_PILL
@@ -303,8 +319,8 @@ class crawl_infrastructure(BaseConsumer):
         if self._w3af_core.status.get_run_time() > self._max_discovery_time:
             if self._report_max_time:
                 self._report_max_time = False
-                msg = 'Maximum crawl time limit hit, no new URLs will be'\
-                      ' added to the queue.'
+                msg = ('Maximum crawl time limit hit, no new URLs will be'
+                       ' added to the queue.')
                 om.out.information(msg)
             return True
 

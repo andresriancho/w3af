@@ -90,6 +90,8 @@ class grep(BaseConsumer):
         if not self.should_grep(request, response):
             return
 
+        self._run_observers(request, response)
+
         # Note that I'm NOT processing the grep plugin data in different
         # threads. This is because it makes no sense (these are all CPU
         # bound).
@@ -98,6 +100,19 @@ class grep(BaseConsumer):
                 plugin.grep_wrapper(request, response)
             except Exception, e:
                 self.handle_exception('grep', plugin.get_name(), request, e)
+
+    def _run_observers(self, request, response):
+        """
+        Run the observers handling any exception that they might raise
+        :return: None
+        """
+        try:
+            for observer in self._observers:
+                observer.grep(request, response)
+        except Exception, e:
+            self.handle_exception('grep',
+                                  'grep._run_observers()',
+                                  'grep._run_observers()', e)
 
     def should_grep(self, request, response):
         """

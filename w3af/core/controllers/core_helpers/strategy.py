@@ -76,6 +76,9 @@ class CoreStrategy(object):
         # Producer threads
         self._seed_producer = seed(self._w3af_core)
 
+        # Also use this method to clear observers
+        self._observers = []
+
     def start(self):
         """
         Starts the work!
@@ -92,6 +95,8 @@ class CoreStrategy(object):
             self._setup_crawl_infrastructure()
             self._setup_audit()
             self._setup_bruteforce()
+
+            self._setup_observers()
             self._setup_404_detection()
 
             self._seed_discovery()
@@ -174,6 +179,22 @@ class CoreStrategy(object):
                 
         self._teardown_auth()
         self._teardown_grep()        
+
+    def add_observer(self, observer):
+        self._observers.append(observer)
+
+    def _setup_observers(self):
+        """
+        "Forward" the observer to the consumers
+        :return: None
+        """
+        for consumer in {self._audit_consumer,
+                         self._bruteforce_consumer,
+                         self._discovery_consumer,
+                         self._grep_consumer}:
+            if consumer is not None:
+                for observer in self._observers:
+                    consumer.add_observer(observer)
 
     def _fuzzable_request_router(self):
         """

@@ -74,9 +74,12 @@ class audit(BaseConsumer):
         try:
             orig_resp = self.get_original_response(fuzzable_request)
         except Exception, e:
-            self.handle_exception('audit', 'audit.get_original_response()',
+            self.handle_exception('audit',
+                                  'audit.get_original_response()',
                                   'audit.get_original_response()', e)
             return
+
+        self._run_observers(fuzzable_request)
 
         for plugin in self._consumer_plugins:
             om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(),
@@ -93,6 +96,19 @@ class audit(BaseConsumer):
 
             self._threadpool.apply_async(self._audit,
                                         (plugin, fuzzable_request, orig_resp))
+
+    def _run_observers(self, fuzzable_request):
+        """
+        Run the observers handling any exception that they might raise
+        :return: None
+        """
+        try:
+            for observer in self._observers:
+                observer.audit(fuzzable_request)
+        except Exception, e:
+            self.handle_exception('audit',
+                                  'audit._run_observers()',
+                                  'audit._run_observers()', e)
 
     @task_decorator
     def _audit(self, function_id, plugin, fuzzable_request, orig_resp):

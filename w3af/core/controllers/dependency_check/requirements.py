@@ -56,6 +56,10 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('vulndb', 'vulndb', '0.0.17'),
                      PIPDependency('markdown', 'markdown', '2.6.1'),
 
+                     # This was used for testing, but now it's required for
+                     # regular users too, do not remove!
+                     PIPDependency('psutil', 'psutil', '2.2.1'),
+
                      # https://gist.github.com/andresriancho/cf2fa1ce239b30f37bd9
                      PIPDependency('ruamel.ordereddict',
                                    'ruamel.ordereddict',
