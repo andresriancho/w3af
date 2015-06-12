@@ -184,7 +184,7 @@ class GAjaxSearch(GoogleAPISearch):
     this API to return only the first 64 results.
     """
 
-    GOOGLE_AJAX_SEARCH_URL = "http://ajax.googleapis.com/ajax/services/search/web?"
+    GOOGLE_AJAX_SEARCH_URL = 'http://ajax.googleapis.com/ajax/services/search/web?'
     GOOGLE_AJAX_MAX_RES_PER_PAGE = 8
     GOOGLE_AJAX_MAX_START_INDEX = 56
 
@@ -234,9 +234,10 @@ class GAjaxSearch(GoogleAPISearch):
 
             # Expected response code is 200; otherwise raise Exception
             if parsed_resp.get('responseStatus') != 200:
-                msg = 'Invalid JSON format returned by Google, response status'\
-                      ' needs to be 200, got "%s" instead.'
-                raise BaseFrameworkException(msg % parsed_resp.get('responseDetails'))
+                msg = ('Invalid JSON format returned by Google, response status'
+                       ' needs to be 200, got "%s" instead.')
+                msg %= parsed_resp.get('responseDetails')
+                raise BaseFrameworkException(msg)
 
             # Update result pages
             res_pages.append(resp)
@@ -252,8 +253,9 @@ class GAjaxSearch(GoogleAPISearch):
         for page in pages:
             # Update results list
             parsed_page = json.loads(page.get_body())
-            links += [GoogleResult(URL(res['url'])) for res in
-                                  parsed_page['responseData']['results']]
+            results = parsed_page['responseData']['results']
+            links += [GoogleResult(URL(res['url'])) for res in results]
+            
         return links[:self._count]
 
 
@@ -262,7 +264,7 @@ class GStandardSearch(GoogleAPISearch):
     Search the web with standard Google webpage.
     """
 
-    GOOGLE_SEARCH_URL = "http://www.google.com/search?"
+    GOOGLE_SEARCH_URL = 'http://www.google.com/search?'
 
     # TODO: Update this, it changes!!
     REGEX_STRING = 'class="r"><a href="/url\?q=(.*?)&amp;sa=U'
@@ -330,10 +332,11 @@ class GStandardSearch(GoogleAPISearch):
                 # Save the links
                 try:
                     url_inst = URL(url)
-                except:
-                    msg = 'Google might have changed its output format.' \
-                          ' The regular expression failed to extract a valid' \
-                          ' URL from the page. Extracted (invalid) URL is: "%s"'
+                except ValueError:
+                    msg = ('Google might have changed its output format.'
+                           ' The regular expression failed to extract a valid'
+                           ' URL from the page. Extracted (invalid) URL'
+                           ' is: "%s"')
                     om.out.error(msg % url[:15])
                 else:
                     links.append(GoogleResult(url_inst))
@@ -349,7 +352,7 @@ class GMobileSearch(GStandardSearch):
     Search the web using Google's Mobile search. Note that Google doesn't
     restrict the access to this page right now.
     """
-    GOOGLE_SEARCH_URL = "http://www.google.com/xhtml?"
+    GOOGLE_SEARCH_URL = 'http://www.google.com/xhtml?'
 
     # Used to extract URLs from Google responses
     # Keep me updated!
@@ -405,8 +408,8 @@ class GoogleResult(object):
     """
     def __init__(self, url):
         if not isinstance(url, URL):
-            msg = 'The url __init__ parameter of a GoogleResult object must'
-            msg += ' be of url.URL type.'
+            msg = ('The url __init__ parameter of a GoogleResult object must'
+                   ' be of url.URL type.')
             raise ValueError(msg)
 
         self.URL = url

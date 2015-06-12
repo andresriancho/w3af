@@ -32,6 +32,10 @@ from w3af.core.data.search_engines.google import (google, GAjaxSearch,
                                                   GMobileSearch,
                                                   FINISHED_OK, IS_NEW)
 
+GOOGLE_MSG = ('This test fails randomly based on Google\'s anti automation'
+              ' protection, if it fails you should run it again in a couple of'
+              ' minutes. Many consecutive failures show that our code is NOT'
+              ' working anymore.')
 URL_REGEX = re.compile('((http|ftp|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)',
                        re.U)
 
@@ -41,8 +45,8 @@ URL_REGEX = re.compile('((http|ftp|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)',
 class TestGoogle(unittest.TestCase):
     """
     This unittest verifies that the Google class works. Remember that this class
-    internally calls GAjaxSearch, GStandardSearch, GMobileSearch in order to avoid
-    being blocked by Google's anti-automation.
+    internally calls GAjaxSearch, GStandardSearch, GMobileSearch in order to
+    avoid being blocked by Google's anti-automation.
 
     @see: test_GMobileSearch, test_GStandardSearch, test_GAjaxSearch below for
           tests on these particular search implementations.
@@ -120,11 +124,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         # This actually does the search
         searcher.links
 
-        msg = 'This test fails randomly based on Google\'s anti automation' \
-              ' protection, if it fails you should run it again in a couple'\
-              ' of minutes. Many consecutive failures show that our code is'\
-              ' NOT working anymore.'
-        self.assertEqual(searcher.status, FINISHED_OK, msg)
+        self.assertEqual(searcher.status, FINISHED_OK, GOOGLE_MSG)
 
         link_list = '\n'.join(str(r) for r in searcher.links)
         msg = 'Got less results than expected, %s is less than %s:\n%s'
@@ -164,11 +164,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         # This actually does the search
         searcher.links
 
-        msg = 'This test fails randomly based on Google\'s anti automation' \
-              ' protection, if it fails you should run it again in a couple of' \
-              ' minutes. Many consecutive failures show that our code is NOT' \
-              ' working anymore.'
-        self.assertEqual(searcher.status, FINISHED_OK, msg)
+        self.assertEqual(searcher.status, FINISHED_OK, GOOGLE_MSG)
 
         msg = 'Got less results than expected:\n%s' % '\n'.join(
             str(r) for r in searcher.links)
