@@ -23,8 +23,6 @@ import inspect
 import copy
 import threading
 
-from stopit import ThreadingTimeout, TimeoutException
-
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
@@ -137,8 +135,7 @@ class AuditPlugin(Plugin):
         fuzzable_request = safe_deepcopy(fuzzable_request)
 
         try:
-            with ThreadingTimeout(self.PLUGIN_TIMEOUT, swallow_exc=False):
-                return self.audit(fuzzable_request, orig_resp)
+            return self.audit(fuzzable_request, orig_resp)
         except FourOhFourDetectionException, ffde:
             # We simply ignore any exceptions we find during the 404 detection
             # process. FYI: This doesn't break the xurllib error handling which
@@ -146,14 +143,6 @@ class AuditPlugin(Plugin):
             #
             # https://github.com/andresriancho/w3af/issues/8949
             om.out.debug('%s' % ffde)
-
-        except TimeoutException:
-            msg = ('[timeout] The "%s" plugin took more than %s seconds to'
-                   ' complete the analysis of "%s", killing it!')
-
-            om.out.debug(msg % (self.get_name(),
-                                self.PLUGIN_TIMEOUT,
-                                fuzzable_request.get_url()))
 
     def audit(self, freq, orig_resp):
         """

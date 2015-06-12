@@ -111,24 +111,3 @@ class TestDocumentParserFactory(unittest.TestCase):
                           '/_vti_bin/search.asmx?disco='}
         
         self.assertEqual(expected_paths, set(paths))
-
-
-class DelayedParser(object):
-    def __init__(self, http_response):
-        """
-        According to the stopit docs it can't kill a thread running an
-        atomic python function such as time.sleep() , so I have to
-        create a function like this. I don't mind, since it's realistic
-        with what we do in w3af anyways.
-        """
-        total_delay = 3.0
-
-        for _ in xrange(100):
-            time.sleep(total_delay/100)
-
-    @staticmethod
-    def can_parse(*args):
-        return True
-
-    def clear(self):
-        return True

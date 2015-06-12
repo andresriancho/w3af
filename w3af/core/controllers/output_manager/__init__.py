@@ -17,18 +17,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import logging
-
 from .manager import OutputManager
 from .log_sink import LogSink
 
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
-
-# https://pypi.python.org/pypi/stopit#logging
-# The stopit named logger emits a warning each time a block of code execution
-# exceeds the associated timeout. To turn logging off, just:
-stopit_logger = logging.getLogger('stopit')
-stopit_logger.setLevel(logging.ERROR)
 
 
 def fresh_output_manager_inst():
