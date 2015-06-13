@@ -18,8 +18,8 @@ import time
 import socket
 import select
 import OpenSSL
-import pyasn1.codec.der.decoder
 import subj_alt_name
+import pyasn1.codec.der.decoder
 
 CERT_NONE = ssl.CERT_NONE
 CERT_OPTIONAL = ssl.CERT_OPTIONAL
