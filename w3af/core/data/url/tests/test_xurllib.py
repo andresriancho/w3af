@@ -54,12 +54,14 @@ from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
 class TestXUrllib(unittest.TestCase):
 
     MOTH_MESSAGE = '<title>moth: vulnerable web application</title>'
+    MOCK_URL = 'http://www.w3af.org/'
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
     
     def tearDown(self):
         self.uri_opener.end()
+        httpretty.reset()
         
     def test_basic(self):
         url = URL(get_moth_http())
@@ -87,6 +89,53 @@ class TestXUrllib(unittest.TestCase):
         url = URL(get_moth_http('/audit/xss/simple_xss.py?text=root:x:0'))
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('root:x:0', http_response.body)
+
+    @httpretty.activate
+    def test_GET_with_post_data(self):
+        httpretty.register_uri(httpretty.GET, self.MOCK_URL,
+                               body=self.MOTH_MESSAGE, status=200)
+
+        mock_url = URL(self.MOCK_URL)
+        data = 'abc=123&def=456'
+        response = self.uri_opener.GET(mock_url, data=data)
+
+        # Check the response
+        self.assertEqual(response.get_code(), 200)
+        self.assertEqual(response.get_body(), self.MOTH_MESSAGE)
+
+        # And use httpretty to check the request
+        self.assertEqual(httpretty.last_request().method, 'GET')
+
+        request_headers = httpretty.last_request().headers
+        self.assertIn('content-length', request_headers)
+        self.assertEqual(str(len(data)), request_headers['content-length'])
+
+        self.assertEqual(httpretty.last_request().body, data)
+        self.assertEqual(httpretty.last_request().path, '/')
+
+    @httpretty.activate
+    def test_GET_with_post_data_and_qs(self):
+        httpretty.register_uri(httpretty.GET, self.MOCK_URL,
+                               body=self.MOTH_MESSAGE, status=200)
+
+        qs = '?qs=1'
+        mock_url = URL(self.MOCK_URL + qs)
+        data = 'abc=123&def=456'
+        response = self.uri_opener.GET(mock_url, data=data)
+
+        # Check the response
+        self.assertEqual(response.get_code(), 200)
+        self.assertEqual(response.get_body(), self.MOTH_MESSAGE)
+
+        # And use httpretty to check the request
+        self.assertEqual(httpretty.last_request().method, 'GET')
+
+        request_headers = httpretty.last_request().headers
+        self.assertIn('content-length', request_headers)
+        self.assertEqual(str(len(data)), request_headers['content-length'])
+
+        self.assertEqual(httpretty.last_request().body, data)
+        self.assertEqual(httpretty.last_request().path, '/' + qs)
 
     def test_post(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
