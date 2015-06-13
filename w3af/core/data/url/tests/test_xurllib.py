@@ -381,33 +381,20 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
-    @attr('internet')
-    def test_bad_file_descriptor_8125(self):
-        """
-        8125 is basically an issue with the way HTTP SSL connections handle the
-        Connection: Close header. If at any point the URL in this test starts
-        to fail, I just need to find another which sends that header.
-
-        Also, see the test_bad_file_descriptor_8125_mock test.
-
-        :see: https://github.com/andresriancho/w3af/issues/8125
-        """
-        self.uri_opener.settings.set_max_http_retries(0)
-        url = URL('https://www.factoriadigital.com/hosting/wordpress')
-        http_response = self.uri_opener.GET(url, cache=False)
-        self.assertIn('Soporte', http_response.body)
-
     def test_bad_file_descriptor_8125_local(self):
         """
+        8125 is basically an issue with the way HTTP SSL connections handle the
+        Connection: Close header.
+
         :see: https://github.com/andresriancho/w3af/issues/8125
         """
-        port = get_unused_port()
         raw_http_response = ('HTTP/1.1 200 Ok\r\n'
                              'Connection: close\r\n'
                              'Content-Type: text/html\r\n'
                              'Content-Length: 3\r\n\r\nabc')
         certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
                                 'certs', 'invalid_cert.pem')
+        port = get_unused_port()
 
         s = SSLServer('localhost', port, certfile,
                       http_response=raw_http_response)
@@ -420,6 +407,11 @@ class TestXUrllib(unittest.TestCase):
 
         self.assertEqual(body, http_response.body)
         s.stop()
+
+        # This error is expected, it's generated when the xurllib negotiates
+        # the different SSL protocols with the server
+        self.assertEqual([e.strerror for e in s.errors],
+                         ['Bad file descriptor'])
 
     def test_rate_limit_high(self):
         self.rate_limit_generic(500, 0.01, 0.4)
