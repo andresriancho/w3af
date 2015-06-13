@@ -613,7 +613,6 @@ class ExtendedUrllib(object):
         # Validate what I'm sending, init the library (if needed)
         self.setup()
 
-        data = str(data)
         host = uri.get_domain()
         new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
