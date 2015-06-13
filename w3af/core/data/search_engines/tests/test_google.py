@@ -111,7 +111,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         if self.GoogleApiSearcher is None:
             return
         
-        keywords = ["pink", "red", "blue"]
+        keywords = ['pink', 'red', 'blue']
         random.shuffle(keywords)
         query = ' '.join(keywords)
         start = 0
