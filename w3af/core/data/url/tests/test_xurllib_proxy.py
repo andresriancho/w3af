@@ -30,9 +30,9 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 
-TODO_183 = 'Skip this test because of a strange bug with the extended'\
-           ' url library and w3af\'s local proxy daemon. More info here:'\
-           ' https://github.com/andresriancho/w3af/issues/183'
+TODO_183 = ('Skip this test because of a strange bug with the extended'
+            ' url library and w3af\'s local proxy daemon. More info here:'
+            ' https://github.com/andresriancho/w3af/issues/183')
 
 
 @attr('moth')

@@ -587,9 +587,8 @@ class ExtendedUrllib(object):
         that where previously set in opener_settings.py .
 
         :param uri: This is the URI to GET, with the query string included.
-        :param data: Only used if the uri parameter is really a URL. The data
-                     will be converted into a string and set as the URL object
-                     query string before sending.
+        :param data: Object to send as post-data, usually a string or a data
+                     container
         :param headers: Any special headers that will be sent with this request
         :param cache: Should the library search the local cache for a response
                       before sending it to the wire?
@@ -614,14 +613,11 @@ class ExtendedUrllib(object):
         # Validate what I'm sending, init the library (if needed)
         self.setup()
 
-        if data:
-            uri = uri.copy()
-            uri.querystring = data
-
-        new_connection = True if timeout is not None else False
         host = uri.get_domain()
+        new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
-        req = HTTPRequest(uri, cookies=cookies, cache=cache,
+
+        req = HTTPRequest(uri, cookies=cookies, cache=cache, data=data,
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
@@ -661,10 +657,10 @@ class ExtendedUrllib(object):
         #    requests.
         #
         data = str(data)
-
-        new_connection = True if timeout is not None else False
         host = uri.get_domain()
+        new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
+
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
                           error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),

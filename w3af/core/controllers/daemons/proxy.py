@@ -28,12 +28,13 @@ import socket
 import select
 import time
 import os
+
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing.dummy import Process
-
 from OpenSSL import SSL
 
 import w3af.core.controllers.output_manager as om
+
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException, ProxyException
 from w3af.core.data.parsers.doc.url import URL
