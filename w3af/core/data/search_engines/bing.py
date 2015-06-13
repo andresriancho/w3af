@@ -54,7 +54,8 @@ class bing(SearchEngine):
                                   'FORM': 'PERE'})
         url_instance = URL(url + query)
         response = self._uri_opener.GET(url_instance, headers=self._headers,
-                                        cache=True, grep=False)
+                                        cache=True, grep=False,
+                                        follow_redirects=True)
 
         # This regex might become outdated, but the good thing is that we have
         # test_bing.py which is going to fail and tell us that it's outdated
@@ -83,14 +84,15 @@ class bing(SearchEngine):
 
         return results
 
+
 class BingResult(object):
     """
     Dummy class that represents the search result.
     """
     def __init__(self, url):
         if not isinstance(url, URL):
-            msg = 'The url __init__ parameter of a BingResult object must'\
-                  ' be of url.URL type.'
+            msg = ('The url __init__ parameter of a BingResult object must'
+                   ' be of url.URL type.')
             raise TypeError(msg)
 
         self.URL = url

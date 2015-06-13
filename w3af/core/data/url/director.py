@@ -1,22 +1,22 @@
 import httplib
+import socket
 
 from urllib2 import (OpenerDirector, ProxyHandler, UnknownHandler, HTTPHandler,
                      HTTPDefaultErrorHandler, HTTPRedirectHandler,
-                     FTPHandler, FileHandler, HTTPErrorProcessor,
-                     HTTPSHandler, Request)
+                     HTTPErrorProcessor, HTTPSHandler, Request)
 
 
 class CustomOpenerDirector(OpenerDirector):
-    def open(self, fullurl, data=None):
+    def open(self, full_url, data=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         """
         Overriding to remove the timeout kwarg which was being used below to
         override my own HTTPRequest.timeout attribute.
         """
         # accept a URL or a Request object
-        if isinstance(fullurl, basestring):
-            req = Request(fullurl, data)
+        if isinstance(full_url, basestring):
+            req = Request(full_url, data)
         else:
-            req = fullurl
+            req = full_url
             if data is not None:
                 req.add_data(data)
 

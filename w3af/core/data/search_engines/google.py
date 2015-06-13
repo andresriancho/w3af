@@ -162,7 +162,7 @@ class GoogleAPISearch(object):
             # mobile search.
             headers = Headers([('User-Agent', '')])
 
-        return self._uri_opener.GET(url, headers=headers)
+        return self._uri_opener.GET(url, headers=headers, follow_redirects=True)
 
     def _do_google_search(self):
         """
@@ -255,7 +255,7 @@ class GAjaxSearch(GoogleAPISearch):
             parsed_page = json.loads(page.get_body())
             results = parsed_page['responseData']['results']
             links += [GoogleResult(URL(res['url'])) for res in results]
-            
+
         return links[:self._count]
 
 

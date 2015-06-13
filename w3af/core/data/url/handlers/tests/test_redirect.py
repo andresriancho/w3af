@@ -19,29 +19,36 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import urllib2
+import unittest
+import httpretty
+
 
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.constants.response_codes import FOUND
+from w3af.core.data.constants.response_codes import FOUND, OK, MOVED_PERMANENTLY
 from w3af.core.data.url.handlers.redirect import HTTP30XHandler
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url import opener_settings
 
 
-class TestRedirectHandler(unittest.TestCase):
+class TestRedirectHandlerLowLevel(unittest.TestCase):
+
+    REDIRECT_URL = '/audit/global_redirect/redirect-header-302.py?url=/'
 
     def setUp(self):
         consecutive_number_generator.reset()
         
     @attr('moth')
     def test_redirect_handler(self):
-        """Test the redirect handler using urllib2"""
-        redirect_url = URL(get_moth_http('/audit/global_redirect/redirect-header-302.py?url=/'))
+        """
+        Test the redirect handler using urllib2
+        """
+        redirect_url = URL(get_moth_http(self.REDIRECT_URL))
         opener = urllib2.build_opener(HTTP30XHandler)
         
         request = urllib2.Request(redirect_url.url_string)
@@ -51,10 +58,12 @@ class TestRedirectHandler(unittest.TestCase):
 
     @attr('moth')
     def test_handler_order(self):
-        """Get an instance of the extended urllib and verify that the redirect
-        handler still works, even when mixed with all the other handlers."""
+        """
+        Get an instance of the extended urllib and verify that the redirect
+        handler still works, even when mixed with all the other handlers.
+        """
         # Configure the handler
-        redirect_url = URL(get_moth_http('/audit/global_redirect/redirect-header-302.py?url=/'))
+        redirect_url = URL(get_moth_http(self.REDIRECT_URL))
         
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
@@ -65,3 +74,101 @@ class TestRedirectHandler(unittest.TestCase):
         
         self.assertEqual(response.code, FOUND)
         self.assertEqual(response.id, 1)
+
+
+class TestRedirectHandlerExtendedUrllib(unittest.TestCase):
+    """
+    Test the redirect handler using ExtendedUrllib
+    """
+    REDIR_DEST = 'http://w3af.org/dest'
+    REDIR_SRC = 'http://w3af.org/src'
+    OK_BODY = 'Body!'
+
+    def setUp(self):
+        consecutive_number_generator.reset()
+        self.uri_opener = ExtendedUrllib()
+
+    def tearDown(self):
+        self.uri_opener.end()
+
+    @httpretty.activate
+    def test_redirect_302_simple_no_follow(self):
+
+        httpretty.register_uri(httpretty.GET, self.REDIR_SRC,
+                               body='', status=FOUND,
+                               adding_headers={'Location': self.REDIR_DEST})
+
+        redirect_src = URL(self.REDIR_SRC)
+        response = self.uri_opener.GET(redirect_src)
+
+        location, _ = response.get_headers().iget('location')
+        self.assertEqual(location, self.REDIR_DEST)
+        self.assertEqual(response.get_code(), FOUND)
+        self.assertEqual(response.get_id(), 1)
+
+    @httpretty.activate
+    def test_redirect_302_simple_follow(self):
+
+        httpretty.register_uri(httpretty.GET, self.REDIR_SRC,
+                               body='', status=FOUND,
+                               adding_headers={'Location': self.REDIR_DEST})
+
+        httpretty.register_uri(httpretty.GET, self.REDIR_DEST,
+                               body=self.OK_BODY, status=200)
+
+        redirect_src = URL(self.REDIR_SRC)
+        response = self.uri_opener.GET(redirect_src, follow_redirects=True)
+
+        self.assertEqual(response.get_code(), OK)
+        self.assertEqual(response.get_body(), self.OK_BODY)
+        self.assertEqual(response.get_redir_uri(), URL(self.REDIR_DEST))
+        self.assertEqual(response.get_url(), URL(self.REDIR_SRC))
+        self.assertEqual(response.get_id(), 2)
+
+    @httpretty.activate
+    def test_redirect_301_loop(self):
+
+        httpretty.register_uri(httpretty.GET, self.REDIR_SRC,
+                               body='', status=MOVED_PERMANENTLY,
+                               adding_headers={'Location': self.REDIR_DEST})
+
+        httpretty.register_uri(httpretty.GET, self.REDIR_DEST,
+                               body='', status=MOVED_PERMANENTLY,
+                               adding_headers={'URI': self.REDIR_SRC})
+
+        redirect_src = URL(self.REDIR_SRC)
+        response = self.uri_opener.GET(redirect_src, follow_redirects=True)
+
+        # At some point the handler detects a loop and stops
+        self.assertEqual(response.get_code(), MOVED_PERMANENTLY)
+        self.assertEqual(response.get_body(), '')
+        self.assertEqual(response.get_id(), 9)
+
+    @httpretty.activate
+    def test_redirect_302_without_location_returns_302_response(self):
+        # Breaks the RFC
+        httpretty.register_uri(httpretty.GET, self.REDIR_SRC,
+                               body='', status=FOUND)
+
+        redirect_src = URL(self.REDIR_SRC)
+        response = self.uri_opener.GET(redirect_src, follow_redirects=True)
+
+        # Doesn't follow the redirects
+        self.assertEqual(response.get_code(), FOUND)
+        self.assertEqual(response.get_body(), '')
+        self.assertEqual(response.get_id(), 1)
+
+    @httpretty.activate
+    def test_redirect_no_follow_file_proto(self):
+        httpretty.register_uri(httpretty.GET, self.REDIR_SRC,
+                               body='', status=FOUND,
+                               adding_headers={'Location':
+                                               'file:///etc/passwd'})
+
+        redirect_src = URL(self.REDIR_SRC)
+        response = self.uri_opener.GET(redirect_src, follow_redirects=True)
+
+        self.assertEqual(response.get_code(), FOUND)
+        self.assertEqual(response.get_body(), '')
+        self.assertEqual(response.get_url(), URL(self.REDIR_SRC))
+        self.assertEqual(response.get_id(), 1)

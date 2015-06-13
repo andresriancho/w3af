@@ -581,7 +581,7 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
-            error_handling=True, timeout=None):
+            error_handling=True, timeout=None, follow_redirects=False):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -599,6 +599,7 @@ class ExtendedUrllib(object):
                         the defined timeout as the socket timeout value for this
                         request. The timeout is specified in seconds
         :param cookies: Send stored cookies in request (or not)
+        :param follow_redirects: Follow 30x redirects (or not)
 
         :return: An HTTPResponse object.
         """
@@ -623,7 +624,8 @@ class ExtendedUrllib(object):
         req = HTTPRequest(uri, cookies=cookies, cache=cache,
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
-                          timeout=timeout, new_connection=new_connection)
+                          timeout=timeout, new_connection=new_connection,
+                          follow_redirects=follow_redirects)
         req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
@@ -1136,8 +1138,8 @@ class ExtendedUrllib(object):
             try:
                 request = eplugin.modify_request(request)
             except BaseFrameworkException, e:
-                msg = 'Evasion plugin "%s" failed to modify the request.'\
-                      ' Exception: "%s".'
+                msg = ('Evasion plugin "%s" failed to modify the request.'
+                       ' Exception: "%s".')
                 om.out.error(msg % (eplugin.get_name(), e))
 
         return request
@@ -1163,7 +1165,7 @@ class ExtendedUrllib(object):
 @contextmanager
 def raise_size_limit(respect_size_limit):
     """
-    TODO: This is an UGLY hack that allows me to download oversized files,
+    TODO: This is an UGLY hack that allows me to download over-sized files,
           but it shouldn't be implemented like this! It should look more
           like the cookies attribute/parameter which uses the cookie_handler.
     """
