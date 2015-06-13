@@ -19,27 +19,29 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import itertools
-import os.path
 import re
 import codecs
+import os.path
+import itertools
+
 from collections import namedtuple
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
+
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE, BOOL, LIST
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
@@ -79,7 +81,7 @@ class pykto(CrawlPlugin):
         Runs pykto to the site.
 
         :param fuzzable_request: A fuzzable_request instance that contains
-                                    (among other things) the URL to test.
+                                 (among other things) the URL to test.
         """
         if not self._exec and not self._mutate_tests:
             # dont run anymore
@@ -148,16 +150,16 @@ class pykto(CrawlPlugin):
         try:
             http_response = function_ptr(nikto_test.uri)
         except BaseFrameworkException, e:
-            msg = 'An exception was raised while requesting "%s", the error'\
-                  ' message is: "%s".'
+            msg = ('An exception was raised while requesting "%s", the error'
+                   ' message is: "%s".')
             om.out.error(msg % (nikto_test.uri, e))
             return False
 
         if nikto_test.is_vulnerable.check(http_response) and \
         not is_404(http_response):
             
-            vdesc = 'pykto plugin found a vulnerability at URL: "%s".'\
-                    ' Vulnerability description: "%s".'
+            vdesc = ('pykto plugin found a vulnerability at URL: "%s".'
+                     ' Vulnerability description: "%s".')
             vdesc = vdesc % (http_response.get_url(), nikto_test.message)
 
             v = Vuln('Insecure URL', vdesc, severity.LOW,
@@ -178,29 +180,29 @@ class pykto(CrawlPlugin):
         ol = OptionList()
 
         d = 'CGI-BIN dirs where to search for vulnerable scripts.'
-        h = 'Pykto will search for vulnerable scripts in many places, one of'\
-            ' them is inside cgi-bin directory. The cgi-bin directory can be'\
-            ' anything and change from install to install, so its a good idea'\
-            ' to make this a user setting. The directories should be supplied'\
-            ' comma separated and with a / at the beginning and one at the end.'\
-            ' Example: "/cgi/,/cgibin/,/bin/"'
+        h = ('Pykto will search for vulnerable scripts in many places, one of'
+             ' them is inside cgi-bin directory. The cgi-bin directory can be'
+             ' anything and change from install to install, so its a good idea'
+             ' to make this a user setting. The directories should be supplied'
+             ' comma separated and with a / at the beginning and one at the end.'
+             ' Example: "/cgi/,/cgibin/,/bin/"')
         o = opt_factory('cgi_dirs', self._cgi_dirs, d, LIST, help=h)
         ol.add(o)
 
         d = 'Admin directories where to search for vulnerable scripts.'
-        h = 'Pykto will search for vulnerable scripts in many places, one of'\
-            ' them is inside administration directories. The admin directory'\
-            ' can be anything and change from install to install, so its a'\
-            ' good idea to make this a user setting. The directories should'\
-            ' be supplied comma separated and with a / at the beginning and'\
-            ' one at the end. Example: "/admin/,/adm/"'
+        h = ('Pykto will search for vulnerable scripts in many places, one of'
+             ' them is inside administration directories. The admin directory'
+             ' can be anything and change from install to install, so its a'
+             ' good idea to make this a user setting. The directories should'
+             ' be supplied comma separated and with a / at the beginning and'
+             ' one at the end. Example: "/admin/,/adm/"')
         o = opt_factory('admin_dirs', self._admin_dirs, d, LIST, help=h)
         ol.add(o)
 
         d = 'PostNuke directories where to search for vulnerable scripts.'
-        h = 'The directories should be supplied comma separated and with a'\
-            'forward slash at the beginning and one at the end. Example:'\
-            '"/forum/,/nuke/"'
+        h = ('The directories should be supplied comma separated and with a'
+             ' forward slash at the beginning and one at the end. Example:'
+             ' "/forum/,/nuke/"')
         o = opt_factory('nuke_dirs', self._nuke, d, LIST, help=h)
         ol.add(o)
 
@@ -210,8 +212,8 @@ class pykto(CrawlPlugin):
         ol.add(o)
 
         d = 'The path to the w3af_scan_database.db file.'
-        h = 'This is a file which has some extra checks for files that are not'\
-            ' present in the nikto database.'
+        h = ('This is a file which has some extra checks for files that are not'
+             ' present in the nikto database.')
         o = opt_factory('extra_db_file', self._extra_db_file, d,
                         INPUT_FILE, help=h)
         ol.add(o)
