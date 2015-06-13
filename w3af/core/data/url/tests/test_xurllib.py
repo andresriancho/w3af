@@ -353,10 +353,10 @@ class TestXUrllib(unittest.TestCase):
         :see: https://github.com/andresriancho/w3af/issues/8125
         """
         port = get_unused_port()
-        raw_http_response = "HTTP/1.1 200 Ok\r\n"\
-                            "Connection: close\r\n"\
-                            "Content-Type: text/html\r\n"\
-                            "Content-Length: 3\r\n\r\nabc"
+        raw_http_response = ('HTTP/1.1 200 Ok\r\n'
+                             'Connection: close\r\n'
+                             'Content-Type: text/html\r\n'
+                             'Content-Length: 3\r\n\r\nabc')
         certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
                                 'certs', 'invalid_cert.pem')
 
