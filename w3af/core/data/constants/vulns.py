@@ -69,7 +69,12 @@ VULNS = {
          'eval() input injection vulnerability': 6,
          'Reflected File Download vulnerability': 71,
          'Shell shock vulnerability': 68,
-         
+         # WebSockets
+         'Insecure WebSocket Origin filter': None,
+         'Open WebSocket': None,
+         'Origin restricted WebSocket': None,
+         'Websockets CSRF vulnerability': None,
+
          # Crawl
          'phpinfo() file found': None,
          'PHP register_globals: On': None,
