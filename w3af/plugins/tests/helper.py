@@ -288,12 +288,13 @@ class PluginTest(unittest.TestCase):
     def _formatMessage(self, msg, standardMsg):
         """Honour the longMessage attribute when generating failure messages.
         If longMessage is False this means:
-        * Use only an explicit message if it is provided
-        * Otherwise use the standard message for the assert
+            * Use only an explicit message if it is provided
+            * Otherwise use the standard message for the assert
 
         If longMessage is True:
-        * Use the standard message
-        * If an explicit message is provided, plus ' : ' and the explicit message
+            * Use the standard message
+            * If an explicit message is provided, plus ' : ' and the explicit
+              message
         """
         if msg:
             data = '%s:\n%s' % (standardMsg, pprint.pformat(msg))

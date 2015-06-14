@@ -308,16 +308,17 @@ class OpenerSettings(Configurable):
         return cfg.get('proxy_address') + ':' + str(cfg.get('proxy_port'))
 
     def set_basic_auth(self, url, username, password):
-        om.out.debug('Called SetBasicAuth')
+        om.out.debug('Called set_basic_auth')
 
         if not url:
             if url is None:
                 raise BaseFrameworkException('The entered basic_auth_domain'
                                              ' URL is invalid!')
             elif username or password:
-                msg = ('To properly configure the basic authentication '
-                       'settings, you should also set the auth domain. If you '
-                       'are unsure, you can set it to the target domain name.')
+                msg = ('To properly configure the basic authentication'
+                       ' settings, you should also set the auth domain. If you '
+                       ' are unsure, you can set it to the target domain name'
+                       ' (eg. www.target.com)')
                 raise BaseFrameworkException(msg)
         else:
             if not hasattr(self, '_password_mgr'):
@@ -483,9 +484,9 @@ class OpenerSettings(Configurable):
         ol.add(o)
         
         d = 'Basic authentication domain'
-        h = 'This configures on which requests to send the authentication'\
-            ' settings configured in basic_auth_passwd and basic_auth_user.'\
-            ' If you are unsure, just set it to the target domain name.'
+        h = ('This configures on which requests to send the authentication'
+             ' settings configured in basic_auth_passwd and basic_auth_user.'
+             ' If you are unsure, just set it to the target domain name.')
         o = opt_factory('basic_auth_domain', cfg.get('basic_auth_domain'), d,
                         STRING, help=h, tabid='Basic HTTP Authentication')
         ol.add(o)
