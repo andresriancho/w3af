@@ -23,20 +23,21 @@ import re
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
-def mock_body_handler(method, uri, headers):
-    if len(uri) > 800:
-        return '"*** stack smashing detected ***:"'
-
-    return 'A regular body without errors'
-
-
 class TestBufferOverflow(PluginTest):
 
     target_url = 'http://mock/bo.c'
 
-    MOCK_RESPONSES = [MockResponse(re.compile('.*'),
-                                   body=mock_body_handler,
-                                   method='GET', status=200)]
+    class BOMockResponse(MockResponse):
+        def get_response(self, http_request, uri, response_headers):
+            if len(uri) > 800:
+                body = '"*** stack smashing detected ***:"'
+            else:
+                body = 'A regular body without errors'
+
+            return self.status, response_headers, body
+
+    MOCK_RESPONSES = [BOMockResponse(re.compile('.*'), body=None,
+                                     method='GET', status=200)]
 
     _run_config = {
         'target': target_url + '?buf=',
@@ -54,7 +55,7 @@ class TestBufferOverflow(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals('Buffer overflow vulnerability', vuln.get_name())
-        self.assertEquals("buf", vuln.get_token_name())
+        self.assertEquals('buf', vuln.get_token_name())
         self.assertEquals(self.target_url, str(vuln.get_url()))
 
 
