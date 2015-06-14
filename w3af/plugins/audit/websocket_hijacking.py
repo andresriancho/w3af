@@ -48,14 +48,10 @@ class websocket_hijacking(AuditPlugin):
         :param freq: A FuzzableRequest
         """
         # We can only work if there are known web sockets
-        links = kb.kb.raw_read('websockets_links', 'websockets_links')
+        ws_links = kb.kb.get('websockets_links', 'websockets_links')
 
-        if not links or not links['ws_links']:
-            return
-
-        ws_links = links['ws_links']
-
-        for web_socket_url in ws_links:
+        for web_socket_info_set in ws_links:
+            web_socket_url = web_socket_info_set['ws_link']
 
             # Checking if we already tested this web socket URL
             if web_socket_url in self.already_tested_websockets:

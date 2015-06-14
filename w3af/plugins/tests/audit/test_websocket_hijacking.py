@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.kb.info import Info
+from w3af.plugins.grep.websockets_links import WebSocketInfoSet
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
@@ -27,6 +29,16 @@ RUN_CONFIG = {
         'target': None,
         'plugins': {
             'audit': (PluginConfig('websocket_hijacking'),),
+        }
+    }
+}
+
+ALL_RUN_CONFIG = {
+    'cfg': {
+        'target': None,
+        'plugins': {
+            'audit': (PluginConfig('websocket_hijacking'),),
+            'grep': (PluginConfig('websockets_links'),),
         }
     }
 }
@@ -48,8 +60,16 @@ class WebSocketTest(PluginTest):
         :return: None. Will raise assertion if fails
         """
         # Setup requirements
-        ws_links = {'ws_links': [self.target_ws]}
-        self.kb.raw_write('websockets_links', 'websockets_links', ws_links)
+        desc = 'The URL: "%s" uses HTML5 websocket "%s"'
+        desc %= (self.target_url, self.target_url)
+
+        i = Info('HTML5 WebSocket detected', desc, 1, 'websockets_links')
+        i.set_url(URL(self.target_url))
+        i[WebSocketInfoSet.ITAG] = self.target_url
+
+        # Store found links
+        info_set = WebSocketInfoSet([i])
+        self.kb.append('websockets_links', 'websockets_links', i, info_set)
 
         # Run the plugin
         cfg = RUN_CONFIG['cfg']
@@ -189,3 +209,39 @@ class CookieAuthWebSocketTest(WebSocketTest):
 
     def test_cookie_auth_websockets(self):
         self.verify_found(['Websockets CSRF vulnerability'])
+
+
+class OpenWebSocketsWithCrawlTest(WebSocketTest):
+    """
+    Test that we can grep a page, extract WS links, and then audit them in
+    the audit plugin.
+    """
+    target_url = 'http://w3af.com/'
+
+    target_ws_http = 'http://w3af.com/echo'
+    target_ws = 'ws://w3af.com/echo'
+
+    HTML_BODY = ('<html>'
+                 '<script>'
+                 'var connection = new WebSocket("ws://w3af.com/echo");'
+                 '</script>'
+                 '</html>')
+
+    MOCK_RESPONSES = [MockResponse(url=target_url,
+                                   body=HTML_BODY,
+                                   method='GET',
+                                   status=200),
+                      MockResponse(url=target_ws_http,
+                                   body='',
+                                   method='GET',
+                                   status=101,
+                                   headers=SUCCESSFUL_UPGRADE)]
+
+    def test_open_websockets(self):
+        # Run the plugin
+        cfg = ALL_RUN_CONFIG['cfg']
+        self._scan(self.target_url, cfg['plugins'])
+
+        # Assert
+        vulns = self.kb.get('websocket_hijacking', 'websocket_hijacking')
+        self.assertEqual(['Open WebSocket'], [v.get_name() for v in vulns])
