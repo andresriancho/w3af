@@ -635,7 +635,7 @@ class ExtendedUrllib(object):
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
              cookies=True, error_handling=True, timeout=None,
-             use_basic_auth=True):
+             follow_redirects=None, use_basic_auth=True):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -655,6 +655,9 @@ class ExtendedUrllib(object):
 
         #    Validate what I'm sending, init the library (if needed)
         self.setup()
+
+        # follow_redirects is ignored because according to the RFC browsers
+        # should not follow 30x redirects on POST
 
         #
         #    Create and send the request
