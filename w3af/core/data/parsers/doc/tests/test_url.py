@@ -25,7 +25,6 @@ import urllib2
 import cPickle
 from multiprocessing.queues import SimpleQueue
 
-from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from w3af.core.data.parsers.doc.url import URL, parse_qs
@@ -53,6 +52,22 @@ class TestURLParser(unittest.TestCase):
         u = URL('w3af.com')
         self.assertEqual(u.get_domain(), 'w3af.com')
         self.assertEqual(u.get_protocol(), 'http')
+
+    def test_websocket_proto(self):
+        """
+        We can also parse and handle ws and wss protocols
+        """
+        u = URL('ws://w3af.com')
+        self.assertEqual(u.get_domain(), 'w3af.com')
+        self.assertEqual(u.get_protocol(), 'ws')
+
+    def test_websocket_secure_proto(self):
+        """
+        We can also parse and handle ws and wss protocols
+        """
+        u = URL('wss://w3af.com')
+        self.assertEqual(u.get_domain(), 'w3af.com')
+        self.assertEqual(u.get_protocol(), 'wss')
 
     def test_just_path(self):
         """
