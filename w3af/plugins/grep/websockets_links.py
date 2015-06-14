@@ -31,22 +31,11 @@ import w3af.core.controllers.output_manager as om
 
 WS_URL = 'ws://'
 WSS_URL = 'wss://'
-WEBSOCKETS_URL_RE = re.compile('["|\']{1}wss?:\/\/'
+WEBSOCKETS_URL_RE = re.compile('["|\']{1}(wss?:\/\/'
                                '[\da-z\.-]+'
                                '(\.[a-z\.]{2,6})?'
                                '(\:\d{1,5})?'
-                               '([\da-z\.-\_\/])*["|\']{1}', re.U | re.I)
-
-
-def find_websockets_links(text):
-    ws_links = set()
-    mobjects = WEBSOCKETS_URL_RE.finditer(text)
-    for ws_mo in mobjects:
-        try:
-            ws_links.add(ws_mo.group(0))
-        except ValueError:
-            pass
-    return ws_links
+                               '([\da-z\.-\_\/])*)["|\']{1}', re.U | re.I)
 
 
 class websockets_links(GrepPlugin):
@@ -119,10 +108,21 @@ class websockets_links(GrepPlugin):
         """
 
 
+def find_websockets_links(text):
+    ws_links = set()
+    mobjects = WEBSOCKETS_URL_RE.finditer(text)
+    for ws_mo in mobjects:
+        try:
+            ws_links.add(ws_mo.group(1))
+        except ValueError:
+            pass
+    return ws_links
+
+
 class WebSocketInfoSet(InfoSet):
     ITAG = 'ws_link'
     TEMPLATE = (
-        'The application uses the HTML5 WebSocket URL {{ ws_link }} in'
+        'The application uses the HTML5 WebSocket URL "{{ ws_link }}" in'
         ' {{ uris|length }} different URLs. The first ten URLs are:\n'
         ''
         '{% for url in uris[:10] %}'
