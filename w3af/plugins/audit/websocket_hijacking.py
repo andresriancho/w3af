@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
@@ -28,8 +27,7 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.websocket.utils import (build_ws_upgrade_request,
                                                    negotiate_websocket_version,
-                                                   is_successful_upgrade,
-                                                   WebSocketProtocolException)
+                                                   is_successful_upgrade)
 
 
 class websocket_hijacking(AuditPlugin):
@@ -37,6 +35,7 @@ class websocket_hijacking(AuditPlugin):
     Detect Cross-Site WebSocket hijacking vulnerabilities.
     :author: Dmitry Roshchin (nixwizard@gmail.com)
     """
+    W3AF_DOMAIN = 'w3af.org'
     W3AF_ORIGIN = 'http://www.w3af.org/'
 
     def __init__(self):
@@ -50,7 +49,8 @@ class websocket_hijacking(AuditPlugin):
         """
         # We can only work if there are known web sockets
         links = kb.kb.raw_read('websockets_links', 'websockets_links')
-        if not links['ws_links']:
+
+        if not links or not links['ws_links']:
             return
 
         ws_links = links['ws_links']
@@ -63,16 +63,11 @@ class websocket_hijacking(AuditPlugin):
 
             self.already_tested_websockets.add(web_socket_url)
 
-            try:
-                web_socket_version = negotiate_websocket_version(self._uri_opener,
-                                                                 web_socket_url)
-            except WebSocketProtocolException, wse:
-                msg = ('Failed to create upgrade HTTP connection to WebSockets,'
-                       ' the original exception is: "%s"')
-                om.out.debug(msg % wse)
-            else:
-                self.check_websocket_security(web_socket_url,
-                                              web_socket_version)
+            web_socket_url = URL(web_socket_url)
+            web_socket_version = negotiate_websocket_version(self._uri_opener,
+                                                             web_socket_url)
+            self.check_websocket_security(web_socket_url,
+                                          web_socket_version)
 
     def check_websocket_security(self, web_socket_url, web_socket_version):
         """
@@ -82,10 +77,11 @@ class websocket_hijacking(AuditPlugin):
         :param web_socket_version: The protocol version
         :return: None, results (if any) are stored to the KB
         """
-        known_checks = {self.check_is_open_web_socket,
+        known_checks = (self.check_is_open_web_socket,
+                        self.check_is_restricted_by_origin_with_match_bug,
                         self.check_is_restricted_by_origin,
                         self.check_need_basic_auth_origin_not_restricted,
-                        self.check_need_cookie_origin_not_restricted}
+                        self.check_need_cookie_origin_not_restricted)
 
         for check in known_checks:
             if check(web_socket_url, web_socket_version):
@@ -104,8 +100,8 @@ class websocket_hijacking(AuditPlugin):
                     * No cookies required for authentication
                     * No basic auth required for authentication
         """
-        upgrade_request = build_ws_upgrade_request(URL(web_socket_url),
-                                                   web_socket_version,
+        upgrade_request = build_ws_upgrade_request(web_socket_url,
+                                                   web_socket_version=web_socket_version,
                                                    origin=self.W3AF_ORIGIN)
         upgrade_response = self._uri_opener.send_mutant(upgrade_request,
                                                         cookies=False,
@@ -122,6 +118,57 @@ class websocket_hijacking(AuditPlugin):
                          upgrade_response.id, self.get_name(), upgrade_request)
         self.kb_append_uniq(self, 'websocket_hijacking', v)
         return True
+
+    def check_is_restricted_by_origin_with_match_bug(self, web_socket_url,
+                                                     web_socket_version):
+        """
+        Note that this method only makes sense if called in a loop with the
+        other check_* methods.
+
+        :param web_socket_url: The URL of the web socket
+        :param web_socket_version: The protocol version
+
+        :return: True if the web socket checks the origin for connections but
+                 there is a bug in the matching process
+        """
+        #
+        # Keep in mind that we get here only if the websocket is NOT an open
+        # (accepts any origin) socket. So we're in a situation where the socket
+        # is either verifying by Origin+Cookies, Origin+Basic Auth or just
+        # Origin.
+        #
+        # We want to check for the "just Origin" now, with a twist, we're
+        # checking if there is a mistake in the Origin domain match process
+        #
+        # This is the trick:
+        origin_domain = web_socket_url.get_domain()
+        origin_domain += '.%s' % self.W3AF_DOMAIN
+
+        for scheme in {'http', 'https'}:
+            origin = '%s://%s' % (scheme, origin_domain)
+            upgrade_request = build_ws_upgrade_request(web_socket_url,
+                                                       web_socket_version=web_socket_version,
+                                                       origin=origin)
+            upgrade_response = self._uri_opener.send_mutant(upgrade_request,
+                                                            cookies=False,
+                                                            use_basic_auth=False)
+
+            if not is_successful_upgrade(upgrade_response):
+                continue
+
+            msg = ('An HTML5 WebSocket which restricts connections based on the'
+                   ' Origin header was found to be vulnerable because of an'
+                   ' incorrect matching algorithm. The "%s" Origin was allowed'
+                   ' to connect to "%s".')
+            msg %= (origin_domain, web_socket_url)
+
+            v = Vuln.from_fr('Insecure WebSocket Origin filter', msg,
+                             severity.MEDIUM, upgrade_response.id,
+                             self.get_name(), upgrade_request)
+            self.kb_append_uniq(self, 'websocket_hijacking', v)
+            return True
+
+        return False
 
     def check_is_restricted_by_origin(self, web_socket_url, web_socket_version):
         """
@@ -143,13 +190,12 @@ class websocket_hijacking(AuditPlugin):
         #
         # We want to check for the "just Origin" now
         #
-        web_socket_url_obj = URL(web_socket_url)
-        origin_domain = web_socket_url_obj.get_domain()
+        origin_domain = web_socket_url.get_domain()
 
         for scheme in {'http', 'https'}:
             origin = '%s://%s' % (scheme, origin_domain)
-            upgrade_request = build_ws_upgrade_request(web_socket_url_obj,
-                                                       web_socket_version,
+            upgrade_request = build_ws_upgrade_request(web_socket_url,
+                                                       web_socket_version=web_socket_version,
                                                        origin=origin)
             upgrade_response = self._uri_opener.send_mutant(upgrade_request,
                                                             cookies=False,
@@ -193,8 +239,8 @@ class websocket_hijacking(AuditPlugin):
         #
         # We want to check for the "authenticates by basic auth"
         #
-        upgrade_request = build_ws_upgrade_request(URL(web_socket_url),
-                                                   web_socket_version,
+        upgrade_request = build_ws_upgrade_request(web_socket_url,
+                                                   web_socket_version=web_socket_version,
                                                    origin=self.W3AF_ORIGIN)
         upgrade_response = self._uri_opener.send_mutant(upgrade_request,
                                                         cookies=False,
@@ -236,8 +282,8 @@ class websocket_hijacking(AuditPlugin):
         #
         # We want to check for the "authenticates by cookie"
         #
-        upgrade_request = build_ws_upgrade_request(URL(web_socket_url),
-                                                   web_socket_version,
+        upgrade_request = build_ws_upgrade_request(web_socket_url,
+                                                   web_socket_version=web_socket_version,
                                                    origin=self.W3AF_ORIGIN)
         upgrade_response = self._uri_opener.send_mutant(upgrade_request,
                                                         # Note the True here!

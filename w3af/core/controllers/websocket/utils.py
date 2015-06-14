@@ -23,8 +23,10 @@ import base64
 import string
 import random
 
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              HTTPRequestException)
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.constants.websockets import (WEBSOCKET_UPGRADE_HEADERS,
                                                  DEFAULT_PROTOCOL_VERSION)
@@ -39,10 +41,16 @@ def gen_ws_sec_key():
 def build_ws_upgrade_request(web_socket_url, extra_headers=None,
                              web_socket_version=DEFAULT_PROTOCOL_VERSION,
                              origin=None):
-    # Replace the protocol so we can easily send a request
-    web_socket_url = web_socket_url.replace('wss://', 'https://', 1)
-    web_socket_url = web_socket_url.replace('ws://', 'http://', 1)
+    """
+    Create a GET request with the required HTTP headers to upgrade to web
+    sockets
 
+    :param web_socket_url: The URL instance where to upgrade
+    :param extra_headers: Any extra headers that will override the defaults
+    :param web_socket_version: The websocket version to use
+    :param origin: Origin header value
+    :return: An HTTP request
+    """
     request_headers = Headers()
     request_headers['Sec-WebSocket-Key'] = gen_ws_sec_key()
 
@@ -58,41 +66,70 @@ def build_ws_upgrade_request(web_socket_url, extra_headers=None,
 
     if origin is not None:
         request_headers['Origin'] = origin
+    else:
+        # If no origin is specified, guess:
+        scheme = 'https://' if 'wss://' in web_socket_url else 'http://'
+        args = (scheme, web_socket_url.get_domain())
+        request_headers['Origin'] = '%s%s' % args
 
-    upgrade_request = FuzzableRequest(web_socket_url, 'GET',
+    # Replace the protocol so we can easily send a request
+    forged_url = web_socket_url.url_string.replace('wss://', 'https://', 1)
+    forged_url = forged_url.replace('ws://', 'http://', 1)
+    forged_url = URL(forged_url)
+
+    upgrade_request = FuzzableRequest(forged_url, 'GET',
                                       headers=request_headers)
     return upgrade_request
 
 
 def negotiate_websocket_version(uri_opener, websocket_url):
-    upgrade_request = build_ws_upgrade_request(websocket_url)
+    """
+    Try to find the websocket version used to talk to the server
 
-    upgrade_response = uri_opener.send_mutant(upgrade_request)
-    upgrade_code = upgrade_response.get_code()
+    :param uri_opener: A URL opener
+    :param websocket_url: The web socket URL instance
+    :return: The websocket version to use
+    """
+    for version in {13, 12, 14}:
+        upgrade_request = build_ws_upgrade_request(websocket_url,
+                                                   web_socket_version=version)
 
-    if upgrade_code in {200, 301, 302, 303, 404, 403, 500}:
-        msg = 'Unexpected WebSockets response code: %s' % upgrade_code
-        raise WebSocketProtocolException(msg)
+        try:
+            upgrade_response = uri_opener.send_mutant(upgrade_request)
+        except HTTPRequestException:
+            # Some rather unfriendly web socket servers simply close the
+            # connection when there is a protocol mismatch
+            continue
 
-    if upgrade_code in {400}:
-        # Might be because of an incorrect protocol version
-        headers = upgrade_response.get_headers()
-        version, _ = headers.iget('Sec-WebSocket-Version', None)
+        upgrade_code = upgrade_response.get_code()
 
-        if version is None:
-            msg = 'Missing Sec-WebSocket-Version header in protocol upgrade'
-            raise WebSocketProtocolException(msg)
+        if upgrade_code in {101}:
+            return version
 
-        return version
+        elif upgrade_code in {400}:
+            # Might be because of an incorrect protocol version, some web
+            # servers are really nice and tell us which version they want to
+            # use, others simply say: "400" and nothing else
+            headers = upgrade_response.get_headers()
+            version, _ = headers.iget('Sec-WebSocket-Version', None)
 
-    if upgrade_code in {101}:
-        return DEFAULT_PROTOCOL_VERSION
+            if version is None:
+                # Test the next version
+                continue
 
-    # TODO: I'm not sure what happens here. What if I'm in a case where the
-    #       WebSocket is not answering with the expected 101 because the
-    #       origin is incorrect, or cookies are missing? What's the expected
-    #       answer for a websocket server in that case?
-    raise NotImplementedError
+            return version
+
+        else:
+            # The other response codes can be anything from "I don't speak that
+            # websocket protocol" to "here is my 404 page"
+            #
+            # Another option is that we're connecting to the web socket using
+            # an origin that's not allowed, in some cases that's a 403 forbidden
+            continue
+
+    # I want to be very friendly and when I'm not aware of the real version just
+    # return the default one
+    return DEFAULT_PROTOCOL_VERSION
 
 
 def is_successful_upgrade(upgrade_response):
@@ -119,6 +156,7 @@ def is_successful_upgrade(upgrade_response):
     connection_value, _ = headers.iget('Connection', None)
     sec_websocket_accept_value, _ = headers.iget('Sec-WebSocket-Accept', None)
 
+    # Relaxed check
     if upgrade_value and connection_value and sec_websocket_accept_value:
         return True
 
