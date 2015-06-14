@@ -45,6 +45,17 @@ class websocket_hijacking(AuditPlugin):
     def audit(self, freq, orig_response):
         """
         Detect websockets for Cross-Site WebSocket hijacking vulnerabilities.
+
+        This plugin works really well and can be improved in two different ways:
+
+            * Add new check_* methods to this class which detect websocket
+              vulnerabilities and then add them to known_checks
+
+            * Extend the websocket link detection in grep.websockets_links,
+              which is the weak part of the process, this is because we're doing
+              a very trivial regular expression match to find WS links, which
+              will most likely fail in "complex" web applications
+
         :param freq: A FuzzableRequest
         """
         # We can only work if there are known web sockets
