@@ -29,24 +29,13 @@ from w3af.core.data.kb.info import Info
 import w3af.core.controllers.output_manager as om
 
 
-WS_URL = "ws://"
-WSS_URL = "wss://"
-WEBSOCKETS_URL_RE = re.compile('["|\']{1}wss?:\/\/'
+WS_URL = 'ws://'
+WSS_URL = 'wss://'
+WEBSOCKETS_URL_RE = re.compile('["|\']{1}(wss?:\/\/'
                                '[\da-z\.-]+'
                                '(\.[a-z\.]{2,6})?'
                                '(\:\d{1,5})?'
-                               '([\da-z\.-\_\/])*["|\']{1}', re.U | re.I)
-
-
-def find_websockets_links(text):
-    ws_links = set()
-    mobjects = WEBSOCKETS_URL_RE.finditer(text)
-    for ws_mo in mobjects:
-        try:
-            ws_links.add(ws_mo.group(0))
-        except ValueError:
-            pass
-    return ws_links
+                               '([\da-z\.-\_\/])*)["|\']{1}', re.U | re.I)
 
 
 class websockets_links(GrepPlugin):
@@ -91,15 +80,15 @@ class websockets_links(GrepPlugin):
         if len(ws_links) == 0:
             # TODO: In some scenarios this message is repeated multiple, since
             #       it's a debug() message we don't care that much.
-            msg = 'The URL "%s" has signs of HTML5 WebSockets usage, ' \
-                  'but couldn\'t find any useful links.\n' \
-                  'Perhaps links are dynamically created using javascript.\n' \
-                  'Manual inspection of the page is recommended.'
+            msg = ('The URL "%s" has signs of HTML5 WebSockets usage,'
+                   ' but failed to find any useful links. Perhaps links are'
+                   ' dynamically created using javascript. Manual inspection'
+                   ' of the page source is recommended.')
             om.out.debug(msg % url)
 
         for ws_link in ws_links:
             desc = 'The URL: "%s" uses HTML5 websocket "%s"'
-            desc = desc % (url, ws_link)
+            desc %= (url, ws_link)
 
             i = Info('HTML5 WebSocket detected', desc, response.id,
                      self.get_name())
@@ -119,10 +108,21 @@ class websockets_links(GrepPlugin):
         """
 
 
+def find_websockets_links(text):
+    ws_links = set()
+    mobjects = WEBSOCKETS_URL_RE.finditer(text)
+    for ws_mo in mobjects:
+        try:
+            ws_links.add(ws_mo.group(1))
+        except ValueError:
+            pass
+    return ws_links
+
+
 class WebSocketInfoSet(InfoSet):
     ITAG = 'ws_link'
     TEMPLATE = (
-        'The application uses the HTML5 WebSocket URL {{ ws_link }} in'
+        'The application uses the HTML5 WebSocket URL "{{ ws_link }}" in'
         ' {{ uris|length }} different URLs. The first ten URLs are:\n'
         ''
         '{% for url in uris[:10] %}'

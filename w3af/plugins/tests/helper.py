@@ -72,9 +72,9 @@ class PluginTest(unittest.TestCase):
             try:
                 url = URL(self.target_url)
             except ValueError, ve:
-                msg = 'When using MOCK_RESPONSES you need to set the'\
-                      ' target_url attribute to a valid URL, exception was:'\
-                      ' "%s".'
+                msg = ('When using MOCK_RESPONSES you need to set the'
+                       ' target_url attribute to a valid URL, exception was:'
+                       ' "%s".')
                 raise Exception(msg % ve)
 
             domain = url.get_domain()
@@ -179,56 +179,22 @@ class PluginTest(unittest.TestCase):
         self.assertEquals(set(found),
                           set(expected))
 
-    def request_callback(self, method, uri, headers):
+    def request_callback(self, http_request, uri, headers):
         match = None
 
         for mock_response in self.MOCK_RESPONSES:
-
-            if mock_response.method != method.command:
-                continue
-
-            if self._mock_url_matches(mock_response, uri):
+            if mock_response.matches(http_request, uri, headers):
                 match = mock_response
                 break
 
         if match is not None:
             fmt = (uri, match)
             om.out.debug('[request_callback] URI %s matched %s' % fmt)
-
-            headers.update({'status': match.status})
-            headers.update(match.headers)
-
-            if match.delay is not None:
-                time.sleep(match.delay)
-
-            return (match.status,
-                    headers,
-                    match.get_body(method, uri, headers))
+            return match.get_response(http_request, uri, headers)
 
         else:
             om.out.debug('[request_callback] URI %s will return 404' % uri)
-
-            status = 404
-            body = 'Not found'
-            headers.update({'Content-Type': 'text/html', 'status': status})
-
-            return status, headers, body
-
-    def _mock_url_matches(self, mock_response, request_uri):
-        """
-        :param mock_response: A MockResponse instance configured by dev
-        :param request_uri: The http request URI sent by the plugin
-        :return: True if the request_uri matches this mock_response
-        """
-        if isinstance(mock_response.url, basestring):
-            if request_uri.endswith(mock_response.url):
-                return True
-
-        elif isinstance(mock_response.url, RE_COMPILE_TYPE):
-            if mock_response.url.match(request_uri):
-                return True
-
-        return False
+            return MockResponse.get_404(http_request, uri, headers)
 
     @retry(tries=3, delay=0.5, backoff=2)
     def _verify_targets_up(self, target_list):
@@ -322,12 +288,13 @@ class PluginTest(unittest.TestCase):
     def _formatMessage(self, msg, standardMsg):
         """Honour the longMessage attribute when generating failure messages.
         If longMessage is False this means:
-        * Use only an explicit message if it is provided
-        * Otherwise use the standard message for the assert
+            * Use only an explicit message if it is provided
+            * Otherwise use the standard message for the assert
 
         If longMessage is True:
-        * Use the standard message
-        * If an explicit message is provided, plus ' : ' and the explicit message
+            * Use the standard message
+            * If an explicit message is provided, plus ' : ' and the explicit
+              message
         """
         if msg:
             data = '%s:\n%s' % (standardMsg, pprint.pformat(msg))
@@ -487,6 +454,10 @@ def create_target_option_list(*target):
 
 
 class MockResponse(object):
+    NO_MOCK = 'httpretty can not mock this method'
+    KNOWN_METHODS = ('GET', 'PUT', 'POST', 'DELETE', 'HEAD', 'PATCH',
+                     'OPTIONS', 'CONNECT')
+
     def __init__(self, url, body, content_type='text/html', status=200,
                  method='GET', headers=None, delay=None):
         self.url = url
@@ -501,9 +472,7 @@ class MockResponse(object):
         if headers is not None:
             self.headers.update(headers)
 
-        assert method in ('GET', 'PUT', 'POST', 'DELETE', 'HEAD', 'PATCH',
-                          'OPTIONS', 'CONNECT'), 'httpretty can not mock this'\
-                                                 ' method'
+        assert method in self.KNOWN_METHODS, self.NO_MOCK
         assert isinstance(url, (basestring, RE_COMPILE_TYPE))
 
     def __repr__(self):
@@ -514,15 +483,48 @@ class MockResponse(object):
 
         return '<MockResponse (%s|%s)>' % (match, self.status)
 
-    def get_body(self, method, uri, headers):
-        """
-        :param method: HTTP method sent by plugin
-        :param uri: The http request URI sent by the plugin
-        :param headers: The http headers sent by plugin
-        :return: Tuple with the response we'll send to the plugin
-        """
-        if not callable(self.body):
-            # A string
-            return self.body
+    @staticmethod
+    def get_404(http_request, uri, headers):
+        status = 404
+        body = 'Not found'
+        headers.update({'Content-Type': 'text/html', 'status': status})
+        return status, headers, body
 
-        return self.body(method, uri, headers)
+    def get_response(self, http_request, uri, response_headers):
+        """
+        :return: A response containing:
+                    * HTTP status code
+                    * Headers dict
+                    * Response body string
+        """
+        response_headers.update({'status': self.status})
+        response_headers.update(self.headers)
+
+        if self.delay is not None:
+            time.sleep(self.delay)
+
+        return self.status, response_headers, self.body
+
+    def matches(self, http_request, uri, headers):
+        if self.method != http_request.command:
+            return False
+
+        if not self.url_matches(uri):
+            return False
+
+        return True
+
+    def url_matches(self, request_uri):
+        """
+        :param request_uri: The http request URI sent by the plugin
+        :return: True if the request_uri matches this mock_response
+        """
+        if isinstance(self.url, basestring):
+            if request_uri.endswith(self.url):
+                return True
+
+        elif isinstance(self.url, RE_COMPILE_TYPE):
+            if self.url.match(request_uri):
+                return True
+
+        return False

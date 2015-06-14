@@ -78,7 +78,8 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
                                   cache=req.get_from_cache,
                                   error_handling=req.error_handling,
                                   retries=req.retries_left,
-                                  new_connection=req.new_connection)
+                                  new_connection=req.new_connection,
+                                  use_basic_auth=req.use_basic_auth)
 
         return new_request
 
