@@ -29,8 +29,8 @@ from w3af.core.data.kb.info import Info
 import w3af.core.controllers.output_manager as om
 
 
-WS_URL = "ws://"
-WSS_URL = "wss://"
+WS_URL = 'ws://'
+WSS_URL = 'wss://'
 WEBSOCKETS_URL_RE = re.compile('["|\']{1}wss?:\/\/'
                                '[\da-z\.-]+'
                                '(\.[a-z\.]{2,6})?'
@@ -91,15 +91,15 @@ class websockets_links(GrepPlugin):
         if len(ws_links) == 0:
             # TODO: In some scenarios this message is repeated multiple, since
             #       it's a debug() message we don't care that much.
-            msg = 'The URL "%s" has signs of HTML5 WebSockets usage, ' \
-                  'but couldn\'t find any useful links.\n' \
-                  'Perhaps links are dynamically created using javascript.\n' \
-                  'Manual inspection of the page is recommended.'
+            msg = ('The URL "%s" has signs of HTML5 WebSockets usage,'
+                   ' but failed to find any useful links. Perhaps links are'
+                   ' dynamically created using javascript. Manual inspection'
+                   ' of the page source is recommended.')
             om.out.debug(msg % url)
 
         for ws_link in ws_links:
             desc = 'The URL: "%s" uses HTML5 websocket "%s"'
-            desc = desc % (url, ws_link)
+            desc %= (url, ws_link)
 
             i = Info('HTML5 WebSocket detected', desc, response.id,
                      self.get_name())
