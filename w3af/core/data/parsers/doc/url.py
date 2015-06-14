@@ -418,8 +418,8 @@ class URL(DiskItem):
                 raise ValueError(msg % port)
 
             if int(port) > 65535 or int(port) < 1:
-                msg = 'Invalid TCP port "%s", expected a number in range'\
-                      ' 1-65535.'
+                msg = ('Invalid TCP port "%s", expected a number in range'
+                       ' 1-65535.')
                 raise ValueError(msg % port)
             
             # Collapse port
@@ -520,7 +520,7 @@ class URL(DiskItem):
         :return: Returns the domain name for the url.
         """
         if not re.match('[a-z0-9-\.]+([a-z0-9-]+)*$', new_domain):
-            raise ValueError("'%s' is an invalid domain" % (new_domain))
+            raise ValueError("'%s' is an invalid domain" % new_domain)
 
         domain = self.netloc.split(':')[0]
         self.netloc = self.netloc.replace(domain, new_domain)
