@@ -532,7 +532,8 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True, error_handling=True, timeout=None):
+                    cookies=True, error_handling=True, timeout=None,
+                    follow_redirects=False, use_basic_auth=True):
         """
         Sends a mutant to the remote web server.
 
@@ -549,12 +550,13 @@ class ExtendedUrllib(object):
         #
         uri = mutant.get_uri()
         data = mutant.get_data()
+        headers = mutant.get_all_headers()
 
         # Also add the cookie header; this is needed by the CookieMutant
-        headers = mutant.get_all_headers()
-        cookie = mutant.get_cookie()
-        if cookie:
-            headers['Cookie'] = str(cookie)
+        if cookies:
+            mutant_cookie = mutant.get_cookie()
+            if mutant_cookie:
+                headers['Cookie'] = str(mutant_cookie)
 
         args = (uri,)
         kwargs = {
@@ -564,7 +566,9 @@ class ExtendedUrllib(object):
             'cache': cache,
             'cookies': cookies,
             'error_handling': error_handling,
-            'timeout': timeout
+            'timeout': timeout,
+            'follow_redirects': follow_redirects,
+            'use_basic_auth': use_basic_auth,
         }
         method = mutant.get_method()
 
@@ -581,7 +585,8 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
-            error_handling=True, timeout=None, follow_redirects=False):
+            error_handling=True, timeout=None, follow_redirects=False,
+            use_basic_auth=True):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -621,14 +626,16 @@ class ExtendedUrllib(object):
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
-                          follow_redirects=follow_redirects)
+                          follow_redirects=follow_redirects,
+                          use_basic_auth=use_basic_auth)
         req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
             return self.send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
-             cookies=True, error_handling=True, timeout=None):
+             cookies=True, error_handling=True, timeout=None,
+             use_basic_auth=True):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -664,7 +671,8 @@ class ExtendedUrllib(object):
         req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
                           error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
-                          timeout=timeout, new_connection=new_connection)
+                          timeout=timeout, new_connection=new_connection,
+                          use_basic_auth=use_basic_auth)
         req = self.add_headers(req, headers)
 
         return self.send(req, grep=grep)
@@ -718,7 +726,7 @@ class ExtendedUrllib(object):
         """
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
                        cache=False, grep=True, cookies=True,
-                       error_handling=True, timeout=None):
+                       error_handling=True, timeout=None, use_basic_auth=True):
             """
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
@@ -743,7 +751,8 @@ class ExtendedUrllib(object):
                               error_handling=error_handling,
                               retries=max_retries,
                               timeout=timeout,
-                              new_connection=new_connection)
+                              new_connection=new_connection,
+                              use_basic_auth=use_basic_auth)
             req = uri_opener.add_headers(req, headers or {})
             return uri_opener.send(req, grep=grep)
 

@@ -37,7 +37,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                  cookies=True, cache=False, method=None,
                  error_handling=True, retries=MAX_HTTP_RETRIES,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                 new_connection=False, follow_redirects=False):
+                 new_connection=False, follow_redirects=False,
+                 use_basic_auth=True):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -56,6 +57,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.timeout = timeout
         self.new_connection = new_connection
         self.follow_redirects = follow_redirects
+        self.use_basic_auth = use_basic_auth
 
         self.method = method
         if self.method is None:
