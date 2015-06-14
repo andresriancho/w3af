@@ -36,7 +36,7 @@ class FastHTTPBasicAuthHandler(urllib2.AbstractBasicAuthHandler,
 
     def http_request(self, request):
         if not request.use_basic_auth:
-            return
+            return request
 
         # Add the headers for the authorization...
         user, pw = self.passwd.find_user_password(None, request.get_full_url())
