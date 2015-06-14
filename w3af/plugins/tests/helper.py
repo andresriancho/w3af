@@ -525,4 +525,5 @@ class MockResponse(object):
             # A string
             return self.body
 
+        nlkadnklsad
         return self.body(method, uri, headers)
