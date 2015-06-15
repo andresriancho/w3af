@@ -59,6 +59,9 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      # regular users too, do not remove!
                      PIPDependency('psutil', 'psutil', '2.2.1'),
 
+                     # We "outsource" the HTTP proxy feature to mitmproxy
+                     PIPDependency('mitmproxy', 'mitmproxy', '0.12.1'),
+
                      # https://gist.github.com/andresriancho/cf2fa1ce239b30f37bd9
                      PIPDependency('ruamel.ordereddict',
                                    'ruamel.ordereddict',
