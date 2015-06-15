@@ -181,7 +181,8 @@ class fingerprint_404(object):
                 else:
                     # They are no equal, this means that we'll have to add this
                     # one to the 404 responses
-                    self._404_responses.append(j)
+                    four_oh_data = FourOhFourResponseFactory(j)
+                    self._404_responses.append(four_oh_data)
 
         # And I return the ones I need
         msg_fmt = 'The 404 body result database has a length of %s.'
