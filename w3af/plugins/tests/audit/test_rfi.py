@@ -24,7 +24,7 @@ import threading
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.php_moth import get_php_moth_http
-from w3af.core.controllers.daemons.webserver import w3afHTTPServer
+from w3af.core.controllers.daemons.webserver import HTTPServer
 from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.plugins.audit.rfi import RFIWebHandler
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -124,7 +124,7 @@ class TestRFI(PluginTest):
 
     def test_custom_web_server(self):
         RFIWebHandler.RESPONSE_BODY = '<? echo "hello world"; ?>'
-        ws = w3afHTTPServer(('127.0.0.1', 0), '.', RFIWebHandler)
+        ws = HTTPServer(('127.0.0.1', 0), '.', RFIWebHandler)
         ws.wait_for_start()
         port = ws.get_port()
 
