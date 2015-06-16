@@ -26,13 +26,13 @@ import Queue
 import traceback
 
 import w3af.core.controllers.output_manager as om
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
+from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
-class w3afLocalProxyHandler(w3afProxyHandler):
+class LocalProxyHandler(ProxyHandler):
     """
     The handler that traps requests and adds them to the queue.
     """
@@ -177,18 +177,15 @@ class LocalProxy(Proxy):
     interface to perform all its magic ;)
     """
 
-    def __init__(self, ip, port, url_opener=ExtendedUrllib(),
-                 proxy_cert=Proxy.SSL_CERT):
+    def __init__(self, ip, port, url_opener=ExtendedUrllib()):
         """
         :param ip: IP address to bind
         :param port: Port to bind
         :param url_opener: The urlOpener that will be used to open the requests
                           that arrive from the browser
-        :param proxy_cert: Proxy certificate to use, this is needed for
-                           proxying SSL connections.
         """
-        Proxy.__init__(self, ip, port, url_opener, w3afLocalProxyHandler,
-                       proxy_cert, name='LocalProxyThread')
+        Proxy.__init__(self, ip, port, url_opener, LocalProxyHandler,
+                       name='LocalProxyThread')
 
         # Internal vars
         self.request_queue = Queue.Queue()

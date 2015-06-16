@@ -28,7 +28,7 @@ from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
+from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 
 TODO_183 = ('Skip this test because of a strange bug with the extended'
             ' url library and w3af\'s local proxy daemon. More info here:'
@@ -45,7 +45,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.uri_opener = ExtendedUrllib()
         
         # Start the proxy daemon
-        self._proxy = Proxy('127.0.0.1', 0, ExtendedUrllib(), w3afProxyHandler)
+        self._proxy = Proxy('127.0.0.1', 0, ExtendedUrllib(), ProxyHandler)
         self._proxy.start()
         self._proxy.wait_for_start()
         

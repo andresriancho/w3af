@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
+from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 
 
 @attr('moth')
@@ -39,14 +39,14 @@ class TestProxy(unittest.TestCase):
         # Start the proxy server
         create_temp_dir()
 
-        self._proxy = Proxy(self.IP, 0, ExtendedUrllib(), w3afProxyHandler)
+        self._proxy = Proxy(self.IP, 0, ExtendedUrllib(), ProxyHandler)
         self._proxy.start()
         self._proxy.wait_for_start()
         
         port = self._proxy.get_port()
         
         # Build the proxy opener
-        proxy_handler = urllib2.ProxyHandler({"http": "http://%s:%s"
+        proxy_handler = urllib2.ProxyHandler({'http': 'http://%s:%s'
                                               % (self.IP, port)})
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)

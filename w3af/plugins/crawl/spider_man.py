@@ -25,7 +25,7 @@ import w3af.core.data.constants.ports as ports
 
 from w3af.core.controllers.misc.get_w3af_version import get_minimalistic_version
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
+from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 from w3af.core.controllers.exceptions import RunOnce, ProxyException
 from w3af.core.controllers.misc.decorators import runonce
 
@@ -170,7 +170,7 @@ class spider_man(CrawlPlugin):
 global_first_request = True
 
 
-class ProxyHandler(w3afProxyHandler):
+class ProxyHandler(ProxyHandler):
 
     def __init__(self, request, client_address, server, spider_man=None):
         self._version = 'spider_man-w3af/%s' % get_minimalistic_version()
@@ -183,7 +183,7 @@ class ProxyHandler(w3afProxyHandler):
             self._spider_man = spider_man
 
         self._uri_opener = self._spider_man._uri_opener
-        w3afProxyHandler.__init__(self, request, client_address, server)
+        ProxyHandler.__init__(self, request, client_address, server)
 
     def do_ALL(self):
         global global_first_request
