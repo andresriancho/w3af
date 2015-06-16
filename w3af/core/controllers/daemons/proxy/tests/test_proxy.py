@@ -130,3 +130,17 @@ class TestProxy(unittest.TestCase):
     def tearDown(self):
         # Shutdown the proxy server
         self._proxy.stop()
+
+    def test_error_handling(self):
+        del self._proxy._master.uri_opener
+
+        try:
+            self.proxy_opener.open(get_moth_http()).read()
+        except urllib2.HTTPError, hte:
+            # By default urllib2 handles 500 errors as exceptions, so we match
+            # against this exception object
+            self.assertEqual(hte.code, 500)
+
+            body = hte.read()
+            self.assertIn('Proxy error', body)
+            self.assertIn('HTTP request', body)

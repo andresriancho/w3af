@@ -19,12 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
+import traceback
+
 from netlib.odict import ODictCaseless
 from libmproxy.controller import Master
+from jinja2 import Environment, FileSystemLoader
 from libmproxy.protocol.http import HTTPResponse as LibMITMProxyHTTPResponse
 
+from w3af import ROOT_PATH
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPRequest import HTTPRequest
+from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.dc.headers import Headers
 from w3af.core.data.misc.encoding import smart_str
 
 
@@ -92,7 +99,7 @@ class ProxyHandler(Master):
                            headers=http_request.get_headers(),
                            grep=False)
 
-    def _create_error_response(self, request, response, exception):
+    def _create_error_response(self, request, response, exception, trace=None):
         """
 
         :param request: The HTTP request which triggered the exception
@@ -101,7 +108,26 @@ class ProxyHandler(Master):
         :param exception: The exception instance
         :return: A mitmproxy response object ready to send to the flow
         """
-        raise NotImplementedError
+        def replace_new_lines(in_str):
+            return in_str.replace('\n', '<br/>')
+
+        context = {'exception_message': str(exception),
+                   'http_request': replace_new_lines(request.dump())}
+
+        if trace is not None:
+            context['traceback'] = replace_new_lines(trace)
+
+        content = render('error.html', context)
+
+        headers = Headers((
+            ('Connection', 'close'),
+            ('Content-type', 'text/html'),
+        ))
+
+        http_response = HTTPResponse(500, content.encode('utf-8'), headers,
+                                     request.get_uri(), request.get_uri(),
+                                     msg='Server error')
+        return http_response
 
     def handle_request(self, flow):
         """
@@ -120,10 +146,26 @@ class ProxyHandler(Master):
         try:
             # Send the request to the remote webserver
             http_response = self._send_http_request(http_request)
-            http_response = self._to_libmproxy_response(flow.request,
-                                                        http_response)
         except Exception, e:
-            http_response = self._create_error_response(http_request, None, e)
+            trace = str(traceback.format_exc())
+            http_response = self._create_error_response(http_request, None, e,
+                                                        trace=trace)
 
         # Send the response (success|error) to the browser
+        http_response = self._to_libmproxy_response(flow.request, http_response)
         flow.reply(http_response)
+
+
+def render(template_name, context):
+    """
+    Render template with context
+
+    :param template_name: string path to template, relative to templates folder
+    :param context: dict with variables
+    :return: compiled template string
+    """
+    path = os.path.join(ROOT_PATH, 'core/controllers/daemons/proxy/templates')
+    env = Environment(loader=FileSystemLoader(path))
+
+    template = env.get_template(template_name)
+    return template.render(context)
