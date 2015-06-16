@@ -22,17 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 
 from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
-
-TODO_183 = ('Skip this test because of a strange bug with the extended'
-            ' url library and w3af\'s local proxy daemon. More info here:'
-            ' https://github.com/andresriancho/w3af/issues/183')
 
 
 @attr('moth')
@@ -77,8 +72,6 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
     def test_https_via_proxy(self):
-        raise SkipTest(TODO_183)
-    
         url = URL(get_moth_https())
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)

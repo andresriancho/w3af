@@ -23,11 +23,9 @@ import shutil
 import unittest
 
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper, Target
-from w3af.core.data.url.tests.test_xurllib_proxy import TODO_183
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
@@ -76,8 +74,6 @@ class TestSQLMapWrapper(unittest.TestCase):
         self.assertTrue(vulnerable)
     
     def test_verify_vulnerability_ssl(self):
-        raise SkipTest(TODO_183)
-
         uri = URL(self.SSL_SQLI_GET)
         target = Target(uri)
         
