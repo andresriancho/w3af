@@ -77,7 +77,7 @@ class Proxy(Process):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/mitm.crt')
+    SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/proxy/ca.crt')
 
     def __init__(self, ip, port, uri_opener, handler_klass=ProxyHandler,
                  proxy_cert=SSL_CERT, name='ProxyThread'):
