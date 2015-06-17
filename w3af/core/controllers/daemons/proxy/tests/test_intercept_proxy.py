@@ -1,5 +1,5 @@
 """
-test_localproxy.py
+test_intercept_proxy.py
 
 Copyright 2012 Andres Riancho
 
