@@ -121,7 +121,7 @@ class ProxyHandler(Master):
             return in_str.replace('\n', '<br/>')
 
         context = {'exception_message': str(exception),
-                   'http_request': replace_new_lines(request.dump())}
+                   'http_request': request.dump()}
 
         if trace is not None:
             context['traceback'] = replace_new_lines(trace)
