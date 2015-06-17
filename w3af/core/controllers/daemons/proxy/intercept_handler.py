@@ -100,6 +100,7 @@ class InterceptProxyHandler(ProxyHandler):
                                                         None, e, trace=trace)
 
         self.parent_process.requests_already_modified.put(http_response)
+        return http_response
 
     def on_start_edit_request(self, http_request):
         """
