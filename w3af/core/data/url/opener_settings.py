@@ -301,7 +301,8 @@ class OpenerSettings(Configurable):
         # Makes no sense, because urllib2.ProxyHandler doesn't support HTTPS
         # proxies with CONNECT. The proxying with CONNECT is implemented in
         # keep-alive handler. (nasty!)
-        proxy_map = {'http': "http://" + ip + ":" + str(port)}
+        proxy_url = 'http://%s:%s' % (ip, port)
+        proxy_map = {'http': proxy_url}
         self._proxy_handler = urllib2.ProxyHandler(proxy_map)
 
     def get_proxy(self):
