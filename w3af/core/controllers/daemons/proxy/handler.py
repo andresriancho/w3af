@@ -75,15 +75,25 @@ class ProxyHandler(Master):
         Convert w3af.core.data.url.HTTPResponse.HTTPResponse  to
         libmproxy.http.HTTPResponse
         """
-        body = smart_str(response.body, response.charset, errors='ignore')
+        charset = response.charset
+
+        body = smart_str(response.body, charset, errors='ignore')
+
+        header_items = []
+        for header_name, header_value in response.headers.items():
+            header_name = smart_str(header_name, charset, errors='ignore')
+            header_value = smart_str(header_value, charset, errors='ignore')
+            header_items.append((header_name, header_value))
+
+        headers = ODictCaseless(header_items)
 
         return LibMITMProxyHTTPResponse(request.httpversion,
                                         response.get_code(),
-                                        response.get_msg(),
-                                        ODictCaseless(response.headers.items()),
+                                        str(response.get_msg()),
+                                        headers,
                                         body)
 
-    def _send_http_request(self, http_request):
+    def _send_http_request(self, http_request, grep=True):
         """
         Send a w3af HTTP request to the web server using w3af's HTTP lib
 
@@ -96,7 +106,7 @@ class ProxyHandler(Master):
         return http_method(http_request.get_uri(),
                            data=http_request.get_data(),
                            headers=http_request.get_headers(),
-                           grep=False)
+                           grep=grep)
 
     def _create_error_response(self, request, response, exception, trace=None):
         """
