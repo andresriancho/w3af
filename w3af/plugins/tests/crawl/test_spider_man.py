@@ -27,14 +27,13 @@ from multiprocessing.dummy import Process
 from w3af.core.controllers.misc.get_unused_port import get_unused_port
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.crawl.spider_man import TERMINATE_URL
 
 BROWSE_URLS = (
     ('GET', '/audit/', None),
     ('GET', '/audit/sql_injection/where_integer_qs.py', 'id=1'),
     ('POST', '/audit/sql_injection/where_integer_form.py', 'text=abc'),
 )
-
-TERMINATE_URL = 'http://127.7.7.7/spider_man?terminate'
 
 
 class BrowserThread(Process):
@@ -49,6 +48,8 @@ class BrowserThread(Process):
         """
         @see: Comment in test_spiderman_basic
         """
+
+        # Wait for the proxy to start
         for i in xrange(120):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
@@ -92,7 +93,7 @@ class BrowserThread(Process):
                     self.responses.append(response.read())
 
         try:
-            response = opener.open(TERMINATE_URL)
+            response = opener.open(TERMINATE_URL.url_string)
         except Exception, ex:
             self.responses.append(str(ex))
         else:
