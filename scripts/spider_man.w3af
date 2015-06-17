@@ -16,7 +16,7 @@ audit sqli
 audit
 back
 target
-set target http://moth/w3af/file_upload/
+set target http://127.0.0.1:8000/w3af/file_upload/
 back
 start
 
