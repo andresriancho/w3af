@@ -100,9 +100,11 @@ class Proxy(Process):
         self._ca_certs = ca_certs
 
         # User configured parameters
-        self._config = ProxyConfig(cadir=self._ca_certs)
-        self._config.host = ip
-        self._config.port = port
+        self._config = ProxyConfig(cadir=self._ca_certs,
+                                   ssl_version_client='all',
+                                   ssl_version_server='all',
+                                   host=ip,
+                                   port=port)
 
         # Start the proxy server
         try:
