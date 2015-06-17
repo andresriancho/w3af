@@ -79,7 +79,8 @@ class TestExtendedUrllibProxy(unittest.TestCase):
     def test_offline_port_via_proxy(self):
         url = URL('http://127.0.0.1:8181/')
         http_response = self.uri_opener.GET(url, cache=False)
-        self.assertEqual(http_response.get_code(), 400)
+        self.assertEqual(http_response.get_code(), 500)
+        self.assertIn('Connection refused', http_response.body)
     
     def test_POST_via_proxy(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
