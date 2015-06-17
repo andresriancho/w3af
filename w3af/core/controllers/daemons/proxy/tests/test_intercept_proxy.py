@@ -38,6 +38,7 @@ class TestInterceptProxy(unittest.TestCase):
     
     IP = '127.0.0.1'
     MOTH_MESSAGE = '<title>moth: vulnerable web application</title>'
+    PAGE_NOT_FOUND = 'Page not found'
     
     def setUp(self):
         # Start the proxy server
@@ -46,7 +47,7 @@ class TestInterceptProxy(unittest.TestCase):
         self._proxy = InterceptProxy(self.IP, 0, ExtendedUrllib())
         self._proxy.start()
         self._proxy.wait_for_start()
-        
+
         port = self._proxy.get_port()
 
         # Build the proxy opener
@@ -104,9 +105,15 @@ class TestInterceptProxy(unittest.TestCase):
     
     def test_request_trapped_send(self):
         def send_request(proxy_opener, result_queue):
-            response = proxy_opener.open(get_moth_http())
-            result_queue.put(response)
-        
+            try:
+                response = proxy_opener.open(get_moth_http())
+            except urllib2.HTTPError, he:
+                # Catch the 403 from the local proxy when the user
+                # drops the HTTP request.
+                result_queue.put(he)
+            else:
+                result_queue.put(response)
+
         self._proxy.set_trap(True)
         
         result_queue = Queue.Queue()
@@ -128,3 +135,91 @@ class TestInterceptProxy(unittest.TestCase):
         
         self.assertEqual(response.code, 200)
         self.assertIn(self.MOTH_MESSAGE, response.read())
+
+    def test_trap_many(self):
+        def send_request(_id, proxy_opener, results):
+            try:
+                response = proxy_opener.open(get_moth_http('/%s' % _id))
+            except urllib2.HTTPError, he:
+                # Catch the 403 from the local proxy when the user
+                # drops the HTTP request.
+                results.put(he)
+            except KeyboardInterrupt:
+                results.put(None)
+            except Exception, e:
+                results.put(e)
+            else:
+                results.put(response)
+
+        self._proxy.set_trap(True)
+
+        result_queue = Queue.Queue()
+
+        for i in xrange(3):
+            args = (i, self.proxy_opener, result_queue)
+            send_thread = threading.Thread(target=send_request, args=args)
+            send_thread.start()
+            time.sleep(1)
+
+        #
+        # The UI gets the first trapped request and processes it:
+        #
+        request = self._proxy.get_trapped_request()
+
+        self.assertIsNotNone(request, 'The proxy did not receive request 0')
+
+        self.assertEqual(request.get_uri().url_string, get_moth_http('/0'))
+        self.assertEqual(request.get_method(), 'GET')
+
+        # It doesn't modify it
+        self._proxy.on_request_edit_finished(request,
+                                             request.dump_request_head(),
+                                             request.get_data())
+
+        # And we get the corresponding response
+        response = result_queue.get()
+
+        self.assertEqual(response.geturl(), get_moth_http('/0'))
+        self.assertEqual(response.code, 404)
+        self.assertIn(self.PAGE_NOT_FOUND, response.read())
+
+        #
+        # The UI gets the second trapped request and processes it:
+        #
+        request = self._proxy.get_trapped_request()
+
+        self.assertIsNotNone(request, 'The proxy did not receive request 1')
+
+        self.assertEqual(request.get_uri().url_string, get_moth_http('/1'))
+        self.assertEqual(request.get_method(), 'GET')
+
+        # It drops the request
+        self._proxy.drop_request(request)
+
+        # And we get the corresponding response
+        response = result_queue.get()
+
+        self.assertEqual(response.geturl(), get_moth_http('/1'))
+        self.assertEqual(response.code, 403)
+
+        #
+        # The UI gets the third trapped request and processes it:
+        #
+        request = self._proxy.get_trapped_request()
+
+        self.assertIsNotNone(request, 'The proxy did not receive request 2')
+
+        self.assertEqual(request.get_uri().url_string, get_moth_http('/2'))
+        self.assertEqual(request.get_method(), 'GET')
+
+        # It doesn't modify it
+        self._proxy.on_request_edit_finished(request,
+                                             request.dump_request_head(),
+                                             request.get_data())
+
+        # And we get the corresponding response
+        response = result_queue.get()
+
+        self.assertEqual(response.geturl(), get_moth_http('/2'))
+        self.assertEqual(response.code, 404)
+        self.assertIn(self.PAGE_NOT_FOUND, response.read())
