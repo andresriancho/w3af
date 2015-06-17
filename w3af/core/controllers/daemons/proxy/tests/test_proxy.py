@@ -46,8 +46,8 @@ class TestProxy(unittest.TestCase):
         port = self._proxy.get_port()
         
         # Build the proxy opener
-        proxy_handler = urllib2.ProxyHandler({'http': 'http://%s:%s'
-                                              % (self.IP, port)})
+        proxy_url = 'http://%s:%s' % (self.IP, port)
+        proxy_handler = urllib2.ProxyHandler({'http': proxy_url})
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)
 
