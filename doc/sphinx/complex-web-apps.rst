@@ -17,6 +17,11 @@ plugins.
     or any other browser side technology is present. The only requirement is for
     the user to manually browse the site using ``spider_man`` as HTTP proxy.
 
+.. note::
+
+    See :doc:`ca-config` for details about how to configure ``w3af``'s
+    certificate authority (CA) in your browser.
+
 Spiderman example
 -----------------
 

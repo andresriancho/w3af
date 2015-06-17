@@ -220,6 +220,12 @@ the proxy is activated or not, a Trap Request button that will determine if the
 proxy is letting the request pass through without the procedure explained above,
 and a Configuration button (see chapter 7.4 for help about this configuration).
 
+.. note::
+
+    See :doc:`/ca-config` for details about how to configure ``w3af``'s
+    certificate authority (CA) in your browser.
+
+
 Wizards
 -------
 
