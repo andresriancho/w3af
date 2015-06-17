@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import itertools
 import re
+import itertools
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -125,14 +125,11 @@ class web_spider(CrawlPlugin):
             # Failed to find a suitable parser for the document
             return
 
-        same_domain = lambda f: f.get_action().get_domain() == \
-                                resp.get_url().get_domain()
-
         # Create one FuzzableRequest for each form variant
         mode = cf.cf.get('form_fuzzing_mode')
         for form_params in dp.get_forms():
 
-            if not same_domain(form_params):
+            if not self._should_analyze_url(form_params.get_action()):
                 continue
 
             headers = fuzzable_req.get_headers()
@@ -233,6 +230,27 @@ class web_spider(CrawlPlugin):
                 possibly_broken = resp_is_404 or (ref in only_re_refs)
                 yield ref, fuzzable_req, resp, possibly_broken
 
+    def _should_analyze_url(self, ref):
+        """
+        :param ref: A URL instance to match against the user configured filters
+        :return: True if we should navigate to this URL
+        """
+        # I don't want w3af sending requests to 3rd parties!
+        if ref.get_domain() != self._target_domain:
+            return False
+
+        # Filter the URL according to the configured regular expressions
+        urlstr = ref.url_string
+        if not self._compiled_follow_re.match(urlstr) or \
+        self._compiled_ignore_re.match(urlstr):
+            return False
+
+        if self._only_forward:
+            if not self._is_forward(ref):
+                return False
+
+        return True
+
     def _should_verify_extracted_url(self, ref, resp):
         """
         :param ref: A newly found URL
@@ -245,19 +263,8 @@ class web_spider(CrawlPlugin):
         if ref == resp.get_uri():
             return False
 
-        # I don't want w3af sending requests to 3rd parties!
-        if ref.get_domain() != self._target_domain:
+        if not self._should_analyze_url(ref):
             return False
-
-        # Filter the URL's according to the configured regexs
-        urlstr = ref.url_string
-        if not self._compiled_follow_re.match(urlstr) or \
-        self._compiled_ignore_re.match(urlstr):
-            return False
-
-        if self._only_forward:
-            if not self._is_forward(ref):
-                return False
 
         #
         # I tried to have only one VariantDB in the framework instead of two,
