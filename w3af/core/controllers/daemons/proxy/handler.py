@@ -19,20 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import os
 import traceback
 
 from netlib.odict import ODictCaseless
 from libmproxy.controller import Master
-from jinja2 import Environment, FileSystemLoader
 from libmproxy.protocol.http import HTTPResponse as LibMITMProxyHTTPResponse
 
-from w3af import ROOT_PATH
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.misc.encoding import smart_str
+from w3af.core.controllers.daemons.proxy.templates.utils import render
 
 
 class ProxyHandler(Master):
@@ -54,9 +52,10 @@ class ProxyHandler(Master):
     http://mitmproxy.org/doc/
     """
 
-    def __init__(self, server, uri_opener):
+    def __init__(self, server, uri_opener, parent_process):
         Master.__init__(self, server)
         self.uri_opener = uri_opener
+        self.parent_process = parent_process
 
     def _to_w3af_request(self, request):
         """
@@ -154,18 +153,3 @@ class ProxyHandler(Master):
         # Send the response (success|error) to the browser
         http_response = self._to_libmproxy_response(flow.request, http_response)
         flow.reply(http_response)
-
-
-def render(template_name, context):
-    """
-    Render template with context
-
-    :param template_name: string path to template, relative to templates folder
-    :param context: dict with variables
-    :return: compiled template string
-    """
-    path = os.path.join(ROOT_PATH, 'core/controllers/daemons/proxy/templates')
-    env = Environment(loader=FileSystemLoader(path))
-
-    template = env.get_template(template_name)
-    return template.render(context)

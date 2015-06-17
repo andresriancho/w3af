@@ -116,7 +116,7 @@ class Proxy(Process):
             # starts
             self._config.port = self.get_port()
 
-        self._master = handler_klass(self._server, self._uri_opener)
+        self._master = handler_klass(self._server, self._uri_opener, self)
 
     def get_bind_ip(self):
         """

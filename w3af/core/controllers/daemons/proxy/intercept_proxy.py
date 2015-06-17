@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
-import time
 import Queue
 
 from w3af.core.controllers.daemons.proxy import Proxy
@@ -44,13 +43,13 @@ class InterceptProxy(Proxy):
         :param url_opener: The urlOpener that will be used to open the requests
                           that arrive from the browser
         """
-        Proxy.__init__(self, ip, port, url_opener, InterceptProxyHandler,
+        Proxy.__init__(self, ip, port, url_opener,
+                       handler_klass=InterceptProxyHandler,
                        name='LocalProxyThread')
 
         # Internal vars
-        self.request_queue = Queue.Queue()
-        self.edited_requests = {}
-        self.edited_responses = {}
+        self.requests_pending_modification = Queue.Queue()
+        self.requests_already_modified = Queue.Queue()
 
         # User configured parameters
         self.methods_to_trap = set()
@@ -58,8 +57,8 @@ class InterceptProxy(Proxy):
         self.what_not_to_trap = re.compile(self.DEFAULT_NO_TRAP)
         self.trap = False
 
-        # Forward to master
-        self.send_raw_request = self._master.send_raw_request
+        # Forward to handler
+        self.on_request_edit_finished = self._master.on_request_edit_finished
 
     def get_trapped_request(self):
         """
@@ -67,7 +66,7 @@ class InterceptProxy(Proxy):
         :return: A fuzzable request object, or None if the queue is empty.
         """
         try:
-            return self.request_queue.get(block=False)
+            return self.requests_pending_modification.get(block=False)
         except Queue.Empty:
             return None
 
@@ -107,8 +106,8 @@ class InterceptProxy(Proxy):
     def get_trap(self):
         return self.trap
 
-    def drop_request(self, orig_fuzzable_req):
+    def drop_request(self, http_request):
         """
         Let the handler know that the request was dropped.
         """
-        self.edited_requests[id(orig_fuzzable_req)] = (None, None)
+        return self._master.on_request_drop(http_request)

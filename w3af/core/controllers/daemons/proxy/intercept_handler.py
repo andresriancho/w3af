@@ -19,10 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import time
 import traceback
 
 from w3af.core.controllers.daemons.proxy import ProxyHandler
+from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.controllers.daemons.proxy.templates.utils import render
 
 
 class InterceptProxyHandler(ProxyHandler):
@@ -42,7 +45,7 @@ class InterceptProxyHandler(ProxyHandler):
             # Now we check if we need to add this to the queue, or just let
             # it go through.
             if self._should_be_trapped(http_request):
-                http_response = self._do_trap(http_request)
+                http_response = self.on_start_edit_request(http_request)
             else:
                 # Send the request to the remote webserver
                 http_response = self._send_http_request(http_request)
@@ -55,73 +58,61 @@ class InterceptProxyHandler(ProxyHandler):
         http_response = self._to_libmproxy_response(flow.request, http_response)
         flow.reply(http_response)
 
-    def send_raw_request(self, orig_fuzzable_req, head, postdata):
-        # the handler is polling this dict and will extract the information
-        # from it and then send it to the remote web server
-        self.edited_requests[id(orig_fuzzable_req)] = (head, postdata)
-
-        # Loop until I get the data from the remote web server
-        for i in xrange(60):
-            time.sleep(0.1)
-            if id(orig_fuzzable_req) in self.edited_responses:
-                res = self.edited_responses[id(orig_fuzzable_req)]
-                del self.edited_responses[id(orig_fuzzable_req)]
-
-                # Now we return it...
-                if isinstance(res, tuple) and isinstance(res[0], Exception):
-                    exception, value, _traceback = res
-                    raise exception, value, _traceback
-                else:
-                    return res
-
-        # I looped and got nothing!
-        msg = 'Timed out waiting for response from remote server.'
-        raise BaseFrameworkException(msg)
-
-    def _do_trap(self, http_request):
+    def on_request_drop(self, http_request):
         """
-        Wait for the user to modify the request
+        When the UI calls "drop request" we need to modify our queues
+
+        :param http_request: The request to drop
+        :return: None, simply queue a "Request drop HTTP response"
+        """
+        content = render('drop.html', {})
+
+        headers = Headers((
+            ('Connection', 'close'),
+            ('Content-type', 'text/html'),
+        ))
+
+        http_response = HTTPResponse(403,
+                                     content.encode('utf-8'),
+                                     headers,
+                                     http_request.get_uri(),
+                                     http_request.get_uri(),
+                                     msg='Request drop')
+
+        self.parent_process.requests_already_modified.put(http_response)
+
+    def on_request_edit_finished(self, orig_http_request, head, post_data):
+        """
+        This method is called when the user finishes editing the request that
+        will be sent to the wire.
+
+        :param orig_http_request: The original HTTP request
+        :param head: The headers for the modified request
+        :param post_data: The post-data for the modified request
+        :return: The HTTP response
+        """
+        try:
+            http_request = http_request_parser(head, post_data)
+            http_response = self._send_http_request(http_request)
+        except Exception, e:
+            trace = str(traceback.format_exc())
+            http_response = self._create_error_response(orig_http_request,
+                                                        None, e, trace=trace)
+
+        self.parent_process.requests_already_modified.put(http_response)
+
+    def on_start_edit_request(self, http_request):
+        """
+        Wait for the user to modify the request. After editing the request the
+        code should call on_edited_request.
+
         :param http_request: A w3af HTTP request instance
         :return: An HTTP response
         """
-        # Add it to the request queue, and wait for the user to edit the
-        # request...
-        self.server.request_queue.put(http_request)
-        edited_requests = self.server.edited_requests
+        self.parent_process.requests_pending_modification.put(http_request)
+        return self.parent_process.requests_already_modified.get()
 
-        while True:
-
-            if not id(http_request) in edited_requests:
-                time.sleep(0.1)
-                continue
-
-            head, body = edited_requests[id(http_request)]
-            del edited_requests[id(http_request)]
-
-            if head is None and body is None:
-                # The request was dropped by the user. Send 403 and break
-                # TODO: send_error!
-                return self.send_error(http_request,
-                                       'The HTTP request was dropped by the user', 403)
-            else:
-                # The request was edited by the user
-                # Send it to the remote web server and to the proxy user
-                # interface.
-                try:
-                    # TODO: name?
-                    http_request = HTTPRequest.from_raw(head, body)
-                    res = self._send_http_request(http_request)
-                except Exception, e:
-                    # TODO: who handles this?
-                    res = e
-
-                # Save it so the upper layer can read this response.
-                self.server.edited_responses[id(http_request)] = res
-
-                # From here, we send it to the browser
-                return res
-
-    def _should_be_trapped(self, fuzzable_request):
+    def _should_be_trapped(self, http_request):
         """
         Determine, based on the user configured parameters:
             - self.what_to_trap
@@ -130,20 +121,20 @@ class InterceptProxyHandler(ProxyHandler):
             - self.trap
         If the request needs to be trapped or not.
 
-        :param fuzzable_request: The request to analyze.
+        :param http_request: The request to analyze.
         """
-        if not self.server.trap:
+        if not self.parent_process.trap:
             return False
 
-        if (len(self.server.methods_to_trap) and
-        fuzzable_request.get_method() not in self.server.methods_to_trap):
+        if (len(self.parent_process.methods_to_trap) and
+        http_request.get_method() not in self.parent_process.methods_to_trap):
             return False
 
-        url_string = fuzzable_request.get_url().url_string
-        if self.server.what_not_to_trap.search(url_string):
+        url_string = http_request.get_uri().uri2url().url_string
+        if self.parent_process.what_not_to_trap.search(url_string):
             return False
 
-        if not self.server.what_to_trap.search(url_string):
+        if not self.parent_process.what_to_trap.search(url_string):
             return False
 
         return True
