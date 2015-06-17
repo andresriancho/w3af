@@ -77,10 +77,10 @@ class Proxy(Process):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    SSL_CERT = os.path.join(ROOT_PATH, 'core/controllers/daemons/proxy/ca.crt')
+    CA_CERT_DIR = os.path.join(ROOT_PATH, 'core/controllers/daemons/proxy/ca/')
 
     def __init__(self, ip, port, uri_opener, handler_klass=ProxyHandler,
-                 proxy_cert=SSL_CERT, name='ProxyThread'):
+                 ca_certs=CA_CERT_DIR, name='ProxyThread'):
         """
         :param ip: IP address to bind
         :param port: Port to bind
@@ -97,10 +97,10 @@ class Proxy(Process):
         self._server = None
         self._running = False
         self._uri_opener = uri_opener
-        self._proxy_cert = proxy_cert
+        self._ca_certs = ca_certs
 
         # User configured parameters
-        self._config = ProxyConfig(clientcerts=self._proxy_cert)
+        self._config = ProxyConfig(cadir=self._ca_certs)
         self._config.host = ip
         self._config.port = port
 

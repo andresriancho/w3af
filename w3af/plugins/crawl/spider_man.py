@@ -268,7 +268,7 @@ class LoggingHandler(ProxyHandler):
 
 class LoggingProxy(Proxy):
     def __init__(self, ip, port, uri_opener, handler_klass=LoggingHandler,
-                 proxy_cert=Proxy.SSL_CERT, name='LoggingProxyThread',
+                 ca_certs=Proxy.CA_CERT_DIR, name='LoggingProxyThread',
                  target_domain=None, plugin=None):
         """
         Override the parent init so we can save the plugin reference, all the
@@ -276,7 +276,7 @@ class LoggingProxy(Proxy):
         """
         super(LoggingProxy, self).__init__(ip, port, uri_opener,
                                            handler_klass=handler_klass,
-                                           proxy_cert=proxy_cert,
+                                           ca_certs=ca_certs,
                                            name=name)
         self.plugin = plugin
         self.target_domain = target_domain
