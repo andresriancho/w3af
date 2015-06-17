@@ -66,12 +66,10 @@ class ProxyHTTPConnection(_HTTPConnection):
         if proto is None:
             raise ValueError("unknown URL type: %s" % url)
 
-        # get host
-        host, rest = urllib.splithost(rest)
+        # get host and port
+        host_port, rest = urllib.splithost(rest)
+        host, port = urllib.splitport(host_port)
         self._real_host = host
-
-        # try to get port
-        host, port = urllib.splitport(host)
 
         # if port is not defined try to get from proto
         if port is None:
