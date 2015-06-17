@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import traceback
+import threading
 
 from w3af.core.controllers.daemons.proxy import ProxyHandler
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
@@ -38,6 +39,20 @@ class InterceptProxyHandler(ProxyHandler):
         decide if the request needs to be trapped and queue it if needed.
 
         :param flow: A libmproxy flow containing the request
+        """
+        t = threading.Thread(target=self.handle_request_in_thread,
+                             args=(flow,),
+                             name='InterceptProxyRequestHandler')
+        t.daemon = True
+        t.start()
+
+    def handle_request_in_thread(self, flow):
+        """
+        The handle_request method is run in the same thread each time, so we
+        need to run in a thread.
+
+        :param flow: A libmproxy flow containing the request
+        :return: None, we reply to flow
         """
         http_request = self._to_w3af_request(flow.request)
 
