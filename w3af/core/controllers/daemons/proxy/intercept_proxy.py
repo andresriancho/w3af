@@ -58,6 +58,7 @@ class InterceptProxy(Proxy):
         self.trap = False
 
         # Forward to handler
+        # pylint: disable=E1103
         self.on_request_edit_finished = self._master.on_request_edit_finished
 
     def get_trapped_request(self):
@@ -110,4 +111,5 @@ class InterceptProxy(Proxy):
         """
         Let the handler know that the request was dropped.
         """
+        # pylint: disable=E1103
         return self._master.on_request_drop(http_request)
