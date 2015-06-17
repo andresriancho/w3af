@@ -38,10 +38,8 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('OpenSSL', 'pyOpenSSL', '0.15.1'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
-                     # There is a newer pyasn1 release, but we're requiring this
-                     # one to make Kali packaging easier, see:
-                     # https://github.com/andresriancho/w3af/issues/8339
-                     PIPDependency('pyasn1', 'pyasn1', '0.1.3'),
+                     # We need 0.1.7 because of mitmproxy
+                     PIPDependency('pyasn1', 'pyasn1', '0.1.7'),
 
                      PIPDependency('lxml', 'lxml', '3.4.4'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
