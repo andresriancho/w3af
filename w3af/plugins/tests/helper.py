@@ -67,6 +67,7 @@ class PluginTest(unittest.TestCase):
         self.w3afcore = w3afCore()
         
         if self.MOCK_RESPONSES:
+            httpretty.reset()
             httpretty.enable()
             
             try:
