@@ -35,7 +35,7 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      PIPDependency('tblib', 'tblib', '0.2.0'),
                      PIPDependency('pdfminer', 'pdfminer', '20140328'),
                      PIPDependency('concurrent.futures', 'futures', '2.1.5'),
-                     PIPDependency('OpenSSL', 'pyOpenSSL', '0.13.1'),
+                     PIPDependency('OpenSSL', 'pyOpenSSL', '0.15.1'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
                      # There is a newer pyasn1 release, but we're requiring this
