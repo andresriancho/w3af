@@ -84,7 +84,7 @@ class SQLiteDBMS(object):
     
     [0] http://www.python.org/dev/peps/pep-3148/
     """
-    def __init__(self, filename, autocommit=False, journal_mode="OFF",
+    def __init__(self, filename, autocommit=False, journal_mode='DELETE',
                  cache_size=2000):
 
         super(SQLiteDBMS, self).__init__()
@@ -263,7 +263,7 @@ class SQLiteExecutor(Process):
         self._in_queue.put(request)
         return future
     
-    def setup(self, filename, autocommit=False, journal_mode="OFF",
+    def setup(self, filename, autocommit=False, journal_mode='OFF',
               cache_size=2000):
         """
         Request the process to perform a setup.
@@ -278,7 +278,7 @@ class SQLiteExecutor(Process):
         self._in_queue.put(request)
         return future
     
-    def _setup_handler(self, filename, autocommit=False, journal_mode="OFF",
+    def _setup_handler(self, filename, autocommit=False, journal_mode='DELETE',
                        cache_size=2000):
         # Convert the filename to UTF-8, this is needed for windows, and special
         # characters, see:
