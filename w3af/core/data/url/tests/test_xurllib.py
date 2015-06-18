@@ -42,7 +42,7 @@ from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import DEFAULT_WAIT_TIME
 from w3af.core.controllers.misc.get_unused_port import get_unused_port
-from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
                                               HTTPRequestException,
@@ -69,6 +69,15 @@ class TestXUrllib(unittest.TestCase):
         
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
         
+        self.assertGreaterEqual(http_response.id, 1)
+        self.assertNotEqual(http_response.id, None)
+
+    def test_basic_ssl(self):
+        url = URL(get_moth_https())
+        http_response = self.uri_opener.GET(url, cache=False)
+
+        self.assertIn(self.MOTH_MESSAGE, http_response.body)
+
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 

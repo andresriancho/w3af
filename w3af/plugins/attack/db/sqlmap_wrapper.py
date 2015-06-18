@@ -40,7 +40,8 @@ class SQLMapWrapper(object):
                     'sqlmap.py',
                     '--output-dir=%s' % OUTPUT_DIR]
 
-    SQLMAP_LOCATION = os.path.join(ROOT_PATH, 'plugins', 'attack', 'db', 'sqlmap') 
+    SQLMAP_LOCATION = os.path.join(ROOT_PATH,
+                                   'plugins', 'attack', 'db', 'sqlmap')
     VULN_STR = 'sqlmap identified the following injection points'
     NOT_VULN_STR = 'all tested parameters appear to be not injectable'
 

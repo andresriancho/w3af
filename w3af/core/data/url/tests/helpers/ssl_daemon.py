@@ -66,6 +66,9 @@ class SSLServer(threading.Thread):
     def __init__(self, listen, port, certfile, proto=ssl.PROTOCOL_TLSv1,
                  http_response=HTTP_RESPONSE):
         threading.Thread.__init__(self)
+        self.daemon = True
+        self.name = 'SSLServer'
+        
         self.listen = listen
         self.port = port
         self.cert = certfile

@@ -87,7 +87,7 @@ class ReqResViewer(gtk.VBox):
         if layout == 'Tabbed':
             self._initTabbedLayout()
         else:
-            self._initSplittedLayout()
+            self._initSplitLayout()
         # Init req toolbox
         self._initToolBox(withManual, withFuzzy, withCompare, withAudit)
         self.show()
@@ -98,16 +98,18 @@ class ReqResViewer(gtk.VBox):
         nb.show()
         self.nb = nb
         self.pack_start(nb, True, True)
-        nb.append_page(self.request, gtk.Label(_("Request")))
-        nb.append_page(self.response, gtk.Label(_("Response")))
+        nb.append_page(self.request, gtk.Label(_('Request')))
+        nb.append_page(self.response, gtk.Label(_('Response')))
         # Info
         self.info = HttpEditor(self.w3af)
         self.info.set_editable(False)
         #self.info.show()
         nb.append_page(self.info, gtk.Label(_("Info")))
 
-    def _initSplittedLayout(self):
-        """Init Splitted layout. It's more convenient for intercept."""
+    def _initSplitLayout(self):
+        """
+        Init Split layout. It's more convenient for intercept
+        """
         self._vpaned = RememberingVPaned(self.w3af, 'trap_view')
         self._vpaned.show()
         self.pack_start(self._vpaned, True, True)

@@ -106,7 +106,7 @@ class EncodeDecode(entries.RememberingWindow):
             w3af, "encodedecode", _("w3af - Encode / Decode"),
             "Encode_and_Decode")
         self.w3af = w3af
-        # Splitted panes
+        # Split panes
         vpan = entries.RememberingVPaned(w3af, "pane-encodedecode")
         # Upper pane
         vbox = gtk.VBox()

@@ -64,14 +64,12 @@ class ProxyHTTPConnection(_HTTPConnection):
         # real host/port to be used to make CONNECT request to proxy
         proto, rest = urllib.splittype(url)
         if proto is None:
-            raise ValueError("unknown URL type: %s" % url)
+            raise ValueError('Unknown URL type: %s' % url)
 
-        # get host
-        host, rest = urllib.splithost(rest)
+        # get host and port
+        host_port, rest = urllib.splithost(rest)
+        host, port = urllib.splitport(host_port)
         self._real_host = host
-
-        # try to get port
-        host, port = urllib.splitport(host)
 
         # if port is not defined try to get from proto
         if port is None:
@@ -87,13 +85,12 @@ class ProxyHTTPConnection(_HTTPConnection):
 
         #send proxy CONNECT request
         new_line = '\r\n'
-        self.send("CONNECT %s:%d HTTP/1.1%s" % (self._real_host,
-                                                self._real_port,
-                                                new_line))
+        host_port = '%s:%d' % (self._real_host, self._real_port)
+        self.send("CONNECT %s HTTP/1.1%s" % (host_port, new_line))
 
         connect_headers = {'Proxy-Connection': 'keep-alive',
                            'Connection': 'keep-alive',
-                           'Host': self._real_host}
+                           'Host': host_port}
 
         for header_name, header_value in connect_headers.items():
             self.send('%s: %s%s' % (header_name, header_value, new_line))

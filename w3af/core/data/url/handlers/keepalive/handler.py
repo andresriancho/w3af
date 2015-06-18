@@ -342,8 +342,8 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         try:
             host, port = self._proxy.split(':')
         except:
-            msg = 'The proxy you are specifying (%s) is invalid! The expected'\
-                  ' format is <ip_address>:<port> is expected.'
+            msg = ('The proxy you are specifying (%s) is invalid! The expected'
+                   ' format is <ip_address>:<port> is expected.')
             raise BaseFrameworkException(msg % proxy)
         else:
             if not host or not port:
@@ -353,7 +353,8 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         return self.do_open(req)
 
     def get_connection(self, request):
-        if self._proxy:
+        use_proxy = getattr(request, 'use_proxy', False)
+        if self._proxy and use_proxy:
             proxy_host, proxy_port = self._proxy.split(':')
             return ProxyHTTPSConnection(proxy_host,
                                         proxy_port,

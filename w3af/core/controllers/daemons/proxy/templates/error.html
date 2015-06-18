@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{%  block title %}Proxy error{% endblock %}
+
+{% block content %}
+    <h1>Proxy error</h1>
+    
+    {% if exception_message %}
+    	<div>{{ exception_message }}</div>
+    	<br/>
+    {% endif %}
+
+    {% if http_request %}
+        <h3>HTTP request</h3>
+    	<div><pre>{{ http_request }}</pre></div>
+    	<br/>
+    {% endif %}
+
+    {% if traceback %}
+        <h3>Traceback</h3>
+    	<div><pre>{{ traceback }}</pre></div>
+    	<br/>
+    {% endif %}
+
+{%  endblock %}

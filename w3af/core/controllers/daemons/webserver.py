@@ -19,13 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import BaseHTTPServer
-import mimetypes
 import os
-import socket
-import threading
-import select
 import time
+import socket
+import select
+import threading
+import mimetypes
+import BaseHTTPServer
 
 import w3af.core.controllers.output_manager as om
 
@@ -51,7 +51,7 @@ def _get_inst(ip, port):
     return _servers.get((ip, port), None)
 
 
-class w3afHTTPServer(BaseHTTPServer.HTTPServer):
+class HTTPServer(BaseHTTPServer.HTTPServer):
     """
     Most of the behavior added here is included in
     """
@@ -117,7 +117,7 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
             time.sleep(0.5)
 
 
-class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):
 
@@ -164,7 +164,7 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         om.out.debug(message)
 
 
-def start_webserver(ip, port, webroot, handler=w3afWebHandler):
+def start_webserver(ip, port, webroot, handler=WebHandler):
     """Create a http server daemon. The returned instance is unique for <ip>
     and <port>.
 
@@ -176,7 +176,7 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
     server_thread = _get_inst(ip, port)
 
     if server_thread is None or server_thread.is_down():
-        web_server = w3afHTTPServer((ip, port), webroot, handler)
+        web_server = HTTPServer((ip, port), webroot, handler)
         _servers[(ip, port)] = web_server
 
         # Start server!
@@ -188,14 +188,14 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
     return server_thread
 
 
-def start_webserver_any_free_port(ip, webroot, handler=w3afWebHandler):
+def start_webserver_any_free_port(ip, webroot, handler=WebHandler):
     """Create a http server daemon in any free port available.
 
     :param ip: IP address where to bind
     :param webroot: web server's root directory
     :return: A local webserver instance and the port where it's listening
     """
-    web_server = w3afHTTPServer((ip, 0), webroot, handler)
+    web_server = HTTPServer((ip, 0), webroot, handler)
 
     # Start server!
     server_thread = threading.Thread(target=web_server.serve_forever)

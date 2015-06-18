@@ -23,7 +23,6 @@ import urllib2
 import unittest
 import httpretty
 
-
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator

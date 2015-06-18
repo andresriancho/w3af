@@ -26,8 +26,9 @@ from w3af.core.ui.gui import helpers, entries, httpLogTab
 from w3af.core.ui.gui.reqResViewer import ReqResViewer
 from w3af.core.ui.gui.entries import ConfigOptions, StatusBar
 
-from w3af.core.controllers.exceptions import BaseFrameworkException, ProxyException
-from w3af.core.controllers.daemons.localproxy import LocalProxy
+from w3af.core.controllers.daemons.proxy import InterceptProxy
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              ProxyException)
 
 from w3af.core.data.options import option_types 
 from w3af.core.data.options.opt_factory import opt_factory
@@ -184,22 +185,15 @@ class ProxiedRequests(entries.RememberingWindow):
         h = _('Comma separated list of HTTP methods to intercept')
         o = opt_factory('methodtrap', "GET,POST", d, option_types.LIST, help=h)
         proxy_options.add(o)
-        
-        
+
         d = _("Ignored extensions")
         h = _('Filename extensions that will NOT be intercepted')
         default_value = ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$"
-        o = opt_factory("notrap", default_value, d, option_types.REGEX)
+        o = opt_factory("notrap", default_value, d, option_types.REGEX, help=h)
         proxy_options.add(o)
-        
-        d = _("Fix content length")
-        h = _('Indicates if the content length header value should be fixed'
-              ' to respect HTTP\'s RFC or not.')
-        o = opt_factory("fixlength", True, d, option_types.BOOL, help=h)
-        proxy_options.add(o)
-        
+
         d = _("View mode for intercept tab")
-        views = ['Splitted', 'Tabbed']
+        views = ('Split', 'Tabbed')
         o = opt_factory("trap_view", views, d, option_types.COMBO)
         proxy_options.add(o)
         
@@ -277,10 +271,7 @@ class ProxiedRequests(entries.RememberingWindow):
         try:
             self.proxy.set_what_to_trap(self.pref.get_value('proxy', 'trap'))
             self.proxy.set_what_not_to_trap(self.pref.get_value('proxy', 'notrap'))
-            self.proxy.set_methods_to_trap(
-                self.pref.get_value('proxy', 'methodtrap'))
-            self.proxy.set_fix_content_length(
-                self.pref.get_value('proxy', 'fixlength'))
+            self.proxy.set_methods_to_trap(self.pref.get_value('proxy', 'methodtrap'))
         except BaseFrameworkException, w3:
             self.show_alert(_("Invalid configuration!\n" + str(w3)))
 
@@ -296,12 +287,12 @@ class ProxiedRequests(entries.RememberingWindow):
         self.pref.save()
 
         if self._layout != self.pref.get_value('proxy', 'trap_view'):
-            self.show_alert(_("Some of options will take effect after you"
-                              " restart proxy tool"))
+            self.show_alert(_('Some of options will take effect after you'
+                              ' restart proxy tool'))
 
     def show_alert(self, msg):
-        dlg = gtk.MessageDialog(
-            None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                                gtk.BUTTONS_OK, msg)
         dlg.run()
         dlg.destroy()
 
@@ -314,7 +305,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.w3af.mainwin.sb(_("Starting local proxy"))
         
         try:
-            self.proxy = LocalProxy(ip, int(port))
+            self.proxy = InterceptProxy(ip, int(port), self.w3af.uri_opener)
         except ProxyException, w3:
             if not silent:
                 self.show_alert(_(str(w3)))
@@ -323,7 +314,7 @@ class ProxiedRequests(entries.RememberingWindow):
             self.proxy.start()
 
     def _supervise_requests(self, *args):
-        """Supervise if there're requests to show.
+        """Supervise if there are requests to show.
 
         :return: True to gobject to keep calling it, False when all is done.
         """
@@ -352,7 +343,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def _send(self, widg):
         """Sends the request through the proxy.
 
-        :param widget: who sent the signal.
+        :param widg: who sent the signal.
         """
         request = self.reqresp.request.get_object()
         # if nothing to send
@@ -365,7 +356,7 @@ class ProxiedRequests(entries.RememberingWindow):
         if data:
             data = str(data)
         try:
-            http_resp = helpers.coreWrap(self.proxy.send_raw_request,
+            http_resp = helpers.coreWrap(self.proxy.on_request_edit_finished,
                                          self.fuzzable, headers, data)
         except BaseFrameworkException:
             return
@@ -380,7 +371,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def _next(self, widg):
         """Moves to the next request.
 
-        :param widget: who sent the signal.
+        :param widg: who sent the signal.
         """
         resp = self.reqresp.response.get_object()
         # If there is request to send, let's send it first
@@ -397,12 +388,12 @@ class ProxiedRequests(entries.RememberingWindow):
     def _close(self):
         """Closes everything."""
         self.keep_checking = False
-        msg = _("Do you want to quit and close the proxy?")
+        msg = _('Do you want to quit and close the proxy?')
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                 gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
-        if  opt != gtk.RESPONSE_YES:
+        if opt != gtk.RESPONSE_YES:
             return False
         
         if self.proxy:

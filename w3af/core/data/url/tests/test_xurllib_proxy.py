@@ -22,17 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 
 from w3af.core.data.url.opener_settings import OpenerSettings
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
-from w3af.core.controllers.daemons.proxy import Proxy, w3afProxyHandler
-
-TODO_183 = ('Skip this test because of a strange bug with the extended'
-            ' url library and w3af\'s local proxy daemon. More info here:'
-            ' https://github.com/andresriancho/w3af/issues/183')
+from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 
 
 @attr('moth')
@@ -45,7 +40,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.uri_opener = ExtendedUrllib()
         
         # Start the proxy daemon
-        self._proxy = Proxy('127.0.0.1', 0, ExtendedUrllib(), w3afProxyHandler)
+        self._proxy = Proxy('127.0.0.2', 0, ExtendedUrllib(), ProxyHandler)
         self._proxy.start()
         self._proxy.wait_for_start()
         
@@ -57,7 +52,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         proxy_address_opt = options['proxy_address']
         proxy_port_opt = options['proxy_port']
         
-        proxy_address_opt.set_value('127.0.0.1') 
+        proxy_address_opt.set_value('127.0.0.2')
         proxy_port_opt.set_value(port)
         
         settings.set_options(options)
@@ -67,26 +62,32 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.uri_opener.end()
         
     def test_http_default_port_via_proxy(self):
-        url = URL(get_moth_http())
-        http_response = self.uri_opener.GET(url, cache=False)
-        self.assertIn(self.MOTH_MESSAGE, http_response.body)
+        # TODO: Write this test
+        pass
 
     def test_http_port_specification_via_proxy(self):
+        self.assertEqual(self._proxy.total_handled_requests, 0)
+
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
+
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
+        self.assertEqual(self._proxy.total_handled_requests, 1)
 
     def test_https_via_proxy(self):
-        raise SkipTest(TODO_183)
-    
+        self.assertEqual(self._proxy.total_handled_requests, 0)
+
         url = URL(get_moth_https())
         http_response = self.uri_opener.GET(url, cache=False)
+
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
+        self.assertEqual(self._proxy.total_handled_requests, 1)
 
     def test_offline_port_via_proxy(self):
         url = URL('http://127.0.0.1:8181/')
         http_response = self.uri_opener.GET(url, cache=False)
-        self.assertEqual(http_response.get_code(), 400)
+        self.assertEqual(http_response.get_code(), 500)
+        self.assertIn('Connection refused', http_response.body)
     
     def test_POST_via_proxy(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))

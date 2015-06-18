@@ -233,9 +233,11 @@ class HTTPResponse(object):
         return string_to_test in self.body
     
     def __eq__(self, other):
-        return self.id == other.id and self._code == other._code and \
-               self.headers == other.headers and self.body == other.body and \
-               self._uri == other._uri
+        return (self.id == other.id and
+                self._code == other._code and
+                self.headers == other.headers and
+                self.body == other.body and
+                self._uri == other._uri)
 
     def __repr__(self):
         vals = {
@@ -527,9 +529,9 @@ class HTTPResponse(object):
             charset = DEFAULT_CHARSET
 
             if len(_body):
-                msg = "The remote web server failed to send the CONTENT_TYPE"\
-                      " header in HTTP response with id %s" % self.id
-                om.out.debug(msg)
+                msg = ('The remote web server failed to send the CONTENT_TYPE'
+                       ' header in HTTP response with id %s')
+                om.out.debug(msg % self.id)
 
         elif not self.is_text_or_html():
             # Not text, save as it is.
