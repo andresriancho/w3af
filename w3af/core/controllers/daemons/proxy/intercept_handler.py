@@ -33,19 +33,6 @@ class InterceptProxyHandler(ProxyHandler):
     """
     The handler that traps requests and adds them to the queue.
     """
-    def handle_request(self, flow):
-        """
-        This method handles EVERY request that was send by the browser, we
-        decide if the request needs to be trapped and queue it if needed.
-
-        :param flow: A libmproxy flow containing the request
-        """
-        t = threading.Thread(target=self.handle_request_in_thread,
-                             args=(flow,),
-                             name='InterceptProxyRequestHandler')
-        t.daemon = True
-        t.start()
-
     def handle_request_in_thread(self, flow):
         """
         The handle_request method is run in the same thread each time, so we

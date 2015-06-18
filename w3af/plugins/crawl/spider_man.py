@@ -157,7 +157,7 @@ class spider_man(CrawlPlugin):
 
 class LoggingHandler(ProxyHandler):
 
-    def handle_request(self, flow):
+    def handle_request_in_thread(self, flow):
         """
         This method handles EVERY request that was send by the browser, we
         receive the request and:

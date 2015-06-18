@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import threading
 import traceback
 
 from netlib.odict import ODictCaseless
@@ -139,6 +140,19 @@ class ProxyHandler(Master):
         return http_response
 
     def handle_request(self, flow):
+        """
+        This method handles EVERY request that was send by the browser, we
+        decide if the request needs to be trapped and queue it if needed.
+
+        :param flow: A libmproxy flow containing the request
+        """
+        t = threading.Thread(target=self.handle_request_in_thread,
+                             args=(flow,),
+                             name='ThreadProxyRequestHandler')
+        t.daemon = True
+        t.start()
+
+    def handle_request_in_thread(self, flow):
         """
         This method handles EVERY request that was send by the browser, since
         this is just a base/example implementation we just:
