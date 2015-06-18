@@ -107,7 +107,7 @@ class ProxyHandler(Master):
         return http_method(http_request.get_uri(),
                            data=http_request.get_data(),
                            headers=http_request.get_headers(),
-                           grep=grep)
+                           grep=grep, use_proxy=False)
 
     def _create_error_response(self, request, response, exception, trace=None):
         """
@@ -146,6 +146,8 @@ class ProxyHandler(Master):
 
         :param flow: A libmproxy flow containing the request
         """
+        self.parent_process.total_handled_requests += 1
+
         t = threading.Thread(target=self.handle_request_in_thread,
                              args=(flow,),
                              name='ThreadProxyRequestHandler')

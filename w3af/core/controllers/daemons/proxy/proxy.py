@@ -99,6 +99,9 @@ class Proxy(Process):
         self._uri_opener = uri_opener
         self._ca_certs = ca_certs
 
+        # Stats
+        self.total_handled_requests = 0
+
         # User configured parameters
         self._config = ProxyConfig(cadir=self._ca_certs,
                                    ssl_version_client='all',

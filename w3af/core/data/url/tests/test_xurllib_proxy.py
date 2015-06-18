@@ -62,19 +62,26 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.uri_opener.end()
         
     def test_http_default_port_via_proxy(self):
-        url = URL(get_moth_http())
-        http_response = self.uri_opener.GET(url, cache=False)
-        self.assertIn(self.MOTH_MESSAGE, http_response.body)
+        # TODO: Write this test
+        pass
 
     def test_http_port_specification_via_proxy(self):
+        self.assertEqual(self._proxy.total_handled_requests, 0)
+
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
+
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
+        self.assertEqual(self._proxy.total_handled_requests, 1)
 
     def test_https_via_proxy(self):
+        self.assertEqual(self._proxy.total_handled_requests, 0)
+
         url = URL(get_moth_https())
         http_response = self.uri_opener.GET(url, cache=False)
+
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
+        self.assertEqual(self._proxy.total_handled_requests, 1)
 
     def test_offline_port_via_proxy(self):
         url = URL('http://127.0.0.1:8181/')
