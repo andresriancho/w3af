@@ -107,7 +107,15 @@ class ProxyHandler(Master):
         return http_method(http_request.get_uri(),
                            data=http_request.get_data(),
                            headers=http_request.get_headers(),
-                           grep=grep, use_proxy=False)
+                           grep=grep,
+                           # This is an important one, which needs to be
+                           # properly documented. What happens here is that
+                           # libmproxy receives a request from xurllib
+                           # configured to send requests via proxy, and then
+                           # another xurllib with the same proxy config tries
+                           # to forward the request. Since it has a proxy config
+                           # it will enter a "proxy request routing loop"
+                           use_proxy=False)
 
     def _create_error_response(self, request, response, exception, trace=None):
         """
