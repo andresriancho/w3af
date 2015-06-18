@@ -40,7 +40,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.uri_opener = ExtendedUrllib()
         
         # Start the proxy daemon
-        self._proxy = Proxy('127.0.0.1', 0, ExtendedUrllib(), ProxyHandler)
+        self._proxy = Proxy('127.0.0.2', 0, ExtendedUrllib(), ProxyHandler)
         self._proxy.start()
         self._proxy.wait_for_start()
         
@@ -52,7 +52,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         proxy_address_opt = options['proxy_address']
         proxy_port_opt = options['proxy_port']
         
-        proxy_address_opt.set_value('127.0.0.1') 
+        proxy_address_opt.set_value('127.0.0.2')
         proxy_port_opt.set_value(port)
         
         settings.set_options(options)
