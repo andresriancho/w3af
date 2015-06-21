@@ -50,7 +50,8 @@ class SQLMapWrapper(object):
                      'it is not recommended to continue in this kind of cases',
                      'unable to connect to the target url or proxy',
                      "[INFO] skipping '",
-                     '[CRITICAL] unable to retrieve page content')
+                     '[CRITICAL] unable to retrieve page content',
+                     'establish SSL connection')
     
     def __init__(self, target, uri_opener, coloring=False, debug=False):
         if not isinstance(target, Target):
