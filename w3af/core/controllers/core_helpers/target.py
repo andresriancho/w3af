@@ -162,8 +162,8 @@ class w3af_core_target(Configurable):
         domain_list = list(set(domain_list))
         
         if len(domain_list) > 1:
-            msg = 'You specified more than one target domain: %s.'\
-                  ' And w3af can only scan one target domain at a time.'
+            msg = ('You specified more than one target domain: %s.'
+                   ' And w3af can only scan one target domain at a time.')
             raise BaseFrameworkException(msg % ', '.join(domain_list))
 
         # Save in the config, the target URLs, this may be useful for some
