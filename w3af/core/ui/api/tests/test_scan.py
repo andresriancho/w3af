@@ -38,9 +38,10 @@ class APIScanTest(APIUnitTest):
                                  data=json.dumps(data),
                                  headers=self.headers)
 
+        scan_id = response.json()['id']
         self.assertEqual(response.json(), {u'message': u'Success',
-                                           u'href': u'/scans/0',
-                                           u'id': 0})
+                                           u'href': u'/scans/%s' % scan_id,
+                                           u'id': scan_id})
         self.assertEqual(response.status_code, 201)
 
         #
@@ -49,8 +50,8 @@ class APIScanTest(APIUnitTest):
         response = self.wait_until_running()
 
         self.assertEqual(response.status_code, 200, response.text)
-        list_response = {u'items': [{u'href': u'/scans/0',
-                                     u'id': 0,
+        list_response = {u'items': [{u'href': u'/scans/%s' % scan_id,
+                                     u'id': scan_id,
                                      u'status': u'Running',
                                      u'errors': False,
                                      u'target_urls': [target_url]}]}
@@ -59,7 +60,7 @@ class APIScanTest(APIUnitTest):
         #
         # Get the detailed status
         #
-        response = requests.get('%s/scans/0/status' % self.api_url)
+        response = requests.get('%s/scans/%s/status' % (self.api_url, scan_id))
         self.assertEqual(response.status_code, 200, response.text)
 
         json_data = response.json()
@@ -102,7 +103,7 @@ class APIScanTest(APIUnitTest):
         #
         # Get the scan log
         #
-        response = requests.get('%s/scans/0/log' % self.api_url)
+        response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id))
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data = response.json()
@@ -119,8 +120,10 @@ class APIScanTest(APIUnitTest):
         #
         # Clear the scan results
         #
-        response = requests.delete('%s/scans/0' % self.api_url)
+        response = requests.delete('%s/scans/%s' % (self.api_url, scan_id))
         self.assertEqual(response.json(), {u'message': u'Success'})
+
+        return scan_id
 
     def test_stop(self):
         profile, target_url = get_test_profile()
@@ -159,3 +162,10 @@ class APIScanTest(APIUnitTest):
                 break
         else:
             self.assertTrue(False, 'Stop not found in log')
+
+    def test_two_scans(self):
+        scan_id_0 = self.test_start_simple_scan()
+        scan_id_1 = self.test_start_simple_scan()
+
+        self.assertEqual(scan_id_0, 0)
+        self.assertEqual(scan_id_1, 1)
