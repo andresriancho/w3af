@@ -40,13 +40,22 @@ class APIUnitTest(unittest.TestCase):
         self.headers = {'Content-type': 'application/json',
                         'Accept': 'application/json'}
 
+        # Clear the crashes before we start
+        tempdir = tempfile.gettempdir()
+
+        for _file in os.listdir(tempdir):
+            if fnmatch.fnmatch(_file, 'w3af-crash*.txt'):
+                os.unlink(os.path.join(tempdir, _file))
+
     def tearDown(self):
         os.killpg(self.process.pid, signal.SIGTERM)
 
-        for _file in os.listdir(tempfile.gettempdir()):
+        tempdir = tempfile.gettempdir()
+
+        for _file in os.listdir(tempdir):
             if fnmatch.fnmatch(_file, 'w3af-crash*.txt'):
                 msg = 'Found w3af crash file from REST API!\n\n'
-                msg += file(_file).read()
+                msg += file(os.path.join(tempdir, _file)).read()
                 self.assertTrue(False, msg)
 
     def wait_until_running(self):
