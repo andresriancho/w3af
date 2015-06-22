@@ -19,6 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from os.path import join
+from uuid import uuid4
+from tempfile import tempdir
+
 from w3af.core.ui.api.db.master import SCANS, ScanInfo
 from w3af.core.controllers.w3afCore import w3afCore
 
@@ -38,7 +42,10 @@ def create_temp_profile(scan_profile):
     :param scan_profile: The contents of a profile configuration
     :return: The scan profile file name and the directory where it was created
     """
-    raise NotImplementedError
+    scan_profile_file = join(tempdir, '%s.pw3af' % uuid4())
+    file(scan_profile_file, 'w').write(scan_profile)
+
+    return scan_profile_file, tempdir
 
 
 def start_scan_helper(target_urls, scan_profile):

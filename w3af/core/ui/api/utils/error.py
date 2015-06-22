@@ -19,7 +19,24 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from flask import jsonify
+import json
+from werkzeug.exceptions import HTTPException
+
+
+class JSONHTTPException(HTTPException):
+    def __init__(self, description=None, code=None):
+        Exception.__init__(self)
+        self.description = description
+        self.code = code
+
+    def get_body(self, environ=None):
+        """Get the JSON body"""
+        return json.dumps({'error': self.description,
+                           'code': self.code})
+
+    def get_headers(self, environ=None):
+        """Get a list of headers."""
+        return [('Content-Type', 'application/json')]
 
 
 def abort(code, message):
@@ -30,6 +47,4 @@ def abort(code, message):
     :param message: A message to show to the user
     :return: None, an exception is raised
     """
-    data = {'error': message,
-            'code': code}
-    raise NotImplementedError
+    raise JSONHTTPException(message, code)
