@@ -54,16 +54,18 @@ def start_api():
     api_url = 'http://127.0.0.1:%s' % port
 
     # Now we wait until the API is ready to answer requests
-    for _ in xrange(20):
+    for i in xrange(50):
         time.sleep(0.5)
+
         try:
             response = requests.get(api_url)
         except:
-            continue
+            if process.pid is None and i > 25:
+                raise RuntimeError('Failed to start the REST API service')
         else:
             if response.status_code in (200, 404):
                 break
     else:
-        raise RuntimeError('Failed to start the REST API service')
+        raise RuntimeError('Timed out waiting for REST API service start')
 
     return process, port, api_url
