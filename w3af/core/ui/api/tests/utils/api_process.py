@@ -24,6 +24,7 @@ import requests
 import time
 import os
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.misc.get_unused_port import get_unused_port
 
 
@@ -38,7 +39,10 @@ def start_api():
     port = get_unused_port()
     dev_null = open(os.devnull, 'w')
 
-    process = subprocess.Popen('python w3af_api 127.0.0.1:%s' % port,
+    w3af_api_path = os.path.abspath(os.path.join(ROOT_PATH, '..'))
+    args = (w3af_api_path, port)
+
+    process = subprocess.Popen('python %s/w3af_api 127.0.0.1:%s' % args,
                                shell=True,
                                stdout=dev_null,
                                stderr=subprocess.STDOUT,
