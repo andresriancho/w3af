@@ -1007,6 +1007,14 @@ def sanitizeStr(value):
 
     return getUnicode(value).replace("\n", " ").replace("\r", "")
 
+def getHeader(headers, key):
+    retVal = None
+    for _ in (headers or {}):
+        if _.upper() == key.upper():
+            retVal = headers[_]
+            break
+    return retVal
+
 def checkFile(filename):
     """
     Checks for file existence and readability
@@ -1248,7 +1256,8 @@ def parseTargetUrl():
         errMsg += "on this platform"
         raise SqlmapGenericException(errMsg)
 
-    if not re.search("^http[s]*://", conf.url, re.I):
+    if not re.search("^http[s]*://", conf.url, re.I) and \
+            not re.search("^ws[s]*://", conf.url, re.I):
         if ":443/" in conf.url:
             conf.url = "https://" + conf.url
         else:

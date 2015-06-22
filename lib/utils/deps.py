@@ -72,11 +72,22 @@ def checkDependencies():
         debugMsg = "'python-ntlm' third-party library is found"
         logger.debug(debugMsg)
     except ImportError:
-        warnMsg = "sqlmap requires 'python-ntlm' third-party library for "
+        warnMsg = "sqlmap requires 'python-ntlm' third-party library "
         warnMsg += "if you plan to attack a web application behind NTLM "
         warnMsg += "authentication. Download from http://code.google.com/p/python-ntlm/"
         logger.warn(warnMsg)
         missing_libraries.add('python-ntlm')
+
+    try:
+        from websocket import ABNF
+        debugMsg = "'python websocket-client' library is found"
+        logger.debug(debugMsg)
+    except ImportError:
+        warnMsg = "sqlmap requires 'websocket-client' third-party library "
+        warnMsg += "if you plan to attack a web application using WebSocket. "
+        warnMsg += "Download from https://pypi.python.org/pypi/websocket-client/"
+        logger.warn(warnMsg)
+        missing_libraries.add('websocket-client')
 
     if IS_WIN:
         try:
