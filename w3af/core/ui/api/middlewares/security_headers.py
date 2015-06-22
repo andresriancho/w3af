@@ -35,5 +35,5 @@ def add_security_headers(response):
     if 'application/json' in response.content_type:
         # Add the charset
         response.content_type = 'application/json; charset=UTF-8'
-        
+
     return response

@@ -24,8 +24,10 @@ import unittest
 
 from mock import Mock
 
-from w3af.core.controllers.core_helpers.status import w3af_core_status
 from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.core_helpers.status import (w3af_core_status,
+                                                       STOPPED, RUNNING,
+                                                       PAUSED)
 
 
 class TestStatus(unittest.TestCase):
@@ -33,7 +35,7 @@ class TestStatus(unittest.TestCase):
     def test_simple(self):
         s = w3af_core_status(Mock())
         
-        self.assertEqual(s.get_status(), 'Stopped.')
+        self.assertEqual(s.get_status(), STOPPED)
         
         self.assertFalse(s.is_running())
         s.start()
@@ -46,7 +48,7 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(s.get_status(), expected)
         
         s.pause(True)
-        self.assertEqual(s.get_status(), 'Paused.')
+        self.assertEqual(s.get_status(), PAUSED)
         
         s.pause(False)
         expected = 'Crawling unittest_fr using crawl.unittest_plugin'
@@ -60,7 +62,7 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(s.get_status(), expected)
         
         s.stop()
-        self.assertEqual(s.get_status(), 'Stopped.')
+        self.assertEqual(s.get_status(), STOPPED)
         self.assertFalse(s.is_running())
     
     def test_queue_status_not_started(self):
