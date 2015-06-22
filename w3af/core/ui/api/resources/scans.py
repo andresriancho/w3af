@@ -19,8 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import threading
-
+from threading import Thread, Event
 from flask import jsonify, request
 
 from w3af.core.ui.api import app
@@ -95,7 +94,7 @@ def start_scan():
     target_options = w3af_core.target.get_options()
     target_option = target_options['target']
     try:
-        target_option.set_value(target_urls)
+        target_option.set_value([URL(u) for u in target_urls])
         w3af_core.target.set_options(target_options)
     except BaseFrameworkException, bfe:
         abort(400, str(bfe))
@@ -104,16 +103,20 @@ def start_scan():
     # Finally, start the scan in a different thread
     #
     scan_id = get_new_scan_id()
+    scan_info_setup = Event()
 
-    args = (target_urls, scan_profile)
-    t = threading.Thread(target=start_scan_helper, name='ScanThread', args=args)
+    args = (target_urls, scan_profile, scan_info_setup)
+    t = Thread(target=start_scan_helper, name='ScanThread', args=args)
     t.daemon = True
 
     t.start()
 
+    # Wait until the thread starts
+    scan_info_setup.wait()
+
     return jsonify({'message': 'Success',
                     'id': scan_id,
-                    'href': '/scans/%s' % scan_id})
+                    'href': '/scans/%s' % scan_id}), 201
 
 
 @app.route('/scans/', methods=['GET'])
@@ -133,13 +136,15 @@ def list_scans():
 
         target_urls = scan_info.target_urls
         status = scan_info.w3af_core.status.get_simplified_status()
+        errors = True if scan_info.exception is not None else False
 
         data.append({'id': scan_id,
                      'href': '/scans/%s' % scan_id,
                      'target_urls': target_urls,
-                     'status': status})
+                     'status': status,
+                     'errors': errors})
 
-    return jsonify(data)
+    return jsonify({'items': data})
 
 
 @app.route('/scans/<int:scan_id>', methods=['DELETE'])
@@ -174,7 +179,10 @@ def scan_status(scan_id):
     if scan_info is None:
         abort(404, 'Scan not found')
 
-    return jsonify(scan_info.w3af_core.status.get_status_as_dict())
+    status = scan_info.w3af_core.status.get_status_as_dict()
+    status['exception'] = str(scan_info.exception)
+
+    return jsonify(status)
 
 
 @app.route('/scans/<int:scan_id>/pause', methods=['GET'])
@@ -214,8 +222,7 @@ def scan_stop(scan_id):
     if not scan_info.w3af_core.can_stop():
         abort(403, 'Scan can not be paused')
 
-    t = threading.Thread(target=scan_info.w3af_core.stop,
-                         name='ScanStopThread', args=())
+    t = Thread(target=scan_info.w3af_core.stop, name='ScanStopThread', args=())
     t.daemon = True
     t.start()
 

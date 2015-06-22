@@ -13,6 +13,9 @@ coverage==3.6
 nose-cov==1.6
 coveralls==0.2
 
+# Requirements to test the REST API
+requests>=2.7.0
+
 # Other
 mock==1.0.1
 psutil==2.2.1

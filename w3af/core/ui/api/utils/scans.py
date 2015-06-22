@@ -28,6 +28,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.ui.api.db.master import SCANS, ScanInfo
 from w3af.core.ui.api.utils.log_handler import RESTAPIOutput
 from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.data.parsers.doc.url import URL
 
 
 def get_scan_info_from_id(scan_id):
@@ -51,35 +52,45 @@ def create_temp_profile(scan_profile):
     return scan_profile_file, tempdir
 
 
-def start_scan_helper(target_urls, scan_profile):
+def start_scan_helper(target_urls, scan_profile, scan_info_setup):
     """
     Create a new instance of w3afCore, save it to SCANS and run core.start()
 
     :param scan_profile: The contents of a profile configuration
+    :param scan_info_setup: Event to set when the scan started
     :return: The instance of w3afCore.
     """
-    scan_profile_file_name, profile_path = create_temp_profile(scan_profile)
-
     scan_info = ScanInfo()
     SCANS[get_new_scan_id()] = scan_info
     scan_info.w3af_core = w3af_core = w3afCore()
     scan_info.target_urls = target_urls
     scan_info.output = RESTAPIOutput()
 
-    # Clear all current output plugins and add ours
+    scan_info_setup.set()
+
+    scan_profile_file_name, profile_path = create_temp_profile(scan_profile)
+
+    # Clear all current output plugins
     om.manager.set_output_plugins([])
-    om.manager.set_output_plugin_inst(scan_info.output)
 
     try:
-        target_options = w3af_core.target.get_options()
-        target_option = target_options['target']
-        
-        target_option.set_value(target_urls)
-        w3af_core.target.set_options(target_options)
-
+        # Load the profile with the core and plugin config
         w3af_core.profiles.use_profile(scan_profile_file_name,
                                        workdir=profile_path)
+
+        # Override the target that's set in the profile
+        target_options = w3af_core.target.get_options()
+        target_option = target_options['target']
+
+        target_option.set_value([URL(u) for u in target_urls])
+        w3af_core.target.set_options(target_options)
+
         w3af_core.plugins.init_plugins()
+
+        # Add the REST API output plugin
+        om.manager.set_output_plugin_inst(scan_info.output)
+
+        # Start the scan!
         w3af_core.verify_environment()
         w3af_core.start()
     except Exception, e:

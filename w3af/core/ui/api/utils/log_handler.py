@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 
 from w3af.core.data.db.disk_list import DiskList
+from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.constants.severity import MEDIUM
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 
@@ -49,7 +50,7 @@ class RESTAPIOutput(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for debug messages.
         """
-        m = Message(DEBUG, '')
+        m = Message(DEBUG, self._clean_string(msg_string))
         self.log.append(m)
 
     def information(self, msg_string, new_line=True):
@@ -88,7 +89,7 @@ class RESTAPIOutput(OutputPlugin):
         self.log.append(m)
 
 
-class Message(object):
+class Message(DiskItem):
     def __init__(self, msg_type, msg):
         """
         :param msg_type: console, information, vulnerability, etc
@@ -123,3 +124,5 @@ class Message(object):
                 'time': self.get_time(),
                 'severity': self.get_severity()}
 
+    def get_eq_attrs(self):
+        return ('_type', '_msg', '_time', '_severity')

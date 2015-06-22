@@ -55,7 +55,7 @@ def list_kb():
         if matches_filter(finding, request):
             data.append(finding_to_json(finding, finding_id))
 
-    return jsonify(data)
+    return jsonify({'items': data})
 
 
 @app.route('/kb/<int:vulnerability_id>', methods=['GET'])
@@ -118,6 +118,6 @@ def finding_to_json(finding, finding_id, detailed=False):
         summary.update(finding.to_json())
     else:
         summary.update({'name': finding.get_name(),
-                        'url': finding.get_url()})
+                        'url': finding.get_url().url_string})
 
     return summary

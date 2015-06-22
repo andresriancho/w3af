@@ -87,6 +87,13 @@ def main():
 
     args = parse_arguments()
 
+    if args.host not in ('127.0.0.1', 'localhost'):
+        print('The REST API does not provide authentication and might expose'
+              ' your system to vulnerabilities such as arbitrary file reads'
+              ' through file:// protocol specified in target URLs and scan'
+              ' profiles. It is NOT RECOMMENDED to bind the REST API to'
+              ' a public IP address. You have been warned.')
+
     try:
         app.run(host=args.host, port=args.port,
                 debug=args.verbose, use_reloader=False)

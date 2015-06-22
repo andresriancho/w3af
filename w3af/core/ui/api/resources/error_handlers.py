@@ -1,5 +1,5 @@
 """
-not_found.py
+error_handlers.py
 
 Copyright 2015 Andres Riancho
 
@@ -28,4 +28,12 @@ def not_found(error):
     response = jsonify({'code': 404,
                         'message': 'Not found'})
     response.status_code = 404
+    return response
+
+
+@app.errorhandler(405)
+def method_not_allowed(error):
+    response = jsonify({'code': 405,
+                        'message': 'Method not allowed'})
+    response.status_code = 405
     return response

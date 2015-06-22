@@ -26,6 +26,7 @@ from werkzeug.exceptions import HTTPException
 class JSONHTTPException(HTTPException):
     def __init__(self, description=None, code=None):
         Exception.__init__(self)
+        self.response = None
         self.description = description
         self.code = code
 
