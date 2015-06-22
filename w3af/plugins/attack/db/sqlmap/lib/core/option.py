@@ -1836,6 +1836,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.safeReq = AttribDict()
     kb.singleLogFlags = set()
     kb.reduceTests = None
+    kb.tlsSNI = None
     kb.stickyDBMS = False
     kb.stickyLevel = None
     kb.storeCrawlingChoice = None
@@ -2180,6 +2181,18 @@ def _setTorSocksProxySettings():
     socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5 if conf.torType == PROXY_TYPE.SOCKS5 else socks.PROXY_TYPE_SOCKS4, LOCALHOST, conf.torPort or DEFAULT_TOR_SOCKS_PORT)
     socks.wrapmodule(urllib2)
 
+def _checkWebSocket():
+    infoMsg = "checking for WebSocket"
+    logger.debug(infoMsg)
+
+    if conf.url and (conf.url.startswith("ws:/") or conf.url.startswith("wss:/")):
+        try:
+            from websocket import ABNF
+        except ImportError:
+            errMsg = "sqlmap requires third-party module 'websocket-client' "
+            errMsg += "in order to use WebSocket funcionality"
+            raise SqlmapMissingDependence(errMsg)
+
 def _checkTor():
     if not conf.checkTor:
         return
@@ -2449,6 +2462,7 @@ def init():
     _setWafFunctions()
     _setTrafficOutputFP()
     _resolveCrossReferences()
+    _checkWebSocket()
 
     parseTargetUrl()
     parseTargetDirect()

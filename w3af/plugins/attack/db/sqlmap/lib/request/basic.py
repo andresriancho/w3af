@@ -66,6 +66,12 @@ def forgeHeaders(items=None):
     headers = OrderedDict()
     for key, value in _.items():
         success = False
+
+        for _ in headers:
+            if _.upper() == key.upper():
+                del headers[_]
+                break
+
         if key.upper() not in (_.upper() for _ in getPublicTypeMembers(HTTP_HEADER, True)):
             try:
                 headers[_str(key)] = value  # dirty hack for http://bugs.python.org/issue12455
@@ -142,7 +148,7 @@ def checkCharEncoding(encoding, warn=True):
         return encoding
 
     # Reference: http://www.destructor.de/charsets/index.htm
-    translate = {"windows-874": "iso-8859-11", "en_us": "utf8", "macintosh": "iso-8859-1", "euc_tw": "big5_tw", "th": "tis-620", "unicode": "utf8",  "utc8": "utf8", "ebcdic": "ebcdic-cp-be", "iso-8859": "iso8859-1", "ansi": "ascii", "gbk2312": "gbk"}
+    translate = {"windows-874": "iso-8859-11", "en_us": "utf8", "macintosh": "iso-8859-1", "euc_tw": "big5_tw", "th": "tis-620", "unicode": "utf8",  "utc8": "utf8", "ebcdic": "ebcdic-cp-be", "iso-8859": "iso8859-1", "ansi": "ascii", "gbk2312": "gbk", "windows-31j": "cp932"}
 
     for delimiter in (';', ',', '('):
         if delimiter in encoding:
