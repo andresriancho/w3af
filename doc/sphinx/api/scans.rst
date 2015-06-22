@@ -25,3 +25,29 @@ Optionally send these requests to control and monitor the scan:
 
    In the previous examples I've used ``/scans/0`` (note the hard-coded zero in
    the URL) as an example. When starting a new scan a new ID will be created.
+
+Starting a scan
+---------------
+
+Performing a ``POST`` to the ``/scans/`` resource is one of the most complex
+requests in our REST API. The call requires two specially crafted variables:
+
+ * ``scan_profile`` which must contain the contents of a ``w3af`` scan profile (not the file name)
+ * ``target_urls`` a list containing URLs to seed ``w3af``'s crawler
+
+.. code-block:: python
+
+    import requests
+    import json
+
+    data = {'scan_profile': file('/path/to/profile.pw3af').read(),
+            'target_urls': ['http://127.0.0.1:8000/audit/sql_injection/']}
+
+    response = requests.post('http://127.0.0.1:5000/scans/',
+                             data=json.dumps(data),
+                             headers={'content-type': 'application/json'})
+
+
+.. note::
+
+   Remember to send the ``Content-Type: application/json`` header

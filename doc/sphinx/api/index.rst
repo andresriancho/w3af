@@ -16,6 +16,12 @@ Starting the REST API service
     $ ./w3af_api
      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 
+REST API Source code
+--------------------
+
+The `REST API <https://github.com/andresriancho/w3af/tree/master/w3af/core/ui/api/>`_
+is implemented in Flask and is pretty well documented for your reading pleasure.
+
 Contents
 --------
 
