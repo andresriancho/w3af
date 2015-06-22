@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import subprocess
 import requests
 import time
+import sys
 import os
 
 from w3af import ROOT_PATH
@@ -40,13 +41,15 @@ def start_api():
     dev_null = open(os.devnull, 'w')
 
     w3af_api_path = os.path.abspath(os.path.join(ROOT_PATH, '..'))
-    args = (w3af_api_path, port)
+    python_executable = sys.executable
 
-    process = subprocess.Popen('python %s/w3af_api 127.0.0.1:%s' % args,
-                               shell=True,
+    cmd = [python_executable, 'w3af_api', '127.0.0.1:%s' % port]
+
+    process = subprocess.Popen(cmd,
                                stdout=dev_null,
                                stderr=subprocess.STDOUT,
-                               preexec_fn=os.setsid)
+                               preexec_fn=os.setsid,
+                               cwd=w3af_api_path)
 
     api_url = 'http://127.0.0.1:%s' % port
 
