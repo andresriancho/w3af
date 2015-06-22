@@ -54,7 +54,7 @@ def start_api():
     api_url = 'http://127.0.0.1:%s' % port
 
     # Now we wait until the API is ready to answer requests
-    for i in xrange(50):
+    for i in xrange(75):
         time.sleep(0.5)
 
         try:
