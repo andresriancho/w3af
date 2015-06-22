@@ -63,7 +63,7 @@ def parse_arguments():
 
     parser.add_argument('-v',
                         required=False,
-                        default=True,
+                        default=False,
                         dest='verbose',
                         action='store_true',
                         help='Enables verbose output')
