@@ -63,7 +63,12 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      # https://gist.github.com/andresriancho/cf2fa1ce239b30f37bd9
                      PIPDependency('ruamel.ordereddict',
                                    'ruamel.ordereddict',
-                                   '0.4.8')]
+                                   '0.4.8'),
+
+                     # Only used by the REST API, but in the future the console
+                     # and GUI will consume it so it's ok to put this here
+                     PIPDependency('Flask', 'Flask', '0.10.1'),
+                     ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
 

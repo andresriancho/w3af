@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from w3af.core.ui.api.main import app
+import sys
+
+from w3af.core.ui.api.main import main
 
 
 if __name__ == '__main__':
-    # TODO: Let the user define the IP and port where to listen
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    sys.exit(main())
