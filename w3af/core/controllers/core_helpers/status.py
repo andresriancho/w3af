@@ -22,8 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 
 import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
+
+PAUSED = 'Paused'
+STOPPED = 'Stopped'
+RUNNING = 'Running'
 
 
 class w3af_core_status(object):
@@ -69,10 +74,10 @@ class w3af_core_status(object):
         :return: A string representing the current w3af core status.
         """
         if self._paused:
-            return 'Paused.'
+            return PAUSED
         
         elif not self.is_running():
-            return 'Stopped.'
+            return STOPPED
         
         else:
             crawl_plugin = self.get_running_plugin('crawl')
@@ -281,12 +286,12 @@ class w3af_core_status(object):
         :return: The status as a very simple string
         """
         if self.is_paused():
-            return 'Paused'
+            return PAUSED
 
         elif not self.is_running():
-            return 'Stopped'
+            return STOPPED
 
-        return 'Running'
+        return RUNNING
 
     def get_status_as_dict(self):
         """

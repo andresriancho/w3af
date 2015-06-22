@@ -160,7 +160,7 @@ def scan_delete(scan_id):
     if scan_info is None:
         abort(404, 'Scan not found')
 
-    if not scan_info.w3af_core.can_clear():
+    if not scan_info.w3af_core.can_cleanup():
         abort(403, 'Scan is not ready to be cleared')
 
     scan_info.w3af_core.cleanup()
@@ -179,8 +179,9 @@ def scan_status(scan_id):
     if scan_info is None:
         abort(404, 'Scan not found')
 
+    exc = scan_info.exception
     status = scan_info.w3af_core.status.get_status_as_dict()
-    status['exception'] = str(scan_info.exception)
+    status['exception'] = exc if exc is None else str(exc)
 
     return jsonify(status)
 
@@ -248,10 +249,11 @@ def scan_log(scan_id):
     start = results_per_page * page
     end = start + results_per_page
 
-    messages = scan_info.output[start:end]
+    messages = scan_info.output.log[start:end]
 
-    more = True if len(scan_info.output) > end else False
+    more = True if len(scan_info.output.log) > end else False
+    next = page + 1 if more else None
 
-    return jsonify({'next': page + 1,
+    return jsonify({'next': next,
                     'more': more,
                     'entries': [m.to_json() for m in messages]})

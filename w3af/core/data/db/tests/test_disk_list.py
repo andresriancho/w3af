@@ -326,6 +326,16 @@ class TestDiskList(unittest.TestCase):
         self.assertIn('1', dl_copy)
         self.assertIn('2', dl_copy)
 
+    def test_slice_greater_than_length(self):
+        disk_list = DiskList()
+        disk_list.append('1')
+        disk_list.append('2')
+
+        dl_copy = disk_list[:50]
+        self.assertIn('1', dl_copy)
+        self.assertIn('2', dl_copy)
+        self.assertEqual(2, len(dl_copy))
+
     def test_slice_first_N(self):
         disk_list = DiskList()
         disk_list.append('1')
