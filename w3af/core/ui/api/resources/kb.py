@@ -92,10 +92,11 @@ def matches_filter(finding, request):
     url = request.args.get('url', None)
 
     if name is not None and url is not None:
-        return name in finding.get_name() and finding.get_url().startswith(url)
+        return (name.lower() in finding.get_name().lower() and
+                finding.get_url().url_string.startswith(url))
 
     elif name is not None:
-        return name in finding.get_name()
+        return name.lower() in finding.get_name().lower()
 
     elif url is not None:
         return finding.get_url().url_string.startswith(url)

@@ -62,12 +62,12 @@ class APIUnitTest(unittest.TestCase):
 
         raise RuntimeError('Timeout waiting for scan to run')
 
-    def wait_until_finish(self):
+    def wait_until_finish(self, wait_loops=100):
         """
         Wait until the scan is in Stopped state
         :return: The HTTP response
         """
-        for _ in xrange(100):
+        for _ in xrange(wait_loops):
             time.sleep(0.5)
 
             response = requests.get('%s/scans/' % self.api_url)

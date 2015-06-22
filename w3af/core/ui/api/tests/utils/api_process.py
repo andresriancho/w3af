@@ -36,9 +36,12 @@ def start_api():
         * URL
     """
     port = get_unused_port()
+    dev_null = open(os.devnull, 'w')
+
     process = subprocess.Popen('python w3af_api 127.0.0.1:%s' % port,
-                               shell=True, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
+                               shell=True,
+                               stdout=dev_null,
+                               stderr=subprocess.STDOUT,
                                preexec_fn=os.setsid)
 
     api_url = 'http://127.0.0.1:%s' % port
