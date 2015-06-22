@@ -105,6 +105,9 @@ class DiskList(object):
         if type(obj).__name__ in dir(__builtin__):
             return cpickle_dumps(obj)
 
+        elif obj is None:
+            return cpickle_dumps(obj)
+
         elif isinstance(obj, DiskItem):
             result = ''
             
@@ -115,8 +118,8 @@ class DiskList(object):
             return result
         
         else:
-            msg = 'Complex classes like %s need to inherit from DiskItem to'\
-                  ' be stored.'
+            msg = ('Complex classes like %s need to inherit from DiskItem to'
+                   ' be stored.')
             raise Exception(msg % type(obj))
 
     def __contains__(self, value):
