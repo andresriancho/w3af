@@ -33,7 +33,7 @@ class URLListOption(ListOption):
         return super(URLListOption, self).set_value(value)
 
     def validate(self, value):
-        parsed_list =  super(URLListOption, self).validate(value)
+        parsed_list = super(URLListOption, self).validate(value)
         res = []
         
         for input_url in parsed_list:
