@@ -226,6 +226,25 @@ def scan_stop(scan_id):
 def scan_log(scan_id):
     """
     :param scan_id: The scan ID to retrieve the scan
-    :return: The scan log contents
+    :return: The scan log contents, paginated using 200 entries per page
     """
-    raise NotImplementedError
+    page = request.args.get('page', 0)
+    results_per_page = 200
+
+    scan_info = get_scan_info_from_id(scan_id)
+    if scan_info is None:
+        abort(404, 'Scan not found')
+
+    if scan_info.output is None:
+        abort(404, 'Scan output not found')
+
+    start = results_per_page * page
+    end = start + results_per_page
+
+    messages = scan_info.output[start:end]
+
+    more = True if len(scan_info.output) > end else False
+
+    return jsonify({'next': page + 1,
+                    'more': more,
+                    'entries': [m.to_json() for m in messages]})

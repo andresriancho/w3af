@@ -30,6 +30,7 @@ SCANS = {}
 class ScanInfo(object):
     def __init__(self):
         self.w3af_core = None
+        self.output = None
         self.exception = None
         self.finished = False
         self.target_urls = None

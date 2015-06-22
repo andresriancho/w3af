@@ -23,7 +23,10 @@ from os.path import join
 from uuid import uuid4
 from tempfile import tempdir
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.ui.api.db.master import SCANS, ScanInfo
+from w3af.core.ui.api.utils.log_handler import RESTAPIOutput
 from w3af.core.controllers.w3afCore import w3afCore
 
 
@@ -61,6 +64,11 @@ def start_scan_helper(target_urls, scan_profile):
     SCANS[get_new_scan_id()] = scan_info
     scan_info.w3af_core = w3af_core = w3afCore()
     scan_info.target_urls = target_urls
+    scan_info.output = RESTAPIOutput()
+
+    # Clear all current output plugins and add ours
+    om.manager.set_output_plugins([])
+    om.manager.set_output_plugin_inst(scan_info.output)
 
     try:
         target_options = w3af_core.target.get_options()
