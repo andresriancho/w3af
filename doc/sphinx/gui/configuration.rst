@@ -1,7 +1,8 @@
 Configurations
 ==============
 
-There're different configuration panels all across the w3af system. Here all of them are explained.
+There are different configuration panels all across the w3af system. Here all of
+them are explained.
 
 HTTP configuration
 ------------------
