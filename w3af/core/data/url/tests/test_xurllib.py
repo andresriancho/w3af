@@ -419,8 +419,8 @@ class TestXUrllib(unittest.TestCase):
 
         # This error is expected, it's generated when the xurllib negotiates
         # the different SSL protocols with the server
-        self.assertEqual([e.strerror for e in s.errors],
-                         ['Bad file descriptor'])
+        self.assertEqual(set([e.strerror for e in s.errors]),
+                         {'Bad file descriptor'})
 
     def test_rate_limit_high(self):
         self.rate_limit_generic(500, 0.01, 0.4)
