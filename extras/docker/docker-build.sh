@@ -15,7 +15,7 @@ else
     TAG=`git rev-parse --short HEAD`
 fi
 
-sudo docker build --no-cache=true -t andresriancho/w3af:${TAG} .
+sudo docker build -t andresriancho/w3af:${TAG} .
 
 rm -rf Dockerfile
 rm -rf .dockerignore
