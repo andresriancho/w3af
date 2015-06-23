@@ -92,7 +92,7 @@ def main():
               ' your system to vulnerabilities such as arbitrary file reads'
               ' through file:// protocol specified in target URLs and scan'
               ' profiles. It is NOT RECOMMENDED to bind the REST API to'
-              ' a public IP address. You have been warned.')
+              ' a public IP address. You have been warned.\n')
 
     try:
         app.run(host=args.host, port=args.port,
