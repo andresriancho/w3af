@@ -297,6 +297,19 @@ class w3af_core_status(object):
         """
         :return: The status as a dict which I can use in JSON responses
         """
+        def serialize_fuzzable_request(fuzzable_request):
+            if fuzzable_request is None:
+                return fuzzable_request
+
+            return '%s %s' % (fuzzable_request.get_method(),
+                              fuzzable_request.get_uri())
+
+        crawl_fuzzable_request = self.get_current_fuzzable_request('crawl')
+        crawl_fuzzable_request = serialize_fuzzable_request(crawl_fuzzable_request)
+
+        audit_fuzzable_request = self.get_current_fuzzable_request('audit')
+        audit_fuzzable_request = serialize_fuzzable_request(audit_fuzzable_request)
+
         data = {
                 'status': self.get_simplified_status(),
                 'is_paused': self.is_paused(),
@@ -308,8 +321,8 @@ class w3af_core_status(object):
                 ,
 
                 'current_request':
-                    {'crawl': self.get_current_fuzzable_request('crawl'),
-                     'audit': self.get_current_fuzzable_request('audit')},
+                    {'crawl': crawl_fuzzable_request,
+                     'audit': audit_fuzzable_request},
 
                 'queues':
                     {'crawl':
