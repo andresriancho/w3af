@@ -49,15 +49,20 @@ class TestCSP(PluginTest):
 
         vulns = self.kb.get('csp', 'csp')
 
-        #---This vuln is shared by several pages
-        EXPECTED = ["Directive 'default-src' allow all sources."]
-        #---Theses vulns are isolated
-        EXPECTED.append("Directive 'script-src' allow all javascript sources.")
-        EXPECTED.append("Directive 'script-src' is defined but no directive"
-                        " 'script-nonce' is defined to protect javascript"
-                        " resources.")
-        EXPECTED.append("Directive 'object-src' allow all plugin sources.")
-        EXPECTED.append("Somes directives are misspelled: def-src,sript-src.")
+        EXPECTED = [#---This vuln is shared by several pages
+                    "Directive 'default-src' allows all sources.",
+
+                    #---These vulns are isolated
+                    "Directive 'script-src' allows all javascript sources.",
+
+                    "Directive 'script-src' is defined but no directive"
+                    " 'script-nonce' is defined to protect javascript"
+                    " resources.",
+
+                    "Directive 'object-src' allows all plugin sources.",
+                    "Some directives are misspelled: def-src, sript-src."]
+
+
 
         vuln_descs = set([v.get_desc(with_id=False) for v in vulns])
         self.assertEqual(set(EXPECTED), vuln_descs)

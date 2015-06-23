@@ -80,6 +80,7 @@ MIME_TYPES = MimeTypes().types_map[1].values()
 #http://stackoverflow.com/questions/4677012/python-cant-pickle-type-x-attribute-lookup-failed
 CSPVulnerability = namedtuple('CSPVulnerability', ['desc', 'severity'])            
 
+
 def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
                                       allow_unsafe_eval=False):
     """
@@ -112,6 +113,7 @@ def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
     
     return protected
 
+
 def find_vulns(response):
     """
     Method to find vulnerabilities into CSP policies from an HTTP response,
@@ -133,7 +135,7 @@ def find_vulns(response):
     policies_all = merge_policies_dict(non_report_only_policies, report_only_policies)
     
     #Quick exit to enhance performance
-    if(len(policies_all) == 0):
+    if len(policies_all) == 0:
         return vulns
         
     #Analyze each policy in details. 
@@ -143,7 +145,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_DEFAULT in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_DEFAULT]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'default-src' allow all sources.",
+            csp_vuln = CSPVulnerability("Directive 'default-src' allows all sources.",
                                         severity.HIGH)
             vulns_lst = [csp_vuln]
             vulns[CSP_DIRECTIVE_DEFAULT] = vulns_lst
@@ -156,12 +158,13 @@ def find_vulns(response):
         #=>Many site use inline javascript code block
         #=>Some popular javascript API (ex: JQueryUI/ExtJS) use eval() function 
         if "*" in directive_values:
-            warn_msg = "Directive 'script-src' allow all javascript sources."
+            warn_msg = "Directive 'script-src' allows all javascript sources."
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
             vulns_lst.append(csp_vuln)   
         if CSP_DIRECTIVE_SCRIPT_NONCE not in policies_all:
-            warn_msg = "Directive 'script-src' is defined but no directive " \
-            "'script-nonce' is defined to protect javascript resources."
+            warn_msg = ("Directive 'script-src' is defined but no directive"
+                        " 'script-nonce' is defined to protect javascript"
+                        " resources.")
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
             vulns_lst.append(csp_vuln)                
         if len(vulns_lst) > 0:
@@ -170,7 +173,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_OBJECT in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_OBJECT]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'object-src' allow all plugin sources.",
+            csp_vuln = CSPVulnerability("Directive 'object-src' allows all plugin sources.",
                                         severity.HIGH)            
             vulns_lst = [csp_vuln]
             vulns[CSP_DIRECTIVE_OBJECT] = vulns_lst
@@ -178,7 +181,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_STYLE in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_STYLE]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'style-src' allow all CSS sources.",
+            csp_vuln = CSPVulnerability("Directive 'style-src' allows all CSS sources.",
                                         severity.LOW)            
             vulns_lst = [csp_vuln]
             vulns[CSP_DIRECTIVE_STYLE] = vulns_lst
@@ -186,7 +189,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_IMAGE in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_IMAGE]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'img-src' allow all image sources.",
+            csp_vuln = CSPVulnerability("Directive 'img-src' allows all image sources.",
                                         severity.LOW)               
             vulns_lst = [csp_vuln]
             vulns[CSP_DIRECTIVE_IMAGE] = vulns_lst
@@ -194,7 +197,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_MEDIA in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_MEDIA]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'media-src' allow all audio/video sources.",
+            csp_vuln = CSPVulnerability("Directive 'media-src' allows all audio/video sources.",
                                         severity.HIGH)            
             vulns_lst = [csp_vuln]
             vulns[CSP_DIRECTIVE_MEDIA] = vulns_lst
@@ -204,7 +207,7 @@ def find_vulns(response):
         vulns_lst = []
         warn_msg = ""
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'frame-src' allow all sources.",
+            csp_vuln = CSPVulnerability("Directive 'frame-src' allows all sources.",
                                         severity.HIGH)            
             vulns_lst.append(csp_vuln)
         if CSP_DIRECTIVE_SANDBOX not in policies_all:
@@ -219,7 +222,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_FONT in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_FONT]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'font-src' allow all font sources.",
+            csp_vuln = CSPVulnerability("Directive 'font-src' allows all font sources.",
                                         severity.MEDIUM)               
             vulns_lst = [csp_vuln]            
             vulns[CSP_DIRECTIVE_FONT] = vulns_lst
@@ -227,7 +230,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_CONNECTION in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_CONNECTION]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'connect-src' allow all connection sources.",
+            csp_vuln = CSPVulnerability("Directive 'connect-src' allows all connection sources.",
                                         severity.HIGH)               
             vulns_lst = [csp_vuln]                        
             vulns[CSP_DIRECTIVE_CONNECTION] = vulns_lst
@@ -235,7 +238,7 @@ def find_vulns(response):
     if CSP_DIRECTIVE_FORM in policies_all:        
         directive_values = policies_all[CSP_DIRECTIVE_FORM]
         if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'form-action' allow all action target.",
+            csp_vuln = CSPVulnerability("Directive 'form-action' allows all action target.",
                                         severity.HIGH)               
             vulns_lst = [csp_vuln]                                    
             vulns[CSP_DIRECTIVE_FORM] = vulns_lst  
@@ -296,7 +299,7 @@ def find_vulns(response):
         warn_msg = ""
         vulns_lst = []        
         if "*" in directive_values:
-            warn_msg = "Directive 'plugin-types' allow all plugins types."
+            warn_msg = "Directive 'plugin-types' allows all plugins types."
             csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
             vulns_lst.append(csp_vuln)            
         #Search invalid directive values
@@ -335,7 +338,7 @@ def find_vulns(response):
     #Check if misspelled directives name exists
     if CSP_MISSPELLED_DIRECTIVES in policies_all:        
         directive_values = policies_all[CSP_MISSPELLED_DIRECTIVES]                                                                                      
-        warn_msg = "Somes directives are misspelled: " + ','.join(directive_values)
+        warn_msg = "Some directives are misspelled: " + ', '.join(directive_values)
         csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
         vulns[CSP_MISSPELLED_DIRECTIVES] = [csp_vuln]
                                  
@@ -459,23 +462,16 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
     policies = {}
     
     #List of allowed CSP directive names
-    directive_allowed_names = []
-    directive_allowed_names.append(CSP_DIRECTIVE_DEFAULT)
-    directive_allowed_names.append(CSP_DIRECTIVE_SCRIPT)
-    directive_allowed_names.append(CSP_DIRECTIVE_OBJECT)
-    directive_allowed_names.append(CSP_DIRECTIVE_STYLE)
-    directive_allowed_names.append(CSP_DIRECTIVE_IMAGE)
-    directive_allowed_names.append(CSP_DIRECTIVE_MEDIA)
-    directive_allowed_names.append(CSP_DIRECTIVE_FRAME)
-    directive_allowed_names.append(CSP_DIRECTIVE_FONT)
-    directive_allowed_names.append(CSP_DIRECTIVE_CONNECTION)
-    directive_allowed_names.append(CSP_DIRECTIVE_REPORT_URI)    
-    directive_allowed_names.append(CSP_DIRECTIVE_FORM)
-    directive_allowed_names.append(CSP_DIRECTIVE_SANDBOX)
-    directive_allowed_names.append(CSP_DIRECTIVE_SCRIPT_NONCE)
-    directive_allowed_names.append(CSP_DIRECTIVE_PLUGIN_TYPES)
-    directive_allowed_names.append(CSP_DIRECTIVE_XSS)
-    
+    directive_allowed_names = [CSP_DIRECTIVE_DEFAULT, CSP_DIRECTIVE_SCRIPT,
+                               CSP_DIRECTIVE_OBJECT, CSP_DIRECTIVE_STYLE,
+                               CSP_DIRECTIVE_IMAGE, CSP_DIRECTIVE_MEDIA,
+                               CSP_DIRECTIVE_FRAME, CSP_DIRECTIVE_FONT,
+                               CSP_DIRECTIVE_CONNECTION,
+                               CSP_DIRECTIVE_REPORT_URI, CSP_DIRECTIVE_FORM,
+                               CSP_DIRECTIVE_SANDBOX,
+                               CSP_DIRECTIVE_SCRIPT_NONCE,
+                               CSP_DIRECTIVE_PLUGIN_TYPES, CSP_DIRECTIVE_XSS]
+
     #Misspelled directives name list
     misspelled_directives_name = []
          
@@ -561,7 +557,7 @@ def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict
                                           (return of method "retrieve_csp_policies").
     :param report_only_policies_dict: A dictionary with all REPORT-ONLY 
                                       Policies 
-                                      (return of method "retrieve_csp_policies").      
+                                      (return of method "retrieve_csp_policies")
     :return: A merged dictionary in which KEY is a CSP directive 
              and VALUE is the list of associated policies.
     """
@@ -587,6 +583,7 @@ def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict
         merged_policies[k] = list(set(values))        
     return merged_policies
 
+
 def _contains_special_directive(directive_definition):
     """
     Internal method to detect in a directive specification if
@@ -596,17 +593,16 @@ def _contains_special_directive(directive_definition):
     
     :return: TRUE only if a special directive is detected. 
     """
-    
     #Manage empty cases
-    if directive_definition == None:
+    if directive_definition is None:
         return False
+
     if len(directive_definition.strip()) == 0:
         return False
     
     #List of directives for which empty value is a behavior specification
-    special_directive_names = []
-    special_directive_names.append(CSP_DIRECTIVE_SANDBOX)
-    special_directive_names.append(CSP_DIRECTIVE_SCRIPT_NONCE)   
+    special_directive_names = [CSP_DIRECTIVE_SANDBOX,
+                               CSP_DIRECTIVE_SCRIPT_NONCE]
 
     tmp = directive_definition.lower()
     for special_directive in special_directive_names:
