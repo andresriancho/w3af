@@ -124,6 +124,7 @@ deployment:
       # Note the master in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/master?circle-token=$W3AF_MODULE_TOKEN"
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-kali-ci/tree/master?circle-token=$W3AF_KALI_TOKEN"
+      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-client/tree/master?circle-token=$W3AF_API_CLIENT_TOKEN"
 
       # Nasty hack required for docker cache sanity: Because we get a new clone
       # of the repo, timestamps don't correspond any more to when the file was
@@ -147,6 +148,7 @@ deployment:
     commands:
       # Note the develop in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/develop?circle-token=$W3AF_MODULE_TOKEN"
+      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-client/tree/develop?circle-token=$W3AF_API_CLIENT_TOKEN"
 
       # Nasty hack required for docker cache sanity: Because we get a new clone
       # of the repo, timestamps don't correspond any more to when the file was
