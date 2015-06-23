@@ -42,7 +42,7 @@ RUN pip install --upgrade pip
 # the docker cache
 RUN pip install clamd==1.0.1 PyGithub==1.21.0 GitPython==0.3.2.RC1 pybloomfiltermmap==0.3.11 \
         esmre==0.3.1 phply==0.9.1 stopit==1.1.0 nltk==2.0.5 chardet==2.1.1 pdfminer==20140328 \
-        futures==2.1.5 pyOpenSSL==0.13.1 scapy-real==2.2.0-dev guess-language==0.2 cluster==1.1.1b3 \
+        futures==2.1.5 pyOpenSSL==0.15.1 scapy-real==2.2.0-dev guess-language==0.2 cluster==1.1.1b3 \
         msgpack-python==0.4.4 python-ntlm==1.0.1 halberd==0.2.4 darts.util.lru==0.5 \
         tblib==0.2.0 ndg-httpsclient==0.3.3 pyasn1==0.1.7
 
