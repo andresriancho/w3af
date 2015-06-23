@@ -54,8 +54,14 @@ class APIUnitTest(unittest.TestCase):
 
         for _file in os.listdir(tempdir):
             if fnmatch.fnmatch(_file, 'w3af-crash*.txt'):
+                crash = file(os.path.join(tempdir, _file)).read()
+
+                # https://circleci.com/gh/andresriancho/w3af/2041
+                if 'failing_spider' in crash:
+                    continue
+
                 msg = 'Found w3af crash file from REST API!\n\n'
-                msg += file(os.path.join(tempdir, _file)).read()
+                msg += crash
                 self.assertTrue(False, msg)
 
     def wait_until_running(self):
