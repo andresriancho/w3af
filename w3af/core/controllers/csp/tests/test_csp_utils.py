@@ -26,32 +26,32 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.controllers.csp.utils import (unsafe_inline_enabled,
-                                        retrieve_csp_report_uri,
-                                        provides_csp_features,
-                                        retrieve_csp_policies,
-                                        find_vulns,
-                                        site_protected_against_xss_by_csp,
-                                        CSP_HEADER_CHROME,
-                                        CSP_HEADER_FIREFOX,
-                                        CSP_HEADER_W3C,
-                                        CSP_DIRECTIVE_OBJECT,
-                                        CSP_DIRECTIVE_DEFAULT,
-                                        CSP_DIRECTIVE_IMAGE,
-                                        CSP_DIRECTIVE_SCRIPT,
-                                        CSP_DIRECTIVE_CONNECTION,
-                                        CSP_HEADER_W3C_REPORT_ONLY,
-                                        CSP_DIRECTIVE_REPORT_URI,
-                                        CSP_DIRECTIVE_VALUE_UNSAFE_INLINE,
-                                        CSP_DIRECTIVE_STYLE,
-                                        CSP_DIRECTIVE_FORM,
-                                        CSP_DIRECTIVE_SANDBOX,
-                                        CSP_DIRECTIVE_SCRIPT_NONCE,
-                                        CSP_DIRECTIVE_PLUGIN_TYPES,
-                                        CSP_DIRECTIVE_XSS,
-                                        CSP_DIRECTIVE_MEDIA,
-                                        CSP_DIRECTIVE_FRAME,
-                                        CSP_DIRECTIVE_FONT,
-                                        CSP_MISSPELLED_DIRECTIVES)
+                                             retrieve_csp_report_uri,
+                                             provides_csp_features,
+                                             retrieve_csp_policies,
+                                             find_vulns,
+                                             site_protected_against_xss_by_csp,
+                                             CSP_HEADER_CHROME,
+                                             CSP_HEADER_FIREFOX,
+                                             CSP_HEADER_W3C,
+                                             CSP_DIRECTIVE_OBJECT,
+                                             CSP_DIRECTIVE_DEFAULT,
+                                             CSP_DIRECTIVE_IMAGE,
+                                             CSP_DIRECTIVE_SCRIPT,
+                                             CSP_DIRECTIVE_CONNECTION,
+                                             CSP_HEADER_W3C_REPORT_ONLY,
+                                             CSP_DIRECTIVE_REPORT_URI,
+                                             CSP_DIRECTIVE_VALUE_UNSAFE_INLINE,
+                                             CSP_DIRECTIVE_STYLE,
+                                             CSP_DIRECTIVE_FORM,
+                                             CSP_DIRECTIVE_SANDBOX,
+                                             CSP_DIRECTIVE_SCRIPT_NONCE,
+                                             CSP_DIRECTIVE_PLUGIN_TYPES,
+                                             CSP_DIRECTIVE_XSS,
+                                             CSP_DIRECTIVE_MEDIA,
+                                             CSP_DIRECTIVE_FRAME,
+                                             CSP_DIRECTIVE_FONT,
+                                             CSP_MISSPELLED_DIRECTIVES)
 
 
 class TestUtils(unittest.TestCase):
@@ -441,34 +441,34 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(vulns), 11)
         #>>>"default-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_DEFAULT]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'default-src' allow all sources.",
+        self.assertTrue(self._vuln_exists("Directive 'default-src' allows all sources.",
                         vulns[CSP_DIRECTIVE_DEFAULT]))  
         #>>>"script-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_SCRIPT]), 2)
-        self.assertTrue(self._vuln_exists("Directive 'script-src' allow all javascript sources.",
+        self.assertTrue(self._vuln_exists("Directive 'script-src' allows all javascript sources.",
                         vulns[CSP_DIRECTIVE_SCRIPT]))   
         warn_msg = "Directive 'script-src' is defined but no directive " \
         "'script-nonce' is defined to protect javascript resources."                                                                                              
-        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_SCRIPT]))                                                                                                                                                                                                                                           
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_SCRIPT]))
         #>>>"object-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_OBJECT]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'object-src' allow all plugin sources.",
+        self.assertTrue(self._vuln_exists("Directive 'object-src' allows all plugin sources.",
                         vulns[CSP_DIRECTIVE_OBJECT]))
         #>>>"style-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_STYLE]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'style-src' allow all CSS sources.",
+        self.assertTrue(self._vuln_exists("Directive 'style-src' allows all CSS sources.",
                         vulns[CSP_DIRECTIVE_STYLE]))
         #>>>"img-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_IMAGE]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'img-src' allow all image sources.",
+        self.assertTrue(self._vuln_exists("Directive 'img-src' allows all image sources.",
                         vulns[CSP_DIRECTIVE_IMAGE]))
         #>>>"media-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_MEDIA]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'media-src' allow all audio/video sources.",
+        self.assertTrue(self._vuln_exists("Directive 'media-src' allows all audio/video sources.",
                         vulns[CSP_DIRECTIVE_MEDIA]))
         #>>>"frame-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_FRAME]), 2)
-        self.assertTrue(self._vuln_exists("Directive 'frame-src' allow all sources.",
+        self.assertTrue(self._vuln_exists("Directive 'frame-src' allows all sources.",
                         vulns[CSP_DIRECTIVE_FRAME]))
         warn_msg = "Directive 'frame-src' is defined but no directive " \
         "'sandbox' is defined to protect resources. Perhaps sandboxing " \
@@ -476,19 +476,19 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_DIRECTIVE_FRAME]))              
         #>>>"font-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_FONT]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'font-src' allow all font sources.",
+        self.assertTrue(self._vuln_exists("Directive 'font-src' allows all font sources.",
                         vulns[CSP_DIRECTIVE_FONT]))
         #>>>"connect-src"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_CONNECTION]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'connect-src' allow all connection sources.",
+        self.assertTrue(self._vuln_exists("Directive 'connect-src' allows all connection sources.",
                         vulns[CSP_DIRECTIVE_CONNECTION]))                                                                                 
         #>>>"form-action"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_FORM]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'form-action' allow all action target.",
+        self.assertTrue(self._vuln_exists("Directive 'form-action' allows all action target.",
                         vulns[CSP_DIRECTIVE_FORM]))
         #>>>"plugin-types"
         self.assertEqual(len(vulns[CSP_DIRECTIVE_PLUGIN_TYPES]), 1)
-        self.assertTrue(self._vuln_exists("Directive 'plugin-types' allow all plugins types.",
+        self.assertTrue(self._vuln_exists("Directive 'plugin-types' allows all plugins types.",
                         vulns[CSP_DIRECTIVE_PLUGIN_TYPES]))                      
 
     def test_find_vulns_case02(self):
@@ -585,10 +585,9 @@ class TestUtils(unittest.TestCase):
         vulns = find_vulns(http_response)  
         self.assertEqual(len(vulns), 1)  
         self.assertEqual(len(vulns[CSP_MISSPELLED_DIRECTIVES]), 1) 
-        warn_msg = "Somes directives are misspelled: "\
-        "defauld-src,image-src,form-src"
-        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_MISSPELLED_DIRECTIVES]))   
-        
+        warn_msg = "Some directives are misspelled: "\
+        "defauld-src, image-src, form-src"
+        self.assertTrue(self._vuln_exists(warn_msg, vulns[CSP_MISSPELLED_DIRECTIVES]))
         
     def test_site_protected_against_xss_by_csp_case01(self):
         """
