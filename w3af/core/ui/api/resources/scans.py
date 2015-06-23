@@ -19,7 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from threading import Thread, Event
+from threading import Event
+from multiprocessing.dummy import Process
 from flask import jsonify, request
 
 from w3af.core.ui.api import app
@@ -106,7 +107,7 @@ def start_scan():
     scan_info_setup = Event()
 
     args = (target_urls, scan_profile, scan_info_setup)
-    t = Thread(target=start_scan_helper, name='ScanThread', args=args)
+    t = Process(target=start_scan_helper, name='ScanThread', args=args)
     t.daemon = True
 
     t.start()
@@ -223,7 +224,7 @@ def scan_stop(scan_id):
     if not scan_info.w3af_core.can_stop():
         abort(403, 'Scan can not be paused')
 
-    t = Thread(target=scan_info.w3af_core.stop, name='ScanStopThread', args=())
+    t = Process(target=scan_info.w3af_core.stop, name='ScanStopThread', args=())
     t.daemon = True
     t.start()
 
