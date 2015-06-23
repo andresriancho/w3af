@@ -222,14 +222,22 @@ class OpenWebSocketsWithCrawlTest(WebSocketTest):
     target_ws_http = 'http://w3af.com/echo'
     target_ws = 'ws://w3af.com/echo'
 
-    HTML_BODY = ('<html>'
-                 '<script>'
-                 'var connection = new WebSocket("ws://w3af.com/echo");'
-                 '</script>'
-                 '</html>')
+    INDEX_BODY = ('<html>'
+                  '<a href="/ws-index">ws index</a>'
+                  '</html>')
+
+    WS_BODY = ('<html>'
+               '<script>'
+               'var connection = new WebSocket("ws://w3af.com/echo");'
+               '</script>'
+               '</html>')
 
     MOCK_RESPONSES = [MockResponse(url=target_url,
-                                   body=HTML_BODY,
+                                   body=INDEX_BODY,
+                                   method='GET',
+                                   status=200),
+                      MockResponse(url=target_url + 'ws-index',
+                                   body=WS_BODY,
                                    method='GET',
                                    status=200),
                       MockResponse(url=target_ws_http,
