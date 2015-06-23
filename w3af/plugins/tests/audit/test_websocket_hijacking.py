@@ -39,6 +39,7 @@ ALL_RUN_CONFIG = {
         'plugins': {
             'audit': (PluginConfig('websocket_hijacking'),),
             'grep': (PluginConfig('websockets_links'),),
+            'crawl': (PluginConfig('web_spider'),),
         }
     }
 }
