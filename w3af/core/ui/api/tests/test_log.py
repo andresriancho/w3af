@@ -40,6 +40,7 @@ class ApiScanLogTest(APIUnitTest):
         #
         # Wait until the scanner finishes and assert the vulnerabilities
         #
+        self.wait_until_running()
         self.wait_until_finish(500)
 
         #

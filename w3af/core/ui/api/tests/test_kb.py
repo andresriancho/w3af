@@ -39,6 +39,7 @@ class KBApiTest(APIUnitTest):
         #
         # Wait until the scanner finishes and assert the vulnerabilities
         #
+        self.wait_until_running()
         self.wait_until_finish()
 
         #
@@ -48,7 +49,7 @@ class KBApiTest(APIUnitTest):
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_items = response.json()['items']
-        self.assertEqual(4, len(vuln_items))
+        self.assertEqual(4, len(vuln_items), self.create_assert_message())
 
         response = requests.get('%s/kb/?name=Foo' % self.api_url)
         self.assertEqual(response.status_code, 200, response.text)

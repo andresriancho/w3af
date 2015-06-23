@@ -87,3 +87,17 @@ class APIUnitTest(unittest.TestCase):
                 return response
 
         raise RuntimeError('Timeout waiting for scan to run')
+
+    def create_assert_message(self):
+        """
+        :return: A string with a message I can use to debug issues, contains
+                 the scan log information available in the REST API (if any)
+        """
+        response = requests.get('%s/scans/' % self.api_url)
+        scan_id = response.json()['items'][0]['id']
+
+        response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id))
+        scan_log = '\n'.join([m['message'] for m in response.json()['entries']])
+
+        self.maxDiff = None
+        return 'Assertion failed! The scan log contains:\n\n%s' % scan_log
