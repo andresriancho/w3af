@@ -28,7 +28,7 @@ REST API clients
 Wrote a REST API client? Let us know and get it linked here!
 
  * `Official Python REST API client <https://github.com/andresriancho/w3af-api-client>`_ which is
- also available at `pypi <https://pypi.python.org/pypi/w3af-api-client>`_
+also available at `pypi <https://pypi.python.org/pypi/w3af-api-client>`_
 
 
 Contents
