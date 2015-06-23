@@ -179,17 +179,17 @@ class error_pages(GrepPlugin):
         Now i'll check if I can get a version number from the error page
         This is common in apache, tomcat, etc...
         """
-        if response.get_code() > 400 and\
-        response.get_code() < 600:
+        if 400 < response.get_code() < 600:
 
             for match, _, _, server in self._multi_re.query(response.body):
                 match_string = match.group(0)
                 if match_string not in self._already_reported_versions:
                     # Save the info obj
                     desc = 'An error page sent this %s version: "%s".'
-                    desc = desc % (server, match_string)
-                    i = Info('Error page with information disclosure', desc,
-                             response.id, self.get_name())
+                    desc %= (server, match_string)
+
+                    i = Info('Error page with information disclosure',
+                             desc, response.id, self.get_name())
                     i.set_url(response.get_url())
                     i.add_to_highlight(server)
                     i.add_to_highlight(match_string)
