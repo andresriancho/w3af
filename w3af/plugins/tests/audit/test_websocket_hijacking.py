@@ -241,7 +241,7 @@ class OpenWebSocketsWithCrawlTest(WebSocketTest):
     def test_open_websockets_with_crawl(self):
         # Run the plugin
         cfg = ALL_RUN_CONFIG['cfg']
-        self._scan(self.target_url, cfg['plugins'], debug=True)
+        self._scan(self.target_url, cfg['plugins'])
 
         # Assert
         vulns = self.kb.get('websocket_hijacking', 'websocket_hijacking')
