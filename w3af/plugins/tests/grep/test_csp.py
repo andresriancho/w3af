@@ -60,7 +60,8 @@ class TestCSP(PluginTest):
                     " resources.",
 
                     "Directive 'object-src' allows all plugin sources.",
-                    "Some directives are misspelled: def-src, sript-src."]
+
+                    "Some directives are misspelled: def-src, sript-src"]
 
 
 
