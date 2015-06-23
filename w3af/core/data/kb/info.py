@@ -475,14 +475,14 @@ class Info(dict):
         return str(hash(concat_all))
     
     def __eq__(self, other):
-        return self.get_uri() == other.get_uri() and\
-               self.get_method() == other.get_method() and\
-               self.get_token_name() == other.get_token_name() and\
-               self.get_dc() == other.get_dc() and\
-               self.get_id() == other.get_id() and\
-               self.get_name() == other.get_name() and\
-               self.get_desc() == other.get_desc() and\
-               self.get_plugin_name() == other.get_plugin_name()
+        return (self.get_uri() == other.get_uri() and
+                self.get_method() == other.get_method() and
+                self.get_token_name() == other.get_token_name() and
+                self.get_dc() == other.get_dc() and
+                self.get_id() == other.get_id() and
+                self.get_name() == other.get_name() and
+                self.get_desc() == other.get_desc() and
+                self.get_plugin_name() == other.get_plugin_name())
 
     def __ne__(self, other):
         return not self.__eq__(other)

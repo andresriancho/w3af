@@ -54,9 +54,6 @@ class meta_tags(GrepPlugin):
                          'author': None, 'release': None, 'version': None,
                          'verify-v1': 'Google Sitemap'}
 
-    def __init__(self):
-        GrepPlugin.__init__(self)
-
     def grep(self, request, response):
         """
         Plugin entry point, search for meta tags.
@@ -94,9 +91,9 @@ class meta_tags(GrepPlugin):
                         continue
 
                     # Now... if we found something, report it =)
-                    fmt = 'The URI: "%s" sent a <meta> tag with the attribute'\
-                          ' %s set to "%s" which looks interesting.'
-                    desc = fmt % (response.get_uri(), where, content)
+                    desc = ('The URI: "%s" sent a <meta> tag with the attribute'
+                            ' %s set to "%s" which looks interesting.')
+                    desc %= (response.get_uri(), where, content)
 
                     tag_name = self._find_tag_name(tag)
                     usage = self.INTERESTING_WORDS.get(tag_name, None)
