@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import copy
+import uuid
+import unittest
 
 from mock import Mock
 
@@ -666,7 +667,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         # Cause error by changing vuln uniq_id
         update_vuln = vuln
-        update_vuln.set_name('a')
+        update_vuln._uniq_id = str(uuid.uuid4())
         modified_id = vuln.get_uniq_id()
 
         self.assertNotEqual(original_id, modified_id)

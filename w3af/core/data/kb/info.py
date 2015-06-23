@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
+import uuid
 
 from vulndb import DBVuln
 
@@ -65,6 +66,7 @@ class Info(dict):
         self._plugin_name = None
         self._vulndb_id = None
         self._vulndb = None
+        self._uniq_id = str(uuid.uuid4())
 
         # Set the values provided by the user
         self.set_vulndb_id(vulndb_id)
@@ -116,6 +118,7 @@ class Info(dict):
         inst = cls(name, desc, response_ids, plugin_name)
         inst._string_matches = other_info.get_to_highlight()
         inst._mutant = other_info.get_mutant()
+        inst._uniq_id = other_info.get_uniq_id()
 
         for k in other_info.keys():
             inst[k] = other_info[k]
@@ -190,7 +193,8 @@ class Info(dict):
                  'plugin_name': self.get_plugin_name(),
                  'severity': self.get_severity(),
                  'attributes': attributes,
-                 'highlight': list(self.get_to_highlight())}
+                 'highlight': list(self.get_to_highlight()),
+                 'uniq_id': self.get_uniq_id()}
 
         return _data
 
@@ -420,7 +424,7 @@ class Info(dict):
         is_last_in_seq = lambda num: num == last_in_seq
 
         for num in seq[1:]:
-            # Is it a new subsequence?
+            # Is it a new sub-sequence?
             is_new_seq = (num != last + 1)
             if is_new_seq:  # End of sequence
                 if dist:  # multi-elems sequence
@@ -462,17 +466,7 @@ class Info(dict):
                  and might disappear in the future. If possible use __eq__
                  to verify if two instances are the same.
         """
-        concat_all = ''
-        
-        for functor in (self.get_uri, self.get_method, self.get_token_name,
-                        self.get_dc, self.get_id, self.get_name, self.get_desc,
-                        self.get_plugin_name):
-            data = functor()
-            if isinstance(data, unicode):
-                data = data.encode('utf-8')
-            concat_all += str(data)
-            
-        return str(hash(concat_all))
+        return self._uniq_id
     
     def __eq__(self, other):
         return (self.get_uri() == other.get_uri() and

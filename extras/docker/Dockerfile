@@ -21,7 +21,10 @@ RUN apt-get upgrade -y
 RUN apt-get dist-upgrade -y
 
 # Install basic and GUI requirements, python-lxml because it doesn't compile correctly from pip
-RUN apt-get install -y python-pip build-essential libxslt1-dev libxml2-dev libsqlite3-dev libyaml-dev openssh-server python-dev git python-lxml wget libssl-dev xdot python-gtk2 python-gtksourceview2 ubuntu-artwork dmz-cursor-theme ca-certificates
+RUN apt-get install -y python-pip build-essential libxslt1-dev libxml2-dev libsqlite3-dev \
+                       libyaml-dev openssh-server python-dev git python-lxml wget libssl-dev \
+                       xdot python-gtk2 python-gtksourceview2 ubuntu-artwork dmz-cursor-theme \
+                       ca-certificates libffi-dev
 
 # Add the w3af user
 # TODO - actually use the w3af user instead of running everything as root

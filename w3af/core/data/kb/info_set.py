@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import uuid
 import textwrap
 
 from jinja2 import StrictUndefined, Environment
@@ -99,6 +100,7 @@ class InfoSet(object):
 
         self.infos = info_instances
         self._mutant = EmptyMutant()
+        self._uniq_id = str(uuid.uuid4())
 
     def add(self, info):
         if len(self.infos) == self.MAX_INFO_INSTANCES:
@@ -247,7 +249,8 @@ class InfoSet(object):
                  'plugin_name': self.get_plugin_name(),
                  'severity': self.get_severity(),
                  'attributes': attributes,
-                 'highlight': list(self.get_to_highlight())}
+                 'highlight': list(self.get_to_highlight()),
+                 'uniq_id': self.get_uniq_id()}
 
         return _data
 
@@ -303,12 +306,7 @@ class InfoSet(object):
                  the user, we can't use id() to know if two info objects are
                  the same or not.
         """
-        concat_all = ''
-
-        for info in self.infos:
-            concat_all += info.get_uniq_id()
-
-        return str(hash(concat_all))
+        return self._uniq_id
 
     def get_attribute(self, attr_name):
         return self.first_info.get(attr_name, None)
@@ -382,7 +380,13 @@ class InfoSet(object):
         return self.first_info.get_vuln_info_from_db()
 
     def __eq__(self, other):
-        return self.get_uniq_id() == other.get_uniq_id()
+        self_json = self.to_json()
+        self_json.pop('uniq_id')
+
+        other_json = self.to_json()
+        other_json.pop('uniq_id')
+
+        return self_json == other_json
 
     def __ne__(self, other):
         return not self.__eq__(other)

@@ -161,8 +161,8 @@ class DiskCSPVulnStoreItem(DiskItem):
     def __init__(self, r_url, r_id, r_vulns):
         """
         Constructor.
-        @param r_url: HTTP reponse url
-        @param r_id: HTTP reponse ID
+        @param r_url: HTTP response url
+        @param r_id: HTTP response ID
         @param r_vulns: CSP vulnerabilities found
         """
         self.url = r_url

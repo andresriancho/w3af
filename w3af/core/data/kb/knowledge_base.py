@@ -407,8 +407,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         This method appends the location_b value to a dict.
         """
         if not ignore_type and not isinstance(value, (Info, Shell, InfoSet)):
-            msg = 'You MUST use raw_write/raw_read to store non-info objects'\
-                  ' to the KnowledgeBase.'
+            msg = ('You MUST use raw_write/raw_read to store non-info objects'
+                   ' to the KnowledgeBase.')
             raise TypeError(msg)
 
         location_a = self._get_real_name(location_a)
