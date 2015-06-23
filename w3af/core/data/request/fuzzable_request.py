@@ -22,11 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import csv
 import string
 import cStringIO
+
 from urllib import unquote
 from itertools import chain
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
+
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.dc.generic.data_container import DataContainer
@@ -510,7 +512,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def get_file_vars(self):
         """
-        :return: A list of postdata parameters that contain a file
+        :return: A list of post-data parameters that contain a file
         """
         try:
             return self._post_data.get_file_vars()
