@@ -19,7 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from os.path import join
+import os
+
 from uuid import uuid4
 from tempfile import tempdir
 
@@ -46,7 +47,7 @@ def create_temp_profile(scan_profile):
     :param scan_profile: The contents of a profile configuration
     :return: The scan profile file name and the directory where it was created
     """
-    scan_profile_file = join(tempdir, '%s.pw3af' % uuid4())
+    scan_profile_file = os.path.join(tempdir, '%s.pw3af' % uuid4())
     file(scan_profile_file, 'w').write(scan_profile)
 
     return scan_profile_file, tempdir
@@ -98,4 +99,5 @@ def start_scan_helper(target_urls, scan_profile, scan_info_setup):
         w3af_core.stop()
     finally:
         scan_info.finished = True
+        os.unlink(os.path.join(profile_path, scan_profile_file_name))
 
