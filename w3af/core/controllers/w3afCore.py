@@ -33,7 +33,8 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 
-from w3af.core.controllers.core_helpers.status import w3af_core_status
+from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.controllers.core_helpers.profiles import w3af_core_profiles
 from w3af.core.controllers.core_helpers.plugins import w3af_core_plugins
 from w3af.core.controllers.core_helpers.target import w3af_core_target
@@ -41,9 +42,8 @@ from w3af.core.controllers.core_helpers.strategy import CoreStrategy
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.core_helpers.strategy_observers.disk_space_observer import DiskSpaceObserver
-from w3af.core.controllers.threads.threadpool import Pool
-from w3af.core.controllers.misc.homeDir import get_home_dir
-
+from w3af.core.controllers.core_helpers.status import (w3af_core_status,
+                                                       STOPPED, RUNNING, PAUSED)
 from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
                                                   log_sink_factory)
 from w3af.core.controllers.profiling import start_profiling, stop_profiling
@@ -297,7 +297,10 @@ class w3afCore(object):
                                      worker_names='WorkerThread')
 
         return self._worker_pool
-        
+
+    def can_cleanup(self):
+        return self.status.get_simplified_status() == STOPPED
+
     def cleanup(self):
         """
         The GTK user interface calls this when a scan has been stopped
@@ -339,6 +342,9 @@ class w3afCore(object):
         # Not calling:
         # self.plugins.zero_enabled_plugins()
         # because I want to keep the selected plugins and configurations
+
+    def can_stop(self):
+        return self.status.get_simplified_status() in (RUNNING, PAUSED)
 
     def stop(self):
         """

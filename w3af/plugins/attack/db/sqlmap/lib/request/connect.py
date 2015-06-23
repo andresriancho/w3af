@@ -19,6 +19,13 @@ import traceback
 import urllib2
 import urlparse
 
+try:
+    import websocket
+    from websocket import WebSocketException
+except ImportError:
+    class WebSocketException(Exception):
+        pass
+
 from extra.safe2bin.safe2bin import safecharencode
 from lib.core.agent import agent
 from lib.core.common import asciifyUrl
@@ -30,6 +37,7 @@ from lib.core.common import evaluateCode
 from lib.core.common import extractRegexResult
 from lib.core.common import findMultipartPostBoundary
 from lib.core.common import getCurrentThreadData
+from lib.core.common import getHeader
 from lib.core.common import getHostHeader
 from lib.core.common import getRequestHeader
 from lib.core.common import getUnicode
@@ -205,7 +213,7 @@ class Connect(object):
             cpuThrottle(conf.cpuThrottle)
 
         if conf.dummy:
-            return randomStr(int(randomInt()), alphabet=[chr(_) for _ in xrange(256)]), {}, int(randomInt())
+            return getUnicode(randomStr(int(randomInt()), alphabet=[chr(_) for _ in xrange(256)]), {}, int(randomInt())), None, None
 
         threadData = getCurrentThreadData()
         with kb.locks.request:
@@ -232,6 +240,8 @@ class Connect(object):
         retrying = kwargs.get("retrying",           False)
         crawling = kwargs.get("crawling",           False)
         skipRead = kwargs.get("skipRead",           False)
+
+        websocket_ = url.lower().startswith("ws")
 
         if not urlparse.urlsplit(url).netloc:
             url = urlparse.urljoin(conf.url, url)
@@ -329,16 +339,16 @@ class Connect(object):
             if kb.proxyAuthHeader:
                 headers[HTTP_HEADER.PROXY_AUTHORIZATION] = kb.proxyAuthHeader
 
-            if HTTP_HEADER.ACCEPT not in headers:
+            if not getHeader(headers, HTTP_HEADER.ACCEPT):
                 headers[HTTP_HEADER.ACCEPT] = HTTP_ACCEPT_HEADER_VALUE
 
-            if HTTP_HEADER.HOST not in headers or not target:
+            if not getHeader(headers, HTTP_HEADER.HOST) or not target:
                 headers[HTTP_HEADER.HOST] = getHostHeader(url)
 
-            if HTTP_HEADER.ACCEPT_ENCODING not in headers:
+            if not getHeader(headers, HTTP_HEADER.ACCEPT_ENCODING):
                 headers[HTTP_HEADER.ACCEPT_ENCODING] = HTTP_ACCEPT_ENCODING_HEADER_VALUE if kb.pageCompress else "identity"
 
-            if post is not None and HTTP_HEADER.CONTENT_TYPE not in headers:
+            if post is not None and not getHeader(headers, HTTP_HEADER.CONTENT_TYPE):
                 headers[HTTP_HEADER.CONTENT_TYPE] = POST_HINT_CONTENT_TYPES.get(kb.postHint, DEFAULT_CONTENT_TYPE)
 
             if headers.get(HTTP_HEADER.CONTENT_TYPE) == POST_HINT_CONTENT_TYPES[POST_HINT.MULTIPART]:
@@ -364,64 +374,89 @@ class Connect(object):
             url = unicodeencode(url)
             post = unicodeencode(post, kb.pageEncoding)
 
-            if method and method not in (HTTPMETHOD.GET, HTTPMETHOD.POST):
-                method = unicodeencode(method)
-                req = MethodRequest(url, post, headers)
-                req.set_method(method)
+            if websocket_:
+                ws = websocket.WebSocket()
+                ws.connect(url, header=("%s: %s" % _ for _ in headers.items() if _[0] not in ("Host",)), cookie=cookie)  # WebSocket will add Host field of headers automatically
+                ws.send(urldecode(post or ""))
+                page = ws.recv()
+                ws.close()
+                code = ws.status
+                status = httplib.responses[code]
+                class _(dict):
+                    pass
+                responseHeaders = _(ws.getheaders())
+                responseHeaders.headers = ["%s: %s\r\n" % (_[0].capitalize(), _[1]) for _ in responseHeaders.items()]
+
+                requestHeaders += "\n".join("%s: %s" % (getUnicode(key.capitalize() if isinstance(key, basestring) else key), getUnicode(value)) for (key, value) in responseHeaders.items())
+                requestMsg += "\n%s" % requestHeaders
+
+                if post is not None:
+                    requestMsg += "\n\n%s" % getUnicode(post)
+
+                requestMsg += "\n"
+
+                threadData.lastRequestMsg = requestMsg
+
+                logger.log(CUSTOM_LOGGING.TRAFFIC_OUT, requestMsg)
             else:
-                req = urllib2.Request(url, post, headers)
+                if method and method not in (HTTPMETHOD.GET, HTTPMETHOD.POST):
+                    method = unicodeencode(method)
+                    req = MethodRequest(url, post, headers)
+                    req.set_method(method)
+                else:
+                    req = urllib2.Request(url, post, headers)
 
-            requestHeaders += "\n".join("%s: %s" % (getUnicode(key.capitalize() if isinstance(key, basestring) else key), getUnicode(value)) for (key, value) in req.header_items())
+                requestHeaders += "\n".join("%s: %s" % (getUnicode(key.capitalize() if isinstance(key, basestring) else key), getUnicode(value)) for (key, value) in req.header_items())
 
-            if not getRequestHeader(req, HTTP_HEADER.COOKIE) and conf.cj:
-                conf.cj._policy._now = conf.cj._now = int(time.time())
-                cookies = conf.cj._cookies_for_request(req)
-                requestHeaders += "\n%s" % ("Cookie: %s" % ";".join("%s=%s" % (getUnicode(cookie.name), getUnicode(cookie.value)) for cookie in cookies))
+                if not getRequestHeader(req, HTTP_HEADER.COOKIE) and conf.cj:
+                    conf.cj._policy._now = conf.cj._now = int(time.time())
+                    cookies = conf.cj._cookies_for_request(req)
+                    requestHeaders += "\n%s" % ("Cookie: %s" % ";".join("%s=%s" % (getUnicode(cookie.name), getUnicode(cookie.value)) for cookie in cookies))
 
-            if post is not None:
-                if not getRequestHeader(req, HTTP_HEADER.CONTENT_LENGTH):
-                    requestHeaders += "\n%s: %d" % (string.capwords(HTTP_HEADER.CONTENT_LENGTH), len(post))
+                if post is not None:
+                    if not getRequestHeader(req, HTTP_HEADER.CONTENT_LENGTH):
+                        requestHeaders += "\n%s: %d" % (string.capwords(HTTP_HEADER.CONTENT_LENGTH), len(post))
 
-            if not getRequestHeader(req, HTTP_HEADER.CONNECTION):
-                requestHeaders += "\n%s: close" % HTTP_HEADER.CONNECTION
+                if not getRequestHeader(req, HTTP_HEADER.CONNECTION):
+                    requestHeaders += "\n%s: close" % HTTP_HEADER.CONNECTION
 
-            requestMsg += "\n%s" % requestHeaders
+                requestMsg += "\n%s" % requestHeaders
 
-            if post is not None:
-                requestMsg += "\n\n%s" % getUnicode(post)
+                if post is not None:
+                    requestMsg += "\n\n%s" % getUnicode(post)
 
-            requestMsg += "\n"
+                requestMsg += "\n"
 
-            threadData.lastRequestMsg = requestMsg
+                threadData.lastRequestMsg = requestMsg
 
-            logger.log(CUSTOM_LOGGING.TRAFFIC_OUT, requestMsg)
+                logger.log(CUSTOM_LOGGING.TRAFFIC_OUT, requestMsg)
 
-            conn = urllib2.urlopen(req)
+                conn = urllib2.urlopen(req)
 
-            if not kb.authHeader and getRequestHeader(req, HTTP_HEADER.AUTHORIZATION) and (conf.authType or "").lower() == AUTH_TYPE.BASIC.lower():
-                kb.authHeader = getRequestHeader(req, HTTP_HEADER.AUTHORIZATION)
+                if not kb.authHeader and getRequestHeader(req, HTTP_HEADER.AUTHORIZATION) and (conf.authType or "").lower() == AUTH_TYPE.BASIC.lower():
+                    kb.authHeader = getRequestHeader(req, HTTP_HEADER.AUTHORIZATION)
 
-            if not kb.proxyAuthHeader and getRequestHeader(req, HTTP_HEADER.PROXY_AUTHORIZATION):
-                kb.proxyAuthHeader = getRequestHeader(req, HTTP_HEADER.PROXY_AUTHORIZATION)
+                if not kb.proxyAuthHeader and getRequestHeader(req, HTTP_HEADER.PROXY_AUTHORIZATION):
+                    kb.proxyAuthHeader = getRequestHeader(req, HTTP_HEADER.PROXY_AUTHORIZATION)
 
-            # Return response object
-            if response:
-                return conn, None, None
+                # Return response object
+                if response:
+                    return conn, None, None
 
-            # Get HTTP response
-            if hasattr(conn, 'redurl'):
-                page = (threadData.lastRedirectMsg[1] if kb.redirectChoice == REDIRECTION.NO\
-                  else Connect._connReadProxy(conn)) if not skipRead else None
-                skipLogTraffic = kb.redirectChoice == REDIRECTION.NO
-                code = conn.redcode
-            else:
-                page = Connect._connReadProxy(conn) if not skipRead else None
+                # Get HTTP response
+                if hasattr(conn, 'redurl'):
+                    page = (threadData.lastRedirectMsg[1] if kb.redirectChoice == REDIRECTION.NO\
+                    else Connect._connReadProxy(conn)) if not skipRead else None
+                    skipLogTraffic = kb.redirectChoice == REDIRECTION.NO
+                    code = conn.redcode
+                else:
+                    page = Connect._connReadProxy(conn) if not skipRead else None
 
-            code = code or conn.code
-            responseHeaders = conn.info()
-            responseHeaders[URI_HTTP_HEADER] = conn.geturl()
-            page = decodePage(page, responseHeaders.get(HTTP_HEADER.CONTENT_ENCODING), responseHeaders.get(HTTP_HEADER.CONTENT_TYPE))
-            status = getUnicode(conn.msg)
+                code = code or conn.code
+                responseHeaders = conn.info()
+                responseHeaders[URI_HTTP_HEADER] = conn.geturl()
+                page = decodePage(page, responseHeaders.get(HTTP_HEADER.CONTENT_ENCODING), responseHeaders.get(HTTP_HEADER.CONTENT_TYPE))
+                status = getUnicode(conn.msg)
 
             if extractRegexResult(META_REFRESH_REGEX, page) and not refreshing:
                 url = extractRegexResult(META_REFRESH_REGEX, page)
@@ -455,7 +490,7 @@ class Connect(object):
                         pass
 
             # Explicit closing of connection object
-            if not conf.keepAlive:
+            if conn and not conf.keepAlive:
                 try:
                     if hasattr(conn.fp, '_sock'):
                         conn.fp._sock.close()
@@ -538,13 +573,13 @@ class Connect(object):
                 debugMsg = "got HTTP error code: %d (%s)" % (code, status)
                 logger.debug(debugMsg)
 
-        except (urllib2.URLError, socket.error, socket.timeout, httplib.BadStatusLine, httplib.IncompleteRead, httplib.ResponseNotReady, struct.error, ProxyError, SqlmapCompressionException), e:
+        except (urllib2.URLError, socket.error, socket.timeout, httplib.BadStatusLine, httplib.IncompleteRead, httplib.ResponseNotReady, struct.error, ProxyError, SqlmapCompressionException, WebSocketException), e:
             tbMsg = traceback.format_exc()
 
             if "no host given" in tbMsg:
                 warnMsg = "invalid URL address used (%s)" % repr(url)
                 raise SqlmapSyntaxException(warnMsg)
-            elif "forcibly closed" in tbMsg:
+            elif "forcibly closed" in tbMsg or "Connection is already closed" in tbMsg:
                 warnMsg = "connection was forcibly closed by the target URL"
             elif "timed out" in tbMsg:
                 if kb.testMode and kb.testType not in (None, PAYLOAD.TECHNIQUE.TIME, PAYLOAD.TECHNIQUE.STACKED):
@@ -563,6 +598,10 @@ class Connect(object):
             elif "IncompleteRead" in tbMsg:
                 warnMsg = "there was an incomplete read error while retrieving data "
                 warnMsg += "from the target URL"
+            elif "Handshake status" in tbMsg:
+                status = re.search("Handshake status ([\d]{3})", tbMsg)
+                errMsg = "websocket handshake status %s" % status.group(1) if status else "unknown"
+                raise SqlmapConnectionException(errMsg)
             else:
                 warnMsg = "unable to connect to the target URL"
 
@@ -600,6 +639,12 @@ class Connect(object):
             _ = urlparse.urlsplit(conn.redurl)
             _ = ("%s%s" % (_.path or "/", ("?%s" % _.query) if _.query else ""))
             requestMsg = re.sub("(\n[A-Z]+ ).+?( HTTP/\d)", "\g<1>%s\g<2>" % re.escape(getUnicode(_)), requestMsg, 1)
+
+            if kb.resendPostOnRedirect is False:
+                requestMsg = re.sub("(\[#\d+\]:\n)POST ", "\g<1>GET ", requestMsg)
+                requestMsg = re.sub("(?i)Content-length: \d+\n", "", requestMsg)
+                requestMsg = re.sub("(?s)\n\n.+", "\n", requestMsg)
+
             responseMsg += "[#%d] (%d %s):\n" % (threadData.lastRequestUID, conn.code, status)
         else:
             responseMsg += "[#%d] (%d %s):\n" % (threadData.lastRequestUID, code, status)

@@ -1,7 +1,10 @@
 Running w3af
 ------------
 
-``w3af`` has two user interfaces, the console user interface and the graphical user interface. This user guide will focus on the console user interface where it's easier to explain the framework's features. To fire up the console UI execute:
+``w3af`` has two user interfaces, the console user interface and the graphical
+user interface. This user guide will focus on the console user interface where
+it's easier to explain the framework's features. To fire up the console UI
+execute:
 
 .. code-block:: none
 
@@ -9,7 +12,10 @@ Running w3af
     w3af>>>
 
 
-From this prompt you will be able to configure framework and plugin settings, launch scans and ultimately exploit a vulnerability. At this point you can start typing commands. The first command you have to learn is ``help`` (please note that commands are case sensitive):
+From this prompt you will be able to configure framework and plugin settings,
+launch scans and ultimately exploit a vulnerability. At this point you can start
+typing commands. The first command you have to learn is ``help`` (please note
+that commands are case sensitive):
 
 
 .. code-block:: none

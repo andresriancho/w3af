@@ -26,9 +26,14 @@ Their objective is to exploit vulnerabilities found by audit plugins. They usual
 Scan configuration
 ==================
 
-After configuring the ``crawl`` and ``audit`` plugins, and setting the target URL the user starts the scan and waits for the vulnerabilities to appear in the user interface.
+After configuring the ``crawl`` and ``audit`` plugins, and setting the target
+URL the user starts the scan and waits for the vulnerabilities to appear in the
+user interface.
 
-Any vulnerabilities which are found during the scan phase are stored in a knowledge base; which is used as the input for the ``attack`` plugins. Once the scan finishes the user will be able to execute the ``attack`` plugins on the identified vulnerabilities.
+Any vulnerabilities which are found during the scan phase are stored in a
+knowledge base; which is used as the input for the ``attack`` plugins. Once the
+scan finishes the user will be able to execute the ``attack`` plugins on the
+identified vulnerabilities.
 
 Configuration recommendations
 -----------------------------
@@ -37,7 +42,8 @@ At this point it should be obvious but:
 
 .. warning::
 
-   Scan time will strongly depend on the number of ``crawl`` and ``audit`` plugins you enable.
+   Scan time will strongly depend on the number of ``crawl`` and ``audit``
+   plugins you enable.
 
 In most cases we recommend running ``w3af`` with the following configuration:
  

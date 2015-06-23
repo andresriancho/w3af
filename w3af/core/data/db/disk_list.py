@@ -74,7 +74,7 @@ class DiskList(object):
         pks = ['index_']
         
         self.db.create_table(self.table_name, columns, pks)
-        self.db.create_index(self.table_name, ['eq_attrs',])
+        self.db.create_index(self.table_name, ['eq_attrs'])
         self.db.commit()
 
         self._state = OPEN
@@ -105,6 +105,9 @@ class DiskList(object):
         if type(obj).__name__ in dir(__builtin__):
             return cpickle_dumps(obj)
 
+        elif obj is None:
+            return cpickle_dumps(obj)
+
         elif isinstance(obj, DiskItem):
             result = ''
             
@@ -115,8 +118,8 @@ class DiskList(object):
             return result
         
         else:
-            msg = 'Complex classes like %s need to inherit from DiskItem to'\
-                  ' be stored.'
+            msg = ('Complex classes like %s need to inherit from DiskItem to'
+                   ' be stored.')
             raise Exception(msg % type(obj))
 
     def __contains__(self, value):
@@ -229,15 +232,19 @@ class DiskList(object):
         step = slice_inst.step or 1
         
         copy = DiskList()
-        
+        disk_list_length = len(self)
+
         # TODO: This piece of code is VERY SLOW and can be improved. Please
         # note that for each element that's selected by the xrange/step, we'll
         # SELECT on the original list and INSERT on the copy.
         #
-        # We could find ways to make this in only one SELECT/INSERT 
+        # We could find ways to make this in only one SELECT/INSERT, but the
+        # main problem is when I add, remove, and then try to slice a DiskList
         for i in xrange(start, stop, step):
+            if i >= disk_list_length:
+                break
             copy.append(self[i])
-        
+
         return copy
             
     def __len__(self):

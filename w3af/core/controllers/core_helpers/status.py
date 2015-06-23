@@ -22,8 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 
 import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
+
+PAUSED = 'Paused'
+STOPPED = 'Stopped'
+RUNNING = 'Running'
 
 
 class w3af_core_status(object):
@@ -69,10 +74,10 @@ class w3af_core_status(object):
         :return: A string representing the current w3af core status.
         """
         if self._paused:
-            return 'Paused.'
+            return PAUSED
         
         elif not self.is_running():
-            return 'Stopped.'
+            return STOPPED
         
         else:
             crawl_plugin = self.get_running_plugin('crawl')
@@ -90,7 +95,8 @@ class w3af_core_status(object):
                 status_str = status_str % (crawl_fr, 'crawl', crawl_plugin)
 
             if audit_plugin is not None and audit_fr is not None:
-                if status_str: status_str += '\n'
+                if status_str:
+                    status_str += '\n'
                 
                 status_str += 'Auditing %s using %s.%s' % (audit_fr, 'audit',
                                                            audit_plugin)
@@ -274,7 +280,56 @@ class w3af_core_status(object):
         eta_minutes = current_size / speed
         # TODO: Show this in h/m/s
         return '%s minutes' % eta_minutes
-    
+
+    def get_simplified_status(self):
+        """
+        :return: The status as a very simple string
+        """
+        if self.is_paused():
+            return PAUSED
+
+        elif not self.is_running():
+            return STOPPED
+
+        return RUNNING
+
+    def get_status_as_dict(self):
+        """
+        :return: The status as a dict which I can use in JSON responses
+        """
+        data = {
+                'status': self.get_simplified_status(),
+                'is_paused': self.is_paused(),
+                'is_running': self.is_running(),
+
+                'active_plugin':
+                    {'crawl': self.get_running_plugin('crawl'),
+                     'audit': self.get_running_plugin('audit')}
+                ,
+
+                'current_request':
+                    {'crawl': self.get_current_fuzzable_request('crawl'),
+                     'audit': self.get_current_fuzzable_request('audit')},
+
+                'queues':
+                    {'crawl':
+                        {'input_speed': self.get_crawl_input_speed(),
+                         'output_speed': self.get_crawl_output_speed(),
+                         'length': self.get_crawl_qsize()},
+                     'audit':
+                        {'input_speed': self.get_audit_input_speed(),
+                         'output_speed': self.get_audit_output_speed(),
+                         'length': self.get_audit_qsize()}
+                    },
+
+                'eta':
+                    {'crawl': self.get_crawl_eta(),
+                     'audit': self.get_audit_eta()},
+
+                'rpm': self.get_rpm(),
+                }
+        return data
+
     def get_long_status(self):
         if not self.is_running():
             return self.get_status()
