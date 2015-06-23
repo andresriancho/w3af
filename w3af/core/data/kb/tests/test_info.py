@@ -184,7 +184,6 @@ class TestInfo(unittest.TestCase):
         i.set_uri(uri)
 
         self.assertIsInstance(i.get_uniq_id(), str)
-        self.assertTrue(i.get_uniq_id().isdigit())
 
     def test_get_uniq_id_with_copy(self):
         uri = URL('http://www.w3af.com/')
