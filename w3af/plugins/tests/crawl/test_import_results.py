@@ -124,40 +124,109 @@ class TestImportResults(PluginTest):
         cfg = self._run_configs['burp64']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, FuzzableRequest)]
-        self.assertEqual(len(post_fr), 1)
-        post_fr = post_fr[0]
-        post_uri = post_fr.get_url().url_string
-        self.assertEqual(post_uri, 'http://moth/w3af/audit/xss/data_receptor.php')
-        self.assertEqual(post_fr.get_data(), 'user=spam&firstname=eggs')
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not
-                isinstance(fr, FuzzableRequest)]
+        #
+        #   Assert that headers are loaded from the file
+        #
+        mozilla = 0
+        for fuzzable_request in fuzzable_requests:
+            user_agent, _ = fuzzable_request.get_headers().iget('user-agent')
 
-        EXPECTED_URLS = {'http://moth/w3af/', 'http://moth/w3af/?id=1'}
+            if user_agent is None:
+                continue
 
-        self.assertEqual(set(urls),
-                         EXPECTED_URLS)
+            self.assertIn('mozilla', user_agent.lower())
+            mozilla += 1
+
+        self.assertGreater(mozilla, 0)
+
+        #
+        #   Assert that POST requests and their data are loaded from file
+        #
+        post_frs = [fr for fr in fuzzable_requests if fr.get_method() == 'POST']
+
+        expected_post_urls = {'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                              'http://127.0.0.1:8000/core/file_upload/upload.py'}
+        post_urls = set([fr.get_uri().url_string for fr in post_frs])
+
+        self.assertEqual(expected_post_urls, post_urls)
+
+        post_fr = post_frs[1]
+        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
+
+        file_contents = 'hello\nworld\n'
+
+        self.assertEqual(post_fr.get_url().url_string, expected_post_url)
+        self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
+
+        #
+        #   Assert that we found the URLs
+        #
+        urls = [fr.get_uri().url_string for fr in fuzzable_requests]
+
+        expected_urls = {u'http://127.0.0.1:8000/',
+                         u'http://127.0.0.1:8000/core/',
+                         u'http://127.0.0.1:8000/favicon.ico',
+                         u'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                         u'http://127.0.0.1:8000/core/file_upload/upload.py',
+                         u'http://127.0.0.1:8000/audit/',
+                         u'http://127.0.0.1:8000/static/moth/css/font-awesome/fonts/fontawesome-webfont.woff?v=4.0.3'}
+
+        self.assertEqual(set(urls), expected_urls)
 
     def test_burp(self):
         cfg = self._run_configs['burp']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get_all_known_fuzzable_requests()
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, FuzzableRequest)]
-        self.assertEqual(len(post_fr), 1)
-        post_fr = post_fr[0]
-        post_uri = post_fr.get_url().url_string
-        self.assertEqual(post_uri, 'http://moth/w3af/audit/xss/data_receptor.php')
-        self.assertEqual(post_fr.get_data(), 'user=spam&firstname=eggs')
+        #
+        #   Assert that headers are loaded from the file
+        #
+        mozilla = 0
+        for fuzzable_request in fuzzable_requests:
+            user_agent, _ = fuzzable_request.get_headers().iget('user-agent')
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, FuzzableRequest)]
+            if user_agent is None:
+                continue
 
-        EXPECTED_URLS = {'http://moth/w3af/', 'http://moth/w3af/?id=1'}
+            self.assertIn('mozilla', user_agent.lower())
+            mozilla += 1
 
-        self.assertEqual(set(urls),
-                         EXPECTED_URLS)
+        self.assertGreater(mozilla, 0)
+
+        #
+        #   Assert that POST requests and their data are loaded from file
+        #
+        post_frs = [fr for fr in fuzzable_requests if fr.get_method() == 'POST']
+
+        expected_post_urls = {'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                              'http://127.0.0.1:8000/core/file_upload/upload.py'}
+        post_urls = set([fr.get_uri().url_string for fr in post_frs])
+
+        self.assertEqual(expected_post_urls, post_urls)
+
+        post_fr = post_frs[1]
+        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
+
+        file_contents = 'hello\nworld\n'
+
+        self.assertEqual(post_fr.get_url().url_string, expected_post_url)
+        self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
+
+        #
+        #   Assert that we found the URLs
+        #
+        urls = [fr.get_uri().url_string for fr in fuzzable_requests]
+
+        expected_urls = {u'http://127.0.0.1:8000/',
+                         u'http://127.0.0.1:8000/core/',
+                         u'http://127.0.0.1:8000/favicon.ico',
+                         u'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                         u'http://127.0.0.1:8000/core/file_upload/upload.py',
+                         u'http://127.0.0.1:8000/audit/',
+                         u'http://127.0.0.1:8000/static/moth/css/font-awesome/fonts/fontawesome-webfont.woff?v=4.0.3'}
+
+        self.assertEqual(set(urls), expected_urls)
