@@ -92,8 +92,7 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertIn('file', mpc)
 
         self.assertEqual(mpc['MAX_FILE_SIZE'], ['2097152'])
-        # We don't store the file content
-        self.assertEqual(mpc['file'], [''])
+        self.assertTrue(mpc['file'][0].startswith('GIF89'))
 
         self.assertEqual(mpc.get_file_vars(), ['file'])
         self.assertEqual(mpc.get_parameter_type('MAX_FILE_SIZE'), 'text')
@@ -163,8 +162,7 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertIn('userfile', mpc)
 
         self.assertEqual(mpc['MAX_FILE_SIZE'], ['2097152'])
-        # We don't store the file content
-        self.assertEqual(mpc['userfile'], [''])
+        self.assertTrue(mpc['userfile'][0].startswith('GIF89'))
 
         self.assertEqual(mpc.get_file_vars(), ['userfile'])
         self.assertEqual(mpc.get_parameter_type('MAX_FILE_SIZE'), 'text')
