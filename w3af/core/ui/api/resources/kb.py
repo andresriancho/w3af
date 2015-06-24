@@ -129,7 +129,17 @@ def finding_to_json(finding, scan_id, finding_id, detailed=False):
                'href': '/scans/%s/kb/%s' % (scan_id, finding_id)}
 
     if detailed:
+        # Get all the data from w3af
         summary.update(finding.to_json())
+
+        # Add the hrefs to the traffic
+        traffic_hrefs = []
+        for response_id in summary['response_ids']:
+            args = (scan_id, response_id)
+            traffic_href = '/scans/%s/traffic/%s' % args
+            traffic_hrefs.append(traffic_href)
+
+        summary['traffic_hrefs'] = traffic_hrefs
     else:
         summary.update({'name': finding.get_name(),
                         'url': finding.get_url().url_string})

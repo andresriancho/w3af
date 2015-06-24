@@ -121,6 +121,9 @@ Get detailed information about a specific vulnerability:
       "response_ids": [
         45
       ],
+      "traffic_hrefs": [
+        "/scans/0/traffic/45"
+      ],
       "severity": "High",
       "tags": [
         "web",

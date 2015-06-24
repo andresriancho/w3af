@@ -49,3 +49,4 @@ Contents
    scans
    kb
    version
+   traffic

@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 import requests
+import base64
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 from w3af.core.ui.api.tests.utils.test_profile import (get_test_profile,
@@ -99,6 +100,18 @@ class APIScanTest(APIUnitTest):
         self.assertEqual(vuln_info['severity'], 'High')
         self.assertEqual(vuln_info['tags'], [u'web', u'sql', u'injection',
                                              u'database', u'error'])
+
+        #
+        # Get the HTTP traffic for this vulnerability
+        #
+        traffic_href = vuln_info['traffic_hrefs'][0]
+        response = requests.get('%s%s' % (self.api_url, traffic_href))
+
+        traffic_data = response.json()
+        self.assertIn('request', traffic_data)
+        self.assertIn('response', traffic_data)
+
+        self.assertIn('GET ', base64.b64decode(traffic_data['request']))
 
         #
         # Get the scan log
