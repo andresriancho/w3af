@@ -41,7 +41,7 @@ class TestExportRequests(PluginTest):
                 'output': (
                     PluginConfig('export_requests',
                                  ('output_file',
-                                  'output-fr.csv', PluginConfig.STR)),
+                                  'output-fr.b64', PluginConfig.STR)),
                 )
             }
         },
@@ -53,26 +53,21 @@ class TestExportRequests(PluginTest):
 
         freq = self.kb.get_all_known_fuzzable_requests()
 
-        self.assertTrue(os.path.exists('output-fr.csv'))
-        file_urls = self._get_urls_from_file()
+        self.assertTrue(os.path.exists('output-fr.b64'))
 
         self.assertEquals(
-            set(sorted(file_urls)),
-            set(sorted([fr.get_uri() for fr in freq]))
+            set(sorted(freq)),
+            set(sorted(self._get_fuzzable_requests_from_file()))
         )
 
-    def _get_urls_from_file(self):
+    def _get_fuzzable_requests_from_file(self):
         # Get the contents of the output file
-        for line in file('output-fr.csv'):
-            if 'http' not in line:
-                continue
-            else:
-                fr = FuzzableRequest.from_csv(line)
-                yield fr.get_uri()
+        for line in file('output-fr.b64'):
+            yield FuzzableRequest.from_base64(line)
 
     def tearDown(self):
         super(TestExportRequests, self).tearDown()
         try:
-            os.remove('output-fr.csv')
+            os.remove('output-fr.b64')
         except:
             pass

@@ -35,20 +35,20 @@ def check_version_syntax(version):
     :return: True if the syntax of the version section of HTTP is valid; else
              raise an exception.
     """
-    splitted_version = version.split('/')
+    split_version = version.split('/')
 
-    if len(splitted_version) != 2:
+    if len(split_version) != 2:
         msg = 'The HTTP request has an invalid version token: "%s"'
         raise BaseFrameworkException(msg % version)
 
-    elif len(splitted_version) == 2:
+    elif len(split_version) == 2:
 
-        if splitted_version[0].lower() != 'http':
-            msg = 'The HTTP request has an invalid HTTP token in the version'\
-                  ' specification: "%s"'
+        if split_version[0].lower() != 'http':
+            msg = ('The HTTP request has an invalid HTTP token in the version'
+                   ' specification: "%s"')
             raise BaseFrameworkException(msg % version)
 
-        if splitted_version[1] not in SUPPORTED_VERSIONS:
+        if split_version[1] not in SUPPORTED_VERSIONS:
             fmt = 'HTTP request version "%s" is unsupported'
             raise BaseFrameworkException(fmt % version)
 
@@ -78,6 +78,16 @@ def check_uri_syntax(uri, host=None):
 
     res = urlparse.urlunparse((scheme, domain, path, params, qs, fragment))
     return res
+
+
+def raw_http_request_parser(raw_http_request):
+    """
+    :param raw_http_request: An HTTP request with headers and body as a string
+    :return: A FuzzableRequest object with all the corresponding information
+             that was sent in head and postdata
+    """
+    head, postdata = raw_http_request.split('\r\n\r\n', 1)
+    return http_request_parser(head, postdata)
 
 
 def http_request_parser(head, postdata):

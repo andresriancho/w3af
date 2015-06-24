@@ -24,9 +24,7 @@ from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from w3af.plugins.crawl.import_results import import_results
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.dc.query_string import QueryString
 from w3af.core.controllers.ci.moth import get_moth_http
 
 
@@ -37,7 +35,7 @@ class TestImportResults(PluginTest):
     BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
                              'import_results')
 
-    input_csv = os.path.join(BASE_PATH, 'input-test.csv')
+    input_base64 = os.path.join(BASE_PATH, 'input-test.b64')
     input_burp = os.path.join(BASE_PATH, 'input-nobase64.burp')
     input_burp_b64 = os.path.join(BASE_PATH, 'input-base64.burp')
 
@@ -45,7 +43,7 @@ class TestImportResults(PluginTest):
         'csv': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('import_results',
-                                               ('input_csv', input_csv,
+                                               ('input_base64', input_base64,
                                                 PluginConfig.STR),
                                                ('input_burp', '', PluginConfig.STR)),)}
         },
@@ -53,7 +51,7 @@ class TestImportResults(PluginTest):
         'burp64': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('import_results',
-                                               ('input_csv',
+                                               ('input_base64',
                                                 '', PluginConfig.STR),
                                                ('input_burp', input_burp_b64, PluginConfig.STR)),)}
         },
@@ -61,54 +59,14 @@ class TestImportResults(PluginTest):
         'burp': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('import_results',
-                                               ('input_csv',
+                                               ('input_base64',
                                                 '', PluginConfig.STR),
                                                ('input_burp', input_burp, PluginConfig.STR)),)}
         },
 
     }
 
-    def test_import_csv_line(self):
-        irp = import_results()
-
-        qsr = irp._obj_from_csv(('GET', 'http://www.w3af.com/', ''))
-
-        self.assertIsInstance(qsr, FuzzableRequest)
-        self.assertEqual(qsr.get_url().get_domain(), 'www.w3af.com')
-        self.assertEqual(qsr.get_url().get_path(), '/')
-        self.assertEqual(qsr.get_method(), 'GET')
-        self.assertEqual(qsr.get_data(), '')
-
-    def test_import_csv_line_query_string(self):
-        irp = import_results()
-        qsr = irp._obj_from_csv(('GET', 'http://www.w3af.com/?id=1', ''))
-
-        self.assertIsInstance(qsr, FuzzableRequest)
-        self.assertEqual(qsr.get_url().get_domain(), 'www.w3af.com')
-        self.assertEqual(qsr.get_url().get_path(), '/')
-        self.assertEqual(qsr.get_method(), 'GET')
-        self.assertEqual(qsr.get_uri().get_querystring(),
-                         QueryString([(u'id', [u'1'])]))
-        self.assertEqual(qsr.get_data(), '')
-
-    def test_import_csv_line_GET_with_post_data(self):
-        irp = import_results()
-        pdr = irp._obj_from_csv(('GET', 'http://www.w3af.com/xyz', 'id=1'))
-
-        self.assertIsInstance(pdr, FuzzableRequest)
-        self.assertEqual(pdr.get_url().get_domain(), 'www.w3af.com')
-        self.assertEqual(pdr.get_url().get_path(), '/xyz')
-        self.assertEqual(pdr.get_method(), 'GET')
-        self.assertEqual(pdr.get_data(), 'id=1')
-
-    def test_csv(self):
-        """
-        Note that the CSV file has the following tests in it:
-            * Simple GET, no parameters, no QS
-            * URL with HttP as protocol
-            * GET with QS
-            * POST with parameters
-        """
+    def test_base64(self):
         cfg = self._run_configs['csv']
         self._scan(cfg['target'], cfg['plugins'])
 
@@ -132,7 +90,6 @@ class TestImportResults(PluginTest):
         self.assertEqual(set(urls),
                          EXPECTED_URLS)
 
-    @attr('ci_fails')
     def test_burp_b64(self):
         cfg = self._run_configs['burp64']
         self._scan(cfg['target'], cfg['plugins'])
@@ -154,7 +111,6 @@ class TestImportResults(PluginTest):
         self.assertEqual(set(urls),
                          EXPECTED_URLS)
 
-    @attr('ci_fails')
     def test_burp(self):
         cfg = self._run_configs['burp']
         self._scan(cfg['target'], cfg['plugins'])

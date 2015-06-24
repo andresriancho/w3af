@@ -86,7 +86,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.dump(), expected)
 
     def test_dump_mangle(self):
-        fr = FuzzableRequest(URL("http://www.w3af.com/"),\
+        fr = FuzzableRequest(URL("http://www.w3af.com/"),
                              headers=Headers([('Host', 'www.w3af.com')]))
 
         expected = u'\r\n'.join([u'GET http://www.w3af.com/ HTTP/1.1',
@@ -107,24 +107,20 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.dump(), expected)
 
     def test_export_import_without_post_data(self):
-        fr = FuzzableRequest(URL("http://www.w3af.com/"))
-        self.assertEqual(fr.to_csv(), '"GET","http://www.w3af.com/",""')
+        fr = FuzzableRequest(URL('http://www.w3af.com/'))
 
-        imported_fr = fr.from_csv(fr.to_csv())
+        imported_fr = FuzzableRequest.from_base64(fr.to_base64())
         self.assertEqual(imported_fr, fr)
     
     def test_export_import_with_post_data(self):
         dc = KeyValueContainer(init_val=[('a', ['1'])])
-        fr = FuzzableRequest(URL("http://www.w3af.com/"), post_data=dc)
+        fr = FuzzableRequest(URL('http://www.w3af.com/'), post_data=dc)
 
-        self.assertEqual(fr.to_csv(), '"GET","http://www.w3af.com/","a=1"')
-
-        raise SkipTest('Failing because we do NOT export headers')
-        imported_fr = fr.from_csv(fr.to_csv())
+        imported_fr = FuzzableRequest.from_base64(fr.to_base64())
         self.assertEqual(imported_fr, fr)
 
     def test_equal(self):
-        u = URL("""http://www.w3af.com/""")
+        u = URL("http://www.w3af.com/")
         fr1 = FuzzableRequest(u)
         fr2 = FuzzableRequest(u)
         self.assertEqual(fr1, fr2)

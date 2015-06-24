@@ -33,7 +33,9 @@ class RequestMixIn(object):
 
     def dump(self, ignore_headers=()):
         """
-        :return: The HTTP request as it would be sent to the wire.
+        :return: The HTTP request as it would be sent to the wire, with a minor
+                 change, instead of using the path in the second token of the
+                 request we use the URL, this is just a user-friendly feature
 
                  Please note that we're returning a byte-string, with the
                  special characters in the headers and URL encoded as expected
