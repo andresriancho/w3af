@@ -107,8 +107,8 @@ class url_fuzzer(CrawlPlugin):
         Perform a simple GET to see if the result is an error or not, and then
         run the actual fuzzing.
         """
-        response = self._uri_opener.GET(
-            mutant, cache=True, headers=self._headers)
+        response = self._uri_opener.GET(mutant, cache=True,
+                                        headers=self._headers)
 
         if not (is_404(response) or
         response.get_code() in (403, 401) or

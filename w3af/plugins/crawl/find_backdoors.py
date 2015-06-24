@@ -122,9 +122,9 @@ class find_backdoors(CrawlPlugin):
             if signature is None:
                 return
 
-            desc = u'An HTTP response matching the web backdoor signature' \
-                   u' "%s" was found at: "%s"; this could indicate that the' \
-                   u' server has been compromised.'
+            desc = (u'An HTTP response matching the web backdoor signature'
+                    u' "%s" was found at: "%s"; this could indicate that the'
+                    u' server has been compromised.')
             desc %= (signature, response.get_url())
 
             # It's probability is higher if we found a long signature
