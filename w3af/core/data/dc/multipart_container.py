@@ -84,7 +84,8 @@ class MultipartContainer(Form):
                 else:
                     attrs = {'type': INPUT_TYPE_FILE,
                              'name': key.name,
-                             'value': key.file.read()}
+                             'value': key.file.read(),
+                             'filename': key.filename}
                     form_params.add_field_by_attrs(attrs)
                     form_params.set_file_name(key.name, key.filename)
 
