@@ -9,7 +9,8 @@ from common.docker_helpers import (check_root, create_volumes, start_container,
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--tag', help='Docker image tag to run. Default'
-                                            'is: stable.',
+                                            ' is stable, try unstable to get'
+                                            ' the latest w3af features.',
                         required=False)
     args = parser.parse_args()
     return args
