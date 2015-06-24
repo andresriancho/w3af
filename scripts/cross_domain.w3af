@@ -1,7 +1,7 @@
 # This script shows how w3af reads a crossdomain.xml file
 
 plugins
-discovery ria_enumerator 
+crawl ria_enumerator 
 back
 target
 set target http://moth

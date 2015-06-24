@@ -1,5 +1,5 @@
 plugins
-list discovery
+list crawl
 list bruteforce
 list audit
 list evasion

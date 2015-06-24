@@ -10,8 +10,8 @@ output config console
 set verbose True
 back
 
-discovery bing_spider
-discovery config bing_spider
+crawl bing_spider
+crawl config bing_spider
 set resultLimit 10
 back
 back

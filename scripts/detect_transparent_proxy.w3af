@@ -10,7 +10,7 @@ output config console
 set verbose False
 back
 
-discovery detect_transparent_proxy
+infrastructure detect_transparent_proxy
 back
 
 target
