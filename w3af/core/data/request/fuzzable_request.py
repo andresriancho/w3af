@@ -156,7 +156,7 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         return cls(http_response.get_uri(), method='GET', cookie=cookie)
 
     @classmethod
-    def from_urllib2_request(cls, request):
+    def from_http_request(cls, request):
         """
         :param request: The instance we'll use as base
         :return: An instance of FuzzableRequest based on a urllib2 HTTP request
