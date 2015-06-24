@@ -480,12 +480,17 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         for k, v in chain(self._headers.items(),
                           self.get_post_data_headers().items()):
 
-            # Ignore any keys which are already defined in the user-specified
-            # headers
-            kvalue, kreal = wire_headers.iget(k, None)
-            if kvalue is not None:
-                continue
-
+            # Please note that here we're overwriting the headers from the
+            # fuzzable request with the headers from the data container,
+            # the overwriting is done in this order due to the order in the
+            # chain() items above
+            #
+            # I found a bug where I loaded a request from spider_man, saved
+            # it using dump() and then tried to load it again and failed because
+            # of this overwriting not being done (the multipart boundary was
+            # incorrect).
+            #
+            # Keep that in mind in case you want to change this overwriting!
             wire_headers[k] = v
 
         return wire_headers
