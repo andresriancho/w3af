@@ -3,7 +3,8 @@
 import argparse
 
 from common.docker_helpers import (check_root, create_volumes, start_container,
-                                   connect_to_container, stop_container)
+                                   connect_to_container, stop_container,
+                                   restore_file_ownership)
 
 
 def parse_args():
@@ -35,3 +36,4 @@ if __name__ == '__main__':
         connect_to_container(container_id, cmd)
     finally:
         stop_container(container_id)
+        restore_file_ownership()
