@@ -51,8 +51,8 @@ class Headers(NonRepeatKeyValueContainer):
             Content-Length: 123
         """
         res = []
-        splitted_str = headers_str.split('\r\n')
-        for one_header_line in splitted_str:
+        split_str = headers_str.split('\r\n')
+        for one_header_line in split_str:
             
             if not one_header_line:
                 continue
@@ -170,12 +170,16 @@ class Headers(NonRepeatKeyValueContainer):
         :return: string representation of the Headers() object.
         """
         header_str_unicode = self._to_str_with_separators(u': ', u'\r\n')
-        header_str_unicode += u'\r\n'
-        
+        if header_str_unicode:
+            header_str_unicode += u'\r\n'
+
         return header_str_unicode.encode('utf-8')
 
     def __unicode__(self):
         """
         :see: __str__ documentation.
         """
-        return self._to_str_with_separators(u': ', u'\r\n') + u'\r\n'
+        headers_unicode = self._to_str_with_separators(u': ', u'\r\n')
+        if headers_unicode:
+            headers_unicode += u'\r\n'
+        return headers_unicode
