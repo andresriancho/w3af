@@ -491,7 +491,13 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             # incorrect).
             #
             # Keep that in mind in case you want to change this overwriting!
-            wire_headers[k] = v
+            #
+            # Overwrite the existing one, case insensitive style
+            _, stored_header_name = wire_headers.iget(k, None)
+            if stored_header_name is not None:
+                wire_headers[stored_header_name] = v
+            else:
+                wire_headers[k] = v
 
         return wire_headers
 
