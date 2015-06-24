@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
-from nose.plugins.attrib import attr
-
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -35,12 +33,12 @@ class TestImportResults(PluginTest):
     BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
                              'import_results')
 
-    input_base64 = os.path.join(BASE_PATH, 'input-test.b64')
-    input_burp = os.path.join(BASE_PATH, 'input-nobase64.burp')
-    input_burp_b64 = os.path.join(BASE_PATH, 'input-base64.burp')
+    input_base64 = os.path.join(BASE_PATH, 'w3af.base64')
+    input_burp = os.path.join(BASE_PATH, 'burp-no-base64.xml')
+    input_burp_b64 = os.path.join(BASE_PATH, 'burp-base64.xml')
 
     _run_configs = {
-        'csv': {
+        'w3af': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('import_results',
                                                ('input_base64', input_base64,
@@ -67,16 +65,34 @@ class TestImportResults(PluginTest):
     }
 
     def test_base64(self):
-        cfg = self._run_configs['csv']
+        cfg = self._run_configs['w3af']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get_all_known_fuzzable_requests()
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if fr.get_raw_data()]
-        self.assertEqual(len(post_fr), 1)
+        #
+        #   Assert that headers are loaded from the file
+        #
+        mozilla = 0
+        for fuzzable_request in fuzzable_requests:
+            user_agent, _ = fuzzable_request.get_headers().iget('user-agent')
 
-        post_fr = post_fr[0]
-        expected_post_url = 'http://127.0.0.1:8000/audit/xss/simple_xss_form.py'
+            if user_agent is None:
+                continue
+
+            self.assertIn('mozilla', user_agent.lower())
+            mozilla += 1
+
+        self.assertGreater(mozilla, 0)
+
+        #
+        #   Assert that POST requests and their data are loaded from file
+        #
+        post_frs = [fr for fr in fuzzable_requests if fr.get_method() == 'POST']
+        self.assertEqual(len(post_frs), 1)
+
+        post_fr = post_frs[0]
+        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
 
         self.assertEqual(post_fr.get_url().url_string, expected_post_url)
         self.assertEqual(post_fr.get_data(), 'text=abc')
@@ -103,8 +119,8 @@ class TestImportResults(PluginTest):
         self.assertEqual(post_uri, 'http://moth/w3af/audit/xss/data_receptor.php')
         self.assertEqual(post_fr.get_data(), 'user=spam&firstname=eggs')
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, FuzzableRequest)]
+        urls = [fr.get_uri().url_string for fr in fr_list if not
+                isinstance(fr, FuzzableRequest)]
 
         EXPECTED_URLS = {'http://moth/w3af/', 'http://moth/w3af/?id=1'}
 

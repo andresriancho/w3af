@@ -38,11 +38,11 @@ from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 
 class import_results(CrawlPlugin):
     """
-    Import URLs found by other tools.
+    Import HTTP requests found by output.export_requests and Burp
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     def __init__(self):
-        CrawlPlugin.__init__(self)
+        super(import_results, self).__init__()
 
         # User configured parameters
         self._input_base64 = ''
@@ -67,6 +67,9 @@ class import_results(CrawlPlugin):
         Load data from the base64 file
         """
         if not self._input_base64:
+            return
+
+        if not os.path.isfile(self._input_base64):
             return
 
         try:

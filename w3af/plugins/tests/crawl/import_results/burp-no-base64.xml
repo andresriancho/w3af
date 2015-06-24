@@ -1,0 +1,1904 @@
+<?xml version="1.1"?>
+<!-- NOTE: Any NULL bytes in requests and responses are preserved within this output, even though this strictly breaks the XML syntax. If your XML parser rejects the NULL bytes then you will need to remove or replace these bytes before parsing. Alternatively, you can use the option to base64-encode requests and responses. -->
+<!DOCTYPE items [
+<!ELEMENT items (item*)>
+<!ATTLIST items burpVersion CDATA "">
+<!ATTLIST items exportTime CDATA "">
+<!ELEMENT item (time, url, host, port, protocol, method, path, extension, request, status, responselength, mimetype, response, comment)>
+<!ELEMENT time (#PCDATA)>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT host (#PCDATA)>
+<!ATTLIST host ip CDATA "">
+<!ELEMENT port (#PCDATA)>
+<!ELEMENT protocol (#PCDATA)>
+<!ELEMENT method (#PCDATA)>
+<!ELEMENT path (#PCDATA)>
+<!ELEMENT extension (#PCDATA)>
+<!ELEMENT request (#PCDATA)>
+<!ATTLIST request base64 (true|false) "false">
+<!ELEMENT status (#PCDATA)>
+<!ELEMENT responselength (#PCDATA)>
+<!ELEMENT mimetype (#PCDATA)>
+<!ELEMENT response (#PCDATA)>
+<!ATTLIST response base64 (true|false) "false">
+<!ELEMENT comment (#PCDATA)>
+]>
+<items burpVersion="1.5.01" exportTime="Wed Jun 24 08:51:13 ART 2015">
+  <item>
+    <time>Wed Jun 24 08:47:09 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <path><![CDATA[/]]></path>
+    <extension>null</extension>
+    <request base64="false"><![CDATA[GET / HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+]]></request>
+    <status>200</status>
+    <responselength>3505</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 200 OK
+Date: Wed, 24 Jun 2015 11:47:09 GMT
+X-Powered-By: PHP/5.1.2-1+b1 ubuntu
+Content-Type: text/html; charset=utf-8
+Server: TwistedWeb/14.0.0
+Content-Length: 3323
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>moth: vulnerable web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/moth/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/moth/css/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="/static/moth/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moth/css/font-awesome/css/font-awesome.min.css">
+    
+  </head>
+  <body>
+    
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-bug"></i> Moth
+            </a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        <div class="page-header">
+          <h1>moth: vulnerable web application</h1>
+        </div>
+        <p class="lead">
+            
+<div class="row">
+  <div class="col-md-8">
+
+	<p>A set of vulnerable scripts which can be used for testing web application security
+	scanners, teaching web application security, etc.</p>
+	
+	<p>
+	    This is a rewrite of the <a href="https://github.com/andresriancho/w3af-moth">PHP-based moth web application</a>.
+	</p>
+	
+	<h2>Vulnerabilities</h2>
+	<p>
+	This software has numerous vulnerabilities, which are grouped according to the
+	<a href="http://w3af.org">w3af</a> plugin which identifies them:
+	</p>
+	
+	<ul>	
+		
+			<li><a href="/audit/">Audit</a></li>
+		
+			<li><a href="/auth/">Auth</a></li>
+		
+			<li><a href="/bruteforce/">Bruteforce</a></li>
+		
+			<li><a href="/core/">Core</a></li>
+		
+			<li><a href="/crawl/">Crawl</a></li>
+		
+			<li><a href="/grep/">Grep</a></li>
+		
+			<li><a href="/infrastructure/">Infrastructure</a></li>
+		
+	</ul>
+
+  </div>
+  
+  <div class="col-md-4">
+    <p>
+        <div class="alert alert-danger">
+            <i class="fa fa-exclamation-triangle"></i>
+            This software should <b>never be used in a production environment</b>.
+        </div>
+    </p>
+    <div class="row-fluid">
+        <div class="span12 pagination-centered">
+            <img src="/static/moth/images/w3af.png">
+        </div>
+    </div>
+
+  </div>
+</div>
+
+        </p>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Moth, from the creators of <a href="http://w3af.org">w3af</a> <i class="fa fa-external-link"></i>.</p>
+      </div>
+    </div>
+    
+    <script src="/static/moth/js/jquery.js"></script>
+    <script src="/static/moth/js/bootstrap.min.js"></script>
+  </body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:47:10 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/static/moth/css/font-awesome/fonts/fontawesome-webfont.woff?v=4.0.3]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <path><![CDATA[/static/moth/css/font-awesome/fonts/fontawesome-webfont.woff?v=4.0.3]]></path>
+    <extension>woff</extension>
+    <request base64="false"><![CDATA[GET /static/moth/css/font-awesome/fonts/fontawesome-webfont.woff?v=4.0.3 HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: application/font-woff;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: identity
+Referer: http://127.0.0.1:8000/static/moth/css/font-awesome/css/font-awesome.min.css
+Connection: keep-alive
+If-Modified-Since: Fri, 15 Aug 2014 12:54:27 GMT
+
+]]></request>
+    <status>304</status>
+    <responselength>93</responselength>
+    <mimetype></mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 304 NOT MODIFIED
+Date: Wed, 24 Jun 2015 11:47:10 GMT
+Server: TwistedWeb/14.0.0
+
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:47:10 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/favicon.ico]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <path><![CDATA[/favicon.ico]]></path>
+    <extension>ico</extension>
+    <request base64="false"><![CDATA[GET /favicon.ico HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+
+]]></request>
+    <status>404</status>
+    <responselength>1720</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 404 NOT FOUND
+Date: Wed, 24 Jun 2015 11:47:10 GMT
+Content-Type: text/html
+Server: TwistedWeb/14.0.0
+Content-Length: 1583
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /favicon.ico</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style type="text/css">
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font:small sans-serif; background:#eee; }
+    body>div { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h1 span { font-size:60%; color:#666; font-weight:normal; }
+    table { border:none; border-collapse: collapse; width:100%; }
+    td, th { vertical-align:top; padding:2px 3px; }
+    th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    #info { background:#f6f6f6; }
+    #info ol { margin: 0.5em 4em; }
+    #info ol li { font-family: monospace; }
+    #summary { background: #ffc; }
+    #explanation { background:#eee; border-bottom: 0px none; }
+  </style>
+</head>
+<body>
+  <div id="summary">
+    <h1>Page not found <span>(404)</span></h1>
+    <table class="meta">
+      <tr>
+        <th>Request Method:</th>
+        <td>GET</td>
+      </tr>
+      <tr>
+        <th>Request URL:</th>
+      <td>http://127.0.0.1:8000/favicon.ico</td>
+      </tr>
+    </table>
+  </div>
+  <div id="info">
+    
+      <p></p>
+    
+  </div>
+
+  <div id="explanation">
+    <p>
+      You're seeing this error because you have <code>DEBUG = True</code> in
+      your Django settings file. Change that to <code>False</code>, and Django
+      will display a standard 404 page.
+    </p>
+  </div>
+</body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:47:20 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/audit/]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <path><![CDATA[/audit/]]></path>
+    <extension>null</extension>
+    <request base64="false"><![CDATA[GET /audit/ HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:8000/
+Connection: keep-alive
+
+]]></request>
+    <status>200</status>
+    <responselength>17384</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 200 OK
+Date: Wed, 24 Jun 2015 11:47:20 GMT
+Content-Type: text/html; charset=utf-8
+Server: TwistedWeb/14.0.0
+Content-Length: 17238
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>moth: vulnerable web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/moth/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/moth/css/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="/static/moth/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moth/css/font-awesome/css/font-awesome.min.css">
+    
+  </head>
+  <body>
+    
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-bug"></i> Moth
+            </a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        <div class="page-header">
+          <h1>
+    <i class="fa fa-list-ul"></i> Audit plugin family test suite
+</h1>
+        </div>
+        <p class="lead">
+            
+<ul>
+	
+		<a href="blind_sqli/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> blind_sqli</h4>
+		</a>
+		
+		    <li>
+		    	<a href="blind_sqli/where_integer_qs.py?id=1">Trivial Blind SQL injection</a>
+	           
+	              <span class="label label-info">WHERE</span>
+	           
+	              <span class="label label-info">integer</span>
+	           
+	              <span class="label label-info">query-string</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="blind_sqli/where_string_single_qs.py?uname=pablo">Trivial Blind SQL injection</a>
+	           
+	              <span class="label label-info">WHERE</span>
+	           
+	              <span class="label label-info">string</span>
+	           
+	              <span class="label label-info">single-quote</span>
+	           
+	              <span class="label label-info">query-string</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="blind_sqli/blind_where_integer_form.py">Trivial blind SQL injection in form</a>
+	           
+	              <span class="label label-info">WHERE</span>
+	           
+	              <span class="label label-info">integer</span>
+	           
+	              <span class="label label-info">form</span>
+	           
+	              <span class="label label-info">blind</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="blind_sqli/blind_where_integer_form_get.py">Trivial blind SQL injection in form with GET method</a>
+	           
+	              <span class="label label-info">WHERE</span>
+	           
+	              <span class="label label-info">integer</span>
+	           
+	              <span class="label label-info">form</span>
+	           
+	              <span class="label label-info">blind</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="eval_vuln/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> eval_vuln</h4>
+		</a>
+		
+		    <li>
+		    	<a href="eval_vuln/eval_blind.py?text=1">Python eval() vulnerability</a>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">blind</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="eval_vuln/eval_double.py?text=1">Python execute vulnerability</a>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">execute</span>
+	           
+	              <span class="label label-info">-c</span>
+	           
+	              <span class="label label-info">double-quote</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="eval_vuln/eval_single.py?text=1">Python execute vulnerability</a>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">execute</span>
+	           
+	              <span class="label label-info">-c</span>
+	           
+	              <span class="label label-info">single-quote</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="global_redirect/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> global_redirect</h4>
+		</a>
+		
+		    <li>
+		    	<a href="global_redirect/redirect-302.py?url=http://w3af.org/">302 HTTP response code redirect</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="global_redirect/redirect-302-filtered.py?url=http://w3af.org/">302 HTTP response code redirect (filtered)</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="global_redirect/redirect-header-302.py?url=http://w3af.org/">302 HTTP response code redirect with redirect header</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="global_redirect/global-redirect-fp.py?url=http://w3af.org/">False positive check for global redirect</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="global_redirect/redirect-javascript.py?url=http://w3af.org/">JavaScript redirect</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="global_redirect/redirect-meta.py?url=http://w3af.org/">meta tag redirect</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="local_file_read/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> local_file_read</h4>
+		</a>
+		
+		    <li>
+		    	<a href="local_file_read/local_file_read.py?file=section.txt">Arbitrary local file read</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="local_file_read/local_file_read_append_extension.py?file=section">Arbitrary local file read with extension appended</a>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="local_file_read/false_positive_1.py?file=section.txt">Echo /etc/passwd file</a>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="local_file_read/local_file_read_full_path.py?file=section.txt">Full path arbitrary file read</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="memcache_injection/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> memcache_injection</h4>
+		</a>
+		
+		    <li>
+		    	<a href="memcache_injection/memcache_value.py?key=1">Batch injection</a>
+	           
+	              <span class="label label-info">memcache</span>
+	           
+	              <span class="label label-info">memcached</span>
+	           
+	              <span class="label label-info">injection</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="memcache_injection/_memcache_value.py?key=1">Batch injection(internal test version)</a>
+	           
+	              <span class="label label-info">memcache</span>
+	           
+	              <span class="label label-info">memcached</span>
+	           
+	              <span class="label label-info">injection</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="os_commanding/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> os_commanding</h4>
+		</a>
+		
+		    <li>
+		    	<a href="os_commanding/blind_osc.py?cmd=ls">Blind OS Commanding</a>
+	           
+	              <span class="label label-info">blind</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="os_commanding/param_osc.py?param=-la">OS Commanding in command argument</a>
+	           
+	              <span class="label label-info">argument</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="os_commanding/trivial_osc.py?cmd=ls">Trivial OS Commanding</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="phishing_vector/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> phishing_vector</h4>
+		</a>
+		
+		    <li>
+		    	<a href="phishing_vector/frame_phishing.py?url=http://w3af.org/">Frame tag phishing vector (trivial)</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="phishing_vector/iframe_phishing.py?url=http://w3af.org/">Iframe tag phishing vector (trivial)</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="phishing_vector/http_blacklist_phishing.py?url=http://w3af.org/">Iframe tag phishing vector with filter</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="sql_injection/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> sql_injection</h4>
+		</a>
+		
+		    <li>
+		    	<a href="sql_injection/where_integer_form.py">Trivial SQL injection</a>
+	           
+	              <span class="label label-info">WHERE</span>
+	           
+	              <span class="label label-info">integer</span>
+	           
+	              <span class="label label-info">form</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="sql_injection/where_integer_qs.py?id=1">Trivial SQL injection</a>
+	           
+	              <span class="label label-info">WHERE</span>
+	           
+	              <span class="label label-info">integer</span>
+	           
+	              <span class="label label-info">query-string</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="sql_injection/where_string_single_qs.py?uname=pablo">Trivial SQL injection</a>
+	           
+	              <span class="label label-info">WHERE</span>
+	           
+	              <span class="label label-info">string</span>
+	           
+	              <span class="label label-info">single-quote</span>
+	           
+	              <span class="label label-info">query-string</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="ssrf/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> ssrf</h4>
+		</a>
+		
+		    <li>
+		    	<a href="ssrf/login_form.py">Authenticated SSRF test</a>
+	           
+	              <span class="label label-info">POST</span>
+	           
+	              <span class="label label-info">SSRF</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="ssrf/logout.py">Logout the current session</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="ssrf/launchpad.py">SSRF launchpad</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="xpath/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> xpath</h4>
+		</a>
+		
+		    <li>
+		    	<a href="xpath/false_positive_echo.py?text=1">XPath false positive check</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">xss</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xpath/false_positive_static.py?text=1">XPath false positive check</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">empty</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xpath/xpath-attr-or.py">XPath injection in OR query</a>
+	           
+	              <span class="label label-info">POST</span>
+	           
+	              <span class="label label-info">or</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xpath/xpath-attr-double.py">XPath injection in double quoted string</a>
+	           
+	              <span class="label label-info">POST</span>
+	           
+	              <span class="label label-info">double-quote</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xpath/xpath-attr-single.py">XPath injection in single quoted string</a>
+	           
+	              <span class="label label-info">POST</span>
+	           
+	              <span class="label label-info">single-quote</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xpath/xpath-attr-tag.py">XPath injection in tag section of query</a>
+	           
+	              <span class="label label-info">POST</span>
+	           
+	              <span class="label label-info">tag</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="xss/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> xss</h4>
+		</a>
+		
+		    <li>
+		    	<a href="xss/499_check.py?text=1">(almost) Cross-Site Scripting</a>
+	           
+	              <span class="label label-info">false-positive</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">filtered</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/lower_str_xss.py?text=1">.lower() Cross-Site scripting</a>
+	           
+	              <span class="label label-info">.lower()</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/simple_xss.py?text=1">Cross-Site scripting</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/persistent_xss_form.py">Cross-Site scripting in form</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">POST</span>
+	           
+	              <span class="label label-info">persistent</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/simple_xss_form.py">Cross-Site scripting in form</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">POST</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/simple_xss_GET_form.py">Cross-Site scripting in form using GET method</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/two_inputs_form.py">Cross-Site scripting in form with two inputs</a>
+	           
+	              <span class="label label-info">POST</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/xss_multipart_form.py">Cross-Site scripting in multipart/post form</a>
+	           
+	              <span class="label label-info">multipart</span>
+	           
+	              <span class="label label-info">POST</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/xss_with_safe_csp.py?text=1">Cross-Site scripting with CSP enabled</a>
+	           
+	              <span class="label label-info">CSP</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/script_blacklist_xss.py?text=1">Cross-Site scripting with trivial blacklist filter</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">blacklist</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/script_insensitive_blacklist_xss.py?text=1">Cross-Site scripting with trivial blacklist filter</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+	              <span class="label label-info">blacklist</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="xss/xss_with_weak_csp.py?text=1">Cross-Site scripting with weak CSP</a>
+	           
+	              <span class="label label-info">CSP</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		<br>
+	
+</ul>
+
+<br>
+<br>
+<hr>
+<div class="col-lg-1 centered">
+  <a href="../" class="btn btn-primary">
+  	<i class="fa fa-chevron-left"></i> 
+  	Back
+  </a>
+</div>
+
+
+        </p>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Moth, from the creators of <a href="http://w3af.org">w3af</a> <i class="fa fa-external-link"></i>.</p>
+      </div>
+    </div>
+    
+    <script src="/static/moth/js/jquery.js"></script>
+    <script src="/static/moth/js/bootstrap.min.js"></script>
+  </body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:47:29 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/audit/xss/simple_xss_form.py]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <path><![CDATA[/audit/xss/simple_xss_form.py]]></path>
+    <extension>py</extension>
+    <request base64="false"><![CDATA[GET /audit/xss/simple_xss_form.py HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:8000/audit/
+Connection: keep-alive
+
+]]></request>
+    <status>200</status>
+    <responselength>4084</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 200 OK
+Date: Wed, 24 Jun 2015 11:47:29 GMT
+Content-Type: text/html; charset=utf-8
+Server: TwistedWeb/14.0.0
+Content-Length: 3939
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>moth: vulnerable web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/moth/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/moth/css/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="/static/moth/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moth/css/font-awesome/css/font-awesome.min.css">
+    
+  </head>
+  <body>
+    
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-bug"></i> Moth
+            </a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        <div class="page-header">
+          <h1>
+    <i class="fa fa-fire"></i> Cross-Site scripting in form vulnerability
+</h1>
+        </div>
+        <p class="lead">
+            
+
+<div class="row">
+  
+  <div class="col-md-6">
+    <!--
+    *
+    *
+    *
+    This is the piece of HTML you're interested in
+    *
+    *
+    *
+    -->
+    
+    
+        <p></p>
+    
+    
+        
+
+<form  class="form-horizontal" method="post" ><div id="div_id_text" class="control-group"><label for="id_text" class="control-label requiredField">
+				Text<span class="asteriskField">*</span></label><div class="controls"><input class="textinput textInput" id="id_text" name="text" type="text" /> </div></div><input type="submit"
+    name="Submit"
+    value="Submit"
+    
+        class="btn btn-primary btn-success"
+        id="submit-id-submit"
+    
+    
+    /> </form>
+
+    
+
+  </div>
+  
+  <div class="col-md-6">
+    <h4>Meta-data</h4>
+	  <table class="table table-hover table-bordered table-condensed">
+        <thead>
+            <tr>
+                <td><strong>Key</strong></td>
+                <td><strong>Value</strong></td>
+            </tr>
+        </thead>
+        
+	    <tbody>
+		    <tr>
+		        <td>Description</td>
+		        <td>Echo form parameter to HTML without any encoding</td>
+		    </tr>
+		
+		    <tr>
+		        <td>False positive check</td>
+		        <td>
+		        
+		          <i class="fa fa-times icon-error"></i>
+		        
+		        </td>
+		    </tr>
+		    
+                <tr>
+                    <td>Tags</td>
+                    <td>
+		               
+				          <span class="label label-info">trivial</span>
+				       
+				          <span class="label label-info">POST</span>
+				       
+				    </td>
+				</tr>
+		    
+
+            
+            
+	    </tbody>
+	  </table>
+  </div>
+
+  
+  <div class="container">
+    <br>
+    <br>
+    <hr>
+    <div class="col-lg-1 centered">
+	  <a href="../" class="btn btn-primary">
+	  	<i class="fa fa-chevron-left"></i> 
+	  	Back
+	  </a>
+    </div>
+  </div>
+  
+</div>
+
+        </p>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Moth, from the creators of <a href="http://w3af.org">w3af</a> <i class="fa fa-external-link"></i>.</p>
+      </div>
+    </div>
+    
+    <script src="/static/moth/js/jquery.js"></script>
+    <script src="/static/moth/js/bootstrap.min.js"></script>
+  </body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:47:32 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/audit/xss/simple_xss_form.py]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>POST</method>
+    <path><![CDATA[/audit/xss/simple_xss_form.py]]></path>
+    <extension>py</extension>
+    <request base64="false"><![CDATA[POST /audit/xss/simple_xss_form.py HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:8000/audit/xss/simple_xss_form.py
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 24
+
+text=hello&Submit=Submit]]></request>
+    <status>200</status>
+    <responselength>3645</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 200 OK
+Date: Wed, 24 Jun 2015 11:47:32 GMT
+Content-Type: text/html; charset=utf-8
+Server: TwistedWeb/14.0.0
+Content-Length: 3500
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>moth: vulnerable web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/moth/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/moth/css/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="/static/moth/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moth/css/font-awesome/css/font-awesome.min.css">
+    
+  </head>
+  <body>
+    
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-bug"></i> Moth
+            </a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        <div class="page-header">
+          <h1>
+    <i class="fa fa-fire"></i> Cross-Site scripting in form vulnerability
+</h1>
+        </div>
+        <p class="lead">
+            
+
+<div class="row">
+  
+  <div class="col-md-6">
+    <!--
+    *
+    *
+    *
+    This is the piece of HTML you're interested in
+    *
+    *
+    *
+    -->
+    
+    
+        <p></p>
+    
+    
+        
+            <p>hello</p>
+        
+    
+
+  </div>
+  
+  <div class="col-md-6">
+    <h4>Meta-data</h4>
+	  <table class="table table-hover table-bordered table-condensed">
+        <thead>
+            <tr>
+                <td><strong>Key</strong></td>
+                <td><strong>Value</strong></td>
+            </tr>
+        </thead>
+        
+	    <tbody>
+		    <tr>
+		        <td>Description</td>
+		        <td>Echo form parameter to HTML without any encoding</td>
+		    </tr>
+		
+		    <tr>
+		        <td>False positive check</td>
+		        <td>
+		        
+		          <i class="fa fa-times icon-error"></i>
+		        
+		        </td>
+		    </tr>
+		    
+                <tr>
+                    <td>Tags</td>
+                    <td>
+		               
+				          <span class="label label-info">trivial</span>
+				       
+				          <span class="label label-info">POST</span>
+				       
+				    </td>
+				</tr>
+		    
+
+            
+            
+	    </tbody>
+	  </table>
+  </div>
+
+  
+  <div class="container">
+    <br>
+    <br>
+    <hr>
+    <div class="col-lg-1 centered">
+	  <a href="../" class="btn btn-primary">
+	  	<i class="fa fa-chevron-left"></i> 
+	  	Back
+	  </a>
+    </div>
+  </div>
+  
+</div>
+
+        </p>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Moth, from the creators of <a href="http://w3af.org">w3af</a> <i class="fa fa-external-link"></i>.</p>
+      </div>
+    </div>
+    
+    <script src="/static/moth/js/jquery.js"></script>
+    <script src="/static/moth/js/bootstrap.min.js"></script>
+  </body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:48:35 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/core/]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <path><![CDATA[/core/]]></path>
+    <extension>null</extension>
+    <request base64="false"><![CDATA[GET /core/ HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:8000/
+Connection: keep-alive
+
+]]></request>
+    <status>200</status>
+    <responselength>6189</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 200 OK
+Date: Wed, 24 Jun 2015 11:48:35 GMT
+Content-Type: text/html; charset=utf-8
+Server: TwistedWeb/14.0.0
+Content-Length: 6044
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>moth: vulnerable web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/moth/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/moth/css/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="/static/moth/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moth/css/font-awesome/css/font-awesome.min.css">
+    
+  </head>
+  <body>
+    
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-bug"></i> Moth
+            </a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        <div class="page-header">
+          <h1>
+    <i class="fa fa-list-ul"></i> Core plugin family test suite
+</h1>
+        </div>
+        <p class="lead">
+            
+<ul>
+	
+		<a href="cookies/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> cookies</h4>
+		</a>
+		
+		    <li>
+		    	<a href="cookies/get-cookie.py">Checks for &quot;TestCookie&quot;</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="cookies/echo-cookies.py">Echoes all cookies</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="cookies/set-cookie.py">Sets a &quot;TestCookie&quot; for testing</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="deflate/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> deflate</h4>
+		</a>
+		
+		    <li>
+		    	<a href="deflate/deflate.html">This view uses deflate/zlib to encode the response</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="delay/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> delay</h4>
+		</a>
+		
+		    <li>
+		    	<a href="delay/delay-responses.py?name=alice">Delay all responses 3 seconds</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="encoding_euc-jp/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> encoding_euc-jp</h4>
+		</a>
+		
+		    <li>
+		    	<a href="encoding_euc-jp/qs-jp.py?%E9%A0%B4%E8%8B%B1%E8%A1%9B%E8%A9%A0%E9%8B%AD%E6%B6%B2%E7%96%AB%E7%9B%8A=1">Link with a query string in Japanese</a>
+	           
+	              <span class="label label-info">encoded</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="encoding_euc-jp/raw-qs-jp.py?￩ﾠﾴ￨ﾋﾱ￨ﾡﾛ￨ﾩﾠ￩ﾋﾭ￦ﾶﾲ￧ﾖﾫ￧ﾛﾊ=1">Link with a query string in Japanese</a>
+	           
+	              <span class="label label-info">not-encoded</span>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="encoding_spaces/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> encoding_spaces</h4>
+		</a>
+		
+		    <li>
+		    	<a href="encoding_spaces/xss-get.py">Cross-Site scripting</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">GET</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="encoding_spaces/xss-post.py">Cross-Site scripting</a>
+	           
+	              <span class="label label-info">trivial</span>
+	           
+	              <span class="label label-info">POST</span>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="encoding_spaces/form_GET_spaces.html">Form with special parameters and GET method</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="encoding_spaces/form_POST_spaces.html">Form with special parameters and POST method</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="encoding_utf8/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> encoding_utf8</h4>
+		</a>
+		
+		    <li>
+		    	<a href="encoding_utf8/￦ﾔﾹ.py">UTF-8 test with Japanese characters</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="encoding_utf8/ￃﾩ.py">UTF-8 test with e cute</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="encoding_utf8/%D0%BF%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B0.py">UTF-8 test with encoded Cyrillic cute</a>
+	           
+		    </li>
+		
+		    <li>
+		    	<a href="encoding_utf8/v%C3%BAlnerable.py">UTF-8 test with encoded u cute</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="file_upload/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> file_upload</h4>
+		</a>
+		
+		    <li>
+		    	<a href="file_upload/upload.py">File uploads using multipart</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="gzip/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> gzip</h4>
+		</a>
+		
+		    <li>
+		    	<a href="gzip/gzip.html">This view uses Gzip to encode the response</a>
+	           
+		    </li>
+		
+		<br>
+	
+		<a href="headers/">
+			<h4><small><i class="fa fa-chevron-right"></i></small> headers</h4>
+		</a>
+		
+		    <li>
+		    	<a href="headers/echo-headers.py">Echoes all request headers</a>
+	           
+		    </li>
+		
+		<br>
+	
+</ul>
+
+<br>
+<br>
+<hr>
+<div class="col-lg-1 centered">
+  <a href="../" class="btn btn-primary">
+  	<i class="fa fa-chevron-left"></i> 
+  	Back
+  </a>
+</div>
+
+
+        </p>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Moth, from the creators of <a href="http://w3af.org">w3af</a> <i class="fa fa-external-link"></i>.</p>
+      </div>
+    </div>
+    
+    <script src="/static/moth/js/jquery.js"></script>
+    <script src="/static/moth/js/bootstrap.min.js"></script>
+  </body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:48:46 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/core/file_upload/upload.py]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>GET</method>
+    <path><![CDATA[/core/file_upload/upload.py]]></path>
+    <extension>py</extension>
+    <request base64="false"><![CDATA[GET /core/file_upload/upload.py HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:8000/core/
+Connection: keep-alive
+
+]]></request>
+    <status>200</status>
+    <responselength>3859</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 200 OK
+Date: Wed, 24 Jun 2015 11:48:46 GMT
+Content-Type: text/html; charset=utf-8
+Server: TwistedWeb/14.0.0
+Content-Length: 3714
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>moth: vulnerable web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/moth/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/moth/css/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="/static/moth/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moth/css/font-awesome/css/font-awesome.min.css">
+    
+  </head>
+  <body>
+    
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-bug"></i> Moth
+            </a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        <div class="page-header">
+          <h1>
+    <i class="fa fa-fire"></i> File uploads using multipart vulnerability
+</h1>
+        </div>
+        <p class="lead">
+            
+
+<div class="row">
+  
+  <div class="col-md-6">
+    <!--
+    *
+    *
+    *
+    This is the piece of HTML you're interested in
+    *
+    *
+    *
+    -->
+    
+    
+        <p></p>
+    
+    
+        
+
+<form  action="upload.py" id="upload" class="form-horizontal" method="post"  enctype="multipart/form-data"><div id="div_id__file" class="control-group"><label for="id__file" class="control-label requiredField">
+				 file<span class="asteriskField">*</span></label><div class="controls"><input class="clearablefileinput" id="id__file" name="_file" type="file" /> </div></div><input type="submit"
+    name="Upload"
+    value="Upload"
+    
+        class="btn btn-primary btn-success"
+        id="submit-id-upload"
+    
+    
+    /> </form>
+
+    
+
+  </div>
+  
+  <div class="col-md-6">
+    <h4>Meta-data</h4>
+	  <table class="table table-hover table-bordered table-condensed">
+        <thead>
+            <tr>
+                <td><strong>Key</strong></td>
+                <td><strong>Value</strong></td>
+            </tr>
+        </thead>
+        
+	    <tbody>
+		    <tr>
+		        <td>Description</td>
+		        <td>File uploads using multipart</td>
+		    </tr>
+		
+		    <tr>
+		        <td>False positive check</td>
+		        <td>
+		        
+		          <i class="fa fa-times icon-error"></i>
+		        
+		        </td>
+		    </tr>
+		    
+
+            
+            
+	    </tbody>
+	  </table>
+  </div>
+
+  
+  <div class="container">
+    <br>
+    <br>
+    <hr>
+    <div class="col-lg-1 centered">
+	  <a href="../" class="btn btn-primary">
+	  	<i class="fa fa-chevron-left"></i> 
+	  	Back
+	  </a>
+    </div>
+  </div>
+  
+</div>
+
+        </p>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Moth, from the creators of <a href="http://w3af.org">w3af</a> <i class="fa fa-external-link"></i>.</p>
+      </div>
+    </div>
+    
+    <script src="/static/moth/js/jquery.js"></script>
+    <script src="/static/moth/js/bootstrap.min.js"></script>
+  </body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+  <item>
+    <time>Wed Jun 24 08:49:09 ART 2015</time>
+    <url><![CDATA[http://127.0.0.1:8000/core/file_upload/upload.py]]></url>
+    <host ip="127.0.0.1">127.0.0.1</host>
+    <port>8000</port>
+    <protocol>http</protocol>
+    <method>POST</method>
+    <path><![CDATA[/core/file_upload/upload.py]]></path>
+    <extension>py</extension>
+    <request base64="false"><![CDATA[POST /core/file_upload/upload.py HTTP/1.1
+Host: 127.0.0.1:8000
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: http://127.0.0.1:8000/core/file_upload/upload.py
+Connection: keep-alive
+Content-Type: multipart/form-data; boundary=---------------------------20642388915334047631405681806
+Content-Length: 348
+
+-----------------------------20642388915334047631405681806
+Content-Disposition: form-data; name="_file"; filename="test.txt"
+Content-Type: text/plain
+
+hello
+world
+
+-----------------------------20642388915334047631405681806
+Content-Disposition: form-data; name="Upload"
+
+Upload
+-----------------------------20642388915334047631405681806--
+]]></request>
+    <status>200</status>
+    <responselength>3388</responselength>
+    <mimetype>HTML</mimetype>
+    <response base64="false"><![CDATA[HTTP/1.1 200 OK
+Date: Wed, 24 Jun 2015 11:49:09 GMT
+Content-Type: text/html; charset=utf-8
+Server: TwistedWeb/14.0.0
+Content-Length: 3243
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>moth: vulnerable web application</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="/static/moth/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/moth/css/sticky-footer-navbar.css" rel="stylesheet">
+    <link href="/static/moth/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moth/css/font-awesome/css/font-awesome.min.css">
+    
+  </head>
+  <body>
+    
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">
+                <i class="fa fa-bug"></i> Moth
+            </a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        <div class="page-header">
+          <h1>
+    <i class="fa fa-fire"></i> File uploads using multipart vulnerability
+</h1>
+        </div>
+        <p class="lead">
+            
+
+<div class="row">
+  
+  <div class="col-md-6">
+    <!--
+    *
+    *
+    *
+    This is the piece of HTML you're interested in
+    *
+    *
+    *
+    -->
+    
+    
+        <p></p>
+    
+    
+        
+            <p>The file was was successfully uploaded</p>
+        
+    
+
+  </div>
+  
+  <div class="col-md-6">
+    <h4>Meta-data</h4>
+	  <table class="table table-hover table-bordered table-condensed">
+        <thead>
+            <tr>
+                <td><strong>Key</strong></td>
+                <td><strong>Value</strong></td>
+            </tr>
+        </thead>
+        
+	    <tbody>
+		    <tr>
+		        <td>Description</td>
+		        <td>File uploads using multipart</td>
+		    </tr>
+		
+		    <tr>
+		        <td>False positive check</td>
+		        <td>
+		        
+		          <i class="fa fa-times icon-error"></i>
+		        
+		        </td>
+		    </tr>
+		    
+
+            
+            
+	    </tbody>
+	  </table>
+  </div>
+
+  
+  <div class="container">
+    <br>
+    <br>
+    <hr>
+    <div class="col-lg-1 centered">
+	  <a href="../" class="btn btn-primary">
+	  	<i class="fa fa-chevron-left"></i> 
+	  	Back
+	  </a>
+    </div>
+  </div>
+  
+</div>
+
+        </p>
+      </div>
+    </div>
+    
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Moth, from the creators of <a href="http://w3af.org">w3af</a> <i class="fa fa-external-link"></i>.</p>
+      </div>
+    </div>
+    
+    <script src="/static/moth/js/jquery.js"></script>
+    <script src="/static/moth/js/bootstrap.min.js"></script>
+  </body>
+</html>
+]]></response>
+    <comment></comment>
+  </item>
+</items>
