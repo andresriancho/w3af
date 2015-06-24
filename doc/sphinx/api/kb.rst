@@ -5,8 +5,8 @@ Once a ``w3af`` scan has started the knowledge base is populated with the
 vulnerabilities which are identified by the plugins. This information can be
 accessed using the REST API using these resources:
 
- * ``/kb/`` returns all the identified vulnerabilities in a list
- * ``/kb/<vulnerability-id>`` returns detailed information about a vulnerability
+ * ``/scans/<scan-id>/kb/`` returns all the identified vulnerabilities in a list
+ * ``/scans/<scan-id>/kb/<vulnerability-id>`` returns detailed information about a vulnerability
 
 
 List
@@ -16,29 +16,29 @@ Get a list of all known vulnerabilities:
 
 .. code-block:: none
 
-    $ curl http://127.0.0.1:5000/kb/
+    $ curl http://127.0.0.1:5000/scans/0/kb/
     {
       "items": [
         {
-          "href": "/kb/0",
+          "href": "/scans/0/kb/0",
           "id": 0,
           "name": "SQL injection",
           "url": "http://127.0.0.1:8000/audit/sql_injection/where_integer_qs.py"
         },
         {
-          "href": "/kb/1",
+          "href": "/scans/0/kb/1",
           "id": 1,
           "name": "SQL injection",
           "url": "http://127.0.0.1:8000/audit/sql_injection/where_string_single_qs.py"
         },
         {
-          "href": "/kb/2",
+          "href": "/scans/0/kb/2",
           "id": 2,
           "name": "SQL injection",
           "url": "http://127.0.0.1:8000/audit/sql_injection/where_integer_form.py"
         },
         {
-          "href": "/kb/3",
+          "href": "/scans/0/kb/3",
           "id": 3,
           "name": "SQL injection",
           "url": "http://127.0.0.1:8000/audit/sql_injection/where_integer_form.py"
@@ -62,7 +62,7 @@ Get detailed information about a specific vulnerability:
 
 .. code-block:: none
 
-    $ curl http://127.0.0.1:5000/kb/1
+    $ curl http://127.0.0.1:5000/scans/0/kb/1
     {
       "attributes": {
         "db": "Unknown database",
@@ -80,7 +80,7 @@ Get detailed information about a specific vulnerability:
       "highlight": [
         "syntax error"
       ],
-      "href": "/kb/1",
+      "href": "/scans/0/kb/1",
       "id": 1,
       "long_description": "Due to the requirement for dynamic content of today's web applications, many rely on a database backend to store data that will be called upon and processed by the web application (or other programs). Web applications retrieve data from the database by using Structured Query Language (SQL) queries.\n\nTo meet demands of many developers, database servers (such as MSSQL, MySQL, Oracle etc.) have additional built-in functionality that can allow extensive control of the database and interaction with the host operating system itself. An SQL injection occurs when a value originating from the client's request is used within a SQL query without prior sanitisation. This could allow cyber-criminals to execute arbitrary SQL code and steal data or use the additional functionality of the database server to take control of more server components.\n\nThe successful exploitation of a SQL injection can be devastating to an organisation and is one of the most commonly exploited web application vulnerabilities.\n\nThis injection was detected as the tool was able to cause the server to respond to the request with a database related error.",
       "name": "SQL injection",
