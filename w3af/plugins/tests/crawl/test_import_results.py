@@ -94,17 +94,31 @@ class TestImportResults(PluginTest):
         post_fr = post_frs[0]
         expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
 
+        file_contents = 'Hello\nworld\n\nABC\n'
+
         self.assertEqual(post_fr.get_url().url_string, expected_post_url)
-        self.assertEqual(post_fr.get_data(), 'text=abc')
+        self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not fr.get_raw_data()]
+        #
+        #   Assert that we found the URLs
+        #
+        urls = [fr.get_uri().url_string for fr in fuzzable_requests]
 
-        EXPECTED_URLS = {u'http://127.0.0.1:8000/',
-                         u'http://127.0.0.1:8000/audit/',
-                         u'http://127.0.0.1:8000/audit/?id=1'}
+        expected_urls = {
+            u'http://127.0.0.1:8000/',
+            u'http://127.0.0.1:8000/static/moth/css/sticky-footer-navbar.css',
+            u'http://127.0.0.1:8000/core/file_upload/upload.py',
+            u'http://127.0.0.1:8000/static/moth/js/bootstrap.min.js',
+            u'http://127.0.0.1:8000/static/moth/css/font-awesome/css/font-awesome.min.css',
+            u'http://127.0.0.1:8000/static/moth/js/jquery.js',
+            u'http://127.0.0.1:8000/static/moth/css/style.css',
+            u'http://127.0.0.1:8000/about/',
+            u'http://127.0.0.1:8000/static/moth/css/bootstrap.min.css',
+            u'http://127.0.0.1:8000/w3af/file_upload/',
+            u'http://127.0.0.1:8000/static/moth/images/w3af.png',
+        }
 
-        self.assertEqual(set(urls),
-                         EXPECTED_URLS)
+        self.assertEqual(set(urls), expected_urls)
 
     def test_burp_b64(self):
         cfg = self._run_configs['burp64']
