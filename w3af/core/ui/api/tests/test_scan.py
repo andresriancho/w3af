@@ -73,7 +73,7 @@ class APIScanTest(APIUnitTest):
         #
         self.wait_until_finish()
 
-        response = requests.get('%s/kb/' % self.api_url)
+        response = requests.get('%s/scans/%s/kb/' % (self.api_url, scan_id))
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_summaries = response.json()['items']
@@ -87,12 +87,12 @@ class APIScanTest(APIUnitTest):
         #
         # Make sure I can access the vulnerability details
         #
-        response = requests.get('%s/kb/0' % self.api_url)
+        response = requests.get('%s/scans/%s/kb/0' % (self.api_url, scan_id))
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_info = response.json()
         self.assertEqual(vuln_info['plugin_name'], 'sqli')
-        self.assertEqual(vuln_info['href'], '/kb/0')
+        self.assertEqual(vuln_info['href'], '/scans/%s/kb/0' % scan_id)
         self.assertEqual(vuln_info['id'], 0)
         self.assertEqual(vuln_info['fix_effort'], 50)
         self.assertEqual(vuln_info['cwe_ids'], ['89'])
