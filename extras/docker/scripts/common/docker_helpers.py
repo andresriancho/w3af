@@ -5,11 +5,14 @@ import sys
 import os
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
-DOCKER_RUN = 'docker run -d -v ~/.w3af:/root/.w3af ' \
-             '-v ~/w3af-shared:/root/w3af-shared andresriancho/w3af'
+DOCKER_RUN = ('docker run'
+              ' -d'
+              ' -v ~/.w3af:/root/.w3af'
+              ' -v ~/w3af-shared:/root/w3af-shared'
+              ' andresriancho/w3af')
 
 
-def start_container(tag):
+def start_container(tag, command=DOCKER_RUN):
     """
     Start a new w3af container so we can connect using SSH and run w3af
 
@@ -17,9 +20,9 @@ def start_container(tag):
     """
 
     if tag is not None:
-        docker_run = DOCKER_RUN + ':%s' % tag
+        docker_run = command + ':%s' % tag
     else:
-        docker_run = DOCKER_RUN + ':stable'
+        docker_run = command + ':stable'
 
     try:
         container_id = subprocess.check_output(docker_run, shell=True)
