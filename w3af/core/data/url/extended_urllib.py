@@ -730,7 +730,7 @@ class ExtendedUrllib(object):
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
                        cache=False, grep=True, cookies=True,
                        error_handling=True, timeout=None, use_basic_auth=True,
-                       use_proxy=True):
+                       use_proxy=True, follow_redirects=False):
             """
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
@@ -757,6 +757,7 @@ class ExtendedUrllib(object):
                               timeout=timeout,
                               new_connection=new_connection,
                               use_basic_auth=use_basic_auth,
+                              follow_redirects=follow_redirects,
                               use_proxy=True)
             req = uri_opener.add_headers(req, headers or {})
             return uri_opener.send(req, grep=grep)
