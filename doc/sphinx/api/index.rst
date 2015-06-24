@@ -48,3 +48,4 @@ Contents
 
    scans
    kb
+   version
