@@ -23,10 +23,16 @@ from __future__ import print_function
 
 import os
 import sys
+import warnings
 import traceback
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af import ROOT_PATH
+
+# https://github.com/andresriancho/w3af/issues/10705
+warnings.filterwarnings('ignore',
+                        message='Not importing directory .*',
+                        module='w3af.*')
 
 
 def factory(module_name, *args):
