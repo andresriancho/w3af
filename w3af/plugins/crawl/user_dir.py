@@ -46,9 +46,6 @@ class user_dir(CrawlPlugin):
     COMMON_USERS = ['www-data', 'www', 'nobody', 'root', 'admin', 'test', 'ftp',
                     'backup']
 
-    def __init__(self):
-        CrawlPlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
@@ -73,9 +70,9 @@ class user_dir(CrawlPlugin):
 
         # Create a response body to compare with the others
         non_existent_user = '~_w_3_a_f_/'
-        test_URL = base_url.url_join(non_existent_user)
+        test_url = base_url.url_join(non_existent_user)
         try:
-            response = self._uri_opener.GET(test_URL, cache=True,
+            response = self._uri_opener.GET(test_url, cache=True,
                                             headers=headers)
         except:
             msg = 'user_dir failed to create a non existent signature.'
@@ -137,17 +134,17 @@ class user_dir(CrawlPlugin):
         desc = None
 
         if tag == OS:
-            desc = 'The remote OS can be identified as "%s" based'\
-                   ' on the remote user "%s" information that is'\
-                   ' exposed by the web server.'
+            desc = ('The remote OS can be identified as "%s" based'
+                    ' on the remote user "%s" information that is'
+                    ' exposed by the web server.')
             desc = desc % (user_desc, user)
 
             name = 'Fingerprinted operating system'
 
         elif tag == APPLICATION:
-            desc = 'The remote server has "%s" installed, w3af'\
-                   ' found this information based on the remote'\
-                   ' user "%s".'
+            desc = ('The remote server has "%s" installed, w3af'
+                    ' found this information based on the remote'
+                    ' user "%s".')
             desc = desc % (user_desc, user)
 
             name = 'Identified installed application'
