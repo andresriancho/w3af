@@ -117,6 +117,22 @@ class Headers(NonRepeatKeyValueContainer):
 
         return default, None
 
+    def getheaders(self, header_name):
+        """
+        This is just a shortcut to iget plus some extras to make this Header
+        class inter-exchangeable with the urllib2 / headers.
+
+        https://github.com/andresriancho/w3af/issues/10769
+
+        :param header_name: The header name to query
+        :return: A list with the header values
+        """
+        header_value, stored_header_name = self.iget(header_name)
+        if header_value is None:
+            return []
+
+        return [header_value]
+
     def idel(self, header_name):
         """
         :raises: KeyError when the header_name is not found in self.
