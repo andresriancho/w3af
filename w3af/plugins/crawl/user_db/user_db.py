@@ -54,6 +54,12 @@ def get_users_from_csv(ident):
         try:
             desc, user = csv_row
         except ValueError:
+            if not csv_row:
+                continue
+
+            if csv_row[0].startswith('#'):
+                continue
+
             om.out.debug('Invalid user_dir input: "%r"' % csv_row)
         else:
             yield desc, user
