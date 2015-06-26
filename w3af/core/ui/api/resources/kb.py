@@ -25,50 +25,61 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
+from w3af.core.ui.api.utils.scans import get_scan_info_from_id
 
 
-@app.route('/kb/', methods=['GET'])
-def list_kb():
+@app.route('/scans/<int:scan_id>/kb/', methods=['GET'])
+def list_kb(scan_id):
     """
-    List vulnerabilities stored in the KB
+    List vulnerabilities stored in the KB (for a specific scan)
 
     Filters:
 
-        * /kb/?name= returns only vulnerabilities which contain the specified
-          string in the vulnerability name. (contains)
+        * /scans/0/kb/?name= returns only vulnerabilities which contain the
+          specified string in the vulnerability name. (contains)
 
-        * /kb/?url= returns only vulnerabilities for a specific URL (startswith)
+        * /scans/0/kb/?url= returns only vulnerabilities for a specific URL
+          (startswith)
 
     If more than one filter is specified they are combined using AND.
 
     :return: A JSON containing a list of:
-        - KB resource URL (eg. /kb/3)
+        - KB resource URL (eg. /scans/0/kb/3)
         - The KB id (eg. 3)
         - The vulnerability name
         - The vulnerability URL
         - Location A
         - Location B
     """
+    scan_info = get_scan_info_from_id(scan_id)
+    if scan_info is None:
+        abort(404, 'Scan not found')
+
     data = []
 
     for finding_id, finding in enumerate(kb.kb.get_all_findings()):
         if matches_filter(finding, request):
-            data.append(finding_to_json(finding, finding_id))
+            data.append(finding_to_json(finding, scan_id, finding_id))
 
     return jsonify({'items': data})
 
 
-@app.route('/kb/<int:vulnerability_id>', methods=['GET'])
-def get_kb(vulnerability_id):
+@app.route('/scans/<int:scan_id>/kb/<int:vulnerability_id>', methods=['GET'])
+def get_kb(scan_id, vulnerability_id):
     """
     The whole information related to the specified vulnerability ID
 
     :param vulnerability_id: The vulnerability ID to query
     :return: All the vulnerability information
     """
+    scan_info = get_scan_info_from_id(scan_id)
+    if scan_info is None:
+        abort(404, 'Scan not found')
+
     for finding_id, finding in enumerate(kb.kb.get_all_findings()):
         if vulnerability_id == finding_id:
-            return jsonify(finding_to_json(finding, finding_id, detailed=True))
+            return jsonify(finding_to_json(finding, scan_id,
+                                           finding_id, detailed=True))
 
     abort(404, 'Not found')
 
@@ -77,10 +88,11 @@ def matches_filter(finding, request):
     """
     Filters:
 
-        * /kb/?name= returns only vulnerabilities which contain the specified
-          string in the vulnerability name. (contains)
+        * /scans/0/kb/?name= returns only vulnerabilities which contain the
+          specified string in the vulnerability name. (contains)
 
-        * /kb/?url= returns only vulnerabilities for a specific URL (startswith)
+        * /scans/0/kb/?url= returns only vulnerabilities for a specific URL
+          (startswith)
 
     If more than one filter is specified they are combined using AND.
 
@@ -105,18 +117,29 @@ def matches_filter(finding, request):
     return True
 
 
-def finding_to_json(finding, finding_id, detailed=False):
+def finding_to_json(finding, scan_id, finding_id, detailed=False):
     """
     :param finding: The vulnerability
+    :param scan_id: The scan ID
     :param finding_id: The vulnerability ID
     :param detailed: Show extra info
     :return: A dict with the finding information
     """
     summary = {'id': finding_id,
-               'href': '/kb/%s' % finding_id}
+               'href': '/scans/%s/kb/%s' % (scan_id, finding_id)}
 
     if detailed:
+        # Get all the data from w3af
         summary.update(finding.to_json())
+
+        # Add the hrefs to the traffic
+        traffic_hrefs = []
+        for response_id in summary['response_ids']:
+            args = (scan_id, response_id)
+            traffic_href = '/scans/%s/traffic/%s' % args
+            traffic_hrefs.append(traffic_href)
+
+        summary['traffic_hrefs'] = traffic_hrefs
     else:
         summary.update({'name': finding.get_name(),
                         'url': finding.get_url().url_string})

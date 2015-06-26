@@ -39,7 +39,7 @@ class export_requests(OutputPlugin):
 
     def __init__(self):
         OutputPlugin.__init__(self)
-        self.output_file = '~/output-requests.csv'
+        self.output_file = '~/output-requests.b64'
 
     def do_nothing(self, *args, **kwds):
         pass
@@ -63,28 +63,19 @@ class export_requests(OutputPlugin):
             return
 
         try:
-            out_file.write('HTTP-METHOD,URI,POSTDATA\n')
-
             for fr in fuzzable_request_set:
-                out_file.write(fr.to_csv() + '\n')
+                out_file.write(fr.to_base64() + '\n')
 
         except Exception, e:
-            msg = 'An exception was raised while trying to export fuzzable'\
-                  ' requests to the output file: "%s".' % e
+            msg = ('An exception was raised while trying to export fuzzable'
+                   ' requests to the output file: "%s".' % e)
             om.out.error(msg)
         finally:
             out_file.close()
 
     def set_options(self, option_list):
         """
-        Sets the Options given on the OptionList to self. The options are the
-        result of a user entering some data on a window that was constructed
-        using the XML Options that was retrieved from the plugin using
-        get_options()
-
-        This method MUST be implemented on every plugin.
-
-        :return: No value is returned.
+        :return: Save the options for this plugin
         """
         self.output_file = option_list['output_file'].get_value()
 
@@ -105,9 +96,18 @@ class export_requests(OutputPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin exports all discovered HTTP requests (URL, Method, Params)
-        to the given file (CSV) which can then be imported in another scan by
-        using the crawl.import_results.
+        This plugin exports all discovered HTTP requests to an output file. The
+        output can then be read in another scan by the crawl.import_results to
+        avoid performing an expensive crawling phase.
+
+        The file format is simple:
+
+         * HTTP requests are serialized to a string (just how they would be
+           sent to the wire)
+
+         * Base64 encoding is used to encode the serialized request
+
+         * Each encoded request is stored in a new line
 
         One configurable parameter exists:
             - output_file

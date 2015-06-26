@@ -51,8 +51,8 @@ class Headers(NonRepeatKeyValueContainer):
             Content-Length: 123
         """
         res = []
-        splitted_str = headers_str.split('\r\n')
-        for one_header_line in splitted_str:
+        split_str = headers_str.split('\r\n')
+        for one_header_line in split_str:
             
             if not one_header_line:
                 continue
@@ -117,6 +117,22 @@ class Headers(NonRepeatKeyValueContainer):
 
         return default, None
 
+    def getheaders(self, header_name):
+        """
+        This is just a shortcut to iget plus some extras to make this Header
+        class inter-exchangeable with the urllib2 / headers.
+
+        https://github.com/andresriancho/w3af/issues/10769
+
+        :param header_name: The header name to query
+        :return: A list with the header values
+        """
+        header_value, stored_header_name = self.iget(header_name)
+        if header_value is None:
+            return []
+
+        return [header_value]
+
     def idel(self, header_name):
         """
         :raises: KeyError when the header_name is not found in self.
@@ -170,12 +186,16 @@ class Headers(NonRepeatKeyValueContainer):
         :return: string representation of the Headers() object.
         """
         header_str_unicode = self._to_str_with_separators(u': ', u'\r\n')
-        header_str_unicode += u'\r\n'
-        
+        if header_str_unicode:
+            header_str_unicode += u'\r\n'
+
         return header_str_unicode.encode('utf-8')
 
     def __unicode__(self):
         """
         :see: __str__ documentation.
         """
-        return self._to_str_with_separators(u': ', u'\r\n') + u'\r\n'
+        headers_unicode = self._to_str_with_separators(u': ', u'\r\n')
+        if headers_unicode:
+            headers_unicode += u'\r\n'
+        return headers_unicode

@@ -32,9 +32,11 @@ class KBApiTest(APIUnitTest):
         profile, target_url = get_test_profile()
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
-        requests.post('%s/scans/' % self.api_url,
-                      data=json.dumps(data),
-                      headers=self.headers)
+        response = requests.post('%s/scans/' % self.api_url,
+                                 data=json.dumps(data),
+                                 headers=self.headers)
+
+        scan_id = response.json()['id']
 
         #
         # Wait until the scanner finishes and assert the vulnerabilities
@@ -45,13 +47,14 @@ class KBApiTest(APIUnitTest):
         #
         # Name filter
         #
-        response = requests.get('%s/kb/?name=SQL%%20Injection' % self.api_url)
+        args = (self.api_url, scan_id)
+        response = requests.get('%s/scans/%s/kb/?name=SQL%%20Injection' % args)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_items = response.json()['items']
         self.assertEqual(4, len(vuln_items), self.create_assert_message())
 
-        response = requests.get('%s/kb/?name=Foo' % self.api_url)
+        response = requests.get('%s/scans/%s/kb/?name=Foo' % args)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_items = response.json()['items']
@@ -60,13 +63,14 @@ class KBApiTest(APIUnitTest):
         #
         # URL filter
         #
-        response = requests.get('%s/kb/?url=%s' % (self.api_url, target_url))
+        extra_args = (self.api_url, scan_id, target_url)
+        response = requests.get('%s/scans/%s/kb/?url=%s' % extra_args)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_items = response.json()['items']
         self.assertEqual(4, len(vuln_items))
 
-        response = requests.get('%s/kb/?url=http://google.com/' % self.api_url)
+        response = requests.get('%s/scans/%s/kb/?url=http://google.com/' % args)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_items = response.json()['items']
@@ -75,8 +79,8 @@ class KBApiTest(APIUnitTest):
         #
         # Combined filter
         #
-        qs = '%s/kb/?url=%s&name=SQL%%20injection'
-        response = requests.get(qs % (self.api_url, target_url))
+        qs = '%s/scans/%s/kb/?url=%s&name=SQL%%20injection'
+        response = requests.get(qs % extra_args)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_items = response.json()['items']

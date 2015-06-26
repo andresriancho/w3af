@@ -15,8 +15,7 @@ def parse_args():
                                             ' is stable, try unstable to get'
                                             ' the latest w3af features.',
                         required=False)
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
@@ -25,12 +24,19 @@ if __name__ == '__main__':
     args = parse_args()
     create_volumes()
 
-    container_id = start_container(args.tag)
+    docker_run = ('docker run'
+                  ' -d'
+                  ' -v ~/.w3af:/root/.w3af'
+                  ' -v ~/w3af-shared:/root/w3af-shared'
+                  ' -p 5000:5000'
+                  ' andresriancho/w3af')
+
+    container_id = start_container(args.tag, command=docker_run)
 
     if args.debug:
         cmd = '/bin/bash'
     else:
-        cmd = '/home/w3af/w3af/w3af_console --no-update'
+        cmd = '/home/w3af/w3af/w3af_api 0.0.0.0:5000'
 
     try:
         connect_to_container(container_id, cmd)

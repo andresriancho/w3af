@@ -9,7 +9,7 @@ back
 
 plugins
 audit
-discovery
+crawl
 output
 back
 

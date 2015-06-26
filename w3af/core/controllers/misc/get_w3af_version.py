@@ -35,22 +35,30 @@ def get_minimalistic_version():
     return file(VERSION_FILE).read().strip()
 
 
-def get_w3af_version():
+def get_w3af_version_as_dict():
     """
-    :return: A string with the w3af version.
+    :return: All the version information in a dict
     """
     commit = to_short_id(get_latest_commit()) if is_git_repo() else 'unknown'
     cdate = ' - %s' % get_latest_commit_date() if is_git_repo() else ''
     branch = get_current_branch() if is_git_repo() else 'unknown'
     dirty = 'Yes' if is_dirty_repo() else 'No'
 
-    vnumber = get_minimalistic_version()
+    return {'version': get_minimalistic_version(),
+            'revision': commit + cdate,
+            'branch': branch,
+            'dirty': dirty}
+
+
+def get_w3af_version():
+    """
+    :return: A string with the w3af version.
+    """
+    version_dict = get_w3af_version_as_dict()
     
     return ('w3af - Web Application Attack and Audit Framework\n'
-            'Version: %s\n'
-            'Revision: %s%s\n'
-            'Branch: %s\n'
-            'Local changes: %s\n'
-            'Author: Andres Riancho and the w3af team.') % (vnumber, commit,
-                                                            cdate, branch,
-                                                            dirty)
+            'Version: %(version)s\n'
+            'Revision: %(revision)s\n'
+            'Branch: %(branch)s\n'
+            'Local changes: %(dirty)s\n'
+            'Author: Andres Riancho and the w3af team.') % version_dict

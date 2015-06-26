@@ -295,7 +295,10 @@ class FormParameters(OrderedDict):
                 form_field = CheckboxFormField(input_name, [input_value])
 
         elif input_type == INPUT_TYPE_FILE:
-            form_field = FileFormField(input_name)
+            file_name = get_value_by_key(attributes, 'filename')
+            form_field = FileFormField(input_name,
+                                       value=input_value,
+                                       file_name=file_name)
 
         else:
             form_field = GenericFormField(input_type, input_name, input_value,

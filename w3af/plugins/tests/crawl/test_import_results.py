@@ -20,13 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
-from nose.plugins.attrib import attr
-
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from w3af.plugins.crawl.import_results import import_results
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.dc.query_string import QueryString
 from w3af.core.controllers.ci.moth import get_moth_http
 
 
@@ -37,15 +33,15 @@ class TestImportResults(PluginTest):
     BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl',
                              'import_results')
 
-    input_csv = os.path.join(BASE_PATH, 'input-test.csv')
-    input_burp = os.path.join(BASE_PATH, 'input-nobase64.burp')
-    input_burp_b64 = os.path.join(BASE_PATH, 'input-base64.burp')
+    input_base64 = os.path.join(BASE_PATH, 'w3af.base64')
+    input_burp = os.path.join(BASE_PATH, 'burp-no-base64.xml')
+    input_burp_b64 = os.path.join(BASE_PATH, 'burp-base64.xml')
 
     _run_configs = {
-        'csv': {
+        'w3af': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('import_results',
-                                               ('input_csv', input_csv,
+                                               ('input_base64', input_base64,
                                                 PluginConfig.STR),
                                                ('input_burp', '', PluginConfig.STR)),)}
         },
@@ -53,7 +49,7 @@ class TestImportResults(PluginTest):
         'burp64': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('import_results',
-                                               ('input_csv',
+                                               ('input_base64',
                                                 '', PluginConfig.STR),
                                                ('input_burp', input_burp_b64, PluginConfig.STR)),)}
         },
@@ -61,117 +57,176 @@ class TestImportResults(PluginTest):
         'burp': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('import_results',
-                                               ('input_csv',
+                                               ('input_base64',
                                                 '', PluginConfig.STR),
                                                ('input_burp', input_burp, PluginConfig.STR)),)}
         },
 
     }
 
-    def test_import_csv_line(self):
-        irp = import_results()
-
-        qsr = irp._obj_from_csv(('GET', 'http://www.w3af.com/', ''))
-
-        self.assertIsInstance(qsr, FuzzableRequest)
-        self.assertEqual(qsr.get_url().get_domain(), 'www.w3af.com')
-        self.assertEqual(qsr.get_url().get_path(), '/')
-        self.assertEqual(qsr.get_method(), 'GET')
-        self.assertEqual(qsr.get_data(), '')
-
-    def test_import_csv_line_query_string(self):
-        irp = import_results()
-        qsr = irp._obj_from_csv(('GET', 'http://www.w3af.com/?id=1', ''))
-
-        self.assertIsInstance(qsr, FuzzableRequest)
-        self.assertEqual(qsr.get_url().get_domain(), 'www.w3af.com')
-        self.assertEqual(qsr.get_url().get_path(), '/')
-        self.assertEqual(qsr.get_method(), 'GET')
-        self.assertEqual(qsr.get_uri().get_querystring(),
-                         QueryString([(u'id', [u'1'])]))
-        self.assertEqual(qsr.get_data(), '')
-
-    def test_import_csv_line_GET_with_post_data(self):
-        irp = import_results()
-        pdr = irp._obj_from_csv(('GET', 'http://www.w3af.com/xyz', 'id=1'))
-
-        self.assertIsInstance(pdr, FuzzableRequest)
-        self.assertEqual(pdr.get_url().get_domain(), 'www.w3af.com')
-        self.assertEqual(pdr.get_url().get_path(), '/xyz')
-        self.assertEqual(pdr.get_method(), 'GET')
-        self.assertEqual(pdr.get_data(), 'id=1')
-
-    def test_csv(self):
-        """
-        Note that the CSV file has the following tests in it:
-            * Simple GET, no parameters, no QS
-            * URL with HttP as protocol
-            * GET with QS
-            * POST with parameters
-        """
-        cfg = self._run_configs['csv']
+    def test_base64(self):
+        cfg = self._run_configs['w3af']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get_all_known_fuzzable_requests()
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if fr.get_raw_data()]
-        self.assertEqual(len(post_fr), 1)
+        #
+        #   Assert that headers are loaded from the file
+        #
+        mozilla = 0
+        for fuzzable_request in fuzzable_requests:
+            user_agent, _ = fuzzable_request.get_headers().iget('user-agent')
 
-        post_fr = post_fr[0]
-        expected_post_url = 'http://127.0.0.1:8000/audit/xss/simple_xss_form.py'
+            if user_agent is None:
+                continue
+
+            self.assertIn('mozilla', user_agent.lower())
+            mozilla += 1
+
+        self.assertGreater(mozilla, 0)
+
+        #
+        #   Assert that POST requests and their data are loaded from file
+        #
+        post_frs = [fr for fr in fuzzable_requests if fr.get_method() == 'POST']
+        self.assertEqual(len(post_frs), 1)
+
+        post_fr = post_frs[0]
+        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
+
+        file_contents = 'Hello\nworld\n\nABC\n'
 
         self.assertEqual(post_fr.get_url().url_string, expected_post_url)
-        self.assertEqual(post_fr.get_data(), 'text=abc')
+        self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not fr.get_raw_data()]
+        #
+        #   Assert that we found the URLs
+        #
+        urls = [fr.get_uri().url_string for fr in fuzzable_requests]
 
-        EXPECTED_URLS = {u'http://127.0.0.1:8000/',
-                         u'http://127.0.0.1:8000/audit/',
-                         u'http://127.0.0.1:8000/audit/?id=1'}
+        expected_urls = {
+            u'http://127.0.0.1:8000/',
+            u'http://127.0.0.1:8000/static/moth/css/sticky-footer-navbar.css',
+            u'http://127.0.0.1:8000/core/file_upload/upload.py',
+            u'http://127.0.0.1:8000/static/moth/js/bootstrap.min.js',
+            u'http://127.0.0.1:8000/static/moth/css/font-awesome/css/font-awesome.min.css',
+            u'http://127.0.0.1:8000/static/moth/js/jquery.js',
+            u'http://127.0.0.1:8000/static/moth/css/style.css',
+            u'http://127.0.0.1:8000/about/',
+            u'http://127.0.0.1:8000/static/moth/css/bootstrap.min.css',
+            u'http://127.0.0.1:8000/w3af/file_upload/',
+            u'http://127.0.0.1:8000/static/moth/images/w3af.png',
+        }
 
-        self.assertEqual(set(urls),
-                         EXPECTED_URLS)
+        self.assertEqual(set(urls), expected_urls)
 
-    @attr('ci_fails')
     def test_burp_b64(self):
         cfg = self._run_configs['burp64']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, FuzzableRequest)]
-        self.assertEqual(len(post_fr), 1)
-        post_fr = post_fr[0]
-        post_uri = post_fr.get_url().url_string
-        self.assertEqual(post_uri, 'http://moth/w3af/audit/xss/data_receptor.php')
-        self.assertEqual(post_fr.get_data(), 'user=spam&firstname=eggs')
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, FuzzableRequest)]
+        #
+        #   Assert that headers are loaded from the file
+        #
+        mozilla = 0
+        for fuzzable_request in fuzzable_requests:
+            user_agent, _ = fuzzable_request.get_headers().iget('user-agent')
 
-        EXPECTED_URLS = {'http://moth/w3af/', 'http://moth/w3af/?id=1'}
+            if user_agent is None:
+                continue
 
-        self.assertEqual(set(urls),
-                         EXPECTED_URLS)
+            self.assertIn('mozilla', user_agent.lower())
+            mozilla += 1
 
-    @attr('ci_fails')
+        self.assertGreater(mozilla, 0)
+
+        #
+        #   Assert that POST requests and their data are loaded from file
+        #
+        post_frs = [fr for fr in fuzzable_requests if fr.get_method() == 'POST']
+
+        expected_post_urls = {'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                              'http://127.0.0.1:8000/core/file_upload/upload.py'}
+        post_urls = set([fr.get_uri().url_string for fr in post_frs])
+
+        self.assertEqual(expected_post_urls, post_urls)
+
+        post_fr = post_frs[1]
+        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
+
+        file_contents = 'hello\nworld\n'
+
+        self.assertEqual(post_fr.get_url().url_string, expected_post_url)
+        self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
+
+        #
+        #   Assert that we found the URLs
+        #
+        urls = [fr.get_uri().url_string for fr in fuzzable_requests]
+
+        expected_urls = {u'http://127.0.0.1:8000/',
+                         u'http://127.0.0.1:8000/core/',
+                         u'http://127.0.0.1:8000/favicon.ico',
+                         u'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                         u'http://127.0.0.1:8000/core/file_upload/upload.py',
+                         u'http://127.0.0.1:8000/audit/',
+                         u'http://127.0.0.1:8000/static/moth/css/font-awesome/fonts/fontawesome-webfont.woff?v=4.0.3'}
+
+        self.assertEqual(set(urls), expected_urls)
+
     def test_burp(self):
         cfg = self._run_configs['burp']
         self._scan(cfg['target'], cfg['plugins'])
 
-        fr_list = self.kb.get_all_known_fuzzable_requests()
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
 
-        post_fr = [fr for fr in fr_list if isinstance(fr, FuzzableRequest)]
-        self.assertEqual(len(post_fr), 1)
-        post_fr = post_fr[0]
-        post_uri = post_fr.get_url().url_string
-        self.assertEqual(post_uri, 'http://moth/w3af/audit/xss/data_receptor.php')
-        self.assertEqual(post_fr.get_data(), 'user=spam&firstname=eggs')
+        #
+        #   Assert that headers are loaded from the file
+        #
+        mozilla = 0
+        for fuzzable_request in fuzzable_requests:
+            user_agent, _ = fuzzable_request.get_headers().iget('user-agent')
 
-        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
-            fr, FuzzableRequest)]
+            if user_agent is None:
+                continue
 
-        EXPECTED_URLS = {'http://moth/w3af/', 'http://moth/w3af/?id=1'}
+            self.assertIn('mozilla', user_agent.lower())
+            mozilla += 1
 
-        self.assertEqual(set(urls),
-                         EXPECTED_URLS)
+        self.assertGreater(mozilla, 0)
+
+        #
+        #   Assert that POST requests and their data are loaded from file
+        #
+        post_frs = [fr for fr in fuzzable_requests if fr.get_method() == 'POST']
+
+        expected_post_urls = {'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                              'http://127.0.0.1:8000/core/file_upload/upload.py'}
+        post_urls = set([fr.get_uri().url_string for fr in post_frs])
+
+        self.assertEqual(expected_post_urls, post_urls)
+
+        post_fr = post_frs[1]
+        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
+
+        file_contents = 'hello\nworld\n'
+
+        self.assertEqual(post_fr.get_url().url_string, expected_post_url)
+        self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
+
+        #
+        #   Assert that we found the URLs
+        #
+        urls = [fr.get_uri().url_string for fr in fuzzable_requests]
+
+        expected_urls = {u'http://127.0.0.1:8000/',
+                         u'http://127.0.0.1:8000/core/',
+                         u'http://127.0.0.1:8000/favicon.ico',
+                         u'http://127.0.0.1:8000/audit/xss/simple_xss_form.py',
+                         u'http://127.0.0.1:8000/core/file_upload/upload.py',
+                         u'http://127.0.0.1:8000/audit/',
+                         u'http://127.0.0.1:8000/static/moth/css/font-awesome/fonts/fontawesome-webfont.woff?v=4.0.3'}
+
+        self.assertEqual(set(urls), expected_urls)

@@ -5,11 +5,14 @@ import sys
 import os
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
-DOCKER_RUN = 'docker run -d -v ~/.w3af:/root/.w3af ' \
-             '-v ~/w3af-shared:/root/w3af-shared andresriancho/w3af'
+DOCKER_RUN = ('docker run'
+              ' -d'
+              ' -v ~/.w3af:/root/.w3af'
+              ' -v ~/w3af-shared:/root/w3af-shared'
+              ' andresriancho/w3af')
 
 
-def start_container(tag):
+def start_container(tag, command=DOCKER_RUN):
     """
     Start a new w3af container so we can connect using SSH and run w3af
 
@@ -17,9 +20,9 @@ def start_container(tag):
     """
 
     if tag is not None:
-        docker_run = DOCKER_RUN + ':%s' % tag
+        docker_run = command + ':%s' % tag
     else:
-        docker_run = DOCKER_RUN + ':stable'
+        docker_run = command + ':stable'
 
     try:
         container_id = subprocess.check_output(docker_run, shell=True)
@@ -104,3 +107,57 @@ def check_root():
     if not os.geteuid() == 0:
         sys.exit('Only root can run this script')
 
+
+def restore_file_ownership():
+    """
+    There are some issues with "sudo w3af_api_docker" (and any other *_docker)
+    where we write to the ~/.w3af/ file but we're doing it as root, and then
+    the user wants to execute ./w3af_api and this message appears:
+
+    Either the w3af home directory "/home/user/.w3af" or its contents are not
+    writable or readable. Please set the correct permissions and ownership.
+    This usually happens when running w3af as root using "sudo"
+
+    So we restore the file ownership of all files inside ~/.w3af/ before exit
+
+    :return: True if we were able to apply the changes
+    """
+    path = os.path.join(os.path.expanduser('~/'), '.w3af')
+    if not os.path.exists(path):
+        return False
+
+    try:
+        # These two are set by sudo, which is the most common way our users
+        # will run w3af inside docker: sudo w3af_console_docker
+        uid = int(os.getenv('SUDO_UID'))
+        gid = int(os.getenv('SUDO_GID'))
+    except ValueError:
+        # TODO: More things to be implemented here
+        return False
+
+    try:
+        _chown(path, uid, gid)
+    except:
+        return False
+
+    return True
+
+
+def _chown(path, uid, gid):
+    """
+    Change permissions recursively
+
+    :param path: The path to apply changes to
+    :param uid: User id
+    :param gid: Group id
+    :return: None
+    """
+    os.chown(path, uid, gid)
+
+    for item in os.listdir(path):
+        item_path = os.path.join(path, item)
+        if os.path.isfile(item_path):
+            os.chown(item_path, uid, gid)
+        elif os.path.isdir(item_path):
+            os.chown(item_path, uid, gid)
+            _chown(item_path, uid, gid)

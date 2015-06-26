@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 import requests
+import base64
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 from w3af.core.ui.api.tests.utils.test_profile import (get_test_profile,
@@ -73,7 +74,7 @@ class APIScanTest(APIUnitTest):
         #
         self.wait_until_finish()
 
-        response = requests.get('%s/kb/' % self.api_url)
+        response = requests.get('%s/scans/%s/kb/' % (self.api_url, scan_id))
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_summaries = response.json()['items']
@@ -87,18 +88,30 @@ class APIScanTest(APIUnitTest):
         #
         # Make sure I can access the vulnerability details
         #
-        response = requests.get('%s/kb/0' % self.api_url)
+        response = requests.get('%s/scans/%s/kb/0' % (self.api_url, scan_id))
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_info = response.json()
         self.assertEqual(vuln_info['plugin_name'], 'sqli')
-        self.assertEqual(vuln_info['href'], '/kb/0')
+        self.assertEqual(vuln_info['href'], '/scans/%s/kb/0' % scan_id)
         self.assertEqual(vuln_info['id'], 0)
         self.assertEqual(vuln_info['fix_effort'], 50)
         self.assertEqual(vuln_info['cwe_ids'], ['89'])
         self.assertEqual(vuln_info['severity'], 'High')
         self.assertEqual(vuln_info['tags'], [u'web', u'sql', u'injection',
                                              u'database', u'error'])
+
+        #
+        # Get the HTTP traffic for this vulnerability
+        #
+        traffic_href = vuln_info['traffic_hrefs'][0]
+        response = requests.get('%s%s' % (self.api_url, traffic_href))
+
+        traffic_data = response.json()
+        self.assertIn('request', traffic_data)
+        self.assertIn('response', traffic_data)
+
+        self.assertIn('GET ', base64.b64decode(traffic_data['request']))
 
         #
         # Get the scan log

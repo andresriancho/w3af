@@ -11,9 +11,19 @@ before diving into this REST API-specific section.
 Starting the REST API service
 -----------------------------
 
+The REST API can be started by running:
+
 .. code-block:: none
 
     $ ./w3af_api
+     * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+
+Or it can also be run inside a docker container:
+
+.. code-block:: none
+
+    $ cd extras/docker/scripts/
+    $ ./w3af_api_docker
      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 
 REST API Source code
@@ -38,3 +48,5 @@ Contents
 
    scans
    kb
+   version
+   traffic

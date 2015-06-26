@@ -124,7 +124,6 @@ class dir_file_bruter(CrawlPlugin):
                     else:
                         yield file_name, dir_url
 
-
     def _send_and_check(self, base_path, (directory_name, dir_url)):
         """
         Performs a GET and verifies that the response is not a 404.
@@ -155,8 +154,8 @@ class dir_file_bruter(CrawlPlugin):
                 fr = FuzzableRequest.from_http_response(http_response)
                 self.output_queue.put(fr)
 
-                msg = 'dir_file_brute plugin found "%s" with HTTP response ' \
-                      'code %s and Content-Length: %s.' \
+                msg = ('dir_file_brute plugin found "%s" with HTTP response '
+                       'code %s and Content-Length: %s.')
                 
                 om.out.information(msg % (http_response.get_url(),
                                           http_response.get_code(),

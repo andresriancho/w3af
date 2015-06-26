@@ -2,7 +2,7 @@
 
 plugins
 infrastructure allowed_methods,web_spider
-discovery
+
 output console,text_file
 output
 output config text_file

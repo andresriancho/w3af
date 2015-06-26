@@ -151,7 +151,7 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals([''], f['foo6'])            # checkbox input
         self.assertEquals(['bar'], f['foo7'])         # hidden input
         self.assertEquals([''], f['foo4'])            # submit input
-        self.assertEquals([''], f['foo3'])            # file input
+        self.assertEquals(['bar'], f['foo3'])         # file input
 
         # 2nd body
         body2 = HTML_DOC % \

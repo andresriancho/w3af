@@ -10,16 +10,23 @@ back
 output config console
 set verbose False
 back
-discovery all, !finger_bing, !finger_google, !finger_pks, !spider_man
-discovery
+
+crawl all, !bing_spider, !google_spider, !spider_man
+crawl
+
 grep all
 grep
+
 audit all
 audit
+
 bruteforce all
 bruteforce
+
 back
+
 target
 set target http://moth/w3af/
 back
+
 start
