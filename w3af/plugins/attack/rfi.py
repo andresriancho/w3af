@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import socket
+import textwrap
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
@@ -408,6 +409,9 @@ class PortScanShell(Shell):
             else:
                 return False
 
+    def scan(self, host, port):
+        return self.is_open_port(host, port)
+
     def get_name(self):
         return 'portscan-shell object'
     
@@ -416,6 +420,29 @@ class PortScanShell(Shell):
         self._rSystem = 'PHP'
         self._rUser = 'unknown'
         self._rSystemName = 'unknown'
+
+    def help(self, command):
+        """
+        Handle the help command.
+        """
+        if command == 'scan':
+            _help = """\
+            scan:
+                Uses the SSRF vulnerability to scan a host's port using the
+                vulnerable host as proxy.
+
+            Examples:
+                scan 127.0.0.1 8080
+                scan 10.0.0.6 80
+            """
+        else:
+            _help = """\
+            Available commands:
+                help                            Display this information
+                scan                            Proxy port scanner
+                exit                            Exit this shell session
+            """
+        return textwrap.dedent(_help)
 
     def __reduce__(self):
         """
