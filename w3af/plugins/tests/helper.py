@@ -65,7 +65,10 @@ class PluginTest(unittest.TestCase):
     def setUp(self):
         self.kb.cleanup()
         self.w3afcore = w3afCore()
-        
+
+        self.request_callback_call_count = 0
+        self.request_callback_match = 0
+
         if self.MOCK_RESPONSES:
             httpretty.reset()
             httpretty.enable()
@@ -181,6 +184,7 @@ class PluginTest(unittest.TestCase):
                           set(expected))
 
     def request_callback(self, http_request, uri, headers):
+        self.request_callback_call_count += 1
         match = None
 
         for mock_response in self.MOCK_RESPONSES:
@@ -189,8 +193,11 @@ class PluginTest(unittest.TestCase):
                 break
 
         if match is not None:
+            self.request_callback_match += 1
+
             fmt = (uri, match)
             om.out.debug('[request_callback] URI %s matched %s' % fmt)
+
             return match.get_response(http_request, uri, headers)
 
         else:
