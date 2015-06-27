@@ -26,6 +26,7 @@ from flask import jsonify
 from os.path import basename
 
 from w3af.core.ui.api import app
+from w3af.core.ui.api.utils.auth import requires_auth
 
 
 @app.errorhandler(404)
@@ -89,6 +90,7 @@ def get_last_call_info(main_tb):
 
 
 @app.route('/raise-500', methods=['GET'])
+@requires_auth
 def raise_500():
     """
     This exists for testing error_500_handler

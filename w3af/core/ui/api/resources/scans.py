@@ -25,6 +25,7 @@ from flask import jsonify, request
 
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
+from w3af.core.ui.api.utils.auth import requires_auth
 from w3af.core.ui.api.db.master import SCANS
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           start_scan_helper,
@@ -36,6 +37,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 @app.route('/scans/', methods=['POST'])
+@requires_auth
 def start_scan():
     """
     Starts a new w3af scan
@@ -121,6 +123,7 @@ def start_scan():
 
 
 @app.route('/scans/', methods=['GET'])
+@requires_auth
 def list_scans():
     """
     :return: A JSON containing a list of:
@@ -149,6 +152,7 @@ def list_scans():
 
 
 @app.route('/scans/<int:scan_id>', methods=['DELETE'])
+@requires_auth
 def scan_delete(scan_id):
     """
     Clear all the scan information
@@ -171,6 +175,7 @@ def scan_delete(scan_id):
 
 
 @app.route('/scans/<int:scan_id>/status', methods=['GET'])
+@requires_auth
 def scan_status(scan_id):
     """
     :param scan_id: The scan ID
@@ -188,6 +193,7 @@ def scan_status(scan_id):
 
 
 @app.route('/scans/<int:scan_id>/pause', methods=['GET'])
+@requires_auth
 def scan_pause(scan_id):
     """
     Pause a scan
@@ -209,6 +215,7 @@ def scan_pause(scan_id):
 
 
 @app.route('/scans/<int:scan_id>/stop', methods=['GET'])
+@requires_auth
 def scan_stop(scan_id):
     """
     Stop a scan
@@ -232,6 +239,7 @@ def scan_stop(scan_id):
 
 
 @app.route('/scans/<int:scan_id>/log', methods=['GET'])
+@requires_auth
 def scan_log(scan_id):
     """
     :param scan_id: The scan ID to retrieve the scan
