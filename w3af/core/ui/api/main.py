@@ -61,6 +61,20 @@ def parse_arguments():
                         nargs='?',
                         type=parse_host_port)
 
+    parser.add_argument('-p',
+                        required=False,
+                        default=False,
+                        dest='password',
+                        help='[Required] SHA512-hashed password for HTTP basic'
+                             ' authentication.')
+
+    parser.add_argument('-u',
+                        required=False,
+                        default='admin',
+                        dest='username',
+                        help='Username required for basic auth. If not '
+                             'specified, this will default to "admin".')
+
     parser.add_argument('-v',
                         required=False,
                         default=False,
@@ -87,12 +101,17 @@ def main():
 
     args = parse_arguments()
 
-    if args.host not in ('127.0.0.1', 'localhost'):
-        print('The REST API does not provide authentication and might expose'
-              ' your system to vulnerabilities such as arbitrary file reads'
-              ' through file:// protocol specified in target URLs and scan'
-              ' profiles. It is NOT RECOMMENDED to bind the REST API to'
-              ' a public IP address. You have been warned.\n')
+    try:
+      # Check password has been specified and is a 512-bit hex string
+      # (ie, that it looks like a SHA512 hash)
+      int(args.password, 16) and len(args.password) == 128
+    except:
+      print('Error: Please specify a valid SHA512-hashed plaintext as password'
+            ' using the "-p" flag.')
+      return 1
+
+    app.config['USERNAME'] = args.username
+    app.config['PASSWORD'] = args.password
 
     try:
         app.run(host=args.host, port=args.port,
