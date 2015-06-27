@@ -106,7 +106,7 @@ class user_dir(CrawlPlugin):
 
             # Save the finding to the KB
             desc = 'An operating system user directory was found at: "%s"'
-            desc = desc % resp.get_url()
+            desc %= resp.get_url()
 
             i = Info('Web user home directory', desc, resp.id, self.get_name())
             i.set_url(resp.get_url())
@@ -137,7 +137,7 @@ class user_dir(CrawlPlugin):
             desc = ('The remote OS can be identified as "%s" based'
                     ' on the remote user "%s" information that is'
                     ' exposed by the web server.')
-            desc = desc % (user_desc, user)
+            desc %= (user_desc, user)
 
             name = 'Fingerprinted operating system'
 
@@ -145,7 +145,7 @@ class user_dir(CrawlPlugin):
             desc = ('The remote server has "%s" installed, w3af'
                     ' found this information based on the remote'
                     ' user "%s".')
-            desc = desc % (user_desc, user)
+            desc %= (user_desc, user)
 
             name = 'Identified installed application'
 
