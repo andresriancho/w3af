@@ -368,10 +368,10 @@ class SQLiteExecutor(Process):
                 except sqlite3.OperationalError, e:
                     # I don't like this string match, but it seems that the
                     # exception doesn't have any error code to match
-                    if 'no such table' in e.message:
+                    if 'no such table' in str(e):
                         dbe = NoSuchTableException(str(e))
 
-                    elif 'malformed' in e.message:
+                    elif 'malformed' in str(e):
                         print(DB_MALFORMED_ERROR)
                         dbe = MalformedDBException(DB_MALFORMED_ERROR)
 
