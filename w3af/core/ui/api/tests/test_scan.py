@@ -36,6 +36,7 @@ class APIScanTest(APIUnitTest):
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
         response = requests.post('%s/scans/' % self.api_url,
+                                 auth=self.api_auth,
                                  data=json.dumps(data),
                                  headers=self.headers)
 
@@ -61,7 +62,8 @@ class APIScanTest(APIUnitTest):
         #
         # Get the detailed status
         #
-        response = requests.get('%s/scans/%s/status' % (self.api_url, scan_id))
+        response = requests.get('%s/scans/%s/status' % (self.api_url, scan_id),
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         json_data = response.json()
@@ -74,7 +76,8 @@ class APIScanTest(APIUnitTest):
         #
         self.wait_until_finish()
 
-        response = requests.get('%s/scans/%s/kb/' % (self.api_url, scan_id))
+        response = requests.get('%s/scans/%s/kb/' % (self.api_url, scan_id),
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_summaries = response.json()['items']
@@ -88,7 +91,8 @@ class APIScanTest(APIUnitTest):
         #
         # Make sure I can access the vulnerability details
         #
-        response = requests.get('%s/scans/%s/kb/0' % (self.api_url, scan_id))
+        response = requests.get('%s/scans/%s/kb/0' % (self.api_url, scan_id),
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_info = response.json()
@@ -105,7 +109,8 @@ class APIScanTest(APIUnitTest):
         # Get the HTTP traffic for this vulnerability
         #
         traffic_href = vuln_info['traffic_hrefs'][0]
-        response = requests.get('%s%s' % (self.api_url, traffic_href))
+        response = requests.get('%s%s' % (self.api_url, traffic_href),
+                                auth=self.api_auth)
 
         traffic_data = response.json()
         self.assertIn('request', traffic_data)
@@ -116,7 +121,8 @@ class APIScanTest(APIUnitTest):
         #
         # Get the scan log
         #
-        response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id))
+        response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id),
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data = response.json()
@@ -133,7 +139,8 @@ class APIScanTest(APIUnitTest):
         #
         # Clear the scan results
         #
-        response = requests.delete('%s/scans/%s' % (self.api_url, scan_id))
+        response = requests.delete('%s/scans/%s' % (self.api_url, scan_id),
+                                   auth=self.api_auth)
         self.assertEqual(response.json(), {u'message': u'Success'})
 
         return scan_id
@@ -143,6 +150,7 @@ class APIScanTest(APIUnitTest):
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
         response = requests.post('%s/scans/' % self.api_url,
+                                 auth=self.api_auth, 
                                  data=json.dumps(data),
                                  headers=self.headers)
 
@@ -159,14 +167,16 @@ class APIScanTest(APIUnitTest):
         #
         # Now stop the scan
         #
-        response = requests.get('%s/scans/0/stop' % self.api_url)
+        response = requests.get('%s/scans/0/stop' % self.api_url, 
+                                 auth=self.api_auth)
         self.assertEqual(response.json(), {u'message': u'Stopping scan'})
 
         # Wait for it...
         self.wait_until_finish()
 
         # Assert that we identify the logs associated with stopping the core
-        response = requests.get('%s/scans/0/log' % self.api_url)
+        response = requests.get('%s/scans/0/log' % self.api_url,
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data = response.json()['entries']
