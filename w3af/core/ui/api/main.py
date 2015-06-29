@@ -26,12 +26,12 @@ import yaml
 from w3af.core.ui.api import app
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check
 
+# Global default values
+defaults = {'USERNAME':'admin',
+            'HOST': '127.0.0.1',
+            'PORT': 5000}
 
-def parse_host_port(host_port):
-    try:
-        host, port = host_port.split(':')
-    except ValueError:
-        raise argparse.ArgumentTypeError('Invalid host:port specified')
+def parse_host_port(host, port):
 
     try:
         port = int(port)
@@ -44,7 +44,7 @@ def parse_host_port(host_port):
     if not host:
         raise argparse.ArgumentTypeError('Empty bind IP address')
 
-    return host, port
+    return host, int(port)
 
 
 def parse_arguments():
@@ -59,9 +59,8 @@ def parse_arguments():
                         help='Specify address where the REST API will listen'
                              ' for HTTP requests. If not specified 127.0.0.1:'
                              '5000 will be used.',
-                        default='127.0.0.1:5000',
-                        nargs='?',
-                        type=parse_host_port)
+                        default=False,
+                        nargs='?')
 
     parser.add_argument('-c',
                         default=False,
@@ -102,10 +101,14 @@ def parse_arguments():
 
     args = parser.parse_args()
 
-    host_port = getattr(args, 'host:port')
-    args.host = host_port[0]
-    args.port = host_port[1]
-
+    try:
+      args.host, args.port = getattr(args,'host:port').split(':')
+    except ValueError:
+      raise argparse.ArgumentTypeError('Please specify a valid host and port as'
+                                       ' HOST:PORT (eg "127.0.0.1:5000").')
+    except AttributeError:
+      pass # Expect AttributeError if host_port was not entered
+    
     return args
 
 
@@ -127,11 +130,11 @@ def main():
               ' a valid YAML file.' % args.config_file)
         return 1
 
-      for k in yaml_conf:
-        if vars(args)[k]:
+      for k.lower() in yaml_conf:
+        if k in vars(args) and vars(args)[k]:
           print('Error: you appear to have specified options in the config'
                 ' file and on the command line. Please resolve any conflicting'
-                ' options and try again.')
+                ' options and try again: %s' % k)
           return 1
 
       # Flask contains a number of built-in server options that can also be
@@ -141,8 +144,8 @@ def main():
         app.config[k.upper()] = yaml_conf[k]
      
     for i in vars(args):
-      if vars(args)[i]:
-        app.config[i.upper()] = vars(args)[i] 
+      if i in vars(args) and vars(args)[i]:
+        app.config[i.upper()] = vars(args)[i]
 
     try:
       # Check password has been specified and is a 512-bit hex string
@@ -152,12 +155,16 @@ def main():
       print('Error: Please specify a valid SHA512-hashed plaintext as password,'
             ' either inside a config file with "-c" or using the "-p" flag.')
       return 1
+    
+    for k in defaults:
+      if not k in app.config:
+        app.config[k] = defaults[k]
 
-    if not 'USERNAME' in app.config:
-      app.config['USERNAME'] = 'admin'
+    app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
+                                                             app.config['PORT'])
 
     try:
-        app.run(host=args.host, port=args.port,
+        app.run(host=app.config['HOST'], port=app.config['PORT'],
                 debug=args.verbose, use_reloader=False)
     except socket.error, se:
         print('Failed to start REST API server: %s' % se.strerror)
