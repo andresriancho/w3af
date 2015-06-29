@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket
 import argparse
+import yaml
 
 from w3af.core.ui.api import app
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check
@@ -51,7 +52,8 @@ def parse_arguments():
     Parses the command line arguments
     :return: The parse result from argparse
     """
-    parser = argparse.ArgumentParser(description='REST API for w3af')
+    parser = argparse.ArgumentParser(description='REST API for w3af',
+                                     formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('host:port', action='store',
                         help='Specify address where the REST API will listen'
@@ -61,19 +63,35 @@ def parse_arguments():
                         nargs='?',
                         type=parse_host_port)
 
-    parser.add_argument('-p',
+    parser.add_argument('-c',
+                        default=False,
+                        dest='config_file',
+                        help='Path to a config file in YAML format. At minimum,'
+                             ' either this OR the "-p" (password) option MUST'
+                             ' be provided.')
+
+    opts = parser.add_argument_group('server options',
+                                     'Server options can be specified here or'
+                                     ' as part of a YAML configuration file'
+                                     ' (see above).\n'
+                                     'If no configuration file is used, the'
+                                     ' "-p" (password) option MUST be specified.')
+
+    opts.add_argument('-p',
                         required=False,
                         default=False,
                         dest='password',
-                        help='[Required] SHA512-hashed password for HTTP basic'
-                             ' authentication.')
+                        help='SHA512-hashed password for HTTP basic'
+                             ' authentication. Linux or Mac users can generate'
+                             ' this by running:\n' 
+                             ' echo -n "password" | sha512sum')
 
-    parser.add_argument('-u',
+    opts.add_argument('-u',
                         required=False,
-                        default='admin',
                         dest='username',
+                        default=False, 
                         help='Username required for basic auth. If not '
-                             'specified, this will default to "admin".')
+                             'specified, this will be set to "admin".')
 
     parser.add_argument('-v',
                         required=False,
@@ -100,18 +118,43 @@ def main():
     dependency_check()
 
     args = parse_arguments()
+    if args.config_file:
+      try:
+        with open(args.config_file) as f:
+          yaml_conf = yaml.safe_load(f)
+      except:
+        print('Error loading config file %s. Please check it exists and is'
+              ' a valid YAML file.' % args.config_file)
+        return 1
+
+      for k in yaml_conf:
+        if vars(args)[k]:
+          print('Error: you appear to have specified options in the config'
+                ' file and on the command line. Please resolve any conflicting'
+                ' options and try again.')
+          return 1
+
+      # Flask contains a number of built-in server options that can also be
+      # modified by setting them in the config YAML:
+      # http://flask.pocoo.org/docs/latest/config/
+
+        app.config[k.upper()] = yaml_conf[k]
+     
+    for i in vars(args):
+      if vars(args)[i]:
+        app.config[i.upper()] = vars(args)[i] 
 
     try:
       # Check password has been specified and is a 512-bit hex string
       # (ie, that it looks like a SHA512 hash)
-      int(args.password, 16) and len(args.password) == 128
+      int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
     except:
-      print('Error: Please specify a valid SHA512-hashed plaintext as password'
-            ' using the "-p" flag.')
+      print('Error: Please specify a valid SHA512-hashed plaintext as password,'
+            ' either inside a config file with "-c" or using the "-p" flag.')
       return 1
 
-    app.config['USERNAME'] = args.username
-    app.config['PASSWORD'] = args.password
+    if not 'USERNAME' in app.config:
+      app.config['USERNAME'] = 'admin'
 
     try:
         app.run(host=args.host, port=args.port,
