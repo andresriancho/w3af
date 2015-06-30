@@ -163,6 +163,11 @@ def main():
     app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
                                                              app.config['PORT'])
 
+    if (app.config['HOST'] == '127.0.0.1' or
+        app.config['HOST'] == 'localhost'):
+      print('CAUTION! Traffic to this API is not encrypted and could be sniffed.'
+            ' Please consider putting this behind an SSL-enabled proxy server.')
+
     try:
         app.run(host=app.config['HOST'], port=app.config['PORT'],
                 debug=args.verbose, use_reloader=False)

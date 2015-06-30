@@ -55,6 +55,14 @@ For example, using the 'curl' command:
       "docs": "http://docs.w3af.org/en/latest/api/index.html" 
     }
 
+Although this provides some security, traffic passing to and from the API is not
+encrypted, meaning that authentication and vulnerability information could be 
+sniffed by an attacker with "man-in-the-middle" capabilities.
+
+If running the API on a publicly available IP address we recommend taking
+additional precautions including running it behind an SSL proxy server (such as 
+Pound, or Apache with mod_proxy enabled).
+
 Config file format
 ------------------
 
