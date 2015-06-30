@@ -111,7 +111,7 @@ Once the docker installation is running these steps will yield a running
     w3af>>>
 
 For advanced usage of ``w3af``'s docker container please read the documentation
- at the `registry hub <https://registry.hub.docker.com/u/andresriancho/w3af/>`_
+at the `docker registry hub <https://registry.hub.docker.com/u/andresriancho/w3af/>`_
 
 Installation in Mac OSX
 -----------------------
