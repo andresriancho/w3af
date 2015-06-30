@@ -131,7 +131,9 @@ def main():
             return 1
 
         for k in yaml_conf:
-            if k.lower() in vars(args) and vars(args)[k.lower()]:
+            if type(yaml_conf[k]).__name__ not in ['str', 'int', 'bool']:
+                pass
+            elif k.lower() in vars(args) and vars(args)[k.lower()]:
                 print('Error: you appear to have specified options in the config'
                       ' file and on the command line. Please resolve any'
                       ' conflicting options and try again: %s' % k)
@@ -141,10 +143,13 @@ def main():
        # modified by setting them in the config YAML:
        # http://flask.pocoo.org/docs/latest/config/
 
-            app.config[k.upper()] = yaml_conf[k]
+            else:
+                app.config[k.upper()] = yaml_conf[k]
      
     for i in vars(args):
-        if i in vars(args) and vars(args)[i]:
+        if type(vars(args)[i]).__name__ not in ['str', 'int', 'bool']:
+            pass
+        elif i in vars(args) and vars(args)[i]:
             app.config[i.upper()] = vars(args)[i]
 
     try:
