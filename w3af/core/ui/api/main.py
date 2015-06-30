@@ -124,11 +124,11 @@ def main():
     args = parse_arguments()
     if args.config_file:
         try:
-          yaml_conf = yaml.safe_load(args.config_file)
+            yaml_conf = yaml.safe_load(args.config_file)
         except:
-          print('Error loading config file %s. Please check it exists and is'
-                ' a valid YAML file.' % args.config_file)
-          return 1
+            print('Error loading config file %s. Please check it exists and is'
+                  ' a valid YAML file.' % args.config_file)
+            return 1
 
         for k in yaml_conf:
             if k.lower() in vars(args) and vars(args)[k.lower()]:
@@ -148,8 +148,8 @@ def main():
             app.config[i.upper()] = vars(args)[i]
 
     try:
-      # Check password has been specified and is a 512-bit hex string
-      # (ie, that it looks like a SHA512 hash)
+        # Check password has been specified and is a 512-bit hex string
+        # (ie, that it looks like a SHA512 hash)
         int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
     except:
         print('Error: Please specify a valid SHA512-hashed plaintext as password,'
@@ -163,8 +163,8 @@ def main():
     app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
                                                              app.config['PORT'])
 
-    if (app.config['HOST'] == '127.0.0.1' or
-        app.config['HOST'] == 'localhost'):
+    if (app.config['HOST'] != '127.0.0.1' and
+        app.config['HOST'] != 'localhost'):
         print('CAUTION! Traffic to this API is not encrypted and could be sniffed.'
               ' Please consider putting this behind an SSL-enabled proxy server.')
 
