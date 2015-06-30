@@ -92,7 +92,7 @@ def parse_arguments():
                         help='Username required for basic auth. If not '
                              'specified, this will be set to "admin".')
 
-    parser.add_argument('-v',
+    opts.add_argument('-v',
                         required=False,
                         default=False,
                         dest='verbose',
