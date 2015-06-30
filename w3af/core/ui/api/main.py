@@ -152,26 +152,41 @@ def main():
         elif i in vars(args) and vars(args)[i]:
             app.config[i.upper()] = vars(args)[i]
 
-    try:
-        # Check password has been specified and is a 512-bit hex string
-        # (ie, that it looks like a SHA512 hash)
-        int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
-    except:
-        print('Error: Please specify a valid SHA512-hashed plaintext as password,'
-              ' either inside a config file with "-c" or using the "-p" flag.')
-        return 1
-    
     for k in defaults:
         if not k in app.config:
             app.config[k] = defaults[k]
 
+    if 'PASSWORD' in app.config:
+        try:
+            # Check password has been specified and is a 512-bit hex string
+            # (ie, that it looks like a SHA512 hash)
+            int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
+        except:
+            print('Error: Please specify a valid SHA512-hashed plaintext as' 
+                  ' password, either inside a config file with "-c" or using the' 
+                  ' "-p" flag.')
+            return 1
+    
     app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
                                                              app.config['PORT'])
 
     if (app.config['HOST'] != '127.0.0.1' and
         app.config['HOST'] != 'localhost'):
-        print('CAUTION! Traffic to this API is not encrypted and could be sniffed.'
-              ' Please consider putting this behind an SSL-enabled proxy server.')
+
+        print('')
+        if not 'PASSWORD' in app.config:
+            print('CAUTION! Running this API on a public IP might expose your'
+                  ' system to vulnerabilities such as arbitrary file reads'
+                  ' through file:// protocol specifications in target URLs and'
+                  ' scan profiles.\n'
+                  'We recommend enabling HTTP basic authentication by specifying'
+                  ' a password on the command line (with "-p <SHA512 hash>") or'
+                  ' in a configuration file.\n')
+
+        print('CAUTION! Traffic to this API is not encrypted and could be'
+              ' sniffed. Please consider putting this behind an SSL-enabled'
+              ' proxy server.\n')
+
 
     try:
         app.run(host=app.config['HOST'], port=app.config['PORT'],

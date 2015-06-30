@@ -35,6 +35,8 @@ def check_auth(username, password):
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        if not 'PASSWORD' in app.config: # Auth was not enabled at startup
+            return f(*args, **kwargs)
         auth = request.authorization
         if not auth or not check_auth(auth.username, auth.password):
            abort(401, 'Could not verify access. Please specify a username and \
