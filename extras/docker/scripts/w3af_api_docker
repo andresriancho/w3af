@@ -15,6 +15,9 @@ def parse_args():
                                             ' is stable, try unstable to get'
                                             ' the latest w3af features.',
                         required=False)
+    parser.add_argument('-c', '--config-file',
+                        help='[Required] Path to API config file in YAML format.',
+                        required=True, dest=api_config_file)
     return parser.parse_args()
 
 
@@ -36,7 +39,7 @@ if __name__ == '__main__':
     if args.debug:
         cmd = '/bin/bash'
     else:
-        cmd = '/home/w3af/w3af/w3af_api 0.0.0.0:5000'
+        cmd = '/home/w3af/w3af/w3af_api 0.0.0.0:5000 -c %s' % api_config_file
 
     try:
         connect_to_container(container_id, cmd)
