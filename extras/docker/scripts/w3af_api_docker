@@ -16,7 +16,7 @@ def parse_args():
                                             ' the latest w3af features.',
                         required=False)
     parser.add_argument('-c', '--config-file',
-                        help='[Required] Path to API config file in YAML format.',
+                        help='Path to API config file in YAML format.',
                         required=True, dest=api_config_file)
     return parser.parse_args()
 
