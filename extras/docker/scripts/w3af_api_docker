@@ -9,15 +9,16 @@ from common.docker_helpers import (check_root, create_volumes, start_container,
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--debug', help='Use bash to connect',
+    opts = parser.add_mutually_exclusive_group()
+    opts.add_argument('-d', '--debug', help='Use bash to connect',
                         action='store_true')
     parser.add_argument('-t', '--tag', help='Docker image tag to run. Default'
                                             ' is stable, try unstable to get'
                                             ' the latest w3af features.',
                         required=False)
-    parser.add_argument('-c', '--config-file',
+    opts.add_argument('-c', '--config-file',
                         help='Path to API config file in YAML format.',
-                        required=True, dest=api_config_file)
+                        required=False, dest='api_config_file')
     return parser.parse_args()
 
 
@@ -38,8 +39,10 @@ if __name__ == '__main__':
 
     if args.debug:
         cmd = '/bin/bash'
-    else:
+    elif args.api_config_file: 
         cmd = '/home/w3af/w3af/w3af_api 0.0.0.0:5000 -c %s' % api_config_file
+    else:
+        cmd = '/home/w3af/w3af/w3af_api 0.0.0.0:5000'
 
     try:
         connect_to_container(container_id, cmd)
