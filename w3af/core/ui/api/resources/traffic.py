@@ -24,12 +24,14 @@ from flask import jsonify
 
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
+from w3af.core.ui.api.utils.auth import requires_auth
 from w3af.core.ui.api.utils.scans import get_scan_info_from_id
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.controllers.exceptions import DBException
 
 
 @app.route('/scans/<int:scan_id>/traffic/<int:traffic_id>', methods=['GET'])
+@requires_auth
 def get_traffic_details(scan_id, traffic_id):
     """
     The HTTP request and response associated with a vulnerability, usually the

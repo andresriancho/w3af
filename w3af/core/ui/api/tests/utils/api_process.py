@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import subprocess
 import requests
+import hashlib
 import time
 import sys
 import os
@@ -42,8 +43,11 @@ def start_api():
 
     w3af_api_path = os.path.abspath(os.path.join(ROOT_PATH, '..'))
     python_executable = sys.executable
+    api_auth = ('admin', 'unittests')
 
-    cmd = [python_executable, 'w3af_api', '127.0.0.1:%s' % port]
+    cmd = [python_executable, 'w3af_api', 
+    '-p %s' % sha512(api_auth[1]).hexdigest(),
+    '127.0.0.1:%s' % port]
 
     process = subprocess.Popen(cmd,
                                stdout=dev_null,
@@ -58,7 +62,7 @@ def start_api():
         time.sleep(0.5)
 
         try:
-            response = requests.get(api_url)
+            response = requests.get(api_url, auth=api_auth)
         except:
             if process.pid is None and i > 25:
                 raise RuntimeError('Failed to start the REST API service')
@@ -68,4 +72,4 @@ def start_api():
     else:
         raise RuntimeError('Timed out waiting for REST API service start')
 
-    return process, port, api_url
+    return process, port, api_url, api_auth

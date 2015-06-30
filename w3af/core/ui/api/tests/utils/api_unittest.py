@@ -36,7 +36,7 @@ class APIUnitTest(unittest.TestCase):
         # Disable requests logging
         logging.getLogger('requests').setLevel(logging.WARNING)
 
-        self.process, self.port, self.api_url = start_api()
+        self.process, self.port, self.api_url, self.api_auth = start_api()
         self.headers = {'Content-type': 'application/json',
                         'Accept': 'application/json'}
 
@@ -72,7 +72,9 @@ class APIUnitTest(unittest.TestCase):
         for _ in xrange(10):
             time.sleep(0.5)
 
-            response = requests.get('%s/scans/' % self.api_url)
+            response = requests.get('%s/scans/' % self.api_url, 
+                                    auth=self.api_auth)
+                                    
             self.assertEqual(response.status_code, 200, response.text)
             if response.json()['items'][0]['status'] != 'Stopped':
                 return response
@@ -87,7 +89,8 @@ class APIUnitTest(unittest.TestCase):
         for _ in xrange(wait_loops):
             time.sleep(0.5)
 
-            response = requests.get('%s/scans/' % self.api_url)
+            response = requests.get('%s/scans/' % self.api_url, 
+                                    auth=self.api_auth)
             self.assertEqual(response.status_code, 200, response.text)
             if response.json()['items'][0]['status'] != 'Running':
                 return response
@@ -99,10 +102,12 @@ class APIUnitTest(unittest.TestCase):
         :return: A string with a message I can use to debug issues, contains
                  the scan log information available in the REST API (if any)
         """
-        response = requests.get('%s/scans/' % self.api_url)
+        response = requests.get('%s/scans/' % self.api_url, 
+                                auth=self.api_auth)
         scan_id = response.json()['items'][0]['id']
 
-        response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id))
+        response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id),
+                                auth=self.api_auth)
         scan_log = '\n'.join([m['message'] for m in response.json()['entries']])
 
         self.maxDiff = None

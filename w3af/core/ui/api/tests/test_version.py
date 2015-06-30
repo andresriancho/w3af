@@ -30,7 +30,8 @@ class VersionTest(APIUnitTest):
         #
         # Name filter
         #
-        response = requests.get('%s/version' % self.api_url)
+        response = requests.get('%s/version' % self.api_url,
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         version_dict = response.json()

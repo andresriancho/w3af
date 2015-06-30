@@ -34,6 +34,7 @@ class ApiScanLogTest(APIUnitTest):
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
         requests.post('%s/scans/' % self.api_url,
+                      auth=self.api_auth,
                       data=json.dumps(data),
                       headers=self.headers)
 
@@ -46,7 +47,8 @@ class ApiScanLogTest(APIUnitTest):
         #
         # Get the scan log
         #
-        response = requests.get('%s/scans/0/log' % self.api_url)
+        response = requests.get('%s/scans/0/log' % self.api_url,
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data_page_0 = response.json()
@@ -60,7 +62,8 @@ class ApiScanLogTest(APIUnitTest):
         self.assertEqual(zero_entry['type'], 'debug')
         self.assertIsNotNone(zero_entry['time'])
 
-        response = requests.get('%s/scans/0/log?page=1' % self.api_url)
+        response = requests.get('%s/scans/0/log?page=1' % self.api_url,
+                                auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         self.assertNotEqual(log_data_page_0['entries'],
