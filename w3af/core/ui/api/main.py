@@ -126,8 +126,9 @@ def main():
         try:
             yaml_conf = yaml.safe_load(args.config_file)
         except:
+            file.close(args.config_file)
             print('Error loading config file %s. Please check it exists and is'
-                  ' a valid YAML file.' % args.config_file)
+                  ' a valid YAML file.' % args.config_file.name)
             return 1
 
         for k in yaml_conf:
@@ -145,6 +146,8 @@ def main():
 
             else:
                 app.config[k.upper()] = yaml_conf[k]
+
+        file.close(args.config_file)
      
     for i in vars(args):
         if type(vars(args)[i]).__name__ not in ['str', 'int', 'bool']:
