@@ -65,6 +65,7 @@ def parse_arguments():
     parser.add_argument('-c',
                         default=False,
                         dest='config_file',
+                        type=argparse.FileType('r'),
                         help='Path to a config file in YAML format. At minimum,'
                              ' either this OR the "-p" (password) option MUST'
                              ' be provided.')
@@ -123,8 +124,7 @@ def main():
     args = parse_arguments()
     if args.config_file:
         try:
-          with open(args.config_file) as f:
-            yaml_conf = yaml.safe_load(f)
+          yaml_conf = yaml.safe_load(args.config_file)
         except:
           print('Error loading config file %s. Please check it exists and is'
                 ' a valid YAML file.' % args.config_file)
