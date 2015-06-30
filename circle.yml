@@ -141,6 +141,7 @@ deployment:
       - docker pull andresriancho/w3af:stable; true
       - cd extras/docker/ && ./docker-build.sh stable
       - docker push andresriancho/w3af:stable
+      - docker push andresriancho/w3af:${CIRCLE_SHA1:0:7}-stable
 
   staging:
     branch: develop
@@ -165,3 +166,4 @@ deployment:
       - docker pull andresriancho/w3af:unstable; true
       - cd extras/docker/ && ./docker-build.sh unstable
       - docker push andresriancho/w3af:unstable
+      - docker push andresriancho/w3af:${CIRCLE_SHA1:0:7}-unstable
