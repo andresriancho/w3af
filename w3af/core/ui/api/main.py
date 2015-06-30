@@ -102,12 +102,12 @@ def parse_arguments():
     args = parser.parse_args()
 
     try:
-      args.host, args.port = getattr(args,'host:port').split(':')
+        args.host, args.port = getattr(args,'host:port').split(':')
     except ValueError:
-      raise argparse.ArgumentTypeError('Please specify a valid host and port as'
+        raise argparse.ArgumentTypeError('Please specify a valid host and port as'
                                        ' HOST:PORT (eg "127.0.0.1:5000").')
     except AttributeError:
-      pass # Expect AttributeError if host_port was not entered
+        pass # Expect AttributeError if host_port was not entered
     
     return args
 
@@ -122,51 +122,51 @@ def main():
 
     args = parse_arguments()
     if args.config_file:
-      try:
-        with open(args.config_file) as f:
-          yaml_conf = yaml.safe_load(f)
-      except:
-        print('Error loading config file %s. Please check it exists and is'
-              ' a valid YAML file.' % args.config_file)
-        return 1
-
-      for k in yaml_conf:
-        if k.lower() in vars(args) and vars(args)[k.lower()]:
-          print('Error: you appear to have specified options in the config'
-                ' file and on the command line. Please resolve any conflicting'
-                ' options and try again: %s' % k)
+        try:
+          with open(args.config_file) as f:
+            yaml_conf = yaml.safe_load(f)
+        except:
+          print('Error loading config file %s. Please check it exists and is'
+                ' a valid YAML file.' % args.config_file)
           return 1
 
-      # Flask contains a number of built-in server options that can also be
-      # modified by setting them in the config YAML:
-      # http://flask.pocoo.org/docs/latest/config/
+        for k in yaml_conf:
+            if k.lower() in vars(args) and vars(args)[k.lower()]:
+                print('Error: you appear to have specified options in the config'
+                      ' file and on the command line. Please resolve any'
+                      ' conflicting options and try again: %s' % k)
+                return 1
 
-        app.config[k.upper()] = yaml_conf[k]
+       # Flask contains a number of built-in server options that can also be
+       # modified by setting them in the config YAML:
+       # http://flask.pocoo.org/docs/latest/config/
+
+            app.config[k.upper()] = yaml_conf[k]
      
     for i in vars(args):
-      if i in vars(args) and vars(args)[i]:
-        app.config[i.upper()] = vars(args)[i]
+        if i in vars(args) and vars(args)[i]:
+            app.config[i.upper()] = vars(args)[i]
 
     try:
       # Check password has been specified and is a 512-bit hex string
       # (ie, that it looks like a SHA512 hash)
-      int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
+        int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
     except:
-      print('Error: Please specify a valid SHA512-hashed plaintext as password,'
-            ' either inside a config file with "-c" or using the "-p" flag.')
-      return 1
+        print('Error: Please specify a valid SHA512-hashed plaintext as password,'
+              ' either inside a config file with "-c" or using the "-p" flag.')
+        return 1
     
     for k in defaults:
-      if not k in app.config:
-        app.config[k] = defaults[k]
+        if not k in app.config:
+            app.config[k] = defaults[k]
 
     app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
                                                              app.config['PORT'])
 
     if (app.config['HOST'] == '127.0.0.1' or
         app.config['HOST'] == 'localhost'):
-      print('CAUTION! Traffic to this API is not encrypted and could be sniffed.'
-            ' Please consider putting this behind an SSL-enabled proxy server.')
+        print('CAUTION! Traffic to this API is not encrypted and could be sniffed.'
+              ' Please consider putting this behind an SSL-enabled proxy server.')
 
     try:
         app.run(host=app.config['HOST'], port=app.config['PORT'],
