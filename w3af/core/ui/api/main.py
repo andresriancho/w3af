@@ -130,8 +130,8 @@ def main():
               ' a valid YAML file.' % args.config_file)
         return 1
 
-      for k.lower() in yaml_conf:
-        if k in vars(args) and vars(args)[k]:
+      for k in yaml_conf:
+        if k.lower() in vars(args) and vars(args)[k.lower()]:
           print('Error: you appear to have specified options in the config'
                 ' file and on the command line. Please resolve any conflicting'
                 ' options and try again: %s' % k)
