@@ -16,8 +16,8 @@ else
     exit 1
 fi
 
-sudo docker build -t andresriancho/w3af:${CIRCLE_SHA1:0:7}-${ENV} .
-sudo docker tag andresriancho/w3af:${CIRCLE_SHA1:0:7}-${ENV} andresriancho/w3af:${ENV}
+sudo docker build -t andresriancho/w3af:${ENV} .
+sudo docker tag andresriancho/w3af:${ENV} andresriancho/w3af:${CIRCLE_SHA1:0:7}-${ENV}
 
 rm -rf Dockerfile
 rm -rf .dockerignore
