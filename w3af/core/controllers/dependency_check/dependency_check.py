@@ -120,11 +120,13 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     #    Report all missing python modules
     #    
     if failed_deps:
+        # pylint: disable=E1101
         msg = ('Your python installation needs the following modules'
                ' to run w3af:\n')
         msg += '    ' + ' '.join([fdep.module_name for fdep in failed_deps])
         print(msg)
         print('\n')
+        # pylint: enable=E1101
         
         #
         #    Report missing pip packages
