@@ -23,7 +23,7 @@ load-plugins=w3af.core.controllers.tests.pylint_plugins.hashlib_fix,w3af.core.co
 
 # Fix gtk and other C extension false positives
 unsafe-load-any-extensions=yes
-extension-pkg-whitelist=lxml,gtk,pygtk,pango,webkit,gtksourceview2,esm,ruamel,ruamel.ordereddict
+extension-pkg-whitelist=lxml,gtk,pygtk,pango,webkit,gtksourceview2,esm,ruamel,ruamel.ordereddict,pybloomfilter
 
 [MESSAGES CONTROL]
 

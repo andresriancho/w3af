@@ -88,7 +88,9 @@ class FormParameters(OrderedDict):
                             INPUT_TYPE_SELECT}
 
     def __init__(self, init_vals=(), meta=None, encoding=DEFAULT_ENCODING):
+        # pylint: disable=E1002
         super(FormParameters, self).__init__(init_vals)
+        # pylint: enable=E1002
 
         # Form parameter meta-data
         self.meta = meta if meta is not None else {}
@@ -208,8 +210,10 @@ class FormParameters(OrderedDict):
         form_fields = self.meta.setdefault(form_field.name, [])
         form_fields.append(form_field)
 
+        # pylint: disable=E1101
         form_values = self.setdefault(form_field.name, [])
         form_values.append(form_field.value or '')
+        # pylint: enable=E1101
 
     def add_field_by_attr_items(self, attr_items):
         """
