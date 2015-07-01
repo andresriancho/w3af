@@ -1,7 +1,5 @@
-# http://www.logilab.org/blogentry/78354
-
-from logilab.astng import MANAGER
-from logilab.astng.builder import ASTNGBuilder
+from astroid import MANAGER, register_module_extender
+from astroid.builder import AstroidBuilder
 
 CODE_FIX = """
 class Popen(object):
@@ -17,16 +15,10 @@ class Popen(object):
     def terminate(*args, **kwds): pass
 """
 
-def subprocess_transform(module):
-    if module.name == 'subprocess':
-        fake = ASTNGBuilder(MANAGER).string_build(CODE_FIX)
-        
-        for func in ('Popen',):
-            module.locals[func] = fake.locals[func]
+
+def subprocess_transform():
+    return AstroidBuilder(MANAGER).string_build(CODE_FIX)
+
 
 def register(linter):
-    """called when loaded by pylint --load-plugins, register our tranformation
-    function here
-    """
-    MANAGER.register_transformer(subprocess_transform)
-    
+    register_module_extender(MANAGER, 'subprocess', subprocess_transform)

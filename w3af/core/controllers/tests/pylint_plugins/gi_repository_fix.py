@@ -1,7 +1,6 @@
-# http://www.logilab.org/blogentry/78354
+from astroid import MANAGER, register_module_extender
+from astroid.builder import AstroidBuilder
 
-from logilab.astng import MANAGER
-from logilab.astng.builder import ASTNGBuilder
 
 CODE_FIX = """
 class Notify(object):
@@ -9,16 +8,10 @@ class Notify(object):
     def init(*args, **kwds): pass
 """
 
-def gi_repository_transform(module):
-    if module.name == 'gi.repository':
-        fake = ASTNGBuilder(MANAGER).string_build(CODE_FIX)
-        
-        for func in ('Notify',):
-            module.locals[func] = fake.locals[func]
+
+def gi_repository_transform():
+    return AstroidBuilder(MANAGER).string_build(CODE_FIX)
+
 
 def register(linter):
-    """called when loaded by pylint --load-plugins, register our tranformation
-    function here
-    """
-    MANAGER.register_transformer(gi_repository_transform)
-    
+    register_module_extender(MANAGER, 'gi.repository', gi_repository_transform)

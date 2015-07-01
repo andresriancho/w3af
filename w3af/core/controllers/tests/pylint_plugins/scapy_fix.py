@@ -1,7 +1,6 @@
-# http://www.logilab.org/blogentry/78354
+from astroid import MANAGER, register_module_extender
+from astroid.builder import AstroidBuilder
 
-from logilab.astng import MANAGER
-from logilab.astng.builder import ASTNGBuilder
 
 CODE_FIX = """
 class IP(object): pass
@@ -12,16 +11,10 @@ class traceroute(object):
         pass
 """
 
-def scapy_transform(module):
-    if module.name == 'scapy.all':
-        fake = ASTNGBuilder(MANAGER).string_build(CODE_FIX)
-        
-        for func in ('IP', 'TCP', 'UDP', 'traceroute'):
-            module.locals[func] = fake.locals[func]
+
+def scapy_transform():
+    return AstroidBuilder(MANAGER).string_build(CODE_FIX)
+
 
 def register(linter):
-    """called when loaded by pylint --load-plugins, register our tranformation
-    function here
-    """
-    MANAGER.register_transformer(scapy_transform)
-    
+    register_module_extender(MANAGER, 'scapy.all', scapy_transform)
