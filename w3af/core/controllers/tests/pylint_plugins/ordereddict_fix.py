@@ -3,7 +3,8 @@ from astroid import scoped_nodes
 
 NEED_FIX = ('Headers', 'NonRepeatKeyValueContainer', 'KeyValueContainer',
             'FormParameters')
-FIX_MEMBERS = ('update', 'items', 'iteritems', 'keys', '__setitem__')
+FIX_MEMBERS = ('update', 'items', 'iteritems', 'keys', '__setitem__',
+               'setdefault', 'get')
 
 
 def register(linter):
