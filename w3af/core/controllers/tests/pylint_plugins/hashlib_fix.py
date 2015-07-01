@@ -4,7 +4,8 @@ from astroid.builder import AstroidBuilder
 
 CODE_FIX = """
 class md5(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
@@ -13,7 +14,8 @@ class md5(object):
         return u''
 
 class sha1(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
@@ -22,7 +24,8 @@ class sha1(object):
         return u''
 
 class sha512(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
@@ -31,7 +34,8 @@ class sha512(object):
         return u''
 
 class sha256(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
