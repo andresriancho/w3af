@@ -89,10 +89,12 @@ class http_vs_https_dist(InfrastructurePlugin):
         from scapy.all import traceroute
 
         try:
+            # pylint: disable=E1124
             # First try with httpS
             https_troute = traceroute(domain, dport=https_port)[0].get_trace()
             # Then with http
             http_troute = traceroute(domain, dport=http_port)[0].get_trace()
+            # pylint: enable=E1124
         except:
             # I've seen numerous bug reports with the following exception:
             # "error: illegal IP address string passed to inet_aton"
