@@ -7,7 +7,7 @@ class IP(object): pass
 class TCP(object): pass
 class UDP(object): pass
 class traceroute(object):
-    def __init__(domain, dport=80):
+    def __init__(domain, dport=80, maxttl=1):
         pass
 """
 
