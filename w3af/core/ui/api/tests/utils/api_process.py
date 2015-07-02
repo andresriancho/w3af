@@ -45,9 +45,11 @@ def start_api():
     python_executable = sys.executable
     api_auth = ('admin', 'unittests')
 
-    cmd = [python_executable, 'w3af_api', 
-    '-p "%s"' % sha512(api_auth[1]).hexdigest(),
-    '127.0.0.1:%s' % port]
+    cmd = [python_executable,
+           'w3af_api',
+           '-p',
+           sha512(api_auth[1]).hexdigest(),
+           '127.0.0.1:%s' % port]
 
     process = subprocess.Popen(cmd,
                                stdout=dev_null,

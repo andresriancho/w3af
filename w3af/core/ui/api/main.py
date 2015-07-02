@@ -33,7 +33,6 @@ defaults = {'USERNAME': 'admin',
 
 
 def parse_host_port(host, port):
-
     try:
         port = int(port)
     except ValueError:
@@ -107,8 +106,9 @@ def parse_arguments():
         raise argparse.ArgumentTypeError('Please specify a valid host and port'
                                          ' as HOST:PORT (eg "127.0.0.1:5000").')
     except AttributeError:
-        pass # Expect AttributeError if host_port was not entered
-    
+        # Expect AttributeError if host_port was not entered
+        pass
+
     return args
 
 
@@ -120,7 +120,12 @@ def main():
     # Check if I have all needed dependencies
     dependency_check()
 
-    args = parse_arguments()
+    try:
+        args = parse_arguments()
+    except argparse.ArgumentTypeError, ate:
+        print('%s' % ate)
+        return 1
+
     if args.config_file:
         try:
             yaml_conf = yaml.safe_load(args.config_file)
@@ -166,9 +171,13 @@ def main():
                   ' password, either inside a config file with "-c" or using'
                   ' the "-p" flag.')
             return 1
-    
-    app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
-                                                             app.config['PORT'])
+
+    try:
+        app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
+                                                                 app.config['PORT'])
+    except argparse.ArgumentTypeError, ate:
+        print('%s' % ate)
+        return 1
 
     if (app.config['HOST'] != '127.0.0.1' and
         app.config['HOST'] != 'localhost'):
