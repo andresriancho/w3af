@@ -142,7 +142,7 @@ deployment:
       - ./docker-build.sh latest:
           pwd: extras/docker/
 
-      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-docker/tree/master?circle-token=$W3AF_API_DOCKER_TOKEN --data '{\"build_parameters\": {\"W3AF_COMMIT\": \"'${CIRCLE_SHA1:0:7}'\"}}'"
+      - w3af/core/controllers/ci/circleci/trigger-w3af-api-build.py
 
   staging:
     branch: develop
@@ -168,4 +168,4 @@ deployment:
       - ./docker-build.sh develop:
           pwd: extras/docker/
 
-      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-docker/tree/develop?circle-token=$W3AF_API_DOCKER_TOKEN --data '{\"build_parameters\": {\"W3AF_COMMIT\": \"'${CIRCLE_SHA1:0:7}'\"}}'"
+      - w3af/core/controllers/ci/circleci/trigger-w3af-api-build.py
