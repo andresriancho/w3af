@@ -183,19 +183,19 @@ class ExceptionHandler(object):
         @see: generate_summary method for a way of getting a summary in a
               different format.
         """
-        fmt_with_exceptions = 'During the current scan (with id: %s) w3af'\
-                              ' caught %s exceptions in it\'s plugins. The'\
-                              ' scan was able to continue by ignoring those'\
-                              ' failures but the result is most likely'\
-                              ' incomplete.\n\n'\
-                              'These are the phases and plugins that raised'\
-                              ' exceptions:\n'\
-                              '%s\n'\
-                              'We recommend you report these vulnerabilities'\
-                              ' to the developers in order to help increase'\
-                              ' the project\'s stability.\n'\
-                              'To report these bugs just run the "report"' \
-                              ' command.'
+        fmt_with_exceptions = ('During the current scan (with id: %s) w3af'
+                               ' caught %s exceptions in it\'s plugins. The'
+                               ' scan was able to continue by ignoring those'
+                               ' failures but the result is most likely'
+                               ' incomplete.\n\n'
+                               'These are the phases and plugins that raised'
+                               ' exceptions:\n'
+                               '%s\n'
+                               'We recommend you report these vulnerabilities'
+                               ' to the developers in order to help increase'
+                               ' the project\'s stability.\n'
+                               'To report these bugs just run the "report"'
+                               ' command.')
 
         fmt_without_exceptions = 'No exceptions were raised during scan with' \
                                  ' id: %s.'
@@ -310,6 +310,14 @@ class ExceptionData(object):
 
     def get_where(self):
         return '%s.%s:%s' % (self.phase, self.plugin, self.lineno)
+
+    def to_json(self):
+        return {'function_name': self.function_name,
+                'lineno': self.lineno,
+                'exception': str(self.exception),
+                'traceback': self.traceback_str,
+                'plugin': str(self.plugin),
+                'phase': str(self.phase)}
 
     def __str__(self):
         return self.get_details()
