@@ -25,10 +25,12 @@ import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
+from w3af.core.ui.api.utils.auth import requires_auth
 from w3af.core.ui.api.utils.scans import get_scan_info_from_id
 
 
 @app.route('/scans/<int:scan_id>/kb/', methods=['GET'])
+@requires_auth
 def list_kb(scan_id):
     """
     List vulnerabilities stored in the KB (for a specific scan)
@@ -65,6 +67,7 @@ def list_kb(scan_id):
 
 
 @app.route('/scans/<int:scan_id>/kb/<int:vulnerability_id>', methods=['GET'])
+@requires_auth
 def get_kb(scan_id, vulnerability_id):
     """
     The whole information related to the specified vulnerability ID
