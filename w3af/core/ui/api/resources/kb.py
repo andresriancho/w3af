@@ -105,13 +105,15 @@ def matches_filter(finding, request):
 
     if name is not None and url is not None:
         return (name.lower() in finding.get_name().lower() and
+                finding.get_url() is not None and
                 finding.get_url().url_string.startswith(url))
 
     elif name is not None:
         return name.lower() in finding.get_name().lower()
 
     elif url is not None:
-        return finding.get_url().url_string.startswith(url)
+        return (finding.get_url() is not None and
+                finding.get_url().url_string.startswith(url))
 
     # No filter
     return True

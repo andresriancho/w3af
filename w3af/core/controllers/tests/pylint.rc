@@ -19,7 +19,11 @@ persistent=no
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=w3af.core.controllers.tests.pylint_plugins.hashlib_fix,w3af.core.controllers.tests.pylint_plugins.subprocess_fix,w3af.core.controllers.tests.pylint_plugins.gi_repository_fix,w3af.core.controllers.tests.pylint_plugins.scapy_fix,w3af.core.controllers.tests.pylint_plugins.httpretty_fix
+load-plugins=w3af.core.controllers.tests.pylint_plugins.hashlib_fix,w3af.core.controllers.tests.pylint_plugins.subprocess_fix,w3af.core.controllers.tests.pylint_plugins.gi_repository_fix,w3af.core.controllers.tests.pylint_plugins.scapy_fix,w3af.core.controllers.tests.pylint_plugins.httpretty_fix,w3af.core.controllers.tests.pylint_plugins.ordereddict_fix
+
+# Fix gtk and other C extension false positives
+unsafe-load-any-extensions=yes
+extension-pkg-whitelist=lxml,gtk,pygtk,pango,webkit,gtksourceview2,esm,ruamel,ruamel.ordereddict,pybloomfilter
 
 [MESSAGES CONTROL]
 
@@ -34,15 +38,13 @@ enable=E0101,E1103,E1124,E0611,E1123,E1120,E0202,E0203,E0100,E1305,E0221,E0222,E
 # it should appear only once).
 #disable=
 
-
 [REPORTS]
 
 # Set the output format. Available formats are text, parseable, colorized, msvs
 # (visual studio) and html
 output-format=text
 
-# Include message's id in output
-include-ids=yes
+msg-template={msg_id}:{line:3d},{column}: {obj}: {msg}
 
 # Put messages in a separate file for each module / package specified on the
 # command line instead of printing them on stdout. Reports (if any) will be

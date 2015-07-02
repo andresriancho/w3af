@@ -1,11 +1,11 @@
-# http://www.logilab.org/blogentry/78354
+from astroid import MANAGER, register_module_extender
+from astroid.builder import AstroidBuilder
 
-from logilab.astng import MANAGER
-from logilab.astng.builder import ASTNGBuilder
 
 CODE_FIX = """
 class md5(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
@@ -14,7 +14,8 @@ class md5(object):
         return u''
 
 class sha1(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
@@ -23,7 +24,8 @@ class sha1(object):
         return u''
 
 class sha512(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
@@ -32,7 +34,8 @@ class sha512(object):
         return u''
 
 class sha256(object):
-    def __init__(self, value): pass
+    def __init__(self, value=None):
+        pass
     def hexdigest(self):
         return u''
     def update(self, x):
@@ -42,16 +45,9 @@ class sha256(object):
 """
 
 
-def hashlib_transform(module):
-    if module.name == 'hashlib':
-        fake = ASTNGBuilder(MANAGER).string_build(CODE_FIX)
-        
-        for hashfunc in ('sha1', 'md5', 'sha512', 'sha256'):
-            module.locals[hashfunc] = fake.locals[hashfunc]
+def hashlib_transform():
+    return AstroidBuilder(MANAGER).string_build(CODE_FIX)
 
 
 def register(linter):
-    """called when loaded by pylint --load-plugins, register our transformation
-    function here
-    """
-    MANAGER.register_transformer(hashlib_transform)
+    register_module_extender(MANAGER, 'hashlib', hashlib_transform)

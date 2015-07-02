@@ -12,7 +12,7 @@ def parse_args():
     parser.add_argument('-d', '--debug', help='Use bash to connect',
                         action='store_true')
     parser.add_argument('-t', '--tag', help='Docker image tag to run. Default'
-                                            ' is stable, try unstable to get'
+                                            ' is latest, try develop to get'
                                             ' the latest w3af features.',
                         required=False)
     args = parser.parse_args()

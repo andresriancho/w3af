@@ -138,9 +138,12 @@ deployment:
       - find . -exec touch -t 201401010000 {} \;
       - for x in $(git ls-tree --full-tree --name-only -r HEAD); do touch -t $(date -d "$(git log -1 --format=%ci "${x}")" +%y%m%d%H%M.%S) "${x}"; done
 
-      - docker pull andresriancho/w3af:stable; true
-      - cd extras/docker/ && ./docker-build.sh stable
-      - docker push andresriancho/w3af:stable
+      - docker pull andresriancho/w3af:latest; true
+      - cd extras/docker/ && ./docker-build.sh latest
+      - docker push andresriancho/w3af:latest
+      - docker push andresriancho/w3af:${CIRCLE_SHA1:0:7}-master
+
+      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-docker/tree/master?circle-token=$W3AF_API_DOCKER_TOKEN --data '{\"build_parameters\": {\"W3AF_COMMIT\": \"'${CIRCLE_SHA1:0:7}'\"}}'"
 
   staging:
     branch: develop
@@ -162,6 +165,9 @@ deployment:
       - find . -exec touch -t 201401010000 {} \;
       - for x in $(git ls-tree --full-tree --name-only -r HEAD); do touch -t $(date -d "$(git log -1 --format=%ci "${x}")" +%y%m%d%H%M.%S) "${x}"; done
 
-      - docker pull andresriancho/w3af:unstable; true
-      - cd extras/docker/ && ./docker-build.sh unstable
-      - docker push andresriancho/w3af:unstable
+      - docker pull andresriancho/w3af:develop; true
+      - cd extras/docker/ && ./docker-build.sh develop
+      - docker push andresriancho/w3af:develop
+      - docker push andresriancho/w3af:${CIRCLE_SHA1:0:7}-develop
+
+      - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-docker/tree/develop?circle-token=$W3AF_API_DOCKER_TOKEN --data '{\"build_parameters\": {\"W3AF_COMMIT\": \"'${CIRCLE_SHA1:0:7}'\"}}'"
