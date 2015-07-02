@@ -16,8 +16,13 @@ else
     exit 1
 fi
 
-sudo docker build -t andresriancho/w3af:${ENV} .
-sudo docker tag andresriancho/w3af:${ENV} andresriancho/w3af:${CIRCLE_SHA1:0:7}-${ENV}
+NEW_TAG=`docker-tag-naming bump andresriancho/w3af ${ENV} --commit-id ${CIRCLE_SHA1:0:7}`
+
+docker build -t andresriancho/w3af:${ENV} .
+docker tag andresriancho/w3af:${ENV} andresriancho/w3af:${NEW_TAG}
+
+docker push andresriancho/w3af:${ENV}
+docker push andresriancho/w3af:${NEW_TAG}
 
 rm -rf Dockerfile
 rm -rf .dockerignore
