@@ -19,17 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import yaml
 import socket
 import argparse
-import yaml
 
 from w3af.core.ui.api import app
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check
 
 # Global default values
-defaults = {'USERNAME':'admin',
+defaults = {'USERNAME': 'admin',
             'HOST': '127.0.0.1',
             'PORT': 5000}
+
 
 def parse_host_port(host, port):
 
@@ -73,40 +74,38 @@ def parse_arguments():
     opts = parser.add_argument_group('server options',
                                      'Server options can be specified here or'
                                      ' as part of a YAML configuration file'
-                                     ' (see above).\n'
-                                     'If no configuration file is used, the'
-                                     ' "-p" (password) option MUST be specified.')
+                                     ' using the "-c" command line argument.')
 
     opts.add_argument('-p',
-                        required=False,
-                        default=False,
-                        dest='password',
-                        help='SHA512-hashed password for HTTP basic'
-                             ' authentication. Linux or Mac users can generate'
-                             ' this by running:\n' 
-                             ' echo -n "password" | sha512sum')
+                      required=False,
+                      default=False,
+                      dest='password',
+                      help='SHA512-hashed password for HTTP basic'
+                           ' authentication. Linux or Mac users can generate'
+                           ' the hash running:\n'
+                           ' echo -n "password" | sha512sum')
 
     opts.add_argument('-u',
-                        required=False,
-                        dest='username',
-                        default=False, 
-                        help='Username required for basic auth. If not '
-                             'specified, this will be set to "admin".')
+                      required=False,
+                      dest='username',
+                      default=False,
+                      help='Username required for basic auth. If not '
+                           'specified, this will be set to "admin".')
 
     opts.add_argument('-v',
-                        required=False,
-                        default=False,
-                        dest='verbose',
-                        action='store_true',
-                        help='Enables verbose output')
+                      required=False,
+                      default=False,
+                      dest='verbose',
+                      action='store_true',
+                      help='Enables verbose output')
 
     args = parser.parse_args()
 
     try:
-        args.host, args.port = getattr(args,'host:port').split(':')
+        args.host, args.port = getattr(args, 'host:port').split(':')
     except ValueError:
-        raise argparse.ArgumentTypeError('Please specify a valid host and port as'
-                                       ' HOST:PORT (eg "127.0.0.1:5000").')
+        raise argparse.ArgumentTypeError('Please specify a valid host and port'
+                                         ' as HOST:PORT (eg "127.0.0.1:5000").')
     except AttributeError:
         pass # Expect AttributeError if host_port was not entered
     
@@ -135,22 +134,20 @@ def main():
             if type(yaml_conf[k]).__name__ not in ['str', 'int', 'bool']:
                 pass
             elif k.lower() in vars(args) and vars(args)[k.lower()]:
-                print('Error: you appear to have specified options in the config'
-                      ' file and on the command line. Please resolve any'
+                print('Error: you appear to have specified options in the'
+                      ' config file and on the command line. Please resolve any'
                       ' conflicting options and try again: %s' % k)
                 return 1
-
-       # Flask contains a number of built-in server options that can also be
-       # modified by setting them in the config YAML:
-       # http://flask.pocoo.org/docs/latest/config/
-
             else:
+                # Flask contains a number of built-in server options that can
+                # also be modified by setting them in the config YAML:
+                # http://flask.pocoo.org/docs/latest/config/
                 app.config[k.upper()] = yaml_conf[k]
 
         file.close(args.config_file)
      
     for i in vars(args):
-        if type(vars(args)[i]).__name__ not in ['str', 'int', 'bool']:
+        if type(vars(args)[i]).__name__ not in ('str', 'int', 'bool'):
             pass
         elif i in vars(args) and vars(args)[i]:
             app.config[i.upper()] = vars(args)[i]
@@ -166,8 +163,8 @@ def main():
             int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
         except:
             print('Error: Please specify a valid SHA512-hashed plaintext as' 
-                  ' password, either inside a config file with "-c" or using the' 
-                  ' "-p" flag.')
+                  ' password, either inside a config file with "-c" or using'
+                  ' the "-p" flag.')
             return 1
     
     app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
@@ -182,14 +179,13 @@ def main():
                   ' system to vulnerabilities such as arbitrary file reads'
                   ' through file:// protocol specifications in target URLs and'
                   ' scan profiles.\n'
-                  'We recommend enabling HTTP basic authentication by specifying'
-                  ' a password on the command line (with "-p <SHA512 hash>") or'
-                  ' in a configuration file.\n')
+                  'We recommend enabling HTTP basic authentication by'
+                  ' specifying a password on the command line (with'
+                  ' "-p <SHA512 hash>") or in a configuration file.\n')
 
         print('CAUTION! Traffic to this API is not encrypted and could be'
-              ' sniffed. Please consider putting this behind an SSL-enabled'
+              ' sniffed. Please consider serving it behind an SSL-enabled'
               ' proxy server.\n')
-
 
     try:
         app.run(host=app.config['HOST'], port=app.config['PORT'],

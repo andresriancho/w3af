@@ -29,9 +29,9 @@ Or it can also be run inside a docker container:
 Authentication
 --------------
 
-It is possible to require HTTP basic authentication for all API views by
-specifying a SHA512-hashed password on the command line (with "-p <SHA512_HASH>")
-or in a configuration file using the "password:" directive (see the section
+It is possible to require HTTP basic authentication for all REST API requests by
+specifying a SHA512-hashed password on the command line (with ``-p <SHA512_HASH>``)
+or in a configuration file using the ``password:`` directive (see the section
 below for more information about configuration files).
 
 Linux or Mac users can generate a SHA512 hash from a plaintext password by
@@ -45,10 +45,10 @@ running:
     $ ./w3af_api -p "bd2b1aaf7ef4f09be9f52ce2d8d599674d81aa9d6a4421696dc4d93dd0619d682ce56b4d64a9ef097761ced99e0f67265b5f76085e5b0ee7ca4696b2ad6fe2b2"
      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 
-In the above example, users would be able to connect using HTTP basic
-authentication with the default username 'admin' and the password 'secret'.
+In the above example, users are only able to connect using HTTP basic
+authentication with the default username ``admin`` and the password ``secret``.
 
-For example, using the 'curl' command:
+For example, using the ``curl`` command:
 
 .. code-block:: none
 
@@ -58,18 +58,19 @@ For example, using the 'curl' command:
     }
 
 Please note that even with basic authentication, traffic passing to and from the 
-API is not encrypted, meaning that authentication and vulnerability information 
-could still be sniffed by an attacker with "man-in-the-middle" capabilities.
+REST API is not encrypted, meaning that authentication and vulnerability
+information could still be sniffed by an attacker with "man-in-the-middle"
+capabilities.
 
-If running the API on a publicly available IP address we recommend taking
+When running the REST API on a publicly available IP address we recommend taking
 additional precautions including running it behind an SSL proxy server (such as 
-Pound, or Apache with mod_proxy enabled).
+Pound, nginx, or Apache with mod_proxy enabled).
 
 Config file format
 ------------------
 
 Using a configuration file is optional and is simply a convenient place to store
-configuration options that could otherwise be specified on the command line.
+settings that could otherwise be specified using command line arguments.
 
 The configuration file is in standard YAML format and accepts any of the options
 found on the command line. A sample configuration file would look like this:
@@ -84,7 +85,7 @@ found on the command line. A sample configuration file would look like this:
     # The SHA512-hashed password is 'secret'. We don't recommend using this.
     password: 'bd2b1aaf7ef4f09be9f52ce2d8d599674d81aa9d6a4421696dc4d93dd0619d682ce56b4d64a9ef097761ced99e0f67265b5f76085e5b0ee7ca4696b2ad6fe2b2'
 
-In the above example, all values except 'password' are the defaults and could
+In the above example, all values except ``password`` are the defaults and could
 have been omitted from the configuration file without changing the way the API 
 runs.
 

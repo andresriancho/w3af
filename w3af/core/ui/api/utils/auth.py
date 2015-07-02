@@ -20,10 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from functools import wraps
-from flask import request
 from hashlib import sha512
+
+from flask import request
+
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
+
 
 def check_auth(username, password):
     """This function is called to check if a username /
@@ -32,14 +35,19 @@ def check_auth(username, password):
     return (username == app.config['USERNAME'] and
             sha512(password).hexdigest() == app.config['PASSWORD'])
 
+
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not 'PASSWORD' in app.config: # Auth was not enabled at startup
+
+        if not 'PASSWORD' in app.config:
+            # Auth was not enabled at startup
             return f(*args, **kwargs)
+
         auth = request.authorization
         if not auth or not check_auth(auth.username, auth.password):
-           abort(401, 'Could not verify access. Please specify a username and \
-             password for HTTP basic authentication.')
+            abort(401, 'Could not verify access. Please specify a username and'
+                       ' password for HTTP basic authentication.')
         return f(*args, **kwargs)
+    
     return decorated
