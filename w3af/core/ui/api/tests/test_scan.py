@@ -127,13 +127,14 @@ class APIScanTest(APIUnitTest):
 
         log_data = response.json()
         self.assertGreater(len(log_data['entries']), 100)
-        self.assertEqual(log_data['more'], False)
         self.assertEqual(log_data['next'], None)
+        self.assertEqual(log_data['next_url'], None)
 
         zero_entry = log_data['entries'][0]
         self.assertEqual(zero_entry['message'], u'Called w3afCore.start()')
         self.assertEqual(zero_entry['severity'], None)
         self.assertEqual(zero_entry['type'], 'debug')
+        self.assertIsNotNone(zero_entry['id'])
         self.assertIsNotNone(zero_entry['time'])
 
         #
