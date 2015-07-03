@@ -236,37 +236,3 @@ def scan_stop(scan_id):
     t.start()
 
     return jsonify({'message': 'Stopping scan'})
-
-
-@app.route('/scans/<int:scan_id>/log', methods=['GET'])
-@requires_auth
-def scan_log(scan_id):
-    """
-    :param scan_id: The scan ID to retrieve the scan
-    :return: The scan log contents, paginated using 200 entries per page
-    """
-    page = request.args.get('page', '0')
-    results_per_page = 200
-
-    scan_info = get_scan_info_from_id(scan_id)
-    if scan_info is None:
-        abort(404, 'Scan not found')
-
-    if scan_info.output is None:
-        abort(404, 'Scan output not found')
-
-    if not page.isdigit():
-        abort(400, 'Invalid page number')
-
-    page = int(page)
-    start = results_per_page * page
-    end = start + results_per_page
-
-    messages = scan_info.output.log[start:end]
-
-    more = True if len(scan_info.output.log) > end else False
-    next = page + 1 if more else None
-
-    return jsonify({'next': next,
-                    'more': more,
-                    'entries': [m.to_json() for m in messages]})
