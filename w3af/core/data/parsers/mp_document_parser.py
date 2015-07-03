@@ -96,6 +96,7 @@ class MultiProcessingDocumentParser(object):
             self._pool.terminate()
             self._pool = None
 
+        if self._processes is not None:
             self._processes.clear()
             self._processes = None
 
