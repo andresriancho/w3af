@@ -5,3 +5,4 @@ from . import index
 from . import version
 from . import traffic
 from . import exceptions
+from . import log

@@ -45,16 +45,17 @@ class ApiScanLogTest(APIUnitTest):
         self.wait_until_finish(500)
 
         #
-        # Get the scan log
+        # Get the scan log paginating by "page"
         #
         response = requests.get('%s/scans/0/log' % self.api_url,
                                 auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data_page_0 = response.json()
-        self.assertEqual(len(log_data_page_0['entries']), 200)
-        self.assertEqual(log_data_page_0['more'], True)
+        entries = log_data_page_0['entries']
+        self.assertEqual(len(entries), 200, entries)
         self.assertEqual(log_data_page_0['next'], 1)
+        self.assertEqual(log_data_page_0['next_url'], '/scans/0/log?page=1')
 
         zero_entry = log_data_page_0['entries'][0]
         self.assertEqual(zero_entry['message'], u'Called w3afCore.start()')
@@ -63,6 +64,34 @@ class ApiScanLogTest(APIUnitTest):
         self.assertIsNotNone(zero_entry['time'])
 
         response = requests.get('%s/scans/0/log?page=1' % self.api_url,
+                                auth=self.api_auth)
+        self.assertEqual(response.status_code, 200, response.text)
+
+        self.assertNotEqual(log_data_page_0['entries'],
+                            response.json()['entries'])
+
+
+        #
+        # Get the scan log paginating by "id"
+        #
+        response = requests.get('%s/scans/0/log?id=0' % self.api_url,
+                                auth=self.api_auth)
+        self.assertEqual(response.status_code, 200, response.text)
+
+        log_data_page_0 = response.json()
+        entries = log_data_page_0['entries']
+        self.assertEqual(len(entries), 200, entries)
+        self.assertEqual(log_data_page_0['next'], 200)
+        self.assertEqual(log_data_page_0['next_url'], '/scans/0/log?id=200')
+
+        zero_entry = log_data_page_0['entries'][0]
+        self.assertEqual(zero_entry['message'], u'Called w3afCore.start()')
+        self.assertEqual(zero_entry['severity'], None)
+        self.assertEqual(zero_entry['type'], 'debug')
+        self.assertEqual(zero_entry['id'], 0)
+        self.assertIsNotNone(zero_entry['time'])
+
+        response = requests.get('%s/scans/0/log?id=200' % self.api_url,
                                 auth=self.api_auth)
         self.assertEqual(response.status_code, 200, response.text)
 
