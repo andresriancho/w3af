@@ -88,6 +88,7 @@ class ApiScanLogTest(APIUnitTest):
         self.assertEqual(zero_entry['message'], u'Called w3afCore.start()')
         self.assertEqual(zero_entry['severity'], None)
         self.assertEqual(zero_entry['type'], 'debug')
+        self.assertEqual(zero_entry['id'], 0)
         self.assertIsNotNone(zero_entry['time'])
 
         response = requests.get('%s/scans/0/log?id=200' % self.api_url,
