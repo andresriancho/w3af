@@ -52,44 +52,55 @@ class lang(GrepPlugin):
         :param response: The HTTP response object
         """
         with self._plugin_lock:
-            if self._exec and response.is_text_or_html() and not is_404(response):
-                
-                body = response.get_clear_text_body().lower()
+            if not self._exec:
+                return
 
+            if not response.is_text_or_html():
+                return
+
+            if is_404(response):
+                return
+
+            body = response.get_clear_text_body().lower()
+
+            try:
                 guessed_lang = guess_language.guessLanguage(body)
+            except IndexError:
+                # I don't care about exception handling of the external lib
+                guessed_lang = 'UNKNOWN'
 
-                if guessed_lang == 'UNKNOWN':
-                    # None means "I'm still trying"
-                    kb.kb.raw_write(self, 'lang', None)
-                    
-                    # Keep running until self._tries_left is zero 
-                    self._tries_left -= 1
-                    
-                    if self._tries_left == 0:
-                        msg = 'Could not determine the site language using the'\
-                              ' first 25 HTTP responses, not enough text to make'\
-                              ' a good analysis.'
-                        om.out.debug(msg)
-                        
-                        # unknown means I'll stop testing because I don't
-                        # have any idea about the target's language
-                        kb.kb.raw_write(self, 'lang', 'unknown')
-                        
-                        self._exec = False
-                else:
-                    # Only run until we find the page language
+            if guessed_lang == 'UNKNOWN':
+                # None means "I'm still trying"
+                kb.kb.raw_write(self, 'lang', None)
+
+                # Keep running until self._tries_left is zero
+                self._tries_left -= 1
+
+                if self._tries_left == 0:
+                    msg = ('Could not determine the site language using the'
+                           ' first 25 HTTP responses, not enough text to make'
+                           ' a good analysis.')
+                    om.out.debug(msg)
+
+                    # unknown means I'll stop testing because I don't
+                    # have any idea about the target's language
+                    kb.kb.raw_write(self, 'lang', 'unknown')
+
                     self._exec = False
-                    
-                    msg = 'The page is written in: "%s".'
-                    om.out.information(msg % guessed_lang)
-                    kb.kb.raw_write(self, 'lang', guessed_lang)
+            else:
+                # Only run until we find the page language
+                self._exec = False
+
+                msg = 'The page is written in: "%s".'
+                om.out.information(msg % guessed_lang)
+                kb.kb.raw_write(self, 'lang', guessed_lang)
 
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin reads N pages and determines the language the site is written
-        in. This is done by saving a list of prepositions in different languages,
-        and counting the number of matches on every page.
+        This plugin reads N pages and determines the language the site is
+        written in. This is done by saving a list of prepositions in different
+        languages, and counting the number of matches on every page.
         """
