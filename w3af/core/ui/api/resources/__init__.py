@@ -7,3 +7,4 @@ from . import traffic
 from . import exceptions
 from . import log
 from . import urls
+from . import fuzzable_requests
