@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
+from nose.tools import nottest
 from w3af.core.controllers.ci.moth import get_moth_http
 
 PROFILE_URL = 'http://127.0.0.1:8000/audit/sql_injection/'
@@ -146,6 +146,7 @@ url_parameter =
 """
 
 
+@nottest
 def get_test_profile(profile=FAST_TEST_PROFILE):
     moth = get_moth_http('/')
 
