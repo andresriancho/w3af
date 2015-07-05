@@ -55,7 +55,8 @@ class ApiScanLogTest(APIUnitTest):
         entries = log_data_page_0['entries']
         self.assertEqual(len(entries), 200, entries)
         self.assertEqual(log_data_page_0['next'], 1)
-        self.assertEqual(log_data_page_0['next_url'], '/scans/0/log?page=1')
+        self.assertEqual(log_data_page_0['next_url'],
+                         '/scans/%s/log?page=1' % scan_id)
 
         zero_entry = log_data_page_0['entries'][0]
         self.assertEqual(zero_entry['message'], u'Called w3afCore.start()')
@@ -82,7 +83,8 @@ class ApiScanLogTest(APIUnitTest):
         entries = log_data_page_0['entries']
         self.assertEqual(len(entries), 200, entries)
         self.assertEqual(log_data_page_0['next'], 200)
-        self.assertEqual(log_data_page_0['next_url'], '/scans/0/log?id=200')
+        self.assertEqual(log_data_page_0['next_url'],
+                         '/scans/%s/log?id=200' % scan_id)
 
         zero_entry = log_data_page_0['entries'][0]
         self.assertEqual(zero_entry['message'], u'Called w3afCore.start()')
