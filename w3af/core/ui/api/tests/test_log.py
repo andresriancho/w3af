@@ -32,9 +32,11 @@ class ApiScanLogTest(APIUnitTest):
         profile, target_url = get_test_profile(SLOW_TEST_PROFILE)
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
-        self.app.post('/scans/',
-                      data=json.dumps(data),
-                      headers=self.HEADERS)
+        response = self.app.post('/scans/',
+                                 data=json.dumps(data),
+                                 headers=self.HEADERS)
+
+        scan_id = json.loads(response.data)['id']
 
         #
         # Wait until the scanner finishes and assert the vulnerabilities
@@ -45,7 +47,7 @@ class ApiScanLogTest(APIUnitTest):
         #
         # Get the scan log paginating by "page"
         #
-        response = self.app.get('/scans/0/log',
+        response = self.app.get('/scans/%s/log' % scan_id,
                                 headers=self.HEADERS)
         self.assertEqual(response.status_code, 200, response.data)
 
@@ -61,7 +63,7 @@ class ApiScanLogTest(APIUnitTest):
         self.assertEqual(zero_entry['type'], 'debug')
         self.assertIsNotNone(zero_entry['time'])
 
-        response = self.app.get('/scans/0/log?page=1',
+        response = self.app.get('/scans/%s/log?page=1' % scan_id,
                                 headers=self.HEADERS)
         self.assertEqual(response.status_code, 200, response.data)
 
@@ -72,7 +74,7 @@ class ApiScanLogTest(APIUnitTest):
         #
         # Get the scan log paginating by "id"
         #
-        response = self.app.get('/scans/0/log?id=0',
+        response = self.app.get('/scans/%s/log?id=0' % scan_id,
                                 headers=self.HEADERS)
         self.assertEqual(response.status_code, 200, response.data)
 
@@ -89,7 +91,7 @@ class ApiScanLogTest(APIUnitTest):
         self.assertEqual(zero_entry['id'], 0)
         self.assertIsNotNone(zero_entry['time'])
 
-        response = self.app.get('/scans/0/log?id=200',
+        response = self.app.get('/scans/%s/log?id=200' % scan_id,
                                 headers=self.HEADERS)
         self.assertEqual(response.status_code, 200, response.data)
 
