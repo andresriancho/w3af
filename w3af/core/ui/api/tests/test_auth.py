@@ -33,7 +33,7 @@ class AuthTest(APIUnitTest):
                 'target_urls': [target_url]}
 
         # I'm not sending any authentication in this request
-        headers = self.HEADERS
+        headers = self.HEADERS.copy()
         headers.pop('Authorization')
 
         response = self.app.post('/scans/',
