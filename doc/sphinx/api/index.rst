@@ -113,3 +113,5 @@ Contents
    kb
    version
    traffic
+   urls
+   exceptions
