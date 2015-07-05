@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import requests
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 from w3af.core.ui.api.tests.utils.test_profile import get_test_profile
@@ -32,13 +31,15 @@ class AuthTest(APIUnitTest):
         profile, target_url = get_test_profile()
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
-        response = requests.post('%s/scans/' % self.api_url,
-                                 # I'm not sending any authentication in this
-                                 # request
-                                 #auth=self.api_auth,
-                                 data=json.dumps(data),
-                                 headers=self.headers)
 
-        code = response.json()['code']
+        # I'm not sending any authentication in this request
+        headers = self.HEADERS
+        headers.pop('Authorization')
+
+        response = self.app.post('/scans/',
+                                 data=json.dumps(data),
+                                 headers=headers)
+
+        code = json.loads(response.data)['code']
         self.assertEqual(code, 401)
         self.assertEqual(response.status_code, 401)

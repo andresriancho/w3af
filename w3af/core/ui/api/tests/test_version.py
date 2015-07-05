@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import requests
+import json
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 
@@ -30,11 +30,10 @@ class VersionTest(APIUnitTest):
         #
         # Name filter
         #
-        response = requests.get('%s/version' % self.api_url,
-                                auth=self.api_auth)
-        self.assertEqual(response.status_code, 200, response.text)
+        response = self.app.get('/version', headers=self.HEADERS)
+        self.assertEqual(response.status_code, 200, response.data)
 
-        version_dict = response.json()
+        version_dict = json.loads(response.data)
         self.assertIn('version', version_dict)
         self.assertIn('revision', version_dict)
         self.assertIn('branch', version_dict)

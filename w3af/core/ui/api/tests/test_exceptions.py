@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import requests
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 from w3af.core.ui.api.tests.utils.test_profile import get_test_profile
@@ -33,29 +32,24 @@ class ScanExceptionResourceTest(APIUnitTest):
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
 
-        response = requests.post('%s/scans/' % self.api_url,
-                                 auth=self.api_auth,
+        response = self.app.post('/scans/',
                                  data=json.dumps(data),
-                                 headers=self.headers)
+                                 headers=self.HEADERS)
 
-        scan_id = response.json()['id']
+        scan_id = json.loads(response.data)['id']
         self.wait_until_running()
 
         # Create an exception in the w3af scan
-        response = requests.post('%s/scans/%s/exceptions/' % (self.api_url,
-                                                              scan_id),
-                                 auth=self.api_auth,
-                                 headers=self.headers)
+        response = self.app.post('/scans/%s/exceptions/' % scan_id,
+                                 headers=self.HEADERS)
 
         self.assertEqual(response.status_code, 201)
 
         # And now query it using the REST API
-        response = requests.get('%s/scans/%s/exceptions/' % (self.api_url,
-                                                             scan_id),
-                                auth=self.api_auth,
-                                headers=self.headers)
+        response = self.app.get('/scans/%s/exceptions/' % scan_id,
+                                headers=self.HEADERS)
 
-        exceptions = response.json()['items']
+        exceptions = json.loads(response.data)['items']
         self.assertEqual(len(exceptions), 1)
 
         exception = exceptions[0]
@@ -71,9 +65,7 @@ class ScanExceptionResourceTest(APIUnitTest):
                             u'plugin': u'plugin'}
         self.assertEqual(exception, expected_summary)
 
-        response = requests.get('%s/scans/%s/exceptions/0' % (self.api_url,
-                                                              scan_id),
-                                auth=self.api_auth,
-                                headers=self.headers)
+        response = self.app.get('/scans/%s/exceptions/0' % scan_id,
+                                headers=self.HEADERS)
 
-        self.assertIn('traceback', response.json())
+        self.assertIn('traceback', json.loads(response.data))

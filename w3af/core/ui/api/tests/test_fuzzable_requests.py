@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 import base64
-import requests
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 from w3af.core.ui.api.tests.utils.test_profile import get_test_profile
@@ -42,12 +41,11 @@ class FuzzableRequestsTest(APIUnitTest):
         profile, target_url = get_test_profile()
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
-        response = requests.post('%s/scans/' % self.api_url,
-                                 auth=self.api_auth,
+        response = self.app.post('/scans/',
                                  data=json.dumps(data),
-                                 headers=self.headers)
+                                 headers=self.HEADERS)
 
-        scan_id = response.json()['id']
+        scan_id = json.loads(response.data)['id']
 
         #
         # Wait until the scanner finishes and assert the vulnerabilities
@@ -58,12 +56,11 @@ class FuzzableRequestsTest(APIUnitTest):
         #
         # Get all the URLs that the scanner found
         #
-        args = (self.api_url, scan_id)
-        response = requests.get('%s/scans/%s/fuzzable-requests/' % args,
-                                auth=self.api_auth)
-        self.assertEqual(response.status_code, 200, response.text)
+        response = self.app.get('/scans/%s/fuzzable-requests/' % scan_id,
+                                headers=self.HEADERS)
+        self.assertEqual(response.status_code, 200, response.data)
 
-        encoded_fuzzable_requests_items = response.json()['items']
+        encoded_fuzzable_requests_items = json.loads(response.data)['items']
         decoded_fuzzable_requests = []
 
         for encoded_fr in encoded_fuzzable_requests_items:

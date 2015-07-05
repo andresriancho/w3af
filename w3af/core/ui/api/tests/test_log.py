@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import requests
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 from w3af.core.ui.api.tests.utils.test_profile import (get_test_profile,
@@ -33,10 +32,9 @@ class ApiScanLogTest(APIUnitTest):
         profile, target_url = get_test_profile(SLOW_TEST_PROFILE)
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
-        requests.post('%s/scans/' % self.api_url,
-                      auth=self.api_auth,
+        self.app.post('/scans/',
                       data=json.dumps(data),
-                      headers=self.headers)
+                      headers=self.HEADERS)
 
         #
         # Wait until the scanner finishes and assert the vulnerabilities
@@ -47,11 +45,11 @@ class ApiScanLogTest(APIUnitTest):
         #
         # Get the scan log paginating by "page"
         #
-        response = requests.get('%s/scans/0/log' % self.api_url,
-                                auth=self.api_auth)
-        self.assertEqual(response.status_code, 200, response.text)
+        response = self.app.get('/scans/0/log',
+                                headers=self.HEADERS)
+        self.assertEqual(response.status_code, 200, response.data)
 
-        log_data_page_0 = response.json()
+        log_data_page_0 = json.loads(response.data)
         entries = log_data_page_0['entries']
         self.assertEqual(len(entries), 200, entries)
         self.assertEqual(log_data_page_0['next'], 1)
@@ -63,22 +61,22 @@ class ApiScanLogTest(APIUnitTest):
         self.assertEqual(zero_entry['type'], 'debug')
         self.assertIsNotNone(zero_entry['time'])
 
-        response = requests.get('%s/scans/0/log?page=1' % self.api_url,
-                                auth=self.api_auth)
-        self.assertEqual(response.status_code, 200, response.text)
+        response = self.app.get('/scans/0/log?page=1',
+                                headers=self.HEADERS)
+        self.assertEqual(response.status_code, 200, response.data)
 
         self.assertNotEqual(log_data_page_0['entries'],
-                            response.json()['entries'])
+                            json.loads(response.data)['entries'])
 
 
         #
         # Get the scan log paginating by "id"
         #
-        response = requests.get('%s/scans/0/log?id=0' % self.api_url,
-                                auth=self.api_auth)
-        self.assertEqual(response.status_code, 200, response.text)
+        response = self.app.get('/scans/0/log?id=0',
+                                headers=self.HEADERS)
+        self.assertEqual(response.status_code, 200, response.data)
 
-        log_data_page_0 = response.json()
+        log_data_page_0 = json.loads(response.data)
         entries = log_data_page_0['entries']
         self.assertEqual(len(entries), 200, entries)
         self.assertEqual(log_data_page_0['next'], 200)
@@ -91,9 +89,9 @@ class ApiScanLogTest(APIUnitTest):
         self.assertEqual(zero_entry['id'], 0)
         self.assertIsNotNone(zero_entry['time'])
 
-        response = requests.get('%s/scans/0/log?id=200' % self.api_url,
-                                auth=self.api_auth)
-        self.assertEqual(response.status_code, 200, response.text)
+        response = self.app.get('/scans/0/log?id=200',
+                                headers=self.HEADERS)
+        self.assertEqual(response.status_code, 200, response.data)
 
         self.assertNotEqual(log_data_page_0['entries'],
-                            response.json()['entries'])
+                            json.loads(response.data)['entries'])
