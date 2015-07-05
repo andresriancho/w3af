@@ -96,8 +96,18 @@ def start_scan_helper(target_urls, scan_profile, scan_info_setup):
         w3af_core.start()
     except Exception, e:
         scan_info.exception = e
-        w3af_core.stop()
+        try:
+            w3af_core.stop()
+        except AttributeError:
+            # Reduce some exceptions found during interpreter shutdown
+            pass
+
     finally:
         scan_info.finished = True
-        os.unlink(os.path.join(profile_path, scan_profile_file_name))
+
+        try:
+            os.unlink(os.path.join(profile_path, scan_profile_file_name))
+        except (AttributeError, IOError) as _:
+            # Reduce some exceptions found during interpreter shutdown
+            pass
 
