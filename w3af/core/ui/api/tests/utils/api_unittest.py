@@ -26,6 +26,7 @@ import hashlib
 import unittest
 
 from w3af.core.ui.api import app
+from w3af.core.ui.api.db.master import SCANS
 
 
 class APIUnitTest(unittest.TestCase):
@@ -45,6 +46,17 @@ class APIUnitTest(unittest.TestCase):
         app.config['USERNAME'] = 'admin'
 
         self.app = app.test_client()
+
+    def tearDown(self):
+        """
+        Since the API does not support concurrent scans we need to cleanup
+        everything before starting a new scan/test.
+        """
+        for scan_id, scan_info in SCANS.iteritems():
+            if scan_info is not None:
+                scan_info.w3af_core.stop()
+                scan_info.w3af_core.cleanup()
+                SCANS[scan_id] = None
 
     def wait_until_running(self):
         """
