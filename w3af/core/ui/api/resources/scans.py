@@ -229,7 +229,7 @@ def scan_stop(scan_id):
         abort(404, 'Scan not found')
 
     if not scan_info.w3af_core.can_stop():
-        abort(403, 'Scan can not be paused')
+        abort(403, 'Scan can not be stop')
 
     t = Process(target=scan_info.w3af_core.stop, name='ScanStopThread', args=())
     t.daemon = True
