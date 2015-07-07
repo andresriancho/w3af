@@ -75,7 +75,8 @@ def error_500_handler(error):
         response = jsonify({'code': 500,
                             'exception': str(error),
                             'handler_exception': str(e),
-                            'please': new_issue})
+                            'please': new_issue,
+                            'message': 'REST API error'})
 
     response.status_code = 500
     return response

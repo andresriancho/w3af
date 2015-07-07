@@ -32,7 +32,7 @@ class JSONHTTPException(HTTPException):
 
     def get_body(self, environ=None):
         """Get the JSON body"""
-        return json.dumps({'error': self.description,
+        return json.dumps({'message': self.description,
                            'code': self.code})
 
     def get_headers(self, environ=None):
