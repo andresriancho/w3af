@@ -20,11 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-import time
-import re
 
 from nose.plugins.attrib import attr
-from mock import patch, call, PropertyMock
 
 from w3af.core.data.url.tests.test_xurllib import TimeoutTCPHandler
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
@@ -33,7 +30,6 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.w3afCore import w3afCore
-from w3af.plugins.tests.helper import PluginTest, MockResponse
 
 
 @attr('moth')
