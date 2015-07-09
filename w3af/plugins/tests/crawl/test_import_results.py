@@ -153,10 +153,14 @@ class TestImportResults(PluginTest):
 
         self.assertEqual(expected_post_urls, post_urls)
 
-        post_fr = post_frs[1]
         expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
-
         file_contents = 'hello\nworld\n'
+
+        post_fr = None
+
+        for fr in fuzzable_requests:
+            if fr.get_url().url_string.endswith('upload.py'):
+                post_fr = fr
 
         self.assertEqual(post_fr.get_url().url_string, expected_post_url)
         self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
@@ -208,9 +212,13 @@ class TestImportResults(PluginTest):
 
         self.assertEqual(expected_post_urls, post_urls)
 
-        post_fr = post_frs[1]
-        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
+        post_fr = None
 
+        for fr in fuzzable_requests:
+            if fr.get_url().url_string.endswith('upload.py'):
+                post_fr = fr
+
+        expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
         file_contents = 'hello\nworld\n'
 
         self.assertEqual(post_fr.get_url().url_string, expected_post_url)
