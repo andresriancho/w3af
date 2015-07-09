@@ -146,6 +146,7 @@ deployment:
       - ./docker-build.sh master:
           pwd: extras/docker/
 
+      - docker push andresriancho/w3af:latest
       - w3af/core/controllers/ci/circleci/trigger-w3af-api-build.py
 
   staging:
