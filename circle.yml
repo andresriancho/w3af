@@ -143,7 +143,7 @@ deployment:
       - for x in $(git ls-tree --full-tree --name-only -r HEAD); do touch -t $(date -d "$(git log -1 --format=%ci "${x}")" +%y%m%d%H%M.%S) "${x}"; done
 
       - docker pull andresriancho/w3af:latest; true
-      - ./docker-build.sh latest:
+      - ./docker-build.sh master:
           pwd: extras/docker/
 
       - w3af/core/controllers/ci/circleci/trigger-w3af-api-build.py
