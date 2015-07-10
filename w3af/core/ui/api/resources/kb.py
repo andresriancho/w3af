@@ -146,7 +146,10 @@ def finding_to_json(finding, scan_id, finding_id, detailed=False):
 
         summary['traffic_hrefs'] = traffic_hrefs
     else:
+        # Support findings without a URL
+        url = finding.get_url().url_string if finding.get_url() else None
+
         summary.update({'name': finding.get_name(),
-                        'url': finding.get_url().url_string})
+                        'url': url})
 
     return summary
