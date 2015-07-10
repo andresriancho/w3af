@@ -52,7 +52,7 @@ class OutputFileOption(BaseOption):
         if not os.path.isdir(directory):
             msg = 'Invalid file option "%s", the directory "%s" does'\
                   ' not exist.'
-            raise BaseFrameworkException(msg % (directory, value))
+            raise BaseFrameworkException(msg % (value, directory))
 
         if not os.access(directory, os.W_OK):
             msg = 'Invalid file option "%s", the user does not have' \
