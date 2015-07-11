@@ -198,7 +198,7 @@ def main():
 
     try:
         app.run(host=app.config['HOST'], port=app.config['PORT'],
-                debug=args.verbose, use_reloader=False)
+                debug=args.verbose, use_reloader=False, threaded=True)
     except socket.error, se:
         print('Failed to start REST API server: %s' % se.strerror)
         return 1

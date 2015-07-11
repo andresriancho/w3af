@@ -62,6 +62,7 @@ class ApiScanLogTest(APIUnitTest):
         self.assertEqual(zero_entry['message'], u'Called w3afCore.start()')
         self.assertEqual(zero_entry['severity'], None)
         self.assertEqual(zero_entry['type'], 'debug')
+        self.assertIsInstance(zero_entry['id'], int)
         self.assertIsNotNone(zero_entry['time'])
 
         response = self.app.get('/scans/%s/log?page=1' % scan_id,
@@ -70,7 +71,6 @@ class ApiScanLogTest(APIUnitTest):
 
         self.assertNotEqual(log_data_page_0['entries'],
                             json.loads(response.data)['entries'])
-
 
         #
         # Get the scan log paginating by "id"

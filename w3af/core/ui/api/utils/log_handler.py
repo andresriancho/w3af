@@ -19,10 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import time
+import shelve
+import tempfile
 
-from w3af.core.data.db.disk_list import DiskList
-from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.constants.severity import MEDIUM
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 
@@ -42,12 +43,49 @@ class RESTAPIOutput(OutputPlugin):
     """
     def __init__(self):
         super(RESTAPIOutput, self).__init__()
-        self.log = DiskList(table_prefix='RestApiScanLog')
-        self.log_id = -1
+
+        self._db_backend = None
+        self._log_id = -1
+
+        # Using a shelve instead of a DiskList to make sure we don't depend
+        # on anything related with w3af, DiskList uses DBMS which is cleared
+        # and (ab)used by the framework
+        #
+        # https://github.com/andresriancho/w3af/issues/11214
+        self.log = shelve.open(self.get_db_backend(), protocol=2)
+
+    def get_db_backend(self):
+        if self._db_backend is None:
+            fd, self._db_backend = tempfile.mkstemp(prefix='w3af-api-log',
+                                                    suffix='shelve',
+                                                    dir=tempfile.tempdir)
+            os.close(fd)
+            os.unlink(self._db_backend)
+
+        return self._db_backend
+
+    def cleanup(self):
+        try:
+            self.log.close()
+        except:
+            # Just in case we call cleanup twice on the same shelve
+            pass
+
+        if os.path.exists(self._db_backend):
+            os.unlink(self._db_backend)
 
     def get_log_id(self):
-        self.log_id += 1
-        return self.log_id
+        self._log_id += 1
+        return str(self._log_id)
+
+    def get_entries(self, start, end):
+        for log_id in xrange(start, end):
+            log_id = str(log_id)
+
+            try:
+                yield self.log[log_id]
+            except KeyError:
+                break
 
     def debug(self, msg_string, new_line=True):
         """
@@ -55,8 +93,9 @@ class RESTAPIOutput(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for debug messages.
         """
-        m = Message(DEBUG, self._clean_string(msg_string), self.get_log_id())
-        self.log.append(m)
+        _id = self.get_log_id()
+        m = Message(DEBUG, self._clean_string(msg_string), _id)
+        self.log[_id] = m
 
     def information(self, msg_string, new_line=True):
         """
@@ -64,9 +103,9 @@ class RESTAPIOutput(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for informational messages.
         """
-        m = Message(INFORMATION, self._clean_string(msg_string),
-                    self.get_log_id())
-        self.log.append(m)
+        _id = self.get_log_id()
+        m = Message(INFORMATION, self._clean_string(msg_string), _id)
+        self.log[_id] = m
 
     def error(self, msg_string, new_line=True):
         """
@@ -74,8 +113,9 @@ class RESTAPIOutput(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action for error messages.
         """
-        m = Message(ERROR, self._clean_string(msg_string), self.get_log_id())
-        self.log.append(m)
+        _id = self.get_log_id()
+        m = Message(ERROR, self._clean_string(msg_string), _id)
+        self.log[_id] = m
 
     def vulnerability(self, msg_string, new_line=True, severity=MEDIUM):
         """
@@ -83,20 +123,21 @@ class RESTAPIOutput(OutputPlugin):
         called from a plugin or from the framework. This method should take an
         action when a vulnerability is found.
         """
-        m = Message(VULNERABILITY, self._clean_string(msg_string),
-                    self.get_log_id())
+        _id = self.get_log_id()
+        m = Message(VULNERABILITY, self._clean_string(msg_string), _id)
         m.set_severity(severity)
-        self.log.append(m)
+        self.log[_id] = m
 
     def console(self, msg_string, new_line=True):
         """
         This method is used by the w3af console to print messages to the outside
         """
-        m = Message(CONSOLE, self._clean_string(msg_string), self.get_log_id())
-        self.log.append(m)
+        _id = self.get_log_id()
+        m = Message(CONSOLE, self._clean_string(msg_string), _id)
+        self.log[_id] = m
 
 
-class Message(DiskItem):
+class Message(object):
     def __init__(self, msg_type, msg, _id):
         """
         :param msg_type: console, information, vulnerability, etc
@@ -106,7 +147,7 @@ class Message(DiskItem):
         self._msg = msg
         self._time = time.time()
         self._severity = None
-        self._id = _id
+        self._id = int(_id)
 
     def get_id(self):
         return self._id
@@ -135,6 +176,3 @@ class Message(DiskItem):
                 'time': self.get_time(),
                 'severity': self.get_severity(),
                 'id': self.get_id()}
-
-    def get_eq_attrs(self):
-        return ('_type', '_msg', '_time', '_severity', '_id')

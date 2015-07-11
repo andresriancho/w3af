@@ -86,7 +86,7 @@ def paginate_logs(scan_id, scan_info, page, _id):
         start = RESULTS_PER_PAGE * page
         end = start + RESULTS_PER_PAGE
 
-        messages = scan_info.output.log[start:end]
+        messages = scan_info.output.get_entries(start, end)
 
         more = True if len(scan_info.output.log) > end else False
         next = page + 1 if more else None
@@ -102,7 +102,7 @@ def paginate_logs(scan_id, scan_info, page, _id):
         start_id = int(_id)
         end_id = start_id + RESULTS_PER_PAGE
 
-        messages = scan_info.output.log[start_id:end_id]
+        messages = scan_info.output.get_entries(start_id, end_id)
 
         more = True if len(scan_info.output.log) > end_id else False
         next = end_id if more else None

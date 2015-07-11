@@ -34,3 +34,10 @@ class ScanInfo(object):
         self.exception = None
         self.finished = False
         self.target_urls = None
+
+    def cleanup(self):
+        if self.w3af_core is not None:
+            self.w3af_core.cleanup()
+
+        if self.output is not None:
+            self.output.cleanup()

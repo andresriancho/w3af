@@ -165,10 +165,13 @@ def scan_delete(scan_id):
     if scan_info is None:
         abort(404, 'Scan not found')
 
+    if scan_info.w3af_core is None:
+        abort(400, 'Scan state is invalid and can not be cleared')
+
     if not scan_info.w3af_core.can_cleanup():
         abort(403, 'Scan is not ready to be cleared')
 
-    scan_info.w3af_core.cleanup()
+    scan_info.cleanup()
     SCANS[scan_id] = None
 
     return jsonify({'message': 'Success'})
