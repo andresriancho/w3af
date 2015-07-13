@@ -41,6 +41,13 @@ def main():
         print('%s' % ate)
         return 1
 
+    # monkey-patch to prevent 'Thread' object has no attribute '_children'
+    # https://circleci.com/gh/andresriancho/w3af-api-docker/50
+    import threading
+    from multiprocessing.dummy import Process
+    threading.Thread = Process
+
+    # And finally start the app:
     try:
         app.run(host=app.config['HOST'], port=app.config['PORT'],
                 debug=args.verbose, use_reloader=False, threaded=True)
