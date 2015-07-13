@@ -75,7 +75,7 @@ def run_simple(hostname, port, application, use_reloader=False,
         test_socket.bind((hostname, port))
         test_socket.close()
 
-        from werkzeug.serving._reloader import run_with_reloader
+        from werkzeug._reloader import run_with_reloader
         run_with_reloader(inner, extra_files, reloader_interval,
                           reloader_type)
     else:
