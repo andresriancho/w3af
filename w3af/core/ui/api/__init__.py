@@ -1,5 +1,5 @@
-from flask import Flask
-app = Flask('w3af')
+from .utils.mp_flask import ThreadedFlask
+app = ThreadedFlask('w3af')
 
 from . import app
 from . import middlewares
