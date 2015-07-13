@@ -169,7 +169,7 @@ class APIScanTest(IntegrationTest):
         # Now stop the scan
         #
         response = requests.get('%s/scans/0/stop' % self.api_url, 
-                                 auth=self.api_auth)
+                                auth=self.api_auth)
         self.assertEqual(response.json(), {u'message': u'Stopping scan'})
 
         # Wait for it...
