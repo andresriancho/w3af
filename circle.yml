@@ -8,10 +8,6 @@ machine:
   services:
     - docker
 
-  pre:
-    # TODO: Affected by https://github.com/docker/docker/issues/12489 , slow push
-    - sudo curl -L -o /usr/bin/docker 'http://s3-external-1.amazonaws.com/circle-downloads/docker-1.6.2-circleci'; sudo chmod 0755 /usr/bin/docker; true
-
   python:
     version: 2.7.3
 
@@ -28,10 +24,6 @@ machine:
     # and the python which was put inside my virtualenv
     - pyenv global system
 
-    # And we want to start the django-moth server
-    # https://circleci.com/docs/background-process
-    - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &" > $CIRCLE_ARTIFACTS/setup-moth-nohup.log
-
 
 checkout:
   post:
@@ -43,9 +35,6 @@ checkout:
 
 dependencies:
   cache_directories:
-    # This, since it's run in the machine section is in the home
-    - "/home/ubuntu/django-moth"
-
     # These are inside the w3af directory
     - "xpresser"
     - "wivet"
@@ -54,10 +43,13 @@ dependencies:
     - "php-moth"
 
   pre:
+    - docker info
+    - docker version
+
     - sudo apt-get update
-    - sudo apt-get install -y python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2
-    - sudo apt-get install -y python-dbus python-pygame python-opencv python-scipy python-numpy
-    - sudo apt-get install -y stunnel4 libffi-dev tcpdump joe python-webkit
+    - sudo apt-get install -y python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2 \
+                              python-dbus python-pygame python-opencv python-scipy python-numpy \
+                              stunnel4 libffi-dev tcpdump joe python-webkit
 
     # Install the core/console dependencies
     - pip install --upgrade pip
@@ -95,11 +87,11 @@ dependencies:
         background: true
         pwd: pico-wavsep
 
-    # Save docker hub credentials to file
-    - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < extras/docker/dockercfg.template > ~/.dockercfg
+    # Run the test servers/dependencies
+    - docker-compose --project-name test-dependencies --file w3af/core/controllers/ci/test-compose.yml up -d
+    - echo "127.0.0.1:8000" > /tmp/moth-http.txt
+    - echo "127.0.0.1:8001" > /tmp/moth-https.txt
 
-    # Wait for the daemon to be available to run the tests
-    - w3af/core/controllers/ci/wait_for_moth.py
 
   post:
     - pip --version
@@ -113,8 +105,6 @@ test:
 
     - nosetests w3af/core/data/constants/tests/test_vulns.py:TestVulnsConstants.test_vuln_updated
 
-    - w3af/core/controllers/ci/teardown_moth.py
-
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         
 #  post:
 #    - coverage combine
@@ -125,6 +115,9 @@ deployment:
     branch: master
     owner: andresriancho
     commands:
+      # Save docker hub credentials to file
+      - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < extras/docker/dockercfg.template > ~/.dockercfg
+
       # Note the master in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/master?circle-token=$W3AF_MODULE_TOKEN"
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-kali-ci/tree/master?circle-token=$W3AF_KALI_TOKEN"
@@ -153,6 +146,9 @@ deployment:
     branch: develop
     owner: andresriancho
     commands:
+      # Save docker hub credentials to file
+      - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < extras/docker/dockercfg.template > ~/.dockercfg
+
       # Note the develop in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/develop?circle-token=$W3AF_MODULE_TOKEN"
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-client/tree/develop?circle-token=$W3AF_API_CLIENT_TOKEN"

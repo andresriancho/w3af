@@ -26,3 +26,6 @@ fabric==1.8.0
 yolk==0.4.3
 memory_profiler==0.32
 docker-tag-naming>=1.0.3
+
+# Most test servers are run inside docker containers
+docker-compose==1.2.0
