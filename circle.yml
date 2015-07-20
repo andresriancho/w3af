@@ -47,8 +47,8 @@ dependencies:
     - docker version
 
     - sudo apt-get update
-    - sudo apt-get install -y python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2 \
-                              python-dbus python-pygame python-opencv python-scipy python-numpy \
+    - sudo apt-get install -y python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2
+                              python-dbus python-pygame python-opencv python-scipy python-numpy
                               stunnel4 libffi-dev tcpdump joe python-webkit
 
     # Install the core/console dependencies
