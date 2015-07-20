@@ -22,9 +22,9 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_ssh_config_files(PayloadTestHelper):
+class TestSSHConfigFiles(PayloadTestHelper):
 
     def test_ssh_config_files(self):
         result = exec_payload(self.shell, 'ssh_config_files', use_api=True)
-        self.assertTrue('/etc/ssh/sshd_config' in result)
-        self.assertTrue('PermitRootLogin' in result['/etc/ssh/sshd_config'])
+        self.assertIn('/etc/ssh/sshd_config', result)
+        self.assertIn('PermitRootLogin', result['/etc/ssh/sshd_config'])

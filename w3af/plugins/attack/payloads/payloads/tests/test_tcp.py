@@ -23,9 +23,9 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_tcp(PayloadTestHelper):
+class TestTCP(PayloadTestHelper):
 
-    EXPECTED_RESULT = set([whereis_moth()['http'],])
+    EXPECTED_RESULT = {whereis_moth()['http']}
 
     def test_tcp(self):
         result = exec_payload(self.shell, 'tcp', use_api=True)
@@ -34,4 +34,4 @@ class test_tcp(PayloadTestHelper):
         for key, conn_data in result.iteritems():
             local_addresses.append(conn_data['local_address'])
 
-        self.assertTrue(set(local_addresses).issuperset(self.EXPECTED_RESULT))
+        self.assertIn(self.EXPECTED_RESULT, local_addresses)

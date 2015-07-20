@@ -22,9 +22,9 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_udp(PayloadTestHelper):
+class TestUDP(PayloadTestHelper):
 
-    EXPECTED_RESULT = set(['0.0.0.0:68', ])
+    EXPECTED_RESULT = {'0.0.0.0:68'}
 
     def test_udp(self):
         result = exec_payload(self.shell, 'udp', use_api=True)
@@ -33,4 +33,4 @@ class test_udp(PayloadTestHelper):
         for key, conn_data in result.iteritems():
             local_addresses.append(conn_data['local_address'])
 
-        self.assertTrue(set(local_addresses).issuperset(self.EXPECTED_RESULT))
+        self.assertIn(self.EXPECTED_RESULT, local_addresses)
