@@ -22,9 +22,9 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_is_root(PayloadTestHelper):
+class TestIsRoot(PayloadTestHelper):
 
-    EXPECTED_RESULT = False
+    EXPECTED_RESULT = True
 
     def test_is_root(self):
         result = exec_payload(self.shell, 'is_root', use_api=True)
