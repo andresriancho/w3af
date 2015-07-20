@@ -26,5 +26,10 @@ class TestSSHConfigFiles(PayloadTestHelper):
 
     def test_ssh_config_files(self):
         result = exec_payload(self.shell, 'ssh_config_files', use_api=True)
-        self.assertIn('/etc/ssh/sshd_config', result)
-        self.assertIn('PermitRootLogin', result['/etc/ssh/sshd_config'])
+        self.assertNotIn('/etc/ssh/sshd_config', result)
+
+        # This might be useful for other environments, but for now the docker
+        # image for django-moth doesn't have ssh, thus it doesn't allow root
+        # login
+        #
+        #self.assertIn('PermitRootLogin', result['/etc/ssh/sshd_config'])

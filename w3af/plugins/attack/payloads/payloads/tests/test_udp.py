@@ -24,7 +24,8 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 class TestUDP(PayloadTestHelper):
 
-    EXPECTED_RESULT = {'0.0.0.0:68'}
+    # No udp services running inside django-moth docker image
+    EXPECTED_RESULT = {}
 
     def test_udp(self):
         result = exec_payload(self.shell, 'udp', use_api=True)
