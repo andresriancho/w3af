@@ -28,4 +28,4 @@ class TestCurrentUser(PayloadTestHelper):
         result = exec_payload(self.shell, 'current_user', use_api=True)
 
         home = result['current']['home']
-        self.assertEqual('root', home)
+        self.assertEqual('/root/', home)

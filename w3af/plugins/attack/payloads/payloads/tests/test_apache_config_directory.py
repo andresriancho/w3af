@@ -24,7 +24,7 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 class TestApacheConfigDirectory(PayloadTestHelper):
 
-    EXPECTED_RESULT = {}
+    EXPECTED_RESULT = {'apache_directory': []}
 
     def test_apache_config_directory(self):
         result = exec_payload(self.shell,

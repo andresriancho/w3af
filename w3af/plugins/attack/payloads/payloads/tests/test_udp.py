@@ -34,4 +34,4 @@ class TestUDP(PayloadTestHelper):
         for key, conn_data in result.iteritems():
             local_addresses.append(conn_data['local_address'])
 
-        self.assertIn(self.EXPECTED_RESULT, local_addresses)
+        self.assertEqual(self.EXPECTED_RESULT, set(local_addresses))
