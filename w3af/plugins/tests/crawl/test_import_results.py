@@ -22,8 +22,8 @@ import os
 
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.data.dc.multipart_container import MultipartContainer
 
 
 class TestImportResults(PluginTest):
@@ -124,7 +124,6 @@ class TestImportResults(PluginTest):
         cfg = self._run_configs['burp64']
         self._scan(cfg['target'], cfg['plugins'])
 
-
         fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
 
         #
@@ -159,10 +158,13 @@ class TestImportResults(PluginTest):
         post_fr = None
 
         for fr in fuzzable_requests:
-            if fr.get_url().url_string.endswith('upload.py'):
+            if fr.get_url().url_string.endswith('upload.py') and \
+            isinstance(fr.get_raw_data(), MultipartContainer):
                 post_fr = fr
+                break
 
         self.assertEqual(post_fr.get_url().url_string, expected_post_url)
+        self.assertIn('_file', post_fr.get_raw_data())
         self.assertEqual(post_fr.get_raw_data()['_file'][0], file_contents)
 
         #
@@ -215,8 +217,10 @@ class TestImportResults(PluginTest):
         post_fr = None
 
         for fr in fuzzable_requests:
-            if fr.get_url().url_string.endswith('upload.py'):
+            if fr.get_url().url_string.endswith('upload.py') and \
+            isinstance(fr.get_raw_data(), MultipartContainer):
                 post_fr = fr
+                break
 
         expected_post_url = 'http://127.0.0.1:8000/core/file_upload/upload.py'
         file_contents = 'hello\nworld\n'
