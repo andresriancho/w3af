@@ -80,7 +80,7 @@ class APIUnitTest(unittest.TestCase):
         :return: The HTTP response
         """
         status = None
-        
+
         for _ in xrange(wait_loops):
             time.sleep(0.5)
 
