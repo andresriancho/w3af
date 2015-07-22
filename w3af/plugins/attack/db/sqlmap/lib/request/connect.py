@@ -212,7 +212,9 @@ class Connect(object):
         elif conf.cpuThrottle:
             cpuThrottle(conf.cpuThrottle)
 
-        if conf.dummy:
+        if conf.offline:
+            return None, None, None
+        elif conf.dummy:
             return getUnicode(randomStr(int(randomInt()), alphabet=[chr(_) for _ in xrange(256)]), {}, int(randomInt())), None, None
 
         threadData = getCurrentThreadData()
@@ -820,7 +822,6 @@ class Connect(object):
                 retVal = paramString
                 match = re.search("%s=(?P<value>[^&]*)" % re.escape(parameter), paramString)
                 if match:
-                    origValue = match.group("value")
                     retVal = re.sub("%s=[^&]*" % re.escape(parameter), "%s=%s" % (parameter, newValue), paramString)
                 return retVal
 
@@ -1029,23 +1030,24 @@ class Connect(object):
         if kb.nullConnection and not content and not response and not timeBasedCompare:
             noteResponseTime = False
 
-            pushValue(kb.pageCompress)
-            kb.pageCompress = False
+            try:
+                pushValue(kb.pageCompress)
+                kb.pageCompress = False
 
-            if kb.nullConnection == NULLCONNECTION.HEAD:
-                method = HTTPMETHOD.HEAD
-            elif kb.nullConnection == NULLCONNECTION.RANGE:
-                auxHeaders[HTTP_HEADER.RANGE] = "bytes=-1"
+                if kb.nullConnection == NULLCONNECTION.HEAD:
+                    method = HTTPMETHOD.HEAD
+                elif kb.nullConnection == NULLCONNECTION.RANGE:
+                    auxHeaders[HTTP_HEADER.RANGE] = "bytes=-1"
 
-            _, headers, code = Connect.getPage(url=uri, get=get, post=post, method=method, cookie=cookie, ua=ua, referer=referer, host=host, silent=silent, auxHeaders=auxHeaders, raise404=raise404, skipRead=(kb.nullConnection == NULLCONNECTION.SKIP_READ))
+                _, headers, code = Connect.getPage(url=uri, get=get, post=post, method=method, cookie=cookie, ua=ua, referer=referer, host=host, silent=silent, auxHeaders=auxHeaders, raise404=raise404, skipRead=(kb.nullConnection == NULLCONNECTION.SKIP_READ))
 
-            if headers:
-                if kb.nullConnection in (NULLCONNECTION.HEAD, NULLCONNECTION.SKIP_READ) and HTTP_HEADER.CONTENT_LENGTH in headers:
-                    pageLength = int(headers[HTTP_HEADER.CONTENT_LENGTH])
-                elif kb.nullConnection == NULLCONNECTION.RANGE and HTTP_HEADER.CONTENT_RANGE in headers:
-                    pageLength = int(headers[HTTP_HEADER.CONTENT_RANGE][headers[HTTP_HEADER.CONTENT_RANGE].find('/') + 1:])
-
-            kb.pageCompress = popValue()
+                if headers:
+                    if kb.nullConnection in (NULLCONNECTION.HEAD, NULLCONNECTION.SKIP_READ) and HTTP_HEADER.CONTENT_LENGTH in headers:
+                        pageLength = int(headers[HTTP_HEADER.CONTENT_LENGTH])
+                    elif kb.nullConnection == NULLCONNECTION.RANGE and HTTP_HEADER.CONTENT_RANGE in headers:
+                        pageLength = int(headers[HTTP_HEADER.CONTENT_RANGE][headers[HTTP_HEADER.CONTENT_RANGE].find('/') + 1:])
+            finally:
+                kb.pageCompress = popValue()
 
         if not pageLength:
             try:
