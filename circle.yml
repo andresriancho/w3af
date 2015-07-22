@@ -37,7 +37,6 @@ dependencies:
   cache_directories:
     # These are inside the w3af directory
     - "xpresser"
-    - "wivet"
     - "pico-wavsep"
     - "sqlmap-testenv"
     - "php-moth"
@@ -64,11 +63,6 @@ dependencies:
     # Install the test dependencies
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
-    # Install and run wivet in the background
-    - w3af/core/controllers/ci/install_scripts/install_wivet.sh
-    - php -S localhost:8899 -t wivet/ w3af/core/controllers/ci/helpers/router.php:
-        background: true
-
     # Install and run php-moth in the background
     - w3af/core/controllers/ci/install_scripts/install_php_moth.sh
     - php -S localhost:9009 -t . -c conf/default.ini router.php &> $CIRCLE_ARTIFACTS/run_php_moth.log:
@@ -91,6 +85,7 @@ dependencies:
     - docker-compose --project-name test-dependencies --file w3af/core/controllers/ci/test-compose.yml up -d
     - echo "127.0.0.1:8000" > /tmp/moth-http.txt
     - echo "127.0.0.1:8001" > /tmp/moth-https.txt
+    - echo "127.0.0.1:8899" > /tmp/wivet.txt
 
 
   post:

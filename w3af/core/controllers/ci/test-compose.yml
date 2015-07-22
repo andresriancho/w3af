@@ -3,3 +3,9 @@ moth:
   ports:
     - "8000:8000"
     - "8001:8001"
+
+
+wivet:
+  image: andresriancho/wivet:latest
+  ports:
+    - "8899:80"
