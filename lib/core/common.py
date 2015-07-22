@@ -43,6 +43,7 @@ from xml.dom import minidom
 from xml.sax import parse
 from xml.sax import SAXParseException
 
+from extra.beep.beep import beep
 from extra.cloak.cloak import decloak
 from extra.safe2bin.safe2bin import safecharencode
 from lib.core.bigarray import BigArray
@@ -97,7 +98,6 @@ from lib.core.settings import DBMS_DIRECTORY_DICT
 from lib.core.settings import DEFAULT_COOKIE_DELIMITER
 from lib.core.settings import DEFAULT_GET_POST_DELIMITER
 from lib.core.settings import DEFAULT_MSSQL_SCHEMA
-from lib.core.settings import DESCRIPTION
 from lib.core.settings import DUMMY_USER_INJECTION
 from lib.core.settings import DYNAMICITY_MARK_LENGTH
 from lib.core.settings import ERROR_PARSING_REGEXES
@@ -134,9 +134,7 @@ from lib.core.settings import REFLECTED_MAX_REGEX_PARTS
 from lib.core.settings import REFLECTED_REPLACEMENT_REGEX
 from lib.core.settings import REFLECTED_VALUE_MARKER
 from lib.core.settings import REFLECTIVE_MISS_THRESHOLD
-from lib.core.settings import REVISION
 from lib.core.settings import SENSITIVE_DATA_REGEX
-from lib.core.settings import SITE
 from lib.core.settings import SUPPORTED_DBMS
 from lib.core.settings import TEXT_TAG_REGEX
 from lib.core.settings import TIME_STDEV_COEFF
@@ -146,7 +144,6 @@ from lib.core.settings import URI_QUESTION_MARKER
 from lib.core.settings import URLENCODE_CHAR_LIMIT
 from lib.core.settings import URLENCODE_FAILSAFE_CHARS
 from lib.core.settings import USER_AGENT_ALIASES
-from lib.core.settings import VERSION
 from lib.core.settings import VERSION_STRING
 from lib.core.threads import getCurrentThreadData
 from lib.utils.sqlalchemy import _sqlalchemy
@@ -875,7 +872,7 @@ def dataToOutFile(filename, data):
         retVal = os.path.join(conf.filePath, filePathToSafeString(filename))
 
         try:
-            with openFile(retVal, "wb") as f:
+            with open(retVal, "w+b") as f:
                 f.write(data)
         except IOError, ex:
             errMsg = "something went wrong while trying to write "
@@ -935,6 +932,10 @@ def readInput(message, default=None, checkBatch=True):
             retVal = default
         else:
             logging._acquireLock()
+
+            if conf.get("beep"):
+                beep()
+
             dataToStdout("\r%s" % message, forceOutput=True, bold=True)
             kb.prependFlag = False
 
@@ -1027,7 +1028,7 @@ def checkFile(filename):
 
     if valid:
         try:
-            with open(filename, "rb") as f:
+            with open(filename, "rb"):
                 pass
         except:
             valid = False
@@ -2280,7 +2281,7 @@ def findMultipartPostBoundary(post):
     candidates = []
 
     for match in re.finditer(r"(?m)^--(.+?)(--)?$", post or ""):
-        _ = match.group(1)
+        _ = match.group(1).strip().strip('-')
         if _ in done:
             continue
         else:
@@ -2978,7 +2979,7 @@ def createGithubIssue(errMsg, excMsg):
 
 
         data = {"title": "Unhandled exception (#%s)" % key, "body": "```%s\n```\n```\n%s```" % (errMsg, excMsg)}
-        req = urllib2.Request(url="https://api.github.com/repos/sqlmapproject/sqlmap/issues", data=json.dumps(data), headers={"Authorization": "token %s" % GITHUB_REPORT_OAUTH_TOKEN})
+        req = urllib2.Request(url="https://api.github.com/repos/sqlmapproject/sqlmap/issues", data=json.dumps(data), headers={"Authorization": "token %s" % GITHUB_REPORT_OAUTH_TOKEN.decode("base64")})
 
         try:
             f = urllib2.urlopen(req)
@@ -3285,7 +3286,7 @@ def expandMnemonics(mnemonics, parser, args):
                     pointer = pointer.next[char]
                     pointer.current.append(option)
 
-    for mnemonic in mnemonics.split(','):
+    for mnemonic in (mnemonics or "").split(','):
         found = None
         name = mnemonic.split('=')[0].replace("-", "").strip()
         value = mnemonic.split('=')[1] if len(mnemonic.split('=')) > 1 else None
@@ -3713,7 +3714,7 @@ def applyFunctionRecursively(value, function):
 
     return retVal
 
-def decodeHexValue(value):
+def decodeHexValue(value, raw=False):
     """
     Returns value decoded from DBMS specific hexadecimal representation
 
@@ -3728,7 +3729,7 @@ def decodeHexValue(value):
         if value and isinstance(value, basestring) and len(value) % 2 == 0:
             retVal = hexdecode(retVal)
 
-            if not kb.binaryField:
+            if not kb.binaryField and not raw:
                 if Backend.isDbms(DBMS.MSSQL) and value.startswith("0x"):
                     try:
                         retVal = retVal.decode("utf-16-le")
