@@ -41,13 +41,20 @@ RUN cat /home/w3af/.ssh/w3af-docker.pub >> /root/.ssh/authorized_keys
 # Get and install pip
 RUN pip install --upgrade pip
 
+#
 # We install some pip packages before adding the code in order to better leverage
 # the docker cache
+#
+# Leave one library without install, so w3af_dependency_install is actually
+# created and we can run the next commands without if statements
+#
+#tblib==0.2.0
+#
 RUN pip install clamd==1.0.1 PyGithub==1.21.0 GitPython==0.3.2.RC1 pybloomfiltermmap==0.3.14 \
         esmre==0.3.1 phply==0.9.1 nltk==3.0.1 chardet==2.1.1 pdfminer==20140328 \
         futures==2.1.5 pyOpenSSL==0.15.1 scapy-real==2.2.0-dev guess-language==0.2 cluster==1.1.1b3 \
         msgpack-python==0.4.4 python-ntlm==1.0.1 halberd==0.2.4 darts.util.lru==0.5 \
-        tblib==0.2.0 ndg-httpsclient==0.3.3 pyasn1==0.1.7 Jinja2==2.7.3 \
+        ndg-httpsclient==0.3.3 pyasn1==0.1.7 Jinja2==2.7.3 \
         vulndb==0.0.17 markdown==2.6.1 psutil==2.2.1 mitmproxy==0.12.1 \
         ruamel.ordereddict==0.4.8 Flask==0.10.1
 
