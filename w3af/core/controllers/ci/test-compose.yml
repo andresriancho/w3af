@@ -9,3 +9,9 @@ wivet:
   image: andresriancho/wivet:latest
   ports:
     - "8899:80"
+
+
+php-moth:
+  image: andresriancho/php-moth:latest
+  ports:
+    - "9009:80"

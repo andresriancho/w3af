@@ -39,7 +39,6 @@ dependencies:
     - "xpresser"
     - "pico-wavsep"
     - "sqlmap-testenv"
-    - "php-moth"
 
   pre:
     - docker info
@@ -63,12 +62,6 @@ dependencies:
     # Install the test dependencies
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
-    # Install and run php-moth in the background
-    - w3af/core/controllers/ci/install_scripts/install_php_moth.sh
-    - php -S localhost:9009 -t . -c conf/default.ini router.php &> $CIRCLE_ARTIFACTS/run_php_moth.log:
-        background: true
-        pwd: php-moth
-
     # Install and run sqlmap's testenv in the background
     - w3af/core/controllers/ci/install_scripts/install_sqlmap_testenv.sh
     - php -S localhost:8998 -t . &> $CIRCLE_ARTIFACTS/run_testenv.log:
@@ -86,6 +79,7 @@ dependencies:
     - echo "127.0.0.1:8000" > /tmp/moth-http.txt
     - echo "127.0.0.1:8001" > /tmp/moth-https.txt
     - echo "127.0.0.1:8899" > /tmp/wivet.txt
+    - echo "127.0.0.1:9009" > /tmp/php-moth.txt
 
 
   post:
