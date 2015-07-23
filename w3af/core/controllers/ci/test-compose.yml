@@ -11,7 +11,7 @@ wivet:
     - "8899:80"
 
 
-php-moth:
+phpmoth:
   image: andresriancho/php-moth:latest
   ports:
     - "9009:80"
