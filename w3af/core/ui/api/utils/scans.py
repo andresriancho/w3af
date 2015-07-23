@@ -52,6 +52,18 @@ def create_temp_profile(scan_profile):
 
     return scan_profile_file, tempdir
 
+def create_scan_helper():
+    """
+    Create a new instance of w3afCore and save it to SCANS
+
+    :return: The numeric key of the ScanInfo object in SCANS
+    """
+    scan_info = ScanInfo()
+    scan_id = get_new_scan_id()
+    SCANS[scan_id] = scan_info
+    scan_info.w3af_core = w3afCore()
+    return scan_id
+
 
 def start_scan_helper(target_urls, scan_profile, scan_info_setup):
     """
@@ -61,9 +73,8 @@ def start_scan_helper(target_urls, scan_profile, scan_info_setup):
     :param scan_info_setup: Event to set when the scan started
     :return: The instance of w3afCore.
     """
-    scan_info = ScanInfo()
-    SCANS[get_new_scan_id()] = scan_info
-    scan_info.w3af_core = w3af_core = w3afCore()
+    scan_info = SCANS[create_scan_helper()]
+    w3af_core = scan_info.w3af_core
     scan_info.target_urls = target_urls
     scan_info.output = RESTAPIOutput()
 
