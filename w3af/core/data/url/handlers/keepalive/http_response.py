@@ -229,7 +229,7 @@ class HTTPResponse(httplib.HTTPResponse):
 
         # Is the remote end saying we need to close the connection?
         elif conn and 'close' in conn.lower():
-            debug('will_close = False due to Connection: close')
+            debug('will_close = True due to Connection: close')
             return True
 
         if self.version == 11:
@@ -240,7 +240,7 @@ class HTTPResponse(httplib.HTTPResponse):
 
         # Proxy-Connection is a netscape hack.
         pconn = self.msg.getheader('proxy-connection')
-        if pconn and "keep-alive" in pconn.lower():
+        if pconn and 'keep-alive' in pconn.lower():
             return False
 
         # otherwise, assume it will close

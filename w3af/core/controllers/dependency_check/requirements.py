@@ -68,6 +68,7 @@ CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
                      # Only used by the REST API, but in the future the console
                      # and GUI will consume it so it's ok to put this here
                      PIPDependency('Flask', 'Flask', '0.10.1'),
+                     PIPDependency('yaml', 'PyYAML', '3.11'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
