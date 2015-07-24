@@ -423,7 +423,7 @@ class TestXUrllib(unittest.TestCase):
                          {'Bad file descriptor'})
 
     def test_rate_limit_high(self):
-        self.rate_limit_generic(500, 0.01, 0.4)
+        self.rate_limit_generic(500, 0.009, 0.4)
 
     def test_rate_limit_low(self):
         self.rate_limit_generic(1, 1, 2.2)
