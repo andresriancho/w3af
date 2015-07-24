@@ -11,9 +11,6 @@ machine:
   python:
     version: 2.7.3
 
-  java:
-    version: oraclejdk7
-
   post:
     # This was required to avoid issues with different builds of python being
     # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
@@ -33,7 +30,6 @@ dependencies:
   cache_directories:
     # These are inside the w3af directory
     - "xpresser"
-    - "pico-wavsep"
 
   pre:
     - docker info
@@ -56,12 +52,6 @@ dependencies:
 
     # Install the test dependencies
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
-
-    # Install and run wavsep in the background
-    - w3af/core/controllers/ci/install_scripts/install_wavsep.sh
-    - java -jar jenkins-winstone.jar --warfile=wavsep.war --useJasper --commonLibFolder=lib --httpPort=8098 --ajp13Port=8099:
-        background: true
-        pwd: pico-wavsep
 
     # Run the test servers/dependencies
     - docker-compose --project-name test-dependencies --file w3af/tests/docker-compose.yml up -d

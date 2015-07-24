@@ -17,6 +17,10 @@ phpmoth:
     - "9009:80"
 
 
+#
+# testenv
+#
+
 mydb:
   image: mysql
   environment:
@@ -34,3 +38,18 @@ testenv:
     - APACHE_RUN_GROUP=www-data
     - APACHE_LOG_DIR=/var/log/apache2/
 
+
+#
+# WAVSEP
+#
+wavsep:
+  image: andresriancho/pico-wavsep:latest
+  ports:
+    - "8098:8080"
+  links:
+    - wavsepdb
+
+wavsepdb:
+  image: mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=wavsep
