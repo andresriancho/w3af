@@ -48,7 +48,8 @@ class TestProxy(unittest.TestCase):
         
         # Build the proxy opener
         proxy_url = 'http://%s:%s' % (self.IP, port)
-        proxy_handler = urllib2.ProxyHandler({'http': proxy_url})
+        proxy_handler = urllib2.ProxyHandler({'http': proxy_url,
+                                              'https': proxy_url})
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)
 
@@ -105,6 +106,9 @@ class TestProxy(unittest.TestCase):
         proxy_resp_headers = dict(proxy_resp.info())
         del direct_resp_headers['date']
         del proxy_resp_headers['date']
+
+        del direct_resp_headers['transfer-encoding']
+        del proxy_resp_headers['content-length']
 
         del proxy_resp_headers['content-encoding']
 
