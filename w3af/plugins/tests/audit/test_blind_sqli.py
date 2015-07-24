@@ -152,8 +152,7 @@ class TestBlindSQLI(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals(
-            'Blind SQL injection vulnerability', vuln.get_name())
+        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
         self.assertTrue('time delays' in vuln.get_desc())
         self.assertEquals(target_url, str(vuln.get_url()))
 
