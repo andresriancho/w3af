@@ -24,6 +24,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 
+from w3af.core.controllers.ci.sqlmap_testenv import get_sqlmap_testenv_http
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
@@ -111,9 +112,10 @@ class TestProxy(unittest.TestCase):
         during setUp and tearDown."""
         # Get response using the proxy
         proxy_resp = self.proxy_opener.open(get_moth_http()).read()
-        # Get it the other way
+
+        # Get it without the proxy
         resp = urllib2.urlopen(get_moth_http()).read()
-        # They must be very similar
+
         self.assertEqual(resp, proxy_resp)
     
     def test_stop_no_requests(self):
@@ -144,3 +146,22 @@ class TestProxy(unittest.TestCase):
             body = hte.read()
             self.assertIn('Proxy error', body)
             self.assertIn('HTTP request', body)
+
+    def test_proxy_gzip_encoding(self):
+        """
+        When we perform a request to a site which returns gzip encoded data, the
+        ExtendedUrllib will automatically decode that and set it as the body,
+        this test makes sure that we're also changing the header to reflect
+        that change.
+
+        Not doing this will make the browser (or any other http client) fail to
+        decode the body (it will try to gunzip it and fail).
+        """
+        url = get_sqlmap_testenv_http('/sqlmap/mysql/get_int.php?id=1')
+        resp = self.proxy_opener.open(url)
+
+        headers = dict(resp.headers)
+        content_encoding = headers.get('content-encoding')
+
+        self.assertIn('luther', resp.read())
+        self.assertEqual('identity', content_encoding)

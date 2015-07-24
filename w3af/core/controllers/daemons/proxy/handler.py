@@ -88,6 +88,12 @@ class ProxyHandler(Master):
 
         headers = ODictCaseless(header_items)
 
+        # This is an important step! The ExtendedUrllib will gunzip the body
+        # for us, which is great, but we need to change the content-encoding
+        # for the response in order to match the decoded body and avoid the
+        # HTTP client using the proxy from failing
+        headers['content-encoding'] = ['identity']
+
         return LibMITMProxyHTTPResponse(request.httpversion,
                                         response.get_code(),
                                         str(response.get_msg()),
