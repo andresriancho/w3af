@@ -16,8 +16,10 @@ ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
 NOSETESTS = 'nosetests'
 # Not using code coverage (--with-cov --cov-report=xml) due to:
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory
-NOSE_PARAMS = '--with-timer --with-doctest --doctest-tests --with-xunit'\
-              ' -v --xunit-file=%%s --with-id --id-file=%s' % ID_FILE
+NOSE_PARAMS = ('--with-timer --timer-ok=2 --timer-top-n 5'
+               ' --with-doctest --doctest-tests'
+               ' --with-xunit -v --xunit-file=%%s --with-id'
+               ' --id-file=%s' % ID_FILE)
 # One test can't run for more than this amount of seconds
 NOSE_TIMEOUT = 60 * 8
 
