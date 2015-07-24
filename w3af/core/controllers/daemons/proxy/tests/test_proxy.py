@@ -80,6 +80,9 @@ class TestProxy(unittest.TestCase):
         del direct_resp_headers['transfer-encoding']
         del proxy_resp_headers['content-length']
 
+        del direct_resp_headers['content-encoding']
+        del proxy_resp_headers['content-encoding']
+
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
     def test_do_ssl_req_through_proxy(self):
@@ -103,6 +106,10 @@ class TestProxy(unittest.TestCase):
         proxy_resp_headers = dict(proxy_resp.info())
         del direct_resp_headers['date']
         del proxy_resp_headers['date']
+
+        del direct_resp_headers['content-encoding']
+        del proxy_resp_headers['content-encoding']
+
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
     def test_proxy_req_ok(self):
