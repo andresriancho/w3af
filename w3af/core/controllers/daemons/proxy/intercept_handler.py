@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import traceback
-import threading
 
 from w3af.core.controllers.daemons.proxy import ProxyHandler
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
