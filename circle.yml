@@ -69,10 +69,15 @@ test:
 
     - nosetests w3af/core/data/constants/tests/test_vulns.py:TestVulnsConstants.test_vuln_updated
 
-# https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         
-#  post:
-#    - coverage combine
-#    - coveralls
+  post:
+    # Store the docker container logs for debugging
+    - docker logs testdependencies_wivet_1 > $CIRCLE_ARTIFACTS/wivet.log
+    - docker logs testdependencies_testenv_1 > $CIRCLE_ARTIFACTS/sqlmap-testenv.log
+    - docker logs testdependencies_mydb_1 > $CIRCLE_ARTIFACTS/mydb.log
+    - docker logs testdependencies_wavsep_1 > $CIRCLE_ARTIFACTS/wavsep.log
+    - docker logs testdependencies_wavsepdb_1 > $CIRCLE_ARTIFACTS/wavsep-db.log
+    - docker logs testdependencies_phpmoth_1 > $CIRCLE_ARTIFACTS/phpmoth.log
+    - docker logs testdependencies_moth_1 > $CIRCLE_ARTIFACTS/django-moth.log
 
 deployment:
   production:
