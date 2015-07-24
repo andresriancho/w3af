@@ -15,3 +15,22 @@ phpmoth:
   image: andresriancho/php-moth:latest
   ports:
     - "9009:80"
+
+
+mydb:
+  image: mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=testpass
+
+
+testenv:
+  image: andresriancho/testenv:latest
+  ports:
+    - "8998:80"
+  links:
+    - mydb
+  environment:
+    - APACHE_RUN_USER=www-data
+    - APACHE_RUN_GROUP=www-data
+    - APACHE_LOG_DIR=/var/log/apache2/
+

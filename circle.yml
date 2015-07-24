@@ -11,10 +11,6 @@ machine:
   python:
     version: 2.7.3
 
-  # This is required to run WIVET
-  php:
-    version: 5.5.11
-
   java:
     version: oraclejdk7
 
@@ -38,7 +34,6 @@ dependencies:
     # These are inside the w3af directory
     - "xpresser"
     - "pico-wavsep"
-    - "sqlmap-testenv"
 
   pre:
     - docker info
@@ -62,12 +57,6 @@ dependencies:
     # Install the test dependencies
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
-    # Install and run sqlmap's testenv in the background
-    - w3af/core/controllers/ci/install_scripts/install_sqlmap_testenv.sh
-    - php -S localhost:8998 -t . &> $CIRCLE_ARTIFACTS/run_testenv.log:
-        background: true
-        pwd: sqlmap-testenv
-
     # Install and run wavsep in the background
     - w3af/core/controllers/ci/install_scripts/install_wavsep.sh
     - java -jar jenkins-winstone.jar --warfile=wavsep.war --useJasper --commonLibFolder=lib --httpPort=8098 --ajp13Port=8099:
@@ -80,6 +69,7 @@ dependencies:
     - echo "127.0.0.1:8001" > /tmp/moth-https.txt
     - echo "127.0.0.1:8899" > /tmp/wivet.txt
     - echo "127.0.0.1:9009" > /tmp/php-moth.txt
+    - echo '127.0.0.1:8998' > /tmp/sqlmap-testenv.txt
 
 
   post:

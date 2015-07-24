@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 
-HTTP_SQLMAP_TESTENV = '/tmp/sqlmap_testenv.txt'
+HTTP_SQLMAP_TESTENV = '/tmp/sqlmap-testenv.txt'
 DEFAULT_SQLMAP_TESTENV = 'sqlmap-testenv-fallback:80'
 
 
