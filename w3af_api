@@ -2,8 +2,12 @@
 
 import sys
 
-from w3af.core.ui.api.main import main
+from w3af.core.controllers.dependency_check.dependency_check import dependency_check
 
 
 if __name__ == '__main__':
+    # Check if I have all needed dependencies
+    dependency_check()
+
+    from w3af.core.ui.api.main import main
     sys.exit(main())

@@ -24,7 +24,6 @@ import argparse
 
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.cli import process_cmd_args_config
-from w3af.core.controllers.dependency_check.dependency_check import dependency_check
 
 
 def main():
@@ -32,9 +31,6 @@ def main():
     Entry point for the REST API
     :return: Zero if everything went well
     """
-    # Check if I have all needed dependencies
-    dependency_check()
-
     try:
         args = process_cmd_args_config(app)
     except argparse.ArgumentTypeError, ate:
