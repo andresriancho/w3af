@@ -242,7 +242,7 @@ class csrf(AuditPlugin):
                 return True
     
         # Calculate entropy
-        entropy = self.shannon_entropy(value.encode('utf8'))
+        entropy = self.shannon_entropy(value.encode('utf8', errors='ignore'))
         if entropy >= min_entropy:
             return True
 
