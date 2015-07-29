@@ -229,8 +229,10 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             """
             This basically removes characters that are hard to compare
             """
-            return string.translate(heterogen_string.encode('utf-8'),
-                                    TRANS_TABLE, deletions=DELETE_CHARS)
+            heterogen_string = heterogen_string.encode('utf-8', errors='ignore')
+
+            return string.translate(heterogen_string, TRANS_TABLE,
+                                    deletions=DELETE_CHARS)
 
         data = self.get_data()
         # This is the easy part. If it was exactly like this in the request
