@@ -171,24 +171,14 @@ class SGMLParser(BaseParser):
         resp_body = http_resp.get_body()
 
         try:
-            self._parse_response_body_as_string(resp_body)
-        except etree.XMLSyntaxError, xse:
-            msg = ('An error occurred while parsing "%s",'
-                   ' original exception: "%s"')
-            om.out.debug(msg % (http_resp.get_url(), xse))
-        except ValueError:
-            # Sometimes we get XMLs in the response. lxml fails to parse them
-            # when an encoding header is specified and the text is unicode. So
-            # we better make an exception and convert it to string. Note that
-            # yet the parsed elems will be unicode.
-            self._parse_response_body_as_string(resp_body,
-                                                errors='xmlcharrefreplace')
-        except UnicodeDecodeError:
-            # In some cases we fail to decode the string, let's try again but
-            # ignoring all the errors we find
-            #
-            # https://github.com/andresriancho/w3af/issues/11339
             self._parse_response_body_as_string(resp_body, errors='ignore')
+        except etree.XMLSyntaxError, xse:
+            #
+            # This is too common, we don't want to raise an exception because
+            # of invalid / broken HTML
+            #
+            msg = 'Error occurred while parsing "%s", original exception: "%s"'
+            om.out.debug(msg % (http_resp.get_url(), xse))
 
     def _parse_response_body_as_string(self, resp_body, errors='strict'):
         """
