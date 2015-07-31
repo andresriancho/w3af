@@ -320,15 +320,24 @@ class w3af_core_plugins(object):
                 plugin_inst = self.get_quick_instance(plugin_type, plugin_name)
 
                 for dep in plugin_inst.get_plugin_deps():
-                    dep_plugin_type, dep_plugin_name = dep.split('.')
+                    dep_plugin_type, dep_name = dep.split('.')
 
                     if dep_plugin_type != plugin_type:
                         # We can't guarantee execution order if the plugin
                         # dependencies are of different types
                         continue
 
-                    plugin_index = plugin_names[plugin_type].index(plugin_name)
-                    dependency_index = plugin_names[plugin_type].index(dep_plugin_name)
+                    try:
+                        plugin_index = plugin_names[plugin_type].index(plugin_name)
+                        dependency_index = plugin_names[plugin_type].index(dep_name)
+                    except ValueError:
+                        # A very rare case which I was unable to reproduce since
+                        # it requires the enabled_plugins list to change
+                        # during our iteration
+                        #
+                        # ValueError: 'detect_reverse_proxy' is not in list
+                        # https://github.com/andresriancho/w3af/issues/11062
+                        continue
 
                     if dependency_index < plugin_index:
                         # Everything is ok, the dependency is run before the
@@ -336,7 +345,7 @@ class w3af_core_plugins(object):
                         continue
 
                     # Switch
-                    plugin_names[plugin_type][plugin_index] = dep_plugin_name
+                    plugin_names[plugin_type][plugin_index] = dep_name
                     plugin_names[plugin_type][dependency_index] = plugin_name
 
     def create_instances(self):
