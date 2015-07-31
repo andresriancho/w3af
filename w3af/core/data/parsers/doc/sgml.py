@@ -183,6 +183,12 @@ class SGMLParser(BaseParser):
             # yet the parsed elems will be unicode.
             self._parse_response_body_as_string(resp_body,
                                                 errors='xmlcharrefreplace')
+        except UnicodeDecodeError:
+            # In some cases we fail to decode the string, let's try again but
+            # ignoring all the errors we find
+            #
+            # https://github.com/andresriancho/w3af/issues/11339
+            self._parse_response_body_as_string(resp_body, errors='ignore')
 
     def _parse_response_body_as_string(self, resp_body, errors='strict'):
         """
