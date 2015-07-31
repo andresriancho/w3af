@@ -307,8 +307,8 @@ class PromptDialog(gtk.Dialog):
     def _save(self, widg):
         """Saves the content to a file."""
         text = self.prompt.get_text()
-        dlg = gtk.FileChooserDialog(title=_('Choose a file...'),
-                                    action=gtk.FILE_CHOOSER_ACTION_OPEN,
+        dlg = gtk.FileChooserDialog(title=_('Choose output file...'),
+                                    action=gtk.FILE_CHOOSER_ACTION_SAVE,
                                     buttons=(gtk.STOCK_CANCEL,
                                              gtk.RESPONSE_CANCEL,
                                              gtk.STOCK_SAVE,
@@ -317,10 +317,11 @@ class PromptDialog(gtk.Dialog):
         fname = dlg.get_filename()
         dlg.destroy()
         if resp == gtk.RESPONSE_OK and fname is not None:
-            fh = open(fname, "w")
+            fh = open(fname, 'w')
             fh.write(text)
             fh.close()
         return
+
 
 if __name__ == "__main__":
     def proc_func(x):
