@@ -152,15 +152,15 @@ class cors_origin(AuditPlugin):
         if not (len(report_sensitive) or len(report_strange)):
             return
 
-        msg = ('The remote Web application, specifically "%s", returned'
-               ' a "%s" header with the value set to "%s" which is'
-               ' insecure')
-        msg %= (url, ACCESS_CONTROL_ALLOW_METHODS, allow_methods)
-
         if report_sensitive:
             name = 'Sensitive CORS methods enabled'
-            msg += ' since it allows the following sensitive HTTP methods: %s.'
-            msg %= (', '.join(report_sensitive),)
+
+            msg = ('The remote Web application, specifically "%s", returned'
+                   ' a "%s" header with the value set to "%s" which is'
+                   ' insecure since it allows the following sensitive HTTP'
+                   ' methods: %s.')
+            msg %= (url, ACCESS_CONTROL_ALLOW_METHODS,
+                    allow_methods, ', '.join(report_sensitive))
 
             v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
             v.set_url(forged_req.get_url())
@@ -171,8 +171,13 @@ class cors_origin(AuditPlugin):
 
         if report_strange:
             name = 'Uncommon CORS methods enabled'
-            msg += ' since it allows the following uncommon HTTP methods: %s.'
-            msg %= (', '.join(report_strange),)
+
+            msg = ('The remote Web application, specifically "%s", returned'
+                   ' a "%s" header with the value set to "%s" which is'
+                   ' insecure since it allows the following uncommon HTTP'
+                   ' methods: %s.')
+            msg %= (url, ACCESS_CONTROL_ALLOW_METHODS,
+                    allow_methods, ', '.join(report_strange))
 
             v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
             v.set_url(forged_req.get_url())
