@@ -37,7 +37,7 @@ from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.controllers.core_helpers.profiles import w3af_core_profiles
 from w3af.core.controllers.core_helpers.plugins import w3af_core_plugins
-from w3af.core.controllers.core_helpers.target import w3af_core_target
+from w3af.core.controllers.core_helpers.target import CoreTarget
 from w3af.core.controllers.core_helpers.strategy import CoreStrategy
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
@@ -117,7 +117,7 @@ class w3afCore(object):
         self.profiles = w3af_core_profiles(self)
         self.plugins = w3af_core_plugins(self)
         self.status = w3af_core_status(self)
-        self.target = w3af_core_target()
+        self.target = CoreTarget()
         self.strategy = CoreStrategy(self)
         
         # FIXME: In the future, when the output_manager is not an awful

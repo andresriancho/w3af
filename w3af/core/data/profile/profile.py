@@ -24,7 +24,7 @@ import codecs
 import shutil
 import ConfigParser
 
-from w3af.core.controllers.core_helpers.target import w3af_core_target
+from w3af.core.controllers.core_helpers.target import CoreTarget
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.data.constants.encodings import UTF8
@@ -410,7 +410,7 @@ class profile(object):
                  target_framework, etc.)
         """
         # Get the plugin defaults with their types
-        target_instance = w3af_core_target()
+        target_instance = CoreTarget()
         options = target_instance.get_options()
 
         for section in self._config.sections():

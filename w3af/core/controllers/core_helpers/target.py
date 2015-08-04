@@ -1,5 +1,5 @@
 """
-w3af_core_target.py
+target.py
 
 Copyright 2006 Andres Riancho
 
@@ -33,7 +33,7 @@ cf.cf.save('target_domains', set())
 cf.cf.save('baseURLs', [])
 
 
-class w3af_core_target(Configurable):
+class CoreTarget(Configurable):
     """
     A class that acts as an interface for the user interfaces, so they can
     configure the target settings using get_options and SetOptions.
