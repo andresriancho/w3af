@@ -47,13 +47,13 @@ class HttpHeadersView(RememberingVPaned):
         self.parentView = parentView
         self.is_request = True
         box = gtk.HBox()
-        self._headersStore = gtk.ListStore(gobject.TYPE_STRING,
+        self._header_store = gtk.ListStore(gobject.TYPE_STRING,
                                            gobject.TYPE_STRING)
-        self._headersTreeview = gtk.TreeView(self._headersStore)
+        self._headersTreeview = gtk.TreeView(self._header_store)
         # Column for Name
         renderer = gtk.CellRendererText()
         renderer.set_property('editable', editable)
-        renderer.connect('edited', self._header_name_edited, self._headersStore)
+        renderer.connect('edited', self._header_name_edited, self._header_store)
         column = gtk.TreeViewColumn(_('Name'), renderer, text=0)
         column.set_sort_column_id(0)
         column.set_resizable(True)
@@ -62,7 +62,7 @@ class HttpHeadersView(RememberingVPaned):
         renderer = gtk.CellRendererText()
         renderer.set_property('editable', editable)
         renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
-        renderer.connect('edited', self._header_value_edited, self._headersStore)
+        renderer.connect('edited', self._header_value_edited, self._header_store)
         column = gtk.TreeViewColumn(_('Value'), renderer, text=1)
         column.set_resizable(True)
         column.set_expand(True)
@@ -107,7 +107,7 @@ class HttpHeadersView(RememberingVPaned):
 
     def _add_header(self, widget):
         """Add header to headers."""
-        i = self._headersStore.append(["", ""])
+        i = self._header_store.append(['', ''])
         selection = self._headersTreeview.get_selection()
         selection.select_iter(i)
 
@@ -158,9 +158,9 @@ class HttpHeadersView(RememberingVPaned):
 
     def _update_headers_tab(self, headers):
         """Update current headers view part from headers list."""
-        self._headersStore.clear()
+        self._header_store.clear()
         for header in headers:
-            self._headersStore.append([header, headers[header]])
+            self._header_store.append([header, headers[header]])
 
     def _changed(self, widg=None):
         """Synchronize changes with other views (callback)."""
@@ -170,7 +170,7 @@ class HttpHeadersView(RememberingVPaned):
 
     def clear(self):
         """Clear view."""
-        self._headersStore.clear()
+        self._header_store.clear()
         self._raw.clear()
         self.startLine = ''
 
@@ -196,7 +196,7 @@ class HttpHeadersView(RememberingVPaned):
         """Return object (request or response)."""
         head = self.startLine
 
-        for header in self._headersStore:
+        for header in self._header_store:
             head += header[0] + ':' + header[1] + CRLF
 
         if self.is_request:
