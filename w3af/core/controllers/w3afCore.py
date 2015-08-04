@@ -429,11 +429,11 @@ class w3afCore(object):
         (human) user.
         """
         if not self.plugins.initialized:
-            msg = 'You must call the plugins.init_plugins() method before'\
-                  ' calling start().'
+            msg = ('You must call the plugins.init_plugins() method before'
+                   ' calling start().')
             raise BaseFrameworkException(msg)
 
-        if not cf.cf.get('targets'):
+        if not cf.cf.get('targets') or not cf.cf.get('target_domains'):
             raise BaseFrameworkException('No target URI configured.')
 
         if not len(self.plugins.get_enabled_plugins('audit')) \
@@ -459,6 +459,9 @@ class w3afCore(object):
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the
             # data from the history in their end() method.
+            #
+            # Also needs to be done before target.clear() because some plugins
+            # need to access the target data stored in cf
             om.manager.end_output_plugins()
         except Exception:
             raise

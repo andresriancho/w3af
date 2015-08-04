@@ -166,6 +166,12 @@ class CoreTarget(Configurable):
                    ' And w3af can only scan one target domain at a time.')
             raise BaseFrameworkException(msg % ', '.join(domain_list))
 
+        if len(domain_list) == 0:
+            msg = ('There is something wrong with the configured target URLs,'
+                   ' w3af was unable to extract at least one domain name from'
+                   ' the user configured setting: "%s"')
+            raise BaseFrameworkException(msg % configured_target_urls)
+
         # Save in the config, the target URLs, this may be useful for some
         # plugins
         cf.cf.save('targets', target_urls)
