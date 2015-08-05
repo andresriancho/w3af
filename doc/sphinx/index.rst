@@ -64,7 +64,7 @@ Contents
    scripts
    authentication
    common-use-cases
-   complex-web-apps
+   advanced-use-cases
    
    exploitation
    advanced-exploitation
