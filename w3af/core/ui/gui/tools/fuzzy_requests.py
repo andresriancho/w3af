@@ -24,15 +24,16 @@ import os
 
 import gtk
 import gobject
+
 from w3af import ROOT_PATH
 from w3af.core.ui.gui import helpers, entries
 from w3af.core.ui.gui.reqResViewer import ReqResViewer, RequestPart
 from w3af.core.ui.gui.clusterGraph import distance_function_selector
 from w3af.core.ui.gui.payload_generators import create_generator_menu
+from w3af.core.ui.gui.tools.helpers import fuzzygen
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.controllers.exceptions import (HTTPRequestException,
                                               ScanMustStopException)
-from w3af.core.ui.gui.tools.helpers import fuzzygen
 
 
 FUZZY_REQUEST_EXAMPLE = """\
@@ -43,7 +44,7 @@ Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """
 
-FUZZYHELP = """\
+FUZZY_HELP = """\
 <b>This is the syntax you can follow to generate
 multiple crafted requests.</b>
 
@@ -174,7 +175,7 @@ class FuzzyRequests(entries.RememberingWindow):
         # help
         helplabel = gtk.Label()
         helplabel.set_selectable(True)
-        helplabel.set_markup(FUZZYHELP)
+        helplabel.set_markup(FUZZY_HELP)
         self.originalReq.append_page(helplabel, gtk.Label("Syntax help"))
         helplabel.show()
         self.originalReq.show()
