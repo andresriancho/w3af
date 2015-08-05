@@ -1,5 +1,5 @@
 """
-file_option.py
+input_file_option.py
 
 Copyright 2008 Andres Riancho
 
@@ -78,28 +78,29 @@ class InputFileOption(BaseOption):
 
         directory = os.path.abspath(os.path.dirname(value))
         if not os.path.isdir(directory):
-            msg = 'Invalid input file option value "%s", the directory does'\
-                  ' not exist.'
+            msg = ('Invalid input file option value "%s", the directory does'
+                   ' not exist.')
             raise BaseFrameworkException(msg % value)
 
         if not os.access(directory, os.R_OK):
-            msg = 'Invalid input file option value "%s", the user doesn\'t have' \
-                  ' enough permissions to read from the specified directory.'
+            msg = ('Invalid input file option value "%s", the user does not'
+                   ' have enough permissions to read from the specified'
+                   ' directory.')
             raise BaseFrameworkException(msg % value)
 
         if not os.path.exists(value):
-            msg = 'Invalid input file option value "%s", the specified file' \
-                  ' does not exist.'
+            msg = ('Invalid input file option value "%s", the specified file'
+                   ' does not exist.')
             raise BaseFrameworkException(msg % value)
 
         if not os.access(value, os.R_OK):
-            msg = 'Invalid input file option value "%s", the user doesn\'t have' \
-                  ' enough permissions to read the specified file.'
+            msg = ('Invalid input file option value "%s", the user does not'
+                   ' have enough permissions to read the specified file.')
             raise BaseFrameworkException(msg % value)
 
         if not os.path.isfile(value):
-            msg = 'Invalid input file option value "%s", the path doesn\'t' \
-                  ' point to a file.'
+            msg = ('Invalid input file option value "%s", the path does not'
+                   ' point to a file.')
             raise BaseFrameworkException(msg % value)
 
         return value
