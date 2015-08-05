@@ -51,7 +51,7 @@ class TestSSI(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
 
-        self.assertEquals("message", vuln.get_token_name())
+        self.assertEquals('message', vuln.get_token_name())
         self.assertEquals(self.target_url + 'ssi-lfr.php', str(vuln.get_url()))
         self.assertEquals('Persistent server side include vulnerability',
                           vuln.get_name())
