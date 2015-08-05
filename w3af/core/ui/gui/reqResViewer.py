@@ -405,7 +405,7 @@ class RequestPart(RequestResponsePart):
     def __init__(self, parent, w3af, enableWidget=[], editable=False,
                  widgname='default'):
         RequestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
-                                     widgname=widgname + "request")
+                                     widgname=widgname + 'request')
 
         self.raw_view = HttpRawView(w3af, self, editable)
         self.add_view(self.raw_view)

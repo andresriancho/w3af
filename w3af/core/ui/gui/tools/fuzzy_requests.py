@@ -158,9 +158,9 @@ class FuzzyRequests(entries.RememberingWindow):
         self.originalReq = RequestPart(self, w3af,
                                        [analyzBut.set_sensitive,
                                         self.sendPlayBut.set_sensitive,
-                                        functools.partial(self.sSB_state.change, "rRV")],
+                                        functools.partial(self.sSB_state.change, 'rRV')],
                                        editable=True,
-                                       widgname="fuzzyrequest")
+                                       widgname='fuzzyrequest')
 
         if initial_request is None:
             self.originalReq.show_raw(FUZZY_REQUEST_EXAMPLE, '')
