@@ -64,7 +64,7 @@ class MangleHandler(urllib2.BaseHandler):
         Convert an HTTPResponse.HTTPResponse object to a httplib.httpresponse
         subclass that I created in keepalive.
 
-        :param HTTPResponse: HTTPResponse.HTTPResponse object
+        :param original_response: HTTPResponse.HTTPResponse object
         :return: httplib.httpresponse subclass
         """
         ka_resp = MangledKeepAliveHTTPResponse()
