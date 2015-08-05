@@ -63,11 +63,14 @@ class ssi(AuditPlugin):
 
         :return: A string, see above.
         """
+        # Generic
         yield '<!--#exec cmd="echo -n %s;echo -n %s" -->' % get_seeds()
 
-        # TODO: Add mod_perl ssi injection support
-        # http://www.sens.buffalo.edu/services/webhosting/advanced/perlssi.shtml
-        #yield <!--#perl sub="sub {print qq/mod_perl is working!/;}" -->
+        # Perl SSI
+        yield ('<!--#set var="SEED_A" value="%s" -->'
+               '<!--#echo var="SEED_A" -->'
+               '<!--#set var="SEED_B" value="%s" -->'
+               '<!--#echo var="SEED_B" -->' % get_seeds())
 
     def _get_expected_results(self, mutant):
         """
@@ -76,7 +79,7 @@ class ssi(AuditPlugin):
         """
         sent_payload = mutant.get_token_payload()
         seed_numbers = self._extract_expected_re.findall(sent_payload)
-        
+
         seed_a = int(seed_numbers[0])
         seed_b = int(seed_numbers[1])
 
