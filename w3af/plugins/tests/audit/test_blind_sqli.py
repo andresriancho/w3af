@@ -80,7 +80,7 @@ class TestBlindSQLI(PluginTest):
         # Run the scan
         target = get_moth_http('/audit/blind_sqli/blind_where_integer_form.py')
         cfg = self._run_configs['cfg']
-        self._scan(target, cfg['plugins'], debug=True)
+        self._scan(target, cfg['plugins'])
 
         # Assert the general results
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
