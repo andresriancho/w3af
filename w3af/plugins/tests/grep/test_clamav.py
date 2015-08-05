@@ -88,7 +88,6 @@ class TestClamAV(unittest.TestCase):
         self.assertEqual(finding.get_name(), 'Malware identified')
         self.assertIn('ClamAV identified malware', finding.get_desc())
         self.assertEqual(finding.get_url().url_string, url.url_string)
-        
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     @need_clamav
