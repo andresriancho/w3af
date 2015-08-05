@@ -97,10 +97,12 @@ def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
             if sock is not None:
                 sock.close()
 
+    # pylint: disable=E0702
     if err is not None:
         raise err
     else:
         raise socket.error('getaddrinfo returns an empty list')
+    # pylint: enable=E0702
 
 
 class ProxyHTTPConnection(_HTTPConnection):
