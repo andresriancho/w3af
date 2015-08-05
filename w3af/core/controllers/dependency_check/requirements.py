@@ -24,7 +24,8 @@ from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 CORE = 1
 GUI = 2
 
-CORE_PIP_PACKAGES = [PIPDependency('clamd', 'clamd', '1.0.1'),
+
+CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('github', 'PyGithub', '1.21.0'),
                      PIPDependency('git.util', 'GitPython', '0.3.2.RC1'),
                      PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.14'),

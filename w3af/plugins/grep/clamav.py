@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import threading
-import clamd
+import pyclamd
 
 # Installed as a clamd dependency by pip
 from six import BytesIO
@@ -113,7 +113,7 @@ class clamav(GrepPlugin):
         """
         try:
             cd = self._get_connection()
-            return cd.ping() == u'PONG'
+            return cd.ping() is True
         except:
             return False
     
@@ -123,7 +123,7 @@ class clamav(GrepPlugin):
                  Thought about having a connection pool, but it doesn't make
                  much sense; plus it adds complexity due to the threads.
         """
-        return clamd.ClamdUnixSocket(path=self._clamd_socket)
+        return pyclamd.ClamdUnixSocket(filename=self._clamd_socket)
     
     def _get_clamd_version(self):
         """
@@ -142,10 +142,10 @@ class clamav(GrepPlugin):
         :return: None
         """
         body = str(response.get_body())
-        
+
         try:
             cd = self._get_connection()
-            result_dict = cd.instream(BytesIO(body))
+            result_dict = cd.scan_stream(body)
         except Exception, e:
             msg = ('The ClamAV plugin failed to connect to clamd using'
                    ' the provided unix socket: "%s". Please verify your'
@@ -155,7 +155,7 @@ class clamav(GrepPlugin):
             result = None
         else:
             result = self._parse_scan_result(result_dict)
-        
+
         return response, result
     
     def _report_result(self, (response, scan_result)):
@@ -167,11 +167,14 @@ class clamav(GrepPlugin):
         :param scan_result: The result object from _scan_http_response
         :return: None
         """
+        if scan_result is None:
+            return
+
         if scan_result.found:
         
             desc = ('ClamAV identified malware at URL: "%s", the matched'
                     ' signature name is "%s".')
-            desc = desc % (response.get_url(), scan_result.signature)
+            desc %= (response.get_url(), scan_result.signature)
     
             i = Info('Malware identified', desc, response.id, self.get_name())
             i.set_url(response.get_url())
