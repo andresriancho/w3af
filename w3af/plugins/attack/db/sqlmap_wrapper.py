@@ -27,18 +27,31 @@ import tempfile
 import subprocess
 
 import w3af.core.controllers.output_manager as om
+
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.daemons.proxy import Proxy
+from w3af.core.controllers.misc.which import which
 
 
 class SQLMapWrapper(object):
 
     OUTPUT_DIR = '%s/%s' % (tempfile.gettempdir(), os.getpid())
     DEBUG_ARGS = ['-v6']
-    DEFAULT_ARGS = [sys.executable,
-                    'sqlmap.py',
-                    '--output-dir=%s' % OUTPUT_DIR]
+
+    # This was added for Debian (and most likely useful for other distributions)
+    # because we don't want to have a sqlmap.deb and duplicate the same files
+    # in w3af.deb
+    #
+    # https://github.com/andresriancho/w3af/issues/10538
+    #
+    INSTALLED_DEFAULT_ARGS = ['sqlmap',
+                              '--output-dir=%s' % OUTPUT_DIR]
+
+    # The embedded sqlmap (the whole directory) is removed in Debian
+    EMBEDDED_DEFAULT_ARGS = [sys.executable,
+                             'sqlmap.py',
+                             '--output-dir=%s' % OUTPUT_DIR]
 
     SQLMAP_LOCATION = os.path.join(ROOT_PATH,
                                    'plugins', 'attack', 'db', 'sqlmap')
@@ -132,7 +145,31 @@ class SQLMapWrapper(object):
         
         fmt = 'Unexpected answer found in sqlmap output for command "%s": "%s"'
         raise NotImplementedError(fmt % (full_command, stdout))
-    
+
+    def _get_base_args(self):
+        """
+        Simple logic to get the base args in different environments where:
+            * sqlmap is in PATH
+            * The embedded sqlmap is not available
+
+        :see: https://github.com/andresriancho/w3af/issues/10538
+
+        :return: The base args to execute sqlmap in this environment, or raise
+                 an exception if something is wrong.
+        """
+        if os.path.exists(self.SQLMAP_LOCATION):
+            # This is the most common scenario where the user installs w3af
+            # from source and wants to use the embedded sqlmap
+            return self.SQLMAP_LOCATION, self.EMBEDDED_DEFAULT_ARGS
+
+        # sqlmap is not embedded, most likely because the packager removed
+        # it and sqlmap executable is in path, make sure it's there before
+        # we return the base args
+        if not which('sqlmap'):
+            raise RuntimeError('The "sqlmap" command is not in PATH')
+
+        return os.getcwd(), self.INSTALLED_DEFAULT_ARGS
+
     def _run(self, custom_params):
         """
         Internal function used by run_sqlmap and run_sqlmap_with_pipes to
@@ -143,9 +180,11 @@ class SQLMapWrapper(object):
         if not os.path.exists(self.OUTPUT_DIR):
             os.mkdir(self.OUTPUT_DIR)
 
+        cwd, base_args = self._get_base_args()
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
-        all_params = self.DEFAULT_ARGS + final_params + target_params
+
+        all_params = base_args + final_params + target_params
         
         if self.debug:
             all_params += self.DEBUG_ARGS
@@ -157,7 +196,7 @@ class SQLMapWrapper(object):
                                        stderr=subprocess.PIPE,
                                        shell=False,
                                        universal_newlines=True,
-                                       cwd=self.SQLMAP_LOCATION)
+                                       cwd=cwd)
         except OSError, os_err:
             # https://github.com/andresriancho/w3af/issues/10186
             # OSError: [Errno 12] Cannot allocate memory
