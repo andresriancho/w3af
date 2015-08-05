@@ -433,7 +433,7 @@ class w3afCore(object):
                    ' calling start().')
             raise BaseFrameworkException(msg)
 
-        if not cf.cf.get('targets') or not cf.cf.get('target_domains'):
+        if not self.target.has_valid_configuration():
             raise BaseFrameworkException('No target URI configured.')
 
         if not len(self.plugins.get_enabled_plugins('audit')) \
