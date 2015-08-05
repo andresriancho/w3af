@@ -72,6 +72,22 @@ class ssi(AuditPlugin):
                '<!--#set var="SEED_B" value="%s" -->'
                '<!--#echo var="SEED_B" -->' % get_seeds())
 
+        # Smarty
+        # http://www.smarty.net/docsv2/en/language.function.math.tpl
+        yield '{math equation="x * y" x=%s y=%s}' % get_seeds()
+
+        # Mako
+        # http://docs.makotemplates.org/en/latest/syntax.html
+        yield '${%s * %s}' % get_seeds()
+
+        # Jinja2 and Twig
+        # http://jinja.pocoo.org/docs/dev/templates/#math
+        # http://twig.sensiolabs.org/doc/templates.html
+        yield '{{%s * %s}}' % get_seeds()
+
+        # Generic
+        yield '{%s * %s}' % get_seeds()
+
     def _get_expected_results(self, mutant):
         """
         Extracts the potential results from the mutant payload and returns them
@@ -183,7 +199,10 @@ class ssi(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds server side include (SSI) vulnerabilities.
+        This plugin finds server side include (SSI) vulnerabilities, also
+        recently renamed to Server-Side Template Injection vulnerabilities.
+
+        http://blog.portswigger.net/2015/08/server-side-template-injection.html
         """
 
 
