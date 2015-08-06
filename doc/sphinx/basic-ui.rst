@@ -261,9 +261,46 @@ changing the parameters values, and the ``view`` command for listing existing
 values. On the previous example we disabled persistent cross site scripting
 checks in the xss plugin.
 
+Saving the configuration
+------------------------
 
-Starting a scan
----------------
+Once the plugin and framework configuration is set, it is possible to save this
+information to a profile:
+
+.. code-block:: none
+
+    w3af>>> profiles
+    w3af/profiles>>> save_as tutorial
+    Profile saved.
+
+Profiles are saved as files in ``~/.w3af/profiles/``. The saved configuration
+can be loaded in order to run a new scan:
+
+.. code-block:: none
+
+    w3af>>> profiles
+    w3af/profiles>>> use fast_scan
+    The plugins configured by the scan profile have been enabled, and their options configured.
+    Please set the target URL(s) and start the scan.
+    w3af/profiles>>>
+
+Sharing a profile with another user might be problematic, since they include
+full paths to the files referenced by plugin configurations which would require
+users to share the profile, referenced files, and manually edit the profile to
+match the current environment. To solve this issue the ``self-contained`` flag
+was added:
+
+.. code-block:: none
+
+    w3af>>> profiles
+    w3af/profiles>>> save_as tutorial self-contained
+    Profile saved.
+
+A ``self-contained`` profile bundles all the referenced files inside the profile
+and can be easily shared with other users.
+
+Starting the scan
+-----------------
 
 After configuring all desired plugins the user has to set the target URL and
 finally start the scan. The target selection is done this way:
