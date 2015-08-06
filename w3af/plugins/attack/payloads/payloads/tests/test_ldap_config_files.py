@@ -25,7 +25,7 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_ldap_config_files(PayloadTestHelper):
+class TestLDAPConfigFiles(PayloadTestHelper):
 
     EXPECTED_RESULT = {}
 
