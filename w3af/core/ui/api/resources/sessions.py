@@ -71,3 +71,14 @@ def session_info(scan_id):
         urls = list_subroutes(request)
         return jsonify({'message': 'Session %s' % scan_id,
                         'available_endpoints': urls})
+
+@app.route('/sessions/<int:scan_id>/plugins/', methods=['GET'])
+@requires_auth
+def list_plugin_types(scan_id):
+    if scan_id not in SCANS:
+        return jsonify({
+            'code': 404,
+            'message': 'Session with ID %s does not exist' % scan_id
+        }), 404
+    w3af = SCANS[scan_id].w3af_core
+    return jsonify({ 'entries': w3af.plugins.get_plugin_types() })
