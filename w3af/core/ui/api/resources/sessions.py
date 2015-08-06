@@ -83,7 +83,8 @@ def list_plugin_types(scan_id):
     return jsonify({ 'entries': w3af.plugins.get_plugin_types() })
 
 
-@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/', methods=['GET'])
+@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/',
+           methods=['GET'])
 @requires_auth
 @check_session_exists
 def get_plugin_list(scan_id, plugin_type):
@@ -99,4 +100,7 @@ def get_plugin_list(scan_id, plugin_type):
                          'message': 'Plugin type %s not found' % plugin_type
                       }), 404
     else:
-        return jsonify({ 'entries': w3af.plugins.get_plugin_list(plugin_type) })
+        return jsonify({
+            'description': " ".join(w3af.plugins.get_plugin_type_desc(
+                plugin_type).split()),
+            'entries': w3af.plugins.get_plugin_list(plugin_type) })
