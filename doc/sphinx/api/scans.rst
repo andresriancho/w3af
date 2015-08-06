@@ -51,3 +51,11 @@ requests in our REST API. The call requires two specially crafted variables:
 .. note::
 
    Remember to send the ``Content-Type: application/json`` header
+
+.. note::
+
+   In order to avoid issues with incorrect paths referenced by a plugin
+   configuration inside the ``scan_profile`` it is recommended to use
+   ``self-contained`` profiles.
+
+
