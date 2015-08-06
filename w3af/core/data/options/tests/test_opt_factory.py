@@ -97,7 +97,7 @@ class TestOptionFactory(unittest.TestCase):
                 IPPORT: ['127.0.0.1'],
                 IP: ['127.0.0.', '127.0.0', '3847398740'],
                 REGEX: ['.*('],
-                INPUT_FILE: [input_file, '/'],
+                INPUT_FILE: [input_file, '/', 'base64://'],
                 OUTPUT_FILE: [output_file, '/'],
                 PORT: ['65536']
                 }

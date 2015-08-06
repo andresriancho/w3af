@@ -31,11 +31,10 @@ import errno
 
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
-import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.misc.homeDir import get_home_dir
-from w3af.core.controllers.core_helpers.profiles import w3af_core_profiles
+from w3af.core.controllers.core_helpers.profiles import CoreProfiles
 from w3af.core.controllers.core_helpers.plugins import w3af_core_plugins
 from w3af.core.controllers.core_helpers.target import CoreTarget
 from w3af.core.controllers.core_helpers.strategy import CoreStrategy
@@ -114,7 +113,7 @@ class w3afCore(object):
         # they basically handle every aspect of the w3af framework. I create
         # these here because they are used by the UIs even before starting a
         # scan.
-        self.profiles = w3af_core_profiles(self)
+        self.profiles = CoreProfiles(self)
         self.plugins = w3af_core_plugins(self)
         self.status = w3af_core_status(self)
         self.target = CoreTarget()
@@ -267,7 +266,7 @@ class w3afCore(object):
 
         finally:
             time_spent = self.status.get_scan_time()
-            
+
             om.out.information('Scan finished in %s' % time_spent)
             om.out.information('Stopping the core...')
 
