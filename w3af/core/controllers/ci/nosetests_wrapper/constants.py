@@ -1,12 +1,16 @@
 import os
 import multiprocessing
 
-
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 
 # How many nosetests commands to run at the same time
-MAX_WORKERS = multiprocessing.cpu_count()
+#
+# At CircleCI I've got 32 cores to use, but don't want to use them all with
+# nosetests, so I reduce the count by 4. Just in case I want to run this on
+# a regular workstation I set a min of 2 using max()
+MAX_WORKERS = max(multiprocessing.cpu_count() - 4, 2)
+
 # How many tests to send to each process
 CHUNK_SIZE = 25
 
@@ -33,8 +37,7 @@ NOSE_XUNIT_EXT = 'xml'
 NOSE_RUN_SELECTOR = 'not ci_fails and not fails and not ci_ignore'
 NOSE_IGNORE_SELECTOR = 'ci_fails or fails or ci_ignore'
 
-NOISE = [
-         # Related with xvfb not having the randr extension
+NOISE = [# Related with xvfb not having the randr extension
          'Xlib:  extension "RANDR" missing on display ":99".',
 
          # Related with scapy, we're not root, tcpdump is not available
