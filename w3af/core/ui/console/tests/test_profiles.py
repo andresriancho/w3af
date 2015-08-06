@@ -28,6 +28,7 @@ from w3af.core.data.db.startup_cfg import StartUpConfig
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 from w3af.core.data.profile.profile import profile
+from w3af.core.controllers.core_helpers.tests.test_profiles import assertProfilesEqual
 
 
 @attr('smoke')
@@ -55,7 +56,13 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
             profile(profile_name)
         except:
             assert False, 'The %s profile does NOT exist!' % profile_name
-        
+
+    def _assert_equal(self, profile_name_a, profile_name_b):
+        p1 = profile(profile_name_a, workdir='.')
+        p2 = profile(profile_name_b, workdir='.')
+
+        assertProfilesEqual(p1.profile_file_name, p2.profile_file_name)
+
     def test_load_profile_exists(self):
         commands_to_run = ['profiles',
                            'help',
@@ -91,7 +98,6 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_substring_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-
     def test_load_profile_not_exists(self):
         commands_to_run = ['profiles',
                            'help',
@@ -121,6 +127,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         self.assertTrue(assert_result, msg)
         
         self._assert_exists('unittest')
+        self._assert_equal('unittest', 'OWASP_TOP10')
 
     def test_set_save_use(self):
         """
