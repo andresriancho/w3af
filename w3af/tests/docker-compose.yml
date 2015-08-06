@@ -1,9 +1,22 @@
+#
+# moth with a load balancer
+#
 moth:
   image: andresriancho/django-moth:latest
+
+balancer:
+  image: haproxy
+  links:
+    - moth
+  volumes:
+    - haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
   ports:
     - "8000:8000"
     - "8001:8001"
 
+#
+# wivet
+#
 
 wivet:
   image: andresriancho/wivet:latest
@@ -11,6 +24,9 @@ wivet:
     - "8899:80"
 
 
+#
+# phpmoth
+#
 phpmoth:
   image: andresriancho/php-moth:latest
   ports:

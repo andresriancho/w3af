@@ -58,6 +58,7 @@ dependencies:
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
     # Run the test servers/dependencies
+    - docker-compose --project-name test-dependencies --file w3af/tests/docker-compose.yml scale moth=2
     - docker-compose --project-name test-dependencies --file w3af/tests/docker-compose.yml up -d
     - w3af/tests/add-test-routes.sh
 
