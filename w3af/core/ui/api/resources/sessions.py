@@ -25,6 +25,7 @@ from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
 from w3af.core.ui.api.utils.routes import list_subroutes
 from w3af.core.ui.api.utils.auth import requires_auth
+from w3af.core.ui.api.utils.sessions import check_session_exists
 from w3af.core.ui.api.db.master import SCANS
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           create_scan_helper,
@@ -55,6 +56,7 @@ def create_scan_session():
 
 @app.route('/sessions/<int:scan_id>', methods=['GET'])
 @requires_auth
+@check_session_exists
 def session_info(scan_id):
     """
     Shows information about available actions for a session
@@ -62,23 +64,20 @@ def session_info(scan_id):
     :return: 404 if scan does not exist.
              Otherwise, a list of possible routes under /sessions/<scan_id>/
     """
-    if scan_id not in SCANS:
-        return jsonify({
-            'code': 404,
-            'message': 'Session with ID %s does not exist' % scan_id
-        }), 404
-    else:
-        urls = list_subroutes(request)
-        return jsonify({'message': 'Session %s' % scan_id,
+    urls = list_subroutes(request)
+    return jsonify({'message': 'Session %s' % scan_id,
                         'available_endpoints': urls})
+
 
 @app.route('/sessions/<int:scan_id>/plugins/', methods=['GET'])
 @requires_auth
+@check_session_exists
 def list_plugin_types(scan_id):
-    if scan_id not in SCANS:
-        return jsonify({
-            'code': 404,
-            'message': 'Session with ID %s does not exist' % scan_id
-        }), 404
+    """
+    Lists available plugin types
+
+    :return: 404 if scan does not exist (see decorator @check_session_exists).
+             Otherwise, a list of all existing plugin types.
+    """
     w3af = SCANS[scan_id].w3af_core
     return jsonify({ 'entries': w3af.plugins.get_plugin_types() })
