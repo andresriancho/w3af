@@ -31,7 +31,6 @@ import errno
 
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
-import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.misc.homeDir import get_home_dir
@@ -267,7 +266,7 @@ class w3afCore(object):
 
         finally:
             time_spent = self.status.get_scan_time()
-            
+
             om.out.information('Scan finished in %s' % time_spent)
             om.out.information('Stopping the core...')
 
