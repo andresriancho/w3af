@@ -76,8 +76,27 @@ def list_plugin_types(scan_id):
     """
     Lists available plugin types
 
-    :return: 404 if scan does not exist (see decorator @check_session_exists).
+    :return: 404 if scan does not exist.
              Otherwise, a list of all existing plugin types.
     """
     w3af = SCANS[scan_id].w3af_core
     return jsonify({ 'entries': w3af.plugins.get_plugin_types() })
+
+
+@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/', methods=['GET'])
+@requires_auth
+@check_session_exists
+def get_plugin_list(scan_id, plugin_type):
+    """
+    Lists available plugins of type "plugin_type"
+
+    :return: 404 if scan or plugin type does not exist.
+             Otherwise, a list of all matching plugins.
+    """
+    w3af = SCANS[scan_id].w3af_core
+    if plugin_type not in w3af.plugins.get_plugin_types():
+        return jsonify({ 'code': 404,
+                         'message': 'Plugin type %s not found' % plugin_type
+                      }), 404
+    else:
+        return jsonify({ 'entries': w3af.plugins.get_plugin_list(plugin_type) })
