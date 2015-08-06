@@ -58,7 +58,7 @@ dependencies:
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
     # Run the test servers/dependencies
-    - docker-compose --project-name test-dependencies --file w3af/tests/docker-compose.yml up -d
+    - cd w3af/tests/ && docker-compose up -d
     - w3af/tests/add-test-routes.sh
 
   post:
@@ -72,6 +72,9 @@ test:
         timeout: 360
 
     - nosetests w3af/core/data/constants/tests/test_vulns.py:TestVulnsConstants.test_vuln_updated
+
+    # Dump the container logs for debugging
+    - for c in `docker ps -q`; do docker logs $c > $CIRCLE_ARTIFACTS/docker-$c.log; done
 
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         
 #  post:
