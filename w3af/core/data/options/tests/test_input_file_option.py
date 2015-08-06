@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
@@ -28,6 +29,9 @@ from w3af.core.data.options.input_file_option import InputFileOption
 
 
 class TestInputFileOption(unittest.TestCase):
+
+    INPUT_FILE = os.path.relpath(os.path.join(ROOT_PATH, 'core', 'data',
+                                              'options', 'tests', 'test.txt'))
 
     def test_valid_base64_data(self):
         value = '%s%s' % (InputFileOption.DATA_PROTO,
@@ -50,3 +54,10 @@ class TestInputFileOption(unittest.TestCase):
         value = '%s%s' % (InputFileOption.DATA_PROTO, 'x')
         self.assertRaises(BaseFrameworkException, opt_factory, 'name', value,
                           'desc', INPUT_FILE, 'help', 'tab')
+
+    def test_save_file_as_self_contained(self):
+        opt = opt_factory('name', self.INPUT_FILE, 'desc',
+                          INPUT_FILE, 'help', 'tab')
+
+        self.assertIn(InputFileOption.DATA_PROTO,
+                      opt.get_value_for_profile(self_contained=True))

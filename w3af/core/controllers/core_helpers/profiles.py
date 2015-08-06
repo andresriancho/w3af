@@ -36,7 +36,8 @@ class CoreProfiles(object):
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
 
-    def save_current_to_new_profile(self, profile_name, profile_desc=''):
+    def save_current_to_new_profile(self, profile_name, profile_desc='',
+                                    self_contained=False):
         """
         Saves current config to a newly created profile.
 
@@ -53,34 +54,41 @@ class CoreProfiles(object):
         profile_inst.save(profile_name)
 
         # Save current to profile
-        return self.save_current_to_profile(profile_name, profile_desc)
+        return self.save_current_to_profile(profile_name, profile_desc,
+                                            self_contained=self_contained)
 
-    def save_current_to_profile(self, profile_name, prof_desc='', prof_path=''):
+    def save_current_to_profile(self, profile_name, prof_desc='', prof_path='',
+                                self_contained=False):
         """
         Save the current configuration of the core to the profile called
         profile_name.
 
         :return: The new profile instance if the profile was successfully saved.
-            otherwise raise a BaseFrameworkException.
+                 Otherwise raise a BaseFrameworkException.
         """
         # Open the already existing profile
         new_profile = profile(profile_name, workdir=os.path.dirname(prof_path))
 
-        # Save the enabled plugins
-        for pType in self._w3af_core.plugins.get_plugin_types():
-            enabled_plugins = []
-            for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
-                enabled_plugins.append(pName)
-            new_profile.set_enabled_plugins(pType, enabled_plugins)
-
-        # Save the profile options
+        # shortcut
         w3af_plugins = self._w3af_core.plugins
 
-        for ptype in w3af_plugins.get_plugin_types():
-            for pname in w3af_plugins.get_enabled_plugins(ptype):
-                poptions = w3af_plugins.get_plugin_options(ptype, pname)
-                if poptions:
-                    new_profile.set_plugin_options(ptype, pname, poptions)
+        # Save the enabled plugins
+        for plugin_type in w3af_plugins.get_plugin_types():
+            enabled_plugins = []
+            for plugin_name in w3af_plugins.get_enabled_plugins(plugin_type):
+                enabled_plugins.append(plugin_name)
+            new_profile.set_enabled_plugins(plugin_type, enabled_plugins)
+
+        # Save the plugin options
+        for plugin_type in w3af_plugins.get_plugin_types():
+            for plugin_name in w3af_plugins.get_enabled_plugins(plugin_type):
+                plugin_options = w3af_plugins.get_plugin_options(plugin_type,
+                                                                 plugin_name)
+                if plugin_options:
+                    new_profile.set_plugin_options(plugin_type,
+                                                   plugin_name,
+                                                   plugin_options,
+                                                   self_contained=self_contained)
 
         # Save the profile targets
         targets = cf.cf.get('targets')

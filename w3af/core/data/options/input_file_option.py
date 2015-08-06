@@ -72,7 +72,7 @@ class InputFileOption(BaseOption):
         else:
             self._value = validated_value
 
-    def get_value_for_profile(self):
+    def get_value_for_profile(self, self_contained=False):
         """
         This method is called before saving the option value to the profile file
 
@@ -85,12 +85,13 @@ class InputFileOption(BaseOption):
 
                  Something else we do here is to convert the temp file we
                  created during the base64:// data handler back to the base64://
-                 string.
+                 string. This allows us to keep profiles which are
+                 self-contained in that state.
         """
         #
         #   First we handle base64://
         #
-        if self.should_base64_encode_file(self._value):
+        if self_contained or self.should_base64_encode_file(self._value):
             try:
                 return self.encode_b64_data(self._value)
             except Exception, e:

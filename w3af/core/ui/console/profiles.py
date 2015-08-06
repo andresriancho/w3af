@@ -19,15 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import string
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.util import suggest
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.profile.profile import profile as Profile
 
 
-class profilesMenu(menu):
+class ProfilesMenu(menu):
     """
     Menu to control the profiles.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
@@ -38,8 +38,8 @@ class profilesMenu(menu):
         menu.__init__(self, name, console, w3af, parent)
         self._profiles = {}
         instance_list, invalid_profiles = w3af.profiles.get_profile_list()
-        for profile in instance_list:
-            self._profiles[profile.get_name()] = profile
+        for _profile in instance_list:
+            self._profiles[_profile.get_name()] = _profile
         self._load_help('profiles')
 
     def _cmd_use(self, params):
@@ -82,22 +82,47 @@ class profilesMenu(menu):
         """
         Saves the current config to a new profile.
         """
+        self_contained = False
+
         if not params:
             om.out.console('Parameter missing, please see the help:')
             self._cmd_help(['save_as'])
             return
-        
-        filename = params[0]
-        
-        valid = string.ascii_letters + string.digits + '_-'
-        for char in filename:
-            if char not in valid:
-                msg = 'Invalid profile name. Use letters and digits only.'
-                om.out.console(msg)
-                return                    
+
+        elif len(params) == 1:
+            # This is the most common case where the user just specifies a
+            # profile name to save
+            profile_name = params[0]
+
+        elif len(params) == 2:
+            # This is the case to support self contained profiles
+            # https://github.com/andresriancho/w3af/issues/10949
+            profile_name = params[0]
+            self_contained = params[1]
+
+            if 'self-contained' != self_contained:
+                om.out.console('Invalid profile save flag, please see the help:')
+                self._cmd_help(['save_as'])
+                return
+            else:
+                self_contained = True
+
+        else:
+            om.out.console('Too many parameters, please see the help:')
+            self._cmd_help(['save_as'])
+            return
+
+        # Validate the profile name
+        try:
+            Profile.is_valid_profile_name(profile_name)
+        except BaseFrameworkException, bfe:
+            om.out.console('%s' % bfe)
+            return
 
         description = 'Profile generated using the console UI.'
-        self._w3af.profiles.save_current_to_new_profile(filename, description)
+        self._w3af.profiles.save_current_to_new_profile(profile_name,
+                                                        description,
+                                                        self_contained=self_contained)
         
         om.out.console('Profile saved.')
 
