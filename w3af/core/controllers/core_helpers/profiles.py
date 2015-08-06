@@ -31,7 +31,7 @@ from w3af.core.controllers.misc.homeDir import HOME_DIR
 from w3af.core.data.profile.profile import profile as profile
 
 
-class w3af_core_profiles(object):
+class CoreProfiles(object):
 
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
@@ -233,7 +233,7 @@ class w3af_core_profiles(object):
             - One with the file names of the profiles that are invalid
 
         >>> HOME_DIR = '.'
-        >>> p = w3af_core_profiles(None)
+        >>> p = CoreProfiles(None)
         >>> valid, invalid = p.get_profile_list(HOME_DIR)
         >>> valid_lower = [prof.get_name().lower() for prof in valid]
         >>> 'owasp_top10' in valid_lower
