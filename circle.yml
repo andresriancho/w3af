@@ -59,7 +59,7 @@ dependencies:
 
     # Run the test servers/dependencies
     - docker-compose --project-name test-dependencies --file w3af/tests/docker-compose.yml scale moth=2
-    - docker-compose --project-name test-dependencies --file w3af/tests/docker-compose.yml up -d
+    - docker-compose --project-name test-dependencies --file w3af/tests/docker-compose.yml up -d --no-recreate
     - w3af/tests/add-test-routes.sh
 
   post:
