@@ -267,8 +267,6 @@ Saving the configuration
 Once the plugin and framework configuration is set, it is possible to save this
 information to a profile:
 
-<<<<<<< HEAD
-=======
 .. code-block:: none
 
     w3af>>> profiles
@@ -304,7 +302,6 @@ and can be easily shared with other users.
 Starting the scan
 -----------------
 
->>>>>>> develop
 After configuring all desired plugins the user has to set the target URL and
 finally start the scan. The target selection is done this way:
 
