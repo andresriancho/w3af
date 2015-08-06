@@ -194,7 +194,7 @@ class os_commanding(AuditPlugin):
 
         # Now I filter the commands based on the target_os:
         target_os = cf.cf.get('target_os').lower()
-        commands = [c for c in commands if c.get_OS() in (target_os, 'unknown')]
+        commands = [c for c in commands if target_os in (c.get_OS(), 'unknown')]
 
         return commands
 
@@ -231,7 +231,7 @@ class os_commanding(AuditPlugin):
 
         # Now I filter the commands based on the target_os:
         target_os = cf.cf.get('target_os').lower()
-        commands = [c for c in commands if c.get_OS() in (target_os, 'unknown')]
+        commands = [c for c in commands if target_os in (c.get_OS(), 'unknown')]
 
         return commands
 
