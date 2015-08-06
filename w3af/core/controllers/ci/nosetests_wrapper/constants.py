@@ -12,6 +12,7 @@ CHUNK_SIZE = 25
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
+JSON_ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.json')
 
 NOSETESTS = 'nosetests'
 # Not using code coverage (--with-cov --cov-report=xml) due to:

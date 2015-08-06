@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 """
 import os
 import sys
+import json
 import shlex
 import pickle
 import logging
@@ -33,6 +34,7 @@ from nose.tools import nottest
 
 from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
                                                                   ID_FILE,
+                                                                  JSON_ID_FILE,
                                                                   NOSETESTS,
                                                                   NOSE_COLLECT_PARAMS,
                                                                   NOSE_XUNIT_EXT,
@@ -55,7 +57,8 @@ def _get_tests(fname, selector=None, nose_params=NOSE_COLLECT_PARAMS):
     collect_with_output = nose_params % output_file
     
     if selector is not None:
-        cmd = '%s %s -A "%s" w3af/' % (NOSETESTS, collect_with_output,
+        cmd = '%s %s -A "%s" w3af/' % (NOSETESTS,
+                                       collect_with_output,
                                        selector)
     else:
         cmd = '%s %s w3af/' % (NOSETESTS, collect_with_output)
@@ -94,8 +97,8 @@ def get_all_tests():
     """
     Collect all tests and return them
     
-    :return: A test suite as returned by xunitparser with all the tests available
-             in the w3af framework source code, without any selectors.
+    :return: A test suite as returned by xunitparser with all the tests
+             available in the w3af framework source code, without any selectors.
     """
     return _get_tests('all.xml')
 
@@ -105,8 +108,8 @@ def get_ignored_tests():
     """
     Collect all ignored tests and return them
     
-    :return: A test suite as returned by xunitparser with all the tests available
-             in the w3af framework source code, without any selectors.
+    :return: A test suite as returned by xunitparser with all the tests
+             available in the w3af framework source code, without any selectors.
     """
     return _get_tests('ignored.xml', NOSE_IGNORE_SELECTOR,
                       NOSE_COLLECT_IGNORE_PARAMS)
@@ -134,6 +137,12 @@ def get_test_ids(nose_selector):
     """
     nose_ids = pickle.load(file(ID_FILE))
     return nose_ids['ids'].keys()
+
+
+@nottest
+def save_noseids_as_json():
+    nose_ids = pickle.load(file(ID_FILE))
+    file(JSON_ID_FILE, 'w').write(json.dumps(nose_ids['ids'], indent=4))
 
 
 @nottest
