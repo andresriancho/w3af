@@ -18,9 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import re
 import sys
-import subprocess
 import tempfile
+import subprocess
 
 from nose.plugins.attrib import attr
 
@@ -128,6 +129,68 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         
         self._assert_exists('unittest')
         self._assert_equal('unittest', 'OWASP_TOP10')
+
+    def test_save_as_self_contained_profile(self):
+        commands_to_run = ['profiles',
+                           'use OWASP_TOP10',
+                           'save_as unittest self-contained',
+                           'exit']
+
+        expected = ('Profile saved.',)
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
+
+        # The profile is now self contained
+        p = profile('unittest')
+        self.assertIn('caFileName = base64://',
+                      file(p.profile_file_name).read())
+
+        # Before it wasn't
+        p = profile('OWASP_TOP10')
+        self.assertIn('caFileName = %ROOT_PATH%',
+                      file(p.profile_file_name).read())
+
+    def test_use_self_contained_profile(self):
+        """
+        Makes sure that we're able to use a self-contained profile and that
+        it's transparent for the plugin code.
+        """
+        #
+        #   Make the profile self-contained and load it
+        #
+        commands_to_run = ['profiles',
+                           'use OWASP_TOP10',
+                           'save_as unittest self-contained',
+                           'back',
+                           'profiles',
+                           'use unittest',
+                           'back',
+                           'plugins audit config ssl_certificate',
+                           'view',
+                           'exit']
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        #
+        # Extract the temp file from the plugin configuration and read it
+        #
+        for line in self._mock_stdout.messages:
+            match = re.search('(/tmp/w3af-.*-sc\.dat)', line)
+            if not match:
+                continue
+
+            filename = match.group(0)
+
+            self.assertIn('Bundle of CA Root Certificates',
+                          file(filename).read())
+            break
+        else:
+            self.assertTrue(False, 'No self contained file found')
 
     def test_set_save_use(self):
         """
