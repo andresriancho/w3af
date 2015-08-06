@@ -36,24 +36,24 @@ class w3af_core_profiles(object):
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
 
-    def save_current_to_new_profile(self, profile_name, profileDesc=''):
+    def save_current_to_new_profile(self, profile_name, profile_desc=''):
         """
         Saves current config to a newly created profile.
 
         :param profile_name: The profile to clone
-        :param profileDesc: The description of the new profile
+        :param profile_desc: The description of the new profile
 
         :return: The new profile instance if the profile was successfully saved.
                  Else, raise a BaseFrameworkException.
         """
         # Create the new profile.
         profile_inst = profile()
-        profile_inst.set_desc(profileDesc)
+        profile_inst.set_desc(profile_desc)
         profile_inst.set_name(profile_name)
         profile_inst.save(profile_name)
 
         # Save current to profile
-        return self.save_current_to_profile(profile_name, profileDesc)
+        return self.save_current_to_profile(profile_name, profile_desc)
 
     def save_current_to_profile(self, profile_name, prof_desc='', prof_path=''):
         """
@@ -68,18 +68,19 @@ class w3af_core_profiles(object):
 
         # Save the enabled plugins
         for pType in self._w3af_core.plugins.get_plugin_types():
-            enabledPlugins = []
+            enabled_plugins = []
             for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
-                enabledPlugins.append(pName)
-            new_profile.set_enabled_plugins(pType, enabledPlugins)
+                enabled_plugins.append(pName)
+            new_profile.set_enabled_plugins(pType, enabled_plugins)
 
         # Save the profile options
-        for pType in self._w3af_core.plugins.get_plugin_types():
-            for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
-                pOptions = self._w3af_core.plugins.get_plugin_options(
-                    pType, pName)
-                if pOptions:
-                    new_profile.set_plugin_options(pType, pName, pOptions)
+        w3af_plugins = self._w3af_core.plugins
+
+        for ptype in w3af_plugins.get_plugin_types():
+            for pname in w3af_plugins.get_enabled_plugins(ptype):
+                poptions = w3af_plugins.get_plugin_options(ptype, pname)
+                if poptions:
+                    new_profile.set_plugin_options(ptype, pname, poptions)
 
         # Save the profile targets
         targets = cf.cf.get('targets')

@@ -252,7 +252,7 @@ class profile(object):
         :param options: an OptionList
         :return: None
         """
-        section = plugin_type + "." + plugin_name
+        section = '%s.%s' % (plugin_type, plugin_name)
         if section not in self._config.sections():
             self._config.add_section(section)
 
