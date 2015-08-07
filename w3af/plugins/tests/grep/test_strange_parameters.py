@@ -29,7 +29,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.plugins.grep.strange_parameters import strange_parameters
 
 
-class test_strange_parameters(unittest.TestCase):
+class TestStrangeParameters(unittest.TestCase):
 
     def setUp(self):
         kb.kb.cleanup()
@@ -77,7 +77,9 @@ class test_strange_parameters(unittest.TestCase):
                                         'strange_parameters')), 1)
 
     def test_strange_parameters_find_sql(self):
-        body = '<html><a href="http://moth/abc.jsp?call=SELECT x FROM TABLE">x</a></html>'
+        body = ('<html>'
+                '<a href="http://moth/abc.jsp?sql=SELECT x FROM TABLE">x</a>'
+                '</html>')
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('strange_parameters',
@@ -85,10 +87,10 @@ class test_strange_parameters(unittest.TestCase):
 
     def test_multi(self):
         body = """<html>
-                  <a href="http://moth/abc.jsp?call=SELECT x FROM TABLE">x</a>
+                  <a href="http://moth/abc.jsp?sql=SELECT x FROM TABLE">x</a>
                   <a href="http://moth/abc.jsp?call=s(12,3)">x</a>
                   </html>"""
         response = HTTPResponse(200, body, self.headers, self.url, self.url, _id=1)
         self.plugin.grep(self.request, response)
-        self.assertEquals(len(kb.kb.get('strange_parameters',
-                                        'strange_parameters')), 2)
+        vulns = kb.kb.get('strange_parameters', 'strange_parameters')
+        self.assertEquals(len(vulns), 2, vulns)
