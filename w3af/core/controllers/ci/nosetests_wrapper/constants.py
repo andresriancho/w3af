@@ -11,14 +11,12 @@ LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 # count by 4. Just in case I want to run this on a regular workstation I set a
 # min of 2 using max()
 MAX_WORKERS = max(multiprocessing.cpu_count() - 4, 2)
-
-MAX_WORKERS = 3
-
+MAX_WORKERS = 1
 # How many tests to send to each process
 #
 # Usually lower numbers are better here. A high chunk size will usually lead to
 # larger delays.
-CHUNK_SIZE = 10
+CHUNK_SIZE = 2
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
