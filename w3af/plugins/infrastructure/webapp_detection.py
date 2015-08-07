@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from wad.detection import Detector
+from wad.detection import Detector, TIMEOUT
 from wad.output import HumanReadableOutput
 
 import w3af.core.controllers.output_manager as om
@@ -31,6 +31,25 @@ from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.kb.info import Info
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
+
+
+class w3afDetector(Detector):
+    """
+    This class overrides some getter functions in original Detector class
+    in order to use w3af's ExtendedUrllib.
+    """
+    def __init__(self, uri_opener):
+        super(w3afDetector, self).__init__()
+        self._uri_opener = uri_opener
+
+    def get_page(self, url, timeout=TIMEOUT):
+        return self._uri_opener.GET(url, cache=True, timeout=timeout)
+
+    def get_new_url(self, page):
+        return page.get_url().url_string
+
+    def get_content(self, page, url):
+        return page.get_body()
 
 
 class webapp_detection(InfrastructurePlugin):
@@ -59,14 +78,14 @@ class webapp_detection(InfrastructurePlugin):
               'Original WAD authors: CERN-CERT; http://cern.ch/security'
         om.out.information(msg)
 
-        self._main(fuzzable_request.get_url().base_url().url_string)
+        self._main(fuzzable_request.get_url())
 
     def _main(self, url):
         """
         Based on WAD's main executable
         """
 
-        detector = Detector()
+        detector = w3afDetector(uri_opener=self._uri_opener)
         results = detector.detect(url, timeout=self._timeout)
 
         self._report(results)
@@ -78,9 +97,6 @@ class webapp_detection(InfrastructurePlugin):
 
         :return: None.
         """
-        # This is added so other w3af plugins can read the WAD results.
-        # If needed by other plugins, I could fill up the info object with
-        # more data about the different headers, time, etc...
         if results:
             i = Info('Web applications detection report',
                      HumanReadableOutput().retrieve(results), 1,
@@ -108,7 +124,7 @@ class webapp_detection(InfrastructurePlugin):
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
-        self._timeout = options_list['result_limit'].get_value()
+        self._timeout = options_list['timeout'].get_value()
 
     def get_long_desc(self):
         """
