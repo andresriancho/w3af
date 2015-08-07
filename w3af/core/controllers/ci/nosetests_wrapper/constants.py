@@ -22,7 +22,7 @@ MAX_WORKERS = 10
 CHUNK_SIZE = 10
 
 # Experiment override previous setting
-CHUNK_SIZE = 1
+CHUNK_SIZE = 5
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
