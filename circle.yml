@@ -34,6 +34,7 @@ dependencies:
   pre:
     - docker info
     - docker version
+    - docker images
 
     - sudo apt-get update
     - sudo apt-get install -y python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2
