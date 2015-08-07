@@ -22,14 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 import pyclamd
 
-# Installed as a clamd dependency by pip
-from six import BytesIO
 from collections import namedtuple
 
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-
 from w3af.core.data.kb.info import Info
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
