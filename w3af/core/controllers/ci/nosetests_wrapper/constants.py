@@ -1,22 +1,27 @@
 import os
 import multiprocessing
 
+from w3af.core.controllers.ci.detect import is_running_on_ci
+
+
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 
 # How many nosetests commands to run at the same time
 #
 # At CircleCI I've got 32 cores to use, but don't want to use them all with
-# nosetests (other important stuff like docker is running too), so I reduce the
-# count by 4. Just in case I want to run this on a regular workstation I set a
-# min of 2 using max()
-MAX_WORKERS = max(multiprocessing.cpu_count() - 4, 2)
+# nosetests (other important stuff like docker is running too), so I set a fixed
+# value
+if is_running_on_ci():
+    MAX_WORKERS = 10
+else:
+    MAX_WORKERS = max(multiprocessing.cpu_count() - 1, 2)
 
 # How many tests to send to each process
 #
 # Usually lower numbers are better here. A high chunk size will usually lead to
 # larger delays.
-CHUNK_SIZE = 10
+CHUNK_SIZE = 3
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')

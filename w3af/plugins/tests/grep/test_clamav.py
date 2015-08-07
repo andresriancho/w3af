@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import time
+import unittest
 from itertools import repeat
 
-import clamd
+import pyclamd
 from mock import patch, Mock
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -52,7 +52,7 @@ class TestClamAV(unittest.TestCase):
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_clamav_eicar(self, *args):
-        body = clamd.EICAR
+        body = pyclamd.ClamdAgnostic().EICAR()
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)
@@ -132,7 +132,7 @@ class TestClamAV(unittest.TestCase):
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_clamav_eicar(self, *args):
-        body = clamd.EICAR
+        body = pyclamd.ClamdAgnostic().EICAR()
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)

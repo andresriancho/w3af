@@ -39,11 +39,18 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     """
     def setUp(self):
         super(TestProfilesConsoleUI, self).setUp()
-        self._remove_if_exists('unittest')
+        self._remove_if_exists(self.get_profile_name())
     
     def tearDown(self):
         super(TestProfilesConsoleUI, self).tearDown()
-        self._remove_if_exists('unittest')
+        self._remove_if_exists(self.get_profile_name())
+
+    def get_profile_name(self):
+        profile_name = self.id()
+        profile_name = profile_name.replace('.', '-')
+        profile_name = profile_name.replace(':', '-')
+        profile_name = profile_name.lower()
+        return profile_name
     
     def _remove_if_exists(self, profile_name):
         try:
@@ -116,7 +123,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     def test_save_as_profile(self):
         commands_to_run = ['profiles',
                            'use OWASP_TOP10',
-                           'save_as unittest',
+                           'save_as %s' % self.get_profile_name(),
                            'exit']
 
         expected = ('Profile saved.',)
@@ -127,13 +134,13 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
         
-        self._assert_exists('unittest')
-        self._assert_equal('unittest', 'OWASP_TOP10')
+        self._assert_exists(self.get_profile_name())
+        self._assert_equal(self.get_profile_name(), 'OWASP_TOP10')
 
     def test_save_as_self_contained_profile(self):
         commands_to_run = ['profiles',
                            'use OWASP_TOP10',
-                           'save_as unittest self-contained',
+                           'save_as %s self-contained' % self.get_profile_name(),
                            'exit']
 
         expected = ('Profile saved.',)
@@ -145,7 +152,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         self.assertTrue(assert_result, msg)
 
         # The profile is now self contained
-        p = profile('unittest')
+        p = profile(self.get_profile_name())
         self.assertIn('caFileName = base64://',
                       file(p.profile_file_name).read())
 
@@ -164,10 +171,10 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         #
         commands_to_run = ['profiles',
                            'use OWASP_TOP10',
-                           'save_as unittest self-contained',
+                           'save_as %s self-contained' % self.get_profile_name(),
                            'back',
                            'profiles',
-                           'use unittest',
+                           'use %s' % self.get_profile_name(),
                            'back',
                            'plugins audit config ssl_certificate',
                            'view',
@@ -216,7 +223,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
                            'set msf_location /tmp/',
                            'back',
                            'profiles',
-                           'save_as unittest',
+                           'save_as %s' % self.get_profile_name(),
                            'exit']
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
@@ -243,7 +250,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         # Now we run a new ConsoleUI that will load the saved settings. We
         # should see /tmp/ as the value for msf_location
         commands_to_run = ['profiles',
-                           'use unittest',
+                           'use %s' % self.get_profile_name(),
                            'back',
                            'misc-settings',
                            'view',
@@ -275,7 +282,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     def test_save_load_misc_settings(self):
         # Save the settings
         commands_to_run = ['misc-settings set msf_location /etc/',
-                           'profiles save_as unittest',
+                           'profiles save_as %s' % self.get_profile_name(),
                            'exit']
 
         expected = ('Profile saved.',)
@@ -286,14 +293,14 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
         
-        self._assert_exists('unittest')
+        self._assert_exists(self.get_profile_name())
         
         # Clean the mocked stdout
         self._mock_stdout.clear()
         
         # Load the settings
         commands_to_run = ['profiles',
-                           'use unittest',
+                           'use %s' % self.get_profile_name(),
                            'back',
                            'misc-settings view',
                            'exit']
