@@ -21,6 +21,9 @@ MAX_WORKERS = 10
 # larger delays.
 CHUNK_SIZE = 10
 
+# Experiment override previous setting
+CHUNK_SIZE = 1
+
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
 JSON_ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.json')
