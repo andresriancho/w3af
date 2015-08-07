@@ -21,7 +21,7 @@ else:
 #
 # Usually lower numbers are better here. A high chunk size will usually lead to
 # larger delays.
-CHUNK_SIZE = 5
+CHUNK_SIZE = 3
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
