@@ -12,6 +12,9 @@ LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 # min of 2 using max()
 MAX_WORKERS = max(multiprocessing.cpu_count() - 4, 2)
 
+# Experiment override previous setting
+MAX_WORKERS = 10
+
 # How many tests to send to each process
 #
 # Usually lower numbers are better here. A high chunk size will usually lead to
