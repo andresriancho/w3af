@@ -170,12 +170,12 @@ def start_webserver(ip, port, webroot, handler=WebHandler):
 
     :param ip: IP address where to bind
     :param port: Port number
-    :param webroot: webs erver's root directory
+    :param webroot: webs server's root directory
     :return: A local web server instance bound to the requested address (<ip>, <port>)
     """
-    server_thread = _get_inst(ip, port)
+    web_server = _get_inst(ip, port)
 
-    if server_thread is None or server_thread.is_down():
+    if web_server is None or web_server.is_down():
         web_server = HTTPServer((ip, port), webroot, handler)
         _servers[(ip, port)] = web_server
 
@@ -185,7 +185,7 @@ def start_webserver(ip, port, webroot, handler=WebHandler):
         server_thread.daemon = True
         server_thread.start()
 
-    return server_thread
+    return web_server
 
 
 def start_webserver_any_free_port(ip, webroot, handler=WebHandler):
