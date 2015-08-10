@@ -275,6 +275,16 @@ class TestXUrllib(unittest.TestCase):
         resp = self.uri_opener.GET(url)
         self.assertEqual(resp.get_body(), Ok200Handler.body)
 
+    @attr('internet')
+    def test_ssl_sni(self):
+        """
+        Test is our HTTP client supports SSL SNI
+        """
+        url = URL('https://sni.velox.ch/')
+
+        resp = self.uri_opener.GET(url)
+        self.assertIn('<strong>Great!', resp.get_body())
+
     def test_ssl_fail_when_requesting_http(self):
         http_daemon = UpperDaemon(Ok200Handler)
         http_daemon.start()
