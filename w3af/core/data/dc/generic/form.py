@@ -121,9 +121,6 @@ class Form(KeyValueContainer):
     def update(self, *args, **kwargs):
         return self.form_params.update(*args, **kwargs)
 
-    def has_post_data(self):
-        return self.form_params.has_post_data()
-
     def __str__(self):
         """
         Each form subclass (URLEncoded and Multipart form) need to implement
