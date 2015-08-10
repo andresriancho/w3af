@@ -79,6 +79,17 @@ class Proxy(Process):
 
     CA_CERT_DIR = os.path.join(ROOT_PATH, 'core/controllers/daemons/proxy/ca/')
 
+    INCORRECT_SETUP = ('Your OpenSSL setup seems to be broken. The mitmproxy'
+                       ' library failed to create the default configuration'
+                       ' required to run.\n'
+                       '\n'
+                       'The original exception is: "%s"\n'
+                       '\n'
+                       'Please see this [0] github issue for potential'
+                       ' workarounds and help.\n'
+                       '\n'
+                       '[0] https://github.com/mitmproxy/mitmproxy/issues/281')
+
     def __init__(self, ip, port, uri_opener, handler_klass=ProxyHandler,
                  ca_certs=CA_CERT_DIR, name='ProxyThread'):
         """
@@ -103,11 +114,27 @@ class Proxy(Process):
         self.total_handled_requests = 0
 
         # User configured parameters
-        self._config = ProxyConfig(cadir=self._ca_certs,
-                                   ssl_version_client='all',
-                                   ssl_version_server='all',
-                                   host=ip,
-                                   port=port)
+        try:
+            self._config = ProxyConfig(cadir=self._ca_certs,
+                                       ssl_version_client='all',
+                                       ssl_version_server='all',
+                                       host=ip,
+                                       port=port)
+        except AttributeError as ae:
+            if str(ae) == "'module' object has no attribute '_lib'":
+                # This is a rare issue with the OpenSSL setup that some users
+                # (mostly in mac os) find. Not related with w3af/mitmproxy but
+                # with some broken stuff they have
+                #
+                # https://github.com/mitmproxy/mitmproxy/issues/281
+                # https://github.com/andresriancho/w3af/issues/10716
+                #
+                # AttributeError: 'module' object has no attribute '_lib'
+                raise ProxyException(self.INCORRECT_SETUP % ae)
+
+            else:
+                # Something unexpected, raise
+                raise
 
         # Start the proxy server
         try:
