@@ -454,6 +454,11 @@ class ProfileList(gtk.TreeView):
         """Saves the selected profile."""
         profile_obj = self._get_profile()
 
+        if profile_obj is None:
+            # AttributeError: 'NoneType' object has no attribute 'get_name'
+            # https://github.com/andresriancho/w3af/issues/11941
+            return
+
         if not self.w3af.mainwin.save_state_to_core(relaxedTarget=True):
             return
 
