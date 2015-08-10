@@ -109,10 +109,13 @@ class un_ssl(AuditPlugin):
             and relative_distance_boolean(insecure_response.get_body(),
                                           secure_response.get_body(),
                                           0.95):
-                desc = 'Secure content can be accessed using the insecure'\
-                       ' protocol HTTP. The vulnerable URLs are:'\
-                       ' "%s" - "%s" .'
-                desc = desc % (secure_uri, insecure_uri)
+
+                desc = ('Secure content can be accessed using the insecure'
+                        ' HTTP protocol. The vulnerable URLs used to verify'
+                        ' this vulnerability are:\n'
+                        ' - %s\n'
+                        ' - %s\n')
+                desc %= (secure_uri, insecure_uri)
 
                 response_ids = [insecure_response.id, secure_response.id]
 
@@ -121,8 +124,6 @@ class un_ssl(AuditPlugin):
                                  self.get_name(), freq)
 
                 self.kb_append(self, 'un_ssl', v)
-
-                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
                 # In most cases, when one resource is available, all are
                 # so we just stop searching for this vulnerability

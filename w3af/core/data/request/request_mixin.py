@@ -59,7 +59,7 @@ class RequestMixIn(object):
         """
         :return: request first line as sent to the wire.
         """
-        return u"%s %s HTTP/1.1%s" % (self.get_method(),
+        return u'%s %s HTTP/1.1%s' % (self.get_method(),
                                       self.get_uri().url_encode(),
                                       CRLF)
 
@@ -67,7 +67,7 @@ class RequestMixIn(object):
         """
         :return: A string with the head of the request
         """
-        return u"%s%s" % (self.get_request_line(),
+        return u'%s%s' % (self.get_request_line(),
                           self.dump_headers(ignore_headers=ignore_headers))
 
     def dump_headers(self, ignore_headers=()):
