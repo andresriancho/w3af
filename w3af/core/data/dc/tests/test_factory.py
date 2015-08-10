@@ -117,11 +117,11 @@ class TestDCFactory(unittest.TestCase):
 
     def test_dc_from_form_params_without_files_with_multipart_enctype(self):
         form_params = FormParameters()
-
+        form_params.set_method('POST')
         form_params.set_form_encoding('multipart/form-data')
         form_params.add_field_by_attr_items([('name', 'a'),
-                               ('type', 'text'),
-                               ('value', 'bcd')])
+                                             ('type', 'text'),
+                                             ('value', 'bcd')])
 
         mpdc = dc_from_form_params(form_params)
 
