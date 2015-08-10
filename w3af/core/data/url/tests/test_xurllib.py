@@ -276,6 +276,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(resp.get_body(), Ok200Handler.body)
 
     @attr('internet')
+    @attr('ci_fails')
     def test_ssl_sni(self):
         """
         Test is our HTTP client supports SSL SNI
