@@ -104,3 +104,43 @@ def get_plugin_list(scan_id, plugin_type):
             'description': " ".join(w3af.plugins.get_plugin_type_desc(
                 plugin_type).split()),
             'entries': w3af.plugins.get_plugin_list(plugin_type) })
+
+
+@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/<string:plugin>/',
+           methods=['GET'])
+@requires_auth
+@check_session_exists
+def get_plugin_config(**kwargs):
+    """
+    Shows current configuration and help text for the named plugin.
+
+    :return: 404 if scan or plugin does not exist.
+             Otherwise, a JSON object containing settings and basic help text.
+    """
+    scan_id = kwargs['scan_id']
+    plugin_type = kwargs['plugin_type']
+    plugin = kwargs['plugin']
+
+    w3af = SCANS[scan_id].w3af_core
+    if plugin_type not in w3af.plugins.get_plugin_types():
+        return jsonify({ 'code': 404,
+                         'message': 'Plugin type %s not found' % plugin_type
+                      }), 404
+    opts = (
+        w3af.plugins.get_plugin_options(plugin_type, plugin) or
+        w3af.plugins.get_plugin_inst(plugin_type, plugin).get_options()
+        )
+    plugin_opts = { i.get_name():
+            { "value": i.get_value(),
+              "description": i.get_desc(),
+              "type": i.get_type(),
+              "help": i.get_help() }
+        for i in opts }
+
+    long_desc = " ".join(w3af.plugins.get_quick_instance(plugin_type, plugin)
+                         .get_long_desc().split())
+    enabled = plugin in w3af.plugins.get_enabled_plugins(plugin_type)
+
+    return jsonify({ 'configuration': plugin_opts,
+                     'description': long_desc,
+                     'enabled' : enabled })
