@@ -48,3 +48,17 @@ class SessionTest(APIUnitTest):
         self.assertEqual(get_plugin_list.status_code, 200)
         self.assertIsInstance(plugin_list, list)
 
+        plugin_opts = self.app.get(
+            '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
+            headers=self.HEADERS)
+        self.assertEqual(plugin_opts.status_code, 200)
+
+        desc = json.loads(plugin_opts.data)['description']
+        params = json.loads(plugin_opts.data)['configuration']
+        enabled = json.loads(plugin_opts.data)['enabled']
+
+        self.assertIsInstance(enabled, bool)
+        self.assertIsInstance(desc, unicode)
+        self.assertIn('passwdFile', params)
+        k,v = params.popitem()
+        self.assertIn('type', v)
