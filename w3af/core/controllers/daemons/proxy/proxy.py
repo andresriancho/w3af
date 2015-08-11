@@ -116,8 +116,8 @@ class Proxy(Process):
         # User configured parameters
         try:
             self._config = ProxyConfig(cadir=self._ca_certs,
-                                       ssl_version_client='all',
-                                       ssl_version_server='all',
+                                       ssl_version_client='SSLv23',
+                                       ssl_version_server='SSLv23',
                                        host=ip,
                                        port=port)
         except AttributeError as ae:
@@ -135,6 +135,12 @@ class Proxy(Process):
             else:
                 # Something unexpected, raise
                 raise
+
+        # Setting these options together with ssl_version_client and
+        # ssl_version_server set to SSLv23 means that the proxy will allow all
+        # types (including insecure) of SSL connections
+        self._config.openssl_options_client = None
+        self._config.openssl_options_server = None
 
         # Start the proxy server
         try:
