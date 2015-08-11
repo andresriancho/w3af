@@ -75,8 +75,14 @@ Example: use fast_scan /tmp/]]></body>
                <head>Save the current configuration to a profile.</head>
                <body><![CDATA[Syntax: save_as PROFILE_NAME                
 Example: save_as fast_scan
+Example: save_as fast_scan self-contained
 
-Please note that the save_as command will overwrite existing profiles.]]></body>
+Please note that the save_as command will overwrite existing profiles with the
+same name.
+
+When the "self-contained" flag is set the profile will bundle all files referenced
+by the plugin configurations. This is useful for sharing custom profiles between
+different workstations. Disabled by default.]]></body>
             </item>
         </category>
     </topic>

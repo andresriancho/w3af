@@ -278,7 +278,11 @@ class Info(dict):
             return
 
         if not DBVuln.is_valid_id(vulndb_id):
-            raise ValueError('Invalid vulnerability DB id: %s' % vulndb_id)
+            all_db_ids = DBVuln.get_all_db_ids()
+            msg = ('Invalid vulnerability DB id %s. There are %s entries in'
+                   ' the vulnerability database but none is the specified one.')
+            args = (vulndb_id, len(all_db_ids))
+            raise ValueError(msg % args)
 
         self._vulndb_id = vulndb_id
 

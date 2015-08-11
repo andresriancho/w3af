@@ -27,8 +27,8 @@ from w3af.core.data.kb.vuln_templates.sql_injection_template import SQLiTemplate
 
 class TestSQLMapShell(ReadExploitTest):
 
-    SQLI = get_sqlmap_testenv_http('/mysql/get_int.php?id=2')
-    BSQLI = get_sqlmap_testenv_http('/mysql/get_int_noerror.php?id=3')
+    SQLI = get_sqlmap_testenv_http('/sqlmap/mysql/get_int.php?id=2')
+    BSQLI = get_sqlmap_testenv_http('/sqlmap/mysql/get_int_noerror.php?id=3')
 
     _run_configs = {
         'sqli': {
@@ -95,7 +95,7 @@ class TestSQLMapShell(ReadExploitTest):
         sqlit = SQLiTemplate()
         
         options = sqlit.get_options()
-        path = '/mysql/get_int.php'
+        path = '/sqlmap/mysql/get_int.php'
         options['url'].set_value(get_sqlmap_testenv_http(path))
         options['data'].set_value('id=2')
         options['vulnerable_parameter'].set_value('id')

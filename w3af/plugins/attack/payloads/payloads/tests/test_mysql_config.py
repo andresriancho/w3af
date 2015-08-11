@@ -22,10 +22,10 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_mysql_config(PayloadTestHelper):
+class TestMySQLConfig(PayloadTestHelper):
 
     EXPECTED_RESULT = '/etc/mysql/my.cnf'
 
     def test_mysql_config(self):
         result = exec_payload(self.shell, 'mysql_config', use_api=True)
-        self.assertTrue(self.EXPECTED_RESULT in result)
+        self.assertNotIn(self.EXPECTED_RESULT, result)

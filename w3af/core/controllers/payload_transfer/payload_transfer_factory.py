@@ -75,12 +75,12 @@ class payload_transfer_factory(object):
             if not inbound_port:
                 inbound_port = self._es.get_inbound_port()
         except BaseFrameworkException, w3:
-            msg = 'The extrusion scan failed, no reverse connect transfer ' \
-                  'methods can be used. Trying inband echo transfer method.' \
-                  ' Error: "%s"'
+            msg = ('The extrusion scan failed, no reverse connect transfer '
+                   'methods can be used. Trying inband echo transfer method.'
+                   ' Error: "%s"')
             om.out.error(msg % w3)
         except Exception, e:
-            om.out.error('Unhandled exception: ' + str(e))
+            om.out.error('Unhandled exception: "%s"' % e)
         else:
             to_test.append(ReverseFTP(self._exec_method, os, inbound_port))
             if os == 'windows':
@@ -108,5 +108,8 @@ class payload_transfer_factory(object):
                 om.out.debug('%s *FAILED* to transfer a file to the'
                              ' compromised host.' % method)
 
-        raise BaseFrameworkException('Failed to transfer a file to the remote'
-                                     ' host! ALL the transfer methods failed.')
+        raise BaseFrameworkException('Failed to transfer the file to the remote'
+                                     ' host. All the transfer methods failed.'
+                                     ' See the debug log for more information'
+                                     ' and potential workarounds for this'
+                                     ' issue.')

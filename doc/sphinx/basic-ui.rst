@@ -1,5 +1,5 @@
 Running w3af
-------------
+============
 
 ``w3af`` has two user interfaces, the console user interface and the graphical
 user interface. This user guide will focus on the console user interface where
@@ -48,11 +48,17 @@ that commands are case sensitive):
     Configure the target URL.
     w3af>>>
 
-The main menu commands are explained in the help that is displayed above. The internals of every menu will be seen later in this document. As you already noticed, the ``help`` command can take a parameter, and if available, a detailed help for that command will be shown, e.g. ``help keys``.
+The main menu commands are explained in the help that is displayed above. The
+internals of every menu will be seen later in this document. As you already
+noticed, the ``help`` command can take a parameter, and if available, a detailed
+help for that command will be shown, e.g. ``help keys``.
 
-Other interesting things to notice about the console UI is the ability for tabbed completion (type 'plu' and then TAB) and the command history (after typing some commands, navigate the history with the up and down arrows).
+Other interesting things to notice about the console UI is the ability for
+tabbed completion (type 'plu' and then TAB) and the command history (after
+typing some commands, navigate the history with the up and down arrows).
 
-To enter a configuration menu, you just have to type it's name and hit enter, you will see how the prompt changes and you are now in that context:
+To enter a configuration menu, you just have to type it's name and hit enter,
+you will see how the prompt changes and you are now in that context:
 
 .. code-block:: none
 
@@ -100,7 +106,11 @@ Here is a usage example of these commands in the ``http-settings`` menu:
     w3af/config:http-settings>>> back
     w3af>>>
 
-To summarize, the ``view`` command is used to list all configurable parameters, with their values and a description. The ``set`` command is used to change a value. Finally we can execute ``back`` or press CTRL+C to return to the previous menu. A detailed help for every configuration parameter can be obtained using ``help parameter`` as shown in this example:
+To summarize, the ``view`` command is used to list all configurable parameters,
+with their values and a description. The ``set`` command is used to change a
+value. Finally we can execute ``back`` or press CTRL+C to return to the previous
+menu. A detailed help for every configuration parameter can be obtained using
+``help parameter`` as shown in this example:
 
 .. code-block:: none
 
@@ -112,9 +122,14 @@ To summarize, the ``view`` command is used to list all configurable parameters, 
     w3af/config:http-settings>>>
 
 
-The ``http-settings`` and the ``misc-settings`` configuration menus are used to set system wide parameters that are used by the framework. All the parameters have defaults and in most cases you can leave them as they are. ``w3af`` was designed in a way that allows beginners to run it without having to learn a lot of its internals.
+The ``http-settings`` and the ``misc-settings`` configuration menus are used to
+set system wide parameters that are used by the framework. All the parameters
+have defaults and in most cases you can leave them as they are. ``w3af`` was
+designed in a way that allows beginners to run it without having to learn a lot
+of its internals.
 
-It is also flexible enough to be tuned by experts that know what they want and need to change internal configuration parameters to fulfill their tasks.
+It is also flexible enough to be tuned by experts that know what they want and
+need to change internal configuration parameters to fulfill their tasks.
 
 Running w3af with GTK user interface
 ------------------------------------
@@ -125,11 +140,14 @@ The framework has also a graphical user interface that you can start by executin
 
     $ ./w3af_gui
 
-The graphical user interface allows you to perform all the actions that the framework offers and features a much easier and faster way to start a scan and analyze the results.
+The graphical user interface allows you to perform all the actions that the
+framework offers and features a much easier and faster way to start a scan and
+analyze the results.
 
 .. note::
 
-   The GUI has different third party dependencies and might require you to install extra OS and python packages.
+   The GUI has different third party dependencies and might require you to
+   install extra OS and python packages.
 
 Plugin configuration
 --------------------
@@ -158,7 +176,8 @@ The plugins are configured using the “plugins” configuration menu.
     |-----------------------------------------------------------------------------|
     w3af/plugins>>> 
 
-All plugins except the ``attack`` plugins can be configured within this menu. Lets list all the plugins of the ``audit`` type:
+All plugins except the ``attack`` plugins can be configured within this menu.
+Lets list all the plugins of the ``audit`` type:
 
 .. code-block:: none
 
@@ -172,7 +191,8 @@ All plugins except the ``attack`` plugins can be configured within this menu. Le
     | buffer_overflow    |        |      | Find buffer overflow vulnerabilities.  |
     ...
 
-To enable the ``xss`` and ``sqli`` plugins, and then verify that the command was understood by the framework, we issue this set of commands:
+To enable the ``xss`` and ``sqli`` plugins, and then verify that the command was
+understood by the framework, we issue this set of commands:
 
 .. code-block:: none
 
@@ -198,7 +218,8 @@ To enable the ``xss`` and ``sqli`` plugins, and then verify that the command was
     w3af/plugins>>>
 
 
-Or if the user is interested in knowing exactly what a plugin does, he can also run the ``desc`` command like this:
+Or if the user is interested in knowing exactly what a plugin does, he can also
+run the ``desc`` command like this:
 
 .. code-block:: none
 
@@ -235,13 +256,54 @@ Now we know what this plugin does, but let's check its internals:
     The configuration has been saved.
     w3af/plugins>>> 
 
-The configuration menus for the plugins also have the ``set`` command for changing the parameters values, and the ``view`` command for listing existing values. On the previous example we disabled persistent cross site scripting checks in the xss plugin.
+The configuration menus for the plugins also have the ``set`` command for
+changing the parameters values, and the ``view`` command for listing existing
+values. On the previous example we disabled persistent cross site scripting
+checks in the xss plugin.
 
+Saving the configuration
+------------------------
 
-Starting a scan
----------------
+Once the plugin and framework configuration is set, it is possible to save this
+information to a profile:
 
-After configuring all desired plugins the user has to set the target URL and finally start the scan. The target selection is done this way:
+.. code-block:: none
+
+    w3af>>> profiles
+    w3af/profiles>>> save_as tutorial
+    Profile saved.
+
+Profiles are saved as files in ``~/.w3af/profiles/``. The saved configuration
+can be loaded in order to run a new scan:
+
+.. code-block:: none
+
+    w3af>>> profiles
+    w3af/profiles>>> use fast_scan
+    The plugins configured by the scan profile have been enabled, and their options configured.
+    Please set the target URL(s) and start the scan.
+    w3af/profiles>>>
+
+Sharing a profile with another user might be problematic, since they include
+full paths to the files referenced by plugin configurations which would require
+users to share the profile, referenced files, and manually edit the profile to
+match the current environment. To solve this issue the ``self-contained`` flag
+was added:
+
+.. code-block:: none
+
+    w3af>>> profiles
+    w3af/profiles>>> save_as tutorial self-contained
+    Profile saved.
+
+A ``self-contained`` profile bundles all the referenced files inside the profile
+and can be easily shared with other users.
+
+Starting the scan
+-----------------
+
+After configuring all desired plugins the user has to set the target URL and
+finally start the scan. The target selection is done this way:
 
 .. code-block:: none
 
@@ -256,7 +318,8 @@ Finally, run ``start`` in order to run all the configured plugins.
 
     w3af>>> start
 
-At any time during the scan, you can hit ``<enter>`` in order to get a live status of the w3af core. Status lines look like this:
+At any time during the scan, you can hit ``<enter>`` in order to get a live
+status of the w3af core. Status lines look like this:
 
 .. code-block:: none
 

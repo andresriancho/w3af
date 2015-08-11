@@ -28,6 +28,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.multipart_container import MultipartContainer
 
@@ -185,3 +186,28 @@ class TestMultipartContainer(unittest.TestCase):
         self.assertIsNotNone(dc.get_token())
         self.assertIsNotNone(dc_copy.get_token())
         self.assertEqual(dc_copy.get_token().get_name(), 'a')
+
+    def test_store_in_disk_set(self):
+        boundary, post_data = multipart_encode([('a', 'bcd'), ], [])
+        multipart_boundary = MultipartContainer.MULTIPART_HEADER
+
+        headers = Headers([('content-length', str(len(post_data))),
+                           ('content-type', multipart_boundary % boundary)])
+
+        dc = MultipartContainer.from_postdata(headers, post_data)
+
+        dc.set_token(('a', 0))
+
+        disk_set = DiskSet()
+        disk_set.add(dc)
+
+        dc_read = disk_set[0]
+
+        # These are different objects
+        self.assertIsNot(dc_read, dc)
+
+        # But they hold the same data
+        self.assertEqual(dc.get_token(), dc_read.get_token())
+        self.assertIsNotNone(dc.get_token())
+        self.assertIsNotNone(dc_read.get_token())
+        self.assertEqual(dc_read.get_token().get_name(), 'a')

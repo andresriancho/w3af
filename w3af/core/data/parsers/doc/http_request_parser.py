@@ -135,15 +135,19 @@ def http_request_parser(head, postdata):
     # Now we parse the headers (easy!) and finally we send the request
     headers_str = split_head[1:]
     headers_inst = Headers()
+
     for header in headers_str:
         one_split_header = header.split(':', 1)
         if len(one_split_header) == 1:
-            msg = 'The HTTP request has an invalid header: "%s".'
+            msg = ('The HTTP request has an invalid header which does not'
+                   ' contain the ":" separator: "%s"')
             raise BaseFrameworkException(msg % header)
 
         header_name = one_split_header[0].strip()
         header_value = one_split_header[1].strip()
+
         if header_name in headers_inst:
+            # Handle duplicated headers
             headers_inst[header_name] += ', ' + header_value
         else:
             headers_inst[header_name] = header_value

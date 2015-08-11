@@ -277,12 +277,12 @@ class ProxiedRequests(entries.RememberingWindow):
 
         self._prev_ip_port = new_port
         httpeditor = self.reqresp.request.get_view_by_id('HttpRawView')
-        httpeditor.set_show_line_numbers(
-            self.pref.get_value('editor', 'display_line_num'))
-        httpeditor.set_highlight_current_line(
-            self.pref.get_value('editor', 'highlight_current_line'))
-        httpeditor.set_highlight_syntax(
-            self.pref.get_value('editor', 'highlight_syntax'))
+        httpeditor.set_show_line_numbers(self.pref.get_value('editor',
+                                                             'display_line_num'))
+        httpeditor.set_highlight_current_line(self.pref.get_value('editor',
+                                                                  'highlight_current_line'))
+        httpeditor.set_highlight_syntax(self.pref.get_value('editor',
+                                                            'highlight_syntax'))
         httpeditor.set_wrap(self.pref.get_value('editor', 'wrap'))
         self.pref.save()
 

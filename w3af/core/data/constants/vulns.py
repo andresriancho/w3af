@@ -140,7 +140,7 @@ VULNS = {
          'Basic HTTP credentials': None,
          'Authentication without www-authenticate header': None,
          'NTLM authentication': None,
-         'HTTP Basic authentication': None,
+         'HTTP Basic authentication': 77,
          'Cookie without HttpOnly': 22,
          'Secure cookie over HTTP': None,
          'Secure flag missing in HTTPS cookie': 25,
@@ -186,7 +186,7 @@ VULNS = {
          'Malware identified': None,
          'Insecure password submission over HTTP': 49,
          'CSP vulnerability': None,
-         'Missing X-Content-Type-Options header': None,
+         'Missing X-Content-Type-Options header': 76,
          'Missing Strict Transport Security header': 19,
          'HTML5 WebSocket detected': None,
          'Insecure password form access over HTTP': 49,
@@ -229,7 +229,7 @@ VULNS = {
          'MS15-034': None,
          
          # Bruteforce
-         'Guessable credentials': None,
+         'Guessable credentials': 75,
 
          # Attack
          'DAV Misconfiguration': 23,

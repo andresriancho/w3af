@@ -66,34 +66,6 @@ exit
 
 
 class TestStrategy(PluginTest):
-    target_url = get_moth_http('/audit/sql_injection/'
-                               'where_string_single_qs.py?uname=pablo')
-
-    _run_configs = {
-        'cfg': {
-            'target': target_url,
-            'plugins': {
-                'audit': (PluginConfig('sqli'),),
-            }
-        }
-    }
-
-    @attr('smoke')
-    @attr('moth')
-    def test_same_fr_set_object(self):
-        cfg = self._run_configs['cfg']
-
-        id_before_fr = id(self.kb.get_all_known_fuzzable_requests())
-        id_before_ur = id(self.kb.get_all_known_urls())
-        
-        self._scan(cfg['target'], cfg['plugins'])
-        
-        id_after_fr = id(self.kb.get_all_known_fuzzable_requests())
-        id_after_ur = id(self.kb.get_all_known_urls())
-
-        self.assertEquals(id_before_fr, id_after_fr)
-        self.assertEquals(id_before_ur, id_after_ur)
-
     def setUp(self):
         super(TestStrategy, self).setUp()
 
@@ -134,11 +106,11 @@ class TestStrategy(PluginTest):
 
             p = subprocess.Popen([python_executable, 'w3af_console',
                                   '-n', '-s', SCRIPT_PATH],
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  stdin=subprocess.PIPE,
-                                  shell=False,
-                                  universal_newlines=True)
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 stdin=subprocess.PIPE,
+                                 shell=False,
+                                 universal_newlines=True)
 
             stdout, stderr = p.communicate()
             i_vuln_count = stdout.count(VULN_STRING)
@@ -154,3 +126,33 @@ class TestStrategy(PluginTest):
                 self.assertEqual(found_vulns, previous_found)
 
             all_previous_vulns.append(found_vulns)
+
+
+class TestSameFuzzableRequestSet(PluginTest):
+    target_url = get_moth_http('/audit/sql_injection/'
+                               'where_string_single_qs.py?uname=pablo')
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'audit': (PluginConfig('sqli'),),
+            }
+        }
+    }
+
+    @attr('smoke')
+    @attr('moth')
+    def test_same_fr_set_object(self):
+        cfg = self._run_configs['cfg']
+
+        id_before_fr = id(self.kb.get_all_known_fuzzable_requests())
+        id_before_ur = id(self.kb.get_all_known_urls())
+
+        self._scan(cfg['target'], cfg['plugins'])
+
+        id_after_fr = id(self.kb.get_all_known_fuzzable_requests())
+        id_after_ur = id(self.kb.get_all_known_urls())
+
+        self.assertEquals(id_before_fr, id_after_fr)
+        self.assertEquals(id_before_ur, id_after_ur)

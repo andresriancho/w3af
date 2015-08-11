@@ -548,16 +548,17 @@ class MainApp(object):
     def save_state_to_core(self, relaxedTarget=False):
         """Save the actual state to the core.
 
-        :param relaxedTarget: if True, return OK even if the target wasn't saved ok
+        :param relaxedTarget: if True, return OK even if the target wasn't
+                              successfully saved
         :return: True if all went ok
         """
         # Clear everything
-        for ptype in self.w3af.plugins.get_plugin_types():
-            self.w3af.plugins.set_plugins([], ptype)
+        for plugin_type in self.w3af.plugins.get_plugin_types():
+            self.w3af.plugins.set_plugins([], plugin_type)
 
         # save the activated plugins
-        for ptype, plugins in self.pcbody.get_activated_plugins():
-            self.w3af.plugins.set_plugins(plugins, ptype)
+        for plugin_type, plugins in self.pcbody.get_activated_plugins():
+            self.w3af.plugins.set_plugins(plugins, plugin_type)
 
         # save the URL, the rest of the options are saved in the "Advanced"
         # dialog
@@ -584,9 +585,8 @@ class MainApp(object):
         return True
 
     def _scan_start(self):
-        """Starts the actual scanning.
-
-        :param widget: the widget that generated the signal.
+        """
+        Starts the actual scanning
         """
         if not self.save_state_to_core():
             return

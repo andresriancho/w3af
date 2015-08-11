@@ -22,9 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import codecs
 import shutil
+import string
 import ConfigParser
 
-from w3af.core.controllers.core_helpers.target import w3af_core_target
+from w3af.core.controllers.core_helpers.target import CoreTarget
 from w3af.core.controllers.misc.factory import factory
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.data.constants.encodings import UTF8
@@ -136,6 +137,18 @@ class profile(object):
         msg = 'The profile "%s" wasn\'t found.'
         raise BaseFrameworkException(msg % profile_name)
 
+    @staticmethod
+    def is_valid_profile_name(profile_name):
+        valid = string.ascii_letters + string.digits + '_-'
+
+        for char in profile_name:
+            if char not in valid:
+                msg = ('Invalid profile name. Allowed characters are '
+                       ' letters, digits, _ and - .')
+                raise BaseFrameworkException(msg)
+
+        return True
+
     def get_profile_paths(self, workdir):
         """
         :param workdir: The working directory
@@ -244,7 +257,8 @@ class profile(object):
                     res.append(name)
         return res
 
-    def set_plugin_options(self, plugin_type, plugin_name, options):
+    def set_plugin_options(self, plugin_type, plugin_name, options,
+                           self_contained=False):
         """
         Set the plugin options.
         :param plugin_type: 'audit', 'output', etc.
@@ -252,13 +266,16 @@ class profile(object):
         :param options: an OptionList
         :return: None
         """
-        section = plugin_type + "." + plugin_name
+        section = '%s.%s' % (plugin_type, plugin_name)
         if section not in self._config.sections():
             self._config.add_section(section)
 
         for option in options:
-            self._config.set(section, option.get_name(),
-                             option.get_value_for_profile())
+            value = option.get_value_for_profile(self_contained=self_contained)
+
+            self._config.set(section,
+                             option.get_name(),
+                             value)
 
     def get_plugin_options(self, plugin_type, plugin_name):
         """
@@ -410,7 +427,7 @@ class profile(object):
                  target_framework, etc.)
         """
         # Get the plugin defaults with their types
-        target_instance = w3af_core_target()
+        target_instance = CoreTarget()
         options = target_instance.get_options()
 
         for section in self._config.sections():

@@ -22,9 +22,9 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_hosts(PayloadTestHelper):
+class TestHosts(PayloadTestHelper):
 
-    EXPECTED_RESULT = ['/etc/hosts', '/etc/hosts.deny', '/etc/hosts.allow']
+    EXPECTED_RESULT = ['/etc/hosts']
 
     def test_hosts(self):
         result = exec_payload(self.shell, 'hosts', use_api=True)

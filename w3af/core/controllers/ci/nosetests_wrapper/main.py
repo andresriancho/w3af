@@ -18,6 +18,7 @@ from w3af.core.controllers.ci.nosetests_wrapper.utils.nosetests import run_noset
 from w3af.core.controllers.ci.nosetests_wrapper.utils.test_stats import (get_all_tests,
                                                                          get_run_tests,
                                                                          get_test_ids,
+                                                                         save_noseids_as_json,
                                                                          get_ignored_tests)
 from w3af.core.controllers.ci.nosetests_wrapper.constants import (LOG_FILE,
                                                                   MAX_WORKERS,
@@ -47,6 +48,7 @@ def nose_strategy():
     :return: A list with the nosetests commands to run.
     """
     test_ids = get_test_ids(NOSE_RUN_SELECTOR)
+    save_noseids_as_json()
     
     for tests_to_run in zip(*[iter(test_ids)]*CHUNK_SIZE):
         

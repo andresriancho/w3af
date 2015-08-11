@@ -21,15 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.data.kb.config as cf
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.ci.php_moth import get_php_moth_http
 
 
 class PayloadTestHelperExec(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/rfi/vulnerable.php?file=section.php'
+    target_rce = get_php_moth_http('/audit/rfi/rfi-rce.php')
 
     _run_configs = {
         'cfg': {
-            'target': target_url,
+            'target': target_rce + '?file=section.php',
             'plugins': {
                 'audit': (PluginConfig('rfi'),),
             }
@@ -38,7 +39,8 @@ class PayloadTestHelperExec(PluginTest):
 
     def _scan_wrapper(self):
         """
-        :return: Run the scan and return the vulnerability itself and the vuln_id.
+        :return: Run the scan and return the vulnerability itself and the
+                 vuln_id.
         """
         # Run the scan
         cfg = self._run_configs['cfg']

@@ -1,0 +1,55 @@
+moth:
+  image: andresriancho/django-moth:latest
+  ports:
+    - "8000:8000"
+    - "8001:8001"
+
+
+wivet:
+  image: andresriancho/wivet:latest
+  ports:
+    - "8899:80"
+
+
+phpmoth:
+  image: andresriancho/php-moth:latest
+  ports:
+    - "9009:80"
+
+
+#
+# testenv
+#
+
+mydb:
+  image: mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=testpass
+
+
+testenv:
+  image: andresriancho/testenv:latest
+  ports:
+    - "8998:80"
+  links:
+    - mydb
+  environment:
+    - APACHE_RUN_USER=www-data
+    - APACHE_RUN_GROUP=www-data
+    - APACHE_LOG_DIR=/var/log/apache2/
+
+
+#
+# WAVSEP
+#
+wavsep:
+  image: andresriancho/pico-wavsep:latest
+  ports:
+    - "8098:8080"
+  links:
+    - wavsepdb
+
+wavsepdb:
+  image: mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=wavsep

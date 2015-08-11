@@ -33,7 +33,8 @@ from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import (BaseFrameworkException,
+                                              NoSuchTableException)
 
 
 class html_comments(GrepPlugin):
@@ -68,6 +69,7 @@ class html_comments(GrepPlugin):
         # Internal variables
         self._comments = DiskDict(table_prefix='html_comments')
         self._already_reported = ScalableBloomFilter()
+        self._end_was_called = False
 
     def grep(self, request, response):
         """
@@ -150,6 +152,34 @@ class html_comments(GrepPlugin):
         om.out.information(i.get_desc())
         self._already_reported.add((comment, response.get_url()))
 
+    def _handle_no_such_table(self, comment, response, nste):
+        """
+        I had a lot of issues trying to reproduce [0], so this code is just
+        a helper for me to identify the root cause.
+
+        [0] https://github.com/andresriancho/w3af/issues/10849
+
+        :param nste: The original exception
+        :param comment: The comment we're analyzing
+        :param response: The HTTP response
+        :return: None, an exception with more information is re-raised
+        """
+        msg = ('A NoSuchTableException was raised by the DBMS. This issue is'
+               ' related with #10849 , but since I was unable to reproduce'
+               ' it, extra debug information is added to the exception:'
+               '\n'
+               '\n - Grep plugin end() was called: %s'
+               '\n - Response ID is: %s'
+               '\n - HTML comment is: "%s"'
+               '\n - Original exception: "%s"'
+               '\n\n'
+               'https://github.com/andresriancho/w3af/issues/10849\n')
+        args = (self._end_was_called,
+                response.get_id(),
+                comment,
+                nste)
+        raise NoSuchTableException(msg % args)
+
     def _is_new(self, comment, response):
         """
         Make sure that we perform a thread safe check on the self._comments
@@ -158,7 +188,11 @@ class html_comments(GrepPlugin):
         with self._plugin_lock:
             
             #pylint: disable=E1103
-            comment_data = self._comments.get(comment, None)
+            try:
+                comment_data = self._comments.get(comment, None)
+            except NoSuchTableException, nste:
+                self._handle_no_such_table(comment, response, nste)
+
             response_url = response.get_url()
 
             if comment_data is None:
@@ -201,6 +235,7 @@ class html_comments(GrepPlugin):
             for i in sorted(inform):
                 om.out.information(i)
 
+        self._end_was_called = True
         self._comments.cleanup()
 
     def get_long_desc(self):

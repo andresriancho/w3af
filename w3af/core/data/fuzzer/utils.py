@@ -48,17 +48,14 @@ def rand_number(length=0, exclude_numbers=()):
 
     :return: A random string only composed by numbers.
     """
-    max_tries = 100
-    while True:
+    _digits = digits[:]
+    for excluded_number in set(exclude_numbers):
+        _digits = _digits.replace(str(excluded_number), '')
 
-        ru = ''.join(choice(digits) for _ in xrange(length or randint(10, 30)))
-        if int(ru) not in exclude_numbers:
-            return ru
+    if not _digits:
+        raise ValueError('Failed return random number.')
 
-        max_tries -= 1
-        if max_tries == 0:
-            raise ValueError('Failed return random number.')
-
+    ru = ''.join(choice(_digits) for _ in xrange(length or randint(10, 30)))
     return ru
 
 

@@ -43,6 +43,11 @@ from w3af.core.ui.gui.export_request import export_request
 from w3af.core.ui.gui import helpers
 
 
+SIGSEV_ERROR = ('We caught a segmentation fault! Please report this bug'
+                ' following the instructions at'
+                ' http://docs.w3af.org/en/latest/report-a-bug.html')
+
+
 def sigsegv_handler(signum, frame):
     #
     # Might be a good idea to use https://pypi.python.org/pypi/faulthandler/
@@ -52,10 +57,12 @@ def sigsegv_handler(signum, frame):
     #
     # https://github.com/andresriancho/w3af/issues/1850
     # https://github.com/andresriancho/w3af/issues/1899
+    # https://github.com/andresriancho/w3af/issues/10931
     #
-    print('We caught a segmentation fault! Please report this bug to the'
-          ' w3af-develop mailing list, providing details on how to reproduce'
-          ' the issue in our environment.')
+    # Since python is "broken" inside this signal handler, the error string is
+    # pre-allocated in memory
+    #
+    print(SIGSEV_ERROR)
 
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 
@@ -398,7 +405,7 @@ class RequestPart(RequestResponsePart):
     def __init__(self, parent, w3af, enableWidget=[], editable=False,
                  widgname='default'):
         RequestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
-                                     widgname=widgname + "request")
+                                     widgname=widgname + 'request')
 
         self.raw_view = HttpRawView(w3af, self, editable)
         self.add_view(self.raw_view)

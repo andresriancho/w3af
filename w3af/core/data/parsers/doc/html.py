@@ -165,10 +165,10 @@ class HTMLParser(SGMLParser):
                 action = self._source_url
 
         # Create the form object and store everything for later use
-        form_params = FormParameters(encoding=self._encoding)
-        form_params.set_method(method)
-        form_params.set_action(action)
-        form_params.set_form_encoding(form_encoding)
+        form_params = FormParameters(encoding=self._encoding,
+                                     method=method,
+                                     action=action,
+                                     form_encoding=form_encoding)
         form_params.set_autocomplete(autocomplete)
 
         self._forms.append(form_params)

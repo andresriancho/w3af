@@ -1,22 +1,36 @@
 import os
 import multiprocessing
 
+from w3af.core.controllers.ci.detect import is_running_on_ci
+
 
 ARTIFACT_DIR = os.environ.get('CIRCLE_ARTIFACTS', '/tmp/')
 LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 
 # How many nosetests commands to run at the same time
-MAX_WORKERS = multiprocessing.cpu_count()
+#
+# At CircleCI I've got 32 cores to use, but don't want to use them all with
+# nosetests (other important stuff like docker is running too), so I set a fixed
+# value
+if is_running_on_ci():
+    MAX_WORKERS = 10
+else:
+    MAX_WORKERS = max(multiprocessing.cpu_count() - 1, 2)
+
 # How many tests to send to each process
-CHUNK_SIZE = 25
+#
+# Usually lower numbers are better here. A high chunk size will usually lead to
+# larger delays.
+CHUNK_SIZE = 3
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
+JSON_ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.json')
 
 NOSETESTS = 'nosetests'
 # Not using code coverage (--with-cov --cov-report=xml) due to:
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory
-NOSE_PARAMS = '--with-yanc --with-doctest --doctest-tests --with-xunit'\
+NOSE_PARAMS = '--with-timer --with-doctest --doctest-tests --with-xunit'\
               ' -v --xunit-file=%%s --with-id --id-file=%s' % ID_FILE
 # One test can't run for more than this amount of seconds
 NOSE_TIMEOUT = 60 * 8
@@ -32,8 +46,7 @@ NOSE_XUNIT_EXT = 'xml'
 NOSE_RUN_SELECTOR = 'not ci_fails and not fails and not ci_ignore'
 NOSE_IGNORE_SELECTOR = 'ci_fails or fails or ci_ignore'
 
-NOISE = [
-         # Related with xvfb not having the randr extension
+NOISE = [# Related with xvfb not having the randr extension
          'Xlib:  extension "RANDR" missing on display ":99".',
 
          # Related with scapy, we're not root, tcpdump is not available

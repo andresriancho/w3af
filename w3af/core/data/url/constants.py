@@ -16,8 +16,8 @@ MAX_HTTP_RETRIES = 2
 # to access if you don't have IE (mostly ASP.NET applications do this). So now
 # we use the following user-agent string in w3af:
 #
-USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'\
-             ' Trident/4.0; w3af.org)'
+USER_AGENT = ('Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'
+              ' Trident/4.0; w3af.org)')
 
 # The error rate is multiplied by SOCKET_ERROR_DELAY to get the real delay time
 # in seconds.

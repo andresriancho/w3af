@@ -24,6 +24,7 @@ import textwrap
 import w3af.plugins.attack.payloads.payload_handler as payload_handler
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.intrusion_tools.execMethodHelpers import os_detection_exec
 from w3af.core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
 from w3af.core.data.kb.shell import Shell
@@ -145,16 +146,19 @@ class ExecShell(Shell):
         """
         if not self._transfer_handler:
             # Get the fastest transfer method
-            ptf = payload_transfer_factory(self.execute)
-            self._transfer_handler = ptf.get_transfer_handler()
+            try:
+                ptf = payload_transfer_factory(self.execute)
+                self._transfer_handler = ptf.get_transfer_handler()
+            except BaseFrameworkException, e:
+                return '%s' % e
 
         if not self._transfer_handler.can_transfer():
             return 'Failed to transfer, the transfer handler failed.'
         else:
-            estimatedTime = self._transfer_handler.estimate_transfer_time(
-                len(file_content))
-            om.out.debug('The file transfer will take "' + str(
-                estimatedTime) + '" seconds.')
+            msg = 'The file transfer will take %s seconds'
+            handler = self._transfer_handler
+            estimated_time = handler.estimate_transfer_time(len(file_content))
+            om.out.debug(msg % estimated_time)
 
             self._transfer_handler.transfer(file_content, remote_filename)
             om.out.debug('Finished file transfer.')

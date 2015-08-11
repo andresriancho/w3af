@@ -94,11 +94,11 @@ class xss(AuditPlugin):
         desc = desc % mutant.found_at()
         
         if csp_protects:
-            desc += 'The risk associated with this vulnerability was lowered'\
-                    ' because the site correctly implements CSP. The'\
-                    ' vulnerability is still a risk for the application since'\
-                    ' only the latest versions of some browsers implement CSP'\
-                    ' checking.'
+            desc += ('The risk associated with this vulnerability was lowered'
+                     ' because the site correctly implements CSP. The'
+                     ' vulnerability is still a risk for the application since'
+                     ' only the latest versions of some browsers implement CSP'
+                     ' checking.')
         
         v = Vuln.from_mutant('Cross site scripting vulnerability', desc,
                              vuln_severity, response.id, self.get_name(),
