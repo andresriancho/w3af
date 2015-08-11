@@ -126,6 +126,13 @@ def get_plugin_config(**kwargs):
         return jsonify({ 'code': 404,
                          'message': 'Plugin type %s not found' % plugin_type
                       }), 404
+    if plugin not in w3af.plugins.get_plugin_list(plugin_type):
+        return jsonify({
+            'code': 404,
+            'message': 'Plugin %s not found in list of %s plugins' % (plugin,
+                                                                      plugin_type)
+             }), 404
+
     opts = (
         w3af.plugins.get_plugin_options(plugin_type, plugin) or
         w3af.plugins.get_plugin_inst(plugin_type, plugin).get_options()
