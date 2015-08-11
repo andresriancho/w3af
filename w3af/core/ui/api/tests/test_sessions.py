@@ -62,3 +62,16 @@ class SessionTest(APIUnitTest):
         self.assertIn('passwdFile', params)
         k,v = params.popitem()
         self.assertIn('type', v)
+
+        test_404s = [
+            '/sessions/999',
+            '/sessions/%s/plugins/this_should_404/' % session_id,
+            '/sessions/%s/plugins/audit/this_should_also_404/' % session_id,
+            ]
+
+        for endpoint in test_404s:
+            should_404 = self.app.get(endpoint,
+                                       headers=self.HEADERS)
+            code = json.loads(should_404.data)['code']
+            self.assertEqual(code, 404)
+            self.assertEqual(should_404.status_code, 404)
