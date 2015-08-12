@@ -99,11 +99,8 @@ class CoreTarget(Configurable):
         :return: None. A BaseFrameworkException is raised on error.
         """
         protocol = target_url.get_protocol()
-        
         is_file = file_target and protocol == 'file'
-        
-        is_http = protocol in ('http', 'https') and \
-                  target_url.is_valid_domain()
+        is_http = protocol in ('http', 'https') and target_url.is_valid_domain()
                 
         if not is_file and not is_http:
             msg = ('Invalid format for target URL "%s", you have to specify '
@@ -127,7 +124,7 @@ class CoreTarget(Configurable):
 
             self._verify_url(target_url)
 
-            if not target_url.url_string.count('file:///'):
+            if not target_url.url_string.startswith('file:///'):
                 # It's a common URL just like http://w3af.com/
                 target_urls.append(target_url)
                 
@@ -136,7 +133,7 @@ class CoreTarget(Configurable):
                     f = urllib2.urlopen(target_url.url_string)
                 except:
                     msg = 'Cannot open target file: "%s"'
-                    raise BaseFrameworkException(msg % str(target_url))
+                    raise BaseFrameworkException(msg % target_url)
                 else:
                     for line in f:
                         target_in_file = line.strip()
@@ -149,9 +146,24 @@ class CoreTarget(Configurable):
                         if target_in_file.startswith('#'):
                             continue
 
-                        target_in_file_inst = URL(target_in_file)
+                        try:
+                            target_in_file_inst = URL(target_in_file)
+                        except ValueError as ve:
+                            # The URLs specified inside the file might be
+                            # invalid, and the pieces of code which consume
+                            # this method only handle BaseFrameworkException
+                            #
+                            # https://github.com/andresriancho/w3af/issues/12006
+                            #
+                            msg = ('The target URL "%s" specified inside the'
+                                   ' target file "%s" is invalid: "%s"')
+                            args = (target_in_file, target_url, ve)
+                            raise BaseFrameworkException(msg % args)
+
+                        # Some more validation before we're done...
                         self._verify_url(target_in_file_inst, file_target=False)
                         target_urls.append(target_in_file_inst)
+
                     f.close()
 
         return target_urls
