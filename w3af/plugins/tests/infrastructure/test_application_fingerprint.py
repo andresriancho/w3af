@@ -1,5 +1,5 @@
 """
-test_webapp_detection.py
+test_application_fingerprint.py
 
 Copyright 2015 Piotr Lizonczyk
 
