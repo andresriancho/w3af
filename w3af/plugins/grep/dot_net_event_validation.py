@@ -23,6 +23,7 @@ import re
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class dot_net_event_validation(GrepPlugin):
@@ -67,12 +68,15 @@ class dot_net_event_validation(GrepPlugin):
                     ' programming/configuration error should be manually'
                     ' verified.')
             desc %= response.get_url()
+
             i = Info('.NET Event Validation is disabled', desc, response.id,
                      self.get_name())
             i.set_url(response.get_url())
             i.add_to_highlight(viewstate_mo.group())
+            i[EVDisabledInfoSet.ITAG] = response.get_url().get_domain()
 
-            self.kb_append(self, 'dot_net_event_validation', i)
+            self.kb_append_uniq_group(self, self.get_name(), i,
+                                      group_klass=EVDisabledInfoSet)
 
         if not self._encryptedVs.search(response.get_body()):
             # Nice! We can decode the viewstate! =)
@@ -84,8 +88,10 @@ class dot_net_event_validation(GrepPlugin):
             i = Info('.NET ViewState encryption is disabled', desc, response.id,
                      self.get_name())
             i.set_url(response.get_url())
+            i[EVClearTextInfoSet.ITAG] = response.get_url().get_domain()
 
-            self.kb_append(self, 'dot_net_event_validation', i)
+            self.kb_append_uniq_group(self, self.get_name(), i,
+                                      group_klass=EVClearTextInfoSet)
 
     def get_long_desc(self):
         """
@@ -103,3 +109,31 @@ class dot_net_event_validation(GrepPlugin):
         is disabled, you'll be able to bypass authorizations or some other
         controls.
         """
+
+
+class EVDisabledInfoSet(InfoSet):
+    ITAG = 'domain'
+    TEMPLATE = (
+        'The application contains {{ uris|length }} unique URLs which have'
+        ' .NET Event Validation disabled. This programming / configuration'
+        ' error should be manually verified. The first {{ uris|sample_count }}'
+        ' vulnerable URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
+
+
+class EVClearTextInfoSet(InfoSet):
+    ITAG = 'domain'
+    TEMPLATE = (
+        'The application contains {{ uris|length }} unique URLs with .NET'
+        ' ViewState encryption disabled. This programming / configuration error'
+        ' can be exploited to decode and inspect the ViewState contents.'
+        ' The first {{ uris|sample_count }} vulnerable URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
