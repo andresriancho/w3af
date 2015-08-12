@@ -37,7 +37,7 @@ from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance
 
 class generic(AuditPlugin):
     """
-    Find all kind of bugs without using a fixed database of errors.
+    Find all kind of bugs without using a fixed error database.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
@@ -54,7 +54,7 @@ class generic(AuditPlugin):
 
     def audit(self, freq, orig_response):
         """
-        Find all kind of bugs without using a fixed database of errors.
+        Find all kind of "generic" bugs without using a fixed error database
 
         :param freq: A FuzzableRequest
         """
@@ -93,8 +93,10 @@ class generic(AuditPlugin):
                 error_response = self._uri_opener.send_mutant(m)
 
                 # Now I compare responses
-                self._analyze_responses(orig_response, limit_response,
-                                        error_response, m)
+                self._analyze_responses(orig_response,
+                                        limit_response,
+                                        error_response,
+                                        m)
 
     def _analyze_responses(self, orig_resp, limit_response, error_response, mutant):
         """
@@ -160,9 +162,9 @@ class generic(AuditPlugin):
                 if info.get_token_name() == variable and info.get_url() == url:
                     break
             else:
-                desc = 'An unhandled error, which could potentially translate' \
-                       ' to a vulnerability, was found at: %s'
-                desc = desc % mutant.found_at()
+                desc = ('An unhandled error, which could potentially translate'
+                        ' to a vulnerability, was found at: %s')
+                desc %= mutant.found_at()
                 
                 v = Vuln.from_mutant('Unhandled error in web application', desc,
                                      severity.LOW, id_list, self.get_name(),
@@ -170,7 +172,7 @@ class generic(AuditPlugin):
         
                 self.kb_append_uniq(self, 'generic', v)
         
-        self._potential_vulns.cleanup()        
+        self._potential_vulns.cleanup()
                 
     def get_options(self):
         """
@@ -178,8 +180,8 @@ class generic(AuditPlugin):
         """
         ol = OptionList()
 
-        d = 'If two strings have a diff ratio less than diff_ratio, then they'\
-            '  are really different.'
+        d = ('If two strings have a diff ratio less than diff_ratio, then they'
+             '  are really different.')
         o = opt_factory('diff_ratio', self._diff_ratio, d, 'float')
         ol.add(o)
 
