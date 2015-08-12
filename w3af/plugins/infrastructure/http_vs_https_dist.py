@@ -33,9 +33,9 @@ from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.data.kb.info import Info
 
 
-PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_" \
-                 "https_dist. It seems that the user running the w3af process" \
-                 " has not enough privileges."
+PERM_ERROR_MSG = ("w3af won't be able to run plugin infrastructure.http_vs_"
+                  "https_dist. It seems that the user running the w3af process"
+                  " has not enough privileges.")
 
 
 class http_vs_https_dist(InfrastructurePlugin):
@@ -152,8 +152,13 @@ class http_vs_https_dist(InfrastructurePlugin):
         """
         # Import things from scapy when I need them in order to reduce memory
         # usage (which is specially big in scapy module, just when importing)
-        from scapy.all import traceroute
-        from scapy.error import Scapy_Exception
+        try:
+            from scapy.all import traceroute
+            from scapy.error import Scapy_Exception
+        except socket.error:
+            # [Errno 1] Operation not permitted #12131
+            # https://github.com/andresriancho/w3af/issues/12131
+            return False
 
         try:
             traceroute('127.0.0.1', maxttl=1)
