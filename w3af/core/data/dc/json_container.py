@@ -113,7 +113,13 @@ class JSONContainer(DataContainer):
         return '<JSONContainer (token: %s)>' % self.get_token()
 
     def token_filter(self, token_path, token_value):
-        # Only return tokens for strings
+        """
+        Only return tokens for strings and None (which is null in JSON)
+        :see: https://github.com/andresriancho/w3af/issues/12000
+        """
+        if token_value is None:
+            return True
+
         if isinstance(token_value, basestring):
             return True
 
@@ -126,10 +132,11 @@ class JSONContainer(DataContainer):
                     * The value as a string
                     * The setter to modify the value
 
-                Only for the tokens which have a value with type "string",
-                this is required, since we don't want to fuzz something which
-                was a number with a string like "abc", it will simply break the
-                server-side framework parsing and don't return anything useful.
+                Only for the tokens which have a value with type "string" or
+                null, this is required, since we don't want to fuzz something
+                which was a number with a string like "abc", it will simply
+                break the server-side framework parsing and don't return
+                anything useful.
         """
         for key, val, setter in json_iter_setters(self._json):
 

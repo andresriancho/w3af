@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
+import types
 
 from w3af.core.data.dc.utils.token import DataToken
 
@@ -31,7 +32,7 @@ KEY_NUMBER = 'number'
 KEY_NULL = 'null'
 KEY_BOOLEAN = 'boolean'
 
-TO_WRAP_OBJS = (int, float, basestring)
+TO_WRAP_OBJS = (int, float, basestring, types.NoneType)
 
 
 def json_iter_setters(arbitrary_python_obj):

@@ -31,6 +31,7 @@ ARRAY = '["abc", 3, 2.1]'
 ARRAY_NULL = '["abc", null, null]'
 OBJECT = '{"key": "value", "second_key": "second_value"}'
 COMPLEX_OBJECT = '{"key": "value", "second_key": ["abc", 3, 2.1]}'
+OBJECT_NULL = '{"key": null}'
 
 
 class TestJSONContainer(unittest.TestCase):
@@ -46,6 +47,19 @@ class TestJSONContainer(unittest.TestCase):
 
         EXPECTED_TOKENS = [('object-second_key-list-0-string', 'abc'),
                            ('object-key-string', 'value')]
+        token_data = [(t.get_name(), t.get_value()) for dcc, t in dcc_tokens]
+        self.assertEqual(EXPECTED_TOKENS, token_data)
+
+    def test_object_null_value(self):
+        jcont = JSONContainer(OBJECT_NULL)
+        dcc_tokens = [(dcc, token) for dcc, token in jcont.iter_bound_tokens()]
+
+        for dcc, token in dcc_tokens:
+            self.assertIsInstance(dcc, JSONContainer)
+            self.assertIsInstance(token, DataToken)
+            self.assertIs(token, dcc.token)
+
+        EXPECTED_TOKENS = [('object-key-null', None)]
         token_data = [(t.get_name(), t.get_value()) for dcc, t in dcc_tokens]
         self.assertEqual(EXPECTED_TOKENS, token_data)
 
