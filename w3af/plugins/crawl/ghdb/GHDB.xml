@@ -1797,4 +1797,66 @@ Author:fidah.org
 </textualDescription></signature><signature><signatureReferenceNumber>4034</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4034/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;/certsrv&quot; intext:&quot;Select a task&quot;</querystring><shortDescription>inurl:&quot;/certsrv&quot; intext:&quot;Select a task&quot;</shortDescription><textualDescription>Microsoft Certificate Request Webpage.
 
 Author: Felipe Molina (@felmoltor)
-</textualDescription></signature></searchEngineSignature>
+</textualDescription></signature><signature><signatureReferenceNumber>4035</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4035/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:courier/web/ inurl:wmLogin.html filetype:html</querystring><shortDescription>inurl:courier/web/ inurl:wmLogin.html filetype:html</shortDescription><textualDescription>Identifies Accellion Secure File Transfer servers that may be vulnerable to
+https://community.rapid7.com/community/metasploit/blog/2015/07/10/r7-2015-08-accellion-file-transfer-appliance-vulnerabilities-cve-2015-2856-cve-2015-2857
+
+@lanmaster53
+
+</textualDescription></signature><signature><signatureReferenceNumber>4038</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4038/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:EndUserPortal.jsp</querystring><shortDescription>inurl:EndUserPortal.jsp</shortDescription><textualDescription>inurl:EndUserPortal.jsp 
+It takes you it brings up login pages for the service desk. 
+
+https://www.exploit-db.com/exploits/37667/
+
+Author: NumLock90
+</textualDescription></signature><signature><signatureReferenceNumber>4036</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4036/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:&quot;index.php&quot; intext:&quot;ApPHP Hotel Site&quot; -site:&quot;apphp.com&quot;</querystring><shortDescription>inurl:&quot;index.php&quot; intext:&quot;ApPHP Hotel Site&quot; -site:&quot;apphp.com&quot;</shortDescription><textualDescription>Dork Identifies the sites with ApPHP-Hotel-Site 3.x.x vulnerable to sql
+injection.
+
+https://packetstormsecurity.com/files/132369/ApPHP-Hotel-Site-3.x.x-SQL-Injection.html
+
+Regards,
+Karan Ramani
+</textualDescription></signature><signature><signatureReferenceNumber>4037</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4037/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=allinurl:awstats.pl ext:pl</querystring><shortDescription>allinurl:awstats.pl ext:pl</shortDescription><textualDescription>A lot of Panels with Statics Advanced. Enjoy.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>4039</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4039/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:wp-admin/admin-ajax.php inurl:wp-config.php</querystring><shortDescription>inurl:wp-admin/admin-ajax.php inurl:wp-config.php</shortDescription><textualDescription>The dork 'inurl:wp-admin/admin-ajax.php inurl:wp-config.php' finds the
+'wp-config.php' file.  It contains information about the database,
+including the name, host (typically localhost), username, and password.
+This information allows WordPress to communicate with the database to store
+and retrieve data (e.g. Posts, Users, Settings, etc).
+
+Name: Suyog Pawar.
+
+</textualDescription></signature><signature><signatureReferenceNumber>4040</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4040/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=intext:@pwcache &quot;parent directory&quot;</querystring><shortDescription>intext:@pwcache &quot;parent directory&quot;</shortDescription><textualDescription>
+intext:@pwcache &quot;parent directory&quot;
+
+Best regards,
+Adam Bedard
+</textualDescription></signature><signature><signatureReferenceNumber>4041</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4041/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;InterWorx-CP&quot; &quot;Forgot your password&quot;</querystring><shortDescription>intitle:&quot;InterWorx-CP&quot; &quot;Forgot your password&quot;</shortDescription><textualDescription>InterWorx Web Hosting Control Panel login pages.
+
+- Andy G - twitter.com/vxhex
+</textualDescription></signature><signature><signatureReferenceNumber>4042</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4042/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=site:.mil + inurl:login.aspx | .asp | .html | .php | .htm</querystring><shortDescription>site:.mil + inurl:login.aspx | .asp | .html | .php | .htm</shortDescription><textualDescription>*Google Search : site:.mil + inurl:login.aspx | .asp | .html | .php | .htm
+
+Zeel Chavda
+</textualDescription></signature><signature><signatureReferenceNumber>4043</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4043/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=allinurl:foldercontent.html?folder=</querystring><shortDescription>allinurl:foldercontent.html?folder=</shortDescription><textualDescription>Devices of NAS Iomega Cloud Services.
+Enjoy!!!.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>4044</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4044/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:/plugins/aviary-image-editor-add-on-for-gravity-forms/</querystring><shortDescription>inurl:/plugins/aviary-image-editor-add-on-for-gravity-forms/</shortDescription><textualDescription>www.exploit-db.com/exploits/37275/
+Dork: inurl:/plugins/aviary-image-editor-add-on-for-gravity-forms/
+
+
+sincerely,
+Zeel Chavda</textualDescription></signature><signature><signatureReferenceNumber>4045</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4045/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:/wp-content/plugins/inboundio-marketing/</querystring><shortDescription>inurl:/wp-content/plugins/inboundio-marketing/</shortDescription><textualDescription>https://www.exploit-db.com/exploits/36478/
+Google Dork : inurl:/wp-content/plugins/inboundio-marketing/
+
+
+sincerely,
+Zeel Chavda</textualDescription></signature><signature><signatureReferenceNumber>4046</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4046/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intext:index of sym</querystring><shortDescription>intext:index of sym</shortDescription><textualDescription>Dork: intext:index of sym
+
+Most of hacker use auto server symlink script and grab all the config file
+of the server. Most of the script create a folder that name is sym. All
+config file stored in this folder.
+
+
+Thank You
+Atik Rahman</textualDescription></signature><signature><signatureReferenceNumber>4047</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4047/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:&quot;Full path to a .htpasswd file in this dir:&quot; filetype:php</querystring><shortDescription>intext:&quot;Full path to a .htpasswd file in this dir:&quot; filetype:php</shortDescription><textualDescription>Files containing Juicy information from web online tools for generating .htpasswd and giving full web path .
+
+by - l1kw1d  		 	   		  </textualDescription></signature></searchEngineSignature>

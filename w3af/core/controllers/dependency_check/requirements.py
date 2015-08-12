@@ -39,8 +39,8 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('OpenSSL', 'pyOpenSSL', '0.15.1'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
-                     # We need 0.1.7 because of mitmproxy
-                     PIPDependency('pyasn1', 'pyasn1', '0.1.7'),
+                     # We need 0.1.8 because of mitmproxy
+                     PIPDependency('pyasn1', 'pyasn1', '0.1.8'),
 
                      PIPDependency('lxml', 'lxml', '3.4.4'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
@@ -59,7 +59,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('psutil', 'psutil', '2.2.1'),
 
                      # We "outsource" the HTTP proxy feature to mitmproxy
-                     PIPDependency('mitmproxy', 'mitmproxy', '0.12.1'),
+                     PIPDependency('mitmproxy', 'mitmproxy', '0.13'),
 
                      # https://gist.github.com/andresriancho/cf2fa1ce239b30f37bd9
                      PIPDependency('ruamel.ordereddict',

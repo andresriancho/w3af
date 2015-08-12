@@ -102,11 +102,11 @@ class cross_domain_js(GrepPlugin):
                     return
 
             to_highlight = script_tag.attrib.get('src')
-            desc = 'The URL: "%s" has a script tag with a source that points' \
-                   ' to a third party site ("%s"). This practice is not' \
-                   ' recommended, the security of the current site is being' \
-                   ' delegated to the external entity.'
-            desc = desc % (url, script_domain)
+            desc = ('The URL: "%s" has a script tag with a source that points'
+                    ' to a third party site ("%s"). This practice is not'
+                    ' recommended, the security of the current site is being'
+                    ' delegated to the external entity.')
+            desc %= (url, script_domain)
 
             i = Info('Cross-domain javascript source', desc,
                      response.id, self.get_name())

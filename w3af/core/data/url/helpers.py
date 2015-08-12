@@ -130,7 +130,7 @@ def get_exception_reason(error):
     """
     if isinstance(error, URLTimeoutError):
         # New exception type raised by keepalive handler
-        return error.message
+        return str(error)
 
     # Exceptions may be of type httplib.HTTPException or socket.error
     # We're interested on handling them in different ways

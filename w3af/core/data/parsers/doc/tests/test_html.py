@@ -24,12 +24,15 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.factory import dc_from_form_params
+from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.html import HTMLParser
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.tests.test_sgml import build_http_response
 from w3af.core.data.parsers.doc.tests.data.constants import *
+from w3af.core.data.parsers.utils.form_params import (FormParameters,
+                                                      DEFAULT_FORM_ENCODING)
 
 
 class RaiseHTMLParser(HTMLParser):
@@ -271,3 +274,45 @@ class TestHTMLParser(unittest.TestCase):
         p.parse()
 
         self.assertEquals([URL('http://w3af.com/foo.php')], p.references[1])
+
+    def test_tricky_multipart_get_form_11997(self):
+        body = """
+        <html>
+            <form action="" method="get" enctype="multipart/form-data">
+                <input type="text" name="test" value="тест">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 1)
+        form = p.forms[0]
+
+        self.assertEqual(form.get_method(), 'GET')
+        self.assertIsInstance(form, FormParameters)
+        self.assertEqual(form.get_form_encoding(), DEFAULT_FORM_ENCODING)
+
+    def test_form_with_invalid_enctype(self):
+        body = """
+        <html>
+            <form action="" method="get" enctype="ilove/bugs">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 1)
+        form = p.forms[0]
+
+        self.assertEqual(form.get_method(), 'GET')
+        self.assertIsInstance(form, FormParameters)
+        self.assertEqual(form.get_form_encoding(), 'ilove/bugs')
+
+        # But it translates to url-encoded form afterwards
+        dc = dc_from_form_params(form)
+        self.assertIsInstance(dc, URLEncodedForm)

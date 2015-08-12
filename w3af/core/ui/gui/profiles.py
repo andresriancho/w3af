@@ -349,8 +349,8 @@ class ProfileList(gtk.TreeView):
 
         return vals
 
-    def _getProfile(self):
-        """Gets the actual profile instance.
+    def _get_profile(self):
+        """Gets the current profile instance.
 
         :return: The profile instance for the actual cursor position.
         """
@@ -362,12 +362,12 @@ class ProfileList(gtk.TreeView):
         profile_obj = self.profile_instances[prfid]
         return profile_obj
 
-    def _getProfileName(self):
+    def _get_profile_name(self):
         """Gets the actual profile name.
 
         :return: The profile name for the actual cursor position.
         """
-        profile_obj = self._getProfile()
+        profile_obj = self._get_profile()
         if profile_obj is None:
             return None
 
@@ -375,8 +375,8 @@ class ProfileList(gtk.TreeView):
 
     def _use_profile(self, widget=None):
         """Uses the selected profile."""
-        profile_obj = self._getProfile()
-        profile_name = self._getProfileName()
+        profile_obj = self._get_profile()
+        profile_name = self._get_profile_name()
         if profile_name == self.selectedProfile:
             return
 
@@ -452,13 +452,20 @@ class ProfileList(gtk.TreeView):
 
     def save_profile(self, widget=None):
         """Saves the selected profile."""
-        profile_obj = self._getProfile()
+        profile_obj = self._get_profile()
+
+        if profile_obj is None:
+            # AttributeError: 'NoneType' object has no attribute 'get_name'
+            # https://github.com/andresriancho/w3af/issues/11941
+            return
+
         if not self.w3af.mainwin.save_state_to_core(relaxedTarget=True):
             return
+
         self.w3af.profiles.save_current_to_profile(profile_obj.get_name(),
                                                    prof_desc=profile_obj.get_desc(),
                                                    prof_path=profile_obj.get_profile_file())
-        self.w3af.mainwin.sb(_("Profile saved"))
+        self.w3af.mainwin.sb(_('Profile saved'))
         path = self.get_cursor()[0]
         row = self.liststore[path]
         row[0] = row[4]
@@ -469,8 +476,8 @@ class ProfileList(gtk.TreeView):
         if not self.w3af.mainwin.save_state_to_core(relaxedTarget=True):
             return
 
-        dlg = entries.EntryDialog(_(
-            "Save as..."), gtk.STOCK_SAVE_AS, [_("Name:"), _("Description:")])
+        dlg = entries.EntryDialog(_("Save as..."), gtk.STOCK_SAVE_AS,
+                                  [_("Name:"), _("Description:")])
         dlg.run()
         dlgResponse = dlg.inputtexts
         dlg.destroy()
@@ -514,7 +521,7 @@ class ProfileList(gtk.TreeView):
 
     def delete_profile(self, widget=None):
         """Deletes the selected profile."""
-        profile_obj = self._getProfile()
+        profile_obj = self._get_profile()
 
         msg = _("Do you really want to DELETE the profile '%s'?")
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,

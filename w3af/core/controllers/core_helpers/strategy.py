@@ -382,13 +382,24 @@ class CoreStrategy(object):
         for url in cf.cf.get('targets'):
             try:
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
+            except ScanMustStopByUserRequest:
+                raise
+            except Exception, e:
+                msg = ('Failed to send HTTP request to the configured target'
+                       ' URL "%s", the original exception was: "%s" (%s).')
+                args = (url, e, e.__class__.__name__)
+                raise ScanMustStopException(msg % args)
+
+            try:
                 is_404(response)
             except ScanMustStopByUserRequest:
                 raise
             except Exception, e:
-                msg = ('Failed to initialize the 404 detection, original'
-                       ' exception was: "%s".')
-                raise ScanMustStopException(msg % e)
+                msg = ('Failed to initialize the 404 detection using HTTP'
+                       ' response from "%s", the original exception was: "%s"'
+                       ' (%s).')
+                args = (url, e, e.__class__.__name__)
+                raise ScanMustStopException(msg % args)
 
     def _setup_crawl_infrastructure(self):
         """

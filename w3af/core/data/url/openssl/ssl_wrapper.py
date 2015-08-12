@@ -18,8 +18,9 @@ import time
 import socket
 import select
 import OpenSSL
-import subj_alt_name
-import pyasn1.codec.der.decoder
+
+from ndg.httpsclient.subj_alt_name import SubjectAltName
+from pyasn1.codec.der.decoder import decode as der_decoder
 
 CERT_NONE = ssl.CERT_NONE
 CERT_OPTIONAL = ssl.CERT_OPTIONAL
@@ -137,7 +138,7 @@ class SSLSocket(object):
                                                    x509)
 
         dns_name = []
-        general_names = subj_alt_name.SubjectAltName()
+        general_names = SubjectAltName()
 
         for i in range(x509.get_extension_count()):
             ext = x509.get_extension(i)
@@ -146,12 +147,10 @@ class SSLSocket(object):
                 continue
 
             ext_dat = ext.get_data()
-            der_decoder = pyasn1.codec.der.decoder
-            decoded_dat = der_decoder.decode(ext_dat,
-                                             asn1Spec=general_names)
+            decoded_dat = der_decoder(ext_dat, asn1Spec=general_names)
 
             for name in decoded_dat:
-                if not isinstance(name, subj_alt_name.SubjectAltName):
+                if not isinstance(name, SubjectAltName):
                     continue
                 for entry in range(len(name)):
                     component = name.getComponentByPosition(entry)
