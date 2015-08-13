@@ -71,7 +71,7 @@ class dwsync_xml(CrawlPlugin):
         om.out.debug('Parsing dwsync.xml file at %s' % dwsync_url)
 
         try:
-            dom = xml.dom.minidom.parseString(response.get_raw_body())
+            dom = xml.dom.minidom.parseString(response.get_body())
         except Exception, e:
             msg = 'Exception while parsing dwsync.xml file at %s : "%s"'
             om.out.debug(msg % (dwsync_url, e))

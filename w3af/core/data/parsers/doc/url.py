@@ -688,7 +688,7 @@ class URL(DiskItem):
 
     def get_path_qs(self):
         """
-        :return: Returns the domain name and the path for the url.
+        :return: Returns the path for the url containing the QS
         """
         res = self.path
         if self.params != '':
