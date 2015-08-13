@@ -127,7 +127,8 @@ VULNS = {
          'PHP register_globals: Off': None,
          'PHP enable_dl: Off': None,
          'Web user home directory': None,
-         
+         '.DS_Store file found': None,
+
          # Grep
          'US Social Security Number disclosure': 48,
          'DOM Cross site scripting': 56,
