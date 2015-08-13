@@ -24,6 +24,7 @@ from w3af.core.data.parsers.doc.pdf import PDFParser
 from w3af.core.data.parsers.doc.swf import SWFParser
 from w3af.core.data.parsers.doc.wml_parser import WMLParser
 from w3af.core.data.parsers.doc.javascript import JavaScriptParser
+from w3af.core.data.parsers.doc.ds_store_parser import DSStoreParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
@@ -34,7 +35,8 @@ class DocumentParser(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     # WARNING! The order of this list is important. See note below
-    PARSERS = [WMLParser, JavaScriptParser, PDFParser, SWFParser, HTMLParser]
+    PARSERS = [WMLParser, JavaScriptParser, PDFParser, SWFParser, DSStoreParser,
+               HTMLParser]
 
     def __init__(self, http_resp):
         """

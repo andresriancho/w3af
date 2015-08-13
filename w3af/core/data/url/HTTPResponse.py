@@ -260,12 +260,17 @@ class HTTPResponse(object):
     def get_code(self):
         return self._code
 
+    def get_raw_body(self):
+        """
+        Do not decode the response body, return the raw bytes as received from
+        the socket.
+        """
+        return self._raw_body
+
     def get_body(self):
         with self._body_lock:
             if self._body is None:
                 self._body, self._charset = self._charset_handling()
-                # Free 'raw_body'
-                self._raw_body = None
             return self._body
 
     def set_body(self, body):
@@ -310,8 +315,6 @@ class HTTPResponse(object):
     def get_charset(self):
         if not self._charset:
             self._body, self._charset = self._charset_handling()
-            # Free 'raw_body'
-            self._raw_body = None
         return self._charset
 
     def set_charset(self, charset):

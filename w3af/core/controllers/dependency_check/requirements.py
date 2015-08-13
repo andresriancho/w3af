@@ -30,14 +30,17 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('git.util', 'GitPython', '0.3.2.RC1'),
                      PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.14'),
                      PIPDependency('esmre', 'esmre', '0.3.1'),
-                     PIPDependency('phply', 'phply', '0.9.1'),
                      PIPDependency('nltk', 'nltk', '3.0.1'),
                      PIPDependency('chardet', 'chardet', '2.1.1'),
                      PIPDependency('tblib', 'tblib', '0.2.0'),
-                     PIPDependency('pdfminer', 'pdfminer', '20140328'),
                      PIPDependency('concurrent.futures', 'futures', '2.1.5'),
                      PIPDependency('OpenSSL', 'pyOpenSSL', '0.15.1'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
+
+                     # Parsers
+                     PIPDependency('ds_store', 'ds_store', '1.0.1'),
+                     PIPDependency('pdfminer', 'pdfminer', '20140328'),
+                     PIPDependency('phply', 'phply', '0.9.1'),
 
                      # We need 0.1.8 because of mitmproxy
                      PIPDependency('pyasn1', 'pyasn1', '0.1.8'),
