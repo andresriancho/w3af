@@ -26,6 +26,7 @@ use_echo = True
 
 [audit.generic]
 diff_ratio = 0.35
+extensive = False
 
 [audit.format_string]
 

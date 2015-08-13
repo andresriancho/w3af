@@ -107,6 +107,7 @@ only_target_domain = True
 
 [audit.generic]
 diff_ratio = 0.35
+extensive = False
 
 [grep.http_in_body]
 
