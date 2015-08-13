@@ -60,31 +60,28 @@ class server_header(InfrastructurePlugin):
         """
         response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
 
-        for hname, hvalue in response.get_lower_case_headers().iteritems():
-            if hname == 'server':
-                server = hvalue
-                
-                desc = 'The server header for the remote web server is: "%s".'
-                desc = desc % server
-                
-                i = Info('Server header', desc, response.id, self.get_name())
-                i['server'] = server
-                i.add_to_highlight(hname + ':')
-                
-                om.out.information(i.get_desc())
+        server, header_name = response.get_headers().iget('server')
 
-                # Save the results in the KB so the user can look at it
-                kb.kb.append(self, 'server', i)
+        if server:
+            desc = 'The server header for the remote web server is: "%s".'
+            desc = desc % server
 
-                # Also save this for easy internal use
-                # other plugins can use this information
-                kb.kb.raw_write(self, 'server_string', server)
-                break
+            i = Info('Server header', desc, response.id, self.get_name())
+            i['server'] = server
+            i.add_to_highlight(header_name + ':')
 
+            om.out.information(i.get_desc())
+
+            # Save the results in the KB so the user can look at it
+            kb.kb.append(self, 'server', i)
+
+            # Also save this for easy internal use
+            # other plugins can use this information
+            kb.kb.raw_write(self, 'server_string', server)
         else:
             # strange !
-            desc = 'The remote HTTP Server omitted the "server" header in'\
-                  ' its response.'
+            desc = ('The remote HTTP Server omitted the "server" header in'
+                    ' its response.')
             i = Info('Omitted server header', desc, response.id,
                      self.get_name())
 
@@ -92,7 +89,7 @@ class server_header(InfrastructurePlugin):
 
             # Save the results in the KB so that other plugins can use this
             # information
-            kb.kb.append(self, 'ommited_server_header', i)
+            kb.kb.append(self, 'omitted_server_header', i)
 
             # Also save this for easy internal use
             # other plugins can use this information

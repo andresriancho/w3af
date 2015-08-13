@@ -69,44 +69,43 @@ class response_splitting(AuditPlugin):
         """
         Analyze results of the _send_mutant method.
         """
-        #
-        #   I will only report the vulnerability once.
-        #
-        if self._has_no_bug(mutant):
+        if self._has_bug(mutant):
+            return
 
-            if self._header_was_injected(mutant, response):
-                desc = 'Response splitting was found at: %s' % mutant.found_at()
-                
-                v = Vuln.from_mutant('Response splitting vulnerability', desc,
-                                     severity.MEDIUM, response.id,
-                                     self.get_name(), mutant)
+        if self._header_was_injected(mutant, response):
+            desc = 'Response splitting was found at: %s' % mutant.found_at()
 
-                self.kb_append_uniq(self, 'response_splitting', v)
-                
-            # When trying to send a response splitting to php 5.1.2 I get :
-            # Header may not contain more than a single header, new line detected
-            for error in self.HEADER_ERRORS:
+            v = Vuln.from_mutant('Response splitting vulnerability', desc,
+                                 severity.MEDIUM, response.id,
+                                 self.get_name(), mutant)
 
-                if error in response:
-                    desc = 'The variable "%s" at URL "%s" modifies the HTTP'\
-                           ' response headers, but this error was sent while'\
-                           ' testing for response splitting: "%s".'
-                    args = (mutant.get_token_name(), mutant.get_url(), error)
-                    desc = desc % args
-                    i = Info.from_mutant('Parameter modifies response headers',
-                                         desc, response.id, self.get_name(),
-                                         mutant)
-                    
-                    self.kb_append_uniq(self, 'response_splitting', i)
+            self.kb_append_uniq(self, 'response_splitting', v)
 
-                    return
+        # When trying to send a response splitting to php 5.1.2 I get :
+        # Header may not contain more than a single header, new line detected
+        for error in self.HEADER_ERRORS:
+
+            if error in response:
+                desc = ('The variable "%s" at URL "%s" modifies the HTTP'
+                        ' response headers, but this error was sent while'
+                        ' testing for response splitting: "%s".')
+                args = (mutant.get_token_name(), mutant.get_url(), error)
+                desc = desc % args
+                i = Info.from_mutant('Parameter modifies response headers',
+                                     desc, response.id, self.get_name(),
+                                     mutant)
+
+                self.kb_append_uniq(self, 'response_splitting', i)
+
+                return
 
     def _header_was_injected(self, mutant, response):
         """
         This method verifies if a header was successfully injected
 
         :param mutant: The mutant that was sent to generate the response
-        :param response: The HTTP response where I want to find the injected header.
+        :param response: The HTTP response where I want to find the injected
+                         header.
         :return: True / False
         """
         # Get the lower case headers
@@ -118,10 +117,10 @@ class response_splitting(AuditPlugin):
                 return True
 
             elif HEADER_NAME in header and value.lower() != HEADER_VALUE:
-                msg = 'The vulnerable header was added to the HTTP response,'\
-                      ' but the value is not what w3af expected (%s: %s).'\
-                      ' Please verify manually.'
-                msg = msg % (HEADER_NAME,HEADER_VALUE)
+                msg = ('The vulnerable header was added to the HTTP response,'
+                       ' but the value is not what w3af expected (%s: %s).'
+                       ' Please verify manually.')
+                msg = msg % (HEADER_NAME, HEADER_VALUE)
                 om.out.information(msg)
 
                 i = Info.from_mutant('Parameter modifies response headers',
