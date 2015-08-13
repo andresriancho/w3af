@@ -28,7 +28,8 @@ from w3af.core.controllers.auto_update.utils import (is_git_repo, to_short_id,
                                                      get_current_branch,
                                                      is_dirty_repo)
 
-VERSION_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'constants', 'version.txt')
+VERSION_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'constants',
+                            'version.txt')
 
 
 def get_minimalistic_version():

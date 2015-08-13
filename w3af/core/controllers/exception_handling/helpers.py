@@ -20,11 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
-import pprint
 import sys
+import copy
+import pprint
 import tempfile
 import StringIO
-import copy
+import platform
 
 from itertools import chain
 
@@ -56,6 +57,17 @@ def gettempdir():
     return tempfile.gettempdir()
 
 
+def get_platform_dist():
+    """
+    :return: A human readable representation of platform.dist() , unknown if
+             the module returned none / ''
+    """
+    if platform.dist() == ('', '', ''):
+        return 'Unknown'
+
+    return ' '.join(platform.dist())
+
+
 def get_versions():
     try:
         import gtk
@@ -63,18 +75,20 @@ def get_versions():
         gtk_version = 'No GTK module installed'
         pygtk_version = 'No GTK module installed'
     else:
-        gtk_version = ".".join(str(x) for x in gtk.gtk_version)
-        pygtk_version = ".".join(str(x) for x in gtk.pygtk_version)
+        gtk_version = '.'.join(str(x) for x in gtk.gtk_version)
+        pygtk_version = '.'.join(str(x) for x in gtk.pygtk_version)
 
     # String containing the versions for python, gtk and pygtk
-    versions = '  Python version: %s\n'\
-               '  GTK version: %s\n'\
-               '  PyGTK version: %s\n'\
-               '  w3af version:\n    %s'
+    versions = ('  Python version: %s\n'
+                '  Platform: %s\n'
+                '  GTK version: %s\n'
+                '  PyGTK version: %s\n'
+                '  w3af version:\n    %s')
     
     w3af_version = '\n    '.join(get_w3af_version().split('\n'))
     
     versions = versions % (sys.version.replace('\n', ''),
+                           get_platform_dist(),
                            gtk_version,
                            pygtk_version,
                            w3af_version)
@@ -83,10 +97,11 @@ def get_versions():
 
 
 def create_crash_file(exception):
-    filename = "w3af-crash-" + rand_alnum(5) + ".txt"
+    filename = 'w3af-crash-%s.txt' % rand_alnum(5)
     filename = os.path.join(gettempdir(), filename)
-    crash_dump = file(filename, "w")
-    crash_dump.write(_('Submit this bug here: https://github.com/andresriancho/w3af/issues/new \n'))
+    crash_dump = file(filename, 'w')
+    crash_dump.write(_('Submit this bug here:'
+                       ' https://github.com/andresriancho/w3af/issues/new \n'))
     crash_dump.write(get_versions())
     crash_dump.write(exception)
     crash_dump.close()
