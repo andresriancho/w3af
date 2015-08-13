@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import re
 import sys
 import unittest
 
@@ -32,6 +33,9 @@ class mock_stdout(object):
         self.messages = []
 
     def write(self, msg):
+        ansi_escape = re.compile(r'\x1b[^m]*m')
+        msg = ansi_escape.sub('', msg)
+
         self.messages.extend(msg.split('\n\r'))
 
     flush = MagicMock()
