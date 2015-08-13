@@ -19,15 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import string
 import sys
+import string
 
-from functools import wraps
 from errno import ENOSPC
+from functools import wraps
+from termcolor import colored
 
+from w3af.core.data.constants.severity import HIGH, MEDIUM, LOW, INFORMATION
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.exceptions import ScanMustStopByKnownReasonExc
 from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.options.option_types import BOOL
 from w3af.core.data.options.option_list import OptionList
 
 
@@ -53,22 +56,34 @@ class console(OutputPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    SEVERITY_COLOR = {HIGH: 'red',
+                      MEDIUM: 'yellow',
+                      LOW: 'blue',
+                      INFORMATION: 'cyan'}
+
     def __init__(self):
         OutputPlugin.__init__(self)
 
         # User configured setting
         self.verbose = False
+        self.use_colors = True
 
     def _make_printable(self, a_string):
         a_string = str(a_string)
         a_string = a_string.replace('\n', '\n\r')
         return ''.join(ch for ch in a_string if ch in string.printable)
 
-    def _print_to_stdout(self, message, newline):
-        to_print = self._make_printable(message)
+    def _print_to_stdout(self, message, newline, severity=None):
+        message = self._make_printable(message)
         if newline:
-            to_print += '\r\n'
-        sys.stdout.write(to_print)
+            message += '\r\n'
+
+        if self.use_colors:
+            color = self.SEVERITY_COLOR.get(severity, None)
+            if color is not None:
+                message = colored(message, color)
+
+        sys.stdout.write(message)
         sys.stdout.flush()
 
     @catch_ioerror
@@ -82,26 +97,20 @@ class console(OutputPlugin):
             self._print_to_stdout(message, new_line)
 
     @catch_ioerror
-    def _generic(self, message, new_line=True, severity=None):
-        """
-        This method is called from the output object. The output object was
-        called from a plugin or from the framework. This method should take
-        an action for all messages except from debug ones.
-        """
+    def error(self, message, new_line=True, severity=HIGH):
+        self._print_to_stdout(message, new_line, severity=severity)
+
+    @catch_ioerror
+    def console(self, message, new_line=True, severity=None):
         self._print_to_stdout(message, new_line)
 
-    error = console = vulnerability = information = _generic
+    @catch_ioerror
+    def vulnerability(self, message, new_line=True, severity=HIGH):
+        self._print_to_stdout(message, new_line, severity=severity)
 
-    def get_long_desc(self):
-        """
-        :return: A DETAILED description of the plugin functions and features.
-        """
-        return """
-        This plugin writes the framework messages to the console.
-
-        One configurable parameter exists:
-            - verbose
-        """
+    @catch_ioerror
+    def information(self, message, new_line=True, severity=None):
+        self._print_to_stdout(message, new_line)
 
     def set_options(self, option_list):
         """
@@ -115,14 +124,32 @@ class console(OutputPlugin):
         :return: No value is returned.
         """
         self.verbose = option_list['verbose'].get_value()
+        self.use_colors = option_list['use_colors'].get_value()
 
     def get_options(self):
         """
         :return: A list of option objects for this plugin.
         """
         ol = OptionList()
+
         d = 'Enables verbose output for the console'
-        o = opt_factory('verbose', self.verbose, d, 'boolean')
+        o = opt_factory('verbose', self.verbose, d, BOOL)
+        ol.add(o)
+
+        d = 'Enable output coloring'
+        o = opt_factory('use_colors', self.use_colors, d, BOOL)
         ol.add(o)
 
         return ol
+
+    def get_long_desc(self):
+        """
+        :return: A DETAILED description of the plugin functions and features.
+        """
+        return """
+        This plugin writes the framework messages to the console.
+
+        Two configurable parameters exist:
+            - verbose
+            - use_colors
+        """

@@ -25,6 +25,8 @@ import shlex
 import random
 import traceback
 
+from termcolor import colored
+
 try:
     import w3af.core.ui.console.io.console as term
     import w3af.core.ui.console.tables as tables
@@ -459,7 +461,8 @@ class ConsoleUI(object):
         term.moveBack(len(tail))
 
     def _showPrompt(self):
-        term.write(self._context.get_path() + ">>> ")
+        prompt = colored(self._context.get_path() + '>>> ', 'blue')
+        term.write(prompt)
 
     def _showLine(self):
         strLine = self._getLineStr()
