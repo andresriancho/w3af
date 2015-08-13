@@ -4,6 +4,7 @@ name = bruteforce
 
 [output.console]
 verbose = True
+use_colors = True
 
 [bruteforce.basic_auth]
 

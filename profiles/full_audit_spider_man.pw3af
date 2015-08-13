@@ -4,6 +4,7 @@ name = full_audit_spider_man
 
 [output.console]
 verbose = False
+use_colors = True
 
 [audit.file_upload]
 extensions = gif,html

@@ -14,6 +14,7 @@ target =
 
 [output.console]
 verbose = True
+use_colors = True
 
 [profile]
 description = This is an empty profile that you can use to start a new configuration from.

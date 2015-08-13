@@ -26,6 +26,7 @@ msf_location = /opt/metasploit3/bin/
 
 [output.console]
 verbose = False
+use_colors = True
 
 [grep.motw]
 

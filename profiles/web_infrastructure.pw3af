@@ -51,6 +51,7 @@ ntlm_auth_url =
 
 [output.console]
 verbose = False
+use_colors = True
 
 [infrastructure.fingerprint_WAF]
 

@@ -166,6 +166,7 @@ listen_port = 44449
 
 [output.console]
 verbose = True
+use_colors = True
 
 [audit.format_string]
 

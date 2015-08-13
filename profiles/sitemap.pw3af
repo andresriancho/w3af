@@ -43,6 +43,7 @@ ntlm_auth_url =
 
 [output.console]
 verbose = False
+use_colors = True
 
 [crawl.sitemap_xml]
 
