@@ -539,7 +539,8 @@ class MockResponse(object):
         :return: True if the request_uri matches this mock_response
         """
         if isinstance(self.url, basestring):
-            if request_uri.endswith(self.url):
+            request_path = URL(request_uri).get_path_qs()
+            if request_path == self.url:
                 return True
 
         elif isinstance(self.url, RE_COMPILE_TYPE):
