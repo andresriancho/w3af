@@ -53,6 +53,17 @@ SOURCE_CODE = (
     ('<!--\s*%.*?%(--)?>', 'PHP'),
     ('<!--\s*\?.*?\?(--)?>', 'ASP or JSP'),
     ('<!--\s*jsp:.*?(--)?>', 'JSP'),
+
+    ('#include <', 'Unknown'),
+
+    ('#!\/usr', 'Shell script'),
+    ('#!\/bin', 'Shell script'),
+
+    ('import java\.', 'Java'),
+    ('public class .+\{', 'Java'),
+    ('package\s\w+\;', 'Java'),
+
+    ('<!--g:render', 'Groovy')
 )
 
 BLACKLIST = {'xml', 'xpacket'}
