@@ -48,7 +48,7 @@ class blank_body(GrepPlugin):
         """
         if response.get_body() == '' and request.get_method() in self.METHODS\
         and response.get_code() not in self.HTTP_CODES\
-        and 'location' not in response.get_lower_case_headers()\
+        and not response.get_headers().icontains('location')\
         and response.get_url().uri2url() not in self.already_reported:
 
             self.already_reported.add(response.get_url().uri2url())

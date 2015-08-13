@@ -191,10 +191,10 @@ class content_negotiation(CrawlPlugin):
         headers['Accept'] = 'w3af/bar'
         response = self._uri_opener.GET(alternate_resource, headers=headers)
 
-        # And I parse the result
-        if 'alternates' in response.get_lower_case_headers():
-            alternates = response.get_lower_case_headers()['alternates']
+        alternates, _ = response.get_headers().iget('alternates')
 
+        # And I parse the result
+        if alternates:
             # An alternates header looks like this:
             # alternates: {"backup.php.bak" 1 {type application/x-trash} {length 0}},
             #             {"backup.php.old" 1 {type application/x-trash} {length 0}},
@@ -252,7 +252,7 @@ class content_negotiation(CrawlPlugin):
             headers['Accept'] = 'w3af/bar'
             response = self._uri_opener.GET(alternate_resource, headers=headers)
 
-            if 'alternates' in response.get_lower_case_headers():
+            if response.get_headers().icontains('alternates'):
                 # Even if there is only one file, with an unique mime type,
                 # the content negotiation will return an alternates header.
                 # So this is pretty safe.
@@ -261,9 +261,9 @@ class content_negotiation(CrawlPlugin):
                 self._content_negotiation_enabled = True
 
                 # Save the result as an info in the KB, for the user to see it:
-                desc = 'HTTP Content negotiation is enabled in the remote web'\
-                       ' server. This could be used to bruteforce file names'\
-                       ' and find new resources.'
+                desc = ('HTTP Content negotiation is enabled in the remote web'
+                        ' server. This could be used to bruteforce file names'
+                        ' and find new resources.')
  
                 i = Info('HTTP Content Negotiation enabled', desc, response.id,
                          self.get_name())
@@ -291,7 +291,7 @@ class content_negotiation(CrawlPlugin):
         """
         :return: A list of option objects for this plugin.
         """
-        d1 = 'Wordlist to use in the file name bruteforcing process.'
+        d1 = 'Word list to use in the file name brute forcing process.'
         o1 = opt_factory('wordlist', self._wordlist, d1, 'string')
 
         ol = OptionList()

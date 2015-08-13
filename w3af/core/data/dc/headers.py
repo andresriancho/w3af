@@ -117,6 +117,14 @@ class Headers(NonRepeatKeyValueContainer):
 
         return default, None
 
+    def icontains(self, header_name):
+        """
+        :param header_name: The header name to check (case insensitive)
+        :return: True if the header name exists in this headers set
+        """
+        value, stored_header_name = self.iget(header_name)
+        return True if value is not None else False
+
     def getheaders(self, header_name):
         """
         This is just a shortcut to iget plus some extras to make this Header

@@ -43,15 +43,15 @@ class click_jacking(GrepPlugin):
 
     def grep(self, request, response):
         """
-        TODO: need to check here for auth cookie?!
+        Check x-frame-options header
         """
         if not response.is_text_or_html():
             return
 
         self._total_count += 1
 
-        headers = response.get_lower_case_headers()
-        x_frame_options = headers.get('x-frame-options', '')
+        headers = response.get_headers()
+        x_frame_options, header_name = headers.iget('x-frame-options', '')
 
         if not x_frame_options.lower() in ('deny', 'sameorigin'):
             self._vuln_count += 1
@@ -69,15 +69,15 @@ class click_jacking(GrepPlugin):
         # If none of the URLs implement protection, simply report
         # ONE vulnerability that says that.
         if self._total_count == self._vuln_count:
-            desc = 'The whole target has no protection (X-Frame-Options'\
-                   ' header) against Click-Jacking attacks'
+            desc = ('The whole target has no protection (X-Frame-Options'
+                    ' header) against Click-Jacking attacks')
         # If most of the URLs implement the protection but some
         # don't, report ONE vulnerability saying: "Most are protected,
         # but x, y are not.
         if self._total_count > self._vuln_count:
-            desc = 'Some URLs have no protection (X-Frame-Options header)'\
-                   ' against Click-Jacking attacks. The list of vulnerable:' \
-                   ' URLs is:\n\n - '
+            desc = ('Some URLs have no protection (X-Frame-Options header)'
+                    ' against Click-Jacking attacks. The list of vulnerable:'
+                    ' URLs is:\n\n - ')
 
             desc += ' - '.join([str(url) + '\n' for url in self._vulns])
 

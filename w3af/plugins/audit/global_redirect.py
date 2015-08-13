@@ -75,7 +75,8 @@ class global_redirect(AuditPlugin):
     def _find_redirect(self, response):
         """
         This method checks if the browser was redirected (using a 302 code)
-        or is being told to be redirected by javascript or <meta http-equiv="refresh"
+        or is being told to be redirected by javascript or
+        <meta http-equiv="refresh"
 
         One day we should be able to identify all redirect methods:
         http://code.google.com/p/html5security/wiki/RedirectionMethods
@@ -185,8 +186,8 @@ class global_redirect(AuditPlugin):
         This plugin finds global redirection vulnerabilities. This kind of bugs
         are used for phishing and other identity theft attacks. A common example
         of a global redirection would be a script that takes a "url" parameter
-        and when requesting this page, a HTTP 302 message with the location header
-        to the value of the url parameter is sent in the response.
+        and when requesting this page, a HTTP 302 message with the location
+        header to the value of the url parameter is sent in the response.
 
         Global redirection vulnerabilities can be found in javascript, META tags
         and 302 / 301 HTTP return codes.
