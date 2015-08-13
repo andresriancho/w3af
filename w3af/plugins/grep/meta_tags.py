@@ -74,20 +74,23 @@ class meta_tags(GrepPlugin):
 
         for tag in meta_tag_list:
             for attr_name, attr_value in tag.items():
+
+                if not attr_name or not attr_value:
+                    # https://github.com/andresriancho/w3af/issues/2012
+                    continue
+
                 for word in self.INTERESTING_WORDS:
 
                     # Check if we have something interesting and WHERE that
                     # thing actually is
-                    where = content = None
                     if word in attr_name:
                         where = ATTR_NAME
                         content = attr_name
                     elif word in attr_value:
                         where = ATTR_VALUE
                         content = attr_value
-
-                    # Go to the next one if nothing is found
-                    if where is None:
+                    else:
+                        # Go to the next one if nothing is found
                         continue
 
                     # Now... if we found something, report it =)
