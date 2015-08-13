@@ -90,8 +90,8 @@ class allowed_methods(InfrastructurePlugin):
         domain_path = fuzzable_request.get_url().get_domain_path()
         if domain_path not in self._already_tested:
             self._already_tested.add(domain_path)
-            allowed_methods, id_list = self._identify_allowed_methods(domain_path)
-            self._analyze_methods(domain_path, allowed_methods, id_list)
+            _allowed_methods, id_list = self._identify_allowed_methods(domain_path)
+            self._analyze_methods(domain_path, _allowed_methods, id_list)
 
     def _identify_allowed_methods(self, url):
         # First, try to check available methods using OPTIONS,
@@ -99,26 +99,26 @@ class allowed_methods(InfrastructurePlugin):
         allowed_options, id_options = self._identify_with_OPTIONS(url)
         allowed_bf, id_bf = self._identify_with_bruteforce(url)
         
-        allowed_methods = allowed_options + allowed_bf
+        _allowed_methods = allowed_options + allowed_bf
         # If a method was found by both, bf and options, it is duplicated in 
         # the list. Remove dups
-        allowed_methods = list(set(allowed_methods))
+        _allowed_methods = list(set(_allowed_methods))
         # There are no duplicate requests.
         # Even if a method was discovered with both, bf and options, we 
         # furthermore want to see both requests
         id_list = id_options + id_bf
         
         # Added this to make the output a little bit more readable.
-        allowed_methods.sort()
+        _allowed_methods.sort()
         
-        return allowed_methods, id_list
+        return _allowed_methods, id_list
 
     def _identify_with_OPTIONS(self, url):
         """
         Find out what methods are allowed using OPTIONS
         :param url: Where to check.
         """
-        allowed_methods = []
+        _allowed_methods = []
         id_list = []
 
         try:
@@ -131,18 +131,18 @@ class allowed_methods(InfrastructurePlugin):
             
             for header_name in ['allow', 'public']:
                 if header_name in headers:
-                    allowed_methods.extend(headers[header_name].split(','))
-                    allowed_methods = [x.strip() for x in allowed_methods]
-                    allowed_methods = list(set(allowed_methods))
+                    _allowed_methods.extend(headers[header_name].split(','))
+                    _allowed_methods = [x.strip() for x in _allowed_methods]
+                    _allowed_methods = list(set(_allowed_methods))
         
-        return allowed_methods, id_list
+        return _allowed_methods, id_list
 
     def _identify_with_bruteforce(self, url):
         id_list = []
-        allowed_methods = []
+        _allowed_methods = []
         #
         #   Before doing anything else, I'll send a request with a
-        #   non-existant method if that request succeds, then all will...
+        #   non-existent method if that request succeeds, then all will...
         #
         non_exist_response = self._uri_opener.ARGENTINA(url)
         get_response = self._uri_opener.GET(url)
@@ -150,10 +150,10 @@ class allowed_methods(InfrastructurePlugin):
         if non_exist_response.get_code() not in self.BAD_CODES\
         and get_response.get_body() == non_exist_response.get_body():
 
-            desc = 'The remote Web server has a custom configuration, in'\
-                   ' which any not implemented methods that are invoked are' \
-                   ' defaulted to GET instead of returning a "Not Implemented"'\
-                   ' response.'
+            desc = ('The remote Web server has a custom configuration, in'
+                    ' which any not implemented methods that are invoked are'
+                    ' defaulted to GET instead of returning a "Not Implemented"'
+                    ' response.')
             response_ids = [non_exist_response.get_id(), get_response.get_id()]
             i = Info('Non existent methods default to GET', desc, response_ids,
                      self.get_name())
@@ -183,29 +183,29 @@ class allowed_methods(InfrastructurePlugin):
             else:
                 code = response.get_code()                
                 if code not in self.BAD_CODES:
-                    allowed_methods.append(method)
+                    _allowed_methods.append(method)
                     id_list.append(response.id)
         
-        return allowed_methods, id_list
+        return _allowed_methods, id_list
 
-    def _analyze_methods(self, url, allowed_methods, id_list):
+    def _analyze_methods(self, url, _allowed_methods, id_list):
         # Sometimes there are no allowed methods, which means that our plugin
         # failed to identify any methods.
-        if not allowed_methods:
+        if not _allowed_methods:
             return
 
         # Check for DAV
-        elif set(allowed_methods).intersection(self.DAV_METHODS):
+        elif set(_allowed_methods).intersection(self.DAV_METHODS):
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this
             # information
-            desc = 'The URL "%s" has the following allowed methods. These'\
-                   ' include DAV methods and should be disabled: %s'
-            desc = desc % (url, ', '.join(allowed_methods))
+            desc = ('The URL "%s" has the following allowed methods. These'
+                    ' include DAV methods and should be disabled: %s')
+            desc = desc % (url, ', '.join(_allowed_methods))
             
             i = Info('DAV methods enabled', desc, id_list, self.get_name())
             i.set_url(url)
-            i['methods'] = allowed_methods
+            i['methods'] = _allowed_methods
             
             kb.kb.append(self, 'dav-methods', i)
         else:
@@ -213,11 +213,11 @@ class allowed_methods(InfrastructurePlugin):
             # information. Do not remove these information, other plugins
             # REALLY use it !
             desc = 'The URL "%s" has the following enabled HTTP methods: %s'
-            desc = desc % (url, ', '.join(allowed_methods))
+            desc = desc % (url, ', '.join(_allowed_methods))
             
             i = Info('Allowed HTTP methods', desc, id_list, self.get_name())
             i.set_url(url)
-            i['methods'] = allowed_methods
+            i['methods'] = _allowed_methods
             
             kb.kb.append(self, 'methods', i)
 
@@ -230,38 +230,36 @@ class allowed_methods(InfrastructurePlugin):
         dav_info_obj = kb.kb.get('allowed_methods', 'dav-methods')
 
         # Now I transform it to something I can use with group_by_min_key
-        allMethods = []
+        all_methods = []
         for i in all_info_obj:
-            allMethods.append((i.get_url(), i['methods']))
+            all_methods.append((i.get_url(), i['methods']))
 
-        davMethods = []
+        dav_methods = []
 
         for i in dav_info_obj:
-            davMethods.append((i.get_url(), i['methods']))
+            dav_methods.append((i.get_url(), i['methods']))
 
         # Now I work the data...
-        to_show, method_type = davMethods, ' DAV'
+        to_show, method_type = dav_methods, ' DAV'
         if not self._report_dav_only:
-            to_show, method_type = allMethods, ''
+            to_show, method_type = all_methods, ''
 
         # Make it hashable
         tmp = []
         for url, methodList in to_show:
             tmp.append((url, ', '.join(methodList)))
 
-        result_dict, itemIndex = group_by_min_key(tmp)
+        result_dict, item_index = group_by_min_key(tmp)
 
         for k in result_dict:
-            if itemIndex == 0:
+            if item_index == 0:
                 # Grouped by URLs
-                msg = 'The URL: "%s" has the following' + \
-                    method_type + ' methods enabled:'
-                om.out.information(msg % k)
+                msg = 'The URL: "%s" has the following %s methods enabled:'
+                om.out.information(msg % (k, method_type))
             else:
                 # Grouped by Methods
-                msg = 'The methods: ' + k + \
-                    ' are enabled on the following URLs:'
-                om.out.information(msg)
+                msg = 'The methods: %s are enabled on the following URLs:'
+                om.out.information(msg % k)
 
             for i in result_dict[k]:
                 om.out.information('- ' + i)
@@ -273,9 +271,9 @@ class allowed_methods(InfrastructurePlugin):
         ol = OptionList()
 
         d1 = 'Execute plugin only one time'
-        h1 = 'Generally the methods allowed for a URL are configured system'\
-             ' wide, so executing this plugin only once is the faster choice.'\
-             ' The most accurate choice is to run it against every URL.'
+        h1 = ('Generally the methods allowed for a URL are configured system'
+              ' wide, so executing this plugin only once is the faster choice.'
+              ' The most accurate choice is to run it against every URL.')
         o = opt_factory('execOneTime', self._exec_one_time, d1,
                         'boolean', help=h1)
         ol.add(o)
@@ -291,7 +289,7 @@ class allowed_methods(InfrastructurePlugin):
         This method sets all the options that are configured using the user
         interface generated by the framework using the result of get_options().
 
-        :param OptionList: A dictionary with the options for the plugin.
+        :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
         self._exec_one_time = options_list['execOneTime'].get_value()
