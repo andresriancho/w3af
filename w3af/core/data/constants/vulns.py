@@ -69,6 +69,8 @@ VULNS = {
          'eval() input injection vulnerability': 6,
          'Reflected File Download vulnerability': 71,
          'Shell shock vulnerability': 68,
+         'Rosetta Flash': None,
+
          # WebSockets
          'Insecure WebSocket Origin filter': None,
          'Open WebSocket': None,
