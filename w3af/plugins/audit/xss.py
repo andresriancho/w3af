@@ -124,7 +124,17 @@ class xss(AuditPlugin):
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
             self._xss_mutants.append((trivial_mutant, response.id))
-        
+
+        # This is something I've seen in as a false positive during my
+        # assessments and is better explained in this stackoverflow question
+        # https://goo.gl/BgXVJY
+        ct_options, _ = response.get_headers().iget('X-Content-Type-Options')
+        content_type, _ = response.get_headers().iget('Content-Type')
+
+        if content_type == 'application/json' and ct_options == 'nosniff':
+            # No luck exploiting this JSON XSS
+            return False
+
         if payload in response.get_body().lower():
             self._report_vuln(mutant, response, payload)
             return True
