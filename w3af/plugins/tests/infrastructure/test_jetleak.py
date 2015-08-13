@@ -36,7 +36,7 @@ class TestJetLeak(PluginTest):
         }
     }
 
-    JETLEAK_ERROR = '400 Illegal character 0x0 in state'
+    JETLEAK_ERROR = 'Illegal character 0x0 in state'
 
     class JettyMockResponse(MockResponse):
         def get_response(self, http_request, uri, response_headers):

@@ -46,7 +46,7 @@ class jetleak(InfrastructurePlugin):
         if response.get_code() != 400:
             return
 
-        if '400 Illegal character 0x0 in state' not in response.get_msg():
+        if 'Illegal character 0x0 in state' not in response.get_msg():
             return
 
         desc = ('The application appears to be running a version of Jetty'
