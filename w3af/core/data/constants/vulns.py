@@ -228,6 +228,7 @@ VULNS = {
          'Information disclosure via .NET errors': 73,
          'Potential virtual host misconfiguration': None,
          'MS15-034': None,
+         'JetLeak': None,
          
          # Bruteforce
          'Guessable credentials': 75,
