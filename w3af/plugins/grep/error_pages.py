@@ -105,6 +105,9 @@ class error_pages(GrepPlugin):
         'at org.apache.tomcat.',
         'at org.apache.jasper.',
 
+        # https://github.com/andresriancho/w3af/issues/4001
+        '<html><head><title>Application Exception</title>',
+
         # ruby
         '<h1 class="error_title">Ruby on Rails application could not be started</h1>',
 
