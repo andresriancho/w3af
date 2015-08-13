@@ -76,6 +76,7 @@ VULNS = {
          'Websockets CSRF vulnerability': None,
 
          # Crawl
+         'dwsync.xml file found': None,
          'phpinfo() file found': None,
          'PHP register_globals: On': None,
          'PHP allow_url_fopen: On': None,
