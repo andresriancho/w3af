@@ -38,7 +38,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
                      # Parsers
-                     PIPDependency('ds_store', 'ds_store', '1.0.1'),
+                     PIPDependency('ds_store', 'ds-store', '1.0.1'),
                      PIPDependency('pdfminer', 'pdfminer', '20140328'),
                      PIPDependency('phply', 'phply', '0.9.1'),
 
