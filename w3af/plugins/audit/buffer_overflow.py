@@ -62,13 +62,17 @@ class buffer_overflow(AuditPlugin):
     def __init__(self):
         """
         Some notes:
-            On Apache, when an overflow happends on a cgic script, this is written
-            to the log:
-                *** stack smashing detected ***: /var/www/.../buffer_overflow.cgi terminated,
-                referer: http://localhost/w3af/bufferOverflow/buffer_overflow.cgi
-                Premature end of script headers: buffer_overflow.cgi, referer: ...
-
             On Apache, when an overflow happends on a cgic script, this is
+            written to the log:
+                *** stack smashing detected ***:
+
+                    /var/www/.../buffer_overflow.cgi terminated,
+                    referer: http://localhost/w3af/buffer_overflow.cgi
+
+                    Premature end of script headers: buffer_overflow.cgi,
+                    referer: ...
+
+            On Apache, when an overflow happens on a cgic script, this is
             returned to the user:
                 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
                 <html><head>
@@ -79,7 +83,8 @@ class buffer_overflow(AuditPlugin):
                 misconfiguration and was unable to complete
                 your request.</p>
                 <p>Please contact the server administrator,
-                 webmaster@localhost and inform them of the time the error occurred,
+                 webmaster@localhost and inform them of the time the error
+                 occurred,
                 and anything you might have done that may have
                 caused the error.</p>
                 <p>More information about this error may be available
@@ -89,7 +94,8 @@ class buffer_overflow(AuditPlugin):
                 PHP/5.1.6 Server at localhost Port 80</address>
                 </body></html>
 
-            Note that this is an Apache error 500, not the more common PHP error 500.
+            Note that this is an Apache error 500, not the more common PHP error
+            500.
         """
         AuditPlugin.__init__(self)
 
