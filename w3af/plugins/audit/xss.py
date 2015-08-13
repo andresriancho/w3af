@@ -146,7 +146,7 @@ class xss(AuditPlugin):
         Analyze the mutant for reflected XSS.
         
         @parameter mutant: A mutant that was used to test if the parameter
-            was echoed back or not
+                           was echoed back or not
         """
         xss_strings = [replace_randomize(i) for i in self.PAYLOADS]
         fuzzable_params = [mutant.get_token_name()]
@@ -319,4 +319,4 @@ class xss(AuditPlugin):
 
 def replace_randomize(data):
     rand_str = rand_alnum(5).lower()
-    return data.replace("RANDOMIZE", rand_str)
+    return data.replace('RANDOMIZE', rand_str)
