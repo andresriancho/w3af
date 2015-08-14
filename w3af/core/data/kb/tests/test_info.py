@@ -54,8 +54,8 @@ BLIND_SQLI_TOP10_REFS = [
 class MockInfo(Info):
     LONG_DESC = 'Foo bar spam eggs' * 10
 
-    def __init__(self, ids=1):
-        super(MockInfo, self).__init__('TestCase', self.LONG_DESC, ids,
+    def __init__(self, ids=1, desc=None):
+        super(MockInfo, self).__init__('TestCase', desc or self.LONG_DESC, ids,
                                        'plugin_name')
 
 
@@ -120,7 +120,16 @@ class TestInfo(unittest.TestCase):
         desc = 'abc ' * 30
         i.set_desc(desc)
         self.assertTrue(i.get_desc().startswith(desc))
-    
+
+    def test_get_desc_new_line(self):
+        """
+        https://github.com/andresriancho/w3af/issues/12220
+        """
+        i = MockInfo(desc=('This is a rather long and complex desc which has'
+                           'a new line at the end.\n\n'))
+
+        self.assertIn('\n\nThis information was', i.get_desc())
+
     def test_pickleable(self):
         cPickle.dumps(MockInfo())
 
