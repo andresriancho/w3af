@@ -135,6 +135,9 @@ class TestOutputManager(unittest.TestCase):
     def test_error_handling(self):
         
         class InvalidPlugin(object):
+            def flush(self):
+                pass
+            
             def information(self, msg, new_line=True):
                 raise Exception('Test')
 
