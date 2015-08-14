@@ -19,14 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
 from wad.detection import Detector
+from wad.group import group
 from wad.output import HumanReadableOutput
 
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.exceptions import RunOnce
-from w3af.core.controllers.misc.decorators import runonce
+from w3af.core.controllers.exceptions import NoMoreCalls
 from w3af.core.data.kb.info import Info
 
 
@@ -63,8 +64,15 @@ class application_fingerprint(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
         self.detector = None
+        self.knowledge = {}
+        self.full_results = {}
+        self.request_ids = []
+        self.kb_info_id = None
+        self.no_new_knowledge_count = 0
 
-    @runonce(exc_class=RunOnce)
+        # User configurable
+        self.no_new_knowledge_count_max = 10
+
     def discover(self, fuzzable_request):
         """
         It calls the "main" from WAD and writes the results to the kb.
@@ -72,35 +80,58 @@ class application_fingerprint(InfrastructurePlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
-        self._main(fuzzable_request)
+        result = self._main(fuzzable_request)
+        if not result:
+            return
+
+        self.knowledge.update(result)
+        self.full_results.update(result)
+        self.request_ids.append(self.detector.original_response.id)
+
+        new_knowledge = group(copy.deepcopy(self.knowledge))
+        if new_knowledge != self.knowledge:
+            self.no_new_knowledge_count = 0
+            self.knowledge = new_knowledge
+        else:
+            self.no_new_knowledge_count += 1
+
+        self._report()
+        if self.no_new_knowledge_count >= self.no_new_knowledge_count_max:
+            raise NoMoreCalls
 
     def _main(self, fuzzable_request):
         """
         Based on WAD's main executable
         """
         self.detector = w3afDetector(uri_opener=self._uri_opener)
-        results = self.detector.detect(fuzzable_request.get_url())
+        return self.detector.detect(fuzzable_request.get_url())
 
-        self._report(results)
-
-    def _report(self, results):
+    def _report(self):
         """
         Displays detailed report information to the user and save the data to
         the kb.
 
         :return: None.
         """
-        if results:
-            i = Info('Application fingerprint',
-                     HumanReadableOutput().retrieve(results),
-                     self.detector.original_response.id,
-                     self.get_name())
+        desc = HumanReadableOutput().retrieve(self.full_results)
+        i = Info('Application fingerprint',
+                 desc, self.request_ids, self.get_name())
 
+        if not self.kb_info_id:
             kb.kb.append(self, 'Application fingerprint', i)
+            self.kb_info_id = i.get_uniq_id()
+        else:
+            info = kb.kb.get_by_uniq_id(self.kb_info_id)
+            new_info = copy.deepcopy(info)
+            new_info.set_desc(desc)
+            new_info.set_id(self.request_ids)
+            kb.kb.update(info, new_info)
+            self.kb_info_id = new_info.get_uniq_id()
 
-            # Also save this for easy internal use
-            # other plugins can use this information
-            kb.kb.raw_write(self, 'application_fingerprint', results)
+        # Also save this for easy internal use
+        # other plugins can use this information
+        kb.kb.raw_write('application_fingerprint',
+                        'application_fingerprint', self.full_results)
 
     def get_long_desc(self):
         """

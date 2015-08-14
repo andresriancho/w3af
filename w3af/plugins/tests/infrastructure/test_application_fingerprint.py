@@ -49,7 +49,7 @@ class TestApplicationFingerprint(PluginTest):
 
     def get_raw_data(self, url):
         raw_dict = self.kb.raw_read('application_fingerprint',
-                               'application_fingerprint')
+                                    'application_fingerprint')
 
         self.assertEqual(len(raw_dict.keys()), 1, raw_dict.keys())
         self.assertIn(url, raw_dict)
