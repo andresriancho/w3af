@@ -93,9 +93,7 @@ class path_disclosure(GrepPlugin):
         if not response.is_text_or_html():
             return
         
-        vuln = self.find_path_disclosure(request, response)
-
-        if vuln:
+        if self.find_path_disclosure(request, response):
             self._update_kb_path_list()
         
     def find_path_disclosure(self, request, response):
@@ -120,22 +118,24 @@ class path_disclosure(GrepPlugin):
                     continue
 
                 # Remove false positives
-                if not self._is_false_positive(match, request, response):
-                    self._reported.append((real_url, match))
+                if self._is_false_positive(match, request, response):
+                    continue
 
-                    desc = 'The URL: "%s" has a path disclosure'\
-                           ' vulnerability which discloses "%s".'
-                    desc = desc % (response.get_url(), match)
+                # Found!
+                self._reported.append((real_url, match))
 
-                    v = Vuln('Path disclosure vulnerability', desc,
-                             severity.LOW, response.id, self.get_name())
+                desc = ('The URL: "%s" has a path disclosure vulnerability'
+                        ' which discloses "%s".')
+                desc %= (response.get_url(), match)
 
-                    v.set_url(real_url)
-                    v['path'] = match
-                    v.add_to_highlight(match)
+                v = Vuln('Path disclosure vulnerability', desc,
+                         severity.LOW, response.id, self.get_name())
+                v.add_to_highlight(match)
+                v.set_url(real_url)
+                v['path'] = match
 
-                    self.kb_append(self, 'path_disclosure', v)
-                    return v
+                self.kb_append(self, 'path_disclosure', v)
+                return v
 
     def _is_false_positive(self, match, request, response):
         """
