@@ -255,7 +255,7 @@ class detailed(AuthPlugin):
         missing_options = []
 
         for o in options_list:
-            if not o.get_value():
+            if o.get_value() == '':
                 missing_options.append(o.get_name())
 
         if missing_options:
