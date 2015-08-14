@@ -27,6 +27,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 class TestBingSpider(PluginTest):
 
     target_url = 'http://www.bonsai-sec.com/'
+    target_url_fmt = 'http://www.bonsai-sec.com/%s'
 
     _run_configs = {
         'cfg': {
@@ -40,7 +41,7 @@ class TestBingSpider(PluginTest):
         'blog', 'es/clients/', '',
     )
 
-    MOCK_RESPONSES = [MockResponse('/%s' % eu, 'Response body.') for eu in EXPECTED_URLS]
+    MOCK_RESPONSES = [MockResponse(target_url_fmt % eu, 'Response body.') for eu in EXPECTED_URLS]
 
     def test_found_urls(self):
         cfg = self._run_configs['cfg']

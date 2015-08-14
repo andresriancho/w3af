@@ -65,12 +65,16 @@ class TestGenexusXML(PluginTest):
        </Object>
     </Objects>"""
 
-    MOCK_RESPONSES = [MockResponse('/execute.xml', EXECUTE_XML,
+    MOCK_RESPONSES = [MockResponse('http://httpretty-mock/execute.xml',
+                                   EXECUTE_XML,
                                    content_type='application/xml'),
-                      MockResponse('/DeveloperMenu.xml', DEVELOPER_MENU_XML,
+                      MockResponse('http://httpretty-mock/DeveloperMenu.xml',
+                                   DEVELOPER_MENU_XML,
                                    content_type='application/xml'),
-                      MockResponse('/hidden.aspx', 'Exists'),
-                      MockResponse('/foobar.aspx', 'Exists')]
+                      MockResponse('http://httpretty-mock/hidden.aspx',
+                                   'Exists'),
+                      MockResponse('http://httpretty-mock/foobar.aspx',
+                                   'Exists')]
 
     def test_genexus_xml(self):                
         cfg = self._run_configs['cfg']
