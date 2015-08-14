@@ -34,7 +34,10 @@ SP = ' '
 
 
 class HttpHeadersView(RememberingVPaned):
-    """Headers + raw payload view."""
+    """
+    Headers + raw payload view.
+    """
+
     def __init__(self, w3af, parentView, editable=False):
         """Make object."""
         RememberingVPaned.__init__(self, w3af, 'headers_view')
@@ -44,13 +47,13 @@ class HttpHeadersView(RememberingVPaned):
         self.parentView = parentView
         self.is_request = True
         box = gtk.HBox()
-        self._headersStore = gtk.ListStore(gobject.TYPE_STRING,
+        self._header_store = gtk.ListStore(gobject.TYPE_STRING,
                                            gobject.TYPE_STRING)
-        self._headersTreeview = gtk.TreeView(self._headersStore)
+        self._headersTreeview = gtk.TreeView(self._header_store)
         # Column for Name
         renderer = gtk.CellRendererText()
         renderer.set_property('editable', editable)
-        renderer.connect('edited', self._headerNameEdited, self._headersStore)
+        renderer.connect('edited', self._header_name_edited, self._header_store)
         column = gtk.TreeViewColumn(_('Name'), renderer, text=0)
         column.set_sort_column_id(0)
         column.set_resizable(True)
@@ -59,7 +62,7 @@ class HttpHeadersView(RememberingVPaned):
         renderer = gtk.CellRendererText()
         renderer.set_property('editable', editable)
         renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
-        renderer.connect('edited', self._headerValueEdited, self._headersStore)
+        renderer.connect('edited', self._header_value_edited, self._header_store)
         column = gtk.TreeViewColumn(_('Value'), renderer, text=1)
         column.set_resizable(True)
         column.set_expand(True)
@@ -71,10 +74,10 @@ class HttpHeadersView(RememberingVPaned):
         box.pack_start(self._scrolled)
         # Buttons area
         buttons = [
-            (gtk.STOCK_GO_UP, self._moveHeaderUp),
-            (gtk.STOCK_GO_DOWN, self._moveHeaderDown),
-            (gtk.STOCK_ADD, self._addHeader),
-            (gtk.STOCK_DELETE, self._deleteHeader)
+            (gtk.STOCK_GO_UP, self._move_header_up),
+            (gtk.STOCK_GO_DOWN, self._move_header_down),
+            (gtk.STOCK_ADD, self._add_header),
+            (gtk.STOCK_DELETE, self._delete_header)
         ]
 
         buttonBox = gtk.VBox()
@@ -102,13 +105,13 @@ class HttpHeadersView(RememberingVPaned):
             buf.connect("changed", self._changed)
         self.add(self._raw)
 
-    def _addHeader(self, widget):
+    def _add_header(self, widget):
         """Add header to headers."""
-        i = self._headersStore.append(["", ""])
+        i = self._header_store.append(['', ''])
         selection = self._headersTreeview.get_selection()
         selection.select_iter(i)
 
-    def _deleteHeader(self, widget):
+    def _delete_header(self, widget):
         """Delete selected header."""
         selection = self._headersTreeview.get_selection()
         (model, selected) = selection.get_selected()
@@ -116,7 +119,7 @@ class HttpHeadersView(RememberingVPaned):
             model.remove(selected)
         self._changed()
 
-    def _moveHeaderDown(self, widget):
+    def _move_header_down(self, widget):
         """Move down selected header."""
         selection = self._headersTreeview.get_selection()
         (model, selected) = selection.get_selected()
@@ -127,7 +130,7 @@ class HttpHeadersView(RememberingVPaned):
             model.swap(selected, next)
         self._changed()
 
-    def _moveHeaderUp(self, widget):
+    def _move_header_up(self, widget):
         """Move up selected header."""
         selection = self._headersTreeview.get_selection()
         model, selected = selection.get_selected()
@@ -143,21 +146,21 @@ class HttpHeadersView(RememberingVPaned):
         model.swap(selected, prev)
         self._changed()
 
-    def _headerNameEdited(self, cell, path, new_text, model):
+    def _header_name_edited(self, cell, path, new_text, model):
         """Callback for header's name edited signal."""
         model[path][0] = new_text
         self._changed()
 
-    def _headerValueEdited(self, cell, path, new_text, model):
+    def _header_value_edited(self, cell, path, new_text, model):
         """Callback for header's value edited signal."""
         model[path][1] = new_text
         self._changed()
 
-    def _updateHeadersTab(self, headers):
+    def _update_headers_tab(self, headers):
         """Update current headers view part from headers list."""
-        self._headersStore.clear()
+        self._header_store.clear()
         for header in headers:
-            self._headersStore.append([header, headers[header]])
+            self._header_store.append([header, headers[header]])
 
     def _changed(self, widg=None):
         """Synchronize changes with other views (callback)."""
@@ -167,7 +170,7 @@ class HttpHeadersView(RememberingVPaned):
 
     def clear(self):
         """Clear view."""
-        self._headersStore.clear()
+        self._header_store.clear()
         self._raw.clear()
         self.startLine = ''
 
@@ -179,21 +182,21 @@ class HttpHeadersView(RememberingVPaned):
         """Show object in view."""
         if self.is_request:
             self.startLine = obj.get_request_line()
-            self._updateHeadersTab(obj.get_headers())
+            self._update_headers_tab(obj.get_headers())
             data = ''
             if obj.get_data():
                 data = str(obj.get_data())
             self._raw.set_text(data)
         else:
             self.startLine = obj.get_status_line()
-            self._updateHeadersTab(obj.get_headers())
+            self._update_headers_tab(obj.get_headers())
             self._raw.set_text(obj.get_body())
 
     def get_object(self):
         """Return object (request or response)."""
         head = self.startLine
 
-        for header in self._headersStore:
+        for header in self._header_store:
             head += header[0] + ':' + header[1] + CRLF
 
         if self.is_request:

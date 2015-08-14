@@ -286,12 +286,12 @@ class PromptDialog(gtk.Dialog):
         # the toolbar
         box = gtk.HBox()
         but = gtk.Button(stock=gtk.STOCK_SAVE)
-        but.set_property("image-position", gtk.POS_TOP)
-        but.connect("clicked", self._save)
+        but.set_property('image-position', gtk.POS_TOP)
+        but.connect('clicked', self._save)
         box.pack_start(but, False, False)
         self.vbox.pack_start(box, False, False)
         self.vbox.pack_start(gtk.HSeparator(), False, False, padding=5)
-        # FIXME: poner un HELP aca
+        # FIXME: Add help here
 
         # the prompt in an scrolled window
         sw = gtk.ScrolledWindow()
@@ -307,17 +307,21 @@ class PromptDialog(gtk.Dialog):
     def _save(self, widg):
         """Saves the content to a file."""
         text = self.prompt.get_text()
-        dlg = gtk.FileChooserDialog(
-            title=_("Choose a file..."), action=gtk.FILE_CHOOSER_ACTION_OPEN,
-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        dlg = gtk.FileChooserDialog(title=_('Choose output file...'),
+                                    action=gtk.FILE_CHOOSER_ACTION_SAVE,
+                                    buttons=(gtk.STOCK_CANCEL,
+                                             gtk.RESPONSE_CANCEL,
+                                             gtk.STOCK_SAVE,
+                                             gtk.RESPONSE_OK))
         resp = dlg.run()
         fname = dlg.get_filename()
         dlg.destroy()
         if resp == gtk.RESPONSE_OK and fname is not None:
-            fh = open(fname, "w")
+            fh = open(fname, 'w')
             fh.write(text)
             fh.close()
         return
+
 
 if __name__ == "__main__":
     def proc_func(x):

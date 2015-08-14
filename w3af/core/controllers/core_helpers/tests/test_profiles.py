@@ -23,9 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 
+from ConfigParser import ConfigParser
 from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
+from w3af.core.data.profile.profile import profile
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
@@ -154,3 +156,77 @@ class TestCoreProfiles(unittest.TestCase):
                                                            'ssl_certificate')
         ca_path = plugin_opts['caFileName'].get_value()
         self.assertEqual(ca_path, self.INPUT_FILE)
+
+    def test_load_save_as_no_changes(self):
+        """
+        During some tests I noticed that the console UI was removing the plugin
+        configuration from the profiles when I did a save_as, so this test
+        is rather simple and will:
+
+            * Load a profile
+            * Save it again
+            * Make a diff between the old and new, it should be empty
+        """
+        self.core.profiles.use_profile('OWASP_TOP10', workdir='.')
+        self.core.profiles.save_current_to_new_profile('unittest-OWASP_TOP10')
+
+        # Diff the two profile files
+        p1 = profile('OWASP_TOP10', workdir='.')
+        p2 = profile('unittest-OWASP_TOP10', workdir='.')
+
+        assertProfilesEqual(p1.profile_file_name, p2.profile_file_name)
+
+        # cleanup
+        self.core.profiles.remove_profile('unittest-OWASP_TOP10')
+
+
+def assertProfilesEqual(profile_filename_a, profile_filename_b,
+                        skip_sections=None, skip_options=None):
+    """
+    Compares two profiles
+    """
+    if skip_options is None:
+        skip_options = {'local_ip_address', 'description', 'name'}
+
+    if skip_sections is None:
+        skip_sections = {'target'}
+
+    original = ConfigParser()
+    original.read(profile_filename_a)
+
+    saved = ConfigParser()
+    saved.read(profile_filename_b)
+
+    #
+    #   Analyze in one way
+    #
+    for section_name in original.sections():
+        for orig_name, orig_value in original.items(section_name):
+            if orig_name in skip_options:
+                continue
+
+            if section_name in skip_sections:
+                continue
+
+            saved_value = saved.get(section_name, orig_name)
+            msg = ('The "%s" option of the "%s" section changed from'
+                   ' "%s" to "%s"')
+            args = (orig_name, section_name, orig_value, saved_value)
+            assert saved_value == orig_value, msg % args
+
+    #
+    #   And then the other
+    #
+    for section_name in saved.sections():
+        for saved_name, saved_value in saved.items(section_name):
+            if saved_name in skip_options:
+                continue
+
+            if section_name in skip_sections:
+                continue
+
+            orig_value = original.get(section_name, saved_name)
+            msg = ('The "%s" option of the "%s" section changed from'
+                   ' "%s" to "%s"')
+            args = (saved_name, section_name, orig_value, saved_value)
+            assert saved_value == orig_value, msg % args

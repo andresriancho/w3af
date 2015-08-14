@@ -74,13 +74,19 @@ class BaseOption(object):
     def get_value_str(self):
         return self._get_str(self.get_value())
 
-    def get_value_for_profile(self):
+    def get_value_for_profile(self, self_contained=False):
         """
         Allows the option to be serialized differently when used as a profile
         value.
 
         Added when fixing:
             https://github.com/andresriancho/w3af/issues/402
+
+        :param self_contained: If set to True the profile option will be
+                               serialized in such a way that it can be read in
+                               full from the profile. For example, if the option
+                               is a file, the contents are read and stored as
+                               the value.
         """
         return self._get_str(self.get_value())
 

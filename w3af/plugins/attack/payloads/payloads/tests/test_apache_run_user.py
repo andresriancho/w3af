@@ -22,9 +22,9 @@ from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import Payl
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_apache_run_user(PayloadTestHelper):
+class TestApacheRunUser(PayloadTestHelper):
 
-    EXPECTED_RESULT = {'apache_run_user': [u'www-data']}
+    EXPECTED_RESULT = {'apache_run_user': []}
 
     def test_apache_run_user(self):
         result = exec_payload(self.shell, 'apache_run_user', use_api=True)

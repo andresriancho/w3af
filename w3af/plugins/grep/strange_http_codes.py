@@ -44,11 +44,13 @@ class strange_http_codes(GrepPlugin):
             return
 
         # Create a new info object from scratch and save it to the kb
-        desc = 'The remote Web server sent a strange HTTP response code:'\
-               ' "%s" with the message: "%s", manual inspection is recommended.'
-        desc = desc % (response.get_code(), response.get_msg())
+        desc = ('The remote Web server sent a strange HTTP response code:'
+                ' "%s" with the message: "%s", manual inspection is'
+                ' recommended.')
+        desc %= (response.get_code(), response.get_msg())
 
-        i = Info('Strange HTTP response code', desc, response.id, self.get_name())
+        i = Info('Strange HTTP response code',
+                 desc, response.id, self.get_name())
         i.add_to_highlight(str(response.get_code()), response.get_msg())
         i.set_url(response.get_url())
         i[StrangeCodesInfoSet.ITAG] = response.get_code()

@@ -20,16 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import threading
-import clamd
+import pyclamd
 
-# Installed as a clamd dependency by pip
-from six import BytesIO
 from collections import namedtuple
 
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-
 from w3af.core.data.kb.info import Info
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -76,7 +73,7 @@ class clamav(GrepPlugin):
         if not self._is_properly_configured():
             return
         
-        if request.get_method() not in self.METHODS or\
+        if request.get_method() not in self.METHODS or \
         response.get_code() not in self.HTTP_CODES:
             return
         
@@ -99,9 +96,9 @@ class clamav(GrepPlugin):
                 self._properly_configured = True
                 
             else:
-                msg = 'The ClamAV plugin failed to connect to clamd using'\
-                      ' the provided unix socket: "%s". Please verify your'\
-                      ' configuration and try again.'
+                msg = ('The ClamAV plugin failed to connect to clamd using'
+                       ' the provided unix socket: "%s". Please verify your'
+                       ' configuration and try again.')
                 om.out.error(msg % self._clamd_socket)
                 self._properly_configured = False
             
@@ -113,7 +110,7 @@ class clamav(GrepPlugin):
         """
         try:
             cd = self._get_connection()
-            return cd.ping() == u'PONG'
+            return cd.ping() is True
         except:
             return False
     
@@ -123,7 +120,7 @@ class clamav(GrepPlugin):
                  Thought about having a connection pool, but it doesn't make
                  much sense; plus it adds complexity due to the threads.
         """
-        return clamd.ClamdUnixSocket(path=self._clamd_socket)
+        return pyclamd.ClamdUnixSocket(filename=self._clamd_socket)
     
     def _get_clamd_version(self):
         """
@@ -142,20 +139,20 @@ class clamav(GrepPlugin):
         :return: None
         """
         body = str(response.get_body())
-        
+
         try:
             cd = self._get_connection()
-            result_dict = cd.instream(BytesIO(body))
+            result_dict = cd.scan_stream(body)
         except Exception, e:
-            msg = 'The ClamAV plugin failed to connect to clamd using'\
-                  ' the provided unix socket: "%s". Please verify your'\
-                  ' configuration and try again. The exception was: "%s".'
+            msg = ('The ClamAV plugin failed to connect to clamd using'
+                   ' the provided unix socket: "%s". Please verify your'
+                   ' configuration and try again. The exception was: "%s".')
             om.out.error(msg % (self._clamd_socket, e))
             self._properly_configured = False
             result = None
         else:
             result = self._parse_scan_result(result_dict)
-        
+
         return response, result
     
     def _report_result(self, (response, scan_result)):
@@ -167,11 +164,14 @@ class clamav(GrepPlugin):
         :param scan_result: The result object from _scan_http_response
         :return: None
         """
+        if scan_result is None:
+            return
+
         if scan_result.found:
         
-            desc = 'ClamAV identified malware at URL: "%s", the matched'\
-                   ' signature name is "%s".'
-            desc = desc % (response.get_url(), scan_result.signature)
+            desc = ('ClamAV identified malware at URL: "%s", the matched'
+                    ' signature name is "%s".')
+            desc %= (response.get_url(), scan_result.signature)
     
             i = Info('Malware identified', desc, response.id, self.get_name())
             i.set_url(response.get_url())
@@ -202,9 +202,9 @@ class clamav(GrepPlugin):
         ol = OptionList()
 
         d = 'ClamAV daemon socket path'
-        h = 'Communication with ClamAV is performed over an Unix socket, in'\
-            ' order to be able to use this plugin please start a clamd daemon'\
-            ' and provide the unix socket path.'
+        h = ('Communication with ClamAV is performed over an Unix socket, in'
+             ' order to be able to use this plugin please start a clamd daemon'
+             ' and provide the unix socket path.')
         # TODO: Maybe I should change this STRING to INPUT_FILE?
         o = opt_factory('clamd_socket', self._clamd_socket, d, STRING, help=h)
         ol.add(o)
@@ -218,9 +218,9 @@ class clamav(GrepPlugin):
         return """
         Uses ClamAV to identify malware in your site.
         
-        In order to be able to successfully use this plugin, you'll have to
-        install ClamAV in your system, for Ubuntu the following commands should
-        install ClamAV and start the daemon:
+        In order to be able to use this plugin, you'll have to install ClamAV
+        in your system, for Ubuntu the following commands should install ClamAV
+        and start the daemon:
         
         sudo apt-get install clamav-daemon clamav-freshclam clamav-unofficial-sigs
         sudo freshclam

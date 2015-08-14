@@ -96,16 +96,16 @@ class ConfigPanel(gtk.VBox):
 
     Handles the creation of each configuration panel for each plugin.
 
-    :param profileDescription: The description of the selected profile, if any
+    :param profile_description: The description of the selected profile, if any
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
-    def __init__(self, profileDescription=None):
+    def __init__(self, profile_description=None):
         super(ConfigPanel, self).__init__(False, 0)
 
-        if profileDescription is not None:
+        if profile_description is not None:
             # put the description
-            lab = gtk.Label(profileDescription)
+            lab = gtk.Label(profile_description)
             lab.set_line_wrap(True)
             self.widg = lab
             lab.show()
@@ -630,11 +630,11 @@ class PluginConfigBody(gtk.VBox):
 
         self.show()
 
-    def _buildpan(self, profileDescription=None):
+    def _buildpan(self, profile_description=None):
         """Builds the panel."""
         pan = entries.RememberingHPaned(self.w3af, "pane-plugconfigbody", 250)
         leftpan = entries.RememberingVPaned(self.w3af, "pane-plugconfigleft", 320)
-        self.config_panel = ConfigPanel(profileDescription)
+        self.config_panel = ConfigPanel(profile_description)
 
         # upper left
         scrollwin1u = gtk.ScrolledWindow()

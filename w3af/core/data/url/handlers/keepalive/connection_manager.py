@@ -200,11 +200,11 @@ class ConnectionManager(object):
                     retry_count -= 1
                     time.sleep(self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
 
-            msg = 'HTTP connection pool (keepalive) waited too long (%s sec)' \
-                  ' for a free connection, giving up. This usually occurs' \
-                  ' when w3af is scanning using a slow connection, the remote' \
-                  ' server is slow (or applying QoS to IP addresses flagged' \
-                  ' as attackers).'
+            msg = ('HTTP connection pool (keepalive) waited too long (%s sec)'
+                   ' for a free connection, giving up. This usually occurs'
+                   ' when w3af is scanning using a slow connection, the remote'
+                   ' server is slow (or applying QoS to IP addresses flagged'
+                   ' as attackers).')
             seconds = (self.GET_AVAILABLE_CONNECTION_RETRY_NUM *
                        self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
             raise ConnectionPoolException(msg % seconds)

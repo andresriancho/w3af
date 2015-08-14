@@ -41,8 +41,10 @@ class TestProxy(XpresserUnittest):
         self.http_daemon = HTTPDaemon()
         self.http_daemon.start()
         self.http_daemon.wait_for_start()
-        
-        proxy_support = urllib2.ProxyHandler({'http': '127.0.0.1:8080'})
+
+        proxy_url = '127.0.0.1:8080'
+        proxy_support = urllib2.ProxyHandler({'http': proxy_url,
+                                              'https': proxy_url})
         self.opener = urllib2.build_opener(proxy_support)
         
     def tearDown(self):

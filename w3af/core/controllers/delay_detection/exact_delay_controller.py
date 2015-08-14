@@ -99,15 +99,15 @@ class ExactDelayController(DelayMixIn):
         return True, responses
 
     def _log_success(self, delay, response):
-        msg = u'(Test id: %s) Successfully controlled HTTP response delay for'\
-              u' URL %s - parameter "%s" for %s seconds using %r, response'\
-              u' wait time was: %s seconds.'
+        msg = (u'(Test id: %s) Successfully controlled HTTP response delay for'
+               u' URL %s - parameter "%s" for %s seconds using %r, response'
+               u' wait time was: %s seconds.')
         self._log_generic(msg, delay, response)
 
     def _log_failure(self, delay, response):
-        msg = u'(Test id: %s) Failed to control HTTP response delay for'\
-              u' URL %s - parameter "%s" for %s seconds using %r, response'\
-              u' wait time was: %s seconds.'
+        msg = (u'(Test id: %s) Failed to control HTTP response delay for'
+               u' URL %s - parameter "%s" for %s seconds using %r, response'
+               u' wait time was: %s seconds.')
         self._log_generic(msg, delay, response)
 
     def _log_generic(self, msg, delay, response):

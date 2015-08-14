@@ -52,11 +52,12 @@ class strange_reason(GrepPlugin):
             return
 
         # Create a new info object from scratch and save it to the kb:
-        desc = 'The remote Web server sent a strange HTTP reason'\
-               'message "%s", manual inspection is recommended.'
-        desc = desc % response.get_msg()
+        desc = ('The remote Web server sent a strange HTTP reason'
+                ' message "%s", manual inspection is recommended.')
+        desc %= response.get_msg()
 
-        i = Info('Strange HTTP Reason message', desc, response.id, self.get_name())
+        i = Info('Strange HTTP Reason message',
+                 desc, response.id, self.get_name())
         i.set_url(response.get_url())
         i.add_to_highlight(response.get_msg())
         i[StrangeHeaderInfoSet.ITAG] = response.get_msg()

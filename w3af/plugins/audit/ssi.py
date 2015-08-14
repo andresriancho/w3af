@@ -22,15 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import w3af.core.data.constants.severity as severity
+import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.fuzzer.utils import rand_alpha
-from w3af.core.data.db.disk_dict import DiskDict
-from w3af.core.data.db.disk_list import DiskList
-from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.esmre.multi_in import multi_in
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from w3af.core.data.fuzzer.fuzzer import create_mutants
+from w3af.core.data.fuzzer.utils import rand_number
+from w3af.core.data.db.disk_dict import DiskDict
+from w3af.core.data.kb.vuln import Vuln
 
 
 class ssi(AuditPlugin):
@@ -38,16 +37,12 @@ class ssi(AuditPlugin):
     Find server side inclusion vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     def __init__(self):
         AuditPlugin.__init__(self)
 
         # Internal variables
-        self._expected_res_mutant = DiskDict(table_prefix='ssi')
-        self._freq_list = DiskList(table_prefix='ssi')
-        
-        re_str = '<!--#exec cmd="echo -n (.*?);echo -n (.*?)" -->'
-        self._extract_results_re = re.compile(re_str) 
+        self._expected_mutant_dict = DiskDict(table_prefix='ssi')
+        self._extract_expected_re = re.compile('[1-9]{5}')
 
     def audit(self, freq, orig_response):
         """
@@ -55,18 +50,8 @@ class ssi(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
-        # Create the mutants to send right now,
         ssi_strings = self._get_ssi_strings()
         mutants = create_mutants(freq, ssi_strings, orig_resp=orig_response)
-
-        # Used in end() to detect "persistent SSI"
-        for mut in mutants:
-            expected_result = self._extract_result_from_payload(
-                mut.get_token_value())
-            self._expected_res_mutant[expected_result] = mut
-
-        self._freq_list.append(freq)
-        # End of persistent SSI setup
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -78,38 +63,76 @@ class ssi(AuditPlugin):
 
         :return: A string, see above.
         """
-        yield '<!--#exec cmd="echo -n %s;echo -n %s" -->' % (rand_alpha(5),
-                                                             rand_alpha(5))
+        # Generic
+        yield '<!--#exec cmd="echo -n %s;echo -n %s" -->' % get_seeds()
 
-        # TODO: Add mod_perl ssi injection support
-        # http://www.sens.buffalo.edu/services/webhosting/advanced/perlssi.shtml
-        #yield <!--#perl sub="sub {print qq/If you see this, mod_perl is working!/;}" -->
+        # Perl SSI
+        yield ('<!--#set var="SEED_A" value="%s" -->'
+               '<!--#echo var="SEED_A" -->'
+               '<!--#set var="SEED_B" value="%s" -->'
+               '<!--#echo var="SEED_B" -->' % get_seeds())
 
-    def _extract_result_from_payload(self, payload):
+        # Smarty
+        # http://www.smarty.net/docsv2/en/language.function.math.tpl
+        yield '{math equation="x * y" x=%s y=%s}' % get_seeds()
+
+        # Mako
+        # http://docs.makotemplates.org/en/latest/syntax.html
+        yield '${%s * %s}' % get_seeds()
+
+        # Jinja2 and Twig
+        # http://jinja.pocoo.org/docs/dev/templates/#math
+        # http://twig.sensiolabs.org/doc/templates.html
+        yield '{{%s * %s}}' % get_seeds()
+
+        # Generic
+        yield '{%s * %s}' % get_seeds()
+
+    def _get_expected_results(self, mutant):
         """
-        Extract the expected result from the payload we're sending.
+        Extracts the potential results from the mutant payload and returns them
+        in a list.
         """
-        match = self._extract_results_re.search(payload)
-        return match.group(1) + match.group(2)
+        sent_payload = mutant.get_token_payload()
+        seed_numbers = self._extract_expected_re.findall(sent_payload)
+
+        seed_a = int(seed_numbers[0])
+        seed_b = int(seed_numbers[1])
+
+        return [str(seed_a * seed_b), '%s%s' % (seed_a, seed_b)]
 
     def _analyze_result(self, mutant, response):
         """
         Analyze the result of the previously sent request.
         :return: None, save the vuln to the kb.
         """
-        if self._has_no_bug(mutant):
-            e_res = self._extract_result_from_payload(mutant.get_token_value())
-            if e_res in response and not e_res in mutant.get_original_response_body():
-                
-                desc = 'Server side include (SSI) was found at: %s'
-                desc = desc % mutant.found_at()
-                
-                v = Vuln.from_mutant('Server side include vulnerability', desc,
-                                     severity.HIGH, response.id, self.get_name(),
-                                     mutant)
+        # Store the mutants in order to be able to analyze the persistent case
+        # later
+        expected_results = self._get_expected_results(mutant)
 
-                v.add_to_highlight(e_res)
-                self.kb_append_uniq(self, 'ssi', v)
+        for expected_result in expected_results:
+            self._expected_mutant_dict[expected_result] = mutant
+
+        # Now we analyze the "reflected" case
+        if self._has_bug(mutant):
+            return
+
+        for expected_result in expected_results:
+            if expected_result not in response:
+                continue
+
+            if expected_result in mutant.get_original_response_body():
+                continue
+
+            desc = 'Server side include (SSI) was found at: %s'
+            desc %= mutant.found_at()
+
+            v = Vuln.from_mutant('Server side include vulnerability', desc,
+                                 severity.HIGH, response.id,
+                                 self.get_name(), mutant)
+
+            v.add_to_highlight(expected_result)
+            self.kb_append_uniq(self, 'ssi', v)
 
     def end(self):
         """
@@ -118,62 +141,76 @@ class ssi(AuditPlugin):
 
         Example where a persistent SSI can be found:
 
-        Say you have a "guestbook" (a CGI application that allows visitors
+        Say you have a "guest book" (a CGI application that allows visitors
         to leave messages for everyone to see) on a server that has SSI
-        enabled. Most such guestbooks around the Net actually allow visitors
+        enabled. Most such guest books around the Net actually allow visitors
         to enter HTML code as part of their comments. Now, what happens if a
         malicious visitor decides to do some damage by entering the following:
 
         <!--#exec cmd="ls" -->
 
-        If the guestbook CGI program was designed carefully, to strip SSI
+        If the guest book CGI program was designed carefully, to strip SSI
         commands from the input, then there is no problem. But, if it was not,
         there exists the potential for a major headache!
 
         For a working example please see moth VM.
         """
-        multi_in_inst = multi_in(self._expected_res_mutant.keys())
-
-        def filtered_freq_generator(freq_list):
-            already_tested = ScalableBloomFilter()
-
-            for freq in freq_list:
-                if freq not in already_tested:
-                    already_tested.add(freq)
-                    yield freq
-
-        def analyze_persistent(freq, response):
-
-            for matched_expected_result in multi_in_inst.query(response.get_body()):
-                # We found one of the expected results, now we search the
-                # self._persistent_data to find which of the mutants sent it
-                # and create the vulnerability
-                mutant = self._expected_res_mutant[matched_expected_result]
-                
-                desc = 'Server side include (SSI) was found at: %s' \
-                       ' The result of that injection is shown by browsing'\
-                       ' to "%s".' 
-                desc = desc % (mutant.found_at(), freq.get_url())
-                
-                v = Vuln.from_mutant('Persistent server side include vulnerability',
-                                     desc, severity.HIGH, response.id,
-                                     self.get_name(), mutant)
-                
-                v.add_to_highlight(matched_expected_result)
-                self.kb_append(self, 'ssi', v)
+        fuzzable_request_set = kb.kb.get_all_known_fuzzable_requests()
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                      filtered_freq_generator(self._freq_list),
-                                      analyze_persistent,
+                                      fuzzable_request_set,
+                                      self._analyze_persistent,
                                       cache=False)
-        
-        self._expected_res_mutant.cleanup()
-        self._freq_list.cleanup()
+
+        self._expected_mutant_dict.cleanup()
+
+    def _analyze_persistent(self, freq, response):
+        """
+        Analyze the response of sending each fuzzable request found by the
+        framework, trying to identify any locations where we might have injected
+        a payload.
+
+        :param freq: The fuzzable request
+        :param response: The HTTP response
+        :return: None, vulns are stored in KB
+        """
+        multi_in_inst = multi_in(self._expected_mutant_dict.keys())
+
+        for matched_expected_result in multi_in_inst.query(response.get_body()):
+            # We found one of the expected results, now we search the
+            # self._expected_mutant_dict to find which of the mutants sent it
+            # and create the vulnerability
+            mutant = self._expected_mutant_dict[matched_expected_result]
+
+            desc = ('Server side include (SSI) was found at: %s'
+                    ' The result of that injection is shown by browsing'
+                    ' to "%s".')
+            desc %= (mutant.found_at(), freq.get_url())
+
+            v = Vuln.from_mutant('Persistent server side include vulnerability',
+                                 desc, severity.HIGH, response.id,
+                                 self.get_name(), mutant)
+
+            v.add_to_highlight(matched_expected_result)
+            self.kb_append(self, 'ssi', v)
 
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds server side include (SSI) vulnerabilities.
+        This plugin finds server side include (SSI) vulnerabilities, also
+        recently renamed to Server-Side Template Injection vulnerabilities.
+
+        http://blog.portswigger.net/2015/08/server-side-template-injection.html
         """
+
+
+def get_seeds():
+    """
+    :return: A couple of random numbers which will be used to make the payloads
+             unique. Please note that I'm excluding the zeroes in order to avoid
+             some bugs where leading zeroes are truncated.
+    """
+    return (rand_number(5, exclude_numbers=(0,)),
+            rand_number(5, exclude_numbers=(0,)))

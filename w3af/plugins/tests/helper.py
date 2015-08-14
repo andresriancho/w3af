@@ -277,6 +277,11 @@ class PluginTest(unittest.TestCase):
         if debug or environ_debug:
             self._configure_debug()
 
+        # Set a special user agent to be able to grep the logs and identify
+        # requests sent by each test
+        custom_test_agent = self.get_custom_agent()
+        self.w3afcore.uri_opener.settings.set_user_agent(custom_test_agent)
+
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
         self.w3afcore.verify_environment()
@@ -292,6 +297,12 @@ class PluginTest(unittest.TestCase):
             caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
             tracebacks = [e.get_details() for e in caught_exceptions]
             self.assertEqual(len(caught_exceptions), 0, tracebacks)
+
+    def get_custom_agent(self):
+        """
+        :return: The test agent for easier log grep
+        """
+        return 'Mozilla/4.0 (compatible; w3af.org; TestCase: %s)' % self.id()
 
     def _formatMessage(self, msg, standardMsg):
         """Honour the longMessage attribute when generating failure messages.

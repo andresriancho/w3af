@@ -8,29 +8,14 @@ machine:
   services:
     - docker
 
-  pre:
-    # TODO: Affected by https://github.com/docker/docker/issues/12489 , slow push
-    - sudo curl -L -o /usr/bin/docker 'http://s3-external-1.amazonaws.com/circle-downloads/docker-1.6.2-circleci'; sudo chmod 0755 /usr/bin/docker; true
-
   python:
     version: 2.7.3
-
-  # This is required to run WIVET
-  php:
-    version: 5.5.11
-
-  java:
-    version: oraclejdk7
 
   post:
     # This was required to avoid issues with different builds of python being
     # used between the gtk libs installed in /usr/lib/python2.7/dist-packages/
     # and the python which was put inside my virtualenv
     - pyenv global system
-
-    # And we want to start the django-moth server
-    # https://circleci.com/docs/background-process
-    - nohup bash -c "python w3af/w3af/core/controllers/ci/setup_moth.py &" > $CIRCLE_ARTIFACTS/setup-moth-nohup.log
 
 
 checkout:
@@ -43,21 +28,22 @@ checkout:
 
 dependencies:
   cache_directories:
-    # This, since it's run in the machine section is in the home
-    - "/home/ubuntu/django-moth"
-
     # These are inside the w3af directory
     - "xpresser"
-    - "wivet"
-    - "pico-wavsep"
-    - "sqlmap-testenv"
-    - "php-moth"
 
   pre:
+    - docker info
+    - docker version
+    - docker images
+
     - sudo apt-get update
     - sudo apt-get install -y python-gtksourceview2 python-gtk2 gir1.2-notify-0.7 python-pyatspi2
-    - sudo apt-get install -y python-dbus python-pygame python-opencv python-scipy python-numpy
-    - sudo apt-get install -y stunnel4 libffi-dev tcpdump joe python-webkit
+                              python-dbus python-pygame python-opencv python-scipy python-numpy
+                              stunnel4 libffi-dev tcpdump joe python-webkit
+
+    # ClamAV installation for grep.clamav testing
+    - sudo apt-get install clamav-daemon clamav-freshclam clamav-unofficial-sigs
+    - sudo service clamav-daemon start
 
     # Install the core/console dependencies
     - pip install --upgrade pip
@@ -72,34 +58,9 @@ dependencies:
     # Install the test dependencies
     - w3af/core/controllers/ci/install_scripts/install_test_dependencies.sh
 
-    # Install and run wivet in the background
-    - w3af/core/controllers/ci/install_scripts/install_wivet.sh
-    - php -S localhost:8899 -t wivet/ w3af/core/controllers/ci/helpers/router.php:
-        background: true
-
-    # Install and run php-moth in the background
-    - w3af/core/controllers/ci/install_scripts/install_php_moth.sh
-    - php -S localhost:9009 -t . -c conf/default.ini router.php &> $CIRCLE_ARTIFACTS/run_php_moth.log:
-        background: true
-        pwd: php-moth
-
-    # Install and run sqlmap's testenv in the background
-    - w3af/core/controllers/ci/install_scripts/install_sqlmap_testenv.sh
-    - php -S localhost:8998 -t . &> $CIRCLE_ARTIFACTS/run_testenv.log:
-        background: true
-        pwd: sqlmap-testenv
-
-    # Install and run wavsep in the background
-    - w3af/core/controllers/ci/install_scripts/install_wavsep.sh
-    - java -jar jenkins-winstone.jar --warfile=wavsep.war --useJasper --commonLibFolder=lib --httpPort=8098 --ajp13Port=8099:
-        background: true
-        pwd: pico-wavsep
-
-    # Save docker hub credentials to file
-    - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < extras/docker/dockercfg.template > ~/.dockercfg
-
-    # Wait for the daemon to be available to run the tests
-    - w3af/core/controllers/ci/wait_for_moth.py
+    # Run the test servers/dependencies
+    - cd w3af/tests/ && docker-compose up -d
+    - w3af/tests/add-test-routes.sh
 
   post:
     - pip --version
@@ -113,7 +74,8 @@ test:
 
     - nosetests w3af/core/data/constants/tests/test_vulns.py:TestVulnsConstants.test_vuln_updated
 
-    - w3af/core/controllers/ci/teardown_moth.py
+    # Dump the container logs for debugging
+    - for c in `docker ps -q`; do docker logs $c > $CIRCLE_ARTIFACTS/docker-$c.log; done
 
 # https://bitbucket.org/ned/coveragepy/issue/282/coverage-combine-consumes-a-lot-of-memory         
 #  post:
@@ -125,6 +87,9 @@ deployment:
     branch: master
     owner: andresriancho
     commands:
+      # Save docker hub credentials to file
+      - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < extras/docker/dockercfg.template > ~/.dockercfg
+
       # Note the master in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/master?circle-token=$W3AF_MODULE_TOKEN"
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-kali-ci/tree/master?circle-token=$W3AF_KALI_TOKEN"
@@ -153,6 +118,9 @@ deployment:
     branch: develop
     owner: andresriancho
     commands:
+      # Save docker hub credentials to file
+      - sed "s/<EMAIL>/$DOCKER_EMAIL/;s/<AUTH>/$DOCKER_AUTH/" < extras/docker/dockercfg.template > ~/.dockercfg
+
       # Note the develop in the URLs
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-module/tree/develop?circle-token=$W3AF_MODULE_TOKEN"
       - "curl --header 'Content-Type: application/json' --request POST https://circleci.com/api/v1/project/andresriancho/w3af-api-client/tree/develop?circle-token=$W3AF_API_CLIENT_TOKEN"

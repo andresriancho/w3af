@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 
-HTTP_PHP_MOTH = '/tmp/php_moth.txt'
+HTTP_PHP_MOTH = '/tmp/php-moth.txt'
 DEFAULT_PHP_MOTH = 'php_moth-fallback:80'
 
 

@@ -31,55 +31,64 @@ from w3af.core.controllers.misc.homeDir import HOME_DIR
 from w3af.core.data.profile.profile import profile as profile
 
 
-class w3af_core_profiles(object):
+class CoreProfiles(object):
 
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
 
-    def save_current_to_new_profile(self, profile_name, profileDesc=''):
+    def save_current_to_new_profile(self, profile_name, profile_desc='',
+                                    self_contained=False):
         """
         Saves current config to a newly created profile.
 
         :param profile_name: The profile to clone
-        :param profileDesc: The description of the new profile
+        :param profile_desc: The description of the new profile
 
         :return: The new profile instance if the profile was successfully saved.
                  Else, raise a BaseFrameworkException.
         """
         # Create the new profile.
         profile_inst = profile()
-        profile_inst.set_desc(profileDesc)
+        profile_inst.set_desc(profile_desc)
         profile_inst.set_name(profile_name)
         profile_inst.save(profile_name)
 
         # Save current to profile
-        return self.save_current_to_profile(profile_name, profileDesc)
+        return self.save_current_to_profile(profile_name, profile_desc,
+                                            self_contained=self_contained)
 
-    def save_current_to_profile(self, profile_name, prof_desc='', prof_path=''):
+    def save_current_to_profile(self, profile_name, prof_desc='', prof_path='',
+                                self_contained=False):
         """
         Save the current configuration of the core to the profile called
         profile_name.
 
         :return: The new profile instance if the profile was successfully saved.
-            otherwise raise a BaseFrameworkException.
+                 Otherwise raise a BaseFrameworkException.
         """
         # Open the already existing profile
         new_profile = profile(profile_name, workdir=os.path.dirname(prof_path))
 
-        # Save the enabled plugins
-        for pType in self._w3af_core.plugins.get_plugin_types():
-            enabledPlugins = []
-            for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
-                enabledPlugins.append(pName)
-            new_profile.set_enabled_plugins(pType, enabledPlugins)
+        # shortcut
+        w3af_plugins = self._w3af_core.plugins
 
-        # Save the profile options
-        for pType in self._w3af_core.plugins.get_plugin_types():
-            for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
-                pOptions = self._w3af_core.plugins.get_plugin_options(
-                    pType, pName)
-                if pOptions:
-                    new_profile.set_plugin_options(pType, pName, pOptions)
+        # Save the enabled plugins
+        for plugin_type in w3af_plugins.get_plugin_types():
+            enabled_plugins = []
+            for plugin_name in w3af_plugins.get_enabled_plugins(plugin_type):
+                enabled_plugins.append(plugin_name)
+            new_profile.set_enabled_plugins(plugin_type, enabled_plugins)
+
+        # Save the plugin options
+        for plugin_type in w3af_plugins.get_plugin_types():
+            for plugin_name in w3af_plugins.get_enabled_plugins(plugin_type):
+                plugin_options = w3af_plugins.get_plugin_options(plugin_type,
+                                                                 plugin_name)
+                if plugin_options:
+                    new_profile.set_plugin_options(plugin_type,
+                                                   plugin_name,
+                                                   plugin_options,
+                                                   self_contained=self_contained)
 
         # Save the profile targets
         targets = cf.cf.get('targets')
@@ -232,7 +241,7 @@ class w3af_core_profiles(object):
             - One with the file names of the profiles that are invalid
 
         >>> HOME_DIR = '.'
-        >>> p = w3af_core_profiles(None)
+        >>> p = CoreProfiles(None)
         >>> valid, invalid = p.get_profile_list(HOME_DIR)
         >>> valid_lower = [prof.get_name().lower() for prof in valid]
         >>> 'owasp_top10' in valid_lower

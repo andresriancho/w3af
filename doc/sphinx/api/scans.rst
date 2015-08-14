@@ -48,10 +48,6 @@ requests in our REST API. The call requires two specially crafted variables:
                              headers={'content-type': 'application/json'})
 
 
-.. note::
-
-   Remember to send the ``Content-Type: application/json`` header
-
 A successful HTTP ``POST`` request ``/scans/`` looks like this:
 
 .. code-block:: http
@@ -92,3 +88,16 @@ And the expected answer is a ``201`` status code:
       "id": 0,
       "message": "Success"
     }
+
+
+.. note::
+
+   Remember to send the ``Content-Type: application/json`` header
+
+.. note::
+
+   In order to avoid issues with incorrect paths referenced by a plugin
+   configuration inside the ``scan_profile`` it is recommended to use
+   ``self-contained`` profiles.
+
+

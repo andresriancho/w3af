@@ -48,6 +48,62 @@ class _HTTPConnection(httplib.HTTPConnection, UniqueID):
                                         timeout=timeout)
         self.is_fresh = True
 
+    def connect(self):
+        """
+        Connect to the host and port specified in __init__ , overriding to set
+        the socket options which should allow us to avoid issues like:
+
+            https://github.com/andresriancho/w3af/issues/11359
+
+        In systems that are running many instances of w3af and/or other network
+        intensive software.
+        """
+        self.sock = create_connection((self.host, self.port),
+                                      self.timeout,
+                                      self.source_address)
+
+        if self._tunnel_host:
+            self._tunnel()
+
+
+def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+                      source_address=None):
+    """
+    Extends socket.create_connection with the socket options to apply before
+    calling connect().
+    """
+
+    host, port = address
+    err = None
+    for res in socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
+        af, socktype, proto, canonname, sa = res
+        sock = None
+        try:
+            sock = socket.socket(af, socktype, proto)
+
+            # This is what I've added to the create_connection function
+            # https://github.com/andresriancho/w3af/issues/11359
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+            if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
+                sock.settimeout(timeout)
+            if source_address:
+                sock.bind(source_address)
+            sock.connect(sa)
+            return sock
+
+        except socket.error as _:
+            err = _
+            if sock is not None:
+                sock.close()
+
+    # pylint: disable=E0702
+    if err is not None:
+        raise err
+    else:
+        raise socket.error('getaddrinfo returns an empty list')
+    # pylint: enable=E0702
+
 
 class ProxyHTTPConnection(_HTTPConnection):
     """
@@ -76,17 +132,17 @@ class ProxyHTTPConnection(_HTTPConnection):
             try:
                 self._real_port = self._ports[proto]
             except KeyError:
-                raise ValueError("unknown protocol for: %s" % url)
+                raise ValueError('Unknown protocol for: %s' % url)
         else:
             self._real_port = int(port)
 
     def connect(self):
-        httplib.HTTPConnection.connect(self)
+        super(ProxyHTTPConnection, self).connect()
 
         #send proxy CONNECT request
         new_line = '\r\n'
         host_port = '%s:%d' % (self._real_host, self._real_port)
-        self.send("CONNECT %s HTTP/1.1%s" % (host_port, new_line))
+        self.send('CONNECT %s HTTP/1.1%s' % (host_port, new_line))
 
         connect_headers = {'Proxy-Connection': 'keep-alive',
                            'Connection': 'keep-alive',
@@ -106,7 +162,7 @@ class ProxyHTTPConnection(_HTTPConnection):
         if code != 200:
             #proxy returned and error, abort connection, and raise exception
             self.close()
-            raise socket.error("Proxy connection failed: %d %s" %
+            raise socket.error('Proxy connection failed: %d %s' %
                               (code, message.strip()))
 
         # eat up header block from proxy....
@@ -158,9 +214,9 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
         """
         :return: fresh TCP/IP connection
         """
-        sock = socket.create_connection((self.host, self.port))
+        sock = create_connection((self.host, self.port))
 
-        if getattr(self, "_tunnel_host", None):
+        if getattr(self, '_tunnel_host', None):
             self.sock = sock
             self._tunnel()
 

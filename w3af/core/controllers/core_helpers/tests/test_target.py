@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.config as cf
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.core_helpers.target import w3af_core_target
+from w3af.core.controllers.core_helpers.target import CoreTarget
 from w3af.core.data.parsers.doc.url import URL as URL_KLASS
 from w3af.core.data.options.option_types import (BOOL, INT, FLOAT, STRING, URL,
                                                  IPPORT, LIST, REGEX, COMBO,
@@ -41,7 +41,7 @@ OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
 class TestTarget(unittest.TestCase):
     
     def test_basic(self):
-        opt_lst = w3af_core_target().get_options()
+        opt_lst = CoreTarget().get_options()
 
         for opt in opt_lst:
             self.assertIn(opt.get_type(), OPTION_TYPES)
@@ -57,7 +57,7 @@ class TestTarget(unittest.TestCase):
             self.assertIsInstance(opt.get_value_str(), basestring)
 
     def test_verify_url(self):
-        ctarget = w3af_core_target()
+        ctarget = CoreTarget()
 
         self.assertRaises(BaseFrameworkException, ctarget._verify_url,
                           URL_KLASS('ftp://www.google.com/'))
@@ -66,7 +66,7 @@ class TestTarget(unittest.TestCase):
         self.assertTrue(ctarget._verify_url(URL_KLASS('http://www.google.com:39/')))
 
     def test_verify_file_target(self):
-        ctarget = w3af_core_target()
+        ctarget = CoreTarget()
 
         target_file = '/tmp/moth.target'
         target = 'file://%s' % target_file

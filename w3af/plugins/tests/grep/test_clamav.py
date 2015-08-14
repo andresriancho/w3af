@@ -19,14 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import time
+import unittest
 from itertools import repeat
-from functools import wraps
 
-import clamd
+import pyclamd
 from mock import patch, Mock
-from nose.plugins.skip import SkipTest
 
 import w3af.core.data.kb.knowledge_base as kb
 from w3af.plugins.grep.clamav import clamav
@@ -39,18 +37,6 @@ from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.ci.moth import get_moth_http
 
 
-def need_clamav(meth):
-    
-    @wraps(meth)
-    def debug(self, *args, **kwds):
-        if not self.plugin._connection_test():
-            raise SkipTest('No connection to clamav found.')
-        
-        return meth(self, *args, **kwds)
-    
-    return debug
-
-    
 class TestClamAV(unittest.TestCase):
 
     def setUp(self):
@@ -65,9 +51,8 @@ class TestClamAV(unittest.TestCase):
         self.plugin.end()
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @need_clamav
     def test_clamav_eicar(self, *args):
-        body = clamd.EICAR
+        body = pyclamd.ClamdAgnostic().EICAR()
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)
@@ -88,10 +73,8 @@ class TestClamAV(unittest.TestCase):
         self.assertEqual(finding.get_name(), 'Malware identified')
         self.assertIn('ClamAV identified malware', finding.get_desc())
         self.assertEqual(finding.get_url().url_string, url.url_string)
-        
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
-    @need_clamav
     def test_clamav_empty(self, *args):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -149,7 +132,7 @@ class TestClamAV(unittest.TestCase):
 
     @patch('w3af.plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_clamav_eicar(self, *args):
-        body = clamd.EICAR
+        body = pyclamd.ClamdAgnostic().EICAR()
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url, _id=1)
@@ -190,7 +173,6 @@ class TestClamAVScan(PluginTest):
         super(TestClamAVScan, self).tearDown()
         self.plugin.end()
         
-    @need_clamav
     def test_found_vuln(self):
         """
         Test to validate case in which malware is identified while crawling.

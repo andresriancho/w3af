@@ -24,7 +24,7 @@ import Queue
 
 from w3af.core.controllers.daemons.proxy import Proxy
 from w3af.core.controllers.daemons.proxy import InterceptProxyHandler
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import ProxyException
 
 
 class InterceptProxy(Proxy):
@@ -79,7 +79,7 @@ class InterceptProxy(Proxy):
             self.what_to_trap = re.compile(regex)
         except re.error:
             error = 'The regular expression you configured is invalid.'
-            raise BaseFrameworkException(error)
+            raise ProxyException(error)
 
     def set_methods_to_trap(self, methods):
         """
@@ -96,7 +96,7 @@ class InterceptProxy(Proxy):
             self.what_not_to_trap = re.compile(regex)
         except re.error:
             error = 'The regular expression you configured is invalid.'
-            raise BaseFrameworkException(error)
+            raise ProxyException(error)
 
     def set_trap(self, trap):
         """

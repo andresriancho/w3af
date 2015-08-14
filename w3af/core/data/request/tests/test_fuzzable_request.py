@@ -25,7 +25,6 @@ import cPickle
 import copy
 
 from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
@@ -36,6 +35,9 @@ from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.utils.multipart import multipart_encode
+from w3af.core.data.db.disk_set import DiskSet
+from w3af.core.data.dc.multipart_container import MultipartContainer
 
 
 @attr('smoke')
@@ -86,7 +88,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(fr.dump(), expected)
 
     def test_dump_mangle(self):
-        fr = FuzzableRequest(URL("http://www.w3af.com/"),
+        fr = FuzzableRequest(URL('http://www.w3af.com/'),
                              headers=Headers([('Host', 'www.w3af.com')]))
 
         expected = u'\r\n'.join([u'GET http://www.w3af.com/ HTTP/1.1',
@@ -120,7 +122,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(imported_fr, fr)
 
     def test_equal(self):
-        u = URL("http://www.w3af.com/")
+        u = URL('http://www.w3af.com/')
         fr1 = FuzzableRequest(u)
         fr2 = FuzzableRequest(u)
         self.assertEqual(fr1, fr2)
@@ -141,7 +143,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(r.get_url(), url)
 
     def test_str_no_qs(self):
-        fr = FuzzableRequest(URL("http://www.w3af.com/"))
+        fr = FuzzableRequest(URL('http://www.w3af.com/'))
         expected = 'Method: GET | http://www.w3af.com/'
         self.assertEqual(str(fr), expected)
 
@@ -153,7 +155,7 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_str_with_postdata(self):
         headers = Headers([('content-type', URLEncodedForm.ENCODING)])
-        fr = FuzzableRequest.from_parts("http://www.w3af.com/", post_data='a=1',
+        fr = FuzzableRequest.from_parts('http://www.w3af.com/', post_data='a=1',
                                         headers=headers)
         expected = 'Method: GET | http://www.w3af.com/ | URL encoded ' \
                    'form: (a)'
@@ -169,7 +171,7 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(str(fr), expected)
 
     def test_repr(self):
-        url = "http://www.w3af.com/"
+        url = 'http://www.w3af.com/'
         fr = FuzzableRequest(URL(url))
 
         self.assertEqual(repr(fr), '<fuzzable request | GET | %s>' % url)
@@ -281,3 +283,25 @@ class TestFuzzableRequest(unittest.TestCase):
         form = dc_from_form_params(form_params)
 
         return FuzzableRequest.from_form(form)
+    
+    def test_multipart_fuzzable_request_store(self):
+        boundary, post_data = multipart_encode([('a', 'bcd'), ], [])
+        multipart_boundary = MultipartContainer.MULTIPART_HEADER
+
+        headers = Headers([('content-length', str(len(post_data))),
+                           ('content-type', multipart_boundary % boundary)])
+
+        dc = MultipartContainer.from_postdata(headers, post_data)
+        post_data = str(dc)
+
+        fr = FuzzableRequest.from_parts(URL('http://www.w3af.com/'),
+                                        method='POST', post_data=post_data,
+                                        headers=headers)
+        
+        disk_set = DiskSet()
+        disk_set.add(fr)
+
+        fr_read = disk_set[0]
+
+        self.assertIsInstance(fr_read.get_raw_data(), MultipartContainer)
+        self.assertIn('a', fr_read.get_raw_data())

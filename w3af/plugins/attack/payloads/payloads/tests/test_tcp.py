@@ -18,14 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from w3af.core.controllers.ci.moth import whereis_moth
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 
-class test_tcp(PayloadTestHelper):
+class TestTCP(PayloadTestHelper):
 
-    EXPECTED_RESULT = set([whereis_moth()['http'],])
+    EXPECTED_RESULT = {'172.17.0.1:8000', '0.0.0.0:8001', '0.0.0.0:8000'}
 
     def test_tcp(self):
         result = exec_payload(self.shell, 'tcp', use_api=True)
@@ -34,4 +33,5 @@ class test_tcp(PayloadTestHelper):
         for key, conn_data in result.iteritems():
             local_addresses.append(conn_data['local_address'])
 
-        self.assertTrue(set(local_addresses).issuperset(self.EXPECTED_RESULT))
+        for expected_local_address in self.EXPECTED_RESULT:
+            self.assertIn(expected_local_address, local_addresses)

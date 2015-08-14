@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os.path
-import copy
 
 from itertools import izip, repeat
 
@@ -30,6 +29,7 @@ from w3af import ROOT_PATH
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, STRING, INPUT_FILE, INT
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.controllers.misc.safe_deepcopy import safe_deepcopy
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
                                                           password_bruteforcer)
@@ -104,7 +104,7 @@ class BruteforcePlugin(AuditPlugin):
         :return: A list with FuzzableRequests (if we were able to bruteforce
                  any forms/basic auth present in fuzzable_request).
         """
-        self.audit(copy.deepcopy(fuzzable_request))
+        self.audit(safe_deepcopy(fuzzable_request))
 
         res = []
 

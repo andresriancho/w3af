@@ -18,9 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import re
 import sys
-import subprocess
 import tempfile
+import subprocess
 
 from nose.plugins.attrib import attr
 
@@ -28,6 +29,7 @@ from w3af.core.data.db.startup_cfg import StartUpConfig
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.ui.console.tests.helper import ConsoleTestHelper
 from w3af.core.data.profile.profile import profile
+from w3af.core.controllers.core_helpers.tests.test_profiles import assertProfilesEqual
 
 
 @attr('smoke')
@@ -37,11 +39,18 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     """
     def setUp(self):
         super(TestProfilesConsoleUI, self).setUp()
-        self._remove_if_exists('unittest')
+        self._remove_if_exists(self.get_profile_name())
     
     def tearDown(self):
         super(TestProfilesConsoleUI, self).tearDown()
-        self._remove_if_exists('unittest')
+        self._remove_if_exists(self.get_profile_name())
+
+    def get_profile_name(self):
+        profile_name = self.id()
+        profile_name = profile_name.replace('.', '-')
+        profile_name = profile_name.replace(':', '-')
+        profile_name = profile_name.lower()
+        return profile_name
     
     def _remove_if_exists(self, profile_name):
         try:
@@ -55,7 +64,13 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
             profile(profile_name)
         except:
             assert False, 'The %s profile does NOT exist!' % profile_name
-        
+
+    def _assert_equal(self, profile_name_a, profile_name_b):
+        p1 = profile(profile_name_a, workdir='.')
+        p2 = profile(profile_name_b, workdir='.')
+
+        assertProfilesEqual(p1.profile_file_name, p2.profile_file_name)
+
     def test_load_profile_exists(self):
         commands_to_run = ['profiles',
                            'help',
@@ -91,7 +106,6 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_substring_in_output(expected)
         self.assertTrue(assert_result, msg)
 
-
     def test_load_profile_not_exists(self):
         commands_to_run = ['profiles',
                            'help',
@@ -109,7 +123,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     def test_save_as_profile(self):
         commands_to_run = ['profiles',
                            'use OWASP_TOP10',
-                           'save_as unittest',
+                           'save_as %s' % self.get_profile_name(),
                            'exit']
 
         expected = ('Profile saved.',)
@@ -120,7 +134,70 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
         
-        self._assert_exists('unittest')
+        self._assert_exists(self.get_profile_name())
+        self._assert_equal(self.get_profile_name(), 'OWASP_TOP10')
+
+    def test_save_as_self_contained_profile(self):
+        commands_to_run = ['profiles',
+                           'use OWASP_TOP10',
+                           'save_as %s self-contained' % self.get_profile_name(),
+                           'exit']
+
+        expected = ('Profile saved.',)
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        assert_result, msg = self.startswith_expected_in_output(expected)
+        self.assertTrue(assert_result, msg)
+
+        # The profile is now self contained
+        p = profile(self.get_profile_name())
+        self.assertIn('caFileName = base64://',
+                      file(p.profile_file_name).read())
+
+        # Before it wasn't
+        p = profile('OWASP_TOP10')
+        self.assertIn('caFileName = %ROOT_PATH%',
+                      file(p.profile_file_name).read())
+
+    def test_use_self_contained_profile(self):
+        """
+        Makes sure that we're able to use a self-contained profile and that
+        it's transparent for the plugin code.
+        """
+        #
+        #   Make the profile self-contained and load it
+        #
+        commands_to_run = ['profiles',
+                           'use OWASP_TOP10',
+                           'save_as %s self-contained' % self.get_profile_name(),
+                           'back',
+                           'profiles',
+                           'use %s' % self.get_profile_name(),
+                           'back',
+                           'plugins audit config ssl_certificate',
+                           'view',
+                           'exit']
+
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
+
+        #
+        # Extract the temp file from the plugin configuration and read it
+        #
+        for line in self._mock_stdout.messages:
+            match = re.search('(/tmp/w3af-.*-sc\.dat)', line)
+            if not match:
+                continue
+
+            filename = match.group(0)
+
+            self.assertIn('Bundle of CA Root Certificates',
+                          file(filename).read())
+            break
+        else:
+            self.assertTrue(False, 'No self contained file found')
 
     def test_set_save_use(self):
         """
@@ -146,7 +223,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
                            'set msf_location /tmp/',
                            'back',
                            'profiles',
-                           'save_as unittest',
+                           'save_as %s' % self.get_profile_name(),
                            'exit']
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
@@ -173,7 +250,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         # Now we run a new ConsoleUI that will load the saved settings. We
         # should see /tmp/ as the value for msf_location
         commands_to_run = ['profiles',
-                           'use unittest',
+                           'use %s' % self.get_profile_name(),
                            'back',
                            'misc-settings',
                            'view',
@@ -205,7 +282,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     def test_save_load_misc_settings(self):
         # Save the settings
         commands_to_run = ['misc-settings set msf_location /etc/',
-                           'profiles save_as unittest',
+                           'profiles save_as %s' % self.get_profile_name(),
                            'exit']
 
         expected = ('Profile saved.',)
@@ -216,14 +293,14 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
         
-        self._assert_exists('unittest')
+        self._assert_exists(self.get_profile_name())
         
         # Clean the mocked stdout
         self._mock_stdout.clear()
         
         # Load the settings
         commands_to_run = ['profiles',
-                           'use unittest',
+                           'use %s' % self.get_profile_name(),
                            'back',
                            'misc-settings view',
                            'exit']

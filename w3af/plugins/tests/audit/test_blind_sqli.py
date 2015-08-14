@@ -47,7 +47,7 @@ class TestBlindSQLI(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
         self.assertFalse('time delays' in vuln.get_desc())
         self.assertEquals("numeric", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
@@ -71,7 +71,7 @@ class TestBlindSQLI(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals(
-            "Blind SQL injection vulnerability", vuln.get_name())
+            'Blind SQL injection vulnerability', vuln.get_name())
         self.assertFalse('time delays' in vuln.get_desc())
         self.assertEquals("stringsingle", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
@@ -88,7 +88,7 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals(1, len(vulns))
         vuln = vulns[0]
 
-        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
         self.assertEquals('text', vuln.get_mutant().get_token_name())
         self.assertEquals('blind_where_integer_form.py',
                           vuln.get_url().get_file_name())
@@ -105,7 +105,7 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals(1, len(vulns))
         vuln = vulns[0]
 
-        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
         self.assertEquals('q', vuln.get_mutant().get_token_name())
         self.assertEquals('blind_where_integer_form_get.py',
                           vuln.get_url().get_file_name())
@@ -152,8 +152,7 @@ class TestBlindSQLI(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals(
-            'Blind SQL injection vulnerability', vuln.get_name())
+        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
         self.assertTrue('time delays' in vuln.get_desc())
         self.assertEquals(target_url, str(vuln.get_url()))
 
