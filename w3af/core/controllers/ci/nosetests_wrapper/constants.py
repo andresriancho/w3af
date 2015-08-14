@@ -13,7 +13,7 @@ LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 # nosetests (other important stuff like docker is running too), so I set a fixed
 # value
 if is_running_on_ci():
-    MAX_WORKERS = 9
+    MAX_WORKERS = 10
 else:
     MAX_WORKERS = max(multiprocessing.cpu_count() - 1, 2)
 
