@@ -292,6 +292,13 @@ class xml_file(OutputPlugin):
         """
         This method is called when the scan has finished.
         """
+        self.flush()
+
+    def flush(self):
+        """
+        Write the XML to the output file
+        :return: None
+        """
         for i in kb.kb.get_all_findings():
             message_node = self._xmldoc.createElement('vulnerability')
 

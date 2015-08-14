@@ -128,6 +128,20 @@ class OutputPlugin(Plugin):
         """
         return []
 
+    def flush(self):
+        """
+        Write vulnerabilities and any other important information to the output
+        file/socket.
+
+        This method is called once every OutputManager.FLUSH_TIMEOUT by the
+        OutputManager and is useful to give feedback to the user before the
+        scan ends.
+
+        :see: https://github.com/andresriancho/w3af/issues/6726
+        :return: None
+        """
+        pass
+
     def _clean_string(self, string_to_clean):
         """
         :param string_to_clean: A string that should be cleaned before using

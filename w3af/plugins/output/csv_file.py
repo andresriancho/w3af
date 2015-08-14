@@ -49,6 +49,9 @@ class csv_file(OutputPlugin):
     information = error = console = log_enabled_plugins = do_nothing
 
     def end(self):
+        self.flush()
+
+    def flush(self):
         """
         Exports the vulnerabilities and information to the user configured
         file.
@@ -84,8 +87,8 @@ class csv_file(OutputPlugin):
                        info.get_desc()]
                 csv_writer.writerow(row)
             except Exception, e:
-                msg = 'An exception was raised while trying to write the '\
-                      ' vulnerabilities to the output file. Exception: "%s"'
+                msg = ('An exception was raised while trying to write the '
+                       ' vulnerabilities to the output file. Exception: "%s"')
                 om.out.error(msg % e)
                 output_handler.close()
                 print(e)

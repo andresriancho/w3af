@@ -158,15 +158,21 @@ class html_file(OutputPlugin):
             self._enabled_plugins[plugin_type] = enabled
 
     def end(self):
+        try:
+            self.flush()
+        finally:
+            self._additional_info.clear()
+            self._enabled_plugins = {}
+
+    def flush(self):
         """
-        This method is called when the scan has finished, we perform these
-        main tasks:
+        This method is called when we want to write the data to the html,
+        performs these main tasks:
             * Get the target URLs
             * Get the enabled plugins
             * Get the vulnerabilities and infos from the KB
             * Get the debug data
             * Send all the data to jinja2 for rendering the template
-
         """
         target_urls = [t.url_string for t in cf.cf.get('targets')]
         target_domain = cf.cf.get('target_domains')[0]
@@ -231,9 +237,6 @@ class html_file(OutputPlugin):
             msg = u'Failed to render html report template. Exception: "%s"'
             om.out.error(msg % e)
             return False
-        finally:
-            self._additional_info.clear()
-            self._enabled_plugins = {}
 
         try:
             output_fh.write(rendered_output.encode('utf-8'))

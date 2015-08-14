@@ -48,6 +48,9 @@ class export_requests(OutputPlugin):
     information = error = console = debug = log_enabled_plugins = do_nothing
 
     def end(self):
+        self.flush()
+
+    def flush(self):
         """
         Exports a list of fuzzable requests to the user configured file.
         """

@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import sys
+import time
+import Queue
 import threading
 
 from multiprocessing.dummy import Process
@@ -81,6 +83,9 @@ class OutputManager(Process):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
+    FLUSH_TIMEOUT = 60
+
     # Thread locking to avoid starting the om many times from different threads
     start_lock = threading.RLock()
 
@@ -97,6 +102,7 @@ class OutputManager(Process):
         # Internal variables
         self.in_queue = SilentJoinableQueue()
         self._w3af_core = None
+        self._last_output_flush = None
 
     def set_w3af_core(self, w3af_core):
         self._w3af_core = w3af_core
@@ -123,7 +129,11 @@ class OutputManager(Process):
         """
         while True:
             try:
-                work_unit = self.in_queue.get()
+                work_unit = self.in_queue.get(timeout=self.FLUSH_TIMEOUT)
+            except Queue.Empty:
+                self.flush_plugin_output()
+                continue
+
             except EOFError:
                 # The queue which we're consuming ended abruptly, this is
                 # usually a side effect of the process ending and
@@ -143,6 +153,49 @@ class OutputManager(Process):
                 self._call_output_plugins_action(*args, **kwargs)
 
                 self.in_queue.task_done()
+
+            # Now that the new message has been processed by the output plugins
+            # we flush the output (if needed)
+            self.flush_plugin_output()
+
+    def flush_plugin_output(self):
+        """
+        Call flush() on all plugins so they write their data to the external
+        file(s) / socket(s) if they want to. This is useful when the scan
+        takes a lot of time to complete.
+
+        By default output plugins have a no-op implementation for flush(), but
+        plugins like xml_file and csv_file will write to the user configured
+        files when called.
+
+        Only flush once every FLUSH_TIMEOUT seconds.
+
+        :see: https://github.com/andresriancho/w3af/issues/6726
+        :return: None
+        """
+        if not self.should_flush():
+            return
+
+        self.update_last_output_flush()
+
+        for o_plugin in self._output_plugin_instances:
+            o_plugin.flush()
+
+    def should_flush(self):
+        """
+        :return: True if we have to flush the output
+        """
+        if self._last_output_flush is None:
+            return True
+
+        time_diff = time.time() - self._last_output_flush
+        if time_diff >= self.FLUSH_TIMEOUT:
+            return True
+
+        return False
+
+    def update_last_output_flush(self):
+        self._last_output_flush = time.time()
 
     def end_output_plugins(self):
         self.process_all_messages()
