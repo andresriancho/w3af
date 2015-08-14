@@ -140,7 +140,12 @@ class sqli(AuditPlugin):
     )
     _multi_re = multi_re(SQL_ERRORS_RE)
 
-    SQLI_STRINGS = (u"a'b\"c'd\"",)
+    # Note that these payloads are similar but they do generate different errors
+    # depending on the SQL query context they are used. Removing one or the
+    # other will lower our SQLMap testenv coverage
+    SQLI_STRINGS = (u"a'b\"c'd\"",
+                    u"1'2\"3")
+
     SQLI_MESSAGE = (u'A SQL error was found in the response supplied by '
                     u'the web application, the error is (only a fragment is '
                     u'shown): "%s". The error was found on response with id %s.')
