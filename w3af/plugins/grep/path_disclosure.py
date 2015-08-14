@@ -25,6 +25,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
+from w3af.core.data.esmre.multi_re import multi_re
 from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.constants.common_directories import get_common_directories
 from w3af.core.data.kb.vuln import Vuln
@@ -43,44 +44,23 @@ class path_disclosure(GrepPlugin):
 
         # Internal variables
         self._reported = DiskList(table_prefix='path_disclosure')
+        self._signature_re = None
 
-        # Compile all regular expressions and store information to avoid
-        # multiple queries to the same function
-        self._common_directories = get_common_directories()
-        self._compiled_regexes = {}
-        self._compile_regex()
-
-    def _compile_regex(self):
+    def setup(self):
         """
         :return: None, the result is saved in self._path_disc_regex_list
         """
-        #
-        # I tried to enhance the performance of this plugin by putting
-        # all the regular expressions in one (1|2|3|4...|N)
-        # That gave no visible result.
-        #
-        for path_disclosure_string in self._common_directories:
+        if self._signature_re is not None:
+            return
+
+        all_signatures = []
+
+        for path_disclosure_string in get_common_directories():
             regex_string = '(%s.*?)[^A-Za-z0-9\._\-\\/\+~]'
             regex_string = regex_string % path_disclosure_string
-            regex = re.compile(regex_string, re.IGNORECASE)
+            all_signatures.append(regex_string)
             
-            self._compiled_regexes[path_disclosure_string] = regex
-
-    def _potential_disclosures(self, html_string):
-        """
-        Taking into account that regular expressions are slow, we first
-        apply this function to check if the HTML string has potential
-        path disclosures.
-
-        With this performance enhancement we reduce the plugin run time
-        to 1/8 of the time in cases where no potential disclosures are found,
-        and around 1/3 when potential disclosures *are* found.
-
-        :return: Potential path disclosures
-        """
-        for path_disclosure_string in self._common_directories:
-            if path_disclosure_string in html_string:
-                yield path_disclosure_string
+        self._signature_re = multi_re(all_signatures, hint_len=1)
 
     def grep(self, request, response):
         """
@@ -92,7 +72,9 @@ class path_disclosure(GrepPlugin):
         """
         if not response.is_text_or_html():
             return
-        
+
+        self.setup()
+
         if self.find_path_disclosure(request, response):
             self._update_kb_path_list()
         
@@ -100,42 +82,41 @@ class path_disclosure(GrepPlugin):
         """
         Actually find the path disclosure vulnerabilities
         """
-        html_string = response.get_body()
+        body_text = response.get_body()
+        match_list = []
 
-        for potential_disclosure in self._potential_disclosures(html_string):
+        for match, _, _ in self._signature_re.query(body_text):
+            match_list.append(match.group(1))
 
-            path_disc_regex = self._compiled_regexes[potential_disclosure]
-            match_list = path_disc_regex.findall(html_string)
+        # Sort by the longest match, this is needed for filtering out
+        # some false positives please read the note below.
+        match_list.sort(longest_cmp)
+        real_url = response.get_url().url_decode()
 
-            # Sort by the longest match, this is needed for filtering out
-            # some false positives please read the note below.
-            match_list.sort(longest_cmp)
-            real_url = response.get_url().url_decode()
+        for match in match_list:
+            # Avoid duplicated reports
+            if (real_url, match) in self._reported:
+                continue
 
-            for match in match_list:
-                # Avoid duplicated reports
-                if (real_url, match) in self._reported:
-                    continue
+            # Remove false positives
+            if self._is_false_positive(match, request, response):
+                continue
 
-                # Remove false positives
-                if self._is_false_positive(match, request, response):
-                    continue
+            # Found!
+            self._reported.append((real_url, match))
 
-                # Found!
-                self._reported.append((real_url, match))
+            desc = ('The URL: "%s" has a path disclosure vulnerability which'
+                    ' discloses "%s".')
+            desc %= (response.get_url(), match)
 
-                desc = ('The URL: "%s" has a path disclosure vulnerability'
-                        ' which discloses "%s".')
-                desc %= (response.get_url(), match)
+            v = Vuln('Path disclosure vulnerability', desc, severity.LOW,
+                     response.id, self.get_name())
+            v.add_to_highlight(match)
+            v.set_url(real_url)
+            v['path'] = match
 
-                v = Vuln('Path disclosure vulnerability', desc,
-                         severity.LOW, response.id, self.get_name())
-                v.add_to_highlight(match)
-                v.set_url(real_url)
-                v['path'] = match
-
-                self.kb_append(self, 'path_disclosure', v)
-                return v
+            self.kb_append(self, 'path_disclosure', v)
+            return v
 
     def _is_false_positive(self, match, request, response):
         """
