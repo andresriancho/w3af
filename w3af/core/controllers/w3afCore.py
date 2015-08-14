@@ -35,7 +35,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.controllers.core_helpers.profiles import CoreProfiles
-from w3af.core.controllers.core_helpers.plugins import w3af_core_plugins
+from w3af.core.controllers.core_helpers.plugins import CorePlugins
 from w3af.core.controllers.core_helpers.target import CoreTarget
 from w3af.core.controllers.core_helpers.strategy import CoreStrategy
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
@@ -114,7 +114,7 @@ class w3afCore(object):
         # these here because they are used by the UIs even before starting a
         # scan.
         self.profiles = CoreProfiles(self)
-        self.plugins = w3af_core_plugins(self)
+        self.plugins = CorePlugins(self)
         self.status = w3af_core_status(self)
         self.target = CoreTarget()
         self.strategy = CoreStrategy(self)
