@@ -27,6 +27,7 @@ from wad.group import group
 from wad.output import HumanReadableOutput
 
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import NoMoreCalls
@@ -180,3 +181,13 @@ class application_fingerprint(InfrastructurePlugin):
         This plugin is a wrapper of CERN's CERT team's Web application detection
         (WAD) tool.
         """
+
+    def end(self):
+        """
+        Required in order to print the application fingerprint to the console
+        only once (at the end of the scan).
+        :return: None
+        """
+        if self.kb_info_id:
+            info = kb.kb.get_by_uniq_id(self.kb_info_id)
+            om.out.report_finding(info)
