@@ -42,14 +42,14 @@ class TestApplicationFingerprint(PluginTest):
 
     def get_human_readable_info(self):
         infos = self.kb.get('application_fingerprint',
-                            'Application fingerprint')
+                            'application_fingerprint')
 
         self.assertEqual(len(infos), 1, infos)
         return infos[0]
 
     def get_raw_data(self, url):
         raw_dict = self.kb.raw_read('application_fingerprint',
-                                    'application_fingerprint')
+                                    'application_fingerprint_raw')
 
         self.assertEqual(len(raw_dict.keys()), 1, raw_dict.keys())
         self.assertIn(url, raw_dict)
