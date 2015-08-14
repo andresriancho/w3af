@@ -252,10 +252,16 @@ class detailed(AuthPlugin):
         self.follow_redirects = options_list['follow_redirects'].get_value()
         self.url_encode_params = options_list['url_encode_params'].get_value()
 
+        missing_options = []
+
         for o in options_list:
-            if o.get_value() == '':
-                msg = "All parameters are required and can't be empty."
-                raise BaseFrameworkException(msg)
+            if not o.get_value():
+                missing_options.append(o.get_name())
+
+        if missing_options:
+            msg = ("All parameters are required and can't be empty. The"
+                   " missing parameters are %s")
+            raise BaseFrameworkException(msg % ', '.join(missing_options))
 
     def get_long_desc(self):
         """

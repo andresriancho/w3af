@@ -66,13 +66,15 @@ class CorePlugins(object):
                         'evasion': [], 'mangle': [], 'output': [], 'auth': [],
                         'infrastructure': []}
 
+        # After we zero all options and enabled plugins we need to call
+        # init_plugins again
+        self.initialized = False
+
     def init_plugins(self):
         """
         The user interfaces should run this method *before* calling start().
         If they don't do it, an exception is raised.
         """
-        self.initialized = True
-
         # This is inited before all, to have a full logging support.
         om.manager.set_output_plugins(self._plugins_names_dict['output'])
 
@@ -90,6 +92,11 @@ class CorePlugins(object):
         mangle = self.plugins['mangle']
         self._w3af_core.uri_opener.settings.set_mangle_plugins(mangle)
 
+        # The plugin factory might raise an exception due to invalid plugin
+        # configurations. Only set the initialized attribute if we get to the
+        # end of init_plugins()
+        self.initialized = True
+
     def set_plugin_options(self, plugin_type, plugin_name, plugin_options):
         """
         :param plugin_type: The plugin type, like 'audit' or 'crawl'
@@ -102,14 +109,23 @@ class CorePlugins(object):
         if plugin_type.lower() == 'output':
             om.manager.set_plugin_options(plugin_name, plugin_options)
 
+        # Save the options, even if they are invalid. This is a good idea
+        # because:
+        #
+        #   * If the user sees an error raised by the set_options() below he'll
+        #     fix the configuration (calling this method again) and override
+        #     the invalid settings
+        #
+        #   * If the user ignores the error raised by set_options() and tries
+        #     to start the scan init_plugins will fail, this is:
+        #     https://github.com/andresriancho/w3af/issues/7477
+        #
+        self._plugins_options[plugin_type][plugin_name] = plugin_options
+
         # The following lines make sure that the plugin will accept the options
-        # that the user is setting to it.
+        # that the user is setting
         plugin_inst = self.get_plugin_inst(plugin_type, plugin_name)
         plugin_inst.set_options(plugin_options)
-
-        # Now that we are sure that these options are valid, lets save them
-        # so we can use them later!
-        self._plugins_options[plugin_type][plugin_name] = plugin_options
 
     def get_plugin_options(self, plugin_type, plugin_name):
         """

@@ -158,10 +158,16 @@ class generic(AuthPlugin):
         self.auth_url = options_list['auth_url'].get_value()
         self.check_url = options_list['check_url'].get_value()
 
+        missing_options = []
+
         for o in options_list:
             if not o.get_value():
-                msg = "All parameters are required and can't be empty."
-                raise BaseFrameworkException(msg)
+                missing_options.append(o.get_name())
+
+        if missing_options:
+            msg = ("All parameters are required and can't be empty. The"
+                   " missing parameters are %s")
+            raise BaseFrameworkException(msg % ', '.join(missing_options))
 
     def get_long_desc(self):
         """

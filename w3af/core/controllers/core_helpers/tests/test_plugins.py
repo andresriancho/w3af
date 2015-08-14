@@ -28,6 +28,7 @@ from nose.plugins.attrib import attr
 from mock import patch
 
 from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 TEST_PLUGIN_NAME = 'failing_spider'
 
@@ -56,13 +57,13 @@ class TestW3afCorePlugins(unittest.TestCase):
                     'bruteforce', 'auth', 'infrastructure'}
         self.assertEquals(set(plugin_types), expected)
 
-    def test_get_plugin_listAudit(self):
+    def test_get_plugin_list_audit(self):
         plugin_list = self.core.plugins.get_plugin_list('audit')
 
         expected = {'sqli', 'xss', 'eval'}
         self.assertTrue(set(plugin_list).issuperset(expected))
 
-    def test_get_plugin_listCrawl(self):
+    def test_get_plugin_list_crawl(self):
         plugin_list = self.core.plugins.get_plugin_list('crawl')
 
         expected = {'web_spider', 'spider_man'}
@@ -73,7 +74,7 @@ class TestW3afCorePlugins(unittest.TestCase):
 
         self.assertEquals(plugin_inst.get_name(), 'sqli')
 
-    def test_get_plugin_instAll(self):
+    def test_get_plugin_inst_all(self):
         for plugin_type in itertools.chain(self.core.plugins.get_plugin_types(), ['attack']):
             for plugin_name in self.core.plugins.get_plugin_list(plugin_type):
                 plugin_inst = self.core.plugins.get_plugin_inst(
@@ -120,6 +121,39 @@ class TestW3afCorePlugins(unittest.TestCase):
     def test_plugin_options_invalid(self):
         self.assertRaises(TypeError, self.core.plugins.set_plugin_options,
                           'crawl', 'web_spider', None)
+
+    def test_plugin_options_partially_invalid_scan_does_not_start(self):
+        self.core.plugins.set_plugins(['generic'], 'auth')
+
+        plugin_inst = self.core.plugins.get_plugin_inst('auth', 'generic')
+        options = plugin_inst.get_options()
+
+        username = options['username']
+        username.set_value('andres')
+
+        password = options['password']
+        password.set_value('foobar')
+
+        # There are missing configuration parameters, so it's ok for this to
+        # fail
+        self.assertRaises(BaseFrameworkException,
+                          self.core.plugins.set_plugin_options,
+                          'auth', 'generic', options)
+
+        # Do not start the scan if the user failed to configure the plugins
+        # https://github.com/andresriancho/w3af/issues/7477
+        self.assertRaises(BaseFrameworkException,
+                          self.core.plugins.init_plugins)
+
+        # Now we set all the options again and it should succeed
+        options['username_field'].set_value('username')
+        options['password_field'].set_value('password')
+        options['auth_url'].set_value('http://login.com/')
+        options['check_url'].set_value('http://check.com/')
+        options['check_string'].set_value('abc')
+
+        self.core.plugins.set_plugin_options('auth', 'generic', options)
+        self.core.plugins.init_plugins()
 
     def test_init_plugins(self):
         enabled = ['web_spider']
