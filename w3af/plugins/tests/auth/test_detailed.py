@@ -132,22 +132,25 @@ class TestDetailedRedirectLoop(PluginTest):
     check_string = 'Logged in'
     data_format = '%u=%U&%p=%P&Login=Login'
 
-    MOCK_RESPONSES = [MockResponse('/auth/login_form.py', '', status=302,
+    MOCK_RESPONSES = [MockResponse('http://mock/auth/login_form.py', '',
+                                   status=302,
                                    headers={'Location': '/confirm/?token=123'},
                                    method='POST'),
 
                       # Redirect loop #1
-                      MockResponse('/confirm/?token=123', 'Created new token',
+                      MockResponse('http://mock/confirm/?token=123',
+                                   'Created new token',
                                    status=302,
                                    headers={'Location': '/confirm/?token=abc'}),
 
                       # Redirect loop #2
-                      MockResponse('/confirm/?token=abc', 'Token is not new',
+                      MockResponse('http://mock/confirm/?token=abc',
+                                   'Token is not new',
                                    status=302,
                                    headers={'Location': '/confirm/?token=123'}),
 
-                      MockResponse('/auth/home.py', 'Home page'),
-                      MockResponse('/auth/verify.py', 'Not logged in')]
+                      MockResponse('http://mock/auth/home.py', 'Home page'),
+                      MockResponse('http://mock/auth/verify.py', 'Not logged in')]
 
     _run_config = {
         'target': target_url,

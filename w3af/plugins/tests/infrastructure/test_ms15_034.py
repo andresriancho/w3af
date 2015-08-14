@@ -32,7 +32,7 @@ class TestFindMS14_034(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('/', 'PASS', status=416)]
+    MOCK_RESPONSES = [MockResponse(target_url, 'PASS', status=416)]
 
     def test_vulnerable_host(self):
         cfg = self._run_configs['cfg']
@@ -57,7 +57,7 @@ class TestNotFindMS14_034(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('/', 'PASS', status=415)]
+    MOCK_RESPONSES = [MockResponse(target_url, 'PASS', status=415)]
 
     def test_vulnerable_host(self):
         cfg = self._run_configs['cfg']

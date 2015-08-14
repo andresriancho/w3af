@@ -28,12 +28,13 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 class TestPHPEggs(PluginTest):
 
     target_url = 'http://mock/'
-    MOCK_RESPONSES = [MockResponse('?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000', '1'),
-                      MockResponse('?=PHPE9568F34-D428-11d2-A769-00AA001ACF42',
+    MOCK_RESPONSES = [MockResponse('http://mock/?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000',
+                                   '1'),
+                      MockResponse('http://mock/?=PHPE9568F34-D428-11d2-A769-00AA001ACF42',
                                    '2', content_type='image/png'),
-                      MockResponse('?=PHPE9568F35-D428-11d2-A769-00AA001ACF42',
+                      MockResponse('http://mock/?=PHPE9568F35-D428-11d2-A769-00AA001ACF42',
                                    '3', content_type='image/png'),
-                      MockResponse('?=PHPE9568F36-D428-11d2-A769-00AA001ACF42',
+                      MockResponse('http://mock/?=PHPE9568F36-D428-11d2-A769-00AA001ACF42',
                                    '4', content_type='image/png')]
 
     _run_configs = {
@@ -72,7 +73,7 @@ class TestPHPEggs(PluginTest):
 class TestPHPEggsNoFingerprint(PluginTest):
 
     target_url = 'http://mock/'
-    MOCK_RESPONSES = [MockResponse('/', 'Index is not empty')]
+    MOCK_RESPONSES = [MockResponse(target_url, 'Index is not empty')]
 
     _run_configs = {
         'cfg': {

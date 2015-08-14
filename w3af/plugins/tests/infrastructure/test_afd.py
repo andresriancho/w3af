@@ -38,7 +38,7 @@ class TestFoundAFD(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('/', 'PASS'),
+    MOCK_RESPONSES = [MockResponse(target_url, 'PASS'),
                       MockResponse(BAD_SIG_URI, 'FAIL')]
 
     def test_afd_found_http(self):
@@ -58,6 +58,9 @@ class TestFoundAFD(PluginTest):
 
 class TestFoundHttpsAFD(TestFoundAFD):
     target_url = 'https://httpretty/'
+
+    MOCK_RESPONSES = [MockResponse(target_url, 'PASS'),
+                      MockResponse(BAD_SIG_URI, 'FAIL')]
 
 
 class TestNotFoundAFD(PluginTest):

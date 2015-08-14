@@ -494,6 +494,10 @@ class MockResponse(object):
         assert method in self.KNOWN_METHODS, self.NO_MOCK
         assert isinstance(url, (basestring, RE_COMPILE_TYPE))
 
+        if isinstance(url, basestring):
+            url = URL(url)
+            assert url.get_domain(), 'Need to specify the MockResponse domain'
+
     def __repr__(self):
         if isinstance(self.url, RE_COMPILE_TYPE):
             match = 're:"%s"' % self.url.pattern

@@ -36,7 +36,7 @@ class WAFTest(object):
 class TestFingerprintWAFIBMWebSphere(WAFTest, PluginTest):
 
     IBM_WAF = 'X-Backside-Transport=1'
-    MOCK_RESPONSES = [MockResponse('/', 'Hello world',
+    MOCK_RESPONSES = [MockResponse(WAFTest.target_url, 'Hello world',
                                    headers={'Set-Cookie': IBM_WAF})]
 
     def test_fingerprint_waf(self):
@@ -59,7 +59,7 @@ class TestFingerprintWAFIBMWebSphere(WAFTest, PluginTest):
 
 class TestFingerprintWAFNone(WAFTest, PluginTest):
 
-    MOCK_RESPONSES = [MockResponse('/', 'Hello world')]
+    MOCK_RESPONSES = [MockResponse(WAFTest.target_url, 'Hello world')]
 
     def test_fingerprint_waf(self):
         cfg = self._run_configs['cfg']

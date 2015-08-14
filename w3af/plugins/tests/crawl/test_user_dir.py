@@ -34,9 +34,12 @@ class TestUserDir(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('/~www/', 'www user home directory.'),
-                      MockResponse('/~kmem/', 'kmem user home directory.'),
-                      MockResponse('/xfs/', 'home sweet home')]
+    MOCK_RESPONSES = [MockResponse('http://httpretty/~www/',
+                                   'www user home directory.'),
+                      MockResponse('http://httpretty/~kmem/',
+                                   'kmem user home directory.'),
+                      MockResponse('http://httpretty//xfs/',
+                                   'home sweet home')]
 
     EXPECTED_RESULTS = {('Web user home directory', 'http://httpretty/~www/'),
                         ('Web user home directory', 'http://httpretty/~kmem/'),

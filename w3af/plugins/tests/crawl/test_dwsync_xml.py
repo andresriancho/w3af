@@ -38,8 +38,8 @@ class TestDWSyncXML(PluginTest):
               '          remote="129063549600000000" />'
               '</dwsync>')
 
-    MOCK_RESPONSES = [MockResponse('/_notes/dwsync.xml', DWSYNC),
-                      MockResponse('/secret/', 'Secret directory')]
+    MOCK_RESPONSES = [MockResponse('http://mock/_notes/dwsync.xml', DWSYNC),
+                      MockResponse('http://mock/secret/', 'Secret directory')]
 
     def test_dwsync_xml(self):
         cfg = self._run_configs['cfg']

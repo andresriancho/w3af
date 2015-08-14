@@ -25,7 +25,7 @@ class TestServerStatus(PluginTest):
 
     target_url = 'http://httpretty-mock/'
 
-    MOCK_RESPONSES = [MockResponse('/server-status',
+    MOCK_RESPONSES = [MockResponse('http://httpretty-mock/server-status',
                                    '<dl><dt>Server Version: Apache/2.2.9 (Unix)</dt>'),]
 
     _run_configs = {

@@ -28,7 +28,7 @@ class TestUnSSL(PluginTest):
     target_url = 'http://httpretty/'
 
     # This mocked response will be returned for both http and https
-    MOCK_RESPONSES = [MockResponse('/', 'foo bar spam',)]
+    MOCK_RESPONSES = [MockResponse(target_url, 'foo bar spam',)]
 
     _run_configs = {
         'cfg': {
@@ -74,10 +74,10 @@ class TestNotFoundUnSSL(PluginTest):
 
     @httpretty.activate
     def test_not_found_unssl(self):
-        httpretty.register_uri(httpretty.GET, "http://httpretty/",
+        httpretty.register_uri(httpretty.GET, self.target_url,
                                body='This is NOT SECURE')
 
-        httpretty.register_uri(httpretty.GET, "https://httpretty/",
+        httpretty.register_uri(httpretty.GET, 'https://httpretty/',
                                body='The banking application is here.')
 
         cfg = self._run_configs['cfg']

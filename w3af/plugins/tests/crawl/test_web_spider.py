@@ -254,8 +254,8 @@ class TestRelativePathsIn404(PluginTest):
 
     MOCK_RESPONSES = [MockResponse(re.compile('http://mock/galeria/.*'),
                                    GALERIA_HTML),
-                      MockResponse('/', 'Thanks.', method='POST'),
-                      MockResponse('/', INDEX_HTML)]
+                      MockResponse('http://mock/', 'Thanks.', method='POST'),
+                      MockResponse('http://mock/', INDEX_HTML)]
 
     def test_crawl_404_relative(self):
         cfg = self._run_configs['cfg']
@@ -300,8 +300,8 @@ class TestDeadLock(PluginTest):
 
     INDEX_HTML = file(os.path.join(TEST_ROOT, 'index.html')).read()
 
-    MOCK_RESPONSES = [MockResponse('/', INDEX_HTML),
-                      MockResponse('/', 'Thanks.', method='POST')]
+    MOCK_RESPONSES = [MockResponse('http://mock/', INDEX_HTML),
+                      MockResponse('http://mock/', 'Thanks.', method='POST')]
 
     def test_no_lock(self):
         cfg = self._run_configs['cfg']

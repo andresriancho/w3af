@@ -38,11 +38,11 @@ RUN_CONFIG = {
 
 class TestHTAccess(PluginTest):
 
-    target_url = 'http://httpretty-mock/'
+    target_url = 'http://mock/'
 
-    MOCK_RESPONSES = [MockResponse('/', 'Bad credentials',
+    MOCK_RESPONSES = [MockResponse(target_url, 'Bad credentials',
                                    method='GET', status=401),
-                      MockResponse('/', 'Hidden treasure', method='POST',
+                      MockResponse(target_url, 'Hidden treasure', method='POST',
                                    status=200)]
 
     def test_found_htaccess_methods(self):
@@ -60,11 +60,11 @@ class TestHTAccess(PluginTest):
 
 class TestHTAccessFalsePositiveGeneric(PluginTest):
 
-    target_url = 'http://httpretty-mock/'
+    target_url = 'http://mock/'
 
-    MOCK_RESPONSES = [MockResponse('/', 'Bad credentials',
+    MOCK_RESPONSES = [MockResponse(target_url, 'Bad credentials',
                                    method='GET', status=401),
-                      MockResponse('/', 'Bad credentials',
+                      MockResponse(target_url, 'Bad credentials',
                                    method='POST', status=403)]
 
     def test_false_positive(self):
@@ -77,13 +77,13 @@ class TestHTAccessFalsePositiveGeneric(PluginTest):
 
 class TestHTaccessCheck1915_1(TestHTAccessFalsePositiveGeneric):
     # https://github.com/andresriancho/w3af/issues/1915
-    MOCK_RESPONSES = [MockResponse('/', 'Bad credentials',
-                                   method='GET', status=401)]
+    MOCK_RESPONSES = [MockResponse(TestHTAccessFalsePositiveGeneric.target_url,
+                                   'Bad credentials', method='GET', status=401)]
 
 
 class TestHTaccessCheck1915_2(TestHTAccessFalsePositiveGeneric):
     # https://github.com/andresriancho/w3af/issues/1915
-    MOCK_RESPONSES = [MockResponse('/', 'Bad credentials',
-                                   method='GET', status=401),
-                      MockResponse('/', 'Bad credentials',
-                                   method='POST', status=401)]
+    MOCK_RESPONSES = [MockResponse(TestHTAccessFalsePositiveGeneric.target_url,
+                                   'Bad credentials', method='GET', status=401),
+                      MockResponse(TestHTAccessFalsePositiveGeneric.target_url,
+                                   'Bad credentials', method='POST', status=401)]
