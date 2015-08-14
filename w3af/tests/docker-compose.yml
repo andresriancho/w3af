@@ -3,6 +3,11 @@ moth:
   ports:
     - "8000:8000"
     - "8001:8001"
+  links:
+    - cache
+
+cache:
+  image: memcached
 
 
 wivet:

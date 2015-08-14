@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
 
@@ -37,13 +35,14 @@ class TestMemcachei(PluginTest):
         }
     }
 
-    @attr('ci_fails')
     def test_found_memcachei(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
+
         vulns = self.kb.get('memcachei', 'memcachei')
         self.assertEquals(1, len(vulns))
-        # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals("Memcache injection vulnerability", vuln.get_name())
+
+        # Now some tests around specific details of the found vuln
+        self.assertEquals('Memcache injection vulnerability', vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.get_url()))
