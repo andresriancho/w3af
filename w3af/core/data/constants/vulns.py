@@ -70,6 +70,7 @@ VULNS = {
          'Reflected File Download vulnerability': 71,
          'Shell shock vulnerability': 68,
          'Rosetta Flash': None,
+         'Memcache injection vulnerability': None,
 
          # WebSockets
          'Insecure WebSocket Origin filter': None,
