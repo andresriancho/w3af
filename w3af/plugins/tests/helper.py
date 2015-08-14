@@ -539,9 +539,22 @@ class MockResponse(object):
         :return: True if the request_uri matches this mock_response
         """
         if isinstance(self.url, basestring):
-            request_path = URL(request_uri).get_path_qs()
-            if request_path == self.url:
-                return True
+            request_uri = URL(request_uri)
+            response_uri = URL(self.url)
+
+            request_path = request_uri.get_path_qs()
+            request_domain = request_uri.get_domain()
+
+            response_path = response_uri.get_path_qs()
+            response_domain = response_uri.get_domain()
+
+            if response_domain != request_domain:
+                return False
+
+            if request_path != response_path:
+                return False
+
+            return True
 
         elif isinstance(self.url, RE_COMPILE_TYPE):
             if self.url.match(request_uri):
