@@ -48,6 +48,20 @@ class generic(AuthPlugin):
         """
         Login to the application.
         """
+        try:
+            return self.do_user_login()
+        except BaseFrameworkException, e:
+            if self._login_error:
+                om.out.error(str(e))
+                self._login_error = False
+            return False
+
+    def do_user_login(self):
+        """
+        Send the request to login the user.
+        :return: True if the login was successful otherwise raise a
+                 BaseFrameworkException
+        """
         msg = 'Logging into the application using %s/%s' % (self.username,
                                                             self.password)
         om.out.debug(msg)
@@ -55,21 +69,16 @@ class generic(AuthPlugin):
         data = urlencode({self.username_field: self.username,
                           self.password_field: self.password})
 
-        try:
-            # TODO Why we don't use FuzzableRequest+send_mutant here?
-            self._uri_opener.POST(self.auth_url, data=data)
-            if not self.is_logged():
-                raise Exception("Can't login into web application as %s/%s"
-                                % (self.username, self.password))
-            else:
-                om.out.debug('Login success for %s/%s' % (self.username,
-                                                          self.password))
-                return True
-        except Exception, e:
-            if self._login_error:
-                om.out.error(str(e))
-                self._login_error = False
-            return False
+        # TODO Why we don't use FuzzableRequest+send_mutant here?
+        self._uri_opener.POST(self.auth_url, data=data)
+
+        if not self.is_logged():
+            msg = "Can't login into web application as %s/%s"
+            raise BaseFrameworkException(msg % (self.username, self.password))
+        else:
+            om.out.debug('Login success for %s/%s' % (self.username,
+                                                      self.password))
+            return True
 
     def logout(self):
         """User login."""
@@ -101,27 +110,35 @@ class generic(AuthPlugin):
         options = [
             ('username', self.username, 'string',
              'Username for using in the authentication process'),
+
             ('password', self.password, 'string',
              'Password for using in the authentication process'),
+
             ('username_field', self.username_field,
              'string', 'Username parameter name (ie. "uname" if the HTML looks'
                        ' like <input type="text" name="uname">...)'),
+
             ('password_field', self.password_field,
              'string', 'Password parameter name (ie. "pwd" if the HTML looks'
                        ' like <input type="password" name="pwd">...)'),
+
             ('auth_url', self.auth_url, 'url',
              'URL where the username and password will be sent using a POST'
              ' request'),
+
             ('check_url', self.check_url, 'url',
              'URL used to verify if the session is still active by looking for'
              ' the check_string.'),
+
             ('check_string', self.check_string, 'string',
              'String for searching on check_url page to determine if the'
              'current session is active.'),
         ]
+
         ol = OptionList()
         for o in options:
             ol.add(opt_factory(o[0], o[1], o[3], o[2], help=o[3]))
+
         return ol
 
     def set_options(self, options_list):
@@ -151,8 +168,8 @@ class generic(AuthPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This authentication plugin can login to web application with generic
-        authentication schema.
+        This authentication plugin can login to Web applications which use
+        common authentication schemes.
 
         Seven configurable parameters exist:
             - username
