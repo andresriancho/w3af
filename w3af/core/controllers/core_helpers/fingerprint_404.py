@@ -138,7 +138,7 @@ class fingerprint_404(object):
         #   the 404 depends on the handler, so I want to make sure that I catch
         #   the 404 for each one
         #
-        handlers = {'py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do',
+        handlers = {'py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'action',
                     'gif', 'htm', 'pl', 'cgi', 'xhtml', 'htmls', 'foobar'}
         if extension:
             handlers.add(extension)
