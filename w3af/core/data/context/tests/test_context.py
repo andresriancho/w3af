@@ -22,14 +22,15 @@ import os
 import unittest
 
 from w3af.core.data.context.context import get_context, get_contexts
-from w3af.core.data.context.context.finders import (HtmlText, ScriptSingleQuote,
-                                                    ScriptText, HtmlComment,
-                                                    HtmlAttrSingleQuote,
-                                                    HtmlAttrDoubleQuote,
-                                                    HtmlAttr,
-                                                    HtmlAttrDoubleQuote2ScriptText,
-                                                    StyleComment, StyleText,
-                                                    ScriptDoubleQuote)
+from w3af.core.data.context.context.javascript import (ScriptSingleQuote,
+                                                       ScriptText,
+                                                       ScriptDoubleQuote)
+from w3af.core.data.context.context.style import StyleComment, StyleText
+from w3af.core.data.context.context.html import (HtmlText,
+                                                 HtmlComment,
+                                                 HtmlAttrSingleQuote,
+                                                 HtmlAttrDoubleQuote,
+                                                 HtmlAttr)
 
 
 class TestContext(unittest.TestCase):
@@ -382,6 +383,18 @@ class TestContext(unittest.TestCase):
         self.assertFalse(context.is_executable())
         self.assertTrue(context.can_break(payload))
 
+    def test_payload_onclick_payload_append(self):
+        html = """
+        <html>
+            <input type="button" onClick="XXX-PAYLOAD">
+        </html>
+        """
+        payload = "PAYLOAD"
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.is_executable())
+        self.assertTrue(context.can_break(payload))
+
     def test_payload_onclick_payload_between_double_quotes(self):
         html = """
         <html>
@@ -403,6 +416,18 @@ class TestContext(unittest.TestCase):
         html = """
         <html>
             <input type="button" onClick="foo(PAYLOAD)">
+        </html>
+        """
+        payload = 'PAYLOAD'
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.is_executable())
+        self.assertFalse(context.can_break(payload))
+
+    def test_payload_onclick_payload_separated_with_semicolon(self):
+        html = """
+        <html>
+            <input type="button" onclick="foo();PAYLOAD;bar()">
         </html>
         """
         payload = 'PAYLOAD'

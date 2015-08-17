@@ -20,22 +20,32 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.context.utils.byte_chunk import ByteChunk
-from .finders import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
-                      HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
-                      HtmlComment, ScriptMultiComment, ScriptLineComment,
-                      ScriptSingleQuote, ScriptDoubleQuote, ScriptText,
-                      StyleText, StyleComment, StyleSingleQuote,
-                      StyleDoubleQuote)
+
+from .style import StyleText, StyleComment, StyleSingleQuote, StyleDoubleQuote
+from .javascript import (ScriptMultiComment, ScriptLineComment,
+                         ScriptSingleQuote, ScriptDoubleQuote, ScriptText)
+from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
+                   HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
+                   HtmlComment)
 
 
 def get_contexts():
-    contexts = [HtmlAttrSingleQuote(), HtmlAttrDoubleQuote(),
-                HtmlAttrBackticks(), HtmlAttr(), HtmlTag(), HtmlText(),
-                HtmlComment(), ScriptMultiComment(), ScriptLineComment(),
-                ScriptSingleQuote(), ScriptDoubleQuote(), ScriptText(),
-                StyleText(), StyleComment(), StyleSingleQuote(),
+    contexts = [HtmlAttrSingleQuote(),
+                HtmlAttrDoubleQuote(),
+                HtmlAttrBackticks(),
+                HtmlAttr(),
+                HtmlTag(),
+                HtmlText(),
+                HtmlComment(),
+                ScriptMultiComment(),
+                ScriptLineComment(),
+                ScriptSingleQuote(),
+                ScriptDoubleQuote(),
+                ScriptText(),
+                StyleText(),
+                StyleComment(),
+                StyleSingleQuote(),
                 StyleDoubleQuote()]
-    #contexts.append(HtmlAttrDoubleQuote2ScriptText())
     return contexts
 
 

@@ -109,6 +109,7 @@ class ByteChunk(object):
 
             if inside_name:
                 attr_name += s
+
         attr_name = attr_name.lower()
         return attr_name, quote_character, open_context
 
