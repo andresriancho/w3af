@@ -36,7 +36,7 @@ class TestXSS(PluginTest):
     XSS_302_URL = 'http://moth/w3af/audit/xss/302/'
     XSS_URL_SMOKE = get_moth_http('/audit/xss/')
 
-    WAVSEP_BASE = '/active/RXSS-Detection-Evaluation-GET/'
+    WAVSEP_BASE = '/active/Reflected-XSS/RXSS-Detection-Evaluation-GET/'
     WAVSEP_PATH = get_wavsep_http(WAVSEP_BASE)
     WAVSEP_2919 = get_wavsep_http('%sCase16-Js2ScriptSupportingProperty.jsp' % WAVSEP_BASE)
 
