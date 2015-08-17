@@ -1,5 +1,5 @@
 """
-context.py
+finders.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,19 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from cStringIO import StringIO
 from functools import wraps
-from io import SEEK_CUR
-
-from w3af.core.controllers.misc.decorators import cached_property
-
-
-QUOTE_CHARS = {'"', "'"}
-ATTR_DELIMITERS = {'"', '`', "'"}
-JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove',
-             'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus',
-             'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown',
-             'onkeypress', 'onkeyup', 'onload', 'onunload']
+from w3af.core.data.context.utils.byte_chunk import ByteChunk
+from w3af.core.data.context.constants import (ATTR_DELIMITERS,
+                                              QUOTE_CHARS,
+                                              JS_EVENTS)
 
 
 class Context(object):
@@ -46,7 +38,7 @@ class Context(object):
 
     def can_break(self, payload):
         raise NotImplementedError('can_break() should be implemented')
-    
+
     def match(self, data):
         raise NotImplementedError('match() should be implemented')
 
@@ -55,89 +47,6 @@ class Context(object):
 
     def save(self, data):
         self.data = data
-
-
-def normalize_html(data):
-    """
-    Replace the < and > tags inside attribute delimiters with their encoded
-    versions.
-
-    Do nothing for content inside HTML comments.
-
-    :param data: A string with an HTML
-    :return: Another string, with a modified HTML
-    """
-    #
-    #   These constants are here because of performance
-    #   https://wiki.python.org/moin/PythonSpeed/PerformanceTips
-    #
-    AMP_LT = '&lt;'
-    AMP_GT = '&gt;'
-    TAG_START = '<'
-    TAG_END = '>'
-    COMMENT_END = '--'
-    COMMENT_START = '!--'
-    ATTR_DELIMITERS = {'"', '`', "'"}
-
-    # Move unicode to str if required
-    if isinstance(data, unicode):
-        data = data.encode('utf8')
-
-    # Fast search and replace when more than one char needs to be searched
-    repls = ("\\'", ''), ('\\"', '')
-    data = reduce(lambda a, kv: a.replace(*kv), repls, data)
-
-    # We'll use lists instead of strings for creating the result
-    new_data = []
-    append = new_data.append
-    quote_character = None
-    inside_comment = False
-    data = StringIO(data)
-    should_read = True
-
-    while should_read:
-
-        s = data.read(1)
-
-        if not s:
-            should_read = False
-
-        elif s in ATTR_DELIMITERS:
-            if quote_character and s == quote_character:
-                quote_character = None
-            elif not quote_character:
-                quote_character = s
-
-        elif s == TAG_START:
-            position = data.tell()
-            excl_dash_dash = data.read(3)
-            data.seek(position)
-
-            if excl_dash_dash == COMMENT_START:
-                # We're in the presence of <!--
-                inside_comment = True
-            elif quote_character and not inside_comment:
-                append(AMP_LT)
-                continue
-
-        elif s == TAG_END:
-
-            if inside_comment:
-                # Is this the closing of an HTML comment? Read some bytes back
-                # and find if we have a dash-dash
-                data.seek(-2, SEEK_CUR)
-                dash_dash = data.read(2)
-                if dash_dash == COMMENT_END:
-                    inside_comment = False
-
-            elif quote_character:
-                # Inside a quoted attr, and not inside a comment.
-                append(AMP_GT)
-                continue
-
-        append(s)
-
-    return ''.join(new_data)
 
 
 def crop_js(byte_chunk, context='tag'):
@@ -176,7 +85,7 @@ def inside_js(meth):
 
 
 def inside_style(meth):
-    
+
     @wraps(meth)
     def wrap(self, byte_chunk):
         if byte_chunk.inside_style:
@@ -188,18 +97,18 @@ def inside_style(meth):
             return meth(self, new_bc)
 
         return False
-    
+
     return wrap
 
 
 def inside_html(meth):
-    
+
     @wraps(meth)
     def wrap(self, byte_chunk):
         if not byte_chunk.inside_html:
             return False
         return meth(self, byte_chunk)
-    
+
     return wrap
 
 
@@ -315,6 +224,7 @@ class HtmlAttrQuote(HtmlAttr):
     html_url_attrs = ['href', 'src']
 
     def __init__(self):
+        super(HtmlAttrQuote, self).__init__()
         self.name = None
         self.quote_character = None
 
@@ -363,6 +273,7 @@ class HtmlAttrQuote(HtmlAttr):
 class HtmlAttrSingleQuote(HtmlAttrQuote):
 
     def __init__(self):
+        super(HtmlAttrSingleQuote, self).__init__()
         self.name = 'HTML_ATTR_SINGLE_QUOTE'
         self.quote_character = "'"
 
@@ -370,6 +281,7 @@ class HtmlAttrSingleQuote(HtmlAttrQuote):
 class HtmlAttrDoubleQuote(HtmlAttrQuote):
 
     def __init__(self):
+        super(HtmlAttrDoubleQuote, self).__init__()
         self.name = 'HTML_ATTR_DOUBLE_QUOTE'
         self.quote_character = '"'
 
@@ -377,12 +289,13 @@ class HtmlAttrDoubleQuote(HtmlAttrQuote):
 class HtmlAttrBackticks(HtmlAttrQuote):
 
     def __init__(self):
+        super(HtmlAttrBackticks, self).__init__()
         self.name = 'HTML_ATTR_BACKTICKS'
         self.quote_character = '`'
 
 
 class ScriptContext(Context):
-    
+
     @inside_js
     def inside_comment(self, byte_chunk):
         return (self._inside_multi_comment(byte_chunk) or
@@ -479,6 +392,7 @@ class ScriptQuote(ScriptContext):
 class ScriptSingleQuote(ScriptQuote):
 
     def __init__(self):
+        super(ScriptSingleQuote, self).__init__()
         self.name = 'SCRIPT_SINGLE_QUOTE'
         self.quote_character = "'"
 
@@ -486,6 +400,7 @@ class ScriptSingleQuote(ScriptQuote):
 class ScriptDoubleQuote(ScriptQuote):
 
     def __init__(self):
+        super(ScriptDoubleQuote, self).__init__()
         self.name = 'SCRIPT_DOUBLE_QUOTE'
         self.quote_character = '"'
 
@@ -598,6 +513,7 @@ class StyleQuote(StyleContext):
 class StyleSingleQuote(StyleQuote):
 
     def __init__(self):
+        super(StyleSingleQuote, self).__init__()
         self.name = 'STYLE_SINGLE_QUOTE'
         self.quote_character = "'"
 
@@ -605,6 +521,7 @@ class StyleSingleQuote(StyleQuote):
 class StyleDoubleQuote(StyleQuote):
 
     def __init__(self):
+        super(StyleDoubleQuote, self).__init__()
         self.name = 'STYLE_DOUBLE_QUOTE'
         self.quote_character = '"'
 
@@ -653,169 +570,4 @@ class HtmlAttrDoubleQuote2ScriptText(HtmlAttrDoubleQuote2Script, ScriptText):
         return True
 
 
-def get_contexts():
-    contexts = [HtmlAttrSingleQuote(), HtmlAttrDoubleQuote(),
-                HtmlAttrBackticks(), HtmlAttr(), HtmlTag(), HtmlText(),
-                HtmlComment(), ScriptMultiComment(), ScriptLineComment(),
-                ScriptSingleQuote(), ScriptDoubleQuote(), ScriptText(),
-                StyleText(), StyleComment(), StyleSingleQuote(),
-                StyleDoubleQuote()]
-    #contexts.append(HtmlAttrDoubleQuote2ScriptText())
-    return contexts
 
-
-def get_context(data, payload):
-    """
-    :return: A list which contains lists of contexts
-    """
-    return [c for c in get_context_iter(data, payload)]
-
-
-def get_context_iter(data, payload):
-    """
-    :return: A context iterator
-    """
-    chunks = data.split(payload)
-    data = ''
-
-    for chunk in chunks[:-1]:
-        data += chunk
-
-        byte_chunk = ByteChunk(data)
-
-        for context in get_contexts():
-            if context.match(byte_chunk):
-                context.save(data)
-                yield context
-
-
-class ByteChunk(object):
-    """
-    This is a very simple class that holds a piece of HTML, and attributes which
-    are added by the different contexts as it is processed.
-
-    For example, the ByteChunk starts with a set of empty attributes and then
-    after being processed by a context if might end up with a "inside_html"
-    attribute. This means that the next Context will not have to process the
-    inside_html decorator again, it just needs to ask if it has the attr in the
-    set.
-    """
-    def __init__(self, data):
-        self.attributes = dict()
-        self.data = data
-
-    def __repr__(self):
-        return '<ByteChunk for "%s...">' % self.data[-25:]
-
-    @cached_property
-    def nhtml(self):
-        return normalize_html(self.data)
-
-    @cached_property
-    def inside_html(self):
-        if self.inside_js or self.inside_style:
-            return False
-
-        return True
-
-    @cached_property
-    def inside_comment(self):
-        if not self.inside_html:
-            return False
-
-        # We are inside <!--...-->
-        if self.nhtml.rfind('<!--') <= self.nhtml.rfind('-->'):
-            return False
-        
-        return True
-
-    @cached_property
-    def html_attr(self):
-        attr_name = ''
-        inside_name = False
-        inside_value = False
-        data = self.nhtml
-        open_angle_bracket = data.rfind('<')
-        quote_character = None
-        open_context = None
-        i = open_angle_bracket - 1
-
-        if open_angle_bracket <= data.rfind('>'):
-            return False
-
-        for s in data[open_angle_bracket:]:
-            i += 1
-
-            if s in ATTR_DELIMITERS and not quote_character:
-                quote_character = s
-                if inside_value and open_context:
-                    open_context = i + 1
-                continue
-            elif s in ATTR_DELIMITERS and quote_character:
-                quote_character = None
-                inside_value = False
-                open_context = None
-                continue
-
-            if quote_character:
-                continue
-
-            if s == ' ':
-                inside_name = True
-                inside_value = False
-                attr_name = ''
-                continue
-
-            if s == '=':
-                inside_name = False
-                inside_value = True
-                open_context = i + 1
-                continue
-
-            if inside_name:
-                attr_name += s
-        attr_name = attr_name.lower()
-        return (attr_name, quote_character, open_context)
-
-    @cached_property
-    def inside_js(self):
-        script_index = self.nhtml.lower().rfind('<script')
-
-        if script_index > self.nhtml.lower().rfind('</script>') and \
-        self.nhtml[script_index:].count('>'):
-            return True
-
-        return False
-
-    @cached_property
-    def inside_style(self):
-        style_index = self.nhtml.lower().rfind('<style')
-
-        if style_index > self.nhtml.lower().rfind('</style>') and \
-        self.nhtml[style_index:].count('>'):
-            return True
-
-        return False
-
-    def inside_html_attr(self, attrs):
-        attr_data = self.html_attr
-        if not attr_data:
-            return False
-
-        for attr in attrs:
-            if attr == attr_data[0]:
-                return True
-
-        return False
-
-    @cached_property
-    def inside_event_attr(self):
-        if self.inside_html_attr(JS_EVENTS):
-            return True
-        return False
-
-    @cached_property
-    def inside_style_attr(self):
-        if self.inside_html_attr(['style']):
-            return True
-        return False

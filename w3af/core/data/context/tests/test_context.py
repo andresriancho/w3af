@@ -21,11 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
-from w3af.core.data.context.context import (get_context , get_contexts, HtmlText,
-                                        ScriptSingleQuote, ScriptText, HtmlComment,
-                                        HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
-                                        HtmlAttr, HtmlAttrDoubleQuote2ScriptText,
-                                        StyleComment, StyleText)
+from w3af.core.data.context.context import get_context, get_contexts
+from w3af.core.data.context.context.finders import (HtmlText, ScriptSingleQuote,
+                                                    ScriptText, HtmlComment,
+                                                    HtmlAttrSingleQuote,
+                                                    HtmlAttrDoubleQuote,
+                                                    HtmlAttr,
+                                                    HtmlAttrDoubleQuote2ScriptText,
+                                                    StyleComment, StyleText,
+                                                    ScriptDoubleQuote)
 
 
 class TestContext(unittest.TestCase):
@@ -246,7 +250,25 @@ class TestContext(unittest.TestCase):
             </script>
         </html>
         """
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], ScriptSingleQuote)
+        payload = 'PAYLOAD'
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptSingleQuote)
+        self.assertFalse(context.is_executable())
+        self.assertFalse(context.can_break(payload))
+
+    def test_payload_script_single_quote2_can_break(self):
+        html = """
+        <html>
+            <script>
+                init({login:'',foo:'PAYLOAD'BREAK'})
+            </script>
+        </html>
+        """
+        payload = "PAYLOAD'BREAK"
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptSingleQuote)
+        self.assertFalse(context.is_executable())
+        self.assertTrue(context.can_break(payload))
 
     def test_payload_text_can_break(self):
         html = """
@@ -330,7 +352,83 @@ class TestContext(unittest.TestCase):
             <input type="button" value="ClickMe" onClick="PAYLOAD">
         </html>
         """
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[1], ScriptText)
+        payload = 'PAYLOAD'
+        context = get_context(html, payload)[1]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.is_executable())
+        self.assertFalse(context.can_break(payload))
+
+    def test_payload_onclick_payload_between_single_quotes(self):
+        html = """
+        <html>
+            <input type="button" onClick="foo('PAYLOAD'BREAK')">
+        </html>
+        """
+        payload = "PAYLOAD'BREAK"
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.is_executable())
+        self.assertTrue(context.can_break(payload))
+
+    def test_payload_onclick_payload_between_single_quotes_append(self):
+        html = """
+        <html>
+            <input type="button" onClick="foo('XXX-PAYLOAD'BREAK')">
+        </html>
+        """
+        payload = "PAYLOAD'BREAK"
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.is_executable())
+        self.assertTrue(context.can_break(payload))
+
+    def test_payload_onclick_payload_between_double_quotes(self):
+        html = """
+        <html>
+            <input type="button" onClick="foo("PAYLOAD"BREAK")">
+        </html>
+        """
+        payload = 'PAYLOAD"BREAK'
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.is_executable())
+        self.assertTrue(context.can_break(payload))
+
+    def test_payload_onclick_payload_no_quotes(self):
+        """
+        In this case I'm already running code, if I would send alert(1) as
+        payload it would be run, so no need to escape from any string delimiter
+        such as " or '
+        """
+        html = """
+        <html>
+            <input type="button" onClick="foo(PAYLOAD)">
+        </html>
+        """
+        payload = 'PAYLOAD'
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.is_executable())
+        self.assertFalse(context.can_break(payload))
+
+    def test_payload_wavsep_case17_frame_src(self):
+        """
+        :see: http://127.0.0.1:8098/active/Reflected-XSS/
+                                   /RXSS-Detection-Evaluation-GET/
+                                   Case17-Js2PropertyJsScopeDoubleQuoteDelimiter
+                                   .jsp?userinput=dav%22id
+        """
+        html = """
+        <html>
+            <frame name='frame2' id='frame2'
+                   src='javascript:var name="PAYLOAD"BREAK"; alert(name);'>
+        </html>
+        """
+        payload = 'PAYLOAD"BREAK'
+        context = get_context(html, payload)[0]
+        self.assertIsInstance(context, ScriptDoubleQuote)
+        self.assertFalse(context.is_executable())
+        self.assertTrue(context.can_break(payload))
 
     def test_payload_empty(self):
         html = ''
