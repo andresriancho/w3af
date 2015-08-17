@@ -57,7 +57,6 @@ def get_context_iter(data, payload):
         data += chunk
 
         byte_chunk = ByteChunk(data)
-        print byte_chunk
 
         for context in get_contexts():
             if context.match(byte_chunk):
