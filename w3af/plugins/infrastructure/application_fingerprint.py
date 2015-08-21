@@ -103,9 +103,7 @@ class application_fingerprint(InfrastructurePlugin):
         """
         Based on WAD's main executable
         """
-        with self._plugin_lock:
-            detector = w3afDetector(uri_opener=self._uri_opener)
-
+        detector = w3afDetector(uri_opener=self._uri_opener)
         result = detector.detect(fuzzable_request.get_url())
         if result:
             self.request_ids.append(detector.original_response.id)
