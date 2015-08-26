@@ -876,7 +876,7 @@ def dataToOutFile(filename, data):
                 f.write(data)
         except IOError, ex:
             errMsg = "something went wrong while trying to write "
-            errMsg += "to the output file ('%s')" % ex
+            errMsg += "to the output file ('%s')" % ex.message
             raise SqlmapGenericException(errMsg)
 
     return retVal
@@ -1102,7 +1102,7 @@ def setPaths():
     paths.SQLMAP_XML_BANNER_PATH = os.path.join(paths.SQLMAP_XML_PATH, "banner")
     paths.SQLMAP_XML_PAYLOADS_PATH = os.path.join(paths.SQLMAP_XML_PATH, "payloads")
 
-    _ = os.path.join(os.path.expanduser("~"), ".sqlmap")
+    _ = os.path.join(os.path.expandvars(os.path.expanduser("~")), ".sqlmap")
     paths.SQLMAP_OUTPUT_PATH = getUnicode(paths.get("SQLMAP_OUTPUT_PATH", os.path.join(_, "output")), encoding=sys.getfilesystemencoding())
     paths.SQLMAP_DUMP_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "dump")
     paths.SQLMAP_FILES_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "files")
@@ -1112,7 +1112,6 @@ def setPaths():
     paths.SQL_SHELL_HISTORY = os.path.join(_, "sql.hst")
     paths.SQLMAP_SHELL_HISTORY = os.path.join(_, "sqlmap.hst")
     paths.GITHUB_HISTORY = os.path.join(_, "github.hst")
-    paths.SQLMAP_CONFIG = os.path.join(paths.SQLMAP_ROOT_PATH, "sqlmap-%s.conf" % randomStr())
     paths.COMMON_COLUMNS = os.path.join(paths.SQLMAP_TXT_PATH, "common-columns.txt")
     paths.COMMON_TABLES = os.path.join(paths.SQLMAP_TXT_PATH, "common-tables.txt")
     paths.COMMON_OUTPUTS = os.path.join(paths.SQLMAP_TXT_PATH, 'common-outputs.txt')
@@ -1584,9 +1583,10 @@ def safeExpandUser(filepath):
 
     try:
         retVal = os.path.expanduser(filepath)
-    except UnicodeDecodeError:
+    except UnicodeError:
         _ = locale.getdefaultlocale()
-        retVal = getUnicode(os.path.expanduser(filepath.encode(_[1] if _ and len(_) > 1 else UNICODE_ENCODING)))
+        encoding = _[1] if _ and len(_) > 1 else UNICODE_ENCODING
+        retVal = getUnicode(os.path.expanduser(filepath.encode(encoding)), encoding=encoding)
 
     return retVal
 
@@ -2116,7 +2116,7 @@ def getUnicode(value, encoding=None, noneToNull=False):
     elif isinstance(value, basestring):
         while True:
             try:
-                return unicode(value, encoding or kb.get("pageEncoding") or UNICODE_ENCODING)
+                return unicode(value, encoding or (kb.get("pageEncoding") if kb.get("originalPage") else None) or UNICODE_ENCODING)
             except UnicodeDecodeError, ex:
                 try:
                     return unicode(value, UNICODE_ENCODING)
@@ -2282,6 +2282,7 @@ def findMultipartPostBoundary(post):
 
     for match in re.finditer(r"(?m)^--(.+?)(--)?$", post or ""):
         _ = match.group(1).strip().strip('-')
+
         if _ in done:
             continue
         else:
@@ -2482,7 +2483,11 @@ def extractTextTagContent(page):
     [u'Title', u'foobar']
     """
 
-    page = re.sub(r"(?si)[^\s>]*%s[^<]*" % REFLECTED_VALUE_MARKER, "", page or "")
+    page = page or ""
+
+    if REFLECTED_VALUE_MARKER in page:
+        page = re.sub(r"(?si)[^\s>]*%s[^\s<]*" % REFLECTED_VALUE_MARKER, "", page)
+
     return filter(None, (_.group('result').strip() for _ in re.finditer(TEXT_TAG_REGEX, page)))
 
 def trimAlphaNum(value):
@@ -2576,7 +2581,7 @@ def findDynamicContent(firstPage, secondPage):
             prefix = trimAlphaNum(prefix)
             suffix = trimAlphaNum(suffix)
 
-            kb.dynamicMarkings.append((re.escape(prefix[-DYNAMICITY_MARK_LENGTH / 2:]) if prefix else None, re.escape(suffix[:DYNAMICITY_MARK_LENGTH / 2]) if suffix else None))
+            kb.dynamicMarkings.append((prefix[-DYNAMICITY_MARK_LENGTH / 2:] if prefix else None, suffix[:DYNAMICITY_MARK_LENGTH / 2] if suffix else None))
 
     if len(kb.dynamicMarkings) > 0:
         infoMsg = "dynamic content marked for removal (%d region%s)" % (len(kb.dynamicMarkings), 's' if len(kb.dynamicMarkings) > 1 else '')
@@ -2937,7 +2942,7 @@ def unhandledExceptionMessage():
     errMsg += "sqlmap version: %s\n" % VERSION_STRING[VERSION_STRING.find('/') + 1:]
     errMsg += "Python version: %s\n" % PYVERSION
     errMsg += "Operating system: %s\n" % PLATFORM
-    errMsg += "Command line: %s\n" % re.sub(r".+?\bsqlmap.py\b", "sqlmap.py", " ".join(sys.argv))
+    errMsg += "Command line: %s\n" % re.sub(r".+?\bsqlmap.py\b", "sqlmap.py", getUnicode(" ".join(sys.argv), encoding=sys.stdin.encoding))
     errMsg += "Technique: %s\n" % (enumValueToNameLookup(PAYLOAD.TECHNIQUE, kb.technique) if kb.get("technique") else ("DIRECT" if conf.get("direct") else None))
     errMsg += "Back-end DBMS: %s" % ("%s (fingerprinted)" % Backend.getDbms() if Backend.getDbms() is not None else "%s (identified)" % Backend.getIdentifiedDbms())
 
@@ -3012,7 +3017,7 @@ def maskSensitiveData(msg):
 
     retVal = getUnicode(msg)
 
-    for item in filter(None, map(lambda x: conf.get(x), ("hostname", "googleDork", "authCred", "proxyCred", "tbl", "db", "col", "user", "cookie", "proxy"))):
+    for item in filter(None, map(lambda x: conf.get(x), ("hostname", "googleDork", "authCred", "proxyCred", "tbl", "db", "col", "user", "cookie", "proxy", "rFile", "wFile", "dFile"))):
         regex = SENSITIVE_DATA_REGEX % re.sub("(\W)", r"\\\1", getUnicode(item))
         while extractRegexResult(regex, retVal):
             value = extractRegexResult(regex, retVal)
@@ -3022,7 +3027,6 @@ def maskSensitiveData(msg):
         match = re.search(r"(?i)sqlmap.+(-u|--url)(\s+|=)([^ ]+)", retVal)
         if match:
             retVal = retVal.replace(match.group(3), '*' * len(match.group(3)))
-
 
     if getpass.getuser():
         retVal = re.sub(r"(?i)\b%s\b" % re.escape(getpass.getuser()), "*" * len(getpass.getuser()), retVal)
@@ -3466,8 +3470,13 @@ def asciifyUrl(url, forceQuote=False):
             netloc = ':' + password + netloc
         netloc = username + netloc
 
-    if parts.port:
-        netloc += ':' + str(parts.port)
+    try:
+        port = parts.port
+    except:
+        port = None
+
+    if port:
+        netloc += ':' + str(port)
 
     return urlparse.urlunsplit([parts.scheme, netloc, path, query, parts.fragment])
 
@@ -3658,7 +3667,7 @@ def evaluateCode(code, variables=None):
     except KeyboardInterrupt:
         raise
     except Exception, ex:
-        errMsg = "an error occurred while evaluating provided code ('%s'). " % ex
+        errMsg = "an error occurred while evaluating provided code ('%s') " % ex.message
         raise SqlmapGenericException(errMsg)
 
 def serializeObject(object_):
@@ -3827,7 +3836,7 @@ def resetCookieJar(cookieJar):
                 with open(filename, "w+b") as f:
                     f.write("%s\n" % NETSCAPE_FORMAT_HEADER_COOKIES)
                     for line in lines:
-                        _ = line.split()
+                        _ = line.split("\t")
                         if len(_) == 7:
                             _[4] = FORCE_COOKIE_EXPIRATION_TIME
                             f.write("\n%s" % "\t".join(_))
