@@ -23,14 +23,16 @@ from w3af.core.data.context.utils.byte_chunk import ByteChunk
 
 from .style import StyleText, StyleComment, StyleSingleQuote, StyleDoubleQuote
 from .javascript import (ScriptMultiComment, ScriptLineComment,
-                         ScriptSingleQuote, ScriptDoubleQuote, ScriptText)
+                         ScriptSingleQuote, ScriptDoubleQuote, ScriptText,
+                         TagAttributeDoubleQuoteScript)
 from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                    HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
                    HtmlComment)
 
 
 def get_contexts():
-    contexts = [HtmlAttrSingleQuote(),
+    contexts = [TagAttributeDoubleQuoteScript(),
+                HtmlAttrSingleQuote(),
                 HtmlAttrDoubleQuote(),
                 HtmlAttrBackticks(),
                 HtmlAttr(),

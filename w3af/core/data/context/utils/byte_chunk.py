@@ -40,7 +40,10 @@ class ByteChunk(object):
         self.data = data
 
     def __repr__(self):
-        return '<ByteChunk for "%s...">' % self.data[-25:]
+        if len(self.data) >= 25:
+            return '<ByteChunk for "%s...">' % self.data[-25:]
+        else:
+            return '<ByteChunk for "%s">' % self.data
 
     @cached_property
     def nhtml(self):
@@ -72,6 +75,12 @@ class ByteChunk(object):
         data = self.nhtml
         open_angle_bracket = data.rfind('<')
         quote_character = None
+        # Open context is the index where the latest attribute name was opened.
+        # Example:
+        #
+        #       <a href="foo" spam="bar">
+        #                         ^
+        #           open_context--^
         open_context = None
         i = open_angle_bracket - 1
 
@@ -115,11 +124,45 @@ class ByteChunk(object):
 
     @cached_property
     def inside_js(self):
+        """
+        <script>PAYLOAD</script>
+        """
         script_index = self.nhtml.lower().rfind('<script')
 
         if script_index > self.nhtml.lower().rfind('</script>') and \
         self.nhtml[script_index:].count('>'):
             return True
+
+        return False
+
+    @cached_property
+    def inside_event_attr(self):
+        """
+        <a onmouseover="PAYLOAD">...</a>
+        """
+        if self.inside_html_attr(JS_EVENTS):
+            return True
+        return False
+
+    @cached_property
+    def inside_js_handler_attr(self):
+        """
+        <a href="javascript:PAYLOAD">...</a>
+        """
+        attr = self.html_attr
+        if not attr:
+            return False
+
+        attr_name, quote_character, open_context = attr
+        if attr_name not in {'src', 'href'}:
+            return False
+
+        attr_value = self.nhtml[open_context:]
+        attr_value = attr_value.strip().lower()
+
+        for client_side_lang in {'vbscript:', 'javascript:'}:
+            if attr_value.startswith(client_side_lang):
+                return True
 
         return False
 
@@ -142,12 +185,6 @@ class ByteChunk(object):
             if attr == attr_data[0]:
                 return True
 
-        return False
-
-    @cached_property
-    def inside_event_attr(self):
-        if self.inside_html_attr(JS_EVENTS):
-            return True
         return False
 
     @cached_property

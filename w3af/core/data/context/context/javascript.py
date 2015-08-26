@@ -20,31 +20,81 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.context.utils.byte_chunk import ByteChunk
+from w3af.core.data.context.context.html import HtmlAttrDoubleQuote
 from w3af.core.data.context.context.html import Context
 from w3af.core.data.context.constants import QUOTE_CHARS
 
 
-def crop_js(byte_chunk, context='tag'):
-    if context == 'tag':
-        return ByteChunk(byte_chunk.nhtml[byte_chunk.nhtml.lower().rfind('<script')+1:])
-    else:
-        attr_data = byte_chunk.html_attr
-        if attr_data:
-            return ByteChunk(byte_chunk.nhtml[attr_data[2]:])
-
-    return byte_chunk
-
-
 def inside_js(meth):
+    """
+    This is a rather complex decorator that will modify the ByteChunk according
+    to various situations.
+
+        * <script>...</script>
+        * <a onmouseover="...">
+        * <a href="javascript:...">
+
+    See the inline docs for more information on the cases and how they are
+    handled.
+
+    :param meth: The method to decorate
+    :return: False if we're not inside JavaScript context, else the result of
+             calling the wrapped method with the modified ByteChunk (modified
+             as documented above)
+    """
 
     def wrap(self, byte_chunk):
         if byte_chunk.inside_js:
-            new_bc = crop_js(byte_chunk)
-            return meth(self, new_bc)
+            # The payload is inside a <script> tag, get the script contents
+            # and process them in the wrapped method
+            #
+            # This is the case where the byte chunk contains something like:
+            #
+            #       <script>
+            #           hello();
+            #           world();
+            #           var a = '
+            #
+            # And the payload is inside the variable contents
+            #
+            # TODO: What about cases like <script type="text/javascript"> ?
+            #       I believe I'm sending type="text/javascript" as part of the
+            #       script source chunk
+            script_start = byte_chunk.nhtml.lower().rfind('<script')
+            script_source_chunk = ByteChunk(byte_chunk.nhtml[script_start+1:])
+            return meth(self, script_source_chunk)
 
         if byte_chunk.inside_event_attr:
-            new_bc = crop_js(byte_chunk, 'attr')
-            return meth(self, new_bc)
+            # This is the case where the we have a JS event in the tag and the
+            # payload is inside it. The HTML looks like:
+            #
+            #       <a onmouseover="foo();PAYLOAD">
+            #
+            # And the byte chunk looks like:
+            #
+            #       <a onmouseover="foo();
+            #
+            # Note that in this case the developer is not required to add the
+            # javascript: handler to the onmouseover attribute value (see case
+            # below for an example of javascript:)
+
+            # Note that attr_data can't be False because we already checked that
+            # in inside_event_attr
+            attr_data = byte_chunk.html_attr
+
+            # What this does is to find the attribute name (onmouseover)
+            # add + 2 to the index to account for the = and (single|double)
+            # quote (onmouseover=" or onmouseover=') and return the rest.
+            #
+            # Basically if we start with a byte chunk containing:
+            #
+            #   <a onmouseover="foo();
+            #
+            # We create a new byte chunk with foo();
+            attr_script_chunk = ByteChunk(byte_chunk.nhtml[attr_data[2]:])
+            return meth(self, attr_script_chunk)
+
+
 
         return False
     return wrap
@@ -182,6 +232,56 @@ class ScriptText(ScriptContext):
         for i in ['<', '/']:
             if i not in payload:
                 return False
+        return True
+
+    def is_executable(self):
+        return True
+
+
+class TagAttributeDoubleQuoteScript(HtmlAttrDoubleQuote):
+    """
+    <a href="javascript:foo();PAYLOAD">...</a>
+    """
+    def match(self, byte_chunk):
+        if not byte_chunk.inside_js_handler_attr:
+            return False
+
+        # This is the case where we have an href / src attribute which
+        # contains a "javascript:" target which will run JS in the browser.
+        # If the HTML looks like this:
+        #
+        #       <a href="javascript:foo();PAYLOAD">...</a>
+        #
+        # The byte chunk would look like
+        #
+        #       <a href="javascript:foo();
+        #
+        # And we want to create a new byte chunk that will send the JS code
+        # to the analyzer, containing:
+        #
+        #       foo();
+
+        # Note that attr_data can't be False because we already checked that
+        # in inside_event_attr
+        attr_data = byte_chunk.html_attr
+        attr_name, quote_character, open_context = attr_data
+        attr_value = byte_chunk.nhtml[open_context:]
+
+        javascript = 'javascript:'
+        vbscript = 'vbscript:'
+        client_side_code = ''
+
+        if attr_value.lower().startswith(javascript):
+            client_side_code = attr_value[len(javascript):]
+
+        elif attr_value.lower().startswith(vbscript):
+            client_side_code = attr_value[len(vbscript):]
+
+        # What this does is to find the attribute name (href|src)
+        # add + 2 to the index to account for the = and (single|double)
+        # quote (href=" or href='), from there find the javascript: and
+        # and return the script after ":"
+        attr_script_chunk = ByteChunk(client_side_code)
         return True
 
     def is_executable(self):

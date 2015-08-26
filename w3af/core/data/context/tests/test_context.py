@@ -336,6 +336,27 @@ class TestContext(unittest.TestCase):
         """
         context = get_context(html, 'PAYLOAD')[0]
         self.assertTrue(context.is_executable())
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+
+    def test_payload_javascript_href(self):
+        html = """
+        <html>
+            <a href="javascript:PAYLOAD">foo</a>
+        </html>
+        """
+        context = get_context(html, 'PAYLOAD')[0]
+        self.assertIsInstance(context, HtmlText)
+        self.assertTrue(context.is_executable())
+
+    def test_payload_javascript_href_append(self):
+        html = """
+        <html>
+            <a href="javascript:foo();PAYLOAD">foo</a>
+        </html>
+        """
+        context = get_context(html, 'PAYLOAD')[0]
+        self.assertTrue(context.is_executable())
+        self.assertIsInstance(context, HtmlText)
 
     def test_payload_script_attr_value(self):
         html = """
