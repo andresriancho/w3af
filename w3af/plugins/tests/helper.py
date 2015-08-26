@@ -298,6 +298,65 @@ class PluginTest(unittest.TestCase):
             tracebacks = [e.get_details() for e in caught_exceptions]
             self.assertEqual(len(caught_exceptions), 0, tracebacks)
 
+    def _scan_assert(self, config, expected_path_param, ok_to_miss,
+                     kb_addresses, skip_startwith=(), debug=False):
+
+        # Make sure the subclass is properly configured
+        self.assertIsNotNone(self.target_url)
+        self.assertIsNotNone(self.base_path)
+
+        # Scan
+        self._scan(self.target_url, config, debug=debug)
+
+        # Get the results
+        vulns = []
+        for kb_address in kb_addresses:
+            vulns.extend(self.kb.get(*kb_address))
+
+        found_path_param = set()
+        for vuln in vulns:
+            path = vuln.get_url().get_path().replace(self.base_path, '')
+            found_path_param.add((path, vuln.get_token_name()))
+
+        self.assertEqual(expected_path_param, found_path_param)
+
+        #
+        #   Now we assert the unknowns
+        #
+        all_known_urls = self.kb.get_all_known_urls()
+        all_known_files = [u.get_path().replace(self.base_path, '') for u in all_known_urls]
+
+        expected = [path for path, param in expected_path_param]
+
+        missing = []
+
+        for path in all_known_files:
+
+            should_continue = False
+
+            for skip_start in skip_startwith:
+                if path.startswith(skip_start):
+                    should_continue = True
+                    break
+
+            if should_continue:
+                continue
+
+            if path == u'':
+                continue
+
+            if path in ok_to_miss:
+                continue
+
+            if path in expected:
+                # Already checked this one
+                continue
+
+            missing.append(path)
+
+        missing.sort()
+        self.assertEqual(missing, [])
+
     def get_custom_agent(self):
         """
         :return: The test agent for easier log grep
