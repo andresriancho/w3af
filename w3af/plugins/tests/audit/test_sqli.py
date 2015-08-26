@@ -56,18 +56,15 @@ class TestSQLI(PluginTest):
 
 class TestSQLMapTestEnv(PluginTest):
 
-    target_url = get_sqlmap_testenv_http('/sqlmap/mysql/')
+    base_path = '/sqlmap/mysql/'
+    target_url = get_sqlmap_testenv_http(base_path)
 
-    _run_configs = {
-        'cfg': {
-            'target': target_url,
-            'plugins': {
-                'audit': (PluginConfig('sqli'),),
-                'crawl': (PluginConfig('web_spider',
-                             ('only_forward', True, PluginConfig.BOOL),
-                             ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
-            }
-        }
+    config = {
+        'audit': (PluginConfig('sqli'),),
+
+        'crawl': (PluginConfig('web_spider',
+                               ('only_forward', True, PluginConfig.BOOL),
+                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
     }
 
     def test_found_sqli_in_testenv(self):
@@ -77,10 +74,6 @@ class TestSQLMapTestEnv(PluginTest):
         which expect a POST request, so don't worry too much if those post_*
         are not found.
         """
-        cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.get('sqli', 'sqli')
-
         expected_path_param = {(u'get_str_like_par2.php', u'id'),
                                (u'get_dstr.php', u'id'),
                                (u'get_int_orderby.php', u'id'),
@@ -104,13 +97,6 @@ class TestSQLMapTestEnv(PluginTest):
                                (u'get_brackets.php', u'id'),
                                (u'get_int_limit.php', u'id'),
                                (u'get_int_limit_second.php', u'id')}
-
-        found_path_param = set()
-        for vuln in vulns:
-            path = vuln.get_url().get_path().replace('/sqlmap/mysql/', '')
-            found_path_param.add((path, vuln.get_token_name()))
-
-        self.assertEqual(expected_path_param, found_path_param)
 
         #
         #   Now we assert the unknowns
@@ -152,39 +138,14 @@ class TestSQLMapTestEnv(PluginTest):
             u'csrf/post.php',
         }
 
-        all_known_urls = self.kb.get_all_known_urls()
-        all_known_files = [u.get_path().replace('/sqlmap/mysql/', '') for u in all_known_urls]
-
         skip_startwith = {'post_', 'header_', 'referer_', 'cookie_'}
+        kb_addresses = {('sqli', 'sqli')}
 
-        expected = [path for path, param in expected_path_param]
-
-        missing = []
-        self.maxDiff = None
-
-        for path in all_known_files:
-
-            should_continue = False
-
-            for skip_start in skip_startwith:
-                if path.startswith(skip_start):
-                    should_continue = True
-                    break
-
-            if should_continue:
-                continue
-
-            if path in ok_to_miss:
-                continue
-
-            if path in expected:
-                # Already checked this one
-                continue
-
-            missing.append(path)
-
-        missing.sort()
-        self.assertEqual(missing, [])
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
 
 
 class TestWAVSEPError(PluginTest):
