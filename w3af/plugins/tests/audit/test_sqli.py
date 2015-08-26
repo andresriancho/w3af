@@ -240,6 +240,9 @@ class WAVSEPGenericTest(PluginTest):
             if should_continue:
                 continue
 
+            if path == u'':
+                continue
+
             if path in ok_to_miss:
                 continue
 
@@ -279,12 +282,15 @@ class TestWAVSEPError(WAVSEPGenericTest):
         }
 
         ok_to_miss = {
+            # Should be detected using blind SQL injection, even if they send
+            # an exception to the output in some cases:
             u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-With200Errors.jsp',
             u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-With200Errors.jsp',
             u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-With200Errors.jsp',
             u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-With200Errors.jsp',
+
+            # Can only detect this one with time delays?
             u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-With200Errors.jsp',
-            u''
         }
 
         skip_startwith = {'index.jsp'}
