@@ -187,83 +187,25 @@ class TestSQLMapTestEnv(PluginTest):
         self.assertEqual(missing, [])
 
 
-class WAVSEPGenericTest(PluginTest):
+class TestWAVSEPError(PluginTest):
 
-    target_url = None
-    WAVSEP_BASE = None
-    maxDiff = None
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Error/')
+
+    target_url = get_wavsep_http(base_path)
 
     config = {
-        'audit': (PluginConfig('sqli'),),
+        'audit': (PluginConfig('sqli'),
+                  PluginConfig('blind_sqli')),
+
         'crawl': (PluginConfig('web_spider',
-                     ('only_forward', True, PluginConfig.BOOL),
-                     ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+                               ('only_forward', True, PluginConfig.BOOL),
+                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
     }
-
-    def run_scan_assert(self, config, expected_path_param, ok_to_miss,
-                        skip_startwith=()):
-
-        # Make sure the subclass is properly configured
-        self.assertIsNotNone(self.target_url)
-        self.assertIsNotNone(self.WAVSEP_BASE)
-
-        # Scan
-        self._scan(self.target_url, config)
-        vulns = self.kb.get('sqli', 'sqli')
-
-        found_path_param = set()
-        for vuln in vulns:
-            path = vuln.get_url().get_path().replace(self.WAVSEP_BASE, '')
-            found_path_param.add((path, vuln.get_token_name()))
-
-        self.assertEqual(expected_path_param, found_path_param)
-
-        #
-        #   Now we assert the unknowns
-        #
-        all_known_urls = self.kb.get_all_known_urls()
-        all_known_files = [u.get_path().replace(self.WAVSEP_BASE, '') for u in all_known_urls]
-
-        expected = [path for path, param in expected_path_param]
-
-        missing = []
-
-        for path in all_known_files:
-
-            should_continue = False
-
-            for skip_start in skip_startwith:
-                if path.startswith(skip_start):
-                    should_continue = True
-                    break
-
-            if should_continue:
-                continue
-
-            if path == u'':
-                continue
-
-            if path in ok_to_miss:
-                continue
-
-            if path in expected:
-                # Already checked this one
-                continue
-
-            missing.append(path)
-
-        missing.sort()
-        self.assertEqual(missing, [])
-
-
-class TestWAVSEPError(WAVSEPGenericTest):
-
-    WAVSEP_BASE = ('/active/SQL-Injection/'
-                   'SInjection-Detection-Evaluation-GET-200Error/')
-    target_url = get_wavsep_http(WAVSEP_BASE)
 
     def test_found_sqli_wavsep_error(self):
         expected_path_param = {
+            # These are detected using sql injection errors:
             (u'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp', u'password'),
             (u'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp', u'username'),
             (u'Case02-InjectionInSearch-String-UnionExploit-With200Errors.jsp', u'msg'),
@@ -279,23 +221,24 @@ class TestWAVSEPError(WAVSEPGenericTest):
             (u'Case12-InjectionInSearch-Date-UnionExploit-With200Errors.jsp', u'transactionDate'),
             (u'Case13-InjectionInCalc-Date-BooleanExploit-With200Errors.jsp', u'transactionDate'),
             (u'Case14-InjectionInUpdate-Date-CommandInjection-With200Errors.jsp', u'transactionDate'),
+
+            # These are detected using blind SQL injection plugin:
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-With200Errors.jsp', u'transactionId'),
+            (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-With200Errors.jsp', u'msgId'),
+            (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-With200Errors.jsp', u'minBalanace'),
+
+            # Also with blind sql injection, but this is time delay:
+            (u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-With200Errors.jsp', u'msgid')
         }
 
-        ok_to_miss = {
-            # Should be detected using blind SQL injection, even if they send
-            # an exception to the output in some cases:
-            u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-With200Errors.jsp',
-            u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-With200Errors.jsp',
-            u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-With200Errors.jsp',
-            u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-With200Errors.jsp',
-
-            # Can only detect this one with time delays?
-            u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-With200Errors.jsp',
-        }
-
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
         skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
 
-        self.run_scan_assert(self.config,
-                             expected_path_param,
-                             ok_to_miss,
-                             skip_startwith)
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
