@@ -1,4 +1,4 @@
-moth:
+djangomoth:
   image: andresriancho/django-moth:latest
   ports:
     - "8000:8000"
@@ -20,6 +20,14 @@ phpmoth:
   image: andresriancho/php-moth:latest
   ports:
     - "9009:80"
+
+#
+# The old w3af-moth, now as a docker image
+#
+w3afmoth:
+  image: andresriancho/w3af-moth:latest
+  ports:
+    - "9008:80"
 
 
 #
