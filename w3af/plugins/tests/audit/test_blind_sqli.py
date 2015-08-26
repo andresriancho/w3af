@@ -157,28 +157,3 @@ class TestOldMothBlindSQLI(PluginTest):
                           ok_to_miss,
                           kb_addresses,
                           skip_startwith)
-
-
-class TestWAVSEPCase19(PluginTest):
-
-    target_url = get_wavsep_http('/active/SQL-Injection/'
-                                 'SInjection-Detection-Evaluation-GET-200Error/'
-                                 'Case19-InjectionInUpdate-NumericWithoutQuotes'
-                                 '-CommandInjection-With200Errors.jsp'
-                                 '?msgid=100000')
-
-    config = {
-        'audit': (PluginConfig('blind_sqli'),),
-    }
-
-    def test_wavsep_case_19(self):
-        self._scan(self.target_url, self.config)
-
-        vulns = self.kb.get('blind_sqli', 'blind_sqli')
-        self.assertEquals(1, len(vulns))
-
-        # Now some tests around specific details of the found vuln
-        vuln = vulns[0]
-        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
-        self.assertFalse('time delays' in vuln.get_desc())
-        self.assertEquals('numeric', vuln['type'])
