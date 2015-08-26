@@ -61,7 +61,8 @@ class PluginTest(unittest.TestCase):
     runconfig = {}
     kb = kb.kb
     target_url = None
-    
+    base_path = None
+
     def setUp(self):
         self.kb.cleanup()
         self.w3afcore = w3afCore()
