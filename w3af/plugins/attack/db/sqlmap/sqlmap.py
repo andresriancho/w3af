@@ -60,7 +60,7 @@ def modulePath():
     except NameError:
         _ = inspect.getsourcefile(modulePath)
 
-    return getUnicode(os.path.dirname(os.path.realpath(_)), sys.getfilesystemencoding())
+    return getUnicode(os.path.dirname(os.path.realpath(_)), encoding=sys.getfilesystemencoding())
 
 def main():
     """
@@ -69,6 +69,15 @@ def main():
 
     try:
         paths.SQLMAP_ROOT_PATH = modulePath()
+
+        try:
+            os.path.isdir(paths.SQLMAP_ROOT_PATH)
+        except UnicodeEncodeError:
+            errMsg = "your system does not properly handle non-ASCII paths. "
+            errMsg += "Please move the sqlmap's directory to the other location"
+            logger.error(errMsg)
+            exit()
+
         setPaths()
 
         # Store original command line options for possible later restoration

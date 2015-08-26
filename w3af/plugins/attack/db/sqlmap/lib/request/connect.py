@@ -575,7 +575,7 @@ class Connect(object):
                 debugMsg = "got HTTP error code: %d (%s)" % (code, status)
                 logger.debug(debugMsg)
 
-        except (urllib2.URLError, socket.error, socket.timeout, httplib.BadStatusLine, httplib.IncompleteRead, httplib.ResponseNotReady, struct.error, ProxyError, SqlmapCompressionException, WebSocketException), e:
+        except (urllib2.URLError, socket.error, socket.timeout, httplib.HTTPException, struct.error, ProxyError, SqlmapCompressionException, WebSocketException), e:
             tbMsg = traceback.format_exc()
 
             if "no host given" in tbMsg:
@@ -889,11 +889,16 @@ class Connect(object):
 
         if conf.evalCode:
             delimiter = conf.paramDel or DEFAULT_GET_POST_DELIMITER
-            variables = {"uri": uri}
+            variables = {"uri": uri, "lastPage": threadData.lastPage}
             originals = {}
             keywords = keyword.kwlist
 
-            for item in filter(None, (get, post if not kb.postHint else None)):
+            if not get and PLACE.URI in conf.parameters:
+                query = urlparse.urlsplit(uri).query or ""
+            else:
+                query = None
+
+            for item in filter(None, (get, post if not kb.postHint else None, query)):
                 for part in item.split(delimiter):
                     if '=' in part:
                         name, value = part.split('=', 1)
@@ -955,6 +960,10 @@ class Connect(object):
                         if re.search(regex, (post or "")):
                             found = True
                             post = re.sub(regex, "\g<1>%s\g<3>" % value, post)
+
+                        if re.search(regex, (query or "")):
+                            found = True
+                            uri = re.sub(regex.replace(r"\A", r"\?"), "\g<1>%s\g<3>" % value, uri)
 
                         regex = r"((\A|%s)%s=).+?(%s|\Z)" % (re.escape(conf.cookieDel or DEFAULT_COOKIE_DELIMITER), name, re.escape(conf.cookieDel or DEFAULT_COOKIE_DELIMITER))
                         if re.search(regex, (cookie or "")):
@@ -1064,6 +1073,7 @@ class Connect(object):
             page, headers, code = Connect.getPage(url=conf.secondOrder, cookie=cookie, ua=ua, silent=silent, auxHeaders=auxHeaders, response=response, raise404=False, ignoreTimeout=timeBasedCompare, refreshing=True)
 
         threadData.lastQueryDuration = calculateDeltaSeconds(start)
+        threadData.lastPage = page
 
         kb.originalCode = kb.originalCode or code
 
