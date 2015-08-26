@@ -138,7 +138,7 @@ class BlindSqliResponseDiff(object):
             #
             compare_diff = True
 
-        syntax_error = "d'z'0"
+        syntax_error = u"a'b\"c'd\""
         mutant.set_token_value(syntax_error)
         syntax_error_response, body_syntax_error_response = send_clean(mutant)
 
