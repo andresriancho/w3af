@@ -161,7 +161,8 @@ class sqli(AuditPlugin):
 
     SQLI_MESSAGE = (u'A SQL error was found in the response supplied by '
                     u'the web application, the error is (only a fragment is '
-                    u'shown): "%s". The error was found on response with id %s.')
+                    u'shown): "%s". The error was found on response with id'
+                    u' %s.')
 
     def __init__(self):
         AuditPlugin.__init__(self)
