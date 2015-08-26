@@ -58,3 +58,4 @@ wavsepdb:
   image: mysql
   environment:
     - MYSQL_ROOT_PASSWORD=wavsep
+
