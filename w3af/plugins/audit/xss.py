@@ -176,6 +176,7 @@ class xss(AuditPlugin):
             
             sent_payload = mutant.get_token_payload()
 
+            # TODO: https://github.com/andresriancho/w3af/issues/12305
             body_lower = response.get_body().lower()
             sent_payload_lower = sent_payload.lower()
 
