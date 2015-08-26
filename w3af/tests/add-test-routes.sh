@@ -13,7 +13,7 @@ fi
 # there is no password required
 #
 # Only add the line to /etc/hosts if it's not there already
-grep -q -F '127.0.0.1 moth' /etc/hosts || sudo echo '127.0.0.1 moth' >> /etc/hosts
+grep -q -F '127.0.0.1 moth' /etc/hosts || echo '127.0.0.1 moth' | sudo tee -a /etc/hosts
 
 # Routes to be read by python code + tests
 echo "127.0.0.1:8000" > /tmp/moth-http.txt
