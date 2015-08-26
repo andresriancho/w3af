@@ -57,7 +57,7 @@ class sqli(AuditPlugin):
         (r"Unclosed quotation mark before the character string", dbms.MSSQL),
         (r"'80040e07'", dbms.MSSQL),
         (r'Microsoft SQL Native Client error', dbms.MSSQL),
-        
+
         # DB2
         (r'SQLCODE', dbms.DB2),
         (r'DB2 SQL error:', dbms.DB2),
