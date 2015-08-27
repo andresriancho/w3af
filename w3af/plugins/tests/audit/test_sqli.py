@@ -348,3 +348,37 @@ class TestWAVSEPIdentical(PluginTest):
                           ok_to_miss,
                           kb_addresses,
                           skip_startwith)
+
+
+class TestWAVSEPExperimental(PluginTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Error-Experimental/')
+
+    target_url = get_wavsep_http(base_path)
+
+    config = {
+        'audit': (PluginConfig('sqli'),
+                  PluginConfig('blind_sqli')),
+
+        'crawl': (PluginConfig('web_spider',
+                               ('only_forward', True, PluginConfig.BOOL),
+                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+    }
+
+    def test_found_sqli_wavsep_experimental(self):
+        expected_path_param = {
+            (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'target'),
+            (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'msg')
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
