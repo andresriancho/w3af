@@ -77,7 +77,7 @@ def print_status(start_time, done_list, total_tests, queued_run_ids, executor,
             # We have something like [1]
             will_fail = True
 
-        if will_fail:
+        if not will_fail:
             msg = u'Status: (%s/%s) ✓ ' % (len(done_list), total_tests)
         else:
             msg = u'Status: (%s/%s) ✗ ' % (len(done_list), total_tests)
