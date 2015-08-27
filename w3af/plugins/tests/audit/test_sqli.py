@@ -307,3 +307,44 @@ class TestWAVSEPWithDifferentiation(PluginTest):
                           ok_to_miss,
                           kb_addresses,
                           skip_startwith)
+
+
+class TestWAVSEPIdentical(PluginTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Identical/')
+
+    target_url = get_wavsep_http(base_path)
+
+    config = {
+        'audit': (PluginConfig('sqli'),
+                  PluginConfig('blind_sqli')),
+
+        'crawl': (PluginConfig('web_spider',
+                               ('only_forward', True, PluginConfig.BOOL),
+                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+    }
+
+    def test_found_sqli_wavsep_identical(self):
+        expected_path_param = {
+            (u'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionId'),
+            (u'Case02-InjectionInView-String-Blind-200ValidResponseWithDefaultOnException.jsp', u'username'),
+            (u'Case03-InjectionInView-Date-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionDate'),
+            (u'Case06-InjectionInUpdate-Date-TimeDelayExploit-200Identical.jsp', u'transactionDate')
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = {
+            u'Case04-InjectionInUpdate-Numeric-TimeDelayExploit-200Identical.jsp',
+            u'Case05-InjectionInUpdate-String-TimeDelayExploit-200Identical.jsp',
+            u'Case07-InjectionInUpdate-NumericWithoutQuotes-TimeDelayExploit-200Identical.jsp',
+            u'Case08-InjectionInUpdate-DateWithoutQuotes-TimeDelayExploit-200Identical.jsp'
+        }
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
