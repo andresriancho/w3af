@@ -148,13 +148,7 @@ class TestSQLMapTestEnv(PluginTest):
                           skip_startwith)
 
 
-class TestWAVSEPError(PluginTest):
-
-    base_path = ('/active/SQL-Injection/'
-                 'SInjection-Detection-Evaluation-GET-200Error/')
-
-    target_url = get_wavsep_http(base_path)
-
+class WAVSEPTest(PluginTest):
     config = {
         'audit': (PluginConfig('sqli'),
                   PluginConfig('blind_sqli')),
@@ -163,6 +157,14 @@ class TestWAVSEPError(PluginTest):
                                ('only_forward', True, PluginConfig.BOOL),
                                ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
     }
+
+
+class TestWAVSEPError(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Error/')
+
+    target_url = get_wavsep_http(base_path)
 
     def test_found_sqli_wavsep_error(self):
         expected_path_param = {
@@ -205,21 +207,12 @@ class TestWAVSEPError(PluginTest):
                           skip_startwith)
 
 
-class TestWAVSEP500Error(PluginTest):
+class TestWAVSEP500Error(WAVSEPTest):
 
     base_path = ('/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-500Error/')
 
     target_url = get_wavsep_http(base_path)
-
-    config = {
-        'audit': (PluginConfig('sqli'),
-                  PluginConfig('blind_sqli')),
-
-        'crawl': (PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL),
-                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
-    }
 
     def test_found_sqli_wavsep_error(self):
         expected_path_param = {
@@ -257,21 +250,12 @@ class TestWAVSEP500Error(PluginTest):
                           skip_startwith)
 
 
-class TestWAVSEPWithDifferentiation(PluginTest):
+class TestWAVSEPWithDifferentiation(WAVSEPTest):
 
     base_path = ('/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Valid/')
 
     target_url = get_wavsep_http(base_path)
-
-    config = {
-        'audit': (PluginConfig('sqli'),
-                  PluginConfig('blind_sqli')),
-
-        'crawl': (PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL),
-                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
-    }
 
     def test_found_sqli_wavsep_differentiation(self):
         expected_path_param = {
@@ -309,21 +293,12 @@ class TestWAVSEPWithDifferentiation(PluginTest):
                           skip_startwith)
 
 
-class TestWAVSEPIdentical(PluginTest):
+class TestWAVSEPIdentical(WAVSEPTest):
 
     base_path = ('/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Identical/')
 
     target_url = get_wavsep_http(base_path)
-
-    config = {
-        'audit': (PluginConfig('sqli'),
-                  PluginConfig('blind_sqli')),
-
-        'crawl': (PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL),
-                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
-    }
 
     def test_found_sqli_wavsep_identical(self):
         expected_path_param = {
@@ -350,21 +325,12 @@ class TestWAVSEPIdentical(PluginTest):
                           skip_startwith)
 
 
-class TestWAVSEPExperimental(PluginTest):
+class TestWAVSEPExperimental(WAVSEPTest):
 
     base_path = ('/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Error-Experimental/')
 
     target_url = get_wavsep_http(base_path)
-
-    config = {
-        'audit': (PluginConfig('sqli'),
-                  PluginConfig('blind_sqli')),
-
-        'crawl': (PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL),
-                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
-    }
 
     def test_found_sqli_wavsep_experimental(self):
         expected_path_param = {
