@@ -305,16 +305,15 @@ class TestWAVSEPIdentical(WAVSEPTest):
             (u'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionId'),
             (u'Case02-InjectionInView-String-Blind-200ValidResponseWithDefaultOnException.jsp', u'username'),
             (u'Case03-InjectionInView-Date-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionDate'),
-            (u'Case06-InjectionInUpdate-Date-TimeDelayExploit-200Identical.jsp', u'transactionDate')
+            (u'Case04-InjectionInUpdate-Numeric-TimeDelayExploit-200Identical.jsp', u'transactionId'),
+            (u'Case05-InjectionInUpdate-String-TimeDelayExploit-200Identical.jsp', u'description'),
+            (u'Case06-InjectionInUpdate-Date-TimeDelayExploit-200Identical.jsp', u'transactionDate'),
+            (u'Case07-InjectionInUpdate-NumericWithoutQuotes-TimeDelayExploit-200Identical.jsp', u'transactionId'),
+            (u'Case08-InjectionInUpdate-DateWithoutQuotes-TimeDelayExploit-200Identical.jsp', u'transactionDate'),
         }
 
         # None is OK to miss -> 100% coverage
-        ok_to_miss = {
-            u'Case04-InjectionInUpdate-Numeric-TimeDelayExploit-200Identical.jsp',
-            u'Case05-InjectionInUpdate-String-TimeDelayExploit-200Identical.jsp',
-            u'Case07-InjectionInUpdate-NumericWithoutQuotes-TimeDelayExploit-200Identical.jsp',
-            u'Case08-InjectionInUpdate-DateWithoutQuotes-TimeDelayExploit-200Identical.jsp'
-        }
+        ok_to_miss = {}
         skip_startwith = {'index.jsp'}
         kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
 
