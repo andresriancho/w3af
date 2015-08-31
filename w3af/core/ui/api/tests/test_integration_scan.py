@@ -181,11 +181,8 @@ class APIScanTest(IntegrationTest):
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data = response.json()['entries']
-        for entry in log_data:
-            if 'The user stopped the scan' in entry['message']:
-                break
-        else:
-            self.assertTrue(False, 'Stop not found in log')
+        messages = '\n'.join(entry['message'] for entry in log_data)
+        self.assertIn('The user stopped the scan', messages)
 
     def test_two_scans(self):
         scan_id_0 = self.test_start_simple_scan()
