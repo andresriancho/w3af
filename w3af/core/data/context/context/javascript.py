@@ -286,3 +286,24 @@ class TagAttributeDoubleQuoteScript(HtmlAttrDoubleQuote):
 
     def is_executable(self):
         return True
+
+class HtmlAttrDoubleQuote2Script(HtmlAttrDoubleQuote):
+
+    def __init__(self):
+        HtmlAttrDoubleQuote.__init__(self)
+        self.name = 'HTML_ATTR_DOUBLE_QUOTE2SCRIPT'
+
+    @inside_html
+    def match(self, byte_chunk):
+        if not HtmlAttrDoubleQuote._match(self, byte_chunk):
+            return False
+
+        data = byte_chunk.nhtml.lower().replace(' ', '')
+
+        for attr_name in JS_EVENTS:
+            if data.endswith(attr_name + '=' + self.quote_character):
+                break
+        else:
+            return False
+        #        data = data.lower().replace('&quote;', '"')
+        return True

@@ -1,7 +1,7 @@
 """
-finders.py
+html.py
 
-Copyright 2006 Andres Riancho
+Copyright 2015 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,132 +19,94 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from functools import wraps
+from w3af.core.data.context.constants import ATTR_DELIMITERS
+from w3af.core.data.context.context.base import BaseContext
 
-from w3af.core.data.context.constants import ATTR_DELIMITERS, JS_EVENTS
 
+class HtmlTag(BaseContext):
+    """
+    Matches <PAYLOAD></foo>
+    """
+    CAN_BREAK = {' ', '>'}
 
-class Context(object):
-    name = ''
-    data = ''
+    @staticmethod
+    def match(html):
+        # If it ends with a "<" it means that the payload was right after the
+        # tag start character (<)
+        if html and html.endswith('<'):
+            return True
 
-    def get_name(self):
-        return self.name
-
-    def is_executable(self):
         return False
 
-    def can_break(self, payload):
-        raise NotImplementedError('can_break() should be implemented')
 
-    def match(self, data):
-        raise NotImplementedError('match() should be implemented')
+class HtmlTagClose(BaseContext):
+    """
+    Matches <foo></PAYLOAD>
+    """
+    CAN_BREAK = {' ', '>'}
 
-    def inside_comment(self, data):
-        raise NotImplementedError('inside_comment() should be implemented')
+    @staticmethod
+    def match(html):
+        # If it ends with a "</" it means that the payload was right after the
+        # tag start character (</)
+        if html and html.endswith('</'):
+            return True
 
-    def save(self, data):
-        self.data = data
+        return False
 
 
-def inside_html(meth):
+class HtmlText(BaseContext):
+    """
+    Matches <tag attr="value">PAYLOAD</tag>
+    """
+    CAN_BREAK = {'<'}
 
-    @wraps(meth)
-    def wrap(self, byte_chunk):
-        if not byte_chunk.inside_html:
+    @staticmethod
+    def match(html):
+        # Special case where the only thing in the HTML is the payload/the
+        # HTML starts with the payload
+        if not html:
+            return True
+
+        # The other cases where there is a tag soup
+        return BaseContext.is_inside_context(html, '>', '<')
+
+
+class HtmlComment(BaseContext):
+    """
+    Matches <!-- PAYLOAD -->
+    """
+
+    CAN_BREAK = {'-', '>', '<'}
+
+    @staticmethod
+    def match(html):
+        return BaseContext.is_inside_html_comment(html)
+
+
+class HtmlAttr(BaseContext):
+    """
+    Matches <tag PAYLOAD="value" />
+    """
+
+    CAN_BREAK = {' ', '='}
+
+    @staticmethod
+    def match(html):
+        if not BaseContext.is_inside_context(html, '<', '>'):
+            # We're not inside the tag context, so there is no way we're inside
+            # any tag attribute name
             return False
-        return meth(self, byte_chunk)
 
-    return wrap
-
-
-def not_html_comment(meth):
-
-    @wraps(meth)
-    def wrap(self, byte_chunk):
-        if byte_chunk.inside_comment:
+        if BaseContext.is_inside_context(html, '</', '>'):
+            # Nothing to be done inside a closing tag attr
             return False
-        return meth(self, byte_chunk)
 
-    return wrap
-
-
-class HtmlContext(Context):
-    pass
-
-
-class HtmlTag(HtmlContext):
-
-    def __init__(self):
-        self.name = 'HTML_TAG'
-
-    @inside_html
-    @not_html_comment
-    def match(self, byte_chunk):
-        if byte_chunk.nhtml and byte_chunk.nhtml[-1] == '<':
-            return True
-
-        return False
-
-    def can_break(self, payload):
-        for i in [' ', '>']:
-            if i in payload:
-                return True
-        return False
-
-
-class HtmlText(HtmlContext):
-
-    def __init__(self):
-        self.name = 'HTML_TEXT'
-
-    @inside_html
-    @not_html_comment
-    def match(self, byte_chunk):
-        if byte_chunk.nhtml.rfind('<') <= byte_chunk.nhtml.rfind('>'):
-            return True
-        return False
-
-    def can_break(self, payload):
-        if "<" in payload:
-            return True
-        return False
-
-
-class HtmlComment(HtmlContext):
-
-    def __init__(self):
-        self.name = 'HTML_COMMENT'
-
-    @inside_html
-    def match(self, byte_chunk):
-        return byte_chunk.inside_comment
-
-    def can_break(self, payload):
-        for i in ['-', '>', '<']:
-            if i not in payload:
-                return False
-        return True
-
-
-class HtmlAttr(HtmlContext):
-
-    def __init__(self):
-        self.name = 'HTML_ATTR'
-
-    @inside_html
-    @not_html_comment
-    def match(self, byte_chunk):
         quote_character = None
-        data = byte_chunk.nhtml
 
-        open_angle_bracket = data.rfind('<')
+        open_angle_bracket = html.rfind('<')
 
-        # We are inside <...
-        if open_angle_bracket <= data.rfind('>'):
-            return False
-
-        for s in data[open_angle_bracket+1:]:
+        for s in html[open_angle_bracket+1:]:
             if s in ATTR_DELIMITERS:
                 if quote_character and s == quote_character:
                     quote_character = None
@@ -153,113 +115,73 @@ class HtmlAttr(HtmlContext):
                     quote_character = s
                     continue
 
-        if not quote_character and len(data[open_angle_bracket+1:]):
+        if not quote_character and len(html[open_angle_bracket+1:]):
             return True
 
         return False
 
-    def can_break(self, payload):
-        for i in [' ', '=']:
-            if i not in payload:
-                return False
-        return True
 
+class HTMLAttrQuoteGeneric(HtmlAttr):
 
-class HtmlAttrQuote(HtmlAttr):
-
-    html_url_attrs = ['href', 'src']
-
-    def __init__(self):
-        super(HtmlAttrQuote, self).__init__()
-        self.name = None
-        self.quote_character = None
-
-    @inside_html
-    def match(self, byte_chunk):
-        return self._match(byte_chunk)
-
-    @not_html_comment
-    def _match(self, byte_chunk):
-        quote_character = None
-        data = byte_chunk.nhtml
-
-        open_angle_bracket = data.rfind('<')
-
-        # We are inside <...
-        if open_angle_bracket <= data.rfind('>'):
-            return False
-
-        for s in data[open_angle_bracket+1:]:
-            if s in ATTR_DELIMITERS:
-                if quote_character and s == quote_character:
-                    quote_character = None
-                    continue
-                elif not quote_character:
-                    quote_character = s
-                    continue
+    @staticmethod
+    def _match(html, attr_delimiter):
+        context_starts = ['<', attr_delimiter]
+        context_ends = ['>', attr_delimiter]
 
         # This translates to: "HTML string opener an attr delimiter which was
         # never closed, so we're inside an HTML tag attribute"
-        if quote_character == self.quote_character:
+        if BaseContext.is_inside_nested_contexts(html,
+                                                 context_starts,
+                                                 context_ends):
             return True
 
         return False
 
-    def can_break(self, payload):
-        if self.quote_character in payload:
-            return True
-        return False
-
-    def is_executable(self):
-        data = self.data.lower().replace(' ', '')
-        for attr_name in (self.html_url_attrs + JS_EVENTS):
-            # Does the data look like this? <frame src="
-            if data.endswith(attr_name + '=' + self.quote_character):
-                return True
-        return False
+    @staticmethod
+    def is_executable(html):
+        # TODO: Here I need to check if the tag name is in XXX and the attr
+        # name is in YYY, then send the contents of the attribute name to
+        # the JavaScript parser and delegate the "is_executable" to that code
+        raise NotImplementedError
 
 
-class HtmlAttrSingleQuote(HtmlAttrQuote):
+class HtmlAttrSingleQuote(HTMLAttrQuoteGeneric):
+    """
+    Matches <tag attr='PAYLOAD' />
+    """
 
-    def __init__(self):
-        super(HtmlAttrSingleQuote, self).__init__()
-        self.name = 'HTML_ATTR_SINGLE_QUOTE'
-        self.quote_character = "'"
+    ATTR_DELIMITER = "'"
+    CAN_BREAK = {ATTR_DELIMITER}
 
-
-class HtmlAttrDoubleQuote(HtmlAttrQuote):
-
-    def __init__(self):
-        super(HtmlAttrDoubleQuote, self).__init__()
-        self.name = 'HTML_ATTR_DOUBLE_QUOTE'
-        self.quote_character = '"'
+    @staticmethod
+    def match(html):
+        return HTMLAttrQuoteGeneric._match(html,
+                                           HtmlAttrSingleQuote.ATTR_DELIMITER)
 
 
-class HtmlAttrBackticks(HtmlAttrQuote):
+class HtmlAttrDoubleQuote(HTMLAttrQuoteGeneric):
+    """
+    Matches <tag attr="PAYLOAD" />
+    """
 
-    def __init__(self):
-        super(HtmlAttrBackticks, self).__init__()
-        self.name = 'HTML_ATTR_BACKTICKS'
-        self.quote_character = '`'
+    ATTR_DELIMITER = '"'
+    CAN_BREAK = {ATTR_DELIMITER}
+
+    @staticmethod
+    def match(html):
+        return HTMLAttrQuoteGeneric._match(html,
+                                           HtmlAttrDoubleQuote.ATTR_DELIMITER)
 
 
-class HtmlAttrDoubleQuote2Script(HtmlAttrDoubleQuote):
+class HtmlAttrBackticks(HTMLAttrQuoteGeneric):
+    """
+    Matches <tag attr=`PAYLOAD` />
+    """
 
-    def __init__(self):
-        HtmlAttrDoubleQuote.__init__(self)
-        self.name = 'HTML_ATTR_DOUBLE_QUOTE2SCRIPT'
+    ATTR_DELIMITER = '`'
+    CAN_BREAK = {ATTR_DELIMITER}
 
-    @inside_html
-    def match(self, byte_chunk):
-        if not HtmlAttrDoubleQuote._match(self, byte_chunk):
-            return False
-
-        data = byte_chunk.nhtml.lower().replace(' ', '')
-
-        for attr_name in JS_EVENTS:
-            if data.endswith(attr_name + '=' + self.quote_character):
-                break
-        else:
-            return False
-        #        data = data.lower().replace('&quote;', '"')
-        return True
+    @staticmethod
+    def match(html):
+        return HTMLAttrQuoteGeneric._match(html,
+                                           HtmlAttrBackticks.ATTR_DELIMITER)

@@ -1,7 +1,7 @@
 """
 main.py
 
-Copyright 2006 Andres Riancho
+Copyright 2015 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,41 +19,24 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.context.utils.byte_chunk import ByteChunk
-
-from .style import StyleText, StyleComment, StyleSingleQuote, StyleDoubleQuote
-from .javascript import (ScriptMultiComment, ScriptLineComment,
-                         ScriptSingleQuote, ScriptDoubleQuote, ScriptText,
-                         TagAttributeDoubleQuoteScript)
 from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                    HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
-                   HtmlComment)
+                   HtmlComment, HtmlTagClose)
 
-
-def get_contexts():
-    contexts = [TagAttributeDoubleQuoteScript(),
-                HtmlAttrSingleQuote(),
-                HtmlAttrDoubleQuote(),
-                HtmlAttrBackticks(),
-                HtmlAttr(),
-                HtmlTag(),
-                HtmlText(),
-                HtmlComment(),
-                ScriptMultiComment(),
-                ScriptLineComment(),
-                ScriptSingleQuote(),
-                ScriptDoubleQuote(),
-                ScriptText(),
-                StyleText(),
-                StyleComment(),
-                StyleSingleQuote(),
-                StyleDoubleQuote()]
-    return contexts
+# Note that the order is important!
+CONTEXTS = [HtmlComment,
+            HtmlAttrSingleQuote,
+            HtmlAttrDoubleQuote,
+            HtmlAttrBackticks,
+            HtmlAttr,
+            HtmlTag,
+            HtmlTagClose,
+            HtmlText]
 
 
 def get_context(data, payload):
     """
-    :return: A list which contains lists of contexts
+    :return: A list which contains lists of all contexts where the payload lives
     """
     return [c for c in get_context_iter(data, payload)]
 
@@ -68,9 +51,8 @@ def get_context_iter(data, payload):
     for chunk in chunks[:-1]:
         data += chunk
 
-        byte_chunk = ByteChunk(data)
-
-        for context in get_contexts():
-            if context.match(byte_chunk):
-                context.save(data)
+        for context_klass in CONTEXTS:
+            if context_klass.match(data):
+                context = context_klass()
                 yield context
+                break
