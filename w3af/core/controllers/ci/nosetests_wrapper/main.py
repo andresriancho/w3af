@@ -83,6 +83,7 @@ if __name__ == '__main__':
             future_list.append(future)
         
         total_tests = len(future_list)
+        test_run_times = []
         print_status(start_time, done_list, total_tests, queued_run_ids,
                      executor, exit_codes)
         
@@ -90,7 +91,8 @@ if __name__ == '__main__':
             try:
                 for future in futures.as_completed(future_list, timeout=120):
                     try:
-                        cmd, stdout, stderr, exit_code, output_fname = future.result()
+                        (cmd, stdout, stderr, exit_code,
+                         output_fname, test_run_time) = future.result()
                     except Exception as e:
                         msg = 'Run id %s raised exception: "%s"'
                         logging.error(msg % (future.run_id, e))
@@ -100,6 +102,7 @@ if __name__ == '__main__':
                         exit_codes.append(exit_code)
                         done_list.append(future)
                         queued_run_ids.remove(future.run_id)
+                        test_run_times.append((cmd, test_run_time))
 
                         print_status(start_time, done_list, total_tests,
                                      queued_run_ids, executor, exit_codes)
@@ -122,7 +125,7 @@ if __name__ == '__main__':
     all_tests = get_all_tests()
     run_tests = get_run_tests()
     ignored_tests = get_ignored_tests()
-    print_summary(all_tests, run_tests, ignored_tests) 
+    print_summary(all_tests, run_tests, ignored_tests, test_run_times)
         
     # We need to set the exit code.
     sys.exit(summarize_exit_codes(exit_codes))

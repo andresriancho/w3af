@@ -1,9 +1,10 @@
 import os
-import signal
-import logging
-import select
-import subprocess
+import time
 import shlex
+import signal
+import select
+import logging
+import subprocess
 
 from w3af.core.controllers.ci.nosetests_wrapper.utils.output import get_run_id
 from w3af.core.controllers.ci.nosetests_wrapper.constants import (ARTIFACT_DIR,
@@ -57,6 +58,7 @@ def run_nosetests(nose_cmd, first, last):
 
     # Start the nosetests process
     cmd_args = shlex.split(nose_cmd)
+    start_time = time.time()
 
     p = subprocess.Popen(
         cmd_args,
@@ -138,9 +140,13 @@ def run_nosetests(nose_cmd, first, last):
     
     # Close the output   
     output_file.close()
+
+    # Test run time
+    test_run_time = time.time() - start_time
+
+    msg = 'Finished (%s): "%s" with code "%s" in %s seconds'
+    args = (get_run_id(first, last), nose_cmd, p.returncode)
+    logging.debug(msg % args)
     
-    logging.debug('Finished (%s): "%s" with code "%s"' % (get_run_id(first, last),
-                                                          nose_cmd,
-                                                          p.returncode))
-    
-    return nose_cmd, stdout, stderr, p.returncode, output_file.name
+    return (nose_cmd, stdout, stderr, p.returncode, output_file.name,
+            test_run_time)

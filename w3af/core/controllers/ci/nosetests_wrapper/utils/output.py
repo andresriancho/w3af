@@ -106,7 +106,7 @@ def print_will_fail(exit_code):
         logging.critical('Build will end as failed.')
 
 
-def print_summary(all_tests, run_tests, ignored_tests):
+def print_summary(all_tests, run_tests, ignored_tests, test_run_times):
     """
     Print a summary of how many tests were run, how many are available, and
     which ones are missing.
@@ -120,6 +120,18 @@ def print_summary(all_tests, run_tests, ignored_tests):
     msg = 'The following %s tests were NOT run due to selector "%s":\n%s'
     logging.debug(msg % (len(ignored_tests._tests), NOSE_IGNORE_SELECTOR,
                          missing_str))
+
+    #
+    #   Small analysis of the test run times to detect slow tests
+    #
+    def order_by_time(a, b):
+        return cmp(a[1], b[1])
+
+    top_n = 5
+    slow_top_5 = test_run_times.sort(order_by_time)[::-1][:top_n]
+    for slow_test in slow_top_5:
+        logging.info('The Top %s slowest tests are:' % top_n)
+        logging.info(' - %s' % slow_test[0])
 
 
 def clean_noise(output_string):
