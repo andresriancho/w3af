@@ -18,250 +18,158 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import unittest
 
-from w3af.core.data.context.context.javascript import ScriptText
+from w3af.core.data.context.context.javascript import get_js_context
+from w3af.core.data.context.context.javascript import (ScriptText,
+                                                       ScriptSingleQuoteString,
+                                                       ScriptDoubleQuoteString,
+                                                       ScriptSingleLineComment,
+                                                       ScriptMultiLineComment)
 
-    def test_payload_script_single_quote2(self):
-        html = """
-        <html>
-            <script type="text/javascript">//<!--
-                init({login:'',foo:'PAYLOAD'})
-            </script>
-        </html>
-        """
-        payload = 'PAYLOAD'
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptSingleQuote)
-        self.assertFalse(context.is_executable())
-        self.assertFalse(context.can_break(payload))
 
-    def test_payload_script_single_quote2_can_break(self):
-        html = """
-        <html>
-            <script>
-                init({login:'',foo:'PAYLOAD'BREAK'})
-            </script>
-        </html>
-        """
-        payload = "PAYLOAD'BREAK"
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptSingleQuote)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+class TestJavaScript(unittest.TestCase):
+    def test_payload_is_all_content(self):
+        js_code = 'PAYLOAD'
+        contexts = get_js_context(js_code, 'PAYLOAD')
 
-    def test_payload_text_can_break(self):
-        html = """
-        <html>
-            <a>PAYLOAD<</a>
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD<')[0]
-        self.assertTrue(context.can_break('PAYLOAD<'))
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptText)
 
-    def test_payload_javascript_href(self):
-        html = """
-        <html>
-            <a href="javascript:PAYLOAD">foo</a>
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertIsInstance(context, HtmlText)
-        self.assertTrue(context.is_executable())
+        self.assertTrue(context.is_executable(js_code))
 
-    def test_payload_javascript_href_append(self):
-        html = """
-        <html>
-            <a href="javascript:foo();PAYLOAD">foo</a>
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertTrue(context.is_executable())
-        self.assertIsInstance(context, HtmlText)
+    def test_payload_is_executable_1(self):
+        js_code = 'alert("Hello " + PAYLOAD);'
+        contexts = get_js_context(js_code, 'PAYLOAD')
 
-    def test_payload_script_attr_value(self):
-        html = """
-        <html>
-            <script foo=PAYLOAD foo2=aaa>
-                bar
-            </script>
-        </html>
-        """
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlAttr)
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptText)
 
-    def test_payload_js2doublequote(self):
-        html = """
-        <html>
-            <input type="button" value="ClickMe" onClick="PAYLOAD">
-        </html>
-        """
-        payload = 'PAYLOAD'
-        context = get_context(html, payload)[1]
-        self.assertIsInstance(context, ScriptText)
-        self.assertTrue(context.is_executable())
-        self.assertFalse(context.can_break(payload))
+        self.assertTrue(context.is_executable(js_code))
 
-    def test_payload_onclick_payload_between_single_quotes(self):
-        html = """
-        <html>
-            <input type="button" onClick="foo('PAYLOAD'BREAK')">
-        </html>
-        """
-        payload = "PAYLOAD'BREAK"
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+    def test_payload_is_executable_2(self):
+        js_code = "init({login:'',foo: PAYLOAD})"
+        contexts = get_js_context(js_code, 'PAYLOAD')
 
-    def test_payload_onclick_payload_between_single_quotes_append(self):
-        html = """
-        <html>
-            <input type="button" onClick="foo('XXX-PAYLOAD'BREAK')">
-        </html>
-        """
-        payload = "PAYLOAD'BREAK"
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptText)
 
-    def test_payload_onclick_payload_append(self):
-        html = """
-        <html>
-            <input type="button" onClick="XXX-PAYLOAD">
-        </html>
-        """
-        payload = "PAYLOAD"
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+        self.assertTrue(context.is_executable(js_code))
+    
+    def test_payload_break_single_quote_1(self):
+        js_code = "init({login:'',foo: 'PAYLOAD'})"
+        contexts = get_js_context(js_code, 'PAYLOAD')
 
-    def test_payload_onclick_payload_between_double_quotes(self):
-        html = """
-        <html>
-            <input type="button" onClick="foo("PAYLOAD"BREAK")">
-        </html>
-        """
-        payload = 'PAYLOAD"BREAK'
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptSingleQuoteString)
 
-    def test_payload_onclick_payload_no_quotes(self):
-        """
-        In this case I'm already running code, if I would send alert(1) as
-        payload it would be run, so no need to escape from any string delimiter
-        such as " or '
-        """
-        html = """
-        <html>
-            <input type="button" onClick="foo(PAYLOAD)">
-        </html>
-        """
-        payload = 'PAYLOAD'
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertTrue(context.is_executable())
-        self.assertFalse(context.can_break(payload))
+        self.assertTrue(context.is_executable(js_code))
 
-    def test_payload_onclick_payload_separated_with_semicolon(self):
-        html = """
-        <html>
-            <input type="button" onclick="foo();PAYLOAD;bar()">
-        </html>
-        """
-        payload = 'PAYLOAD'
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertTrue(context.is_executable())
-        self.assertFalse(context.can_break(payload))
+    def test_payload_break_single_quote_2(self):
+        js_code = "alert('PAYLOAD');"
+        contexts = get_js_context(js_code, 'PAYLOAD')
 
-    def test_payload_wavsep_case17_frame_src(self):
-        """
-        :see: http://127.0.0.1:8098/active/Reflected-XSS/
-                                   /RXSS-Detection-Evaluation-GET/
-                                   Case17-Js2PropertyJsScopeDoubleQuoteDelimiter
-                                   .jsp?userinput=dav%22id
-        """
-        html = """
-        <html>
-            <frame name='frame2' id='frame2'
-                   src='javascript:var name="PAYLOAD"BREAK"; alert(name);'>
-        </html>
-        """
-        payload = 'PAYLOAD"BREAK'
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptDoubleQuote)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptSingleQuoteString)
 
-    def test_payload_src(self):
-        html = """
-        <html>
-            <img src="PAYLOAD" />
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertTrue(context.is_executable())
-        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertTrue(context.is_executable(js_code))
 
-    def test_payload_handler(self):
-        html = """
-        <html>
-            <a onclick="PAYLOAD">foo</a>
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertTrue(context.is_executable())
-        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+    def test_payload_break_single_quote_3(self):
+        js_code = "alert('Hello ' + 'PAYLOAD');"
+        contexts = get_js_context(js_code, 'PAYLOAD')
 
-    def test_payload_href(self):
-        html = """
-        <html>
-            <a href="PAYLOAD">foo</a>
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertTrue(context.is_executable())
-        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptSingleQuoteString)
 
-    def test_payload_html_inside_script_with_comment(self):
-        html = """
-        <html>
-            <script>
-                <!-- foo();PAYLOAD;bar(); -->
-            </script>
-        </html>
-        """
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], ScriptText)
+        self.assertTrue(context.is_executable(js_code))
 
-    def test_payload_with_space_equal_not_executable_attr(self):
-        """
-        Related with:
-            https://github.com/andresriancho/w3af/issues/1557
-            https://github.com/andresriancho/w3af/issues/2919
-        """
-        html = """
-        <html>
-            <frame bar="PAYLOAD">
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertFalse(context.is_executable())
+    def test_payload_break_double_quote_1(self):
+        js_code = 'init({login:'',foo: "PAYLOAD"})'
+        contexts = get_js_context(js_code, 'PAYLOAD')
 
-    def test_payload_with_space_equal_src_executable(self):
-        """
-        Related with:
-            https://github.com/andresriancho/w3af/issues/1557
-            https://github.com/andresriancho/w3af/issues/2919
-        """
-        html = """
-        <html>
-            <frame src="5vrws =">
-        </html>
-        """
-        self.assertEqual(get_context(html, '5vrws%20%3D'), [])
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptDoubleQuoteString)
 
-        context = get_context(html, '5vrws =')[0]
-        self.assertTrue(context.is_executable())
+        self.assertTrue(context.is_executable(js_code))
+
+    def test_payload_break_double_quote_2(self):
+        js_code = 'alert("PAYLOAD");'
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptDoubleQuoteString)
+
+        self.assertTrue(context.is_executable(js_code))
+
+    def test_payload_break_double_quote_3(self):
+        js_code = 'alert("Hello " + "PAYLOAD");'
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptDoubleQuoteString)
+
+        self.assertTrue(context.is_executable(js_code))
+
+    def test_payload_break_single_line_comment(self):
+        js_code = """
+        foo();
+        // PAYLOAD
+        bar();
+        """
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptSingleLineComment)
+
+        self.assertTrue(context.is_executable(js_code))
+
+    def test_payload_break_single_line_comment_false_positive(self):
+        js_code = """
+        foo('// PAYLOAD');
+        """
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptSingleQuoteString)
+
+        self.assertTrue(context.is_executable(js_code))
+
+    def test_payload_break_multi_line_comment(self):
+        js_code = """
+        foo('');
+        /*
+        Multi
+        Line
+        */
+        bar();
+        """
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptMultiLineComment)
+
+        self.assertTrue(context.is_executable(js_code))
+
+    def test_payload_break_multi_line_comment_false_positive(self):
+        js_code = """
+        foo('/* PAYLOAD');
+        """
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(contexts, ScriptSingleQuoteString)
+
+        self.assertTrue(context.is_executable(js_code))

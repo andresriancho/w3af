@@ -23,7 +23,7 @@ from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                    HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
                    HtmlComment, HtmlTagClose)
 
-# Note that the order is important!
+# Note that the order is important! The most specific contexts should be first
 CONTEXTS = [HtmlComment,
             HtmlAttrSingleQuote,
             HtmlAttrDoubleQuote,
@@ -34,14 +34,14 @@ CONTEXTS = [HtmlComment,
             HtmlText]
 
 
-def get_context(data, payload):
+def get_context(data, payload, contexts=CONTEXTS):
     """
     :return: A list which contains lists of all contexts where the payload lives
     """
-    return [c for c in get_context_iter(data, payload)]
+    return [c for c in get_context_iter(data, payload, contexts=contexts)]
 
 
-def get_context_iter(data, payload):
+def get_context_iter(data, payload, contexts=CONTEXTS):
     """
     :return: A context iterator
     """
@@ -55,4 +55,8 @@ def get_context_iter(data, payload):
             if context_klass.match(data):
                 context = context_klass()
                 yield context
+
+                # We break because each payload can only be in one context, note
+                # that if the payload is echoed multiple times this code still
+                # works because of the outer for loop
                 break
