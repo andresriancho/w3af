@@ -22,7 +22,7 @@ else:
 # Very low numbers will have a performance impact since we need to spawn one
 # new process for each chunk. High chunk size will usually lead to
 # larger delays
-CHUNK_SIZE = 5
+CHUNK_SIZE = 3
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
