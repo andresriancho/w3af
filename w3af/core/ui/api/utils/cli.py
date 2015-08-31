@@ -19,10 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import yaml
 import argparse
-
 from argparse import ArgumentTypeError
+
+import yaml
+
+
 
 
 # Global default values
@@ -60,6 +62,12 @@ def parse_arguments():
                              '5000 will be used.',
                         default=False,
                         nargs='?')
+
+    parser.add_argument('--no-ssl',
+                        dest="disableSSL",
+                        action="store_true",
+                        help="Disable SSL Support"
+                        )
 
     parser.add_argument('-c',
                         default=False,
@@ -182,8 +190,5 @@ def process_cmd_args_config(app):
                   ' specifying a password on the command line (with'
                   ' "-p <SHA512 hash>") or in a configuration file.\n')
 
-        print('CAUTION! Traffic to this API is not encrypted and could be'
-              ' sniffed. Please consider serving it behind an SSL-enabled'
-              ' proxy server.\n')
 
     return args
