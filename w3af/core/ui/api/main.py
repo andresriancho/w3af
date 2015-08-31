@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket
 import argparse
+import ssl
 
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.cli import process_cmd_args_config
@@ -39,8 +40,16 @@ def main():
 
     # And finally start the app:
     try:
-        app.run(host=app.config['HOST'], port=app.config['PORT'],
-                debug=args.verbose, use_reloader=False, threaded=True)
+        if args.disableSSL:
+            app.run(host=app.config['HOST'], port=app.config['PORT'],
+                    debug=args.verbose, use_reloader=False, threaded=True)
+        else:
+            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            context.load_cert_chain('ssl/w3af.cert', 'ssl/w3af.key')
+
+            app.run(host=app.config['HOST'], port=app.config['PORT'],
+                    debug=args.verbose, use_reloader=False, ssl_context=context)
+
     except socket.error, se:
         print('Failed to start REST API server: %s' % se.strerror)
         return 1
