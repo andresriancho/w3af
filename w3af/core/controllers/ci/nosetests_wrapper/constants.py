@@ -13,15 +13,16 @@ LOG_FILE = os.path.join(ARTIFACT_DIR, 'nosetests.log')
 # nosetests (other important stuff like docker is running too), so I set a fixed
 # value
 if is_running_on_ci():
-    MAX_WORKERS = 10
+    MAX_WORKERS = 5
 else:
     MAX_WORKERS = max(multiprocessing.cpu_count() - 1, 2)
 
-# How many tests to send to each process
+# How many tests to send to each nosetests call
 #
-# Usually lower numbers are better here. A high chunk size will usually lead to
-# larger delays.
-CHUNK_SIZE = 3
+# Very low numbers will have a performance impact since we need to spawn one
+# new process for each chunk. High chunk size will usually lead to
+# larger delays
+CHUNK_SIZE = 5
 
 # Where the test ids will be stored
 ID_FILE = os.path.join(ARTIFACT_DIR, 'noseids.pickle')
