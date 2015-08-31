@@ -145,7 +145,7 @@ def run_nosetests(nose_cmd, first, last):
     test_run_time = time.time() - start_time
 
     msg = 'Finished (%s): "%s" with code "%s" in %s seconds'
-    args = (get_run_id(first, last), nose_cmd, p.returncode)
+    args = (get_run_id(first, last), nose_cmd, p.returncode, test_run_time)
     logging.debug(msg % args)
     
     return (nose_cmd, stdout, stderr, p.returncode, output_file.name,
