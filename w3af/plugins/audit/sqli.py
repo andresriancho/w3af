@@ -57,30 +57,36 @@ class sqli(AuditPlugin):
         (r"Unclosed quotation mark before the character string", dbms.MSSQL),
         (r"'80040e07'", dbms.MSSQL),
         (r'Microsoft SQL Native Client error', dbms.MSSQL),
+
         # DB2
         (r'SQLCODE', dbms.DB2),
         (r'DB2 SQL error:', dbms.DB2),
         (r'SQLSTATE', dbms.DB2),
         (r'[CLI Driver]', dbms.DB2),
         (r'[DB2/6000]', dbms.DB2),
+
         # Sybase
         (r"Sybase message:", dbms.SYBASE),
         (r"Sybase Driver", dbms.SYBASE),
         (r"[SYBASE]", dbms.SYBASE),
+
         # Access
         (r'Syntax error in query expression', dbms.ACCESS),
         (r'Data type mismatch in criteria expression.', dbms.ACCESS),
         (r'Microsoft JET Database Engine', dbms.ACCESS),
         (r'[Microsoft][ODBC Microsoft Access Driver]', dbms.ACCESS),
+
         # ORACLE
         (r'Microsoft OLE DB Provider for Oracle', dbms.ORACLE),
         (r'wrong number or types', dbms.ORACLE),
+
         # POSTGRE
         (r'PostgreSQL query failed:', dbms.POSTGRE),
         (r'supplied argument is not a valid PostgreSQL result', dbms.POSTGRE),
         (r'unterminated quoted string at or near', dbms.POSTGRE),
         (r'pg_query() [:', dbms.POSTGRE),
         (r'pg_exec() [:', dbms.POSTGRE),
+
         # MYSQL
         (r'supplied argument is not a valid MySQL', dbms.MYSQL),
         (r'Column count doesn\'t match value count at row', dbms.MYSQL),
@@ -98,6 +104,7 @@ class sqli(AuditPlugin):
             dbms.MYSQL),
         (r"DBD::mysql::st execute failed", dbms.MYSQL),
         (r"DBD::mysql::db do failed:", dbms.MYSQL),
+
         # Informix
         (r'com.informix.jdbc', dbms.INFORMIX),
         (r'Dynamic Page Generation Error:', dbms.INFORMIX),
@@ -106,22 +113,28 @@ class sqli(AuditPlugin):
         (r'[Informix]', dbms.INFORMIX),
         (r'<b>Warning</b>:  ibase_', dbms.INTERBASE),
         (r'Dynamic SQL Error', dbms.INTERBASE),
+
         # DML
         (r'[DM_QUERY_E_SYNTAX]', dbms.DMLDATABASE),
         (r'has occurred in the vicinity of:', dbms.DMLDATABASE),
         (r'A Parser Error (syntax error)', dbms.DMLDATABASE),
+
         # Java
         (r'java.sql.SQLException', dbms.JAVA),
         (r'Unexpected end of command in statement', dbms.JAVA),
+
         # Coldfusion
         (r'[Macromedia][SQLServer JDBC Driver]', dbms.MSSQL),
+
         # SQLite
         (r'could not prepare statement', dbms.SQLITE),
+
         # Generic errors..
         (r'Unknown column', dbms.UNKNOWN),
         (r'where clause', dbms.UNKNOWN),
         (r'SqlServer', dbms.UNKNOWN),
-        (r'syntax error', dbms.UNKNOWN)
+        (r'syntax error', dbms.UNKNOWN),
+        (r'Microsoft OLE DB Provider', dbms.UNKNOWN),
     )
     _multi_in = multi_in(x[0] for x in SQL_ERRORS_STR)
 
@@ -148,7 +161,8 @@ class sqli(AuditPlugin):
 
     SQLI_MESSAGE = (u'A SQL error was found in the response supplied by '
                     u'the web application, the error is (only a fragment is '
-                    u'shown): "%s". The error was found on response with id %s.')
+                    u'shown): "%s". The error was found on response with id'
+                    u' %s.')
 
     def __init__(self):
         AuditPlugin.__init__(self)

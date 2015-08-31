@@ -22,10 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.sql_tools.blind_sqli_response_diff import \
-                                BlindSqliResponseDiff
-from w3af.core.controllers.sql_tools.blind_sqli_time_delay import \
-                                blind_sqli_time_delay
+from w3af.core.controllers.sql_tools.blind_sqli_response_diff import BlindSqliResponseDiff
+from w3af.core.controllers.sql_tools.blind_sqli_time_delay import BlindSQLTimeDelay
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -57,7 +55,7 @@ class blind_sqli(AuditPlugin):
         bsqli_resp_diff = BlindSqliResponseDiff(self._uri_opener)
         bsqli_resp_diff.set_eq_limit(self._eq_limit)
 
-        bsqli_time_delay = blind_sqli_time_delay(self._uri_opener)
+        bsqli_time_delay = BlindSQLTimeDelay(self._uri_opener)
 
         method_list = [bsqli_resp_diff, bsqli_time_delay]
 
@@ -104,8 +102,8 @@ class blind_sqli(AuditPlugin):
         opt_list = OptionList()
 
         desc = 'String equal ratio (0.0 to 1.0)'
-        h = 'Two pages are considered equal if they match in more'\
-            ' than eq_limit.'
+        h = ('Two pages are considered equal if they match in more'
+             ' than eq_limit.')
         opt = opt_factory('eq_limit', self._eq_limit, desc, 'float', help=h)
 
         opt_list.add(opt)

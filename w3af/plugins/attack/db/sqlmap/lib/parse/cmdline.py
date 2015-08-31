@@ -662,8 +662,7 @@ def cmdLineParser():
         general.add_option("--pivot-column", dest="pivotColumn",
                                help="Pivot column name")
 
-        general.add_option("--save", dest="saveCmdline",
-                            action="store_true",
+        general.add_option("--save", dest="saveConfig",
                             help="Save options to a configuration INI file")
 
         general.add_option("--scope", dest="scope",
@@ -862,12 +861,14 @@ def cmdLineParser():
                 for arg in shlex.split(command):
                     argv.append(getUnicode(arg, encoding=sys.stdin.encoding))
             except ValueError, ex:
-                raise SqlmapSyntaxException, "something went wrong during command line parsing ('%s')" % ex
+                raise SqlmapSyntaxException, "something went wrong during command line parsing ('%s')" % ex.message
 
         # Hide non-basic options in basic help case
         for i in xrange(len(argv)):
             if argv[i] == "-hh":
                 argv[i] = "-h"
+            elif re.search(r"\A-\w=.+", argv[i]):
+                print "[!] potentially miswritten (illegal '=') short option detected ('%s')" % argv[i]
             elif argv[i] == "-H":
                 if i + 1 < len(argv):
                     extraHeaders.append(argv[i + 1])

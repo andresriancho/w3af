@@ -51,11 +51,11 @@ class TestCoreProfiles(unittest.TestCase):
 
         enabled_plugins = self.core.plugins.get_all_enabled_plugins()
 
-        self.assertTrue('sqli' in enabled_plugins['audit'])
-        self.assertTrue('credit_cards' in enabled_plugins['grep'])
-        self.assertTrue('private_ip' in enabled_plugins['grep'])
-        self.assertTrue('dns_wildcard' in enabled_plugins['infrastructure'])
-        self.assertTrue('web_spider' in enabled_plugins['crawl'])
+        self.assertIn('sqli', enabled_plugins['audit'])
+        self.assertIn('credit_cards', enabled_plugins['grep'])
+        self.assertIn('private_ip', enabled_plugins['grep'])
+        self.assertIn('dns_wildcard', enabled_plugins['infrastructure'])
+        self.assertIn('web_spider', enabled_plugins['crawl'])
 
     def test_save_current_to_new_profile(self):
         self.core.profiles.use_profile('OWASP_TOP10', workdir='.')
@@ -68,24 +68,25 @@ class TestCoreProfiles(unittest.TestCase):
         self.assertEquals(set(enabled), set(audit))
         self.assertTrue(disabled_plugin not in enabled)
 
-        self.core.profiles.save_current_to_new_profile('unittest-OWASP_TOP10')
+        new_profile_name = 'save-current-new'
+        self.core.profiles.save_current_to_new_profile(new_profile_name)
 
         # Get a new, clean instance of the core.
         clean_core = w3afCore()
         audit = clean_core.plugins.get_enabled_plugins('audit')
         self.assertEquals(audit, [])
 
-        clean_core.profiles.use_profile('unittest-OWASP_TOP10')
+        clean_core.profiles.use_profile(new_profile_name)
         enabled_plugins = clean_core.plugins.get_all_enabled_plugins()
 
-        self.assertTrue(disabled_plugin not in enabled_plugins['audit'])
-        self.assertTrue('credit_cards' in enabled_plugins['grep'])
-        self.assertTrue('private_ip' in enabled_plugins['grep'])
-        self.assertTrue('dns_wildcard' in enabled_plugins['infrastructure'])
-        self.assertTrue('web_spider' in enabled_plugins['crawl'])
+        self.assertNotIn(disabled_plugin, enabled_plugins['audit'])
+        self.assertIn('credit_cards', enabled_plugins['grep'])
+        self.assertIn('private_ip', enabled_plugins['grep'])
+        self.assertIn('dns_wildcard', enabled_plugins['infrastructure'])
+        self.assertIn('web_spider', enabled_plugins['crawl'])
 
         # cleanup
-        clean_core.profiles.remove_profile('unittest-OWASP_TOP10')
+        clean_core.profiles.remove_profile(new_profile_name)
         clean_core.worker_pool.terminate_join()
 
     def test_remove_profile(self):

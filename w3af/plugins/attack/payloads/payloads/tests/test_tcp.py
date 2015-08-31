@@ -24,7 +24,7 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 class TestTCP(PayloadTestHelper):
 
-    EXPECTED_RESULT = {'172.17.0.5:8000', '0.0.0.0:8001', '0.0.0.0:8000'}
+    EXPECTED_RESULT = {'172.17.0.7:8000', '0.0.0.0:8001', '0.0.0.0:8000'}
 
     def test_tcp(self):
         result = exec_payload(self.shell, 'tcp', use_api=True)
