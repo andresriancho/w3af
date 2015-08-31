@@ -19,10 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import yaml
 import argparse
-
 from argparse import ArgumentTypeError
+
+import yaml
+
+
 
 
 # Global default values
@@ -60,6 +62,12 @@ def parse_arguments():
                              '5000 will be used.',
                         default=False,
                         nargs='?')
+
+    parser.add_argument('--no-ssl',
+                        dest="disableSSL",
+                        action="store_true",
+                        help="Disable SSL Support"
+                        )
 
     parser.add_argument('-c',
                         default=False,
