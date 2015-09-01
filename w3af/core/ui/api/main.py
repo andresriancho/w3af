@@ -26,6 +26,8 @@ from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.cli import process_cmd_args_config
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check
 
+from w3af.core.ui.api.utils.digital_certificate import SSLCertifiacate
+
 
 def main():
     """
@@ -43,8 +45,13 @@ def main():
 
     # And finally start the app:
     try:
-        app.run(host=app.config['HOST'], port=app.config['PORT'],
-                debug=args.verbose, use_reloader=False, threaded=True)
+
+        if args.disableSSL:
+            app.run(host=app.config['HOST'], port=app.config['PORT'],
+                    debug=args.verbose, use_reloader=False, threaded=True)
+        else:
+            app.run(host=app.config['HOST'], port=app.config['PORT'],
+                    debug=args.verbose, use_reloader=False, threaded=True, ssl_context=SSLCertifiacate().get())
     except socket.error, se:
         print('Failed to start REST API server: %s' % se.strerror)
         return 1
