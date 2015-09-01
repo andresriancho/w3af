@@ -61,6 +61,12 @@ def parse_arguments():
                         default=False,
                         nargs='?')
 
+    parser.add_argument('--no-ssl',
+                        dest="disableSSL",
+                        action="store_true",
+                        help="Disable SSL Support"
+                        )
+
     parser.add_argument('-c',
                         default=False,
                         dest='config_file',
@@ -182,8 +188,5 @@ def process_cmd_args_config(app):
                   ' specifying a password on the command line (with'
                   ' "-p <SHA512 hash>") or in a configuration file.\n')
 
-        print('CAUTION! Traffic to this API is not encrypted and could be'
-              ' sniffed. Please consider serving it behind an SSL-enabled'
-              ' proxy server.\n')
 
     return args
