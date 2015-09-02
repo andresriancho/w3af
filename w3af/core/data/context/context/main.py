@@ -51,7 +51,7 @@ def get_context_iter(data, payload, contexts=CONTEXTS):
     for chunk in chunks[:-1]:
         data += chunk
 
-        for context_klass in CONTEXTS:
+        for context_klass in contexts:
             if context_klass.match(data):
                 context = context_klass()
                 yield context

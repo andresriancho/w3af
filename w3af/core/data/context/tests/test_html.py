@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
+from w3af.core.data.context.tests.context_test import ContextTest
 from w3af.core.data.context.context import get_context
 from w3af.core.data.context.context.html import (HtmlTag,
                                                  HtmlAttr,
@@ -32,7 +33,7 @@ from w3af.core.data.context.context.html import (HtmlTag,
                                                  HtmlAttrDoubleQuote)
 
 
-class TestHTMLContext(unittest.TestCase):
+class TestHTMLContext(ContextTest):
 
     SAMPLES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'samples')
@@ -73,6 +74,16 @@ class TestHTMLContext(unittest.TestCase):
         html = """
         <html>
             <tag attr="PAYLOAD" />
+        </html>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1)
+        self.assertIsInstance(contexts[0], HtmlAttrDoubleQuote)
+
+    def test_tag_attr_single_double_quote(self):
+        html = """
+        <html>
+            <tag spam='eggs' attr="PAYLOAD" />
         </html>
         """
         contexts = get_context(html, 'PAYLOAD')
@@ -168,12 +179,12 @@ class TestHTMLContext(unittest.TestCase):
             <a>Quoting the great Linus Torvalds: "PAYLOAD<</a>
         </html>
         """
-        contexts = get_context(html, '"PAYLOAD')
+        contexts = get_context(html, '"PAYLOAD<')
         self.assertEqual(len(contexts), 1)
 
         context = contexts[0]
         self.assertIsInstance(context, HtmlText)
-        self.assertTrue(context.can_break('"PAYLOAD<'))
+        self.xss_plugin_can_break(context)
 
     def test_payload_text_with_end_quote(self):
         html = """
@@ -186,7 +197,7 @@ class TestHTMLContext(unittest.TestCase):
 
         context = contexts[0]
         self.assertIsInstance(context, HtmlText)
-        self.assertTrue(context.can_break('PAYLOAD<"'))
+        self.xss_plugin_can_break(context)
 
     def test_payload_tag_name(self):
         html = """
@@ -213,17 +224,21 @@ class TestHTMLContext(unittest.TestCase):
         <a PAYLOAD="/xyz">foo</a>
         """
         contexts = get_context(html, 'PAYLOAD')
-        self.assertEqual(len(contexts), 1, contexts)
 
-        self.assertIsInstance(contexts[0], HtmlAttr)
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, HtmlAttr)
+        self.xss_plugin_can_break(context)
 
     def test_django_500_sample(self):
         html = file(os.path.join(self.SAMPLES_DIR, 'django-500.html')).read()
-        contexts = get_context(html, "QUBD5 =")
+        contexts = get_context(html, 'QUBD5 =')
 
         self.assertEqual(len(contexts), 9)
-        for c in contexts:
-            self.assertIsInstance(c, HtmlText)
+        for context in contexts:
+            self.assertIsInstance(context, HtmlText)
+            self.xss_plugin_can_break(context)
 
     def test_payload_html_comment_with_single_quote(self):
         """
@@ -281,3 +296,6 @@ class TestHTMLContext(unittest.TestCase):
         self.assertEqual(len(contexts), 2, contexts)
         self.assertIsInstance(contexts[0], HtmlComment)
         self.assertIsInstance(contexts[1], HtmlAttrDoubleQuote)
+
+        self.xss_plugin_can_break(contexts[0])
+        self.xss_plugin_can_break(contexts[1])

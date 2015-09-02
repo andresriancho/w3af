@@ -43,10 +43,11 @@ class xss(AuditPlugin):
     :author: Taras ( oxdef@oxdef.info )
     """
     PAYLOADS = ['RANDOMIZE</->',
-                'RANDOMIZE/*',
+                'RANDOMIZE*/',
                 'RANDOMIZE"RANDOMIZE',
                 "RANDOMIZE'RANDOMIZE",
                 "RANDOMIZE`RANDOMIZE",
+                "RANDOMIZE\nRANDOMIZE",
                 "RANDOMIZE ="]
         
     def __init__(self):
