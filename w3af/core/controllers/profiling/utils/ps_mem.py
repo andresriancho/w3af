@@ -385,15 +385,16 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
 
         try:
             cmd = getCmdName(pid, split_args)
-        except LookupError:
+        except (LookupError, OSError):
             #operation not permitted
+            #permission denied
             #kernel threads don't have exe links or
             #process gone
             continue
 
         try:
             private, shared, mem_id = getMemStats(pid)
-        except RuntimeError:
+        except (RuntimeError, OSError):
             continue #process gone
         if shareds.get(cmd):
             if have_pss: #add shared portion of PSS together
@@ -427,8 +428,10 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
 
     return sorted_cmds, shareds, count, total
 
+
 def print_header():
     sys.stdout.write(" Private  +   Shared  =  RAM used\tProgram\n\n")
+
 
 def print_memory_usage(sorted_cmds, shareds, count, total):
     for cmd in sorted_cmds:
@@ -439,6 +442,7 @@ def print_memory_usage(sorted_cmds, shareds, count, total):
     if have_pss:
         sys.stdout.write("%s\n%s%9s\n%s\n" %
                          ("-" * 33, " " * 24, human(total), "=" * 33))
+
 
 def verify_environment():
     if os.geteuid() != 0:
