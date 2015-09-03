@@ -38,8 +38,12 @@ class audit(BaseConsumer):
         :param audit_plugins: Instances of audit plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         """
+        max_qsize = self.THREAD_POOL_SIZE * 2
+
         super(audit, self).__init__(audit_plugins, w3af_core,
-                                    thread_name='Auditor')
+                                    thread_name='Auditor',
+                                    max_pool_queued_tasks=max_qsize,
+                                    max_in_queue_size=max_qsize)
 
     def _teardown(self):
         # End plugins
@@ -94,6 +98,12 @@ class audit(BaseConsumer):
             self._w3af_core.status.set_current_fuzzable_request('audit',
                                                                 fuzzable_request)
 
+            # Note that if we don't limit the input queue size for the thread
+            # pool we might end up with a lot of queued calls here! The calls
+            # contain an HTTP response body, so they really use a lot of
+            # memory!
+            #
+            # This is controlled by max_pool_queued_tasks
             self._threadpool.apply_async(self._audit,
                                         (plugin, fuzzable_request, orig_resp))
 
