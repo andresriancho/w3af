@@ -100,7 +100,12 @@ def dump_psutil():
         netinfo[key] = value._asdict()
 
     # Get the memory usage from ps_mem
-    pids_to_show = [pid for pid, pinfo in process_info.iteritems() if 'python' in str(pinfo['exe'])]
+    pids_to_show = []
+    for pid, pinfo in process_info.iteritems():
+        exe = str(pinfo['exe'])
+        if 'python' in exe and 'w3af' in exe:
+            pids_to_show.append(pid)
+
     ps_mem_data = ps_mem_to_json(*get_memory_usage(pids_to_show, True))
 
     # Merge all the data here
@@ -120,7 +125,7 @@ def ps_mem_to_json(sorted_cmds, shareds, count, total):
     result = []
     
     for cmd in sorted_cmds:
-        private = cmd[1]-shareds[cmd[0]]
+        private = cmd[1] - shareds[cmd[0]]
         shared = shareds[cmd[0]]
         ram_used = cmd[1]
         cmd_count = cmd_with_count(cmd[0], count[cmd[0]])
