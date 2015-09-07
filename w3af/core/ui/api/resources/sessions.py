@@ -22,19 +22,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from flask import jsonify, request
 
 from w3af.core.ui.api import app
-from w3af.core.ui.api.utils.error import abort
 from w3af.core.ui.api.utils.routes import list_subroutes
 from w3af.core.ui.api.utils.auth import requires_auth
 from w3af.core.ui.api.utils.sessions import check_session_exists
 from w3af.core.ui.api.db.master import SCANS
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
-                                          create_scan_helper,
-                                          start_scan_helper,
-                                          get_new_scan_id,
-                                          create_temp_profile)
-from w3af.core.data.parsers.doc.url import URL
+                                          create_scan_helper)
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.options.option_types import *
+from w3af.core.data.options.option_list import OptionList
 
 
 @app.route('/sessions/', methods=['POST'])
@@ -66,7 +64,7 @@ def session_info(scan_id):
     """
     urls = list_subroutes(request)
     return jsonify({'message': 'Session %s' % scan_id,
-                        'available_endpoints': urls})
+                    'available_endpoints': urls})
 
 
 @app.route('/sessions/<int:scan_id>/plugins/', methods=['GET'])
@@ -80,7 +78,7 @@ def list_plugin_types(scan_id):
              Otherwise, a list of all existing plugin types.
     """
     w3af = SCANS[scan_id].w3af_core
-    return jsonify({ 'entries': w3af.plugins.get_plugin_types() })
+    return jsonify({'entries': w3af.plugins.get_plugin_types()})
 
 
 @app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/',
@@ -96,9 +94,9 @@ def get_plugin_list(scan_id, plugin_type):
     """
     w3af = SCANS[scan_id].w3af_core
     if plugin_type not in w3af.plugins.get_plugin_types():
-        return jsonify({ 'code': 404,
-                         'message': 'Plugin type %s not found' % plugin_type
-                      }), 404
+        return jsonify({'code': 404,
+                        'message': 'Plugin type %s not found' % plugin_type
+                       }), 404
     else:
         return jsonify({
             'description': " ".join(w3af.plugins.get_plugin_type_desc(
@@ -151,3 +149,92 @@ def get_plugin_config(**kwargs):
     return jsonify({ 'configuration': plugin_opts,
                      'description': long_desc,
                      'enabled' : enabled })
+
+
+@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/<string:plugin>/',
+           methods=['PATCH'])
+@requires_auth
+@check_session_exists
+def set_plugin_config(**kwargs):
+    """
+    Allows a user to modify a single element of plugin configuration by sending
+    a PATCH request.
+
+    :return: 404 if scan or plugin does not exist.
+             400 if the PATCH request is not in valid format.
+             422 if the PATCH request is in valid format, but settings cannot be
+             applied (eg, negative numbers where none are accepted).
+
+             Otherwise, a JSON object confirming success and echoing the
+             changed setting.
+    """
+
+    scan_id = kwargs['scan_id']
+    plugin_type = kwargs['plugin_type']
+    plugin = kwargs['plugin']
+
+    w3af = SCANS[scan_id].w3af_core
+    if plugin_type not in w3af.plugins.get_plugin_types():
+        return jsonify({ 'code': 404,
+                         'message': 'Plugin type %s not found' % plugin_type
+                      }), 404
+    if plugin not in w3af.plugins.get_plugin_list(plugin_type):
+        return jsonify({
+            'code': 404,
+            'message': 'Plugin %s not found in list of %s plugins' % (plugin,
+                                                                      plugin_type)
+             }), 404
+
+    if not request.json:
+        return jsonify({
+            'code': 400,
+            'message': 'Expected JSON content'
+                       }), 400
+
+    plugin_opts = (
+        w3af.plugins.get_plugin_options(plugin_type, plugin) or
+        w3af.plugins.get_plugin_inst(plugin_type, plugin).get_options()
+    )
+
+    opt_list = OptionList()
+    for opt_name in request.json:
+        try:
+            opt_value = request.json[opt_name]
+            opt_type = plugin_opts[opt_name].get_type()
+        except BaseFrameworkException:
+            return jsonify({
+                'code': '400',
+                'message': '%s is not a valid option for plugin %s' % (opt_name,
+                                                                       plugin)
+                }), 400
+        try:
+            opt_list.add(
+                opt_factory(
+                    opt_name,
+                    opt_value,
+                    'desc',
+                    opt_type
+                )
+            )
+            plugin_opts[opt_name].validate(opt_value)
+        except BaseFrameworkException, e:
+            return jsonify({
+                'code': '422',
+                'message': str(e)
+                }), 422
+
+    plugin_opts.update(opt_list)
+    w3af.plugins.set_plugin_options(plugin_type, plugin, plugin_opts)
+
+    opts = w3af.plugins.get_plugin_options(plugin_type, plugin)
+    popts = { i.get_name():
+            { "value": i.get_value(),
+              "description": i.get_desc(),
+              "type": i.get_type(),
+              "help": i.get_help() }
+        for i in opts }
+
+    return jsonify({
+        'message': 'success',
+        'modified': request.json
+        })
