@@ -57,11 +57,40 @@ class SessionTest(APIUnitTest):
         params = json.loads(plugin_opts.data)['configuration']
         enabled = json.loads(plugin_opts.data)['enabled']
 
+
         self.assertIsInstance(enabled, bool)
         self.assertIsInstance(desc, unicode)
-        self.assertIn('passwdFile', params)
+        self.assertIn('profilingNumber', params)
+
+        prof_num = params['profilingNumber']['value']
+        prof_num = prof_num + 1
+
         k,v = params.popitem()
         self.assertIn('type', v)
+
+        set_plugin_opt = self.app.patch(
+            '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
+            data=json.dumps({"profilingNumber": prof_num}),
+            headers=self.HEADERS)
+        self.assertEqual(set_plugin_opt.status_code, 200)
+
+        test_plugin_changed = self.app.get(
+            '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
+            headers=self.HEADERS)
+        params = json.loads(test_plugin_changed.data)['configuration']
+        self.assertEqual(params['profilingNumber']['value'], prof_num)
+
+        bad_opt_name = self.app.patch(
+            '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
+            data=json.dumps({"nonexistentOption":"foo_bar"}),
+            headers=self.HEADERS)
+        self.assertEqual(bad_opt_name.status_code, 400)
+
+        bad_opt_value = self.app.patch(
+            '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
+            data=json.dumps({"useSvnUsers": "this_should_be_bool"}),
+            headers=self.HEADERS)
+        self.assertEqual(bad_opt_value.status_code, 422)
 
         test_404s = [
             '/sessions/999',
