@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
-import unittest
 
 from w3af.core.data.context.tests.context_test import ContextTest
 from w3af.core.data.context.context import get_context
@@ -28,6 +27,7 @@ from w3af.core.data.context.context.html import (HtmlTag,
                                                  HtmlText,
                                                  HtmlComment,
                                                  HtmlTagClose,
+                                                 HtmlAttrNoQuote,
                                                  HtmlAttrBackticks,
                                                  HtmlAttrSingleQuote,
                                                  HtmlAttrDoubleQuote)
@@ -102,6 +102,30 @@ class TestHTMLContext(ContextTest):
         self.assertEqual(len(contexts), 1)
         self.assertIsInstance(contexts[0], HtmlAttrSingleQuote)
 
+    def test_payload_a_single_quote_with_escape(self):
+        html = """
+        <html>
+            <a foo='PAYLOAD&#39;'>
+                bar
+            </a>
+        </html>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1)
+        self.assertIsInstance(contexts[0], HtmlAttrSingleQuote)
+
+    def test_payload_a_double_quote_with_escape(self):
+        html = """
+        <html>
+            <a foo="PAYLOAD&quot;">
+                bar
+            </a>
+        </html>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1)
+        self.assertIsInstance(contexts[0], HtmlAttrDoubleQuote)
+
     def test_payload_backtick(self):
         html = """
         <html>
@@ -113,6 +137,18 @@ class TestHTMLContext(ContextTest):
         contexts = get_context(html, 'PAYLOAD')
         self.assertEqual(len(contexts), 1)
         self.assertIsInstance(contexts[0], HtmlAttrBackticks)
+
+    def test_payload_attr_value_no_separator(self):
+        html = """
+        <html>
+            <a foo=PAYLOAD bar=loops>
+                bar
+            </a>
+        </html>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1)
+        self.assertIsInstance(contexts[0], HtmlAttrNoQuote)
 
     def test_payload_in_html_text_complex(self):
         html = """
@@ -201,7 +237,7 @@ class TestHTMLContext(ContextTest):
 
     def test_payload_tag_name(self):
         html = """
-        <PAYLOAD>
+        <PAYLOAD></x>
         </foo>
         """
         contexts = get_context(html, 'PAYLOAD')

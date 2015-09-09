@@ -19,44 +19,137 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from HTMLParser import HTMLParser
+from htmlentitydefs import name2codepoint
+
 from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                    HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
-                   HtmlComment, HtmlTagClose)
+                   HtmlComment, HtmlTagClose, HtmlAttrNoQuote)
 
-# Note that the order is important! The most specific contexts should be first
-CONTEXTS = [HtmlComment,
-            HtmlAttrSingleQuote,
-            HtmlAttrDoubleQuote,
-            HtmlAttrBackticks,
-            HtmlAttr,
-            HtmlTag,
-            HtmlTagClose,
-            HtmlText]
+# Note that the x at the beginning is important since in HTML the tag name needs
+# to start with a letter
+CONTEXT_DETECTOR = 'x3141592653589793'
 
 
-def get_context(data, payload, contexts=CONTEXTS):
+def get_context(data, payload):
     """
     :return: A list which contains lists of all contexts where the payload lives
     """
-    return [c for c in get_context_iter(data, payload, contexts=contexts)]
+    return [c for c in get_context_iter(data, payload)]
 
 
-def get_context_iter(data, payload, contexts=CONTEXTS):
+def get_context_iter(data, payload):
     """
+    :param data: The HTML where the payload might be in
+    :param payload: The payload as sent to the web application
+
     :return: A context iterator
+
+    :see: https://github.com/andresriancho/w3af/issues/37
     """
-    chunks = data.split(payload)
-    data = ''
+    if payload not in data:
+        return
 
-    for chunk in chunks[:-1]:
-        data += chunk
+    # We replace the "context breaking payload" with an innocent string
+    data = data.replace(payload, CONTEXT_DETECTOR)
 
-        for context_klass in contexts:
-            if context_klass.match(data):
-                context = context_klass()
-                yield context
+    # Parse!
+    context_detector = ContextDetectorHTMLParser(CONTEXT_DETECTOR)
+    context_detector.feed(data)
 
-                # We break because each payload can only be in one context, note
-                # that if the payload is echoed multiple times this code still
-                # works because of the outer for loop
-                break
+    for context in context_detector.contexts:
+        yield context
+
+
+class ContextDetectorHTMLParser(HTMLParser):
+
+    def __init__(self, payload):
+        HTMLParser.__init__(self)
+        self.payload = payload
+        self.contexts = []
+
+    def handle_starttag(self, tag, attrs):
+        """
+        Find the payload in:
+            * Tag name
+            * Tag attribute name
+            * Tag attribute value (double, single and backtick quotes)
+
+        :param tag: The tag name
+        :param attrs: A list of tuples with attributes
+        :return: None, we save the contexts where the payloads were found to
+                 the "contexts" class attribute
+        """
+        if self.payload in tag:
+            self.contexts.append(HtmlTag(tag))
+
+        for attr_name, attr_value in attrs:
+            if self.payload in attr_name:
+                self.contexts.append(HtmlAttr(attr_name))
+
+            if self.payload in attr_value:
+                context = self.get_attr_value_context(attr_name, attr_value)
+                if context is not None:
+                    self.contexts.append(context)
+
+    def get_attr_value_context(self, attr_name, attr_value):
+        """
+        Use HTMLParser.get_starttag_text to find which quote delimiter was used
+        in this tag.
+
+        :return: The context instance, one of:
+                    * HtmlAttrDoubleQuote
+                    * HtmlAttrSingleQuote
+                    * HtmlAttrBackticks
+        """
+        # Get the raw text string that triggered this parse event
+        full_tag_text = self.get_starttag_text()
+
+        # Since it's the raw text value and the attr_value was unescaped, we
+        # need to unescape it too to be able to compare them
+        full_tag_text = self.unescape(full_tag_text)
+
+        # Analyze the generic cases
+        all_contexts = [HtmlAttrDoubleQuote,
+                        HtmlAttrSingleQuote]
+
+        for context_klass in all_contexts:
+            attr_match = '%s%s%s' % (context_klass.ATTR_DELIMITER,
+                                     attr_value,
+                                     context_klass.ATTR_DELIMITER)
+            if attr_match in full_tag_text:
+                return context_klass(attr_name, attr_value)
+
+        # Special case for HtmlAttrBackticks
+        if attr_value.startswith(HtmlAttrBackticks.ATTR_DELIMITER) and \
+           attr_value.endswith(HtmlAttrBackticks.ATTR_DELIMITER):
+            return HtmlAttrBackticks(attr_name, attr_value)
+
+        # And if we don't have any quotes... then...
+        return HtmlAttrNoQuote(attr_name, attr_value)
+
+    def handle_endtag(self, tag):
+        if self.payload in tag:
+            self.contexts.append(HtmlTagClose(tag))
+
+    def handle_data(self, text_data):
+        if self.payload in text_data:
+            self.contexts.append(HtmlText(text_data))
+
+    def handle_comment(self, comment_text):
+        if self.payload in comment_text:
+            self.contexts.append(HtmlComment(comment_text))
+
+    def handle_entityref(self, name):
+        c = unichr(name2codepoint[name])
+        print "Named ent:", c
+
+    def handle_charref(self, name):
+        if name.startswith('x'):
+            c = unichr(int(name[1:], 16))
+        else:
+            c = unichr(int(name))
+        print "Num ent  :", c
+
+    def handle_decl(self, data):
+        print "Decl     :", data
