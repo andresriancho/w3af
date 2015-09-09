@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from HTMLParser import HTMLParser
-from htmlentitydefs import name2codepoint
+from HTMLParser import HTMLParser, HTMLParseError
 
 from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                    HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
-                   HtmlComment, HtmlTagClose, HtmlAttrNoQuote)
+                   HtmlComment, HtmlTagClose, HtmlAttrNoQuote,
+                   HtmlDeclaration, HtmlProcessingInstruction)
 
 # Note that the x at the beginning is important since in HTML the tag name needs
 # to start with a letter
@@ -55,10 +55,18 @@ def get_context_iter(data, payload):
 
     # Parse!
     context_detector = ContextDetectorHTMLParser(CONTEXT_DETECTOR)
-    context_detector.feed(data)
+    try:
+        context_detector.feed(data)
+    except HTMLParseError:
+        # HTMLParser is able to handle broken markup, but in some cases it might
+        # raise this exception when it encounters an error while parsing.
+        return
 
     for context in context_detector.contexts:
         yield context
+
+    # Clear
+    context_detector.close()
 
 
 class ContextDetectorHTMLParser(HTMLParser):
@@ -91,6 +99,8 @@ class ContextDetectorHTMLParser(HTMLParser):
                 context = self.get_attr_value_context(attr_name, attr_value)
                 if context is not None:
                     self.contexts.append(context)
+
+    handle_startendtag = handle_starttag
 
     def get_attr_value_context(self, attr_name, attr_value):
         """
@@ -140,16 +150,10 @@ class ContextDetectorHTMLParser(HTMLParser):
         if self.payload in comment_text:
             self.contexts.append(HtmlComment(comment_text))
 
-    def handle_entityref(self, name):
-        c = unichr(name2codepoint[name])
-        print "Named ent:", c
-
-    def handle_charref(self, name):
-        if name.startswith('x'):
-            c = unichr(int(name[1:], 16))
-        else:
-            c = unichr(int(name))
-        print "Num ent  :", c
-
     def handle_decl(self, data):
-        print "Decl     :", data
+        if self.payload in data:
+            self.contexts.append(HtmlDeclaration(data))
+
+    def handle_pi(self, data):
+        if self.payload in data:
+            self.contexts.append(HtmlProcessingInstruction(data))

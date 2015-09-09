@@ -57,6 +57,21 @@ class HtmlAttr(BaseContext):
     CAN_BREAK = {' ', '='}
 
 
+class HtmlDeclaration(BaseContext):
+    """
+    This method is called to handle an HTML doctype declaration
+    (e.g. <!DOCTYPE html>).
+    """
+    CAN_BREAK = {'>'}
+
+
+class HtmlProcessingInstruction(BaseContext):
+    """
+    For example, for the processing instruction <?proc color='red'>
+    """
+    CAN_BREAK = {'>'}
+
+
 class HTMLAttrQuoteGeneric(BaseContext):
 
     def __init__(self, attr_name, attr_value):

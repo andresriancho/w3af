@@ -335,3 +335,40 @@ class TestHTMLContext(ContextTest):
 
         self.xss_plugin_can_break(contexts[0])
         self.xss_plugin_can_break(contexts[1])
+
+    def test_broken_1(self):
+        html = """
+        <a PAYLOAD="/xyz
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 0, contexts)
+
+    def test_broken_2(self):
+        html = """
+        <a PAYLOAD="/xyz" /<
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 0, contexts)
+
+    def test_broken_3(self):
+        html = """
+        <a PAYLOAD="/xyz"><
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1, contexts)
+        self.assertIsInstance(contexts[0], HtmlAttr)
+
+    def test_broken_4(self):
+        html = """
+        <a PAYLOAD="/xyz"></
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1, contexts)
+        self.assertIsInstance(contexts[0], HtmlAttr)
+
+    def test_broken_5(self):
+        html = """
+        <a foo="/xyz"></PAYLOAD
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 0, contexts)
