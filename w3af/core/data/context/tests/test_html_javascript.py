@@ -18,10 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
+import unittest
 
 from w3af.core.data.context.context.javascript import ScriptText
 
+
+class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_script_single_quote2(self):
         html = """
         <html>

@@ -19,123 +19,166 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from .main import get_context, get_context_iter
-
-
-"""
-html.py
-
-Copyright 2015 Andres Riancho
-
-This file is part of w3af, http://w3af.org/ .
-
-w3af is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation version 2 of the License.
-
-w3af is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with w3af; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
-"""
+from StringIO import StringIO
 
 from w3af.core.data.context.context.base import BaseContext
+from w3af.core.data.context.constants import CONTEXT_DETECTOR
 
-
-class ScriptText(BaseContext):
-
-    CAN_BREAK = {}
-
-    @staticmethod
-    def match(js_code):
-        return True
-
-    @staticmethod
-    def is_executable(js_code):
-        return True
+STRING_DELIMITERS = {'"', "'"}
 
 
 class ScriptSingleLineComment(BaseContext):
-
     CAN_BREAK = {'\n', '\r'}
-
-    @staticmethod
-    def match(js_code):
-        return BaseContext.is_inside_context(js_code, '//', '\n')
 
 
 class ScriptMultiLineComment(BaseContext):
-
     CAN_BREAK = {'*', '/'}
 
-    @staticmethod
-    def match(js_code):
-        return BaseContext.is_inside_context(js_code, '/*', '*/')
+
+class ScriptStringGeneric(BaseContext):
+    pass
 
 
-class StringGeneric(BaseContext):
-
-    @staticmethod
-    def _match(js_code, attr_delimiter):
-        if not BaseContext.is_inside_context(js_code,
-                                             attr_delimiter,
-                                             attr_delimiter):
-            return False
-
-        return True
-
-
-class ScriptSingleQuoteString(StringGeneric):
+class ScriptSingleQuoteString(ScriptStringGeneric):
     """
     Matches alert('PAYLOAD');
     """
-
     ATTR_DELIMITER = "'"
     CAN_BREAK = {ATTR_DELIMITER}
 
-    @staticmethod
-    def match(js_code):
-        return StringGeneric._match(js_code,
-                                    ScriptSingleQuoteString.ATTR_DELIMITER)
 
-
-class ScriptDoubleQuoteString(StringGeneric):
+class ScriptDoubleQuoteString(ScriptStringGeneric):
     """
     Matches alert("PAYLOAD");
     """
-
     ATTR_DELIMITER = '"'
     CAN_BREAK = {ATTR_DELIMITER}
 
-    @staticmethod
-    def match(js_code):
-        return StringGeneric._match(js_code,
-                                    ScriptDoubleQuoteString.ATTR_DELIMITER)
 
-
-# Note that the order is important! The most specific contexts should be first
-JS_CONTEXTS = [ScriptSingleLineComment,
-               ScriptSingleQuoteString,
-               ScriptDoubleQuoteString,
-               ScriptMultiLineComment,
-               ScriptText]
+class ScriptExecutableContext(BaseContext):
+    """
+    Matches things like:
+        * alert(""); PAYLOAD()
+        * PAYLOAD;
+        * {"x": PAYLOAD}
+    """
+    def is_executable(self):
+        return True
 
 
 def get_js_context(data, payload):
     """
     :return: A list which contains lists of all contexts where the payload lives
     """
-    return get_context(data, payload, JS_CONTEXTS)
+    return [c for c in get_js_context_iter(data, payload)]
 
 
 def get_js_context_iter(data, payload):
     """
+    We parse the JavaScript code and find the payload context name.
+
     :return: A context iterator
     """
-    for context in get_context_iter(data, payload, JS_CONTEXTS):
-        yield context
+    if payload not in data:
+        return
+
+    # We replace the "context breaking payload" with an innocent string
+    data = data.replace(payload, CONTEXT_DETECTOR)
+
+    inside_string = False
+    escape_next = False
+    string_delim = None
+    inside_single_line_comment = False
+    inside_multi_line_comment = False
+    context_content = ''
+
+    data_io = StringIO(data)
+
+    while True:
+        c = data_io.read(1)
+        context_content += c
+
+        if not c:
+            # No more chars to read
+            break
+
+        # Handle \ escapes inside strings
+        if inside_string:
+            if c == '\\':
+                escape_next = True
+                continue
+
+            if escape_next:
+                escape_next = False
+                continue
+
+            if c == string_delim:
+
+                if CONTEXT_DETECTOR in context_content:
+                    if string_delim == "'":
+                        yield ScriptSingleQuoteString(context_content)
+                    else:
+                        yield ScriptDoubleQuoteString(context_content)
+
+                context_content = ''
+                inside_string = False
+
+            # Go to the next char inside the string
+            continue
+
+        # Handle the content of a // Comment
+        if inside_single_line_comment:
+            if c in {'\n', '\r'}:
+                if CONTEXT_DETECTOR in context_content:
+                    yield ScriptSingleLineComment(context_content)
+                inside_single_line_comment = False
+                context_content = ''
+            continue
+
+        # Handle the content of a /* multi line comment */
+        if inside_multi_line_comment:
+            if c == '*':
+                c = data_io.read(1)
+                context_content += c
+
+                if c == '/':
+                    if CONTEXT_DETECTOR in context_content:
+                        yield ScriptMultiLineComment(context_content)
+                    inside_multi_line_comment = False
+                    context_content = ''
+            continue
+
+        # Handle the string starts
+        if c in STRING_DELIMITERS:
+
+            # This analyzes the context content before the string start
+            if CONTEXT_DETECTOR in context_content:
+                yield ScriptExecutableContext(context_content)
+
+            inside_string = True
+            string_delim = c
+            context_content = ''
+            continue
+
+        # Handle the comment starts
+        if c == '/':
+            c = data_io.read(1)
+            context_content += c
+
+            if c == '/':
+                inside_single_line_comment = True
+
+            if c == '*':
+                inside_multi_line_comment = True
+
+            if inside_multi_line_comment or inside_single_line_comment:
+                # This analyzes the context content before the comment start
+                if CONTEXT_DETECTOR in context_content:
+                    yield ScriptExecutableContext(context_content)
+
+                context_content = ''
+                continue
+
+    # Handle the remaining bytes from the JS code:
+    if CONTEXT_DETECTOR in context_content:
+        yield ScriptExecutableContext(context_content)

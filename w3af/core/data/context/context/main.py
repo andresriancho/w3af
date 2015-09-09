@@ -21,15 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from HTMLParser import HTMLParser, HTMLParseError
 
+from w3af.core.data.context.constants import CONTEXT_DETECTOR
 from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                    HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
                    HtmlComment, HtmlTagClose, HtmlAttrNoQuote,
                    HtmlDeclaration, HtmlProcessingInstruction,
                    CSSText, ScriptText)
-
-# Note that the x at the beginning is important since in HTML the tag name needs
-# to start with a letter
-CONTEXT_DETECTOR = 'x3141592653589793'
 
 
 def get_context(data, payload):

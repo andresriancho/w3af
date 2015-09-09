@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.data.context.tests.context_test import ContextTest
 from w3af.core.data.context.context.javascript import get_js_context
-from w3af.core.data.context.context.javascript import (ScriptText,
+from w3af.core.data.context.context.javascript import (ScriptExecutableContext,
                                                        ScriptSingleQuoteString,
                                                        ScriptDoubleQuoteString,
                                                        ScriptSingleLineComment,
@@ -32,101 +32,121 @@ class TestJavaScript(ContextTest):
         js_code = 'PAYLOAD'
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptText)
 
-        self.assertTrue(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptExecutableContext)
+        self.assertTrue(context.is_executable())
 
     def test_payload_is_executable_1(self):
         js_code = 'alert("Hello " + PAYLOAD);'
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptText)
 
-        self.assertTrue(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptExecutableContext)
+        self.assertTrue(context.is_executable())
 
     def test_payload_is_executable_2(self):
         js_code = "init({login:'',foo: PAYLOAD})"
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptText)
 
-        self.assertTrue(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptExecutableContext)
+        self.assertTrue(context.is_executable())
 
     def test_payload_is_executable_3(self):
         js_code = "alert('Hello'); PAYLOAD;"
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptText)
 
-        self.assertTrue(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptExecutableContext)
+        self.assertTrue(context.is_executable())
 
     def test_payload_break_single_quote_1(self):
         js_code = "init({login:'',foo: 'PAYLOAD'})"
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptSingleQuoteString)
 
-        self.assertFalse(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptSingleQuoteString)
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_single_quote_2(self):
         js_code = "alert('PAYLOAD');"
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptSingleQuoteString)
 
-        self.assertFalse(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptSingleQuoteString)
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_single_quote_3(self):
         js_code = "alert('Hello ' + 'PAYLOAD');"
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptSingleQuoteString)
 
-        self.assertFalse(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptSingleQuoteString)
+        self.assertFalse(context.is_executable())
+
+    def test_single_quote_escape(self):
+        js_code = "alert('Hello \\' world' + PAYLOAD);"
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, ScriptExecutableContext)
+        self.assertTrue(context.is_executable())
+
+    def test_single_quote_mix_double(self):
+        js_code = "alert('Hello' + \"PAYLOAD\");"
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, ScriptDoubleQuoteString)
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_double_quote_1(self):
         js_code = 'init({login:'',foo: "PAYLOAD"})'
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptDoubleQuoteString)
 
-        self.assertFalse(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptDoubleQuoteString)
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_double_quote_2(self):
         js_code = 'alert("PAYLOAD");'
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptDoubleQuoteString)
 
-        self.assertFalse(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptDoubleQuoteString)
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_double_quote_3(self):
         js_code = 'alert("Hello " + "PAYLOAD");'
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
-        self.assertIsInstance(context, ScriptDoubleQuoteString)
 
-        self.assertFalse(context.is_executable(js_code))
+        self.assertIsInstance(context, ScriptDoubleQuoteString)
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_single_line_comment(self):
         js_code = """
@@ -136,11 +156,11 @@ class TestJavaScript(ContextTest):
         """
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
 
         self.assertIsInstance(context, ScriptSingleLineComment)
-        self.assertFalse(context.is_executable(js_code))
+        self.assertFalse(context.is_executable())
         self.xss_plugin_can_break(context)
 
     def test_payload_break_single_line_comment_false_positive(self):
@@ -149,11 +169,11 @@ class TestJavaScript(ContextTest):
         """
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
 
         self.assertIsInstance(context, ScriptSingleQuoteString)
-        self.assertFalse(context.is_executable(js_code))
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_single_line_comment_with_single_quote(self):
         js_code = """
@@ -163,11 +183,11 @@ class TestJavaScript(ContextTest):
         """
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
 
         self.assertIsInstance(context, ScriptSingleLineComment)
-        self.assertFalse(context.is_executable(js_code))
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_multi_line_comment(self):
         js_code = """
@@ -182,11 +202,11 @@ class TestJavaScript(ContextTest):
         """
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
 
         self.assertIsInstance(context, ScriptMultiLineComment)
-        self.assertFalse(context.is_executable(js_code))
+        self.assertFalse(context.is_executable())
 
     def test_payload_break_multi_line_comment_false_positive(self):
         js_code = """
@@ -194,8 +214,8 @@ class TestJavaScript(ContextTest):
         """
         contexts = get_js_context(js_code, 'PAYLOAD')
 
-        self.assertEqual(len(contexts), 1)
+        self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
 
         self.assertIsInstance(context, ScriptSingleQuoteString)
-        self.assertFalse(context.is_executable(js_code))
+        self.assertFalse(context.is_executable())

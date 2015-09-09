@@ -20,8 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 QUOTE_CHARS = {'"', "'"}
+
 ATTR_DELIMITERS = {'"', '`', "'"}
-JS_EVENTS = ['onclick', 'ondblclick', 'onmousedown', 'onmousemove',
+
+JS_EVENTS = {'onclick', 'ondblclick', 'onmousedown', 'onmousemove',
              'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus',
              'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown',
-             'onkeypress', 'onkeyup', 'onload', 'onunload']
+             'onkeypress', 'onkeyup', 'onload', 'onunload'}
+
+EXECUTABLE_ATTRS = {'href', 'src'}
+
+# Note that the x at the beginning is important since in HTML the tag name needs
+# to start with a letter
+CONTEXT_DETECTOR = 'x3141592653589793'

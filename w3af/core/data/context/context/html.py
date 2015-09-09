@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.context.context.base import BaseContext
+from w3af.core.data.context.constants import JS_EVENTS, EXECUTABLE_ATTRS
 
 
 class HtmlTag(BaseContext):
@@ -57,19 +58,33 @@ class HtmlAttr(BaseContext):
     CAN_BREAK = {' ', '='}
 
 
-class ScriptText(BaseContext):
+class ScriptText(HtmlText):
     """
     Matches <script>PAYLOAD</script>
     """
     def can_break(self, payload):
+        # If we can break out of the context then we're done
+        if super(ScriptText, self).can_break(payload):
+            return True
+
+        raise NotImplementedError('Parse the script text!')
+
+    def is_executable(self):
         raise NotImplementedError('Parse the script text!')
 
 
-class CSSText(BaseContext):
+class CSSText(HtmlText):
     """
     Matches <style>PAYLOAD</style>
     """
     def can_break(self, payload):
+        # If we can break out of the context then we're done
+        if super(CSSText, self).can_break(payload):
+            return True
+
+        raise NotImplementedError('Parse the CSS text!')
+
+    def is_executable(self):
         raise NotImplementedError('Parse the CSS text!')
 
 
@@ -90,6 +105,8 @@ class HtmlProcessingInstruction(BaseContext):
 
 class HTMLAttrQuoteGeneric(BaseContext):
 
+    JS_ATTRS = EXECUTABLE_ATTRS.union(JS_EVENTS)
+
     def __init__(self, attr_name, attr_value):
         """
         :param attr_name: The attribute name (<tag name=value">)
@@ -100,10 +117,28 @@ class HTMLAttrQuoteGeneric(BaseContext):
         self.value = attr_value
 
     def is_executable(self):
-        # TODO: Here I need to check if the tag name is in XXX and the attr
-        # name is in YYY, then send the contents of the attribute name to
-        # the JavaScript parser and delegate the "is_executable" to that code
-        raise NotImplementedError
+        #
+        # Handle cases like this:
+        #   <h1 style="color:blue;text-align:PAYLOAD">This is a header</h1>
+        #
+        if self.name == 'style':
+            # TODO: Delegate the is_executable to the CSS parser
+            raise NotImplementedError()
+
+        #
+        # Handle cases like this:
+        #   <h1 onmouseover="do_something(PAYLOAD)">This is a header</h1>
+        #
+        if self.name not in self.JS_ATTRS:
+            return False
+
+        # Cleanup the attribute value
+        attr_value = self.value.lower()
+        attr_value = attr_value.replace('javascript:', '')
+        js_code = attr_value.replace('vbscript:', '')
+
+        # TODO: Delegate the is_executable to the JavaScript parser
+        raise NotImplementedError()
 
 
 class HtmlAttrSingleQuote(HTMLAttrQuoteGeneric):
@@ -134,5 +169,5 @@ class HtmlAttrNoQuote(HTMLAttrQuoteGeneric):
     """
     Matches <tag attr=PAYLOAD />
     """
-    ATTR_DELIMITER = " "
-    CAN_BREAK = {ATTR_DELIMITER}
+    ATTR_DELIMITER = ''
+    CAN_BREAK = {' '}
