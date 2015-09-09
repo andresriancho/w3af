@@ -23,8 +23,10 @@ import os
 from w3af.core.data.context.tests.context_test import ContextTest
 from w3af.core.data.context.context import get_context
 from w3af.core.data.context.context.html import (HtmlTag,
+                                                 CSSText,
                                                  HtmlAttr,
                                                  HtmlText,
+                                                 ScriptText,
                                                  HtmlComment,
                                                  HtmlTagClose,
                                                  HtmlAttrNoQuote,
@@ -184,7 +186,7 @@ class TestHTMLContext(ContextTest):
         """
         contexts = get_context(html, 'PAYLOAD')
         self.assertEqual(len(contexts), 1)
-        self.assertIsInstance(contexts[0], HtmlText)
+        self.assertIsInstance(contexts[0], ScriptText)
 
     def test_payload_confuse_parser(self):
         html = """
@@ -372,3 +374,31 @@ class TestHTMLContext(ContextTest):
         """
         contexts = get_context(html, 'PAYLOAD')
         self.assertEqual(len(contexts), 0, contexts)
+
+    def test_script_text(self):
+        html = """
+        <script>foo(); bar(PAYLOAD);</script>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1, contexts)
+        self.assertIsInstance(contexts[0], ScriptText)
+
+    def test_style_text(self):
+        html = """
+        <style>foo(); bar(PAYLOAD);</style>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1, contexts)
+        self.assertIsInstance(contexts[0], CSSText)
+
+    def test_script_text_comment(self):
+        html = """
+        <script type="text/javascript">
+        <!--
+        foo(); bar(PAYLOAD);
+        //-->
+        </script>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 1, contexts)
+        self.assertIsInstance(contexts[0], ScriptText)

@@ -1,7 +1,7 @@
 """
-style.py
+css.py
 
-Copyright 2006 Andres Riancho
+Copyright 2015 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 

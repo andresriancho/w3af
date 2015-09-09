@@ -57,6 +57,22 @@ class HtmlAttr(BaseContext):
     CAN_BREAK = {' ', '='}
 
 
+class ScriptText(BaseContext):
+    """
+    Matches <script>PAYLOAD</script>
+    """
+    def can_break(self, payload):
+        raise NotImplementedError('Parse the script text!')
+
+
+class CSSText(BaseContext):
+    """
+    Matches <style>PAYLOAD</style>
+    """
+    def can_break(self, payload):
+        raise NotImplementedError('Parse the CSS text!')
+
+
 class HtmlDeclaration(BaseContext):
     """
     This method is called to handle an HTML doctype declaration

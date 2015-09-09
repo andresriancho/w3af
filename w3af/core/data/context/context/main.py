@@ -24,7 +24,8 @@ from HTMLParser import HTMLParser, HTMLParseError
 from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
                    HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
                    HtmlComment, HtmlTagClose, HtmlAttrNoQuote,
-                   HtmlDeclaration, HtmlProcessingInstruction)
+                   HtmlDeclaration, HtmlProcessingInstruction,
+                   CSSText, ScriptText)
 
 # Note that the x at the beginning is important since in HTML the tag name needs
 # to start with a letter
@@ -75,6 +76,7 @@ class ContextDetectorHTMLParser(HTMLParser):
         HTMLParser.__init__(self)
         self.payload = payload
         self.contexts = []
+        self.current_tag = None
 
     def handle_starttag(self, tag, attrs):
         """
@@ -88,6 +90,8 @@ class ContextDetectorHTMLParser(HTMLParser):
         :return: None, we save the contexts where the payloads were found to
                  the "contexts" class attribute
         """
+        self.current_tag = tag
+
         if self.payload in tag:
             self.contexts.append(HtmlTag(tag))
 
@@ -143,7 +147,16 @@ class ContextDetectorHTMLParser(HTMLParser):
             self.contexts.append(HtmlTagClose(tag))
 
     def handle_data(self, text_data):
-        if self.payload in text_data:
+        if self.payload not in text_data:
+            return
+
+        if self.current_tag == 'script':
+            self.contexts.append(ScriptText(text_data))
+
+        elif self.current_tag == 'style':
+            self.contexts.append(CSSText(text_data))
+
+        elif self.payload in text_data:
             self.contexts.append(HtmlText(text_data))
 
     def handle_comment(self, comment_text):
