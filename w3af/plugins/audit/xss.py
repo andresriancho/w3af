@@ -59,6 +59,10 @@ class xss(AuditPlugin):
         # Escapes for CSS
         '*/:("\'',
 
+        # The ":" is useful in cases where we want to add the javascript
+        # protocol like <a href="PAYLOAD">   -->   <a href="javascript:alert()">
+        ':',
+
         # Escape single line comments in JavaScript
         "\n",
 
@@ -243,18 +247,17 @@ class xss(AuditPlugin):
         
         :return: None, Vuln (if any) are saved to the kb.
         """
-        body_lower = response.get_body().lower()
-        
+        body = response.get_body()
+
         for mutant, mutant_response_id in self._xss_mutants:
 
             sent_payload = mutant.get_token_payload()
-            sent_payload_lower = sent_payload.lower()
 
-            for context in get_context_iter(body_lower, sent_payload):
-                if context.is_executable() or context.can_break(sent_payload_lower):
+            for context in get_context_iter(body, sent_payload):
+                if context.is_executable() or context.can_break():
                     self._report_persistent_vuln(mutant, response,
                                                  mutant_response_id,
-                                                 sent_payload_lower,
+                                                 sent_payload,
                                                  fuzzable_request)
                     break
     
