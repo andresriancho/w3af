@@ -28,7 +28,7 @@ JS_EVENTS = {'onclick', 'ondblclick', 'onmousedown', 'onmousemove',
              'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown',
              'onkeypress', 'onkeyup', 'onload', 'onunload'}
 
-EXECUTABLE_ATTRS = {'href', 'src'}
+EXECUTABLE_ATTRS = {'href', 'src', 'background', 'dynsrc', 'lowsrc'}
 
 # Note that the x at the beginning is important since in HTML the tag name needs
 # to start with a letter
