@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from w3af.core.data.context.context.javascript import get_js_context_iter
+from w3af.core.data.context.context.css import get_css_context_iter
 from w3af.core.data.context.context.base import BaseContext
 from w3af.core.data.context.constants import JS_EVENTS, EXECUTABLE_ATTRS
 
@@ -101,10 +102,15 @@ class CSSText(HtmlText):
         if super(CSSText, self).can_break():
             return True
 
-        raise NotImplementedError('Parse the CSS text!')
+        css_text = self.get_context_content()
 
-    def is_executable(self):
-        raise NotImplementedError('Parse the CSS text!')
+        for css_context in get_css_context_iter(css_text, self.payload):
+            # At least one of the contexts where the payload is echoed in the
+            # CSS text needs to be escaped from
+            if css_context.can_break():
+                return True
+
+        return False
 
 
 class HtmlDeclaration(BaseContext):
@@ -158,8 +164,16 @@ class HTMLAttrQuoteGeneric(BaseContext):
         #   <h1 style="color:blue;text-align:PAYLOAD">This is a header</h1>
         #
         if self.name == 'style':
-            # TODO: Delegate the is_executable to the CSS parser
-            raise NotImplementedError()
+            # Delegate the can_break to the CSS parser
+            css_text = self.get_context_content()
+
+            for css_context in get_css_context_iter(css_text, self.payload):
+                # At least one of the contexts where the payload is echoed in the
+                # CSS text needs to be escaped from
+                if css_context.can_break():
+                    return True
+
+            return False
 
         #
         # Handle cases like this:
@@ -170,7 +184,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
 
         script_text = self.extract_code()
 
-        # Delegate the is_executable to the JavaScript parser
+        # Delegate the can_break to the JavaScript parser
         for js_context in get_js_context_iter(script_text, self.payload):
             # At least one of the contexts where the payload is echoed in the
             # script text needs to be escaped from
