@@ -62,6 +62,19 @@ class TestHTMLContext(ContextTest):
         self.assertEqual(len(contexts), 1)
         self.assertIsInstance(contexts[0], HtmlText)
 
+    def test_payload_in_html_text_with_lower(self):
+        html = """
+        <html>
+            <body>
+                %s
+            </body>
+        </html>
+        """
+        payload = 'PAYLOAD'
+        contexts = get_context(html % payload.lower(), payload)
+        self.assertEqual(len(contexts), 1)
+        self.assertIsInstance(contexts[0], HtmlText)
+
     def test_payload_html_inside_comment(self):
         html = """
         <html>

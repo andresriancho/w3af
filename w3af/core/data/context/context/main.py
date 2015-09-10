@@ -45,6 +45,15 @@ def get_context_iter(data, payload):
 
     :see: https://github.com/andresriancho/w3af/issues/37
     """
+    # We don't care if the payload we sent was processed with something like
+    # payload.title() , payload.upper() or payload.lower() and then pushed
+    # into the output.
+    #
+    # Remember that some payloads we use do contain letters which might be
+    # affected by those filters; we don't just send the special characters.
+    payload = payload.lower()
+    data = data.lower()
+
     if payload not in data:
         return
 
