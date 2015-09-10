@@ -32,7 +32,7 @@ class ScriptSingleLineComment(BaseContext):
 
 
 class ScriptMultiLineComment(BaseContext):
-    CAN_BREAK = {'*', '/'}
+    CAN_BREAK = {'*/'}
 
 
 class ScriptStringGeneric(BaseContext):
@@ -66,6 +66,10 @@ class ScriptExecutableContext(BaseContext):
 
     def is_executable(self):
         return True
+
+ALL_CONTEXTS = [ScriptExecutableContext, ScriptDoubleQuoteString,
+                ScriptSingleQuoteString, ScriptMultiLineComment,
+                ScriptSingleLineComment]
 
 
 def get_js_context(data, payload):

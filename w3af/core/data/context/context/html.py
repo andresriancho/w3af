@@ -51,7 +51,7 @@ class HtmlComment(BaseContext):
     """
     Matches <!-- PAYLOAD -->
     """
-    CAN_BREAK = {'-', '>', '<'}
+    CAN_BREAK = {'-->'}
 
 
 class HtmlAttr(BaseContext):
