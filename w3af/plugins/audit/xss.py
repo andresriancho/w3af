@@ -56,6 +56,9 @@ class xss(AuditPlugin):
         # Escape JavaScript multi line and CSS comments
         '*/',
 
+        # Escapes for CSS
+        '*/:("\'',
+
         # Escape single line comments in JavaScript
         "\n",
 

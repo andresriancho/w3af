@@ -23,7 +23,9 @@ from unittest import TestCase
 
 from w3af.core.data.kb.config import cf
 
-from w3af.core.data.context.context.html import ALL_CONTEXTS
+from w3af.core.data.context.context.html import ALL_CONTEXTS as ALL_HTML_CONTEXTS
+from w3af.core.data.context.context.javascript import ALL_CONTEXTS as ALL_JS_CONTEXTS
+from w3af.core.data.context.context.css import ALL_CONTEXTS as ALL_CSS_CONTEXTS
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.core.controllers.ci.php_moth import get_php_moth_http
@@ -332,8 +334,8 @@ class TestXSS(PluginTest):
 
 
 class TestXSSPayloadsBreak(TestCase):
-    def test_xss_plugin_can_break(self):
-        for context_klass in ALL_CONTEXTS:
+    def test_xss_plugin_can_break_html(self):
+        for context_klass in ALL_HTML_CONTEXTS:
 
             payload_broke_context = False
 
@@ -345,6 +347,48 @@ class TestXSSPayloadsBreak(TestCase):
                 except TypeError:
                     # Attribute contexts
                     context = context_klass(payload, '', '')
+
+                if context.can_break():
+                    payload_broke_context = True
+                    break
+
+            if not payload_broke_context:
+                klass_name = context.__class__.__name__
+                self.assertTrue(False, 'No XSS payload breaks %s' % klass_name)
+
+    def test_xss_plugin_can_break_js(self):
+        for context_klass in ALL_JS_CONTEXTS:
+
+            payload_broke_context = False
+
+            for payload in xss.PAYLOADS:
+
+                context = context_klass(payload, '')
+
+                if context.is_executable():
+                    payload_broke_context = True
+                    break
+
+                if context.can_break():
+                    payload_broke_context = True
+                    break
+
+            if not payload_broke_context:
+                klass_name = context.__class__.__name__
+                self.assertTrue(False, 'No XSS payload breaks %s' % klass_name)
+
+    def test_xss_plugin_can_break_css(self):
+        for context_klass in ALL_CSS_CONTEXTS:
+
+            payload_broke_context = False
+
+            for payload in xss.PAYLOADS:
+
+                context = context_klass(payload, '')
+
+                if context.is_executable():
+                    payload_broke_context = True
+                    break
 
                 if context.can_break():
                     payload_broke_context = True
