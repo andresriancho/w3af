@@ -19,13 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from nose.plugins.attrib import attr
+from unittest import TestCase
 
 from w3af.core.data.kb.config import cf
 
+from w3af.core.data.context.context.html import ALL_CONTEXTS as ALL_HTML_CONTEXTS
+from w3af.core.data.context.context.javascript import ALL_CONTEXTS as ALL_JS_CONTEXTS
+from w3af.core.data.context.context.css import ALL_CONTEXTS as ALL_CSS_CONTEXTS
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.core.controllers.ci.php_moth import get_php_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.audit.xss import xss
 
 import w3af.core.data.constants.severity as severity
 
@@ -296,15 +301,15 @@ class TestXSS(PluginTest):
             ('Case10-Js2DoubleQuoteJsEventScope.jsp', 'userinput', ['userinput']),
             ('Case11-Js2SingleQuoteJsEventScope.jsp', 'userinput', ['userinput']),
             ('Case12-Js2JsEventScope.jsp', 'userinput', ['userinput']),
-            #('Case13-Vbs2DoubleQuoteVbsEventScope.jsp', 'userinput', ['userinput']),
-            #('Case14-Vbs2SingleQuoteVbsEventScope.jsp', 'userinput', ['userinput']),
+            ('Case13-Vbs2DoubleQuoteVbsEventScope.jsp', 'userinput', ['userinput']),
+            ('Case14-Vbs2SingleQuoteVbsEventScope.jsp', 'userinput', ['userinput']),
             ('Case15-Vbs2VbsEventScope.jsp', 'userinput', ['userinput']),
             ('Case16-Js2ScriptSupportingProperty.jsp', 'userinput', ['userinput']),
-            #('Case17-Js2PropertyJsScopeDoubleQuoteDelimiter.jsp', 'userinput', ['userinput']),
-            #('Case18-Js2PropertyJsScopeSingleQuoteDelimiter.jsp', 'userinput', ['userinput']),
-            #('Case19-Js2PropertyJsScope.jsp', 'userinput', ['userinput']),
-            #('Case20-Vbs2PropertyVbsScopeDoubleQuoteDelimiter.jsp', 'userinput', ['userinput']),
-            #('Case21-Vbs2PropertyVbsScope.jsp', 'userinput', ['userinput']),
+            ('Case17-Js2PropertyJsScopeDoubleQuoteDelimiter.jsp', 'userinput', ['userinput']),
+            ('Case18-Js2PropertyJsScopeSingleQuoteDelimiter.jsp', 'userinput', ['userinput']),
+            ('Case19-Js2PropertyJsScope.jsp', 'userinput', ['userinput']),
+            ('Case20-Vbs2PropertyVbsScopeDoubleQuoteDelimiter.jsp', 'userinput', ['userinput']),
+            ('Case21-Vbs2PropertyVbsScope.jsp', 'userinput', ['userinput']),
             ('Case22-Js2ScriptTagDoubleQuoteDelimiter.jsp', 'userinput', ['userinput']),
             ('Case23-Js2ScriptTagSingleQuoteDelimiter.jsp', 'userinput', ['userinput']),
             ('Case24-Js2ScriptTag.jsp', 'userinput', ['userinput']),
@@ -326,3 +331,69 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
+
+
+class TestXSSPayloadsBreak(TestCase):
+    def test_xss_plugin_can_break_html(self):
+        for context_klass in ALL_HTML_CONTEXTS:
+
+            payload_broke_context = False
+
+            for payload in xss.PAYLOADS:
+
+                try:
+                    # Most contexts
+                    context = context_klass(payload, '')
+                except TypeError:
+                    # Attribute contexts
+                    context = context_klass(payload, '', '')
+
+                if context.can_break():
+                    payload_broke_context = True
+                    break
+
+            if not payload_broke_context:
+                klass_name = context.__class__.__name__
+                self.assertTrue(False, 'No XSS payload breaks %s' % klass_name)
+
+    def test_xss_plugin_can_break_js(self):
+        for context_klass in ALL_JS_CONTEXTS:
+
+            payload_broke_context = False
+
+            for payload in xss.PAYLOADS:
+
+                context = context_klass(payload, '')
+
+                if context.is_executable():
+                    payload_broke_context = True
+                    break
+
+                if context.can_break():
+                    payload_broke_context = True
+                    break
+
+            if not payload_broke_context:
+                klass_name = context.__class__.__name__
+                self.assertTrue(False, 'No XSS payload breaks %s' % klass_name)
+
+    def test_xss_plugin_can_break_css(self):
+        for context_klass in ALL_CSS_CONTEXTS:
+
+            payload_broke_context = False
+
+            for payload in xss.PAYLOADS:
+
+                context = context_klass(payload, '')
+
+                if context.is_executable():
+                    payload_broke_context = True
+                    break
+
+                if context.can_break():
+                    payload_broke_context = True
+                    break
+
+            if not payload_broke_context:
+                klass_name = context.__class__.__name__
+                self.assertTrue(False, 'No XSS payload breaks %s' % klass_name)
