@@ -23,11 +23,18 @@ QUOTE_CHARS = {'"', "'"}
 
 ATTR_DELIMITERS = {'"', '`', "'"}
 
+# These attributes run the value:
+#
+# <a onclick="ShowOld(2367,146986,2);">
 JS_EVENTS = {'onclick', 'ondblclick', 'onmousedown', 'onmousemove',
              'onmouseout', 'onmouseover', 'onmouseup', 'onchange', 'onfocus',
              'onblur', 'onscroll', 'onselect', 'onsubmit', 'onkeydown',
              'onkeypress', 'onkeyup', 'onload', 'onunload'}
 
+# These attributes do execute JavaScript code if they start with javascript:
+# or vbscript: , otherwise they are not executable
+#
+# <a href="javascript:ShowOld(2367,146986,2);">
 EXECUTABLE_ATTRS = {'href', 'src', 'background', 'dynsrc', 'lowsrc'}
 
 # Note that the x at the beginning is important since in HTML the tag name needs

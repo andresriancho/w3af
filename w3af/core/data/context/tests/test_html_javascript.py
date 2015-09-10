@@ -73,6 +73,26 @@ class TestJavaScriptInHTML(unittest.TestCase):
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
 
+    def test_payload_javascript_href_start_with_space(self):
+        html = """
+        <html>
+            <a href=" javascript:foo();PAYLOAD">foo</a>
+        </html>
+        """
+        context = get_context(html, 'PAYLOAD')[0]
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertTrue(context.is_executable())
+
+    def test_payload_href_append_no_exec(self):
+        html = """
+        <html>
+            <a href="http://w3af.org/PAYLOAD">foo</a>
+        </html>
+        """
+        context = get_context(html, 'PAYLOAD')[0]
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertFalse(context.is_executable())
+
     def test_payload_js_doublequote(self):
         html = """
         <html>
@@ -196,11 +216,12 @@ class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_src(self):
         html = """
         <html>
-            <img src="PAYLOAD" />
+            <img src="%s" />
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertTrue(context.is_executable())
+        payload = 'PAYLOAD:'
+        context = get_context(html % payload, payload)[0]
+        self.assertTrue(context.can_break())
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
     def test_payload_handler(self):
@@ -214,13 +235,14 @@ class TestJavaScriptInHTML(unittest.TestCase):
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
     def test_payload_href(self):
+        payload = 'PAYLOAD:'
         html = """
         <html>
-            <a href="PAYLOAD">foo</a>
+            <a href="%s">foo</a>
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
-        self.assertTrue(context.is_executable())
+        context = get_context(html % payload, payload)[0]
+        self.assertTrue(context.can_break())
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
     def test_payload_html_inside_script_with_comment(self):
@@ -259,6 +281,3 @@ class TestJavaScriptInHTML(unittest.TestCase):
         </html>
         """
         self.assertEqual(get_context(html, '5vrws%20%3D'), [])
-
-        context = get_context(html, '5vrws =')[0]
-        self.assertTrue(context.is_executable())
