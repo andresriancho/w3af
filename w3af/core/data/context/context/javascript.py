@@ -105,8 +105,10 @@ def get_js_context_iter(data, payload):
             # No more chars to read
             break
 
-        # Handle \ escapes inside strings
+        # Handle string contents
         if inside_string:
+
+            # Handle \ escapes inside strings
             if c == '\\':
                 escape_next = True
                 continue
@@ -115,6 +117,7 @@ def get_js_context_iter(data, payload):
                 escape_next = False
                 continue
 
+            # Handle string end
             if c == string_delim:
 
                 if CONTEXT_DETECTOR in context_content:
@@ -133,6 +136,8 @@ def get_js_context_iter(data, payload):
 
         # Handle the content of a // Comment
         if inside_single_line_comment:
+
+            # Handle the end of a comment
             if c in {'\n', '\r'}:
                 if CONTEXT_DETECTOR in context_content:
                     yield ScriptSingleLineComment(payload,

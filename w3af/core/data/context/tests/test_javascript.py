@@ -68,6 +68,16 @@ class TestJavaScript(ContextTest):
         self.assertIsInstance(context, ScriptExecutableContext)
         self.assertTrue(context.is_executable())
 
+    def test_payload_is_executable_4(self):
+        js_code = "PAYLOAD; alert('Hello');"
+        contexts = get_js_context(js_code, 'PAYLOAD')
+
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, ScriptExecutableContext)
+        self.assertTrue(context.is_executable())
+
     def test_payload_break_single_quote_1(self):
         js_code = "init({login:'',foo: 'PAYLOAD'})"
         contexts = get_js_context(js_code, 'PAYLOAD')
