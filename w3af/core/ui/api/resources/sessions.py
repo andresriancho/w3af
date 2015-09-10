@@ -30,6 +30,7 @@ from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           create_scan_helper)
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import *
 from w3af.core.data.options.option_list import OptionList
@@ -232,6 +233,101 @@ def set_plugin_config(**kwargs):
               "type": i.get_type() }
 
         for i in opts }
+
+    return jsonify({
+        'message': 'success',
+        'modified': request.json
+        })
+
+
+@app.route('/sessions/<int:scan_id>/core/<string:core_setting>/',
+           methods=['GET'])
+@requires_auth
+@check_session_exists
+def get_core_settings(scan_id, core_setting):
+    """
+    Shows available core settings and their current values.
+
+    :return: 404 if scan does not exist.
+             Otherwise, a JSON object containing settings and basic help text.
+    """
+    w3af = SCANS[scan_id].w3af_core
+
+    core_setting = core_setting.lower()
+    if core_setting == 'http':
+        opts = w3af.uri_opener.settings.get_options()
+    elif core_setting == 'misc':
+        opts = MiscSettings().get_options()
+    elif core_setting == 'target':
+        opts = w3af.target.get_options()
+    else:
+        return jsonify({
+            'code': 404,
+            'message': '%s is not a valid core setting type' % core_setting }), 404
+
+    opt_dict = { i.get_name():
+            { "value": i.get_value(),
+              "description": i.get_desc(),
+              "type": i.get_type() }
+        for i in opts }
+
+    return jsonify({ '%s settings' % core_setting : opt_dict })
+
+
+@app.route('/sessions/<int:scan_id>/core/<string:core_setting>/',
+           methods=['PATCH'])
+@requires_auth
+@check_session_exists
+def set_core_config(scan_id, core_setting):
+    """
+    Allows a user to modify core configuration by sending a PATCH request.
+
+    :return: 404 if scan does not exist.
+             400 if the PATCH request is not in valid format.
+             422 if the PATCH request is in valid format, but settings cannot be
+             applied (eg, negative numbers where none are accepted).
+
+             Otherwise, a JSON object confirming success and echoing the
+             changed setting.
+    """
+    w3af = SCANS[scan_id].w3af_core
+
+    if core_setting == 'http':
+        configurable = w3af.uri_opener.settings
+    if core_setting == 'misc':
+        configurable = MiscSettings()
+    if core_setting == 'target':
+        configurable = w3af.target
+
+    core_opts = configurable.get_options()
+    opt_list = OptionList()
+    for opt_name in request.json:
+        try:
+            opt_value = request.json[opt_name]
+            opt_type = core_opts[opt_name].get_type()
+        except BaseFrameworkException:
+            return jsonify({
+                'code': '400',
+                'message': '%s is not a valid option here' % opt_name
+                }), 400
+        try:
+            opt_list.add(
+                opt_factory(
+                    opt_name,
+                    opt_value,
+                    'desc',
+                    opt_type
+                )
+            )
+            core_opts[opt_name].validate(opt_value)
+        except:
+            return jsonify({
+                'code': '422',
+                'message': 'Invalid %s value %s' % (opt_type, opt_value)
+                }), 422
+
+    core_opts.update(opt_list)
+    configurable.set_options(core_opts)
 
     return jsonify({
         'message': 'success',
