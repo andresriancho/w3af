@@ -226,14 +226,6 @@ def set_plugin_config(**kwargs):
     plugin_opts.update(opt_list)
     w3af.plugins.set_plugin_options(plugin_type, plugin, plugin_opts)
 
-    opts = w3af.plugins.get_plugin_options(plugin_type, plugin)
-    popts = { i.get_name():
-            { "value": i.get_value(),
-              "description": i.get_desc(),
-              "type": i.get_type() }
-
-        for i in opts }
-
     return jsonify({
         'message': 'success',
         'modified': request.json
