@@ -138,8 +138,7 @@ def get_plugin_config(**kwargs):
     plugin_opts = { i.get_name():
             { "value": i.get_value(),
               "description": i.get_desc(),
-              "type": i.get_type(),
-              "help": i.get_help() }
+              "type": i.get_type() }
         for i in opts }
 
     long_desc = " ".join(w3af.plugins.get_quick_instance(plugin_type, plugin)
@@ -230,8 +229,8 @@ def set_plugin_config(**kwargs):
     popts = { i.get_name():
             { "value": i.get_value(),
               "description": i.get_desc(),
-              "type": i.get_type(),
-              "help": i.get_help() }
+              "type": i.get_type() }
+
         for i in opts }
 
     return jsonify({
