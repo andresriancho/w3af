@@ -38,7 +38,8 @@ def summarize_exit_codes(exit_codes):
     that number.
     """
     for ec in exit_codes:
-        if ec != 0: return ec
+        if ec != 0:
+            return ec
     
     return 0
 
@@ -83,7 +84,7 @@ if __name__ == '__main__':
         
         total_tests = len(future_list)
         print_status(start_time, done_list, total_tests, queued_run_ids,
-                     executor)
+                     executor, exit_codes)
         
         while future_list:
             try:
@@ -101,7 +102,7 @@ if __name__ == '__main__':
                         queued_run_ids.remove(future.run_id)
 
                         print_status(start_time, done_list, total_tests,
-                                     queued_run_ids, executor)
+                                     queued_run_ids, executor, exit_codes)
 
                         if exit_code != 0:
                             print_info_console(cmd, stdout, stderr,
@@ -112,7 +113,7 @@ if __name__ == '__main__':
                 logging.debug('Hit futures.as_completed timeout.')
                 logging.warning('Waiting...')
                 print_status(start_time, done_list, total_tests, queued_run_ids,
-                             executor)
+                             executor, exit_codes)
             
             # Filter future_list to avoid issues with tasks which are already
             # finished/done

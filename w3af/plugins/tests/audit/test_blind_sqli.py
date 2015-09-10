@@ -18,13 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.controllers.ci.w3af_moth import get_w3af_moth_http
 
 
-class TestBlindSQLI(PluginTest):
+class TestDjangoBlindSQLI(PluginTest):
 
     _run_configs = {
         'cfg': {
@@ -110,100 +109,50 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals('blind_where_integer_form_get.py',
                           vuln.get_url().get_file_name())
 
-    @attr('ci_fails')
-    def test_single_quote_random(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_string_rnd.php'
-        qs = '?email=andres@w3af.org'
-        self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
 
-        vulns = self.kb.get('blind_sqli', 'blind_sqli')
-        self.assertEquals(1, len(vulns))
+class TestOldMothBlindSQLI(PluginTest):
 
-        # Now some tests around specific details of the found vuln
-        vuln = vulns[0]
-        self.assertEquals(
-            vuln.get_name(), 'Blind SQL injection vulnerability')
-        self.assertEquals(target_url, str(vuln.get_url()))
+    base_path = '/w3af/audit/blind_sql_injection/'
+    target_url = get_w3af_moth_http(base_path)
 
-    @attr('ci_fails')
-    def test_delay_integer(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_integer.php'
-        qs = '?id=1'
-        self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
+    config = {
+        'audit': (PluginConfig('blind_sqli'),),
 
-        vulns = self.kb.get('blind_sqli', 'blind_sqli')
-        self.assertEquals(1, len(vulns))
+        'crawl': (PluginConfig('web_spider',
+                               ('only_forward', True, PluginConfig.BOOL),
+                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+    }
 
-        # Now some tests around specific details of the found vuln
-        vuln = vulns[0]
-        self.assertEquals(
-            'Blind SQL injection vulnerability', vuln.get_name())
-        self.assertTrue('time delays' in vuln.get_desc())
-        self.assertEquals(target_url, str(vuln.get_url()))
+    def test_found_blind_sqli_old_moth(self):
+        expected_path_param = {
+            (u'bsqli_string.php', u'email'),
+            (u'bsqli_integer.php', u'id'),
+            (u'forms/data_receptor.php', u'user'),
+            (u'completely_bsqli_single.php', u'email'),
+            (u'bsqli_string_rnd.php', u'email'),
+            (u'completely_bsqli_double.php', u'email'),
+            (u'completely_bsqli_integer.php', u'id'),
+        }
 
-    @attr('ci_fails')
-    def test_delay_string_single(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_single.php'
-        qs = '?email=andres@w3af.org'
-        self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
+        ok_to_miss = {
+            # Just the HTML to have a form
+            u'forms/',
+            u'forms/test_forms.html',
 
-        vulns = self.kb.get('blind_sqli', 'blind_sqli')
-        self.assertEquals(1, len(vulns))
+            # False positive tests, these must NOT be detected by blind_sqli
+            u'random_500_lines.php',
+            u'random_500_lines_static.php',
+            u'random_50_lines.php',
+            u'random_50_lines_static.php',
+            u'random_5_lines.php',
+            u'random_5_lines_static.php',
+            u'delay_random.php',
+        }
+        skip_startwith = set()
+        kb_addresses = {('blind_sqli', 'blind_sqli')}
 
-        # Now some tests around specific details of the found vuln
-        vuln = vulns[0]
-        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
-        self.assertTrue('time delays' in vuln.get_desc())
-        self.assertEquals(target_url, str(vuln.get_url()))
-
-    @attr('ci_fails')
-    def test_delay_string_double(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_double.php'
-        qs = '?email=andres@w3af.org'
-        self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
-
-        vulns = self.kb.get('blind_sqli', 'blind_sqli')
-        self.assertEquals(1, len(vulns))
-
-        # Now some tests around specific details of the found vuln
-        vuln = vulns[0]
-        self.assertEquals(
-            'Blind SQL injection vulnerability', vuln.get_name())
-        self.assertTrue('time delays' in vuln.get_desc())
-        self.assertEquals(target_url, str(vuln.get_url()))
-
-    @attr('ci_fails')
-    def test_single_quote_form(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/forms/test_forms.html'
-        self._scan(target_url, self._run_configs['cfg']['plugins'])
-
-        action_url = 'http://moth/w3af/audit/blind_sql_injection/forms/data_receptor.php'
-        vulns = self.kb.get('blind_sqli', 'blind_sqli')
-        self.assertEquals(1, len(vulns))
-
-        # Now some tests around specific details of the found vuln
-        vuln = vulns[0]
-        self.assertEquals(
-            'Blind SQL injection vulnerability', vuln.get_name())
-        self.assertEquals("stringsingle", vuln['type'])
-        self.assertFalse('time delays' in vuln.get_desc())
-        self.assertEquals(action_url, str(vuln.get_url()))
-
-    @attr('ci_fails')
-    def test_false_positives(self):
-        target_path = 'http://moth/w3af/audit/blind_sql_injection/'
-        target_fnames = ('random_5_lines.php',
-                         'random_50_lines.php',
-                         'random_500_lines.php',
-                         'random_5_lines_static.php',
-                         'random_50_lines_static.php',
-                         'random_500_lines_static.php',
-                         'delay_random.php')
-        qs = '?id=1'
-
-        for target_fname in target_fnames:
-            target = target_path + target_fname + qs
-            self._scan(target, self._run_configs['cfg']['plugins'])
-
-            vulns = self.kb.get('blind_sqli', 'blind_sqli')
-            self.assertEquals(0, len(vulns))
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)

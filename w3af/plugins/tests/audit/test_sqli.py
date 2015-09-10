@@ -22,6 +22,7 @@ from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.core.controllers.ci.sqlmap_testenv import get_sqlmap_testenv_http
 
 
@@ -55,18 +56,15 @@ class TestSQLI(PluginTest):
 
 class TestSQLMapTestEnv(PluginTest):
 
-    target_url = get_sqlmap_testenv_http('/sqlmap/mysql/')
+    base_path = '/sqlmap/mysql/'
+    target_url = get_sqlmap_testenv_http(base_path)
 
-    _run_configs = {
-        'cfg': {
-            'target': target_url,
-            'plugins': {
-                'audit': (PluginConfig('sqli'),),
-                'crawl': (PluginConfig('web_spider',
-                             ('only_forward', True, PluginConfig.BOOL),
-                             ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
-            }
-        }
+    config = {
+        'audit': (PluginConfig('sqli'),),
+
+        'crawl': (PluginConfig('web_spider',
+                               ('only_forward', True, PluginConfig.BOOL),
+                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
     }
 
     def test_found_sqli_in_testenv(self):
@@ -76,10 +74,6 @@ class TestSQLMapTestEnv(PluginTest):
         which expect a POST request, so don't worry too much if those post_*
         are not found.
         """
-        cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.get('sqli', 'sqli')
-
         expected_path_param = {(u'get_str_like_par2.php', u'id'),
                                (u'get_dstr.php', u'id'),
                                (u'get_int_orderby.php', u'id'),
@@ -103,13 +97,6 @@ class TestSQLMapTestEnv(PluginTest):
                                (u'get_brackets.php', u'id'),
                                (u'get_int_limit.php', u'id'),
                                (u'get_int_limit_second.php', u'id')}
-
-        found_path_param = set()
-        for vuln in vulns:
-            path = vuln.get_url().get_path().replace('/sqlmap/mysql/', '')
-            found_path_param.add((path, vuln.get_token_name()))
-
-        self.assertEqual(expected_path_param, found_path_param)
 
         #
         #   Now we assert the unknowns
@@ -147,40 +134,400 @@ class TestSQLMapTestEnv(PluginTest):
             u'',
 
             # This one is not OK to miss, but we're missing it anyways
-            #
+            # https://github.com/andresriancho/w3af/issues/12257
             u'csrf/post.php',
         }
 
-        all_known_urls = self.kb.get_all_known_urls()
-        all_known_files = [u.get_path().replace('/sqlmap/mysql/', '') for u in all_known_urls]
-
         skip_startwith = {'post_', 'header_', 'referer_', 'cookie_'}
+        kb_addresses = {('sqli', 'sqli')}
 
-        expected = [path for path, param in expected_path_param]
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
 
-        missing = []
-        self.maxDiff = None
 
-        for path in all_known_files:
+class WAVSEPTest(PluginTest):
+    config = {
+        'audit': (PluginConfig('sqli'),
+                  PluginConfig('blind_sqli')),
 
-            should_continue = False
+        'crawl': (PluginConfig('web_spider',
+                               ('only_forward', True, PluginConfig.BOOL),
+                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+    }
 
-            for skip_start in skip_startwith:
-                if path.startswith(skip_start):
-                    should_continue = True
-                    break
 
-            if should_continue:
-                continue
+class TestWAVSEPError(WAVSEPTest):
 
-            if path in ok_to_miss:
-                continue
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Error/')
 
-            if path in expected:
-                # Already checked this one
-                continue
+    target_url = get_wavsep_http(base_path)
 
-            missing.append(path)
+    def test_found_sqli_wavsep_error(self):
+        expected_path_param = {
+            # These are detected using sql injection errors:
+            (u'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp', u'password'),
+            (u'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp', u'username'),
+            (u'Case02-InjectionInSearch-String-UnionExploit-With200Errors.jsp', u'msg'),
+            (u'Case03-InjectionInCalc-String-BooleanExploit-With200Errors.jsp', u'username'),
+            (u'Case04-InjectionInUpdate-String-CommandInjection-With200Errors.jsp', u'msg'),
+            (u'Case05-InjectionInSearchOrderBy-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'orderby'),
+            (u'Case06-InjectionInView-Numeric-PermissionBypass-With200Errors.jsp', u'transactionId'),
+            (u'Case07-InjectionInSearch-Numeric-UnionExploit-With200Errors.jsp', u'msgId'),
+            (u'Case08-InjectionInCalc-Numeric-BooleanExploit-With200Errors.jsp', u'minBalanace'),
+            (u'Case09-InjectionInUpdate-Numeric-CommandInjection-With200Errors.jsp', u'msgid'),
+            (u'Case10-InjectionInSearchOrderBy-Numeric-BinaryDeliberateRuntimeError-With200Errors.jsp', u'orderby'),
+            (u'Case11-InjectionInView-Date-PermissionBypass-With200Errors.jsp', u'transactionDate'),
+            (u'Case12-InjectionInSearch-Date-UnionExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case13-InjectionInCalc-Date-BooleanExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case14-InjectionInUpdate-Date-CommandInjection-With200Errors.jsp', u'transactionDate'),
 
-        missing.sort()
-        self.assertEqual(missing, [])
+            # These are detected using blind SQL injection plugin:
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-With200Errors.jsp', u'transactionId'),
+            (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-With200Errors.jsp', u'msgId'),
+            (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-With200Errors.jsp', u'minBalanace'),
+
+            # Also with blind sql injection, but this is time delay:
+            (u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-With200Errors.jsp', u'msgid')
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEP500Error(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-500Error/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_error(self):
+        expected_path_param = {
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp', u'username'),
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp', u'password'),
+            (u'Case02-InjectionInSearch-String-UnionExploit-WithErrors.jsp', u'msg'),
+            (u'Case03-InjectionInCalc-String-BooleanExploit-WithErrors.jsp', u'username'),
+            (u'Case04-InjectionInUpdate-String-CommandInjection-WithErrors.jsp', u'msg'),
+            (u'Case05-InjectionInSearchOrderBy-String-BinaryDeliberateRuntimeError-WithErrors.jsp', u'orderby'),
+            (u'Case06-InjectionInView-Numeric-PermissionBypass-WithErrors.jsp', u'transactionId'),
+            (u'Case07-InjectionInSearch-Numeric-UnionExploit-WithErrors.jsp', u'msgId'),
+            (u'Case08-InjectionInCalc-Numeric-BooleanExploit-WithErrors.jsp', u'minBalanace'),
+            (u'Case09-InjectionInUpdate-Numeric-CommandInjection-WithErrors.jsp', u'msgid'),
+            (u'Case10-InjectionInSearchOrderBy-Numeric-BinaryDeliberateRuntimeError-WithErrors.jsp', u'orderby'),
+            (u'Case11-InjectionInView-Date-PermissionBypass-WithErrors.jsp', u'transactionDate'),
+            (u'Case12-InjectionInSearch-Date-UnionExploit-WithErrors.jsp', u'transactionDate'),
+            (u'Case13-InjectionInCalc-Date-BooleanExploit-WithErrors.jsp', u'transactionDate'),
+            (u'Case14-InjectionInUpdate-Date-CommandInjection-WithErrors.jsp', u'transactionDate'),
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-WithErrors.jsp', u'transactionDate'),
+            (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-WithErrors.jsp', u'transactionId'),
+            (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-WithErrors.jsp', u'msgId'),
+            (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-WithErrors.jsp', u'minBalanace'),
+            (u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-WithErrors.jsp', u'msgid'),
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPWithDifferentiation(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Valid/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_differentiation(self):
+        expected_path_param = {
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp', u'username'),
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp', u'password'),
+            (u'Case02-InjectionInSearch-String-UnionExploit-WithDifferent200Responses.jsp', u'msg'),
+            (u'Case03-InjectionInCalc-String-BooleanExploit-WithDifferent200Responses.jsp', u'username'),
+            (u'Case04-InjectionInUpdate-String-CommandInjection-WithDifferent200Responses.jsp', u'msg'),
+            (u'Case05-InjectionInSearchOrderBy-String-BinaryDeliberateRuntimeError-WithDifferent200Responses.jsp', u'orderby'),
+            (u'Case06-InjectionInView-Numeric-PermissionBypass-WithDifferent200Responses.jsp', u'transactionId'),
+            (u'Case07-InjectionInSearch-Numeric-UnionExploit-WithDifferent200Responses.jsp', u'msgId'),
+            (u'Case08-InjectionInCalc-Numeric-BooleanExploit-WithDifferent200Responses.jsp', u'minBalanace'),
+            (u'Case09-InjectionInUpdate-Numeric-CommandInjection-WithDifferent200Responses.jsp', u'msgid'),
+            (u'Case10-InjectionInSearchOrderBy-Numeric-BinaryDeliberateRuntimeError-WithDifferent200Responses.jsp', u'orderby'),
+            (u'Case11-InjectionInView-Date-PermissionBypass-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case12-InjectionInSearch-Date-UnionExploit-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case13-InjectionInCalc-Date-BooleanExploit-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case14-InjectionInUpdate-Date-CommandInjection-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-WithDifferent200Responses.jsp', u'transactionId'),
+            (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-WithDifferent200Responses.jsp', u'msgId'),
+            (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-WithDifferent200Responses.jsp', u'minBalanace'),
+            (u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-WithDifferent200Responses.jsp', u'msgid'),
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPIdentical(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Identical/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_identical(self):
+        expected_path_param = {
+            (u'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionId'),
+            (u'Case02-InjectionInView-String-Blind-200ValidResponseWithDefaultOnException.jsp', u'username'),
+            (u'Case03-InjectionInView-Date-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionDate'),
+            (u'Case04-InjectionInUpdate-Numeric-TimeDelayExploit-200Identical.jsp', u'transactionId'),
+            (u'Case05-InjectionInUpdate-String-TimeDelayExploit-200Identical.jsp', u'description'),
+            (u'Case06-InjectionInUpdate-Date-TimeDelayExploit-200Identical.jsp', u'transactionDate'),
+            (u'Case07-InjectionInUpdate-NumericWithoutQuotes-TimeDelayExploit-200Identical.jsp', u'transactionId'),
+            (u'Case08-InjectionInUpdate-DateWithoutQuotes-TimeDelayExploit-200Identical.jsp', u'transactionDate'),
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = {}
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPExperimental(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-GET-200Error-Experimental/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_experimental(self):
+        expected_path_param = {
+            (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'target'),
+            (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'msg')
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPError500POST(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-POST-500Error/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_error_500_post(self):
+        expected_path_param = {
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp', u'username'),
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp', u'password'),
+            (u'Case02-InjectionInSearch-String-UnionExploit-WithErrors.jsp', u'msg'),
+            (u'Case03-InjectionInCalc-String-BooleanExploit-WithErrors.jsp', u'username'),
+            (u'Case04-InjectionInUpdate-String-CommandInjection-WithErrors.jsp', u'msg'),
+            (u'Case05-InjectionInSearchOrderBy-String-BinaryDeliberateRuntimeError-WithErrors.jsp', u'orderby'),
+            (u'Case06-InjectionInView-Numeric-PermissionBypass-WithErrors.jsp', u'transactionId'),
+            (u'Case07-InjectionInSearch-Numeric-UnionExploit-WithErrors.jsp', u'msgId'),
+            (u'Case08-InjectionInCalc-Numeric-BooleanExploit-WithErrors.jsp', u'minBalanace'),
+            (u'Case09-InjectionInUpdate-Numeric-CommandInjection-WithErrors.jsp', u'msgid'),
+            (u'Case10-InjectionInSearchOrderBy-Numeric-BinaryDeliberateRuntimeError-WithErrors.jsp', u'orderby'),
+            (u'Case11-InjectionInView-Date-PermissionBypass-WithErrors.jsp', u'transactionDate'),
+            (u'Case12-InjectionInSearch-Date-UnionExploit-WithErrors.jsp', u'transactionDate'),
+            (u'Case13-InjectionInCalc-Date-BooleanExploit-WithErrors.jsp', u'transactionDate'),
+            (u'Case14-InjectionInUpdate-Date-CommandInjection-WithErrors.jsp', u'transactionDate'),
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-WithErrors.jsp', u'transactionDate'),
+            (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-WithErrors.jsp', u'transactionId'),
+            (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-WithErrors.jsp', u'msgId'),
+            (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-WithErrors.jsp', u'minBalanace'),
+            (u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-WithErrors.jsp', u'msgid')}
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPError200POST(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-POST-200Error/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_error_200_post(self):
+        expected_path_param = {
+            (u'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp', u'password'),
+            (u'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp', u'username'),
+            (u'Case02-InjectionInSearch-String-UnionExploit-With200Errors.jsp', u'msg'),
+            (u'Case03-InjectionInCalc-String-BooleanExploit-With200Errors.jsp', u'username'),
+            (u'Case04-InjectionInUpdate-String-CommandInjection-With200Errors.jsp', u'msg'),
+            (u'Case05-InjectionInSearchOrderBy-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'orderby'),
+            (u'Case06-InjectionInView-Numeric-PermissionBypass-With200Errors.jsp', u'transactionId'),
+            (u'Case07-InjectionInSearch-Numeric-UnionExploit-With200Errors.jsp', u'msgId'),
+            (u'Case08-InjectionInCalc-Numeric-BooleanExploit-With200Errors.jsp', u'minBalanace'),
+            (u'Case09-InjectionInUpdate-Numeric-CommandInjection-With200Errors.jsp', u'msgid'),
+            (u'Case10-InjectionInSearchOrderBy-Numeric-BinaryDeliberateRuntimeError-With200Errors.jsp', u'orderby'),
+            (u'Case11-InjectionInView-Date-PermissionBypass-With200Errors.jsp', u'transactionDate'),
+            (u'Case12-InjectionInSearch-Date-UnionExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case13-InjectionInCalc-Date-BooleanExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case14-InjectionInUpdate-Date-CommandInjection-With200Errors.jsp', u'transactionDate'),
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-With200Errors.jsp', u'transactionId'),
+            (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-With200Errors.jsp', u'msgId'),
+            (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-With200Errors.jsp', u'minBalanace'),
+            (u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-With200Errors.jsp', u'msgid'),
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPWithDifferentiationPOST(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-POST-200Valid/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_differentiation_post(self):
+        expected_path_param = {
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp', u'username'),
+            (u'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp', u'password'),
+            (u'Case02-InjectionInSearch-String-UnionExploit-WithDifferent200Responses.jsp', u'msg'),
+            (u'Case03-InjectionInCalc-String-BooleanExploit-WithDifferent200Responses.jsp', u'username'),
+            (u'Case04-InjectionInUpdate-String-CommandInjection-WithDifferent200Responses.jsp', u'msg'),
+            (u'Case05-InjectionInSearchOrderBy-String-BinaryDeliberateRuntimeError-WithDifferent200Responses.jsp', u'orderby'),
+            (u'Case06-InjectionInView-Numeric-PermissionBypass-WithDifferent200Responses.jsp', u'transactionId'),
+            (u'Case07-InjectionInSearch-Numeric-UnionExploit-WithDifferent200Responses.jsp', u'msgId'),
+            (u'Case08-InjectionInCalc-Numeric-BooleanExploit-WithDifferent200Responses.jsp', u'minBalanace'),
+            (u'Case09-InjectionInUpdate-Numeric-CommandInjection-WithDifferent200Responses.jsp', u'msgid'),
+            (u'Case10-InjectionInSearchOrderBy-Numeric-BinaryDeliberateRuntimeError-WithDifferent200Responses.jsp', u'orderby'),
+            (u'Case11-InjectionInView-Date-PermissionBypass-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case12-InjectionInSearch-Date-UnionExploit-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case13-InjectionInCalc-Date-BooleanExploit-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case14-InjectionInUpdate-Date-CommandInjection-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-WithDifferent200Responses.jsp', u'transactionDate'),
+            (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-WithDifferent200Responses.jsp', u'transactionId'),
+            (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-WithDifferent200Responses.jsp', u'msgId'),
+            (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-WithDifferent200Responses.jsp', u'minBalanace'),
+            (u'Case19-InjectionInUpdate-NumericWithoutQuotes-CommandInjection-WithDifferent200Responses.jsp', u'msgid'),
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPIdenticalPOST(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-POST-200Identical/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_identical_post(self):
+        expected_path_param = {
+            (u'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionId'),
+            (u'Case02-InjectionInView-String-Blind-200ValidResponseWithDefaultOnException.jsp', u'username'),
+            (u'Case03-InjectionInView-Date-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionDate'),
+            (u'Case04-InjectionInUpdate-Numeric-TimeDelayExploit-200Identical.jsp', u'transactionId'),
+            (u'Case05-InjectionInUpdate-String-TimeDelayExploit-200Identical.jsp', u'description'),
+            (u'Case06-InjectionInUpdate-Date-TimeDelayExploit-200Identical.jsp', u'transactionDate'),
+            (u'Case07-InjectionInUpdate-NumericWithoutQuotes-TimeDelayExploit-200Identical.jsp', u'transactionId'),
+            (u'Case08-InjectionInUpdate-DateWithoutQuotes-TimeDelayExploit-200Identical.jsp', u'transactionDate'),
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)
+
+
+class TestWAVSEPExperimentalPOST(WAVSEPTest):
+
+    base_path = ('/active/SQL-Injection/'
+                 'SInjection-Detection-Evaluation-POST-200Error-Experimental/')
+
+    target_url = get_wavsep_http(base_path)
+
+    def test_found_sqli_wavsep_experimental_post(self):
+        expected_path_param = {
+            (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'target'),
+            (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'msg')
+        }
+
+        # None is OK to miss -> 100% coverage
+        ok_to_miss = set()
+        skip_startwith = {'index.jsp'}
+        kb_addresses = {('sqli', 'sqli'), ('blind_sqli', 'blind_sqli')}
+
+        self._scan_assert(self.config,
+                          expected_path_param,
+                          ok_to_miss,
+                          kb_addresses,
+                          skip_startwith)

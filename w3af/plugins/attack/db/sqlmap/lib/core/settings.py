@@ -323,11 +323,11 @@ CUSTOM_INJECTION_MARK_CHAR = '*'
 # Other way to declare injection position
 INJECT_HERE_MARK = '%INJECT HERE%'
 
-# Maximum length used for retrieving data over MySQL error based payload due to "known" problems with longer result strings
-MYSQL_ERROR_CHUNK_LENGTH = 50
+# Minimum chunk length used for retrieving data over error based payloads
+MIN_ERROR_CHUNK_LENGTH = 8
 
-# Maximum length used for retrieving data over MSSQL error based payload due to trimming problems with longer result strings
-MSSQL_ERROR_CHUNK_LENGTH = 100
+# Maximum chunk length used for retrieving data over error based payloads
+MAX_ERROR_CHUNK_LENGTH = 1024
 
 # Do not escape the injected statement if it contains any of the following SQL keywords
 EXCLUDE_UNESCAPE = ("WAITFOR DELAY ", " INTO DUMPFILE ", " INTO OUTFILE ", "CREATE ", "BULK ", "EXEC ", "RECONFIGURE ", "DECLARE ", "'%s'" % CHAR_INFERENCE_MARK)
@@ -385,6 +385,9 @@ CODECS_LIST_PAGE = "http://docs.python.org/library/codecs.html#standard-encoding
 
 # Simple regular expression used to distinguish scalar from multiple-row commands (not sole condition)
 SQL_SCALAR_REGEX = r"\A(SELECT(?!\s+DISTINCT\(?))?\s*\w*\("
+
+# Option/switch values to ignore during configuration save
+IGNORE_SAVE_OPTIONS = ("saveConfig",)
 
 # IP address of the localhost
 LOCALHOST = "127.0.0.1"
@@ -610,6 +613,9 @@ MIN_ENCODED_LEN_CHECK = 5
 
 # Timeout in seconds in which Metasploit remote session has to be initialized
 METASPLOIT_SESSION_TIMEOUT = 300
+
+# Reference: http://www.postgresql.org/docs/9.0/static/catalog-pg-largeobject.html
+LOBLKSIZE = 2048
 
 # Suffix used to mark variables having keyword names
 EVALCODE_KEYWORD_SUFFIX = "_KEYWORD"

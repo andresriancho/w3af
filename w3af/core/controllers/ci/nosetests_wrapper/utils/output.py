@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import print_function
 
 import time
@@ -59,8 +60,28 @@ def humanize_time(secs):
     return '%02dm %02ds' % (mins, secs)
 
 
-def print_status(start_time, done_list, total_tests, queued_run_ids, executor):
-    msg = 'Status: (%s/%s) ' % (len(done_list), total_tests)
+def print_status(start_time, done_list, total_tests, queued_run_ids, executor,
+                 exit_codes):
+
+    if len(exit_codes) == 0:
+        msg = u'Status: (%s/%s) ' % (len(done_list), total_tests)
+    else:
+        exit_codes = list(set(exit_codes))
+        will_fail = False
+
+        if len(exit_codes) > 1:
+            # We have something like [0, 1]
+            will_fail = True
+
+        if exit_codes[0] != 0:
+            # We have something like [1]
+            will_fail = True
+
+        if not will_fail:
+            msg = u'Status: (%s/%s) ✓ ' % (len(done_list), total_tests)
+        else:
+            msg = u'Status: (%s/%s) ✗ ' % (len(done_list), total_tests)
+
     logging.warning(msg)
 
     if len(queued_run_ids) <= 3 and queued_run_ids:
