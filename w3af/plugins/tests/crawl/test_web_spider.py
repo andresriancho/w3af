@@ -180,7 +180,7 @@ class TestWebSpider(PluginTest):
         coverage = get_coverage_for_scan_id(stats[0][0])
         # TODO: Sometimes coverage is 44 and sometimes it is 42!
         # https://github.com/andresriancho/w3af/issues/2309
-        self.assertIn(coverage, {44, 42})
+        self.assertEqual(coverage, 42)
 
 
 def clear_wivet():
