@@ -19,141 +19,150 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from functools import wraps
+from StringIO import StringIO
 
-from w3af.core.data.context.utils.byte_chunk import ByteChunk
-from w3af.core.data.context.context.html import Context
-from w3af.core.data.context.constants import QUOTE_CHARS
+from w3af.core.data.context.context.base import BaseContext
+from w3af.core.data.context.constants import CONTEXT_DETECTOR
 
-
-def crop_style(byte_chunk, context='tag'):
-    if context == 'tag':
-        return ByteChunk(byte_chunk.nhtml[byte_chunk.nhtml.lower().rfind('<style')+1:])
-    else:
-        attr_data = byte_chunk.html_attr
-        if attr_data:
-            return ByteChunk(byte_chunk.nhtml[attr_data[2]:])
+STRING_DELIMITERS = {'"', "'"}
 
 
-def inside_style(meth):
-
-    @wraps(meth)
-    def wrap(self, byte_chunk):
-        if byte_chunk.inside_style:
-            new_bc = crop_style(byte_chunk)
-            return meth(self, new_bc)
-
-        if byte_chunk.inside_style_attr:
-            new_bc = crop_style(byte_chunk, 'attr')
-            return meth(self, new_bc)
-
-        return False
-
-    return wrap
+class StyleContext(BaseContext):
+    def can_break(self):
+        """
+        :return: All the strings in CAN_BREAK are required to break out of
+                 the context and perform a successful XSS
+        """
+        return self.all_in(self.CAN_BREAK, self.payload)
 
 
-class StyleContext(Context):
-
-    @inside_style
-    def inside_comment(self, byte_chunk):
-        # We are inside /*...*/
-        if byte_chunk.nhtml.rfind('/*') <= byte_chunk.nhtml.rfind('*/'):
-            return False
-        return True
+class GenericStyleContext(StyleContext):
+    # These break characters are required for exploits like:
+    # <div style="background-image: url(javascript:alert('XSS'))">
+    CAN_BREAK = {':', '('}
 
 
-class StyleText(StyleContext):
+class StyleSingleQuoteString(StyleContext):
+    CAN_BREAK = {"'", ':', '('}
 
-    def __init__(self):
-        self.name = 'STYLE_TEXT'
 
-    @inside_style
-    def match(self, byte_chunk):
-        if self.inside_comment(byte_chunk):
-            return False
-
-        quote_character = None
-
-        for s in byte_chunk.nhtml:
-            if s in QUOTE_CHARS:
-                if quote_character and s == quote_character:
-                    quote_character = None
-                    continue
-                elif not quote_character:
-                    quote_character = s
-                    continue
-
-        if not quote_character:
-            return True
-
-        return False
-
-    def can_break(self, payload):
-        for i in ['<', '/']:
-            if i not in payload:
-                return False
-        return True
+class StyleDoubleQuoteString(StyleContext):
+    CAN_BREAK = {'"', ':', '('}
 
 
 class StyleComment(StyleContext):
-
-    def __init__(self):
-        self.name = 'STYLE_COMMENT'
-
-    def match(self, byte_chunk):
-        return self.inside_comment(byte_chunk)
-
-    def can_break(self, payload):
-        for i in ['/', '*']:
-            if i not in payload:
-                return False
-        return True
+    CAN_BREAK = {'*/', ':', '('}
 
 
-class StyleQuote(StyleContext):
-
-    def __init__(self):
-        self.name = None
-        self.quote_character = None
-
-    @inside_style
-    def match(self, byte_chunk):
-        if self.inside_comment(byte_chunk):
-            return False
-
-        quote_character = None
-
-        for s in byte_chunk.nhtml:
-            if s in QUOTE_CHARS:
-                if quote_character and s == quote_character:
-                    quote_character = None
-                    continue
-                elif not quote_character:
-                    quote_character = s
-                    continue
-
-        if quote_character == self.quote_character:
-            return True
-
-        return False
-
-    def can_break(self, data):
-        if self.quote_character in data:
-            return True
-        return False
+ALL_CONTEXTS = [GenericStyleContext, StyleSingleQuoteString,
+                StyleDoubleQuoteString, StyleComment]
 
 
-class StyleSingleQuote(StyleQuote):
+def get_css_context(data, payload):
+    """
+    :return: A list which contains lists of all contexts where the payload lives
+    """
+    return [c for c in get_css_context_iter(data, payload)]
 
-    def __init__(self):
-        super(StyleSingleQuote, self).__init__()
-        self.name = 'STYLE_SINGLE_QUOTE'
-        self.quote_character = "'"
 
+def get_css_context_iter(data, payload):
+    """
+    We parse the CSS Style code and find the payload context name.
 
-class StyleDoubleQuote(StyleQuote):
+    :return: A context iterator
+    """
+    if payload not in data:
+        return
 
-    def __init__(self):
-        super(StyleDoubleQuote, self).__init__()
-        self.name = 'STYLE_DOUBLE_QUOTE'
-        self.quote_character = '"'
+    # We replace the "context breaking payload" with an innocent string
+    data = data.replace(payload, CONTEXT_DETECTOR)
+    untidy = lambda text: text.replace(CONTEXT_DETECTOR, payload)
+
+    inside_string = False
+    escape_next = False
+    string_delim = None
+    inside_comment = False
+    context_content = ''
+
+    data_io = StringIO(data)
+
+    while True:
+        c = data_io.read(1)
+        context_content += c
+
+        if not c:
+            # No more chars to read
+            break
+
+        # Handle string contents
+        if inside_string:
+
+            # Handle \ escapes inside strings
+            if c == '\\':
+                escape_next = True
+                continue
+
+            if escape_next:
+                escape_next = False
+                continue
+
+            # Handle string end
+            if c == string_delim:
+
+                if CONTEXT_DETECTOR in context_content:
+                    if string_delim == "'":
+                        yield StyleSingleQuoteString(payload,
+                                                     untidy(context_content))
+                    else:
+                        yield StyleDoubleQuoteString(payload,
+                                                     untidy(context_content))
+
+                context_content = ''
+                inside_string = False
+
+            # Go to the next char inside the string
+            continue
+
+        # Handle the content of a /* comment */
+        if inside_comment:
+            if c == '*':
+                c = data_io.read(1)
+                context_content += c
+
+                if c == '/':
+                    if CONTEXT_DETECTOR in context_content:
+                        yield StyleComment(payload, untidy(context_content))
+                    inside_comment = False
+                    context_content = ''
+            continue
+
+        # Handle the string starts
+        if c in STRING_DELIMITERS:
+
+            # This analyzes the context content before the string start
+            if CONTEXT_DETECTOR in context_content:
+                yield GenericStyleContext(payload, untidy(context_content))
+
+            inside_string = True
+            string_delim = c
+            context_content = ''
+            continue
+
+        # Handle the comment starts
+        if c == '/':
+            c = data_io.read(1)
+            context_content += c
+
+            if c == '*':
+                inside_comment = True
+
+                # This analyzes the context content before the comment start
+                if CONTEXT_DETECTOR in context_content:
+                    yield GenericStyleContext(payload, untidy(context_content))
+
+                context_content = ''
+                continue
+
+    # Handle the remaining bytes from the CSS code:
+    if CONTEXT_DETECTOR in context_content:
+        yield GenericStyleContext(payload, untidy(context_content))
