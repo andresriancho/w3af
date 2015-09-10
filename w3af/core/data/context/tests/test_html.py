@@ -209,7 +209,7 @@ class TestHTMLContext(ContextTest):
 
         context = contexts[0]
         self.assertIsInstance(context, HtmlText)
-        self.assertTrue(context.can_break('PAYLOAD<'))
+        self.assertFalse(context.can_break())
 
     def test_payload_text_with_start_quote(self):
         html = """

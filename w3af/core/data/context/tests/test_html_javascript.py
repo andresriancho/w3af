@@ -20,11 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.context.context.javascript import ScriptText
+from w3af.core.data.context.context.main import get_context
+from w3af.core.data.context.context.html import (ScriptText,
+                                                 HtmlAttrSingleQuote,
+                                                 HtmlAttrDoubleQuote)
 
 
 class TestJavaScriptInHTML(unittest.TestCase):
-    def test_payload_script_single_quote2(self):
+    def test_payload_script_single_quote(self):
         html = """
         <html>
             <script type="text/javascript">//<!--
@@ -34,11 +37,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         payload = 'PAYLOAD'
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptSingleQuote)
-        self.assertFalse(context.is_executable())
-        self.assertFalse(context.can_break(payload))
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.can_break())
 
-    def test_payload_script_single_quote2_can_break(self):
+    def test_payload_script_single_quote_can_break(self):
         html = """
         <html>
             <script>
@@ -48,18 +50,8 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         payload = "PAYLOAD'BREAK"
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptSingleQuote)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
-
-    def test_payload_text_can_break(self):
-        html = """
-        <html>
-            <a>PAYLOAD<</a>
-        </html>
-        """
-        context = get_context(html, 'PAYLOAD<')[0]
-        self.assertTrue(context.can_break('PAYLOAD<'))
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.can_break())
 
     def test_payload_javascript_href(self):
         html = """
@@ -68,7 +60,7 @@ class TestJavaScriptInHTML(unittest.TestCase):
         </html>
         """
         context = get_context(html, 'PAYLOAD')[0]
-        self.assertIsInstance(context, HtmlText)
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
 
     def test_payload_javascript_href_append(self):
@@ -78,30 +70,24 @@ class TestJavaScriptInHTML(unittest.TestCase):
         </html>
         """
         context = get_context(html, 'PAYLOAD')[0]
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
-        self.assertIsInstance(context, HtmlText)
 
-    def test_payload_script_attr_value(self):
-        html = """
-        <html>
-            <script foo=PAYLOAD foo2=aaa>
-                bar
-            </script>
-        </html>
-        """
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], HtmlAttr)
-
-    def test_payload_js2doublequote(self):
+    def test_payload_js_doublequote(self):
         html = """
         <html>
             <input type="button" value="ClickMe" onClick="PAYLOAD">
         </html>
         """
         payload = 'PAYLOAD'
-        context = get_context(html, payload)[1]
-        self.assertIsInstance(context, ScriptText)
+        contexts = get_context(html, payload)
+
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
-        self.assertFalse(context.can_break(payload))
+        self.assertFalse(context.can_break())
 
     def test_payload_onclick_payload_between_single_quotes(self):
         html = """
@@ -111,9 +97,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         payload = "PAYLOAD'BREAK"
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+
+        self.assertTrue(context.can_break())
 
     def test_payload_onclick_payload_between_single_quotes_append(self):
         html = """
@@ -123,33 +110,38 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         payload = "PAYLOAD'BREAK"
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+
+        self.assertTrue(context.can_break())
 
     def test_payload_onclick_payload_append(self):
         html = """
         <html>
-            <input type="button" onClick="XXX-PAYLOAD">
+            <input type="button" onClick="XXX - PAYLOAD">
         </html>
         """
         payload = "PAYLOAD"
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertFalse(context.can_break())
+        self.assertTrue(context.is_executable())
 
     def test_payload_onclick_payload_between_double_quotes(self):
         html = """
         <html>
-            <input type="button" onClick="foo("PAYLOAD"BREAK")">
+            <input type="button" onClick="foo('PAYLOAD'BREAK')">
         </html>
         """
-        payload = 'PAYLOAD"BREAK'
-        context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+        payload = "PAYLOAD'BREAK"
+
+        contexts = get_context(html, payload)
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertTrue(context.can_break())
 
     def test_payload_onclick_payload_no_quotes(self):
         """
@@ -164,9 +156,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         payload = 'PAYLOAD'
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
-        self.assertFalse(context.can_break(payload))
+        self.assertFalse(context.can_break())
 
     def test_payload_onclick_payload_separated_with_semicolon(self):
         html = """
@@ -176,9 +169,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         payload = 'PAYLOAD'
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptText)
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
-        self.assertFalse(context.can_break(payload))
+        self.assertFalse(context.can_break())
 
     def test_payload_wavsep_case17_frame_src(self):
         """
@@ -195,9 +189,9 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         payload = 'PAYLOAD"BREAK'
         context = get_context(html, payload)[0]
-        self.assertIsInstance(context, ScriptDoubleQuote)
-        self.assertFalse(context.is_executable())
-        self.assertTrue(context.can_break(payload))
+
+        self.assertIsInstance(context, HtmlAttrSingleQuote)
+        self.assertTrue(context.can_break())
 
     def test_payload_src(self):
         html = """

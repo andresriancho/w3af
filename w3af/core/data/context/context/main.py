@@ -52,7 +52,7 @@ def get_context_iter(data, payload):
     data = data.replace(payload, CONTEXT_DETECTOR)
 
     # Parse!
-    context_detector = ContextDetectorHTMLParser(CONTEXT_DETECTOR)
+    context_detector = ContextDetectorHTMLParser(payload)
     try:
         context_detector.feed(data)
     except HTMLParseError:
@@ -75,6 +75,9 @@ class ContextDetectorHTMLParser(HTMLParser):
         self.contexts = []
         self.current_tag = None
 
+    def untidy(self, content):
+        return content.replace(CONTEXT_DETECTOR, self.payload)
+
     def handle_starttag(self, tag, attrs):
         """
         Find the payload in:
@@ -89,14 +92,16 @@ class ContextDetectorHTMLParser(HTMLParser):
         """
         self.current_tag = tag
 
-        if self.payload in tag:
-            self.contexts.append(HtmlTag(tag))
+        if CONTEXT_DETECTOR in tag:
+            self.contexts.append(HtmlTag(self.payload,
+                                         self.untidy(tag)))
 
         for attr_name, attr_value in attrs:
-            if self.payload in attr_name:
-                self.contexts.append(HtmlAttr(attr_name))
+            if CONTEXT_DETECTOR in attr_name:
+                self.contexts.append(HtmlAttr(self.payload,
+                                              self.untidy(attr_name)))
 
-            if self.payload in attr_value:
+            if attr_value and CONTEXT_DETECTOR in attr_value:
                 context = self.get_attr_value_context(attr_name, attr_value)
                 if context is not None:
                     self.contexts.append(context)
@@ -129,41 +134,54 @@ class ContextDetectorHTMLParser(HTMLParser):
                                      attr_value,
                                      context_klass.ATTR_DELIMITER)
             if attr_match in full_tag_text:
-                return context_klass(attr_name, attr_value)
+                return context_klass(self.payload,
+                                     attr_name,
+                                     self.untidy(attr_value))
 
         # Special case for HtmlAttrBackticks
         if attr_value.startswith(HtmlAttrBackticks.ATTR_DELIMITER) and \
            attr_value.endswith(HtmlAttrBackticks.ATTR_DELIMITER):
-            return HtmlAttrBackticks(attr_name, attr_value)
+            return HtmlAttrBackticks(self.payload,
+                                     attr_name,
+                                     self.untidy(attr_value))
 
         # And if we don't have any quotes... then...
-        return HtmlAttrNoQuote(attr_name, attr_value)
+        return HtmlAttrNoQuote(self.payload,
+                               attr_name,
+                               self.untidy(attr_value))
 
     def handle_endtag(self, tag):
-        if self.payload in tag:
-            self.contexts.append(HtmlTagClose(tag))
+        if CONTEXT_DETECTOR in tag:
+            self.contexts.append(HtmlTagClose(self.payload,
+                                              self.untidy(tag)))
 
     def handle_data(self, text_data):
-        if self.payload not in text_data:
+        if CONTEXT_DETECTOR not in text_data:
             return
 
         if self.current_tag == 'script':
-            self.contexts.append(ScriptText(text_data))
+            self.contexts.append(ScriptText(self.payload,
+                                            self.untidy(text_data)))
 
         elif self.current_tag == 'style':
-            self.contexts.append(CSSText(text_data))
+            self.contexts.append(CSSText(self.payload,
+                                         self.untidy(text_data)))
 
-        elif self.payload in text_data:
-            self.contexts.append(HtmlText(text_data))
+        elif CONTEXT_DETECTOR in text_data:
+            self.contexts.append(HtmlText(self.payload,
+                                          self.untidy(text_data)))
 
     def handle_comment(self, comment_text):
-        if self.payload in comment_text:
-            self.contexts.append(HtmlComment(comment_text))
+        if CONTEXT_DETECTOR in comment_text:
+            self.contexts.append(HtmlComment(self.payload,
+                                             self.untidy(comment_text)))
 
     def handle_decl(self, data):
-        if self.payload in data:
-            self.contexts.append(HtmlDeclaration(data))
+        if CONTEXT_DETECTOR in data:
+            self.contexts.append(HtmlDeclaration(self.payload,
+                                                 self.untidy(data)))
 
     def handle_pi(self, data):
-        if self.payload in data:
-            self.contexts.append(HtmlProcessingInstruction(data))
+        if CONTEXT_DETECTOR in data:
+            self.contexts.append(HtmlProcessingInstruction(self.payload,
+                                                           self.untidy(data)))

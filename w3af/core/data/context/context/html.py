@@ -19,6 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import re
+
+from w3af.core.data.context.context.javascript import get_js_context_iter
 from w3af.core.data.context.context.base import BaseContext
 from w3af.core.data.context.constants import JS_EVENTS, EXECUTABLE_ATTRS
 
@@ -62,24 +65,40 @@ class ScriptText(HtmlText):
     """
     Matches <script>PAYLOAD</script>
     """
-    def can_break(self, payload):
+    def can_break(self):
         # If we can break out of the context then we're done
-        if super(ScriptText, self).can_break(payload):
+        if super(ScriptText, self).can_break():
             return True
 
-        raise NotImplementedError('Parse the script text!')
+        script_text = self.get_context_content()
+
+        for js_context in get_js_context_iter(script_text, self.payload):
+            # At least one of the contexts where the payload is echoed in the
+            # script text needs to be escaped from
+            if js_context.can_break():
+                return True
+
+        return False
 
     def is_executable(self):
-        raise NotImplementedError('Parse the script text!')
+        script_text = self.get_context_content()
+
+        for js_context in get_js_context_iter(script_text, self.payload):
+            # At least one of the contexts where the payload is echoed in the
+            # script text needs to be executable
+            if js_context.is_executable():
+                return True
+
+        return False
 
 
 class CSSText(HtmlText):
     """
     Matches <style>PAYLOAD</style>
     """
-    def can_break(self, payload):
+    def can_break(self):
         # If we can break out of the context then we're done
-        if super(CSSText, self).can_break(payload):
+        if super(CSSText, self).can_break():
             return True
 
         raise NotImplementedError('Parse the CSS text!')
@@ -107,16 +126,26 @@ class HTMLAttrQuoteGeneric(BaseContext):
 
     JS_ATTRS = EXECUTABLE_ATTRS.union(JS_EVENTS)
 
-    def __init__(self, attr_name, attr_value):
+    JS_PATTERN = re.compile('javascript:', re.IGNORECASE)
+    VB_PATTERN = re.compile('vbscript:', re.IGNORECASE)
+
+    def __init__(self, payload, attr_name, attr_value):
         """
         :param attr_name: The attribute name (<tag name=value">)
         :param attr_value: The attribute value (<tag name=value">)
         """
-        super(HTMLAttrQuoteGeneric, self).__init__(attr_value)
+        super(HTMLAttrQuoteGeneric, self).__init__(payload, attr_value)
         self.name = attr_name
         self.value = attr_value
 
-    def is_executable(self):
+    def extract_code(self):
+        """
+        Cleanup the attribute value which is likely to contain JS code
+        """
+        attr_value = self.JS_PATTERN.sub('', self.value)
+        return self.VB_PATTERN.sub('', attr_value)
+
+    def can_break(self):
         #
         # Handle cases like this:
         #   <h1 style="color:blue;text-align:PAYLOAD">This is a header</h1>
@@ -132,13 +161,41 @@ class HTMLAttrQuoteGeneric(BaseContext):
         if self.name not in self.JS_ATTRS:
             return False
 
-        # Cleanup the attribute value
-        attr_value = self.value.lower()
-        attr_value = attr_value.replace('javascript:', '')
-        js_code = attr_value.replace('vbscript:', '')
+        script_text = self.extract_code()
 
-        # TODO: Delegate the is_executable to the JavaScript parser
-        raise NotImplementedError()
+        # Delegate the is_executable to the JavaScript parser
+        for js_context in get_js_context_iter(script_text, self.payload):
+            # At least one of the contexts where the payload is echoed in the
+            # script text needs to be escaped from
+            if js_context.can_break():
+                return True
+
+        return False
+
+    def is_executable(self):
+        #
+        # Handle cases like this:
+        #   <h1 style="color:blue;text-align:PAYLOAD">This is a header</h1>
+        #
+        if self.name == 'style':
+            # TODO: Delegate the is_executable to the CSS parser
+            raise NotImplementedError()
+
+        #
+        # Handle cases like this:
+        #   <h1 onmouseover="foo();PAYLOAD();">This is a header</h1>
+        #
+        if self.name not in self.JS_ATTRS:
+            return False
+
+        script_text = self.extract_code()
+
+        # Delegate the is_executable to the JavaScript parser
+        for js_context in get_js_context_iter(script_text, self.payload):
+            if js_context.is_executable():
+                return True
+
+        return False
 
 
 class HtmlAttrSingleQuote(HTMLAttrQuoteGeneric):

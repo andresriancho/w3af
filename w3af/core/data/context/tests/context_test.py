@@ -26,7 +26,8 @@ from w3af.plugins.audit.xss import xss
 class ContextTest(unittest.TestCase):
     def xss_plugin_can_break(self, context):
         for payload in xss.PAYLOADS:
-            if context.can_break(payload):
+            context.payload = payload
+            if context.can_break():
                 return
 
         klass_name = context.__class__.__name__

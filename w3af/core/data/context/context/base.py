@@ -24,17 +24,31 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class BaseContext(object):
     CAN_BREAK = None
 
-    def __init__(self, context_content):
+    def __init__(self, payload, context_content):
         """
         :param context_content: See get_context_content docs
         """
+        self.payload = payload
         self.context_content = context_content
 
     def is_executable(self):
+        """
+        :return: True if the context is executable, True examples:
+                    * foo(); PAYLOAD; bar();
+                    * <div onmouseover="PAYLOAD">
+
+                 False examples were we need to break from the context:
+                    * foo('PAYLOAD');
+                    * foo("PAYLOAD");
+                    * /* PAYLOAD */
+        """
         return False
 
-    def can_break(self, payload):
-        return self.any_in(self.CAN_BREAK, payload)
+    def can_break(self):
+        """
+        :return: True if we can break out
+        """
+        return self.any_in(self.CAN_BREAK, self.payload)
 
     def get_context_content(self):
         """
@@ -57,6 +71,9 @@ class BaseContext(object):
         :param html: The HTML response
         :return: True if at least one of the needles is in the html
         """
+        klass = self.__class__.__name__
+        assert needle_list is not None, 'CAN_BREAK is None at %s' % klass
+
         for needle in needle_list:
             if needle in html:
                 return True

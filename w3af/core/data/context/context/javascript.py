@@ -62,6 +62,8 @@ class ScriptExecutableContext(BaseContext):
         * PAYLOAD;
         * {"x": PAYLOAD}
     """
+    CAN_BREAK = {}
+
     def is_executable(self):
         return True
 
@@ -84,6 +86,7 @@ def get_js_context_iter(data, payload):
 
     # We replace the "context breaking payload" with an innocent string
     data = data.replace(payload, CONTEXT_DETECTOR)
+    untidy = lambda text: text.replace(CONTEXT_DETECTOR, payload)
 
     inside_string = False
     escape_next = False
@@ -116,9 +119,11 @@ def get_js_context_iter(data, payload):
 
                 if CONTEXT_DETECTOR in context_content:
                     if string_delim == "'":
-                        yield ScriptSingleQuoteString(context_content)
+                        yield ScriptSingleQuoteString(payload,
+                                                      untidy(context_content))
                     else:
-                        yield ScriptDoubleQuoteString(context_content)
+                        yield ScriptDoubleQuoteString(payload,
+                                                      untidy(context_content))
 
                 context_content = ''
                 inside_string = False
@@ -130,7 +135,8 @@ def get_js_context_iter(data, payload):
         if inside_single_line_comment:
             if c in {'\n', '\r'}:
                 if CONTEXT_DETECTOR in context_content:
-                    yield ScriptSingleLineComment(context_content)
+                    yield ScriptSingleLineComment(payload,
+                                                  untidy(context_content))
                 inside_single_line_comment = False
                 context_content = ''
             continue
@@ -143,7 +149,8 @@ def get_js_context_iter(data, payload):
 
                 if c == '/':
                     if CONTEXT_DETECTOR in context_content:
-                        yield ScriptMultiLineComment(context_content)
+                        yield ScriptMultiLineComment(payload,
+                                                     untidy(context_content))
                     inside_multi_line_comment = False
                     context_content = ''
             continue
@@ -153,7 +160,8 @@ def get_js_context_iter(data, payload):
 
             # This analyzes the context content before the string start
             if CONTEXT_DETECTOR in context_content:
-                yield ScriptExecutableContext(context_content)
+                yield ScriptExecutableContext(payload,
+                                              untidy(context_content))
 
             inside_string = True
             string_delim = c
@@ -174,11 +182,13 @@ def get_js_context_iter(data, payload):
             if inside_multi_line_comment or inside_single_line_comment:
                 # This analyzes the context content before the comment start
                 if CONTEXT_DETECTOR in context_content:
-                    yield ScriptExecutableContext(context_content)
+                    yield ScriptExecutableContext(payload,
+                                                  untidy(context_content))
 
                 context_content = ''
                 continue
 
     # Handle the remaining bytes from the JS code:
     if CONTEXT_DETECTOR in context_content:
-        yield ScriptExecutableContext(context_content)
+        yield ScriptExecutableContext(payload,
+                                      untidy(context_content))
