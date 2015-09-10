@@ -182,6 +182,8 @@ class HTMLAttrQuoteGeneric(BaseContext):
         if ':' in self.payload and self.value.startswith(self.payload):
             return True
 
+        return False
+
     def can_break_style(self):
         """
         Handle cases like this:
