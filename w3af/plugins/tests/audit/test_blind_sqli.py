@@ -21,25 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.w3af_moth import get_w3af_moth_http
+from w3af.core.controllers.ci.wavsep import get_wavsep_http
+
+
+CONFIG = {'audit': (PluginConfig('blind_sqli'),),
+          'crawl': (PluginConfig('web_spider',
+                    ('only_forward', True, PluginConfig.BOOL)),)}
 
 
 class TestDjangoBlindSQLI(PluginTest):
 
-    _run_configs = {
-        'cfg': {
-            'target': None,
-            'plugins': {
-                'audit': (PluginConfig('blind_sqli'),),
-                'crawl': (PluginConfig('web_spider',
-                          ('only_forward', True, PluginConfig.BOOL)),)
-            }
-        }
-    }
-
     def test_integer(self):
         target_url = get_moth_http('/audit/blind_sqli/where_integer_qs.py')
         qs = '?id=1'
-        self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
+        self._scan(target_url + qs, CONFIG)
 
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
@@ -62,7 +57,7 @@ class TestDjangoBlindSQLI(PluginTest):
         self._scan_single_quote(target_url, qs)
 
     def _scan_single_quote(self, target_url, qs):
-        self._scan(target_url + qs, self._run_configs['cfg']['plugins'])
+        self._scan(target_url + qs, CONFIG)
 
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
@@ -78,8 +73,7 @@ class TestDjangoBlindSQLI(PluginTest):
     def test_found_exploit_blind_sqli_form(self):
         # Run the scan
         target = get_moth_http('/audit/blind_sqli/blind_where_integer_form.py')
-        cfg = self._run_configs['cfg']
-        self._scan(target, cfg['plugins'])
+        self._scan(target, CONFIG)
 
         # Assert the general results
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
@@ -95,8 +89,7 @@ class TestDjangoBlindSQLI(PluginTest):
     def test_found_exploit_blind_sqli_form_GET(self):
         # Run the scan
         target = get_moth_http('/audit/blind_sqli/blind_where_integer_form_get.py')
-        cfg = self._run_configs['cfg']
-        self._scan(target, cfg['plugins'])
+        self._scan(target, CONFIG)
 
         # Assert the general results
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
@@ -108,6 +101,18 @@ class TestDjangoBlindSQLI(PluginTest):
         self.assertEquals('q', vuln.get_mutant().get_token_name())
         self.assertEquals('blind_where_integer_form_get.py',
                           vuln.get_url().get_file_name())
+
+
+class TestReflectedXSSFalsePositive(PluginTest):
+
+    def test_xss_false_positive_1516(self):
+        target_url = get_wavsep_http('/active/Reflected-XSS/'
+                                     'RXSS-Detection-Evaluation-GET/'
+                                     'Case24-Js2ScriptTag.jsp?userinput=1234')
+        self._scan(target_url, CONFIG)
+
+        vulns = self.kb.get('blind_sqli', 'blind_sqli')
+        self.assertEquals(0, len(vulns))
 
 
 class TestOldMothBlindSQLI(PluginTest):
