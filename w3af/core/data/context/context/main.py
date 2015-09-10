@@ -83,9 +83,17 @@ class ContextDetectorHTMLParser(HTMLParser):
         self.payload = payload
         self.contexts = []
         self.current_tag = None
+        self.noscript_parent = False
 
     def untidy(self, content):
         return content.replace(CONTEXT_DETECTOR, self.payload)
+    
+    def append_context(self, context):
+        # We just ignore all the contexts which are inside <noscript>
+        if self.noscript_parent:
+            return
+        
+        self.contexts.append(context)
 
     def handle_starttag(self, tag, attrs):
         """
@@ -101,19 +109,21 @@ class ContextDetectorHTMLParser(HTMLParser):
         """
         self.current_tag = tag
 
+        if tag == 'noscript':
+            self.noscript_parent = True
+
         if CONTEXT_DETECTOR in tag:
-            self.contexts.append(HtmlTag(self.payload,
-                                         self.untidy(tag)))
+            self.append_context(HtmlTag(self.payload, self.untidy(tag)))
 
         for attr_name, attr_value in attrs:
             if CONTEXT_DETECTOR in attr_name:
-                self.contexts.append(HtmlAttr(self.payload,
-                                              self.untidy(attr_name)))
+                self.append_context(HtmlAttr(self.payload,
+                                             self.untidy(attr_name)))
 
             if attr_value and CONTEXT_DETECTOR in attr_value:
                 context = self.get_attr_value_context(attr_name, attr_value)
                 if context is not None:
-                    self.contexts.append(context)
+                    self.append_context(context)
 
     handle_startendtag = handle_starttag
 
@@ -160,37 +170,39 @@ class ContextDetectorHTMLParser(HTMLParser):
                                self.untidy(attr_value))
 
     def handle_endtag(self, tag):
+        if tag == 'noscript':
+            self.noscript_parent = False
+
         if CONTEXT_DETECTOR in tag:
-            self.contexts.append(HtmlTagClose(self.payload,
-                                              self.untidy(tag)))
+            self.append_context(HtmlTagClose(self.payload, self.untidy(tag)))
 
     def handle_data(self, text_data):
         if CONTEXT_DETECTOR not in text_data:
             return
 
         if self.current_tag == 'script':
-            self.contexts.append(ScriptText(self.payload,
-                                            self.untidy(text_data)))
+            self.append_context(ScriptText(self.payload,
+                                           self.untidy(text_data)))
 
         elif self.current_tag == 'style':
-            self.contexts.append(CSSText(self.payload,
-                                         self.untidy(text_data)))
+            self.append_context(CSSText(self.payload,
+                                        self.untidy(text_data)))
 
         elif CONTEXT_DETECTOR in text_data:
-            self.contexts.append(HtmlText(self.payload,
-                                          self.untidy(text_data)))
+            self.append_context(HtmlText(self.payload,
+                                         self.untidy(text_data)))
 
     def handle_comment(self, comment_text):
         if CONTEXT_DETECTOR in comment_text:
-            self.contexts.append(HtmlComment(self.payload,
-                                             self.untidy(comment_text)))
+            self.append_context(HtmlComment(self.payload,
+                                            self.untidy(comment_text)))
 
     def handle_decl(self, data):
         if CONTEXT_DETECTOR in data:
-            self.contexts.append(HtmlDeclaration(self.payload,
-                                                 self.untidy(data)))
+            self.append_context(HtmlDeclaration(self.payload,
+                                                self.untidy(data)))
 
     def handle_pi(self, data):
         if CONTEXT_DETECTOR in data:
-            self.contexts.append(HtmlProcessingInstruction(self.payload,
-                                                           self.untidy(data)))
+            self.append_context(HtmlProcessingInstruction(self.payload,
+                                                          self.untidy(data)))

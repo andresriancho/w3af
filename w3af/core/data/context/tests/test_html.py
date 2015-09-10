@@ -408,3 +408,27 @@ class TestHTMLContext(ContextTest):
         contexts = get_context(html, 'PAYLOAD')
         self.assertEqual(len(contexts), 1, contexts)
         self.assertIsInstance(contexts[0], ScriptText)
+
+    def test_payload_inside_noscript_1(self):
+        html = """
+        <html>
+            <body>
+                <noscript>
+                    PAYLOAD
+                </noscript>
+            </body>
+        </html>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 0)
+
+    def test_payload_inside_noscript_2(self):
+        html = """
+        <html>
+            <noscript>
+                <a onmouseover="PAYLOAD">link</a>
+            </noscript>
+        </html>
+        """
+        contexts = get_context(html, 'PAYLOAD')
+        self.assertEqual(len(contexts), 0)
