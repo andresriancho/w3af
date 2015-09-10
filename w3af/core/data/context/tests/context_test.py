@@ -20,15 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.plugins.audit.xss import xss
-
 
 class ContextTest(unittest.TestCase):
-    def xss_plugin_can_break(self, context):
-        for payload in xss.PAYLOADS:
-            context.payload = payload
-            if context.can_break():
-                return
-
-        klass_name = context.__class__.__name__
-        self.assertTrue(False, 'No XSS payload breaks %s' % klass_name)
+    pass

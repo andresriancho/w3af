@@ -147,6 +147,13 @@ class HTMLAttrQuoteGeneric(BaseContext):
 
     def can_break(self):
         #
+        # The most common break is to simply escape the attribute string
+        # delimiter and add a new attribute
+        #
+        if super(HTMLAttrQuoteGeneric, self).can_break():
+            return True
+
+        #
         # Handle cases like this:
         #   <h1 style="color:blue;text-align:PAYLOAD">This is a header</h1>
         #
@@ -228,3 +235,9 @@ class HtmlAttrNoQuote(HTMLAttrQuoteGeneric):
     """
     ATTR_DELIMITER = ''
     CAN_BREAK = {' '}
+
+
+ALL_CONTEXTS = [HtmlAttrNoQuote, HtmlAttrBackticks, HtmlAttrDoubleQuote,
+                HtmlAttrSingleQuote, HtmlProcessingInstruction,
+                HtmlDeclaration, CSSText, ScriptText, HtmlAttr, HtmlComment,
+                HtmlText, HtmlTag, HtmlTagClose]

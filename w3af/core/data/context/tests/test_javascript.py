@@ -161,7 +161,6 @@ class TestJavaScript(ContextTest):
 
         self.assertIsInstance(context, ScriptSingleLineComment)
         self.assertFalse(context.is_executable())
-        self.xss_plugin_can_break(context)
 
     def test_payload_break_single_line_comment_false_positive(self):
         js_code = """

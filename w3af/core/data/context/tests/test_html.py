@@ -222,7 +222,6 @@ class TestHTMLContext(ContextTest):
 
         context = contexts[0]
         self.assertIsInstance(context, HtmlText)
-        self.xss_plugin_can_break(context)
 
     def test_payload_text_with_end_quote(self):
         html = """
@@ -235,7 +234,6 @@ class TestHTMLContext(ContextTest):
 
         context = contexts[0]
         self.assertIsInstance(context, HtmlText)
-        self.xss_plugin_can_break(context)
 
     def test_payload_tag_name(self):
         html = """
@@ -267,7 +265,6 @@ class TestHTMLContext(ContextTest):
         context = contexts[0]
 
         self.assertIsInstance(context, HtmlAttr)
-        self.xss_plugin_can_break(context)
 
     def test_django_500_sample(self):
         html = file(os.path.join(self.SAMPLES_DIR, 'django-500.html')).read()
@@ -276,7 +273,6 @@ class TestHTMLContext(ContextTest):
         self.assertEqual(len(contexts), 9)
         for context in contexts:
             self.assertIsInstance(context, HtmlText)
-            self.xss_plugin_can_break(context)
 
     def test_payload_html_comment_with_single_quote(self):
         """
@@ -334,9 +330,6 @@ class TestHTMLContext(ContextTest):
         self.assertEqual(len(contexts), 2, contexts)
         self.assertIsInstance(contexts[0], HtmlComment)
         self.assertIsInstance(contexts[1], HtmlAttrDoubleQuote)
-
-        self.xss_plugin_can_break(contexts[0])
-        self.xss_plugin_can_break(contexts[1])
 
     def test_broken_1(self):
         html = """

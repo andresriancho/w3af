@@ -19,13 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from nose.plugins.attrib import attr
+from unittest import TestCase
 
 from w3af.core.data.kb.config import cf
 
+from w3af.core.data.context.context.html import ALL_CONTEXTS
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.core.controllers.ci.php_moth import get_php_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.audit.xss import xss
 
 import w3af.core.data.constants.severity as severity
 
@@ -326,3 +329,27 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
+
+
+class TestXSSPayloadsBreak(TestCase):
+    def test_xss_plugin_can_break(self):
+        for context_klass in ALL_CONTEXTS:
+
+            payload_broke_context = False
+
+            for payload in xss.PAYLOADS:
+
+                try:
+                    # Most contexts
+                    context = context_klass(payload, '')
+                except TypeError:
+                    # Attribute contexts
+                    context = context_klass(payload, '', '')
+
+                if context.can_break():
+                    payload_broke_context = True
+                    break
+
+            if not payload_broke_context:
+                klass_name = context.__class__.__name__
+                self.assertTrue(False, 'No XSS payload breaks %s' % klass_name)
