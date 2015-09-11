@@ -196,7 +196,6 @@ def set_plugin_config(**kwargs):
         w3af.plugins.get_plugin_inst(plugin_type, plugin).get_options()
     )
 
-    opt_list = OptionList()
     for opt_name in request.json:
         try:
             opt_value = request.json[opt_name]
@@ -208,22 +207,13 @@ def set_plugin_config(**kwargs):
                                                                        plugin)
                 }), 400
         try:
-            opt_list.add(
-                opt_factory(
-                    opt_name,
-                    opt_value,
-                    'desc',
-                    opt_type
-                )
-            )
-            plugin_opts[opt_name].validate(opt_value)
+            plugin_opts[opt_name].set_value(opt_value)
         except (AttributeError, BaseFrameworkException):
             return jsonify({
                 'code': '422',
                 'message': 'Invalid %s option %s' % (opt_type, opt_value)
                 }), 422
 
-    plugin_opts.update(opt_list)
     w3af.plugins.set_plugin_options(plugin_type, plugin, plugin_opts)
 
     return jsonify({
@@ -292,7 +282,6 @@ def set_core_config(scan_id, core_setting):
         configurable = w3af.target
 
     core_opts = configurable.get_options()
-    opt_list = OptionList()
     for opt_name in request.json:
         try:
             opt_value = request.json[opt_name]
@@ -303,22 +292,13 @@ def set_core_config(scan_id, core_setting):
                 'message': '%s is not a valid option here' % opt_name
                 }), 400
         try:
-            opt_list.add(
-                opt_factory(
-                    opt_name,
-                    opt_value,
-                    'desc',
-                    opt_type
-                )
-            )
-            core_opts[opt_name].validate(opt_value)
+            core_opts[opt_name].set_value(opt_value)
         except (AttributeError, BaseFrameworkException):
             return jsonify({
                 'code': '422',
                 'message': 'Invalid %s value %s' % (opt_type, opt_value)
                 }), 422
 
-    core_opts.update(opt_list)
     configurable.set_options(core_opts)
 
     return jsonify({
