@@ -285,7 +285,8 @@ class w3afCore(object):
         if not hasattr(self, '_worker_pool'):
             # Should get here only on the first call to "worker_pool".
             self._worker_pool = Pool(self.WORKER_THREADS,
-                                     worker_names='WorkerThread')
+                                     worker_names='WorkerThread',
+                                     max_queued_tasks=self.WORKER_THREADS * 10)
 
         if not self._worker_pool.is_running():
             # Clean-up the old worker pool
@@ -293,7 +294,8 @@ class w3afCore(object):
 
             # Create a new one
             self._worker_pool = Pool(self.WORKER_THREADS,
-                                     worker_names='WorkerThread')
+                                     worker_names='WorkerThread',
+                                     max_queued_tasks=self.WORKER_THREADS * 10)
 
         return self._worker_pool
 
