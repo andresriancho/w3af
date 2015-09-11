@@ -35,28 +35,6 @@ class OptionList(object):
         self._internal_opt_list.append(option)
     append = add
 
-    def update(self, new_opt_list):
-        """
-        Replaces a list of values with their counterparts from new_opt_list.
-        Unique values from new_opt_list are appended to the existing list.
-
-        :params: A valid OptionList, "new_opt_list"
-        """
-        if type(new_opt_list).__name__ != 'OptionList':
-            raise BaseFrameworkException('Expected an OptionList object as'
-                                         ' argument to OptionList.update()')
-
-        opt_names = [ o.get_name() for o in new_opt_list ]
-        self._internal_opt_list  = [
-            x if x.get_name() not in opt_names
-            else new_opt_list[x.get_name()]
-            for x in self._internal_opt_list
-           ]
-        # Now add any new options
-        for o in new_opt_list:
-            if o not in self._internal_opt_list:
-                self.add(o)
-
     def __len__(self):
         return len(self._internal_opt_list)
 
