@@ -55,7 +55,7 @@ class TestLFI(PluginTest):
 
 class TestWAVSEP500Error(PluginTest):
 
-    base_path = '/active/LFI/LFI-Detection-Evaluation-GET-500Error/'
+    base_path = '/wavsep/active/LFI/LFI-Detection-Evaluation-GET-500Error/'
 
     target_url = get_wavsep_http(base_path)
 

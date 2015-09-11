@@ -161,7 +161,7 @@ class WAVSEPTest(PluginTest):
 
 class TestWAVSEPError(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Error/')
 
     target_url = get_wavsep_http(base_path)
@@ -209,7 +209,7 @@ class TestWAVSEPError(WAVSEPTest):
 
 class TestWAVSEP500Error(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-500Error/')
 
     target_url = get_wavsep_http(base_path)
@@ -252,7 +252,7 @@ class TestWAVSEP500Error(WAVSEPTest):
 
 class TestWAVSEPWithDifferentiation(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Valid/')
 
     target_url = get_wavsep_http(base_path)
@@ -295,7 +295,7 @@ class TestWAVSEPWithDifferentiation(WAVSEPTest):
 
 class TestWAVSEPIdentical(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Identical/')
 
     target_url = get_wavsep_http(base_path)
@@ -326,7 +326,7 @@ class TestWAVSEPIdentical(WAVSEPTest):
 
 class TestWAVSEPExperimental(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Error-Experimental/')
 
     target_url = get_wavsep_http(base_path)
@@ -351,7 +351,7 @@ class TestWAVSEPExperimental(WAVSEPTest):
 
 class TestWAVSEPError500POST(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-POST-500Error/')
 
     target_url = get_wavsep_http(base_path)
@@ -393,7 +393,7 @@ class TestWAVSEPError500POST(WAVSEPTest):
 
 class TestWAVSEPError200POST(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-POST-200Error/')
 
     target_url = get_wavsep_http(base_path)
@@ -436,7 +436,7 @@ class TestWAVSEPError200POST(WAVSEPTest):
 
 class TestWAVSEPWithDifferentiationPOST(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-POST-200Valid/')
 
     target_url = get_wavsep_http(base_path)
@@ -479,7 +479,7 @@ class TestWAVSEPWithDifferentiationPOST(WAVSEPTest):
 
 class TestWAVSEPIdenticalPOST(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-POST-200Identical/')
 
     target_url = get_wavsep_http(base_path)
@@ -510,7 +510,7 @@ class TestWAVSEPIdenticalPOST(WAVSEPTest):
 
 class TestWAVSEPExperimentalPOST(WAVSEPTest):
 
-    base_path = ('/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-POST-200Error-Experimental/')
 
     target_url = get_wavsep_http(base_path)

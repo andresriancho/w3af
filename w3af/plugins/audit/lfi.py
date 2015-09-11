@@ -87,9 +87,11 @@ class lfi(AuditPlugin):
         # about other default files that could be installed on AIX ? Solaris ?
         # and are not /etc/passwd
         if cf.cf.get('target_os') in {'unix', 'unknown'}:
+            local_files.append("/../" * 15 + "etc/passwd")
             local_files.append("../" * 15 + "etc/passwd")
-            local_files.append("../" * 15 + "etc/passwd\0")
-            local_files.append("../" * 15 + "etc/passwd\0.html")
+
+            local_files.append("/../" * 15 + "etc/passwd\0")
+            local_files.append("/../" * 15 + "etc/passwd\0.html")
             local_files.append("/etc/passwd")
 
             # This test adds support for finding vulnerabilities like this one
@@ -101,11 +103,14 @@ class lfi(AuditPlugin):
 
             if extension != '':
                 local_files.append("/etc/passwd%00." + extension)
-                local_files.append("../" * 15 + "etc/passwd%00." + extension)
+                local_files.append("/../" * 15 + "etc/passwd%00." + extension)
 
         if cf.cf.get('target_os') in {'windows', 'unknown'}:
-            local_files.append("../" * 15 + "boot.ini\0")
-            local_files.append("../" * 15 + "boot.ini\0.html")
+            local_files.append("/../" * 15 + "boot.ini")
+            local_files.append("../" * 15 + "boot.ini")
+
+            local_files.append("/../" * 15 + "boot.ini\0")
+            local_files.append("/../" * 15 + "boot.ini\0.html")
 
             local_files.append("C:\\boot.ini")
             local_files.append("C:\\boot.ini\0")
