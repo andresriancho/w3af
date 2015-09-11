@@ -67,7 +67,7 @@ class TestDjangoBlindSQLI(PluginTest):
         self.assertEquals(
             'Blind SQL injection vulnerability', vuln.get_name())
         self.assertFalse('time delays' in vuln.get_desc())
-        self.assertEquals("stringsingle", vuln['type'])
+        self.assertEquals("string_single", vuln['type'])
         self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_found_exploit_blind_sqli_form(self):
