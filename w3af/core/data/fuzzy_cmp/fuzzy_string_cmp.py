@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import difflib
 import pprint
 
-from upper_bounds import UPPER_BOUNDS
+from w3af.core.data.fuzzy_cmp.upper_bounds import UPPER_BOUNDS
 
 
 def relative_distance_boolean(a_str, b_str, threshold=0.6):
@@ -37,7 +37,6 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
                       0 <= threshold <= 1.0
     :return: A boolean value
     """
-
     if threshold == 0:
         return True
     elif threshold == 1.0:

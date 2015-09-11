@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 """
-test_levenshtein.py
+test_fuzzy_string_cmp.py
 
 Copyright 2012 Andres Riancho
 
