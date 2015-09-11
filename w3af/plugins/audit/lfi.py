@@ -36,7 +36,19 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 
 
-BASEDIR_WARNING = 'open_basedir restriction in effect'
+FILE_OPEN_ERRORS = [# Java
+                    'java.io.FileNotFoundException:',
+                    'java.lang.Exception:',
+                    'java.lang.IllegalArgumentException:',
+                    'java.net.MalformedURLException:',
+
+                    # PHP
+                    'fread\\(\\):',
+                    'for inclusion \'\\(include_path=',
+                    'Failed opening required',
+                    '<b>Warning</b>:  file\\(',
+                    '<b>Warning</b>:  file_get_contents\\(',
+                    'open_basedir restriction in effect']
 
 
 class lfi(AuditPlugin):
@@ -46,27 +58,7 @@ class lfi(AuditPlugin):
     """
 
     file_pattern_multi_in = multi_in(FILE_PATTERNS)
-    file_read_error_multi_re = multi_re(
-        [# Java
-         'java.io.FileNotFoundException:',
-         'java.lang.Exception:',
-         'java.lang.IllegalArgumentException:',
-         'java.net.MalformedURLException:',
-
-         # PHP
-         'fread\\(\\):',
-         'for inclusion \'\\(include_path=',
-         'Failed opening required',
-         '<b>Warning</b>:  file\\(',
-         '<b>Warning</b>:  file_get_contents\\('])
-
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
-        # Internal variables
-        self._file_compiled_regex = []
-        self._error_compiled_regex = []
-        self._open_basedir = False
+    file_read_error_multi_re = multi_re(FILE_OPEN_ERRORS)
 
     def audit(self, freq, orig_response):
         """
@@ -74,19 +66,35 @@ class lfi(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
-        # Which payloads do I want to send to the remote end?
-        local_files = [freq.get_url().get_file_name()]
-        if not self._open_basedir:
-            local_files.extend(self._get_local_file_list(freq.get_url()))
-
-        mutants = create_mutants(freq, local_files, orig_resp=orig_response)
+        mutants = create_mutants(freq,
+                                 self.get_lfi_tests(freq),
+                                 orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result,
                                       grep=False)
 
-    def _get_local_file_list(self, orig_url):
+    def get_lfi_tests(self, freq):
+        """
+        :param freq: The fuzzable request we're analyzing
+        :return: The paths to test
+        """
+        #
+        #   Add some tests which try to read "self"
+        #   http://host.tld/show_user.php?id=show_user.php
+        #
+        lfi_tests = [freq.get_url().get_file_name(),
+                     '/%s' % freq.get_url().get_file_name()]
+
+        #
+        #   Add some tests which try to read common/known files
+        #
+        lfi_tests.extend(self._get_common_file_list(freq.get_url()))
+
+        return lfi_tests
+
+    def _get_common_file_list(self, orig_url):
         """
         This method returns a list of local files to try to include.
 
@@ -135,8 +143,7 @@ class lfi(AuditPlugin):
             local_files.append('%SYSTEMROOT%\\win.ini\0')
             local_files.append('%SYSTEMROOT%\\win.ini\0.html')
 
-            # file:// URIs for windows
-            # http://blogs.msdn.com/b/ie/archive/2006/12/06/file-uris-in-windows.aspx
+            # file:// URIs for windows , docs here: http://goo.gl/A9Mvux
             local_files.append('file:///C:/boot.ini')
             local_files.append('file:///C:/win.ini')
 
@@ -156,17 +163,6 @@ class lfi(AuditPlugin):
         #
         if self._has_bug(mutant):
             return
-
-        # I analyze the response searching for a specific PHP error string
-        # that tells me that open_basedir is enabled, and our request triggered
-        # the restriction. If open_basedir is in use, it makes no sense to keep
-        # trying to read "/etc/passwd", that is why this variable is used to
-        # determine which tests to send if it was possible to detect the usage
-        # of this security feature.
-        if (not self._open_basedir and
-            BASEDIR_WARNING in response and
-            BASEDIR_WARNING not in mutant.get_original_response_body()):
-            self._open_basedir = True
 
         #
         #   Identify the vulnerability
