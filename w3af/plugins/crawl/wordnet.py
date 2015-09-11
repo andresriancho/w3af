@@ -23,8 +23,7 @@ from itertools import chain, repeat, izip
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
-
+from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.fuzzer.mutants.filename_mutant import FileNameMutant
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant

@@ -22,10 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean, relative_distance
+from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import (relative_distance_boolean,
+                                                       relative_distance)
 
 
-class TestLevenshtein(unittest.TestCase):
+class TestFuzzyStringCompare(unittest.TestCase):
 
     def test_all(self):
         acceptance_tests = []
@@ -78,6 +79,7 @@ class TestLevenshtein(unittest.TestCase):
         acceptance_tests.append(('a', 'b', 0.0))
         acceptance_tests.append(('aaaa', 'aaab', 0.75))
         acceptance_tests.append(('a' * 25, 'a', 0.04))
+
         for e, d, f in acceptance_tests:
             res = relative_distance(e, d)
             msg = "return value:%f, given value:%f" % (res, f)

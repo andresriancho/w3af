@@ -34,7 +34,7 @@ from cStringIO import StringIO
 
 from nose.plugins.skip import SkipTest
 
-from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
+from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers

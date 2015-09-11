@@ -20,15 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import copy
-
-from math import log, floor
+from math import log
 from itertools import chain
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
-
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
+from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import relative_distance_boolean
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.kb.vuln import Vuln

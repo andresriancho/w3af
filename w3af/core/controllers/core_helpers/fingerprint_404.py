@@ -25,23 +25,19 @@ import cgi
 import thread
 import urllib
 import string
-
 from collections import namedtuple
 from functools import wraps
 from itertools import izip_longest
 
 from darts.lib.utils.lru import SynchronizedLRUDict
-
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
-
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.db.disk_deque import DiskDeque
-
 from w3af.core.controllers.misc.decorators import retry
-from w3af.core.controllers.misc.fuzzy_string_cmp import (fuzzy_equal,
-                                                         relative_distance)
+from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import (fuzzy_equal,
+                                                       relative_distance)
 from w3af.core.controllers.exceptions import (HTTPRequestException,
                                               FourOhFourDetectionException)
 

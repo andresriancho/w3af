@@ -20,19 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import socket
-
 from itertools import izip, repeat
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
-
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
+from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args, one_to_many
-
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.dc.headers import Headers

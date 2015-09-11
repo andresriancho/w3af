@@ -28,7 +28,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
+from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.plugins.crawl.user_db.user_db import (OS, APPLICATION,
                                                 get_users_from_csv)
 
