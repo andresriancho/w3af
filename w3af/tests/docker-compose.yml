@@ -56,11 +56,13 @@ testenv:
 # WAVSEP
 #
 wavsep:
-  extends:
-    file: wavsep.yml
-    service: wavsep
+  image: andresriancho/wavsep:latest
+  ports:
+    - "8098:8080"
+  links:
+    - wavsepdb
 
 wavsepdb:
-  extends:
-    file: wavsep.yml
-    service: wavsepdb
+  image: mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=wavsep
