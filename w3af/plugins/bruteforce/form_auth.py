@@ -33,6 +33,7 @@ from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzy_cmp.fuzzy_string_cmp import fuzzy_equal
+from w3af.core.data.fuzzy_cmp.average_ratio import average_ratio
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopOnUrlError)
@@ -68,7 +69,7 @@ class form_auth(BruteforcePlugin):
         self._already_tested.append(mutant.get_url())
 
         try:
-            login_failed_bodies = self._id_failed_login_page(mutant)
+            is_failed_login = self.get_response_analyzer(mutant)
         except BaseFrameworkException, bfe:
             msg = 'Unexpected response during form bruteforce setup: "%s"'
             om.out.debug(msg % bfe)
@@ -95,20 +96,33 @@ class form_auth(BruteforcePlugin):
         else:
             generator = self._create_pass_generator(mutant.get_url())
 
-        self._bruteforce_test(mutant, login_failed_bodies, generator)
+        self._bruteforce_test(mutant, is_failed_login, generator)
 
         # Report that we've finished.
         msg = 'Finished bruteforcing "%s".' % mutant.get_url()
         om.out.information(msg)
+
+    def get_response_analyzer(self, mutant):
+        """
+        :param mutant: The login form mutant
+        :return: A function which can be used to determine of a login response
+                 is a failed or successful login.
+        """
+        try:
+            login_failed_bodies = self._id_failed_login_page(mutant)
+        except BaseFrameworkException, bfe:
+            msg = 'Unexpected response during form bruteforce setup: "%s"'
+            om.out.debug(msg % bfe)
+            return
 
     def _bruteforce_pool(self, mutant, login_failed_res, generator):
         args_iter = izip(repeat(mutant), repeat(login_failed_res), generator)
         self.worker_pool.map_multi_args(self._brute_worker, args_iter,
                                         chunksize=100)
 
-    def _bruteforce_test(self, mutant, login_failed_res, generator):
+    def _bruteforce_test(self, mutant, is_failed_login, generator):
         for combination in generator:
-            self._brute_worker(mutant, login_failed_res, combination)
+            self._brute_worker(mutant, is_failed_login, combination)
 
     def _id_failed_login_page(self, mutant):
         """
@@ -132,17 +146,7 @@ class form_auth(BruteforcePlugin):
                  (rand_alnum(8), '')]
 
         for user, passwd in tests:
-            # Setup the data_container
-            # Remember that we can have password only forms!
-            if user_token is not None:
-                form.set_login_username(user)
-
-            form.set_login_password(passwd)
-
-            response = self._uri_opener.send_mutant(mutant, grep=False)
-
-            # Save it
-            body = self.clean_body(response, user, passwd)
+            body = self.send_login_test(form, mutant, user_token, user, passwd)
             login_failed_result_list.append(body)
 
         # Now I perform a self test, before starting with the actual
@@ -153,14 +157,7 @@ class form_auth(BruteforcePlugin):
 
         for user, passwd in tests:
             # Now I do a self test of the result I just created.
-            # Remember that we can have password only forms!
-            if user_token is not None:
-                form.set_login_username(user)
-
-            form.set_login_password(passwd)
-
-            response = self._uri_opener.send_mutant(mutant, grep=False)
-            body = self.clean_body(response, user, passwd)
+            body = self.send_login_test(form, mutant, user_token, user, passwd)
 
             if not self._matches_failed_login(body, login_failed_result_list):
                 msg = ('Failed to generate a response that matches the'
@@ -168,6 +165,23 @@ class form_auth(BruteforcePlugin):
                 raise BaseFrameworkException(msg)
 
         return login_failed_result_list
+
+    def send_login_test(self, form, mutant, user_token, user, passwd):
+        """
+        Sends a login test to a form and returns the HTTP response body
+
+        :param user: The username (might be None for password only forms)
+        :param passwd: The password
+        :return: The HTTP response body, cleaned.
+        """
+        # Remember that we can have password only forms!
+        if user_token is not None:
+            form.set_login_username(user)
+
+        form.set_login_password(passwd)
+
+        response = self._uri_opener.send_mutant(mutant, grep=False)
+        return self.clean_body(response, user, passwd)
 
     def _matches_failed_login(self, resp_body, login_failed_result_list):
         """
@@ -201,7 +215,7 @@ class form_auth(BruteforcePlugin):
         perform a successful login.
 
         :return: A data_container that has all fields (other than the username
-            and password) set to 1,
+                 and password) set to 1,
         """
         user_token, pass_token = form.get_login_tokens()
 
@@ -231,7 +245,7 @@ class form_auth(BruteforcePlugin):
 
         return body
 
-    def _brute_worker(self, mutant, login_failed_result_list, combination):
+    def _brute_worker(self, mutant, is_failed_login, combination):
         """
         :param mutant: A Mutant holding a QsMutant of PostDataMutant, created
                        using form_pointer_factory
@@ -266,7 +280,7 @@ class form_auth(BruteforcePlugin):
 
         body = self.clean_body(resp, user, pwd)
 
-        if self._matches_failed_login(body, login_failed_result_list):
+        if is_failed_login(body):
             return
 
         # Ok, this might be a valid combination.
@@ -280,7 +294,7 @@ class form_auth(BruteforcePlugin):
 
         body = self.clean_body(verif_resp, user, pwd)
 
-        if self._matches_failed_login(body, login_failed_result_list):
+        if is_failed_login(body):
             freq_url = mutant.get_url()
             self._found.add(freq_url)
 
