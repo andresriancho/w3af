@@ -217,10 +217,10 @@ def set_plugin_config(**kwargs):
                 )
             )
             plugin_opts[opt_name].validate(opt_value)
-        except BaseFrameworkException, e:
+        except (AttributeError, BaseFrameworkException):
             return jsonify({
                 'code': '422',
-                'message': str(e)
+                'message': 'Invalid %s option %s' % (opt_type, opt_value)
                 }), 422
 
     plugin_opts.update(opt_list)
@@ -312,7 +312,7 @@ def set_core_config(scan_id, core_setting):
                 )
             )
             core_opts[opt_name].validate(opt_value)
-        except:
+        except (AttributeError, BaseFrameworkException):
             return jsonify({
                 'code': '422',
                 'message': 'Invalid %s value %s' % (opt_type, opt_value)
