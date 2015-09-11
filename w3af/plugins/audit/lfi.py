@@ -43,7 +43,6 @@ class lfi(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    FILE_PATTERNS = FILE_PATTERNS
     _multi_in = multi_in(FILE_PATTERNS)
 
     def __init__(self):
@@ -123,6 +122,12 @@ class lfi(AuditPlugin):
         Analyze results of the _send_mutant method.
         Try to find the local file inclusions.
         """
+        #
+        #   I will only report the vulnerability once.
+        #
+        if self._has_bug(mutant):
+            return
+
         # I analyze the response searching for a specific PHP error string
         # that tells me that open_basedir is enabled, and our request triggered
         # the restriction. If open_basedir is in use, it makes no sense to keep
@@ -130,18 +135,12 @@ class lfi(AuditPlugin):
         # determine which tests to send if it was possible to detect the usage
         # of this security feature.
         if not self._open_basedir:
-            
+
             basedir_warning = 'open_basedir restriction in effect'
-            
+
             if basedir_warning in response and \
             basedir_warning not in mutant.get_original_response_body():
                 self._open_basedir = True
-
-        #
-        #   I will only report the vulnerability once.
-        #
-        if self._has_bug(mutant):
-            return
 
         #
         #   Identify the vulnerability
@@ -151,7 +150,7 @@ class lfi(AuditPlugin):
             if file_pattern_match not in mutant.get_original_response_body():
                 
                 desc = 'Local File Inclusion was found at: %s'
-                desc = desc % mutant.found_at()
+                desc %= mutant.found_at()
                 
                 v = Vuln.from_mutant('Local file inclusion vulnerability',
                                      desc, severity.MEDIUM, response.id,
@@ -200,7 +199,7 @@ class lfi(AuditPlugin):
 
             if match and not regex.search(mutant.get_original_response_body()):
                 desc = 'A file read error was found at: %s'
-                desc = desc % mutant.found_at()
+                desc %= mutant.found_at()
                 
                 i = Info.from_mutant('File read error', desc, response.id,
                                      self.get_name(), mutant)
@@ -220,23 +219,23 @@ class lfi(AuditPlugin):
             res.add(file_pattern_match)
 
         if len(res) == 1:
-            msg = 'A file fragment was found. The section where the file is'\
-                  ' included is (only a fragment is shown): "%s". This is' \
-                  ' just an informational message, which might be related' \
-                  '  to a vulnerability and was found on response with id %s.'
+            msg = ('A file fragment was found. The section where the file is'
+                   ' included is (only a fragment is shown): "%s". This is'
+                   ' just an informational message, which might be related'
+                   '  to a vulnerability and was found on response with id %s.')
             om.out.debug(msg % (list(res)[0], response.id))
             
         if len(res) > 1:
-            msg = 'File fragments have been found. The following is a list' \
-                  ' of file fragments that were returned by the web' \
-                  ' application while testing for local file inclusion: \n'
+            msg = ('File fragments have been found. The following is a list'
+                   ' of file fragments that were returned by the web'
+                   ' application while testing for local file inclusion: \n')
             
             for file_pattern_match in res:
                 msg += '- "%s" \n' % file_pattern_match
                 
-            msg += 'This is just an informational message, which might be' \
-                   ' related to a vulnerability and was found in response' \
-                   ' with id %s.' % response.id
+            msg += ('This is just an informational message, which might be'
+                    ' related to a vulnerability and was found in response'
+                    ' with id %s.' % response.id)
                     
             om.out.debug(msg)
         
