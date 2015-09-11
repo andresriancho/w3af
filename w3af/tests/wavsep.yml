@@ -1,0 +1,11 @@
+wavsep:
+  image: andresriancho/pico-wavsep:latest
+  ports:
+    - "8098:8080"
+  links:
+    - wavsepdb
+
+wavsepdb:
+  image: mysql
+  environment:
+    - MYSQL_ROOT_PASSWORD=wavsep
