@@ -161,7 +161,7 @@ class WAVSEPTest(PluginTest):
 
 class TestWAVSEPError(WAVSEPTest):
 
-    base_path = ('/wavsep/wavsep/active/SQL-Injection/'
+    base_path = ('/wavsep/active/SQL-Injection/'
                  'SInjection-Detection-Evaluation-GET-200Error/')
 
     target_url = get_wavsep_http(base_path)
