@@ -56,7 +56,7 @@ back
 
 back
 target
-set target %s/wavsep/active/Reflected-XSS/RXSS-Detection-Evaluation-GET/
+set target %swavsep/active/Reflected-XSS/RXSS-Detection-Evaluation-GET/
 back
 
 start
