@@ -58,6 +58,7 @@ class sqli(AuditPlugin):
         (r"'80040e07'", dbms.MSSQL),
         (r'Microsoft SQL Native Client error', dbms.MSSQL),
         (r'SQL Server Native Client', dbms.MSSQL),
+        (r'Invalid SQL statement', dbms.MSSQL),
 
         # DB2
         (r'SQLCODE', dbms.DB2),
