@@ -43,43 +43,43 @@ class TestFormAuth(PluginTest):
     target_web_spider_url = get_moth_http('/bruteforce/form/')
 
     positive_test = {
-        'target': None,
-        'plugins': {
-            'crawl': (PluginConfig('web_spider',
-                                  ('only_forward', True, PluginConfig.BOOL),),),
-            'bruteforce': (PluginConfig('form_auth',
-                                        ('usersFile', small_users_positive,
-                                         PluginConfig.STR),
-                                        ('passwdFile', small_passwords,
-                                         PluginConfig.INPUT_FILE),
-                                        ('useProfiling', False,
-                                         PluginConfig.BOOL),
-                                        ),
-                           ),
-        }
+        'crawl': (PluginConfig('web_spider',
+                              ('only_forward', True, PluginConfig.BOOL),),),
+        'bruteforce': (PluginConfig('form_auth',
+                                    ('usersFile',
+                                     small_users_positive,
+                                     PluginConfig.STR),
+
+                                    ('passwdFile',
+                                     small_passwords,
+                                     PluginConfig.INPUT_FILE),
+
+                                    ('useProfiling',
+                                     False,
+                                     PluginConfig.BOOL),),),
     }
 
     negative_test = {
-        'target': None,
-        'plugins': {
-            'crawl': (PluginConfig('web_spider',
-                                  ('only_forward', True, PluginConfig.BOOL),),),
-            'bruteforce': (PluginConfig('form_auth',
-                                        ('usersFile', small_users_negative,
-                                         PluginConfig.STR),
-                                        (
-                                        'passwdFile', small_passwords,
-                                        PluginConfig.INPUT_FILE),
-                                        ('useProfiling', False,
-                                         PluginConfig.BOOL),
-                                        ),
-                           )
-        }
+        'crawl': (PluginConfig('web_spider',
+                              ('only_forward', True, PluginConfig.BOOL),),),
+        'bruteforce': (PluginConfig('form_auth',
+
+                                    ('usersFile',
+                                     small_users_negative,
+                                     PluginConfig.STR),
+
+                                    ('passwdFile',
+                                     small_passwords,
+                                     PluginConfig.INPUT_FILE),
+
+                                    ('useProfiling',
+                                     False,
+                                     PluginConfig.BOOL),),)
     }
 
     @attr('smoke')
     def test_found_credentials_post(self):
-        self._scan(self.target_post_url, self.positive_test['plugins'])
+        self._scan(self.target_post_url, self.positive_test)
 
         # Assert the general results
         vulns = self.kb.get('form_auth', 'auth')
@@ -93,7 +93,7 @@ class TestFormAuth(PluginTest):
         self.assertEquals(vuln['pass'], '1234')
 
     def test_found_credentials_get(self):
-        self._scan(self.target_get_url, self.positive_test['plugins'])
+        self._scan(self.target_get_url, self.positive_test)
 
         # Assert the general results
         vulns = self.kb.get('form_auth', 'auth')
@@ -107,8 +107,7 @@ class TestFormAuth(PluginTest):
         self.assertEquals(vuln['pass'], 'admin')
 
     def test_found_credentials_password_only(self):
-        self._scan(self.target_password_only_url,
-                   self.positive_test['plugins'])
+        self._scan(self.target_password_only_url, self.positive_test)
 
         # Assert the general results
         vulns = self.kb.get('form_auth', 'auth')
@@ -123,7 +122,7 @@ class TestFormAuth(PluginTest):
         self.assertEquals(vuln['pass'], '1234')
 
     def test_negative(self):
-        self._scan(self.target_negative_url, self.negative_test['plugins'])
+        self._scan(self.target_negative_url, self.negative_test)
 
         # Assert the general results
         vulns = self.kb.get('form_auth', 'auth')

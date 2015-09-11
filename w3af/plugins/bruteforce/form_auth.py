@@ -75,19 +75,21 @@ class form_auth(BruteforcePlugin):
             om.out.debug(msg % bfe)
             return
 
-        # Let the user know what we are doing
         user_token, pass_token = mutant.get_dc().get_login_tokens()
-        om.out.information('Found a form login. The action of the '
-                           'form is: "%s".' % mutant.get_url())
+
+        # Let the user know what we are doing
+        msg = 'Found a user login form. The form action is: "%s".'
+        om.out.information(msg % mutant.get_url())
 
         if user_token is not None:
-            om.out.information('The username field to be used is: "%s".'
-                               % user_token.get_name())
+            msg = 'The username field to be used is: "%s".'
+            om.out.information(msg % user_token.get_name())
 
-        om.out.information('The password field to be used is: "%s".'
-                           % pass_token.get_name())
-        om.out.information('Starting form authentication bruteforce on URL: "%s".'
-                           % mutant.get_url())
+        msg = 'The password field to be used is: "%s".'
+        om.out.information(msg % pass_token.get_name())
+
+        msg = 'Starting form authentication bruteforce on URL: "%s".'
+        om.out.information(msg % mutant.get_url())
 
         if user_token is not None:
             generator = self._create_user_pass_generator(mutant.get_url())
@@ -162,9 +164,9 @@ class form_auth(BruteforcePlugin):
             body = self.clean_body(response, user, passwd)
 
             if not self._matches_failed_login(body, login_failed_result_list):
-                raise BaseFrameworkException('Failed to generate a response'
-                                             'that matches the failed login'
-                                             ' page.')
+                msg = ('Failed to generate a response that matches the'
+                       ' failed login page.')
+                raise BaseFrameworkException(msg)
 
         return login_failed_result_list
 

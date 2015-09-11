@@ -30,7 +30,7 @@ from w3af.core.controllers.misc.make_leet import make_leet
 from w3af.core.controllers.misc.itertools_toolset import unique_everseen
 
 
-class password_bruteforcer(object):
+class PasswordBruteforcer(object):
     """
     This class is a helper for bruteforcing any login that provides passwords
     with an iterator API.
@@ -74,7 +74,7 @@ class password_bruteforcer(object):
             yield line.strip()
 
 
-class user_password_bruteforcer(object):
+class UserPasswordBruteforcer(object):
     """
     This class is a helper for bruteforcing any login that provides user and
     password combinations with an iterator API.
@@ -103,7 +103,7 @@ class user_password_bruteforcer(object):
         self._url = url
 
     def _new_password_bruteforcer(self):
-        pbf = password_bruteforcer(self._url)
+        pbf = PasswordBruteforcer(self._url)
         pbf.passwd_file = self.passwd_file
         pbf.l337_p4sswd = self.l337_p4sswd
         pbf.use_profiling = self.use_profiling
@@ -186,9 +186,9 @@ def get_profiling_results(self, max_items=50):
     kb_data = kb.kb.raw_read('password_profiling', 'password_profiling')
 
     if not kb_data:
-        msg = 'No password profiling information collected for using during'\
-              ' the bruteforce process, please try to enable crawl.web_spider'\
-              ' and grep.password_profiling plugins and try again.'
+        msg = ('No password profiling information collected for using during'
+               ' the bruteforce process, please try to enable crawl.web_spider'
+               ' and grep.password_profiling plugins and try again.')
         om.out.debug(msg)
         return []
 

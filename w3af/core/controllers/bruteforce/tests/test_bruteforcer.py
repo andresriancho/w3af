@@ -25,25 +25,25 @@ import unittest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
-from w3af.core.controllers.bruteforce.bruteforcer import (password_bruteforcer,
-                                                     user_password_bruteforcer)
+from w3af.core.controllers.bruteforce.bruteforcer import (PasswordBruteforcer,
+                                                     UserPasswordBruteforcer)
 from w3af.core.data.parsers.doc.url import URL
 
 
-class test_password_bruteforcer(unittest.TestCase):
+class test_PasswordBruteforcer(unittest.TestCase):
 
     @attr('smoke')
     def test_contains(self):
         url = URL('http://www.w3af.org/')
 
-        pwd_bf = password_bruteforcer(url)
+        pwd_bf = PasswordBruteforcer(url)
 
         self.assertTrue('password' in pwd_bf.generator())
         self.assertTrue('123456' in pwd_bf.generator())
         self.assertTrue('12345' in pwd_bf.generator())
 
 
-class test_user_password_bruteforcer(unittest.TestCase):
+class test_UserPasswordBruteforcer(unittest.TestCase):
 
     def setUp(self):
         self.temp_dir = create_temp_dir()
@@ -52,7 +52,7 @@ class test_user_password_bruteforcer(unittest.TestCase):
     def test_bruteforcer_default(self):
         url = URL('http://www.w3af.org/')
 
-        bf = user_password_bruteforcer(url)
+        bf = UserPasswordBruteforcer(url)
 
         expected_combinations = [
             ('prueba1', '123abc'),
@@ -92,7 +92,7 @@ class test_user_password_bruteforcer(unittest.TestCase):
 
         url = URL('http://www.w3af.org/')
 
-        bf = user_password_bruteforcer(url)
+        bf = UserPasswordBruteforcer(url)
         bf.combo_file = combo_filename
         bf.combo_separator = ':'
 

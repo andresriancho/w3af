@@ -31,8 +31,8 @@ from w3af.core.data.options.option_types import BOOL, STRING, INPUT_FILE, INT
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.misc.safe_deepcopy import safe_deepcopy
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
-                                                          password_bruteforcer)
+from w3af.core.controllers.bruteforce.bruteforcer import (UserPasswordBruteforcer,
+                                                          PasswordBruteforcer)
 
 
 class BruteforcePlugin(AuditPlugin):
@@ -68,7 +68,7 @@ class BruteforcePlugin(AuditPlugin):
         self._already_tested = []
 
     def _create_user_pass_generator(self, url):
-        up_bf = user_password_bruteforcer(url)
+        up_bf = UserPasswordBruteforcer(url)
         up_bf.use_emails = self._use_emails
         up_bf.use_profiling = self._use_profiling
         up_bf.profiling_number = self._profiling_number
@@ -82,7 +82,7 @@ class BruteforcePlugin(AuditPlugin):
         return up_bf.generator()
 
     def _create_pass_generator(self, url):
-        p_bf = password_bruteforcer(url)
+        p_bf = PasswordBruteforcer(url)
         p_bf.use_profiling = self._use_profiling
         p_bf.profiling_number = self._profiling_number
         p_bf.l337_p4sswd = self._l337_p4sswd
