@@ -68,6 +68,7 @@ class SessionTest(APIUnitTest):
         k,v = params.popitem()
         self.assertIn('type', v)
 
+        # Test get/set plugin options
         set_plugin_opt = self.app.patch(
             '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
             data=json.dumps({"profilingNumber": prof_num}),
@@ -92,10 +93,36 @@ class SessionTest(APIUnitTest):
             headers=self.HEADERS)
         self.assertEqual(bad_opt_value.status_code, 422)
 
+        # The same but for core options
+        set_core_opt = self.app.patch(
+            '/sessions/%s/core/target/' % session_id,
+            data=json.dumps({"target_os": "unix"}),
+            headers=self.HEADERS)
+        self.assertEqual(set_core_opt.status_code, 200)
+
+        test_core_changed = self.app.get(
+            '/sessions/%s/core/target/' % session_id,
+            headers=self.HEADERS)
+        params = json.loads(test_core_changed.data)['target settings']
+        self.assertEqual(params['target_os']['value'], "unix")
+
+        bad_opt_name = self.app.patch(
+            '/sessions/%s/core/misc/' % session_id,
+            data=json.dumps({"nonexistentOption":"foo_bar"}),
+            headers=self.HEADERS)
+        self.assertEqual(bad_opt_name.status_code, 400)
+
+        bad_opt_value = self.app.patch(
+            '/sessions/%s/core/http/' % session_id,
+            data=json.dumps({"max_file_size": ["this_should", "be_an_int"]}),
+            headers=self.HEADERS)
+        self.assertEqual(bad_opt_value.status_code, 422)
+
         test_404s = [
             '/sessions/999',
             '/sessions/%s/plugins/this_should_404/' % session_id,
             '/sessions/%s/plugins/audit/this_should_also_404/' % session_id,
+            '/sessions/%s/core/nonexistent_setting/' % session_id
             ]
 
         for endpoint in test_404s:
