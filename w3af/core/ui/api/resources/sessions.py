@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import threading
 from flask import jsonify, request
 
 from w3af.core.ui.api import app
@@ -214,12 +215,14 @@ def set_plugin_config(**kwargs):
                 'message': 'Invalid %s option %s' % (opt_type, opt_value)
                 }), 422
 
-    w3af.plugins.set_plugin_options(plugin_type, plugin, plugin_opts)
+    lock = threading.RLock()
+    with lock:
+        w3af.plugins.set_plugin_options(plugin_type, plugin, plugin_opts)
 
-    return jsonify({
-        'message': 'success',
-        'modified': request.json
-        })
+        return jsonify({
+            'message': 'success',
+            'modified': request.json
+            })
 
 
 @app.route('/sessions/<int:scan_id>/core/<string:core_setting>/',
@@ -299,9 +302,11 @@ def set_core_config(scan_id, core_setting):
                 'message': 'Invalid %s value %s' % (opt_type, opt_value)
                 }), 422
 
-    configurable.set_options(core_opts)
+    lock = threading.RLock()
+    with lock:
+        configurable.set_options(core_opts)
 
-    return jsonify({
-        'message': 'success',
-        'modified': request.json
-        })
+        return jsonify({
+            'message': 'success',
+            'modified': request.json
+            })
