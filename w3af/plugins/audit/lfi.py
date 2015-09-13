@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement
 
-import re
-
 import w3af.core.controllers.output_manager as om
 
 import w3af.core.data.constants.severity as severity
@@ -32,9 +30,25 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.is_source_file import is_source_file
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.esmre.multi_re import multi_re
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
+
+
+FILE_OPEN_ERRORS = [# Java
+                    'java.io.FileNotFoundException:',
+                    'java.lang.Exception:',
+                    'java.lang.IllegalArgumentException:',
+                    'java.net.MalformedURLException:',
+
+                    # PHP
+                    'fread\\(\\):',
+                    'for inclusion \'\\(include_path=',
+                    'Failed opening required',
+                    '<b>Warning</b>:  file\\(',
+                    '<b>Warning</b>:  file_get_contents\\(',
+                    'open_basedir restriction in effect']
 
 
 class lfi(AuditPlugin):
@@ -43,15 +57,8 @@ class lfi(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    _multi_in = multi_in(FILE_PATTERNS)
-
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
-        # Internal variables
-        self._file_compiled_regex = []
-        self._error_compiled_regex = []
-        self._open_basedir = False
+    file_pattern_multi_in = multi_in(FILE_PATTERNS)
+    file_read_error_multi_re = multi_re(FILE_OPEN_ERRORS)
 
     def audit(self, freq, orig_response):
         """
@@ -59,19 +66,35 @@ class lfi(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
-        # Which payloads do I want to send to the remote end?
-        local_files = [freq.get_url().get_file_name()]
-        if not self._open_basedir:
-            local_files.extend(self._get_local_file_list(freq.get_url()))
-
-        mutants = create_mutants(freq, local_files, orig_resp=orig_response)
+        mutants = create_mutants(freq,
+                                 self.get_lfi_tests(freq),
+                                 orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result,
                                       grep=False)
 
-    def _get_local_file_list(self, orig_url):
+    def get_lfi_tests(self, freq):
+        """
+        :param freq: The fuzzable request we're analyzing
+        :return: The paths to test
+        """
+        #
+        #   Add some tests which try to read "self"
+        #   http://host.tld/show_user.php?id=show_user.php
+        #
+        lfi_tests = [freq.get_url().get_file_name(),
+                     '/%s' % freq.get_url().get_file_name()]
+
+        #
+        #   Add some tests which try to read common/known files
+        #
+        lfi_tests.extend(self._get_common_file_list(freq.get_url()))
+
+        return lfi_tests
+
+    def _get_common_file_list(self, orig_url):
         """
         This method returns a list of local files to try to include.
 
@@ -87,42 +110,46 @@ class lfi(AuditPlugin):
         # about other default files that could be installed on AIX ? Solaris ?
         # and are not /etc/passwd
         if cf.cf.get('target_os') in {'unix', 'unknown'}:
-            local_files.append("../" * 15 + "etc/passwd")
-            local_files.append("../" * 15 + "etc/passwd\0")
-            local_files.append("../" * 15 + "etc/passwd\0.html")
-            local_files.append("/etc/passwd")
+            local_files.append('/../' * 15 + 'etc/passwd')
+            local_files.append('../' * 15 + 'etc/passwd')
+
+            local_files.append('/../' * 15 + 'etc/passwd\0')
+            local_files.append('/../' * 15 + 'etc/passwd\0.html')
+            local_files.append('/etc/passwd')
 
             # This test adds support for finding vulnerabilities like this one
             # http://website/zen-cart/extras/curltest.php?url=file:///etc/passwd
-            local_files.append("file:///etc/passwd")
+            local_files.append('file:///etc/passwd')
 
-            local_files.append("/etc/passwd\0")
-            local_files.append("/etc/passwd\0.html")
+            local_files.append('/etc/passwd\0')
+            local_files.append('/etc/passwd\0.html')
 
             if extension != '':
-                local_files.append("/etc/passwd%00." + extension)
-                local_files.append("../" * 15 + "etc/passwd%00." + extension)
+                local_files.append('/etc/passwd%00.' + extension)
+                local_files.append('/../' * 15 + 'etc/passwd%00.' + extension)
 
         if cf.cf.get('target_os') in {'windows', 'unknown'}:
-            local_files.append("../" * 15 + "boot.ini\0")
-            local_files.append("../" * 15 + "boot.ini\0.html")
+            local_files.append('/../' * 15 + 'boot.ini')
+            local_files.append('../' * 15 + 'boot.ini')
 
-            local_files.append("C:\\boot.ini")
-            local_files.append("C:\\boot.ini\0")
-            local_files.append("C:\\boot.ini\0.html")
+            local_files.append('/../' * 15 + 'boot.ini\0')
+            local_files.append('/../' * 15 + 'boot.ini\0.html')
 
-            local_files.append("%SYSTEMROOT%\\win.ini")
-            local_files.append("%SYSTEMROOT%\\win.ini\0")
-            local_files.append("%SYSTEMROOT%\\win.ini\0.html")
+            local_files.append('C:\\boot.ini')
+            local_files.append('C:\\boot.ini\0')
+            local_files.append('C:\\boot.ini\0.html')
 
-            # file:// URIs for windows
-            # http://blogs.msdn.com/b/ie/archive/2006/12/06/file-uris-in-windows.aspx
-            local_files.append("file:///C:/boot.ini")
-            local_files.append("file:///C:/win.ini")
+            local_files.append('%SYSTEMROOT%\\win.ini')
+            local_files.append('%SYSTEMROOT%\\win.ini\0')
+            local_files.append('%SYSTEMROOT%\\win.ini\0.html')
+
+            # file:// URIs for windows , docs here: http://goo.gl/A9Mvux
+            local_files.append('file:///C:/boot.ini')
+            local_files.append('file:///C:/win.ini')
 
             if extension != '':
-                local_files.append("C:\\boot.ini%00." + extension)
-                local_files.append("%SYSTEMROOT%\\win.ini%00." + extension)
+                local_files.append('C:\\boot.ini%00.' + extension)
+                local_files.append('%SYSTEMROOT%\\win.ini%00.' + extension)
 
         return local_files
 
@@ -137,25 +164,10 @@ class lfi(AuditPlugin):
         if self._has_bug(mutant):
             return
 
-        # I analyze the response searching for a specific PHP error string
-        # that tells me that open_basedir is enabled, and our request triggered
-        # the restriction. If open_basedir is in use, it makes no sense to keep
-        # trying to read "/etc/passwd", that is why this variable is used to
-        # determine which tests to send if it was possible to detect the usage
-        # of this security feature.
-        if not self._open_basedir:
-
-            basedir_warning = 'open_basedir restriction in effect'
-
-            if basedir_warning in response and \
-            basedir_warning not in mutant.get_original_response_body():
-                self._open_basedir = True
-
         #
         #   Identify the vulnerability
         #
-        file_content_list = self._find_file(response)
-        for file_pattern_match in file_content_list:
+        for file_pattern_match in self._find_common_file_fragments(response):
             if file_pattern_match not in mutant.get_original_response_body():
                 
                 desc = 'Local File Inclusion was found at: %s'
@@ -177,13 +189,14 @@ class lfi(AuditPlugin):
         # (note that this is run if no vulns were identified)
         #
         # http://host.tld/show_user.php?id=show_user.php
-        if mutant.get_token_value() == mutant.get_url().get_file_name():
+        if mutant.get_url().get_file_name() in mutant.get_token_value():
             match, lang = is_source_file(response.get_body())
             if match:
                 # We were able to read the source code of the file that is
                 # vulnerable to local file read
-                desc = 'An arbitrary local file read vulnerability was'\
-                       ' found at: %s' % mutant.found_at()
+                desc = ('An arbitrary local file read vulnerability was'
+                        ' found at: %s')
+                desc %= mutant.found_at()
                 
                 v = Vuln.from_mutant('Local file inclusion vulnerability',
                                      desc, severity.MEDIUM, response.id,
@@ -202,20 +215,19 @@ class lfi(AuditPlugin):
         #   Check for interesting errors (note that this is run if no vulns were
         #   identified)
         #
-        for regex in self.get_include_errors():
-
-            match = regex.search(response.get_body())
-
-            if match and not regex.search(mutant.get_original_response_body()):
+        body = response.get_body()
+        for _, error_str, _ in self.file_read_error_multi_re.query(body):
+            if error_str not in mutant.get_original_response_body():
                 desc = 'A file read error was found at: %s'
                 desc %= mutant.found_at()
                 
                 i = Info.from_mutant('File read error', desc, response.id,
                                      self.get_name(), mutant)
+                i.add_to_highlight(error_str)
                 
                 self.kb_append_uniq(self, 'error', i)
 
-    def _find_file(self, response):
+    def _find_common_file_fragments(self, response):
         """
         This method finds out if the local file has been successfully included
         in the resulting HTML.
@@ -224,7 +236,9 @@ class lfi(AuditPlugin):
         :return: A list of errors found on the page
         """
         res = set()
-        for file_pattern_match in self._multi_in.query(response.get_body()):
+        matches = self.file_pattern_multi_in.query(response.get_body())
+
+        for file_pattern_match in matches:
             res.add(file_pattern_match)
 
         if len(res) == 1:
@@ -250,41 +264,14 @@ class lfi(AuditPlugin):
         
         return res
 
-    def get_include_errors(self):
-        """
-        :return: A list of file inclusion / file read errors generated by the
-                 web application.
-        """
-        #
-        # In previous versions of the plugin the "Inclusion errors" listed in
-        # the _get_file_patterns method made sense... but... it seems that they
-        # trigger false positives... So I moved them here and report them as
-        # something "interesting" if the actual file inclusion is not possible
-        #
-        if self._error_compiled_regex:
-            return self._error_compiled_regex
-        else:
-            read_errors = ["java.io.FileNotFoundException:",
-                           'java.lang.Exception:',
-                           'java.lang.IllegalArgumentException:',
-                           'java.net.MalformedURLException:',
-                           'The server encountered an internal error \\(.*\\) that prevented it from fulfilling this request.',
-                           'The requested resource \\(.*\\) is not available.',
-                           "fread\\(\\):",
-                           "for inclusion '\\(include_path=",
-                           "Failed opening required",
-                           "<b>Warning</b>:  file\\(",
-                           "<b>Warning</b>:  file_get_contents\\("]
-
-            self._error_compiled_regex = [re.compile(i, re.IGNORECASE) for i in read_errors]
-            return self._error_compiled_regex
-
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin will find local file include vulnerabilities. This is done by
-        sending to all injectable parameters file paths like "../../../../../etc/passwd"
-        and searching in the response for strings like "root:x:0:0:".
+        This plugin will find local file include vulnerabilities.
+
+        Detection is performed by sending specific strings which represent
+        common file system paths such as "../../etc/passwd" to all injectable
+        parameters and matching strings like "root:x:0:0:" in the response.
         """

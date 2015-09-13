@@ -66,6 +66,7 @@ dependencies:
     # Run the test servers/dependencies
     - cd w3af/tests/ && docker-compose up -d
     - w3af/tests/add-test-routes.sh
+    - w3af/tests/waitfor-test-dependencies.py
 
   post:
     - pip --version

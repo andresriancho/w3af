@@ -1,5 +1,5 @@
 wavsep:
-  image: andresriancho/pico-wavsep:latest
+  image: andresriancho/wavsep:latest
   ports:
     - "8098:8080"
   links:

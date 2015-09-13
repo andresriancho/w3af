@@ -106,7 +106,7 @@ class TestDjangoBlindSQLI(PluginTest):
 class TestReflectedXSSFalsePositive(PluginTest):
 
     def test_xss_false_positive_1516(self):
-        target_url = get_wavsep_http('/active/Reflected-XSS/'
+        target_url = get_wavsep_http('/wavsep/active/Reflected-XSS/'
                                      'RXSS-Detection-Evaluation-GET/'
                                      'Case24-Js2ScriptTag.jsp?userinput=1234')
         self._scan(target_url, CONFIG)
