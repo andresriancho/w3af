@@ -1859,4 +1859,117 @@ config file stored in this folder.
 Thank You
 Atik Rahman</textualDescription></signature><signature><signatureReferenceNumber>4047</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4047/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:&quot;Full path to a .htpasswd file in this dir:&quot; filetype:php</querystring><shortDescription>intext:&quot;Full path to a .htpasswd file in this dir:&quot; filetype:php</shortDescription><textualDescription>Files containing Juicy information from web online tools for generating .htpasswd and giving full web path .
 
-by - l1kw1d  		 	   		  </textualDescription></signature></searchEngineSignature>
+by - l1kw1d  		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>4048</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4048/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:cgi-bin ext:pl intext:&quot;-rwxr-xr-x&quot;</querystring><shortDescription>inurl:cgi-bin ext:pl intext:&quot;-rwxr-xr-x&quot;</shortDescription><textualDescription>List of Directories of Unix and Linux webs.
+Enjoy!.
+By Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>4049</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4049/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=allinurl:wp-content/plugins/wptf-image-gallery/</querystring><shortDescription>allinurl:wp-content/plugins/wptf-image-gallery/</shortDescription><textualDescription>Description:- Aribtrary File Download Vuln.
+Exploit :- www.exploit-db.com/exploits/37751/
+Google :- allinurl:wp-content/plugins/wptf-image-gallery/
+
+
+Sincerely,
+
+Zeel Chavda
+</textualDescription></signature><signature><signatureReferenceNumber>4050</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4050/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;/squid-reports/&quot; AND intitle:&quot;SARG reports&quot;</querystring><shortDescription>inurl:&quot;/squid-reports/&quot; AND intitle:&quot;SARG reports&quot;</shortDescription><textualDescription>Search the Sarg monitoring graphs of Web Proxy SQUID3
+
+Ing. Daniel Maldonado
+http://www.caceriadespammers.com.ar
+</textualDescription></signature><signature><signatureReferenceNumber>4051</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4051/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;hp laserjet&quot; inurl:SSI/Auth/set_config_deviceinfo.htm</querystring><shortDescription>intitle:&quot;hp laserjet&quot; inurl:SSI/Auth/set_config_deviceinfo.htm</shortDescription><textualDescription># Exploit Title: Unprotected HP Laserjets
+# Google Dork: intitle:&quot;hp laserjet&quot; inurl:SSI/Auth/set_config_deviceinfo.htm
+# Date: 15/08/2015
+# Exploit Author: Anonymous
+
+Change default password or add your own password as the printers come without a password which allows others to mess with settings and print various things.
+</textualDescription></signature><signature><signatureReferenceNumber>4052</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4052/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:/homedir/.cpanel-datastore/</querystring><shortDescription>intext:/homedir/.cpanel-datastore/</shortDescription><textualDescription>intext:/homedir/.cpanel-datastore dork displays publicly accessible and
+indexed cpanel datastores.
+
+Enjoy, Zapperlink
+</textualDescription></signature><signature><signatureReferenceNumber>4053</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4053/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:bbdd index.of &quot;/&quot; &quot;Parent Directory&quot;</querystring><shortDescription>intext:bbdd index.of &quot;/&quot; &quot;Parent Directory&quot;</shortDescription><textualDescription>Databases directory info. Have Fun!
+
+Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>4054</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4054/</link><category>Footholds</category><querystring>http://www.google.com/search?q=intitle:SN0X SHELL: WEEEEEEEEEEEEEEEEED</querystring><shortDescription>intitle:SN0X SHELL: WEEEEEEEEEEEEEEEEED</shortDescription><textualDescription>Google Dork that brings up ddos shell</textualDescription></signature><signature><signatureReferenceNumber>4055</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4055/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:pac inurl:&quot;/proxy&quot;</querystring><shortDescription>filetype:pac inurl:&quot;/proxy&quot;</shortDescription><textualDescription>Search the Web Proxy Autodiscovery Protocol
+
+Ing. Daniel Maldonadohttp://www.caceriadespammers.com.ar
+</textualDescription></signature><signature><signatureReferenceNumber>4056</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4056/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=intext:&quot;Unexpected Problem Occurred!&quot; ext:aspx</querystring><shortDescription>intext:&quot;Unexpected Problem Occurred!&quot; ext:aspx</shortDescription><textualDescription>This Error messages reveal a lot of info of servers. Enjoy xD.
+Rootkit Pentester.
+</textualDescription></signature><signature><signatureReferenceNumber>4057</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4057/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:&quot;Index of&quot; &quot;DCIM&quot;</querystring><shortDescription>intitle:&quot;Index of&quot; &quot;DCIM&quot;</shortDescription><textualDescription>A lot of Camera Photos Dump.
+Have Fun!.
+Rootkit.
+</textualDescription></signature><signature><signatureReferenceNumber>4058</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4058/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl: mil|/issue.php filetype:xls</querystring><shortDescription>inurl: mil|/issue.php filetype:xls</shortDescription><textualDescription>Files containing juicy info of the involved current issuers
+Author : aye_robot</textualDescription></signature><signature><signatureReferenceNumber>4059</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4059/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=site: edu|org + inurl:&quot;faculty_login.asp | .php&quot;</querystring><shortDescription>site: edu|org + inurl:&quot;faculty_login.asp | .php&quot;</shortDescription><textualDescription>Type: login portals
+Author : botsec0
+</textualDescription></signature><signature><signatureReferenceNumber>4060</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4060/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:&quot;Index of&quot; &quot;WhatsApp Images&quot;</querystring><shortDescription>intitle:&quot;Index of&quot; &quot;WhatsApp Images&quot;</shortDescription><textualDescription>WhatsApp Images folder, usually from backups.
+
+--pmbento
+</textualDescription></signature><signature><signatureReferenceNumber>4061</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4061/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:/set_config_password.html</querystring><shortDescription>inurl:/set_config_password.html</shortDescription><textualDescription>Submitter: Gman The Mod-dog </textualDescription></signature><signature><signatureReferenceNumber>4062</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4062/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=intitle:Error Page pageWrapper.jsp?</querystring><shortDescription>intitle:Error Page pageWrapper.jsp?</shortDescription><textualDescription>&quot;java.lang.NullPointerException&quot; Error
+Thanks,
+Xploit</textualDescription></signature><signature><signatureReferenceNumber>4063</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4063/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:IBM Lotus iNotes Login</querystring><shortDescription>intitle:IBM Lotus iNotes Login</shortDescription><textualDescription>Thanks,
+
+Xploit </textualDescription></signature><signature><signatureReferenceNumber>4064</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4064/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:src/viewcvs.cgi/log/.c?=</querystring><shortDescription>inurl:src/viewcvs.cgi/log/.c?=</shortDescription><textualDescription>Vulnerable CVS logs
+</textualDescription></signature><signature><signatureReferenceNumber>4065</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4065/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=intitle:Error-javax.el.ELException+error+xhtml</querystring><shortDescription>intitle:Error-javax.el.ELException+error+xhtml</shortDescription><textualDescription>An Error Occurred:
+&quot;javax.el.ELException&quot; 
+
+Java error and gives 
+
++ Stack Trace, + Component Tree, + Scoped Variables. 
+
+-Xploit
+</textualDescription></signature><signature><signatureReferenceNumber>4066</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4066/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=&quot;ganglia mobile.php&quot;</querystring><shortDescription>&quot;ganglia mobile.php&quot;</shortDescription><textualDescription>EDB: https://www.exploit-db.com/exploits/38030/
+CVE: CVE-2012-3448
+
+Also:
+
+intitle:&quot;Ganglia Mobile&quot;
+intitle:&quot;Ganglia&quot; inurl:&quot;mobile.php&quot;
+intitle:&quot;Grid Report&quot; OR intitle:&quot;Cluster Report&quot; OR intitle:&quot;Node View&quot; OR intitle:&quot;Host Report&quot; OR intitle:&quot;Ganglia:: &quot;
+intitle:&quot;Powered by Job Monarch&quot;
+intext:&quot;Job Monarch version &quot;
+intext:&quot;Jobarchive&quot; intext:&quot;runningtime&quot;
+inurl:&quot;/addons/job_monarch&quot; -oss.trac.surfsara.nl
+&quot;Ganglia Web Frontend version 3.5.0&quot; - Comment: just tweak the version 3.5.0 to any valid Ganglia Web Frontend version to get results targeted to a specific version.</textualDescription></signature><signature><signatureReferenceNumber>4067</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4067/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=inurl:&quot;/cms/app/webroot&quot;</querystring><shortDescription>inurl:&quot;/cms/app/webroot&quot;</shortDescription><textualDescription>inurl:&quot;/cms/app/webroot&quot;
+Author:ShockvaWe (mrnoone)
+ özüm
+</textualDescription></signature><signature><signatureReferenceNumber>4068</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4068/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;IPCam&quot; inurl:monitor2.htm</querystring><shortDescription>intitle:&quot;IPCam&quot; inurl:monitor2.htm</shortDescription><textualDescription>EasyN IP webcam WebUI.
+Category: Various Online devices
+
+- Fitzl Csaba </textualDescription></signature><signature><signatureReferenceNumber>4069</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4069/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:browse.php inurl:kcfinder -github.com</querystring><shortDescription>inurl:browse.php inurl:kcfinder -github.com</shortDescription><textualDescription>Panels of files for kcfinder Software. Have fun!.
+Dork by Rootkit Pentester.
+</textualDescription></signature><signature><signatureReferenceNumber>4070</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4070/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:xampp inurl:perlinfo.pl ext:pl</querystring><shortDescription>inurl:xampp inurl:perlinfo.pl ext:pl</shortDescription><textualDescription>Panels with a lot of data for webservers.
+Dork by Rootkit Pentester.
+</textualDescription></signature><signature><signatureReferenceNumber>4071</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4071/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=site:.edu | .gov ext:bkf | ext:bkp | ext:bak | ext:old | ext:backup</querystring><shortDescription>site:.edu | .gov ext:bkf | ext:bkp | ext:bak | ext:old | ext:backup</shortDescription><textualDescription>Dork :
+site:.edu | .gov ext:bkf | ext:bkp | ext:bak | ext:old | ext:backup
+
+This Will help to grab the Backup and old file of the (.gov and .edu)
+Website's
+
+By : Mishra Dhiraj (D)
+</textualDescription></signature><signature><signatureReferenceNumber>4072</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4072/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=site:target.com ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini</querystring><shortDescription>site:target.com ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini</shortDescription><textualDescription>Dork;
+site:target.com ext:xml | ext:conf | ext:cnf | ext:reg | ext:inf | ext:rdp | ext:cfg | ext:txt | ext:ora | ext:ini
+
+This dork will search for any configuration files a target or targets may
+have.
+You can change in site:target.com - to target:edu (for education targets)
+
+By Kevin Mark
+</textualDescription></signature><signature><signatureReferenceNumber>4073</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4073/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:&quot;Index of&quot; &quot;WhatsApp Databases&quot;</querystring><shortDescription>intitle:&quot;Index of&quot; &quot;WhatsApp Databases&quot;</shortDescription><textualDescription>this dork find db.crypt/.db files of whatsapp conversations
+you can open them with
+https://code.google.com/p/hotoloti/downloads/detail?name=Whatsapp_Xtract_V2.1_2012-05-10-2.zip&amp;
+
+thanks to pmbento
+--acid_burn9X
+</textualDescription></signature><signature><signatureReferenceNumber>4074</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4074/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:Logon  OrderCloud ui/logon.aspx</querystring><shortDescription>intitle:Logon  OrderCloud ui/logon.aspx</shortDescription><textualDescription>Four51 OrderCloud Company cloud software.
+OrderCloud for shopping websites Login.
+-Xploit </textualDescription></signature><signature><signatureReferenceNumber>4075</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4075/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:&quot;/wap/LoginPolicy.jsp&quot;</querystring><shortDescription>inurl:&quot;/wap/LoginPolicy.jsp&quot;</shortDescription><textualDescription>Stoneware webnetwork Cloud 
+
+Allows for Portal Cloud login.
+-Xploit </textualDescription></signature><signature><signatureReferenceNumber>4076</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4076/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:&quot;remote.php/webdav&quot; -site:owncloud.org</querystring><shortDescription>inurl:&quot;remote.php/webdav&quot; -site:owncloud.org</shortDescription><textualDescription>Category: Pages Containin Login Portals
+Author: Felipe Molina (@femoltor)
+
+Owncloud WebDav login
+</textualDescription></signature><signature><signatureReferenceNumber>4077</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4077/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=intitle:&quot;Index.of&quot; &quot;attachments&quot;</querystring><shortDescription>intitle:&quot;Index.of&quot; &quot;attachments&quot;</shortDescription><textualDescription>Directories with interesting info.
+Have Fun Responsible.
+Dork by Rootkit Pentester.
+</textualDescription></signature><signature><signatureReferenceNumber>4078</signatureReferenceNumber><link>https://www.exploit-db.com/ghdb/4078/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=intitle:&quot;Whoops! There was an error.&quot;</querystring><shortDescription>intitle:&quot;Whoops! There was an error.&quot;</shortDescription><textualDescription>These error pages can contain database credentials.
+contact: @geoffreyvdberge
+
+</textualDescription></signature></searchEngineSignature>
