@@ -48,7 +48,7 @@ SOURCE_CODE = (
     ('<%! .*%>', 'JSP'),
     ('<%!\n.*%>', 'JSP'),
     ('<%!\r.*%>', 'JSP'),
-    ('<%=.*%>', 'JSP or PHP'),
+    ('<%=.*%>', 'JSP, PHP or Ruby on Rails'),
 
     ('<!--\s*%.*?%(--)?>', 'PHP'),
     ('<!--\s*\?.*?\?(--)?>', 'ASP or JSP'),
@@ -66,8 +66,10 @@ SOURCE_CODE = (
     ('<!--g:render', 'Groovy'),
 
     # Python
-    ('    def .*?:\n', 'Python'),
-    ('\tdef .*?:\n', 'Python'),
+    ('def .*?\(.*?\):\n', 'Python'),
+
+    # Ruby
+    ('class .*?< .*?end', 'Ruby'),
 )
 
 BLACKLIST = {'xml', 'xpacket'}

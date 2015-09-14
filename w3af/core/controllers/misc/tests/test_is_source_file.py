@@ -62,9 +62,21 @@ class TestIsSourceFile(unittest.TestCase):
         self.assertNotEqual(match, None)
         self.assertEqual(lang, 'PHP')
 
-    def test_code_python_self(self):
-        source = file(__file__).read()
+    def test_code_python(self):
+        source = '''
+                 def foo(self):
+                    pass
+                 '''
         match, lang = is_source_file(source)
 
         self.assertNotEqual(match, None)
         self.assertEqual(lang, 'Python')
+
+    def test_code_ruby(self):
+        source = '''class Person < ActiveRecord::Base
+                        validates :name, presence: true
+                    end'''
+        match, lang = is_source_file(source)
+
+        self.assertNotEqual(match, None)
+        self.assertEqual(lang, 'Ruby')
