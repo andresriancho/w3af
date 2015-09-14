@@ -24,7 +24,7 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.misc.is_source_file import is_source_file
+from w3af.core.controllers.misc.contains_source_code import contains_source_code
 
 
 class code_disclosure(GrepPlugin):
@@ -53,12 +53,7 @@ class code_disclosure(GrepPlugin):
         if not response.is_text_or_html():
             return
 
-        # https://github.com/andresriancho/w3af/issues/5379
-        # Avoid some (rather common) false positives that appear in JS files
-        if 'javascript' in response.content_type:
-            return
-
-        match, lang = is_source_file(response.get_body())
+        match, lang = contains_source_code(response)
 
         if not match:
             return
@@ -75,7 +70,7 @@ class code_disclosure(GrepPlugin):
             name = u'Code disclosure vulnerability'
 
         # Report the vulnerability
-        desc %= (response.get_url(), lang)
+        desc %= (response.get_url(), ' or '.join(list(lang)))
 
         v = Vuln(name, desc, severity.LOW, response.id, self.get_name())
         v.set_url(response.get_url())

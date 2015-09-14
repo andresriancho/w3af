@@ -27,7 +27,7 @@ import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.misc.is_source_file import is_source_file
+from w3af.core.controllers.misc.contains_source_code import contains_source_code
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.esmre.multi_in import multi_in
 from w3af.core.data.esmre.multi_re import multi_re
@@ -190,7 +190,7 @@ class lfi(AuditPlugin):
         #
         # http://host.tld/show_user.php?id=show_user.php
         if mutant.get_url().get_file_name() in mutant.get_token_value():
-            match, lang = is_source_file(response.get_body())
+            match, lang = contains_source_code(response)
             if match:
                 # We were able to read the source code of the file that is
                 # vulnerable to local file read
