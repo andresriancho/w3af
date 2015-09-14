@@ -46,18 +46,16 @@ class TestExactDelay(unittest.TestCase):
     TEST_SUITE = [
                   # Basic, very easy to pass
                   # The three 0.1 are the calls to get_original_time
-                  (True, (0.1, 0.1, 0.1, 3.5,
-                          0.1, 0.1, 0.1, 2.1,
-                          0.1, 0.1, 0.1, 6.1,
-                          0.1, 0.1, 0.1, 2.2,
-                          0.1, 0.1, 0.1, 3.4)),
+                  (True, (0.1, 0.1, 0.1, 12.5,
+                          0.1, 0.1, 0.1, 8.1,
+                          0.1, 0.1, 0.1, 15.1,
+                          0.1, 0.1, 0.1, 20.2)),
                   
                   # Basic with a +0.1 delta
-                  (True, (0.1, 0.1, 0.1, 3.1,
-                          0.1, 0.1, 0.1, 2.1,
-                          0.1, 0.1, 0.1, 6.1,
-                          0.1, 0.1, 0.1, 2.1,
-                          0.1, 0.1, 0.1, 3.1)),
+                  (True, (0.1, 0.1, 0.1, 12.1,
+                          0.1, 0.1, 0.1, 8.1,
+                          0.1, 0.1, 0.1, 15.1,
+                          0.1, 0.1, 0.1, 20.1)),
                   
                   # Basic without controlled delays
                   (False, [0.1] * 20),
@@ -66,19 +64,16 @@ class TestExactDelay(unittest.TestCase):
                   (False, (0, 0, 0, 5,
                            0, 0, 0, 5,
                            0, 0, 0, 5,
-                           0, 0, 0, 5,
                            0, 0, 0, 5)),
 
                   # Basic with server under random heavy load after setup
                   (False, (0, 0, 0, 5,
                            0, 0, 0, 2,
                            0, 0, 0, 2,
-                           0, 0, 0, 5,
-                           0, 0, 0, 7)),
+                           0, 0, 0, 5)),
 
                   # Basic with server under random heavy load after setup
                   (False, (0.1, 0.2, 0.2, 5,
-                           0.1, 0.2, 0.2, 2,
                            0.1, 0.2, 0.2, 2,
                            0.1, 0.2, 0.2, 2,
                            0.1, 0.2, 0.2, 2)),
@@ -89,25 +84,30 @@ class TestExactDelay(unittest.TestCase):
                            0.1, 0.2, 0.2, 7,
                            0.1, 0.2, 0.2, 7,
                            0.1, 0.2, 0.2, 7)),
-                  
+
+                  # Case explained in this commit:
+                  # https://github.com/andresriancho/w3af/commit/dbef5480db6c09ec3a3493f544c108f61155f75c
+                  (True, (0.1, 0.2, 0.2, 12,
+                          0.1, 0.2, 0.2, 8,
+                          0.1, 0.2, 0.2, 19,
+                          0.1, 0.2, 0.2, 22)),
+
                   # With various delays in the setup phase
-                  (True, (0, 0.2, 0, 3.1,
-                          0, 0.1, 0.15, 2.1,
-                          0, 0.2, 0, 6.1,
-                          0, 0.2, 0, 2.1,
-                          0, 0.2, 0.1, 3.1)),
+                  (True, (0, 0.2, 0, 12.1,
+                          0, 0.1, 0.15, 8.1,
+                          0, 0.2, 0, 15.1,
+                          0, 0.2, 0, 20.1)),
 
-                  (True, (0.1, 0.2, 0.1, 3.1,
-                          0.1, 0.2, 0.1, 2.1,
-                          0.1, 0.2, 0.1, 6.1,
-                          0.1, 0.2, 0.1, 2.1,
-                          0.1, 0.2, 0.1, 3.1)),
+                  (True, (0.1, 0.2, 0.1, 12.1,
+                          0.1, 0.2, 0.1, 8.1,
+                          0.1, 0.2, 0.1, 15.1,
+                          0.1, 0.2, 0.1, 20.1)),
 
-                  (True, (0.2, 0.2, 0.21, 3.2,
-                          0.2, 0.2, 0.22, 2.2,
-                          0.2, 0.2, 0.23, 6.2,
-                          0.2, 0.2, 0.24, 2.2,
-                          0.2, 0.2, 0.25, 3.2)),]
+                  (True, (0.2, 0.2, 0.21, 12.2,
+                          0.2, 0.2, 0.22, 8.2,
+                          0.2, 0.2, 0.23, 15.2,
+                          0.2, 0.2, 0.24, 20.2))
+    ]
     
     def test_delay_controlled(self):
         
@@ -146,7 +146,7 @@ class TestExactDelay(unittest.TestCase):
             
             # This is where we change from test_delay_controlled, the basic
             # idea is that we'll allow false negatives but no false positives
-            if expected_result == True:
+            if expected_result:
                 expected_result = [True, False]
             else:
                 expected_result = [False]
