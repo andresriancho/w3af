@@ -877,12 +877,12 @@ class _RememberingPane(object):
 
     :param w3af: the core
     :param widgname: the name of the widget (the remembering key)
-    :param dimension: 0 for hztal, 1 for vertical
+    :param dimension: 0 for horizontal, 1 for vertical
     :param defaultInitPos: the default position for the first time
                            (overrides "half of the screen").
     """
     def __init__(self, w3af, widgname, dimension, defaultInitPos=None):
-        self.connect("notify", self.move_handle)
+        self.connect('notify', self.move_handle)
         self.winconfig = w3af.mainwin.generalconfig
         self.widgname = widgname
         self.dimension = dimension
@@ -894,7 +894,7 @@ class _RememberingPane(object):
         except ValueError:
             # https://github.com/andresriancho/w3af/issues/332
             # ValueError: invalid operation on closed shelf
-            self.signal = self.connect("expose-event", self.exposed)
+            self.signal = self.connect('expose-event', self.exposed)
         else:
             if widgname in self.winconfig:
                 self.set_position(self.winconfig[widgname])
@@ -902,7 +902,7 @@ class _RememberingPane(object):
                 self.set_position(defaultInitPos)
                 self.winconfig[self.widgname] = defaultInitPos
             else:
-                self.signal = self.connect("expose-event", self.exposed)
+                self.signal = self.connect('expose-event', self.exposed)
 
     def move_handle(self, widg, what):
         """
@@ -1121,7 +1121,8 @@ class ConfigOptions(gtk.VBox, Preferences):
                     if not opt.widg.is_valid():
                         invalid.append(opt.get_name())
         if invalid:
-            msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
+            msg = _("The configuration can't be saved, there is a problem in"
+                    " the following parameter(s):\n\n")
             msg += "\n-".join(invalid)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
@@ -1155,8 +1156,8 @@ class ConfigOptions(gtk.VBox, Preferences):
         :param widg: the widget who generated the signal
         :param helpmsg: the message to show in the dialog
         """
-        dlg = gtk.MessageDialog(
-            None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, helpmsg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO,
+                                gtk.BUTTONS_OK, helpmsg)
         dlg.set_title('Plugin help')
         dlg.run()
         dlg.destroy()
