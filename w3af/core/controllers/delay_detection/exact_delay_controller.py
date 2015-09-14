@@ -47,9 +47,7 @@ class ExactDelayController(DelayMixIn):
     # you'll only get slower scans when there is a vulnerability, which is not
     # the most common case
     #
-    # Also note that these delays can't be greater than the framework socket
-    # timeout or that will break the algorithm
-    DELAY_SECONDS = [3, 2, 6, 2, 3]
+    DELAY_SECONDS = [12, 8, 15, 20]
 
     def __init__(self, mutant, delay_obj, uri_opener):
         """
@@ -151,10 +149,10 @@ class ExactDelayController(DelayMixIn):
 
         # Test if the delay worked
         current_response_wait_time = response.get_wait_time()
-        args = (id(self), upper_bound, current_response_wait_time, lower_bound)
-        out.debug(u'(Test id: %s) %s > %s > %s' % args)
+        args = (id(self), current_response_wait_time, lower_bound)
+        out.debug(u'(Test id: %s) %s > %s' % args)
 
-        if upper_bound > current_response_wait_time > lower_bound:
+        if current_response_wait_time > lower_bound:
             return True, response
 
         return False, response
