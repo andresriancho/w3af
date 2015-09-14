@@ -36,6 +36,8 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import *
 from w3af.core.data.options.option_list import OptionList
 
+SET_OPTIONS_LOCK = threading.RLock()
+
 
 @app.route('/sessions/', methods=['POST'])
 @requires_auth
@@ -215,8 +217,7 @@ def set_plugin_config(**kwargs):
                 'message': 'Invalid %s option %s' % (opt_type, opt_value)
                 }), 422
 
-    lock = threading.RLock()
-    with lock:
+    with SET_OPTIONS_LOCK:
         w3af.plugins.set_plugin_options(plugin_type, plugin, plugin_opts)
 
         return jsonify({
@@ -302,8 +303,7 @@ def set_core_config(scan_id, core_setting):
                 'message': 'Invalid %s value %s' % (opt_type, opt_value)
                 }), 422
 
-    lock = threading.RLock()
-    with lock:
+    with SET_OPTIONS_LOCK:
         configurable.set_options(core_opts)
 
         return jsonify({
