@@ -61,3 +61,10 @@ class TestIsSourceFile(unittest.TestCase):
         
         self.assertNotEqual(match, None)
         self.assertEqual(lang, 'PHP')
+
+    def test_code_python_self(self):
+        source = file(__file__).read()
+        match, lang = is_source_file(source)
+
+        self.assertNotEqual(match, None)
+        self.assertEqual(lang, 'Python')

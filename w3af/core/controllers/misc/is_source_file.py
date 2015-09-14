@@ -63,7 +63,11 @@ SOURCE_CODE = (
     ('public class .+\{', 'Java'),
     ('package\s\w+\;', 'Java'),
 
-    ('<!--g:render', 'Groovy')
+    ('<!--g:render', 'Groovy'),
+
+    # Python
+    ('    def .*?:\n', 'Python'),
+    ('\tdef .*?:\n', 'Python'),
 )
 
 BLACKLIST = {'xml', 'xpacket'}
