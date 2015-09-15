@@ -25,7 +25,9 @@ from flask import jsonify, request
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.routes import list_subroutes
 from w3af.core.ui.api.utils.auth import requires_auth
-from w3af.core.ui.api.utils.sessions import check_session_exists
+from w3af.core.ui.api.utils.sessions import (check_session_exists,
+                                             check_plugin_type_exists,
+                                             check_plugin_exists)
 from w3af.core.ui.api.db.master import SCANS
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           create_scan_helper)
@@ -89,6 +91,7 @@ def list_plugin_types(scan_id):
            methods=['GET'])
 @requires_auth
 @check_session_exists
+@check_plugin_type_exists
 def get_plugin_list(scan_id, plugin_type):
     """
     Lists available plugins of type "plugin_type"
@@ -97,21 +100,18 @@ def get_plugin_list(scan_id, plugin_type):
              Otherwise, a list of all matching plugins.
     """
     w3af = SCANS[scan_id].w3af_core
-    if plugin_type not in w3af.plugins.get_plugin_types():
-        return jsonify({'code': 404,
-                        'message': 'Plugin type %s not found' % plugin_type
-                       }), 404
-    else:
-        return jsonify({
-            'description': " ".join(w3af.plugins.get_plugin_type_desc(
-                plugin_type).split()),
-            'entries': w3af.plugins.get_plugin_list(plugin_type) })
+    return jsonify({
+        'description': " ".join(w3af.plugins.get_plugin_type_desc(
+            plugin_type).split()),
+        'entries': w3af.plugins.get_plugin_list(plugin_type) })
 
 
 @app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/<string:plugin>/',
            methods=['GET'])
 @requires_auth
 @check_session_exists
+@check_plugin_type_exists
+@check_plugin_exists
 def get_plugin_config(**kwargs):
     """
     Shows current configuration and help text for the named plugin.
@@ -124,16 +124,6 @@ def get_plugin_config(**kwargs):
     plugin = kwargs['plugin']
 
     w3af = SCANS[scan_id].w3af_core
-    if plugin_type not in w3af.plugins.get_plugin_types():
-        return jsonify({ 'code': 404,
-                         'message': 'Plugin type %s not found' % plugin_type
-                      }), 404
-    if plugin not in w3af.plugins.get_plugin_list(plugin_type):
-        return jsonify({
-            'code': 404,
-            'message': 'Plugin %s not found in list of %s plugins' % (plugin,
-                                                                      plugin_type)
-             }), 404
 
     opts = (
         w3af.plugins.get_plugin_options(plugin_type, plugin) or
@@ -158,6 +148,8 @@ def get_plugin_config(**kwargs):
            methods=['PATCH'])
 @requires_auth
 @check_session_exists
+@check_plugin_type_exists
+@check_plugin_exists
 def set_plugin_config(**kwargs):
     """
     Allows a user to modify a single element of plugin configuration by sending
@@ -177,16 +169,6 @@ def set_plugin_config(**kwargs):
     plugin = kwargs['plugin']
 
     w3af = SCANS[scan_id].w3af_core
-    if plugin_type not in w3af.plugins.get_plugin_types():
-        return jsonify({ 'code': 404,
-                         'message': 'Plugin type %s not found' % plugin_type
-                      }), 404
-    if plugin not in w3af.plugins.get_plugin_list(plugin_type):
-        return jsonify({
-            'code': 404,
-            'message': 'Plugin %s not found in list of %s plugins' % (plugin,
-                                                                      plugin_type)
-             }), 404
 
     if not request.json:
         return jsonify({

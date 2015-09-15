@@ -38,3 +38,39 @@ def check_session_exists(f):
             }), 404
         return f(*args, **kwargs)
     return decorated
+
+
+def check_plugin_type_exists(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        scan_id = kwargs['scan_id']
+        plugin_type = kwargs['plugin_type']
+
+        w3af = SCANS[scan_id].w3af_core
+        if plugin_type not in w3af.plugins.get_plugin_types():
+            return jsonify({ 'code': 404,
+                             'message': 'Plugin type %s not found' % plugin_type
+                          }), 404
+        return f(*args, **kwargs)
+    return decorated
+
+
+def check_plugin_exists(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+
+        scan_id = kwargs['scan_id']
+        plugin_type = kwargs['plugin_type']
+        plugin = kwargs['plugin']
+
+        w3af = SCANS[scan_id].w3af_core
+        if plugin not in w3af.plugins.get_plugin_list(plugin_type):
+            return jsonify({
+                'code': 404,
+                'message': 'Plugin %s not found in list of %s plugins' % (
+                    plugin,
+                    plugin_type)
+                }), 404
+        return f(*args, **kwargs)
+    return decorated
