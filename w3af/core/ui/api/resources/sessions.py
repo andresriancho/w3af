@@ -132,7 +132,8 @@ def get_plugin_config(**kwargs):
     plugin_opts = { i.get_name():
             { "value": i.get_value(),
               "description": i.get_desc(),
-              "type": i.get_type() }
+              "type": i.get_type(),
+              "default": i.get_default_value() }
         for i in opts }
 
     long_desc = " ".join(w3af.plugins.get_quick_instance(plugin_type, plugin)
@@ -236,7 +237,8 @@ def get_core_settings(scan_id, core_setting):
     opt_dict = { i.get_name():
             { "value": i.get_value(),
               "description": i.get_desc(),
-              "type": i.get_type() }
+              "type": i.get_type(),
+              "default": i.get_default_value() }
         for i in opts }
 
     return jsonify({ '%s settings' % core_setting : opt_dict })
