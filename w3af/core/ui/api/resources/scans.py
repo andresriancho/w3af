@@ -64,7 +64,12 @@ def start_scan():
     # REST API is an MVP and we can only run one scan at the time (for now)
     #
     scan_infos = SCANS.values()
-    if not all([si is None for si in scan_infos]):
+    if not all([
+        (
+        si is None or
+        si.w3af_core.status.get_simplified.status.upper == 'STOPPED'
+        )
+        for si in scan_infos]):
         abort(400, 'This version of the REST API does not support'
                    ' concurrent scans. Remember to DELETE finished scans'
                    ' before starting a new one.')
