@@ -31,10 +31,12 @@ def check_session_exists(f):
     def decorated(*args, **kwargs):
 
         scan_id = kwargs['scan_id']
-        if scan_id not in SCANS:
+        if (scan_id not in SCANS or
+            SCANS[scan_id] is None):
             return jsonify({
                 'code': 404,
-                'message': 'Session with ID %s does not exist' % scan_id
+                'message': 'Session with ID %s does not exist'
+                           ' or has been deleted' % scan_id
             }), 404
         return f(*args, **kwargs)
     return decorated
