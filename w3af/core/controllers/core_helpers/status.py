@@ -40,18 +40,18 @@ class w3af_core_status(object):
     def __init__(self, w3af_core, scans_completed=0):
         # Store the core to be able to access the queues to get status
         self._w3af_core = w3af_core
-        
+
         # Init some internal values
         self._is_running = False
         self._paused = False
         self._start_time_epoch = None
         self.scans_completed = scans_completed
-        
+
         # This indicates the plugin that is running right now for each
         # plugin_type
         self._running_plugin = {}
         self._latest_ptype, self._latest_pname = None, None
-        
+
         # The current fuzzable request that the core is analyzing at each phase
         # where a phase means crawl/audit
         self._current_fuzzable_request = {}
@@ -75,17 +75,17 @@ class w3af_core_status(object):
         """
         if self._paused:
             return PAUSED
-        
+
         elif not self.is_running():
             return STOPPED
-        
+
         else:
             crawl_plugin = self.get_running_plugin('crawl')
             audit_plugin = self.get_running_plugin('audit')
-            
+
             crawl_fr = self.get_current_fuzzable_request('crawl')
             audit_fr = self.get_current_fuzzable_request('audit')
-            
+
             if crawl_plugin == audit_plugin == crawl_fr == audit_fr == None:
                 return 'Starting scan.'
 
@@ -97,10 +97,10 @@ class w3af_core_status(object):
             if audit_plugin is not None and audit_fr is not None:
                 if status_str:
                     status_str += '\n'
-                
+
                 status_str += 'Auditing %s using %s.%s' % (audit_fr, 'audit',
                                                            audit_plugin)
-                
+
             status_str = status_str.replace('\x00', '')
             return status_str
 
@@ -114,7 +114,7 @@ class w3af_core_status(object):
         """
         if log:
             om.out.debug('Starting plugin: %s.%s' % (plugin_type, plugin_name))
-            
+
         self._running_plugin[plugin_type] = plugin_name
         self._latest_ptype, self._latest_pname = plugin_type, plugin_name
 
@@ -137,17 +137,17 @@ class w3af_core_status(object):
         core is still working, it should call is_running() to know that.
         """
         return self._is_running
-    
+
     def is_paused(self):
         return self._paused
-    
+
     def get_run_time(self):
         """
         :return: The time (in minutes) between now and the call to start().
         """
         if self._start_time_epoch is None:
             raise RuntimeError('Can NOT call get_run_time before start().')
-        
+
         now = time.time()
         diff = now - self._start_time_epoch
         run_time = diff / 60
@@ -166,13 +166,13 @@ class w3af_core_status(object):
                  start of the scan.
         """
         if self._start_time_epoch is None:
-            raise RuntimeError('Can NOT call get_run_time before start().')
-        
+            return None
+
         now = time.time()
         diff = now - self._start_time_epoch
         run_time = diff / 60.0
         return int(consecutive_number_generator.get() / run_time)
-    
+
     def scan_finished(self):
         self._is_running = False
         self._running_plugin = {}
@@ -196,7 +196,7 @@ class w3af_core_status(object):
     def get_crawl_input_speed(self):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else round_or_None(dc.in_queue.get_input_rpm())
-    
+
     def get_crawl_output_speed(self):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else round_or_None(dc.in_queue.get_output_rpm())
@@ -227,7 +227,7 @@ class w3af_core_status(object):
 
         if input_speed is None or output_speed is None:
             return None
-            
+
         if input_speed >= output_speed:
             return None
 
@@ -244,7 +244,7 @@ class w3af_core_status(object):
     def get_audit_input_speed(self):
         ac = self._w3af_core.strategy._audit_consumer
         return None if ac is None else round_or_None(ac.in_queue.get_input_rpm())
-    
+
     def get_audit_output_speed(self):
         ac = self._w3af_core.strategy._audit_consumer
         return None if ac is None else round_or_None(ac.in_queue.get_output_rpm())
@@ -269,14 +269,14 @@ class w3af_core_status(object):
 
         if input_speed is None or output_speed is None:
             return None
-        
+
         if input_speed >= output_speed:
             return None
-        
+
         # The speed is in URLs per minute that are processed by the framework
         speed = output_speed - input_speed
         current_size = self.get_audit_qsize()
-        
+
         eta_minutes = current_size / speed
         # TODO: Show this in h/m/s
         return '%s minutes' % eta_minutes
@@ -346,35 +346,35 @@ class w3af_core_status(object):
     def get_long_status(self):
         if not self.is_running():
             return self.get_status()
-        
+
         data = {
                 'status': self.get_status(),
-                
+
                 'cin': self.get_crawl_input_speed(),
                 'cout': self.get_crawl_output_speed(),
                 'clen': self.get_crawl_qsize(),
                 'ceta': self.get_crawl_eta(),
-                
+
                 'ain': self.get_audit_input_speed(),
                 'aout': self.get_audit_output_speed(),
                 'alen': self.get_audit_qsize(),
                 'aeta': self.get_audit_eta(),
-                
+
                 'rpm': self.get_rpm()
                 }
-        
+
         status_str = '%(status)s\n'
-        
+
         status_str += 'Crawl phase: In (%(cin)s URLs/min)'\
                       ' Out (%(cout)s URLs/min) Pending (%(clen)s URLs)'\
                       ' ETA (%(ceta)s)\n'
-                      
+
         status_str += 'Audit phase: In (%(ain)s URLs/min)'\
                       ' Out (%(aout)s URLs/min) Pending (%(alen)s URLs)'\
                       ' ETA (%(aeta)s)\n'
-                      
+
         status_str += 'Requests per minute: %(rpm)s'
-        
+
         return status_str % data
 
 
