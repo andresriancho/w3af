@@ -236,6 +236,9 @@ def scan_stop(scan_id):
     if scan_info is None:
         abort(404, 'Scan not found')
 
+    if scan_info.w3af_core.status.get_simplified_status().upper() == 'STOPPED':
+        return jsonify({'message': 'Scan is already stopped'})
+
     if not scan_info.w3af_core.can_stop():
         abort(403, 'Scan can not be stopped')
 
