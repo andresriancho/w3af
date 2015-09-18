@@ -71,7 +71,7 @@ def start_scan():
         )
         for si in scan_infos]):
         abort(400, 'This version of the REST API does not support'
-                   ' concurrent scans. Remember to DELETE finished scans'
+                   ' concurrent scans. Please ensure all scans are finished'
                    ' before starting a new one.')
 
     #
