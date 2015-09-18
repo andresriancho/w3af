@@ -65,7 +65,7 @@ def create_scan_helper():
     return scan_id
 
 
-def start_scan_helper(target_urls, scan_profile, scan_info_setup):
+def start_scan_from_profile(target_urls, scan_profile, scan_info_setup):
     """
     Create a new instance of w3afCore, save it to SCANS and run core.start()
 
@@ -122,3 +122,40 @@ def start_scan_helper(target_urls, scan_profile, scan_info_setup):
             # Reduce some exceptions found during interpreter shutdown
             pass
 
+
+def start_preconfigured_scan(scan_info, scan_info_setup):
+    """
+    Runs core.start(). Takes a ScanInfo object (eg from SCANS) and assumes that
+    that the w3afCore instance is already configured with a full set of options.
+
+    :param scan_info: A ScanInfo object (probably from the SCANS variable)
+    :param scan_info_setup: Event to set when the scan started
+    :return: The instance of w3afCore.
+    """
+    w3af_core = scan_info.w3af_core
+    scan_info.output = RESTAPIOutput()
+
+    scan_info_setup.set()
+
+    # Clear all current output plugins
+    om.manager.set_output_plugins([])
+
+    try:
+        w3af_core.plugins.init_plugins()
+
+        # Add the REST API output plugin
+        om.manager.set_output_plugin_inst(scan_info.output)
+
+        # Start the scan!
+        w3af_core.verify_environment()
+        w3af_core.start()
+    except Exception, e:
+        scan_info.exception = e
+        try:
+            w3af_core.stop()
+        except AttributeError:
+            # Reduce some exceptions found during interpreter shutdown
+            pass
+
+    finally:
+        scan_info.finished = True

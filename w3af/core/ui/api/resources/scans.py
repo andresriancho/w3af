@@ -28,7 +28,7 @@ from w3af.core.ui.api.utils.error import abort
 from w3af.core.ui.api.utils.auth import requires_auth
 from w3af.core.ui.api.db.master import SCANS
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
-                                          start_scan_helper,
+                                          start_scan_from_profile,
                                           get_new_scan_id,
                                           create_temp_profile)
 from w3af.core.data.parsers.doc.url import URL
@@ -114,7 +114,7 @@ def start_scan():
     scan_info_setup = Event()
 
     args = (target_urls, scan_profile, scan_info_setup)
-    t = Process(target=start_scan_helper, name='ScanThread', args=args)
+    t = Process(target=start_scan_from_profile, name='ScanThread', args=args)
     t.daemon = True
 
     t.start()
