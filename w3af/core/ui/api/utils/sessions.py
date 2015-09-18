@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from flask import jsonify
+from flask import jsonify, request
 
 from functools import wraps
 
@@ -51,9 +51,15 @@ def check_plugin_type_exists(f):
 
         w3af = SCANS[scan_id].w3af_core
         if plugin_type not in w3af.plugins.get_plugin_types():
-            return jsonify({ 'code': 404,
-                             'message': 'Plugin type %s not found' % plugin_type
+            return jsonify({'code': 404,
+                            'message': 'Plugin type %s not found' % plugin_type
                           }), 404
+        if (request.method == 'PATCH' and plugin_type.lower() == 'output'):
+            return jsonify({'code': 403,
+                            'message': 'Cannot set output plugin options. At'
+                                       ' present, only the built-in REST API'
+                                       ' output is supported.'
+                          }), 403
         return f(*args, **kwargs)
     return decorated
 
