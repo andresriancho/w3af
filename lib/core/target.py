@@ -39,7 +39,6 @@ from lib.core.enums import POST_HINT
 from lib.core.exception import SqlmapFilePathException
 from lib.core.exception import SqlmapGenericException
 from lib.core.exception import SqlmapMissingPrivileges
-from lib.core.exception import SqlmapSyntaxException
 from lib.core.exception import SqlmapSystemException
 from lib.core.exception import SqlmapUserQuitException
 from lib.core.option import _setDBMS
@@ -92,8 +91,8 @@ def _setRequestParams():
 
     # Perform checks on POST parameters
     if conf.method == HTTPMETHOD.POST and conf.data is None:
-        errMsg = "HTTP POST method depends on HTTP data value to be posted"
-        raise SqlmapSyntaxException(errMsg)
+        logger.warn("detected empty POST body")
+        conf.data = ""
 
     if conf.data is not None:
         conf.method = HTTPMETHOD.POST if not conf.method or conf.method == HTTPMETHOD.GET else conf.method
@@ -223,11 +222,11 @@ def _setRequestParams():
         message += "in the target URL itself? [Y/n/q] "
         test = readInput(message, default="Y")
 
-        if not test or test[0] not in ("n", "N"):
+        if test and test[0] in ("q", "Q"):
+            raise SqlmapUserQuitException
+        elif not test or test[0] not in ("n", "N"):
             conf.url = "%s%s" % (conf.url, CUSTOM_INJECTION_MARK_CHAR)
             kb.processUserMarks = True
-        elif test[0] in ("q", "Q"):
-            raise SqlmapUserQuitException
 
     for place, value in ((PLACE.URI, conf.url), (PLACE.CUSTOM_POST, conf.data), (PLACE.CUSTOM_HEADER, str(conf.httpHeaders))):
         _ = re.sub(PROBLEMATIC_CUSTOM_INJECTION_PATTERNS, "", value or "") if place == PLACE.CUSTOM_HEADER else value or ""
