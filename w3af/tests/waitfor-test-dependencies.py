@@ -93,7 +93,9 @@ def wait_until_stable():
         sys.exit(1)
 
     # hack
-    time.sleep(120)
+    for _ in xrange(10):
+        print('X')
+        time.sleep(60)
 
     return True
 
