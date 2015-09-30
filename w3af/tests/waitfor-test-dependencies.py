@@ -92,11 +92,6 @@ def wait_until_stable():
         print('Test dependencies are not stable')
         sys.exit(1)
 
-    # hack
-    for _ in xrange(10):
-        print('X')
-        time.sleep(60)
-
     return True
 
 if __name__ == '__main__':
