@@ -92,6 +92,9 @@ def wait_until_stable():
         print('Test dependencies are not stable')
         sys.exit(1)
 
+    import time
+    time.sleep(120)
+
     return True
 
 if __name__ == '__main__':
