@@ -92,7 +92,7 @@ def wait_until_stable():
         print('Test dependencies are not stable')
         sys.exit(1)
 
-    import time
+    # hack
     time.sleep(120)
 
     return True
