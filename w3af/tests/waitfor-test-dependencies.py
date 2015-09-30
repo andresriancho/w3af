@@ -47,7 +47,7 @@ def is_online(url, match_string):
 
 
 def waitfor_test_dependencies():
-    print('Waiting for dependencies to be up...')
+    print('Waiting for dependencies to be up...\n\n')
     is_available = []
 
     for _ in xrange(LOOPS):
@@ -68,7 +68,7 @@ def waitfor_test_dependencies():
 
 
 def wait_until_stable():
-    print('Waiting for dependencies to be stable...')
+    print('\n\nWaiting for dependencies to be stable...\n\n')
     test_results = {}
 
     for _ in xrange(LOOPS):
