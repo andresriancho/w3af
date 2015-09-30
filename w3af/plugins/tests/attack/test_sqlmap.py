@@ -84,7 +84,7 @@ class TestSQLMapShell(ReadExploitTest):
         self.assertEquals(1, len(vulns))
         vuln = vulns[0]
 
-        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
         self.assertEquals('id', vuln.get_mutant().get_token_name())
         self.assertEquals('get_int_noerror.php', vuln.get_url().get_file_name())
         

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.controllers.ci.mcir import get_mcir_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -76,3 +77,63 @@ class TestEval(PluginTest):
                           vuln.get_name())
         self.assertEquals("text", vuln.get_token_name())
         self.assertEquals(self.target_delay, str(vuln.get_url()))
+
+
+class TestPHPEchoEval(PluginTest):
+
+    target = get_mcir_http('/phpwn/eval.php?sanitization_level=none'
+                           '&sanitization_type=keyword'
+                           '&sanitization_params='
+                           '&query_results=all_rows'
+                           '&error_level=verbose'
+                           '&inject_string=abc'
+                           '&location=value'
+                           '&custom_inject='
+                           '&submit=Inject%21')
+
+    config = {'audit': (PluginConfig('eval',
+                                    ('use_echo', True, PluginConfig.BOOL),
+                                    ('use_time_delay', False, PluginConfig.BOOL)),),
+    }
+
+    def test_found_eval_echo_php(self):
+        self._scan(self.target, self.config)
+
+        vulns = self.kb.get('eval', 'eval')
+        self.assertEquals(1, len(vulns))
+
+        # Now some tests around specific details of the found vuln
+        vuln = vulns[0]
+        self.assertEquals('eval() input injection vulnerability',
+                          vuln.get_name())
+        self.assertEquals('custom_inject', vuln.get_token_name())
+
+
+class TestPHPSleepEval(PluginTest):
+
+    target = get_mcir_http('/phpwn/eval.php?sanitization_level=none'
+                           '&sanitization_type=keyword'
+                           '&sanitization_params='
+                           '&query_results=none'
+                           '&error_level=none'
+                           '&inject_string=123'
+                           '&location=value'
+                           '&custom_inject='
+                           '&submit=Inject%21')
+
+    config = {'audit': (PluginConfig('eval',
+                                    ('use_echo', False, PluginConfig.BOOL),
+                                    ('use_time_delay', True, PluginConfig.BOOL)),),
+    }
+
+    def test_found_eval_echo_php(self):
+        self._scan(self.target, self.config)
+
+        vulns = self.kb.get('eval', 'eval')
+        self.assertEquals(1, len(vulns))
+
+        # Now some tests around specific details of the found vuln
+        vuln = vulns[0]
+        self.assertEquals('eval() input injection vulnerability',
+                          vuln.get_name())
+        self.assertEquals('custom_inject', vuln.get_token_name())

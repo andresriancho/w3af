@@ -24,3 +24,4 @@ echo "127.0.0.1:9009" > /tmp/php-moth.txt
 echo '127.0.0.1:8998' > /tmp/sqlmap-testenv.txt
 echo '127.0.0.1:8998' > /tmp/sqlmap-testenv.txt
 echo '127.0.0.1:8098' > /tmp/wavsep.txt
+echo '127.0.0.1:8090' > /tmp/mcir.txt
