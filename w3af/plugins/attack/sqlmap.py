@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import select
-import Queue
-import textwrap
 import copy
+import Queue
+import select
+import textwrap
 
 from multiprocessing.dummy import Process
 
