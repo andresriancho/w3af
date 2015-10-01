@@ -175,12 +175,6 @@ def set_plugin_config(**kwargs):
 
     w3af = SCANS[scan_id].w3af_core
 
-    if not request.json:
-        return jsonify({
-            'code': 400,
-            'message': 'Expected JSON content'
-                       }), 400
-
     plugin_opts = (
         w3af.plugins.get_plugin_options(plugin_type, plugin) or
         w3af.plugins.get_plugin_inst(plugin_type, plugin).get_options()
@@ -301,7 +295,7 @@ def set_core_config(scan_id, core_setting):
         configurable = w3af.target
 
     core_opts = configurable.get_options()
-    for opt_name in request.json:
+    for opt_name in request.get_json(force=True):
         try:
             opt_value = request.json[opt_name]
             opt_type = core_opts[opt_name].get_type()
