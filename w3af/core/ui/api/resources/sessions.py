@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import threading
+from multiprocessing.dummy import Process
 from flask import jsonify, request
 
 from w3af.core.ui.api import app
@@ -27,16 +28,19 @@ from w3af.core.ui.api.utils.routes import list_subroutes
 from w3af.core.ui.api.utils.auth import requires_auth
 from w3af.core.ui.api.utils.sessions import (check_session_exists,
                                              check_plugin_type_exists,
-                                             check_plugin_exists)
+                                             check_plugin_exists,
+                                             enable_or_disable_plugin)
 from w3af.core.ui.api.db.master import SCANS
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
-                                          create_scan_helper)
+                                          create_scan_helper,
+                                          start_preconfigured_scan)
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import *
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.parsers.doc.url import URL
 
 SET_OPTIONS_LOCK = threading.RLock()
 
@@ -130,7 +134,7 @@ def get_plugin_config(**kwargs):
         w3af.plugins.get_plugin_inst(plugin_type, plugin).get_options()
         )
     plugin_opts = { i.get_name():
-            { "value": i.get_value(),
+            { "value": str(i.get_value()),
               "description": i.get_desc(),
               "type": i.get_type(),
               "default": i.get_default_value() }
@@ -182,18 +186,40 @@ def set_plugin_config(**kwargs):
         w3af.plugins.get_plugin_inst(plugin_type, plugin).get_options()
     )
 
-    for opt_name in request.json:
+    opt_names = dict(request.get_json(force=True))
+
+    if ('enabled' in opt_names and len(opt_names) == 1):
+        with SET_OPTIONS_LOCK:
+            enable_or_disable_plugin(w3af,
+                                     plugin,
+                                     plugin_type,
+                                     enable=request.json['enabled'])
+            return jsonify({
+                'message': 'success',
+                'modified': request.json
+                })
+    try:
+        # Remove 'enabled' if included as we must set this separately
+        opt_names.pop('enabled')
+    except ValueError:
+        pass
+
+    for opt_name in opt_names:
         try:
             opt_value = request.json[opt_name]
             opt_type = plugin_opts[opt_name].get_type()
         except BaseFrameworkException:
             return jsonify({
                 'code': '400',
-                'message': '%s is not a valid option for plugin %s' % (opt_name,
-                                                                       plugin)
+                'message': '%s is not a valid option for plugin %s' %
+                    (opt_name,
+                     plugin)
                 }), 400
         try:
-            plugin_opts[opt_name].set_value(opt_value)
+            if opt_type.lower() == 'url_list':
+                plugin_opts[opt_name].set_value([URL(o) for o in opt_value])
+            else:
+                plugin_opts[opt_name].set_value(opt_value)
         except (AttributeError, BaseFrameworkException):
             return jsonify({
                 'code': '422',
@@ -201,6 +227,11 @@ def set_plugin_config(**kwargs):
                 }), 422
 
     with SET_OPTIONS_LOCK:
+        if 'enabled' in request.json:
+            enable_or_disable_plugin(w3af,
+                                     plugin,
+                                     plugin_type,
+                                     enable=request.json['enabled'])
         w3af.plugins.set_plugin_options(plugin_type, plugin, plugin_opts)
 
         return jsonify({
@@ -280,7 +311,10 @@ def set_core_config(scan_id, core_setting):
                 'message': '%s is not a valid option here' % opt_name
                 }), 400
         try:
-            core_opts[opt_name].set_value(opt_value)
+            if opt_type.lower() == 'url_list':
+                core_opts[opt_name].set_value([URL(o) for o in opt_value])
+            else:
+                core_opts[opt_name].set_value(opt_value)
         except (AttributeError, BaseFrameworkException):
             return jsonify({
                 'code': '422',
@@ -290,7 +324,26 @@ def set_core_config(scan_id, core_setting):
     with SET_OPTIONS_LOCK:
         configurable.set_options(core_opts)
 
+        if opt_name.lower() == 'target':
+            SCANS[scan_id].target_urls = request.json[opt_name]
+
         return jsonify({
             'message': 'success',
             'modified': request.json
             })
+
+@app.route('/sessions/<int:scan_id>/start')
+@requires_auth
+@check_session_exists
+def start_scan_from_session(scan_id):
+    scan_info_setup = threading.Event()
+    args = (SCANS[scan_id], scan_info_setup)
+
+    t = Process(target=start_preconfigured_scan, name='ScanThread', args=args)
+    t.daemon = True
+    t.start()
+
+    scan_info_setup.wait()
+    return jsonify({'message': 'Success',
+                    'id': scan_id,
+                    'href': '/scans/%s' % scan_id})

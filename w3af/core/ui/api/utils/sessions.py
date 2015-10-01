@@ -82,3 +82,13 @@ def check_plugin_exists(f):
                 }), 404
         return f(*args, **kwargs)
     return decorated
+
+def enable_or_disable_plugin(w3af, plugin, plugin_type, enable=False):
+        plugin_list = w3af.plugins.get_enabled_plugins(plugin_type)
+        if (enable and
+                plugin not in plugin_list):
+            plugin_list.append(plugin)
+        elif (not enable and
+                plugin in plugin_list):
+            plugin_list.remove(plugin)
+        w3af.plugins.set_plugins(plugin_list, plugin_type)
