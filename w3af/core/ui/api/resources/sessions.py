@@ -195,7 +195,7 @@ def set_plugin_config(**kwargs):
     try:
         # Remove 'enabled' if included as we must set this separately
         opt_names.pop('enabled')
-    except ValueError:
+    except LookupError:
         pass
 
     for opt_name in opt_names:
@@ -326,7 +326,7 @@ def set_core_config(scan_id, core_setting):
             'modified': request.json
             })
 
-@app.route('/sessions/<int:scan_id>/start')
+@app.route('/sessions/<int:scan_id>/start', methods=['POST'])
 @requires_auth
 @check_session_exists
 def start_scan_from_session(scan_id):
