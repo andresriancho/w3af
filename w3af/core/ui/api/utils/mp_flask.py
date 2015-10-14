@@ -6,8 +6,8 @@ from SocketServer import ThreadingMixIn
 from werkzeug._internal import _log
 from werkzeug.serving import select_ip_version
 from werkzeug.serving import ForkingWSGIServer, BaseWSGIServer
-from flask import Flask
-
+from flask import Flask, Request
+from w3af.core.ui.api.utils.error import abort
 
 class ThreadedFlask(Flask):
     """
@@ -31,6 +31,7 @@ class ThreadedFlask(Flask):
             self.debug = bool(debug)
         options.setdefault('use_reloader', self.debug)
         options.setdefault('use_debugger', self.debug)
+        self.request_class = JSONRequest
         try:
             run_simple(host, port, self, **options)
         finally:
@@ -117,3 +118,7 @@ class ThreadedWSGIServer(ThreadingMixIn, BaseWSGIServer):
                     args=(request, client_address))
         t.daemon = self.daemon_threads
         t.start()
+
+class JSONRequest(Request):
+    def on_json_loading_failed(self, e):
+        abort(400, 'Expected JSON content')
