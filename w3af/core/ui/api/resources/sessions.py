@@ -137,7 +137,7 @@ def get_plugin_config(**kwargs):
             { "value": str(i.get_value()),
               "description": i.get_desc(),
               "type": i.get_type(),
-              "default": i.get_default_value() }
+              "default": str(i.get_default_value()) }
         for i in opts }
 
     long_desc = " ".join(w3af.plugins.get_quick_instance(plugin_type, plugin)
@@ -260,10 +260,10 @@ def get_core_settings(scan_id, core_setting):
             'message': '%s is not a valid core setting type' % core_setting }), 404
 
     opt_dict = { i.get_name():
-            { "value": i.get_value(),
+            { "value": str(i.get_value()),
               "description": i.get_desc(),
               "type": i.get_type(),
-              "default": i.get_default_value() }
+              "default": str(i.get_default_value()) }
         for i in opts }
 
     return jsonify({ '%s settings' % core_setting : opt_dict })
