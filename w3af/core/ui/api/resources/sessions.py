@@ -55,62 +55,62 @@ def create_scan_session():
         - The URL to the newly created session (eg. /sessions/0)
         - The newly created scan ID (eg. 0)
     """
-    scan_id = create_scan_helper()
+    session_id = create_scan_helper()
 
     return jsonify({'message': 'Success',
-                    'id': scan_id,
-                    'href': '/sessions/%s' % scan_id}), 201
+                    'id': session_id,
+                    'href': '/sessions/%s' % session_id}), 201
 
 
-@app.route('/sessions/<int:scan_id>', methods=['GET'])
+@app.route('/sessions/<int:session_id>', methods=['GET'])
 @requires_auth
 @check_session_exists
-def session_info(scan_id):
+def session_info(session_id):
     """
     Shows information about available actions for a session
 
     :return: 404 if scan does not exist.
-             Otherwise, a list of possible routes under /sessions/<scan_id>/
+             Otherwise, a list of possible routes under /sessions/<session_id>/
     """
     urls = list_subroutes(request)
-    return jsonify({'message': 'Session %s' % scan_id,
+    return jsonify({'message': 'Session %s' % session_id,
                     'available_endpoints': urls})
 
 
-@app.route('/sessions/<int:scan_id>/plugins/', methods=['GET'])
+@app.route('/sessions/<int:session_id>/plugins/', methods=['GET'])
 @requires_auth
 @check_session_exists
-def list_plugin_types(scan_id):
+def list_plugin_types(session_id):
     """
     Lists available plugin types
 
     :return: 404 if scan does not exist.
              Otherwise, a list of all existing plugin types.
     """
-    w3af = SCANS[scan_id].w3af_core
+    w3af = SCANS[session_id].w3af_core
     return jsonify({'entries': w3af.plugins.get_plugin_types()})
 
 
-@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/',
+@app.route('/sessions/<int:session_id>/plugins/<string:plugin_type>/',
            methods=['GET'])
 @requires_auth
 @check_session_exists
 @check_plugin_type_exists
-def get_plugin_list(scan_id, plugin_type):
+def get_plugin_list(session_id, plugin_type):
     """
     Lists available plugins of type "plugin_type"
 
     :return: 404 if scan or plugin type does not exist.
              Otherwise, a list of all matching plugins.
     """
-    w3af = SCANS[scan_id].w3af_core
+    w3af = SCANS[session_id].w3af_core
     return jsonify({
         'description': " ".join(w3af.plugins.get_plugin_type_desc(
             plugin_type).split()),
         'entries': w3af.plugins.get_plugin_list(plugin_type) })
 
 
-@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/<string:plugin>/',
+@app.route('/sessions/<int:session_id>/plugins/<string:plugin_type>/<string:plugin>/',
            methods=['GET'])
 @requires_auth
 @check_session_exists
@@ -123,11 +123,11 @@ def get_plugin_config(**kwargs):
     :return: 404 if scan or plugin does not exist.
              Otherwise, a JSON object containing settings and basic help text.
     """
-    scan_id = kwargs['scan_id']
+    session_id = kwargs['session_id']
     plugin_type = kwargs['plugin_type']
     plugin = kwargs['plugin']
 
-    w3af = SCANS[scan_id].w3af_core
+    w3af = SCANS[session_id].w3af_core
 
     opts = (
         w3af.plugins.get_plugin_options(plugin_type, plugin) or
@@ -149,7 +149,7 @@ def get_plugin_config(**kwargs):
                      'enabled' : enabled })
 
 
-@app.route('/sessions/<int:scan_id>/plugins/<string:plugin_type>/<string:plugin>/',
+@app.route('/sessions/<int:session_id>/plugins/<string:plugin_type>/<string:plugin>/',
            methods=['PATCH'])
 @requires_auth
 @check_session_exists
@@ -169,11 +169,11 @@ def set_plugin_config(**kwargs):
              changed setting.
     """
 
-    scan_id = kwargs['scan_id']
+    session_id = kwargs['session_id']
     plugin_type = kwargs['plugin_type']
     plugin = kwargs['plugin']
 
-    w3af = SCANS[scan_id].w3af_core
+    w3af = SCANS[session_id].w3af_core
 
     plugin_opts = (
         w3af.plugins.get_plugin_options(plugin_type, plugin) or
@@ -234,18 +234,18 @@ def set_plugin_config(**kwargs):
             })
 
 
-@app.route('/sessions/<int:scan_id>/core/<string:core_setting>/',
+@app.route('/sessions/<int:session_id>/core/<string:core_setting>/',
            methods=['GET'])
 @requires_auth
 @check_session_exists
-def get_core_settings(scan_id, core_setting):
+def get_core_settings(session_id, core_setting):
     """
     Shows available core settings and their current values.
 
     :return: 404 if scan does not exist.
              Otherwise, a JSON object containing settings and basic help text.
     """
-    w3af = SCANS[scan_id].w3af_core
+    w3af = SCANS[session_id].w3af_core
 
     core_setting = core_setting.lower()
     if core_setting == 'http':
@@ -269,11 +269,11 @@ def get_core_settings(scan_id, core_setting):
     return jsonify({ '%s settings' % core_setting : opt_dict })
 
 
-@app.route('/sessions/<int:scan_id>/core/<string:core_setting>/',
+@app.route('/sessions/<int:session_id>/core/<string:core_setting>/',
            methods=['PATCH'])
 @requires_auth
 @check_session_exists
-def set_core_config(scan_id, core_setting):
+def set_core_config(session_id, core_setting):
     """
     Allows a user to modify core configuration by sending a PATCH request.
 
@@ -285,7 +285,7 @@ def set_core_config(scan_id, core_setting):
              Otherwise, a JSON object confirming success and echoing the
              changed setting.
     """
-    w3af = SCANS[scan_id].w3af_core
+    w3af = SCANS[session_id].w3af_core
 
     if core_setting == 'http':
         configurable = w3af.uri_opener.settings
@@ -319,19 +319,19 @@ def set_core_config(scan_id, core_setting):
         configurable.set_options(core_opts)
 
         if opt_name.lower() == 'target':
-            SCANS[scan_id].target_urls = request.json[opt_name]
+            SCANS[session_id].target_urls = request.json[opt_name]
 
         return jsonify({
             'message': 'success',
             'modified': request.json
             })
 
-@app.route('/sessions/<int:scan_id>/start', methods=['POST'])
+@app.route('/sessions/<int:session_id>/start', methods=['POST'])
 @requires_auth
 @check_session_exists
-def start_scan_from_session(scan_id):
+def start_scan_from_session(session_id):
     scan_info_setup = threading.Event()
-    args = (SCANS[scan_id], scan_info_setup)
+    args = (SCANS[session_id], scan_info_setup)
 
     t = Process(target=start_preconfigured_scan, name='ScanThread', args=args)
     t.daemon = True
@@ -339,5 +339,5 @@ def start_scan_from_session(scan_id):
 
     scan_info_setup.wait()
     return jsonify({'message': 'Success',
-                    'id': scan_id,
-                    'href': '/scans/%s' % scan_id})
+                    'id': session_id,
+                    'href': '/scans/%s' % session_id})
