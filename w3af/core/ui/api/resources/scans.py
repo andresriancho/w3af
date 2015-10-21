@@ -67,7 +67,7 @@ def start_scan():
     if not all([
         (
         si is None or
-        si.w3af_core.status.get_simplified.status.upper == 'STOPPED'
+        si.w3af_core.status.get_simplified.status.upper() == 'STOPPED'
         )
         for si in scan_infos]):
         abort(400, 'This version of the REST API does not support'
