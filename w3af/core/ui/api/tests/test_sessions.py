@@ -38,7 +38,7 @@ class SessionTest(APIUnitTest):
         plugin_types = json.loads(get_plugin_types.data)['entries']
         self.assertEqual(get_plugin_types.status_code, 200)
         self.assertIsInstance(plugin_types, list)
-        self.assertTrue('audit' in plugin_types)
+        self.assertIn('audit', plugin_types)
 
         get_plugin_list = self.app.get('/sessions/%s/plugins/%s/' %(
                                             session_id,
