@@ -23,6 +23,7 @@ import json
 import requests
 import base64
 
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.ui.api.tests.utils.integration_test import IntegrationTest
 from w3af.core.ui.api.tests.utils.test_profile import (get_expected_vuln_names,
                                                        get_expected_vuln_urls)
@@ -37,7 +38,7 @@ class APIScanFromSessionTest(IntegrationTest):
                 "follow_regex": ".*"},
             "audit.sqli": {}
         }
-        target_url = "http://127.0.0.1:8000/audit/sql_injection/"
+        target_url = get_moth_http('/audit/sql_injection')
         core_settings = {
             "misc": {
                 "fuzz_cookies": False,
