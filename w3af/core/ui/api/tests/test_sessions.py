@@ -26,7 +26,7 @@ from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 
 class SessionTest(APIUnitTest):
 
-    def test_session_config(self):
+    def test_plugin_config(self):
         create_session = self.app.post('/sessions/',
                                        headers=self.HEADERS)
 
@@ -81,6 +81,13 @@ class SessionTest(APIUnitTest):
         params = json.loads(test_plugin_changed.data)['configuration']
         self.assertEqual(params['profilingNumber']['value'], prof_num)
 
+    def test_plugin_bad_request(self):
+        create_session = self.app.post('/sessions/',
+                                       headers=self.HEADERS)
+
+        session_id = json.loads(create_session.data)['id']
+        self.assertEqual(create_session.status_code, 201)
+
         bad_opt_name = self.app.patch(
             '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
             data=json.dumps({"nonexistentOption":"foo_bar"}),
@@ -92,6 +99,13 @@ class SessionTest(APIUnitTest):
             data=json.dumps({"useSvnUsers": "this_should_be_bool"}),
             headers=self.HEADERS)
         self.assertEqual(bad_opt_value.status_code, 422)
+
+    def test_core_config(self):
+        create_session = self.app.post('/sessions/',
+                                       headers=self.HEADERS)
+
+        session_id = json.loads(create_session.data)['id']
+        self.assertEqual(create_session.status_code, 201)
 
         # The same but for core options
         set_core_opt = self.app.patch(
@@ -106,6 +120,13 @@ class SessionTest(APIUnitTest):
         params = json.loads(test_core_changed.data)['target settings']
         self.assertEqual(params['target_os']['value'], "unix")
 
+    def test_core_bad_request(self):
+        create_session = self.app.post('/sessions/',
+                                       headers=self.HEADERS)
+
+        session_id = json.loads(create_session.data)['id']
+        self.assertEqual(create_session.status_code, 201)
+
         bad_opt_name = self.app.patch(
             '/sessions/%s/core/misc/' % session_id,
             data=json.dumps({"nonexistentOption":"foo_bar"}),
@@ -117,6 +138,13 @@ class SessionTest(APIUnitTest):
             data=json.dumps({"max_file_size": ["this_should", "be_an_int"]}),
             headers=self.HEADERS)
         self.assertEqual(bad_opt_value.status_code, 422)
+
+    def test_404s(self):
+        create_session = self.app.post('/sessions/',
+                                       headers=self.HEADERS)
+
+        session_id = json.loads(create_session.data)['id']
+        self.assertEqual(create_session.status_code, 201)
 
         test_404s = [
             '/sessions/999',
