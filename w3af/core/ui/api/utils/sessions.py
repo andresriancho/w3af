@@ -30,13 +30,13 @@ def check_session_exists(f):
     @wraps(f)
     def decorated(*args, **kwargs):
 
-        scan_id = kwargs['scan_id']
-        if (scan_id not in SCANS or
-            SCANS[scan_id] is None):
+        session_id = kwargs['session_id']
+        if (session_id not in SCANS or
+            SCANS[session_id] is None):
             return jsonify({
                 'code': 404,
                 'message': 'Session with ID %s does not exist'
-                           ' or has been deleted' % scan_id
+                           ' or has been deleted' % session_id
             }), 404
         return f(*args, **kwargs)
     return decorated
@@ -46,10 +46,10 @@ def check_plugin_type_exists(f):
     @wraps(f)
     def decorated(*args, **kwargs):
 
-        scan_id = kwargs['scan_id']
+        session_id = kwargs['session_id']
         plugin_type = kwargs['plugin_type']
 
-        w3af = SCANS[scan_id].w3af_core
+        w3af = SCANS[session_id].w3af_core
         if plugin_type not in w3af.plugins.get_plugin_types():
             return jsonify({'code': 404,
                             'message': 'Plugin type %s not found' % plugin_type
@@ -68,11 +68,11 @@ def check_plugin_exists(f):
     @wraps(f)
     def decorated(*args, **kwargs):
 
-        scan_id = kwargs['scan_id']
+        session_id = kwargs['session_id']
         plugin_type = kwargs['plugin_type']
         plugin = kwargs['plugin']
 
-        w3af = SCANS[scan_id].w3af_core
+        w3af = SCANS[session_id].w3af_core
         if plugin not in w3af.plugins.get_plugin_list(plugin_type):
             return jsonify({
                 'code': 404,
