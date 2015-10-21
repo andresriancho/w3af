@@ -62,8 +62,8 @@ class SessionTest(APIUnitTest):
         self.assertIsInstance(desc, unicode)
         self.assertIn('profilingNumber', params)
 
-        prof_num = params['profilingNumber']['value']
-        prof_num = prof_num + 1
+        prof_num = int(params['profilingNumber']['value'])
+        prof_num += 1
 
         k,v = params.popitem()
         self.assertIn('type', v)
@@ -79,7 +79,7 @@ class SessionTest(APIUnitTest):
             '/sessions/%s/plugins/bruteforce/basic_auth/' % session_id,
             headers=self.HEADERS)
         params = json.loads(test_plugin_changed.data)['configuration']
-        self.assertEqual(params['profilingNumber']['value'], prof_num)
+        self.assertEqual(int(params['profilingNumber']['value']), prof_num)
 
     def test_plugin_bad_request(self):
         create_session = self.app.post('/sessions/',
