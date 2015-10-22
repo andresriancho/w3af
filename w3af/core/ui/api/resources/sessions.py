@@ -37,8 +37,6 @@ from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc_settings import MiscSettings
-from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.url import URL
 
 SET_OPTIONS_LOCK = threading.RLock()
