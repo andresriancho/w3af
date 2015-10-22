@@ -32,6 +32,10 @@ class OptionList(object):
         self._internal_opt_list = []
 
     def add(self, option):
+        if option.get_name().lower() == 'enabled':
+          raise BaseFrameworkException(
+              'Invalid option name: "enabled" is reserved for indicating plugin'
+              ' status')
         self._internal_opt_list.append(option)
     append = add
 
