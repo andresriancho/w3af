@@ -180,6 +180,12 @@ def set_plugin_config(**kwargs):
     opt_names = dict(request.get_json(force=True))
 
     if ('enabled' in opt_names and len(opt_names) == 1):
+    # If the request only contains 'enabled', set it here, return and skip
+    # the additional logic.
+    # If the request contains 'enabled' alongside other options, we handle it
+    # in the same lock section as other options below.
+    #
+    # This is done to ensure that the PATCH request is always atomic.
         with SET_OPTIONS_LOCK:
             enable_or_disable_plugin(w3af,
                                      plugin,
