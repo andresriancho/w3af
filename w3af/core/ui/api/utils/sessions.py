@@ -23,7 +23,10 @@ from flask import jsonify, request
 
 from functools import wraps
 
+from w3af.core.ui.api.utils.error import abort
 from w3af.core.ui.api.db.master import SCANS
+from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.parsers.doc.url import URL
 
 
 def check_session_exists(f):
@@ -92,3 +95,19 @@ def enable_or_disable_plugin(w3af, plugin, plugin_type, enable=False):
                 plugin in plugin_list):
             plugin_list.remove(plugin)
         w3af.plugins.set_plugins(plugin_list, plugin_type)
+
+def build_settings_update(opt_list, opt_names):
+    for opt_name in opt_names:
+        try:
+            opt_value = request.json[opt_name]
+            opt_type = opt_list[opt_name].get_type()
+        except BaseFrameworkException as e:
+                abort(400, '%s is not a valid option here' % opt_name)
+        try:
+            if opt_type.lower() == 'url_list':
+                opt_list[opt_name].set_value([URL(o) for o in opt_value])
+            else:
+                opt_list[opt_name].set_value(opt_value)
+        except (AttributeError, BaseFrameworkException) as e:
+                abort(422, 'Invalid %s value %s' % (opt_type, opt_value))
+    return opt_list

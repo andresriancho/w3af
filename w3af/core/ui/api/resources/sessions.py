@@ -26,7 +26,8 @@ from flask import jsonify, request
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.routes import list_subroutes
 from w3af.core.ui.api.utils.auth import requires_auth
-from w3af.core.ui.api.utils.sessions import (check_session_exists,
+from w3af.core.ui.api.utils.sessions import (build_settings_update,
+                                             check_session_exists,
                                              check_plugin_type_exists,
                                              check_plugin_exists,
                                              enable_or_disable_plugin)
@@ -35,9 +36,7 @@ from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           create_scan_helper,
                                           start_preconfigured_scan)
 from w3af.core.controllers.w3afCore import w3afCore
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc_settings import MiscSettings
-from w3af.core.data.parsers.doc.url import URL
 
 SET_OPTIONS_LOCK = threading.RLock()
 
@@ -201,27 +200,7 @@ def set_plugin_config(**kwargs):
     except LookupError:
         pass
 
-    for opt_name in opt_names:
-        try:
-            opt_value = request.json[opt_name]
-            opt_type = plugin_opts[opt_name].get_type()
-        except BaseFrameworkException:
-            return jsonify({
-                'code': '400',
-                'message': '%s is not a valid option for plugin %s' %
-                    (opt_name,
-                     plugin)
-                }), 400
-        try:
-            if opt_type.lower() == 'url_list':
-                plugin_opts[opt_name].set_value([URL(o) for o in opt_value])
-            else:
-                plugin_opts[opt_name].set_value(opt_value)
-        except (AttributeError, BaseFrameworkException):
-            return jsonify({
-                'code': '422',
-                'message': 'Invalid %s option %s' % (opt_type, opt_value)
-                }), 422
+    plugin_opts = build_settings_update(plugin_opts, opt_names)
 
     with SET_OPTIONS_LOCK:
         if 'enabled' in request.json:
@@ -297,32 +276,14 @@ def set_core_config(session_id, core_setting):
     if core_setting == 'target':
         configurable = w3af.target
 
-    core_opts = configurable.get_options()
-    for opt_name in request.get_json(force=True):
-        try:
-            opt_value = request.json[opt_name]
-            opt_type = core_opts[opt_name].get_type()
-        except BaseFrameworkException:
-            return jsonify({
-                'code': '400',
-                'message': '%s is not a valid option here' % opt_name
-                }), 400
-        try:
-            if opt_type.lower() == 'url_list':
-                core_opts[opt_name].set_value([URL(o) for o in opt_value])
-            else:
-                core_opts[opt_name].set_value(opt_value)
-        except (AttributeError, BaseFrameworkException):
-            return jsonify({
-                'code': '422',
-                'message': 'Invalid %s value %s' % (opt_type, opt_value)
-                }), 422
+    core_opts = build_settings_update(configurable.get_options(),
+                                      request.get_json(force=True))
 
     with SET_OPTIONS_LOCK:
         configurable.set_options(core_opts)
 
-        if opt_name.lower() == 'target':
-            SCANS[session_id].target_urls = request.json[opt_name]
+        if (core_setting == 'target' and 'target' in request.json):
+            SCANS[session_id].target_urls = request.json['target']
 
         return jsonify({
             'message': 'success',
