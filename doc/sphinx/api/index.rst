@@ -110,6 +110,7 @@ Contents
    :maxdepth: 2
 
    scans
+   sessions
    kb
    version
    traffic

@@ -4,10 +4,9 @@ The ``/scans/`` resource
 Scanning a Web application using w3af's REST API requires the developer to
 understand this basic workflow:
 
- * Start a new scan using ``POST`` to ``/scans/``
+ * Start a new scan, either by using ``POST`` to ``/scans/`` or by configuring and starting a scan using :doc:`sessions`.
  * Get the scan status using ``GET`` to ``/scans/0``
  * Use :doc:`kb` to get information about the identified vulnerabilities
- * Clear all scan results before starting a new scan by sending a ``DELETE`` to ``/scans/0``
 
 Optionally send these requests to control and monitor the scan:
 
@@ -15,11 +14,12 @@ Optionally send these requests to control and monitor the scan:
  * Pause the scan using ``GET`` to ``/scans/0/pause``
  * Stop the scan using ``GET`` to ``/scans/0/stop``
  * Retrieve the scan log using ``GET`` to ``/scans/0/log``
+ * Clear configured scans and any results before starting a new scan by sending a ``DELETE`` to ``/scans/0``
 
 .. warning::
 
-   The current REST API implementation does not allow users to run more than
-   one concurrent scan.
+   Although multiple scans may be configured at any one time, the current REST 
+   API implementation does not allow users to run more than one concurrent scan.
 
 .. note::
 
@@ -29,8 +29,9 @@ Optionally send these requests to control and monitor the scan:
 Starting a scan
 ---------------
 
-Performing a ``POST`` to the ``/scans/`` resource is one of the most complex
-requests in our REST API. The call requires two specially crafted variables:
+A scan can be quickly started from an existing ``w3af`` profile by performing a
+``POST`` to the ``/scans/`` resource.
+The call requires two specially crafted variables:
 
  * ``scan_profile`` which must contain the contents of a ``w3af`` scan profile (not the file name)
  * ``target_urls`` a list containing URLs to seed ``w3af``'s crawler
@@ -51,3 +52,7 @@ requests in our REST API. The call requires two specially crafted variables:
 .. note::
 
    Remember to send the ``Content-Type: application/json`` header
+
+If no suitable profile exists, more complex requests can be built by sending a
+series of requests to :doc:`sessions`. Once started, a scan from ``sessions``
+can be further controlled and monitored using all the endpoints listed above.
