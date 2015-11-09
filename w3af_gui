@@ -49,7 +49,7 @@ def _configure_output_manager():
     """
     try:
         om.manager.set_output_plugins(['console'])
-    except Exception, e:
+    except Exception as e:
         print('Something went wrong, w3af failed to start the output manager.')
         print('Exception: "%s"' % e)
         sys.exit(-9)
