@@ -30,6 +30,7 @@ def exec_debug(fn):
     def new(self, command):
         #   Run the original function
         result = fn(self, command)
+        result = result if result is not None else ''
         no_newline_result = result.replace('\n', '')
         no_newline_result = no_newline_result.replace('\r', '')
 
