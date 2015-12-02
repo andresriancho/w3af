@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import copy
 
-from math import log, floor
+from math import log
 from itertools import chain
 
 import w3af.core.controllers.output_manager as om
