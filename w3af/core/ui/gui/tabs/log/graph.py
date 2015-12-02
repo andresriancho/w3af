@@ -105,7 +105,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
         
         mmseg = int(msg.get_real_time() * 1000)
         mtype = msg.get_type()
-        if mtype == "vulnerability":
+        if mtype == 'vulnerability':
             sever = msg.get_severity()
         else:
             sever = None
@@ -176,7 +176,7 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
             tspan = pan / self.timeGrouping
 
         # real left margin
-        txts = ["", "Vulns", "Info", "", "Debug"]
+        txts = ['', 'Vulns', 'Info', '', 'Debug']
         maxw = 0
         for txt in txts:
             self.pangolayout.set_text(txt)
@@ -218,13 +218,14 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
             posyant = posy
             self.window.draw_line(self.gc, lm-5, posy, lm, posy)
             self.pangolayout.set_text(txt)
-            (tw,th) = self.pangolayout.get_pixel_size()
+            tw, th = self.pangolayout.get_pixel_size()
             self.window.draw_layout(self.gc, lm-tw-8, posy-th//2, self.pangolayout)
 
         # draw the info
         countingPixel = 0
         pixelQuant = 0
         mesind = 0
+
         while True:
             for (mmseg, mtype, sever) in itertools.islice(self.all_messages,
                                                           mesind, None, None):
@@ -233,19 +234,19 @@ class LogGraph(gtk.DrawingArea, MessageConsumer):
                 posx = self.realLeftMargin + pixel
 
                 # if out of bound, restart draw
-                if posx > (w-MDER):
+                if posx > (w - MDER):
                     yield True
 
-                if mtype == "debug":
+                if mtype == 'debug':
                     if pixel == countingPixel:
                         pixelQuant += 1
                     else:
                         countingPixel = pixel
                         self._drawItem_debug(posx, pixelQuant)
                         pixelQuant = 1
-                elif mtype == "information":
+                elif mtype == 'information':
                     self._drawItem_info(posx)
-                elif mtype == "vulnerability":
+                elif mtype == 'vulnerability':
                     self._drawItem_vuln(posx, sever)
                     
             yield False
