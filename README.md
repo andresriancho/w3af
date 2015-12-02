@@ -1,8 +1,13 @@
 ## w3af - Web application attack and audit framework
 
-w3af is an open source web application security scanner which helps developers
-and information security experts identify and exploit vulnerabilities in their
-web applications.
+w3af is an [open source](https://www.gnu.org/licenses/gpl-2.0.txt) web 
+application security scanner which helps developers and penetration testers
+identify and exploit vulnerabilities in their web applications.
+
+The scanner is able to identify [200+ vulnerabilities](https://github.com/andresriancho/w3af/blob/master/w3af/core/data/constants/vulns.py),
+including [Cross-Site Scripting](https://github.com/andresriancho/w3af/blob/master/w3af/plugins/audit/xss.py),
+[SQL injection](https://github.com/andresriancho/w3af/blob/master/w3af/plugins/audit/sqli.py) and
+[OS commanding](https://github.com/andresriancho/w3af/blob/master/w3af/plugins/audit/os_commanding.py).
 
 ## Contributing
 
