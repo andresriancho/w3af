@@ -54,3 +54,15 @@ class TestXssedDotCom(PluginTest):
         infos = self.kb.get('xssed_dot_com', 'xss')
 
         self.assertEqual(len(infos), 0, infos)
+
+    def test_xssed_dot_com_too_generic_12717(self):
+        """
+        Test for issue #12717
+        https://github.com/andresriancho/w3af/issues/12717
+        """
+        cfg = self._run_configs['cfg']
+        self._scan('https://digi.ninja', cfg['plugins'])
+
+        infos = self.kb.get('xssed_dot_com', 'xss')
+
+        self.assertEqual(len(infos), 0, infos)

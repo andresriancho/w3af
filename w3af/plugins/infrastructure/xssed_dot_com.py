@@ -41,17 +41,13 @@ class xssed_dot_com(InfrastructurePlugin):
     :author: Nicolas Crocfer (shatter@shatter-blog.net)
     :author: Raul Siles: set "." in front of the root domain to limit search
     """
-    def __init__(self):
-        InfrastructurePlugin.__init__(self)
-
-        #
-        #   Depend on xssed.com
-        #
-        self.XSSED_URL = URL('http://www.xssed.com')
-        self.UNFIXED = 'UNFIXED'
-        self.XSSED_DOMAIN_RE = re.compile("<a href='(/mirror/\d*/)'"
-                                          " target='_blank'>")
-        self.XSSED_URL_RE = re.compile('URL: (.*?)</th>')
+    #
+    #   Depends on xssed.com, we need to keep these updated
+    #
+    UNFIXED = 'UNFIXED'
+    XSSED_URL = URL('http://www.xssed.com')
+    XSSED_URL_RE = re.compile('URL: (.*?)</th>')
+    XSSED_DOMAIN_RE = re.compile("<a href='(/mirror/\d*/)' target='_blank'>")
 
     @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
@@ -62,7 +58,7 @@ class xssed_dot_com(InfrastructurePlugin):
                                     (among other things) the URL to test.
         """
         target_domain = fuzzable_request.get_url().get_root_domain()
-        target_path = "/search?key=.%s" % target_domain
+        target_path = '/search?key=.%s' % target_domain
         check_url = self.XSSED_URL.url_join(target_path)
 
         try:
@@ -79,8 +75,7 @@ class xssed_dot_com(InfrastructurePlugin):
         Parse the search result from the xssed site and create the
         corresponding info objects.
         """
-        html_body = response.get_body()
-        xssed_matches = self.XSSED_DOMAIN_RE.findall(html_body)
+        xssed_matches = self.XSSED_DOMAIN_RE.findall(response.get_body())
 
         for mirror_relative_link in xssed_matches:
 

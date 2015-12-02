@@ -73,6 +73,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      # and GUI will consume it so it's ok to put this here
                      PIPDependency('Flask', 'Flask', '0.10.1'),
                      PIPDependency('yaml', 'PyYAML', '3.11'),
+
+                     # tldextract extracts the tld from any domain name
+                     PIPDependency('tldextract', 'tldextract', '1.7.2'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

@@ -28,7 +28,6 @@ from w3af.core.data.constants.ports import MAILER
 from w3af.core.data.constants.response_codes import OK
 from w3af.core.data.constants.severity import HIGH
 from w3af.core.data.constants.ignored_params import IGNORED_PARAMETERS
-from w3af.core.data.constants.top_level_domains import GTOP_LEVEL_DOMAINS
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.constants.vulns import VULNS
 
@@ -48,8 +47,5 @@ class TestAll(unittest.TestCase):
         self.assertEqual(HIGH, HIGH)
         self.assertEqual(IGNORED_PARAMETERS, IGNORED_PARAMETERS)
         self.assertEqual(VULNS, VULNS)
-        
-        self.assertIn('ar', GTOP_LEVEL_DOMAINS)
-        self.assertIn('py', GTOP_LEVEL_DOMAINS)
-        
-        self.assertIn("root:x:0:0:", FILE_PATTERNS)
+
+        self.assertIn('root:x:0:0:', FILE_PATTERNS)

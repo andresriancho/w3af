@@ -787,7 +787,7 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(URL("http://foo.aaa.com.ar").get_root_domain(),
                          'aaa.com.ar')
         self.assertEqual(URL("http://foo.aaa.edu.sz").get_root_domain(),
-                         'aaa.edu.sz')
+                         'edu.sz')
     
     def test_get_filename(self):
         self.assertEqual(URL('https://w3af.com:443/xyz/def.html').get_file_name(),

@@ -27,13 +27,13 @@ import urlparse
 
 from functools import wraps
 from ruamel.ordereddict import ordereddict as OrderedDict
+from tldextract import TLDExtract
 
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.misc.encoding import smart_str, PERCENT_ENCODE
 from w3af.core.data.misc.encoding import is_known_encoding
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-from w3af.core.data.constants.top_level_domains import GTOP_LEVEL_DOMAINS
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.disk_item import DiskItem
@@ -556,54 +556,19 @@ class URL(DiskItem):
         """
         Get the root domain name. Examples:
 
-        input: www.ciudad.com.ar
-        output: ciudad.com.ar
+            input: www.ciudad.com.ar
+            output: ciudad.com.ar
 
-        input: i.love.myself.ru
-        output: myself.ru
-
-        Code taken from: http://getoutfoxed.com/node/41
-
-        TODO: If you ever want to improve this code section, you might be
-              interested in https://pypi.python.org/pypi/tldextract , which
-              seems to be really updated and supported.
-
-              The (minor) down side is that they HTTP GET the GTOP_LEVEL_DOMAINS
-              each time you start the library for the first time.
+            input: i.love.myself.ru
+            output: myself.ru
         """
-        # break authority into two parts: subdomain(s), and base authority
-        # e.g. images.google.com --> [images, google.com]
-        #      www.popo.com.au --> [www, popo.com.au]
-        def split_authority(aAuthority):
-
-            # walk down from right, stop at (but include) first non-toplevel
-            # domain
-            chunks = re.split("\.", aAuthority)
-            chunks.reverse()
-
-            base_authority = ""
-            subdomain = ""
-            found_break = 0
-
-            for chunk in chunks:
-                if not found_break:
-                    base_authority = chunk + (
-                        ".", "")[base_authority == ""] + base_authority
-                else:
-                    subdomain = chunk + (".", "")[subdomain == ""] + subdomain
-                if chunk not in GTOP_LEVEL_DOMAINS:
-                    found_break = 1
-            return [subdomain, base_authority]
-
-        # def to split URI into its parts, returned as URI object
-        def decompose_uri():
-            return split_authority(self.get_domain())[1]
-
+        # An IP address has no 'root domain'
         if is_ip_address(self.netloc):
-            # An IP address has no "root domain"
             return self.netloc
-        else:
-            return decompose_uri()
+
+        extract = TLDExtract(suffix_list_url=False, fallback_to_snapshot=True)
+        extract_result = extract(self.get_domain())
+        return '%s.%s' % (extract_result.domain, extract_result.suffix)
 
     def get_domain_path(self):
         """
