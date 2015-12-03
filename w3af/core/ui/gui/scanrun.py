@@ -415,7 +415,7 @@ class URLsGraph(gtk.VBox):
                    ' trying to render a new dotcode. Please create a new'
                    ' bug report at %s including the following info:\n\n%s')
             new_issue = 'https://github.com/andresriancho/w3af/issues/new'
-            args = (ve, new_issue, pprint.pformat(self.nodos_code))
+            args = (ve, new_issue, dotcode)
             raise ValueError(msg % args)
         else:
             evt.set()
