@@ -54,6 +54,15 @@ RE_COMPILE_TYPE = type(re.compile(''))
 @attr('moth')
 class PluginTest(unittest.TestCase):
     """
+    These tests can be configured using two environment variables:
+
+        * HTTP_PROXY=127.0.0.1:8080 , route traffic through a proxy
+        * DEBUG=1 , enable logging
+
+    For example:
+
+        HTTP_PROXY=127.0.0.1:8080 nosetests -s w3af/plugins/tests/infrastructure/test_allowed_methods.py
+
     Remember that nosetests can't find test generators in unittest.TestCase,
     http://stackoverflow.com/questions/6689537/nose-test-generators-inside-class
     """
