@@ -56,7 +56,8 @@ class PluginTest(unittest.TestCase):
     """
     These tests can be configured using two environment variables:
 
-        * HTTP_PROXY=127.0.0.1:8080 , route traffic through a proxy
+        * HTTP_PROXY=127.0.0.1:8080 , route HTTP traffic through a local proxy
+        * HTTPS_PROXY=127.0.0.1:8080 , route HTTPS traffic through a local proxy
         * DEBUG=1 , enable logging
 
     For example:
