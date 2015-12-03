@@ -232,6 +232,7 @@ VULNS = {
          'Potential virtual host misconfiguration': None,
          'MS15-034': None,
          'JetLeak': None,
+         'Werkzeug debugger enabled': None,
          
          # Bruteforce
          'Guessable credentials': 75,
