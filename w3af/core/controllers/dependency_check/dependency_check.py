@@ -23,6 +23,9 @@ import sys
 import warnings
 import logging
 
+from .utils import verify_python_version
+verify_python_version()
+
 try:
     # Is pip even there?
     import pip
@@ -40,7 +43,6 @@ except ImportError:
     print('    sudo pip install --upgrade pip')
     sys.exit(1)
 
-from .utils import verify_python_version
 from .helper_script import (generate_helper_script,
                             generate_pip_install_non_git,
                             generate_pip_install_git)
@@ -56,8 +58,6 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     
     :return: True if the process should exit
     """
-    verify_python_version()
-    
     disable_warnings()
 
     platform = get_current_platform()

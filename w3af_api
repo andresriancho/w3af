@@ -2,8 +2,12 @@
 
 import sys
 
-from w3af.core.ui.api.main import main
+# Check if I have all needed dependencies, do this as soon as possible so we
+# fail fast
+from w3af.core.controllers.dependency_check.dependency_check import dependency_check
+dependency_check()
 
+from w3af.core.ui.api.main import main
 
 if __name__ == '__main__':
     sys.exit(main())
