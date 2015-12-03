@@ -110,6 +110,10 @@ class websockets_links(GrepPlugin):
 
 def find_websockets_links(text):
     ws_links = set()
+
+    if text is None:
+        return ws_links
+
     mobjects = WEBSOCKETS_URL_RE.finditer(text)
     for ws_mo in mobjects:
         try:

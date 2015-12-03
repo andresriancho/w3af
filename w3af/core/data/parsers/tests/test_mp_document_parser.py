@@ -183,6 +183,18 @@ class TestMPDocumentParser(unittest.TestCase):
         self.assertEqual([Tag('a', {'href': '/abc'}, 'foo'),
                           Tag('b', {}, 'bar')], tags)
 
+    def test_get_tags_by_filter_empty_tag(self):
+        body = '<html><script src="foo.js"></script></html>'
+        url = URL('http://www.w3af.com/')
+        headers = Headers()
+        headers['content-type'] = 'text/html'
+        resp = HTTPResponse(200, body, headers, url, url, charset='utf-8')
+
+        tags = self.mpdoc.get_tags_by_filter(resp, ('script',), yield_text=True)
+
+        # Note that lxml returns None for this tag text:
+        self.assertEqual([Tag('script', {'src': 'foo.js'}, None)], tags)
+
 
 def daemon_child(queue):
     dpc = MultiProcessingDocumentParser()
