@@ -50,14 +50,20 @@ class OutputFileOption(BaseOption):
             raise BaseFrameworkException(msg % value)
 
         if not os.path.isdir(directory):
-            msg = 'Invalid file option "%s", the directory "%s" does'\
-                  ' not exist.'
+            msg = ('Invalid file option "%s", the directory "%s" does'
+                   ' not exist.')
             raise BaseFrameworkException(msg % (value, directory))
 
         if not os.access(directory, os.W_OK):
-            msg = 'Invalid file option "%s", the user does not have' \
-                  ' enough permissions to write to the specified directory.'
+            msg = ('Invalid file option "%s", the user does not have'
+                   ' enough permissions to write to the specified directory.')
             raise BaseFrameworkException(msg % value)
+
+        if os.path.exists(value):
+            if not os.access(value, os.W_OK):
+                msg = ('Invalid file option "%s", the user does not have'
+                       ' enough permissions to write to the file.')
+                raise BaseFrameworkException(msg % value)
 
         # Please note the following:
         #     >>> os.path.abspath(os.path.dirname(''))
