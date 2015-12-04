@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import csv
+import base64
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
@@ -69,8 +70,8 @@ class csv_file(OutputPlugin):
             csv_writer = csv.writer(output_handler, delimiter=',',
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
         except Exception, e:
-            msg = 'An exception was raised while trying to open the '\
-                  ' CSV writer. Exception: "%s"'
+            msg = ('An exception was raised while trying to open the '
+                   ' CSV writer. Exception: "%s"')
             om.out.error(msg % e)
             output_handler.close()
             return
@@ -82,7 +83,7 @@ class csv_file(OutputPlugin):
                        info.get_method(),
                        info.get_uri(),
                        info.get_token_name(),
-                       info.get_mutant().get_data(),
+                       base64.b64encode(info.get_mutant().get_data()),
                        info.get_id(),
                        info.get_desc()]
                 csv_writer.writerow(row)
@@ -101,8 +102,24 @@ class csv_file(OutputPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin exports all identified vulnerabilities and information
-        to the given CSV file.
+        This plugin exports all identified vulnerabilities to a CSV file.
+
+        Each line in the file contains the following fields:
+            * Severity
+            * Name
+            * HTTP method
+            * URL
+            * Vulnerable parameter
+            * Base64 encoded POST-data
+            * Unique vulnerability ID
+            * Description
+
+        Fields are comma separated and the | character is used for quoting.
+
+        The CSV plugin should be used for quick and easy integrations with w3af,
+        external tools which require more details, such as the HTTP request and
+        response associated with each vulnerability, should use the xml_file
+        output plugin.
 
         One configurable parameter exists:
             - output_file
