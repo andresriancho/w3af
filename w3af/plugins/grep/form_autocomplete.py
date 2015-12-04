@@ -25,6 +25,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_PASSWD
 from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.info_set import InfoSet
 
 
 class form_autocomplete(GrepPlugin):
@@ -76,9 +77,10 @@ class form_autocomplete(GrepPlugin):
                              self.get_name())
                     i.add_to_highlight('autocomplete')
                     i.set_url(url)
+                    i[AutoCompleteInfoSet.ITAG] = form.get_action().uri2url()
 
-                    self.kb_append_uniq(self, 'form_autocomplete', i,
-                                        filter_by='URL')
+                    self.kb_append_uniq_group(self, 'form_autocomplete', i,
+                                              group_klass=AutoCompleteInfoSet)
                     break
 
     def get_long_desc(self):
@@ -89,3 +91,16 @@ class form_autocomplete(GrepPlugin):
         This plugin greps every page for autocomplete-able forms containing 
         password-type inputs.
         """
+
+
+class AutoCompleteInfoSet(InfoSet):
+    ITAG = 'action'
+    TEMPLATE = (
+        'The application contains {{ uris|length }} different URLs with a'
+        ' <form> element which has auto-complete enabled for password fields.'
+        ' The first {{ uris|sample_count }} vulnerable URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
