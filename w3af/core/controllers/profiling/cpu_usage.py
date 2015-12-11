@@ -29,11 +29,18 @@ DELAY_MINUTES = 2
 SAVE_THREAD_PTR = []
 
 
+def user_wants_cpu_profiling():
+    _should_profile = os.environ.get('W3AF_CPU_PROFILING', '0')
+
+    if _should_profile.isdigit() and int(_should_profile) == 1:
+        return True
+
+    return False
+
+
 def should_profile_cpu(wrapped):
     def inner():
-        _should_profile = os.environ.get('W3AF_CPU_PROFILING', '0')
-
-        if _should_profile.isdigit() and int(_should_profile) == 1:
+        if user_wants_cpu_profiling():
             return wrapped()
 
     return inner

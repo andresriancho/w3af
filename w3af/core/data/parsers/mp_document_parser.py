@@ -41,6 +41,7 @@ from w3af.core.controllers.threads.decorators import apply_with_return_error
 from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
 from w3af.core.controllers.profiling.memory_usage import user_wants_memory_profiling
 from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemalloc
+from w3af.core.controllers.profiling.cpu_usage import user_wants_cpu_profiling
 from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.data.parsers.utils.request_uniq_id import get_request_unique_id
 
@@ -55,10 +56,18 @@ class MultiProcessingDocumentParser(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # in seconds
-    PARSER_TIMEOUT = 10
     DEBUG = core_profiling_is_enabled()
     MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
+
+    # Increasing the timeout when profiling is enabled seems to fix issue #9713
+    #
+    # https://github.com/andresriancho/w3af/issues/9713
+    PROFILING_ENABLED = (user_wants_memory_profiling() or
+                         user_wants_pytracemalloc() or
+                         user_wants_cpu_profiling())
+
+    # in seconds
+    PARSER_TIMEOUT = 60 if PROFILING_ENABLED else 10
 
     def __init__(self):
         self._pool = None
@@ -123,10 +132,12 @@ class MultiProcessingDocumentParser(object):
         msg = ('[timeout] The parser took more than %s seconds to complete'
                ' parsing of "%s", killed it!')
 
-        if user_wants_memory_profiling() or user_wants_pytracemalloc():
-            msg += (' Keep in mind that you\'re profiling memory usage and'
-                    ' there is a known bug where memory profilers break the'
-                    ' parser cache. See issue #9713 for more information'
+        if self.PROFILING_ENABLED:
+            msg += (' You are running a profiling session which requires more'
+                    ' CPU and resources to be run; the'
+                    ' MultiProcessingDocumentParser failed to parse the HTML'
+                    ' document. Try to increase the PARSER_TIMEOUT and try'
+                    ' again. See issue #9713 for more information'
                     ' https://github.com/andresriancho/w3af/issues/9713')
 
         om.out.debug(msg % (self.PARSER_TIMEOUT, http_response.get_url()))
