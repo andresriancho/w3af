@@ -138,8 +138,8 @@ class MultiProcessingDocumentParser(object):
                     ' MultiProcessingDocumentParser failed to parse the HTML'
                     ' document. Try to increase the PARSER_TIMEOUT and try'
                     ' again.\n\n'
-                    ' This issue invalidates the profiling session!\n\n'
-                    ' See issue #9713 for more information'
+                    'This issue invalidates the profiling session!\n\n'
+                    'See issue #9713 for more information'
                     ' https://github.com/andresriancho/w3af/issues/9713')
 
         log_function = om.out.error if self.PROFILING_ENABLED else om.out.debug
