@@ -137,10 +137,13 @@ class MultiProcessingDocumentParser(object):
                     ' CPU and resources to be run; the'
                     ' MultiProcessingDocumentParser failed to parse the HTML'
                     ' document. Try to increase the PARSER_TIMEOUT and try'
-                    ' again. See issue #9713 for more information'
+                    ' again.\n\n'
+                    ' This issue invalidates the profiling session!\n\n'
+                    ' See issue #9713 for more information'
                     ' https://github.com/andresriancho/w3af/issues/9713')
 
-        om.out.debug(msg % (self.PARSER_TIMEOUT, http_response.get_url()))
+        log_function = om.out.error if self.PROFILING_ENABLED else om.out.debug
+        log_function(msg % (self.PARSER_TIMEOUT, http_response.get_url()))
 
     def get_document_parser_for(self, http_response):
         """
