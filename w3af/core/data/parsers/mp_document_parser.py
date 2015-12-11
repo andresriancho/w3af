@@ -67,7 +67,7 @@ class MultiProcessingDocumentParser(object):
                          user_wants_cpu_profiling())
 
     # in seconds
-    PARSER_TIMEOUT = 60 if PROFILING_ENABLED else 10
+    PARSER_TIMEOUT = 120 if PROFILING_ENABLED else 10
 
     def __init__(self):
         self._pool = None
