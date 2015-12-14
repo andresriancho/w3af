@@ -109,18 +109,18 @@ class MultiProcessingDocumentParser(object):
             self._processes.clear()
             self._processes = None
 
-    def _kill_parser_process(self, hash_string, http_response):
+    def _kill_parser_process(self, request_uniq_id, http_response):
         """
         Kill the process that's handling the parsing of http_response which
-        can be identified by hash_string
+        can be identified by request_uniq_id
 
-        :param hash_string: The hash for the http_response
+        :param request_uniq_id: The hash for the http_response
         :param http_response: The HTTP response which is being parsed
         :return: None
         """
         # Near the timeout error, so we make sure that the pid is still
         # running our "buggy" input
-        pid = self._processes.pop(hash_string, None)
+        pid = self._processes.pop(request_uniq_id, None)
         if pid is not None:
             try:
                 os.kill(pid, signal.SIGTERM)
@@ -160,12 +160,12 @@ class MultiProcessingDocumentParser(object):
         # Start the worker processes if needed
         self.start_workers()
 
-        hash_string = get_request_unique_id(http_response, prepend='parser')
+        request_uniq_id = get_request_unique_id(http_response, prepend='parser')
 
         apply_args = (process_document_parser,
                       http_response,
                       self._processes,
-                      hash_string,
+                      request_uniq_id,
                       self.DEBUG)
 
         # Push the task to the workers
@@ -174,7 +174,7 @@ class MultiProcessingDocumentParser(object):
         try:
             parser_output = result.get(timeout=self.PARSER_TIMEOUT)
         except multiprocessing.TimeoutError:
-            self._kill_parser_process(hash_string, http_response)
+            self._kill_parser_process(request_uniq_id, http_response)
 
             # Act just like when there is no parser
             msg = 'There is no parser for "%s".' % http_response.get_url()
@@ -185,7 +185,7 @@ class MultiProcessingDocumentParser(object):
 
         finally:
             # Just remove it so it doesn't use memory
-            self._processes.pop(hash_string, None)
+            self._processes.pop(request_uniq_id, None)
 
         return parser_output
 
@@ -218,14 +218,14 @@ class MultiProcessingDocumentParser(object):
         # Start the worker processes if needed
         self.start_workers()
 
-        hash_string = get_request_unique_id(http_response, prepend='tags')
+        request_uniq_id = get_request_unique_id(http_response, prepend='tags')
 
         apply_args = (process_get_tags_by_filter,
                       http_response,
                       tags,
                       yield_text,
                       self._processes,
-                      hash_string,
+                      request_uniq_id,
                       self.DEBUG)
 
         # Push the task to the workers
@@ -234,7 +234,7 @@ class MultiProcessingDocumentParser(object):
         try:
             filtered_tags = result.get(timeout=self.PARSER_TIMEOUT)
         except multiprocessing.TimeoutError:
-            self._kill_parser_process(hash_string, http_response)
+            self._kill_parser_process(request_uniq_id, http_response)
 
             # We hit a timeout, return an empty list
             return []
@@ -246,20 +246,20 @@ class MultiProcessingDocumentParser(object):
 
         finally:
             # Just remove it so it doesn't use memory
-            self._processes.pop(hash_string, None)
+            self._processes.pop(request_uniq_id, None)
 
         return filtered_tags
 
 
 def process_get_tags_by_filter(http_resp, tags, yield_text,
-                               processes, hash_string, debug):
+                               processes, request_uniq_id, debug):
     """
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
     # Save this for tracking
     pid = multiprocessing.current_process().pid
-    processes[hash_string] = pid
+    processes[request_uniq_id] = pid
 
     document_parser = DocumentParser(http_resp)
 
@@ -274,14 +274,14 @@ def process_get_tags_by_filter(http_resp, tags, yield_text,
     return filtered_tags
 
 
-def process_document_parser(http_resp, processes, hash_string, debug):
+def process_document_parser(http_resp, processes, request_uniq_id, debug):
     """
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
     # Save this for tracking
     pid = multiprocessing.current_process().pid
-    processes[hash_string] = pid
+    processes[request_uniq_id] = pid
 
     if debug:
         msg = '[mp_document_parser] PID %s is starting to parse %s'

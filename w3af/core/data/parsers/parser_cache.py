@@ -81,9 +81,9 @@ class ParserCache(CacheStats):
         :param http_response: The http response instance
         :return: An instance of DocumentParser
         """
-        hash_string = get_request_unique_id(http_response)
+        request_uniq_id = get_request_unique_id(http_response)
 
-        parser_finished = self._parser_finished_events.get(hash_string, None)
+        parser_finished = self._parser_finished_events.get(request_uniq_id, None)
         if parser_finished is not None:
             # There is one subprocess already processing this http response
             # body, the best thing to do here is to make this thread wait
@@ -99,17 +99,17 @@ class ParserCache(CacheStats):
         # metric increase
         self.inc_query_count()
 
-        parser = self._cache.get(hash_string, None)
+        parser = self._cache.get(request_uniq_id, None)
         if parser is not None:
-            self._handle_cache_hit(hash_string)
+            self._handle_cache_hit(request_uniq_id)
             return parser
         else:
             # Not in cache, have to work.
-            self._handle_cache_miss(hash_string)
+            self._handle_cache_miss(request_uniq_id)
 
             # Create a new instance of DocumentParser, add it to the cache
             event = threading.Event()
-            self._parser_finished_events[hash_string] = event
+            self._parser_finished_events[request_uniq_id] = event
 
             try:
                 parser = mp_doc_parser.get_document_parser_for(http_response)
@@ -120,12 +120,12 @@ class ParserCache(CacheStats):
             else:
                 save_to_cache = self.should_cache(http_response) and cache
                 if save_to_cache:
-                    self._cache[hash_string] = parser
+                    self._cache[request_uniq_id] = parser
                 else:
-                    self._handle_no_cache(hash_string)
+                    self._handle_no_cache(request_uniq_id)
             finally:
                 event.set()
-                self._parser_finished_events.pop(hash_string, None)
+                self._parser_finished_events.pop(request_uniq_id, None)
 
             return parser
 

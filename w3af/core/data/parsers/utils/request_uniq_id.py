@@ -46,10 +46,10 @@ def get_request_unique_id(http_response, prepend=None):
     _to_hash = body_str + uri_str
 
     # Added adler32 after finding some hash() collisions in builds
-    hash_string = str(hash(_to_hash))
-    hash_string += str(zlib.adler32(_to_hash))
+    request_uniq_id = str(hash(_to_hash))
+    request_uniq_id += str(zlib.adler32(_to_hash))
 
     if prepend:
-        hash_string = '%s-%s' % (prepend, hash_string)
+        request_uniq_id = '%s-%s' % (prepend, request_uniq_id)
 
-    return hash_string
+    return request_uniq_id

@@ -67,16 +67,16 @@ class CacheStats(object):
     def get_do_not_cache(self):
         return self._do_not_cache
 
-    def _handle_cache_hit(self, hash_string):
+    def _handle_cache_hit(self, request_uniq_id):
         if self.DEBUG:
-            om.out.debug('[cache] Hit for %s' % hash_string)
+            om.out.debug('[cache] Hit for %s' % request_uniq_id)
             self._from_LRU += 1
 
-    def _handle_cache_miss(self, hash_string):
+    def _handle_cache_miss(self, request_uniq_id):
         if self.DEBUG:
-            om.out.debug('[cache] Miss for %s' % hash_string)
+            om.out.debug('[cache] Miss for %s' % request_uniq_id)
 
-    def _handle_no_cache(self, hash_string):
+    def _handle_no_cache(self, request_uniq_id):
         if self.DEBUG:
-            om.out.debug('[cache] DO NOT CACHE %s' % hash_string)
+            om.out.debug('[cache] DO NOT CACHE %s' % request_uniq_id)
             self._do_not_cache += 1
