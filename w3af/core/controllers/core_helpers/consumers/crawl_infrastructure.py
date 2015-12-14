@@ -56,7 +56,7 @@ class crawl_infrastructure(BaseConsumer):
         super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
                                                    w3af_core,
                                                    thread_name='CrawlInfra',
-                                                   max_pool_queued_tasks=100)
+                                                   max_pool_queued_tasks=BaseConsumer.THREAD_POOL_SIZE)
         self._max_discovery_time = int(max_discovery_time)
 
         # For filtering fuzzable requests found by plugins:
