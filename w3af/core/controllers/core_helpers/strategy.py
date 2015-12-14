@@ -205,18 +205,21 @@ class CoreStrategy(object):
         Also keep in mind that is one of the only methods that will be run in
         the "main thread" and lives during the whole scan process.
         """
-        _input = [self._seed_producer, self._discovery_consumer,
+        _input = [self._seed_producer,
+                  self._discovery_consumer,
                   self._bruteforce_consumer]
         _input = filter(None, _input)
 
-        output = [self._audit_consumer, self._discovery_consumer,
+        output = [self._audit_consumer,
+                  self._discovery_consumer,
                   self._bruteforce_consumer]
         output = filter(None, output)
 
         # Only check if these have exceptions and bring them to the main
         # thread in order to be handled by the ExceptionHandler and the
         # w3afCore
-        _other = [self._audit_consumer, self._auth_consumer,
+        _other = [self._audit_consumer,
+                  self._auth_consumer,
                   self._grep_consumer]
         _other = filter(None, _other)
 
@@ -408,8 +411,7 @@ class CoreStrategy(object):
             * Create the consumer instance and more,
         """
         crawl_plugins = self._w3af_core.plugins.plugins['crawl']
-        infrastructure_plugins = self._w3af_core.plugins.plugins[
-            'infrastructure']
+        infrastructure_plugins = self._w3af_core.plugins.plugins['infrastructure']
 
         if crawl_plugins or infrastructure_plugins:
             discovery_plugins = infrastructure_plugins
