@@ -61,5 +61,5 @@ def log_sink_factory(om_queue):
 # most likely for the log sink, which will be replaced in each sub-process
 manager = OutputManager()
 
-# Logs to into the logging process through out.debug() , out.error() , etc.
+# Logs go into the logging process through out.debug() , out.error() , etc.
 out = log_sink_factory(manager.get_in_queue())
