@@ -82,7 +82,7 @@ class Pool(ThreadPool):
         self.Process = partial(DaemonProcess, name=worker_names)
 
         self._setup_queues(max_queued_tasks)
-        self._taskqueue = Queue.Queue()
+        self._taskqueue = Queue.Queue(maxsize=max_queued_tasks)
         self._cache = {}
         self._state = RUN
         self._maxtasksperchild = maxtasksperchild
