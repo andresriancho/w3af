@@ -35,7 +35,7 @@ class QueueSpeed(object):
     
     def clear(self):
         self._output_data = [] 
-        self._input_rpm = []
+        self._input_data = []
     
     def _add(self, true_false, data):
         data.append((true_false, time.time()))
