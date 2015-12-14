@@ -39,11 +39,21 @@ class grep(BaseConsumer):
         :param grep_plugins: Instances of grep plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         """
+        # We use BaseConsumer.THREAD_POOL_SIZE as an arbitrary "low" number
+        # to calculate the max_in_queue_size, the basic thinking behind this
+        # is that we don't want hundreds of HTTP request + responses queued
+        # in memory waiting for the grep plugins to analyze them.
+        #
+        # If this limit works it means that: If the grep plugins are slow, then
+        # the whole scanner will be slow but no excessive memory usage will be
+        # found
+        max_in_queue_size = BaseConsumer.THREAD_POOL_SIZE * 2
+
         super(grep, self).__init__(grep_plugins,
                                    w3af_core,
                                    create_pool=False,
                                    thread_name='Grep',
-                                   max_in_queue_size=150)
+                                   max_in_queue_size=max_in_queue_size)
         self._already_analyzed = ScalableBloomFilter()
 
     def run(self):
