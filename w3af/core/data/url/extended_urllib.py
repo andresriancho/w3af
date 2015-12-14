@@ -1160,17 +1160,20 @@ class ExtendedUrllib(object):
         url_instance = request.url_object
         domain = url_instance.get_domain()
 
-        if self._grep_queue_put is not None and\
-        domain in cf.cf.get('target_domains'):
+        if self._grep_queue_put is None:
+            return
 
-            # Create a fuzzable request based on the urllib2 request object
-            headers_inst = Headers(request.header_items())
-            fr = FuzzableRequest.from_parts(url_instance,
-                                            request.get_method(),
-                                            request.get_data() or '',
-                                            headers_inst)
+        if domain not in cf.cf.get('target_domains'):
+            return
 
-            self._grep_queue_put((fr, response))
+        # Create a fuzzable request based on the urllib2 request object
+        headers_inst = Headers(request.header_items())
+        fr = FuzzableRequest.from_parts(url_instance,
+                                        request.get_method(),
+                                        request.get_data() or '',
+                                        headers_inst)
+
+        self._grep_queue_put((fr, response))
 
 
 @contextmanager
