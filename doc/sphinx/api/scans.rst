@@ -5,7 +5,7 @@ Scanning a Web application using w3af's REST API requires the developer to
 understand this basic workflow:
 
  * Start a new scan using ``POST`` to ``/scans/``
- * Get the scan status using ``GET`` to ``/scans/0``
+ * Get the scan status using ``GET`` to ``/scans/0/status``
  * Use :doc:`kb` to get information about the identified vulnerabilities
  * Clear all scan results before starting a new scan by sending a ``DELETE`` to ``/scans/0``
 
