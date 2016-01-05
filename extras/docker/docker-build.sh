@@ -12,7 +12,7 @@ cd ../../
 if [ $# -eq 1 ]; then
     ENV=$1
 else
-    echo "Environment argument is required"
+    echo "Build environment name argument is required (./docker-build.sh develop)"
     exit 1
 fi
 
