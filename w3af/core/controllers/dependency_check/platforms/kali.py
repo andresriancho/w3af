@@ -23,10 +23,6 @@ import platform
 
 from .ubuntu1204 import Ubuntu1204
 
-#
-#   This piece of code will most likely be patched to be ignored when we create
-#   the latest deb package for Kali.
-#
 KALI_MESSAGE = '''
 According to Kali's documentation [0] in order to avoid breaking the packaged\
  w3af version you should run the following commands:
