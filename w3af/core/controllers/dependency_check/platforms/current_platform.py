@@ -29,6 +29,7 @@ from .centos import CentOS
 from .centos65 import CentOS65
 from .fedora import Fedora
 from .kali import Kali
+from .kali2 import Kali2
 from .mac import MacOSX
 from .openbsd import OpenBSD5
 from .suse import SuSE
@@ -36,8 +37,8 @@ from .elementaryOS02 import ElementaryOS02
 from .default import DefaultPlatform
 
 KNOWN_PLATFORMS = [Debian76, Debian78, Debian80, Ubuntu1204, CentOS65, CentOS,
-                   Fedora, Kali, MacOSX, OpenBSD5, SuSE, Ubuntu1404, Ubuntu1410,
-                   ElementaryOS02]
+                   Fedora, Kali, Kali2, MacOSX, OpenBSD5, SuSE, Ubuntu1404,
+                   Ubuntu1410, ElementaryOS02]
 
 
 def get_current_platform(known_platforms=KNOWN_PLATFORMS):
