@@ -25,12 +25,12 @@ commands the docker containers are started with two volumes which are mapped to
 your home directory:
 
  * ``~/.w3af/`` from your host is mapped to ``/root/.w3af/`` in the container.
- This directory is mostly used by ``w3af`` to store scan profiles and internal
- data.
+   This directory is mostly used by ``w3af`` to store scan profiles and internal
+   data.
 
  * ``~/w3af-shared`` from your host is mapped to ``/root/w3af-shared`` in the
- container. Use this directory to save your scan results and provide input files
- to w3af.
+   container. Use this directory to save your scan results and provide input files
+   to w3af.
 
 Debugging the container
 -----------------------
