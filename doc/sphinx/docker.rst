@@ -14,6 +14,9 @@ configured to listen on ``0.0.0.0`` and the port needs to be made accessible
 to the host using the ``-p`` parameter in the helper script
 (ie. ``extras/docker/scripts/w3af_console_docker``)
 
+Take a look at `this commit <https://github.com/andresriancho/w3af/commit/a8e2f66e31d8ad4a769cd0e7c12c87559dd026f3>`_
+for more information about exposing ports.
+
 Sharing data with the container
 -------------------------------
 
