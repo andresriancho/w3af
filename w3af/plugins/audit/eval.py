@@ -70,7 +70,9 @@ class eval(AuditPlugin):
         # ASP.NET also uses miliseconds
         # http://msdn.microsoft.com/en-us/library/d00bd51t.aspx
         # Note: The Sleep in ASP.NET is uppercase
-        ExactDelay("Thread.Sleep(%s);", mult=1000)
+        ExactDelay("Thread.Sleep(%s);", mult=1000),
+        # NodeJS eval
+        ExactDelay("var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)", mult=1000)
     )
 
     def __init__(self):
