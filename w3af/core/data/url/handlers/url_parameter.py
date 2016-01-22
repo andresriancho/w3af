@@ -44,8 +44,19 @@ class URLParameterHandler(urllib2.BaseHandler):
         url_instance = URL(req.get_full_url())
         url_instance.set_param(self._url_parameter)
 
-        new_request = HTTPRequest(url_instance, headers=req.headers,
+        new_request = HTTPRequest(url_instance,
+                                  headers=req.headers,
                                   origin_req_host=req.get_origin_req_host(),
                                   unverifiable=req.is_unverifiable(),
-                                  retries=req.retries_left)
+                                  retries=req.retries_left,
+                                  cookies=req.cookies,
+                                  cache=req.get_from_cache,
+                                  new_connection=req.new_connection,
+                                  follow_redirects=req.follow_redirects,
+                                  use_basic_auth=req.use_basic_auth,
+                                  use_proxy=req.use_proxy,
+                                  timeout=req.timeout)
         return new_request
+
+    https_request = http_request
+
