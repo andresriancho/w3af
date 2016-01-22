@@ -29,6 +29,7 @@ from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.output.xml_file import xml_file
 
 
 @attr('smoke')
@@ -92,6 +93,14 @@ class TestXMLOutput(PluginTest):
             os.remove(self.FILENAME)
         except:
             pass
+
+    def test_error_null_byte(self):
+        """
+        https://github.com/andresriancho/w3af/issues/12924
+        """
+        plugin_instance = xml_file()
+        plugin_instance.error('\0')
+        plugin_instance.flush()
 
 
 class XMLParser(object):

@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import base64
 import os
+import re
 import time
+import base64
 import xml.dom.minidom
-
-from functools import partial
 
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
@@ -39,15 +38,31 @@ from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 
-# Override builtin 'str' function in order to avoid encoding
-# errors while generating objects' utf8 byte-string representations.
-xml_str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 
 NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
            'javascript', 'rss+xml', 'soap+xml', 'font-woff',
            'xhtml+xml', 'xml-dtd', 'xop+xml')
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
+
+# https://stackoverflow.com/questions/8733233/filtering-out-certain-bytes-in-python
+INVALID_XML = u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+'
+
+
+def xml_str(s):
+    """
+    Avoid encoding errors while generating objects' utf8 byte-string
+    representations.
+
+    Should fix issues similar to:
+    https://github.com/andresriancho/w3af/issues/12924
+
+    :param s: The input string/unicode
+    :return: A string ready to be sent to the XML file
+    """
+    encoded_str = smart_str(s, encoding='utf8', errors='xmlcharrefreplace')
+    encoded_str = re.sub(INVALID_XML, '?', encoded_str)
+    return encoded_str
 
 
 class xml_file(OutputPlugin):
