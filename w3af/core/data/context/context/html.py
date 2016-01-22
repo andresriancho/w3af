@@ -177,12 +177,24 @@ class HTMLAttrQuoteGeneric(BaseContext):
           <a href="PAYLOAD">
 
         Where the user is able to enter javascript:alert() and run arbitrary
-        JS code
-        """
-        if ':' in self.payload and self.value.startswith(self.payload):
-            return True
+        JS code.
 
-        return False
+        Note that after [0] was reported this method became more complex, since
+        we check that the tag attribute name is one that allows/knows how to
+        handle the "javascript:" protocol.
+
+        [0] https://github.com/andresriancho/w3af/issues/13359
+        """
+        if self.name not in JS_EVENTS and self.name not in EXECUTABLE_ATTRS:
+            return False
+
+        if ':' not in self.payload:
+            return False
+
+        if not self.value.startswith(self.payload):
+            return False
+
+        return True
 
     def can_break_style(self):
         """

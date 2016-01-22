@@ -53,6 +53,27 @@ class TestJavaScriptInHTML(unittest.TestCase):
         self.assertIsInstance(context, ScriptText)
         self.assertTrue(context.can_break())
 
+    def test_payload_javascript_value(self):
+        """
+        Test for false positive reported at
+        https://github.com/andresriancho/w3af/issues/13359
+
+        :return: Should not find a XSS
+        """
+        payload = 'PAYLOAD:PAYLOAD'
+        html = """
+        <html>
+            <form>
+                <input type="text" name="test" value="%s">
+                <input type="submit">
+            </form>
+        </html>
+        """
+        context = get_context(html % payload, payload)[0]
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertFalse(context.is_executable())
+        self.assertFalse(context.can_break())
+
     def test_payload_javascript_href(self):
         html = """
         <html>
