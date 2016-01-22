@@ -41,8 +41,6 @@ from w3af.core.data.url.HTTPRequest import HTTPRequest
 
 # Override builtin 'str' function in order to avoid encoding
 # errors while generating objects' utf8 byte-string representations.
-# Note that this 'smart_str' re-definition only will be available within
-# this module's scope.
 xml_str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 
 NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
@@ -119,7 +117,13 @@ class xml_file(OutputPlugin):
         action for error messages.
         """
         message_node = self._xmldoc.createElement('error')
+
+        #
+        # Note that while the call to "get_caller()" is costly, it only happens
+        # when an error occurs, so it shouldn't impact performance
+        #
         message_node.setAttribute('caller', xml_str(self.get_caller()))
+
         description = self._xmldoc.createTextNode(xml_str(message))
         message_node.appendChild(description)
 
@@ -386,8 +390,10 @@ class xml_file(OutputPlugin):
         self._xmldoc.appendChild(self._topElement)
 
         try:
-            self._xmldoc.writexml(self._file, addindent=' ' * 4,
-                                  newl='\n', encoding='UTF-8')
+            self._xmldoc.writexml(self._file,
+                                  addindent=' ' * 4,
+                                  newl='\n',
+                                  encoding='UTF-8')
             self._file.flush()
         finally:
             self._file.close()
