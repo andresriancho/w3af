@@ -61,6 +61,12 @@ def parse_arguments():
                         default=False,
                         nargs='?')
 
+    parser.add_argument('--no-ssl',
+                        dest="disableSSL",
+                        action="store_true",
+                        help="Disable SSL Support"
+                        )
+
     parser.add_argument('-c',
                         default=False,
                         dest='config_file',
