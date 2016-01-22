@@ -70,9 +70,9 @@ class BlacklistHandler(urllib2.BaseHandler):
         that configuration here. This is the lowest layer inside w3af.
         """
         if uri.uri2url() in self._non_targets:
-            msg = 'The URL you are trying to reach (%s) was configured as a' \
-                  ' non-target. NOT performing the HTTP request and returning'\
-                  ' an empty response.'
+            msg = ('The URL you are trying to reach (%s) was configured as a'
+                   ' non-target. NOT performing the HTTP request and returning'
+                   ' an empty response.')
             om.out.debug(msg % uri)
             return True
 
