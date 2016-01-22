@@ -41,7 +41,8 @@ class ScanExceptionResourceTest(APIUnitTest):
 
         # Create an exception in the w3af scan
         response = self.app.post('/scans/%s/exceptions/' % scan_id,
-                                 headers=self.HEADERS)
+                                 headers=self.HEADERS,
+                                 data='{}')
 
         self.assertEqual(response.status_code, 201)
 
