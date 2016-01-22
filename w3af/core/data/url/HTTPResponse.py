@@ -634,7 +634,7 @@ class HTTPResponse(object):
         dump_head = '%s%s' % (status_line, dumped_headers)
 
         if isinstance(dump_head, unicode):
-            dump_head = dump_head.encode(self.charset)
+            dump_head = dump_head.encode(self.charset, 'replace')
 
         return dump_head
 
@@ -643,10 +643,12 @@ class HTTPResponse(object):
         Return a DETAILED str representation of this HTTP response object.
         """
         body = self.body
+
         # Images, pdf and binary responses in general are never decoded
         # to unicode
         if isinstance(body, unicode):
-            body = body.encode(DEFAULT_CHARSET, 'replace')
+            body = body.encode(self.charset, 'replace')
+
         return "%s%s%s" % (self.dump_response_head(), CRLF, body)
 
     def dump_headers(self):
