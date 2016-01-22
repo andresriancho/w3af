@@ -53,9 +53,9 @@ class OutputManagerHandler(urllib2.BaseHandler):
             resp = response
             
         if not isinstance(request, HTTPRequest):
-            msg = 'There is something odd going on in OutputManagerHandler,'\
-                  ' request should be of type HTTPRequest got %s'\
-                  ' instead.'
+            msg = ('There is something odd going on in OutputManagerHandler,'
+                   ' request should be of type HTTPRequest got %s'
+                   ' instead.')
             raise TypeError(msg % type(request))
 
         om.out.log_http(request, resp)
