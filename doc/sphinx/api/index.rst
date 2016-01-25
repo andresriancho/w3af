@@ -89,6 +89,28 @@ In the above example, all values except ``password`` are the defaults and could
 have been omitted from the configuration file without changing the way the API 
 runs.
 
+Serve using TLS/SSL
+-------------------
+
+``w3af``'s REST API is served using Flask, which can be used to deliver content
+over TLS/SSL. By default ``w3af`` will generate a self signed certificate and
+bind to port 5000 using the ``https`` protocol.
+
+To disable ``https`` users can set the ``--no-ssl`` command line argument.
+
+Advanced users who want to use their own SSL certificates can:
+
+ * Start ``w3af`` in HTTP mode and use a proxy such as ``nginx`` to handle
+   the SSL traffic and forward unencrypted traffic to the REST API.
+
+ * Copy the user generated SSL certificate and key to ``/.w3af/ssl/w3af.crt``
+   and ``/.w3af/ssl/w3af.key`` and start ``./w3af_api`` without ``--no-ssl``.
+
+.. note::
+
+    Using ``nginx`` to serve ``w3af``'s API will give the user more configuration
+    options and security than running SSL in ``w3af_api``.
+
 REST API Source code
 --------------------
 
@@ -100,11 +122,12 @@ REST API clients
 
 Wrote a REST API client? Let us know and get it linked here!
 
- * `Official Python REST API client <https://github.com/andresriancho/w3af-api-client>`_ which is also available at `pypi <https://pypi.python.org/pypi/w3af-api-client>`_
+ * `Official Python REST API client <https://github.com/andresriancho/w3af-api-client>`_
+   which is also available at `pypi <https://pypi.python.org/pypi/w3af-api-client>`_
 
 
-Contents
---------
+API endpoints
+-------------
 
 .. toctree::
    :maxdepth: 2

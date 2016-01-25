@@ -28,7 +28,8 @@ from argparse import ArgumentTypeError
 # Global default values
 DEFAULTS = {'USERNAME': 'admin',
             'HOST': '127.0.0.1',
-            'PORT': 5000}
+            'PORT': 5000,
+            'DISABLE_SSL': False}
 
 
 def parse_host_port(host, port):
@@ -62,10 +63,9 @@ def parse_arguments():
                         nargs='?')
 
     parser.add_argument('--no-ssl',
-                        dest="disableSSL",
+                        dest="disable_ssl",
                         action="store_true",
-                        help="Disable SSL Support"
-                        )
+                        help="Disable SSL support")
 
     parser.add_argument('-c',
                         default=False,
@@ -179,8 +179,8 @@ def process_cmd_args_config(app):
         app.config['HOST'] != 'localhost'):
 
         print('')
-        if not 'PASSWORD' in app.config:
-            print('CAUTION! Running this API on a public IP might expose your'
+        if 'PASSWORD' not in app.config:
+            print('WARNING! Running this API on a public IP might expose your'
                   ' system to vulnerabilities such as arbitrary file reads'
                   ' through file:// protocol specifications in target URLs and'
                   ' scan profiles.\n\n'
@@ -188,8 +188,12 @@ def process_cmd_args_config(app):
                   ' specifying a password on the command line (with'
                   ' "-p <SHA512 hash>") or in a configuration file.\n')
 
-        print('CAUTION! Traffic to this API is not encrypted and could be'
-              ' sniffed. Please consider serving it behind an SSL-enabled'
-              ' proxy server.\n')
+        if app.config['DISABLE_SSL']:
+            print('WARNING! Traffic to this API is not encrypted and could be'
+                  ' sniffed. Please consider using an SSL-enabled proxy such as'
+                  ' nginx, or removing --no-ssl from the command line.\n')
+        else:
+            print('WARNING! Traffic to this API is encrypted using self-signed'
+                  ' certificates.\n')
 
     return args
