@@ -1,12 +1,17 @@
 Bug reporting
 =============
 
-The framework is under continuous development and we might introduce bugs and regressions while trying to implement new features. We use continuous integration and heavy unit and integration testing to avoid most of these but some simply reach to our users (doh!)
+The framework is under continuous development and we might introduce bugs and
+regressions while trying to implement new features. We use continuous integration
+and heavy unit and integration testing to avoid most of these but some simply
+reach to our users (doh!)
 
 Good bug reporting practices
 ----------------------------
 
-If you're using **the latest version of the framework** and find a bug, please `report it <https://github.com/andresriancho/w3af/issues/new>`_ including the following information:
+If you're using **the latest version of the framework** and find a bug, please
+`report it <https://github.com/andresriancho/w3af/issues/new>`_ including the
+following information:
 
  * Detailed steps to reproduce it
  * Expected and obtained output
@@ -14,7 +19,8 @@ If you're using **the latest version of the framework** and find a bug, please `
  * Output of the ``./w3af_console --version`` command
  * Log file with verbose set to ``True`` (see below)
 
-When reporting installation bugs and issues that might relate to your environment, it is a good idea to include `detailed system information <https://gist.githubusercontent.com/andresriancho/9873639/raw/adaff04e2ffe95dfd0b0069a294297107249f7b3/collect-sysinfo.py>`_.
+When reporting installation bugs and issues that might relate to your environment,
+it is a good idea to include `detailed system information <https://gist.githubusercontent.com/andresriancho/9873639/raw/adaff04e2ffe95dfd0b0069a294297107249f7b3/collect-sysinfo.py>`_.
 
 .. code-block:: none
 
@@ -22,7 +28,8 @@ When reporting installation bugs and issues that might relate to your environmen
 	user@box:~/w3af$ chmod +x collect-sysinfo.py
 	user@box:~/w3af$ ./collect-sysinfo.py
 
-This will generate a file called ``/tmp/w3af-sysinfo.txt`` which you may include in your bug report.
+This will generate a file called ``/tmp/w3af-sysinfo.txt`` which you may include
+in your bug report.
 
 Making sure you're on the latest version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,9 +39,13 @@ Making sure you're on the latest version
  * ``apt-get install w3af`` (or similar)
  * ``git clone git@github.com:andresriancho/w3af.git``
 
-Installing using the Operating System package manager is the easiest way, but will usually install an old version of the software that won't be able to :doc:`update.rst`. For reporting bugs we recommend you install the latest ``w3af`` from our repository.
+Installing using the Operating System package manager is the easiest way, but
+will usually install an old version of the software that won't be able to :doc:`update.rst`.
+For reporting bugs we recommend you install the latest ``w3af`` from our repository.
 
-Cloning from the git repository into a directory in your home is the recommended way and will allow auto-updates which guarantee you're always using the latest and greatest.
+Cloning from the git repository into a directory in your home is the recommended
+way and will allow auto-updates which guarantee you're always using the latest
+and greatest.
 
 Getting the specific ``w3af`` version is easy using the ``--version`` command line argument:
 
@@ -68,7 +79,10 @@ Now you're ready to report a bug!
 Basic debugging
 ---------------
 
-When you want to know what the framework is doing the best way is to enable the ``text_file`` output plugin, making sure that the ``verbose`` configuration setting set to ``true``. This will generate a very detailed output file which can be used to gain an insight on ``w3af``'s internals.
+When you want to know what the framework is doing the best way is to enable the
+``text_file`` output plugin, making sure that the ``verbose`` configuration
+setting set to ``true``. This will generate a very detailed output file which
+can be used to gain an insight on ``w3af``'s internals.
 
 .. code-block:: none
 
@@ -81,19 +95,26 @@ When you want to know what the framework is doing the best way is to enable the 
 False negatives
 ---------------
 
-If ``w3af`` is failing to identify a vulnerability which you manually verified please make sure that:
+If ``w3af`` is failing to identify a vulnerability which you manually verified
+please make sure that:
 
  * The ``audit`` plugin that identifies that vulnerability is enabled
- * Using basic debugging, make sure that ``w3af`` finds the URL and parameter associated with the vulnerability. If you don't see that in the log, make sure the ``crawl.web_spider`` plugin is enabled.
+ * Using basic debugging, make sure that ``w3af`` finds the URL and parameter
+   associated with the vulnerability. If you don't see that in the log, make
+   sure the ``crawl.web_spider`` plugin is enabled.
 
 False negatives should be `reported just like bugs <https://github.com/andresriancho/w3af/issues/new>`_ , including all the same information.
 
 False positives
 ---------------
 
-Nobody likes false positives, you go from the adrenaline of "The site is vulnerable to SQL injection!" to "Nope, false positive" in less than a minute. Not good for your heart.
+Nobody likes false positives, you go from the adrenaline of "The site is
+vulnerable to SQL injection!" to "Nope, false positive" in less than a minute.
+Not good for your heart.
 
-Please report the false positives `like bugs <https://github.com/andresriancho/w3af/issues/new>`_ , in our repository. Include as much information as possible, remember that we'll have to verify the false positive, write a unittest and then fix it.
+Please report the false positives `like bugs <https://github.com/andresriancho/w3af/issues/new>`_ ,
+in our repository. Include as much information as possible, remember that we'll
+have to verify the false positive, write a unittest and then fix it.
 
 Common problems
 ---------------
