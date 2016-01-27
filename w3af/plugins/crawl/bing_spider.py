@@ -68,7 +68,7 @@ class bing_spider(CrawlPlugin):
         :return: A list of option objects for this plugin.
         """
         ol = OptionList()
-        d = 'Fetch the first "result_limit" results from the Google search'
+        d = 'Fetch the first "result_limit" results from the Bing search'
         o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
 
