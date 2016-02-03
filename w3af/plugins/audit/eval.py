@@ -54,8 +54,8 @@ class eval(AuditPlugin):
         # ASP
         "Response.Write(new String(\"%%s\",%s))" % PRINT_REPEATS,
         # NodeJS
-        # "response.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
-        # ";response.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
+        "response.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
+        ";response.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
         "res.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
         ";res.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
     )
