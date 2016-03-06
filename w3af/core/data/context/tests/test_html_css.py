@@ -25,6 +25,8 @@ from w3af.core.data.context.context.html import (CSSText,
                                                  HtmlAttrSingleQuote,
                                                  HtmlAttrDoubleQuote)
 
+BOUNDARY = ('boundl', 'boundr')
+
 
 class TestStyleInHTML(unittest.TestCase):
     def test_payload_style_single_quote_break(self):
@@ -35,8 +37,8 @@ class TestStyleInHTML(unittest.TestCase):
             </style>
         </html>
         """
-        payload = 'PAYLOAD":('
-        context = get_context(html % payload, payload)[0]
+        payload = 'boundl":(boundr'
+        context = get_context(html % payload, BOUNDARY)[0]
         self.assertIsInstance(context, CSSText)
         self.assertTrue(context.can_break())
 
@@ -48,17 +50,20 @@ class TestStyleInHTML(unittest.TestCase):
             </style>
         </html>
         """
-        payload = 'PAYLOAD":('
+        payload = 'boundl":(boundr'
         escaped_payload = payload.replace('"', '\\"')
-        contexts = get_context(html % escaped_payload, payload)
-        self.assertEqual(len(contexts), 0)
+        contexts = get_context(html % escaped_payload, BOUNDARY)
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(context, CSSText)
+        self.assertFalse(context.can_break())
 
     def test_payload_inline_single(self):
         html = """
         <div style='background-image: url("%s")'>
         """
-        payload = 'PAYLOAD":('
-        context = get_context(html % payload, payload)[0]
+        payload = 'boundl":(boundr'
+        context = get_context(html % payload, BOUNDARY)[0]
         self.assertIsInstance(context, HtmlAttrSingleQuote)
         self.assertTrue(context.can_break())
 
@@ -66,17 +71,20 @@ class TestStyleInHTML(unittest.TestCase):
         html = """
         <div style='background-image: url("%s")'>
         """
-        payload = 'PAYLOAD":('
+        payload = 'boundl":(boundr'
         escaped_payload = payload.replace('"', '')
-        contexts = get_context(html % escaped_payload, payload)
-        self.assertEqual(len(contexts), 0)
+        contexts = get_context(html % escaped_payload, BOUNDARY)
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(context, HtmlAttrSingleQuote)
+        self.assertFalse(context.can_break())
 
     def test_payload_inline_double(self):
         html = """
         <div style="background-image: url('%s')">
         """
-        payload = "PAYLOAD':("
-        context = get_context(html % payload, payload)[0]
+        payload = "boundl':(boundr"
+        context = get_context(html % payload, BOUNDARY)[0]
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.can_break())
 
@@ -92,8 +100,8 @@ class TestStyleInHTML(unittest.TestCase):
             </head>
         </html>
         """
-        payload = 'PAYLOAD*/:('
-        context = get_context(html % payload, payload)[0]
+        payload = 'boundl*/:(boundr'
+        context = get_context(html % payload, BOUNDARY)[0]
         self.assertIsInstance(context, CSSText)
         self.assertTrue(context.can_break())
 
@@ -113,7 +121,35 @@ class TestStyleInHTML(unittest.TestCase):
             </head>
         </html>
         """
-        payload = 'PAYLOAD:('
-        context = get_context(html % payload, payload)[0]
+        payload = 'boundl:(boundr'
+        context = get_context(html % payload, BOUNDARY)[0]
         self.assertIsInstance(context, CSSText)
         self.assertTrue(context.can_break())
+
+    def test_payload_style_can_break_html(self):
+        html = """
+        <html>
+            <style>
+                /*boundl</style>boundr*/
+            </style>
+        </html>
+        """
+        contexts = get_context(html, BOUNDARY)
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(context, CSSText)
+        self.assertTrue(context.can_break())
+
+    def test_payload_style_can_break_html_fp(self):
+        html = """
+        <html>
+            <style>
+                /*boundl<boundr*/
+            </style>
+        </html>
+        """
+        contexts = get_context(html, BOUNDARY)
+        self.assertEqual(len(contexts), 1)
+        context = contexts[0]
+        self.assertIsInstance(context, CSSText)
+        self.assertFalse(context.can_break())

@@ -23,7 +23,9 @@ from unittest import TestCase
 
 from w3af.core.data.kb.config import cf
 
+from w3af.core.data.context.utils import place_boundary
 from w3af.core.data.context.context.html import ALL_CONTEXTS as ALL_HTML_CONTEXTS
+from w3af.core.data.context.context.html import CSSText, ScriptText
 from w3af.core.data.context.context.javascript import ALL_CONTEXTS as ALL_JS_CONTEXTS
 from w3af.core.data.context.context.css import ALL_CONTEXTS as ALL_CSS_CONTEXTS
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -334,6 +336,8 @@ class TestXSS(PluginTest):
 
 
 class TestXSSPayloadsBreak(TestCase):
+    BOUNDARY = ('left', 'right')
+
     def test_xss_plugin_can_break_html(self):
         for context_klass in ALL_HTML_CONTEXTS:
 
@@ -341,12 +345,18 @@ class TestXSSPayloadsBreak(TestCase):
 
             for payload in xss.PAYLOADS:
 
+                payload = place_boundary(payload, self.BOUNDARY)
                 try:
                     # Most contexts
-                    context = context_klass(payload, '')
+                    if context_klass is ScriptText or context_klass is CSSText:
+                        # CSSText/ScriptText are "complex" contexts
+                        # that take all available payloads for performance purposes
+                        context = context_klass({payload}, '', self.BOUNDARY)
+                    else:
+                        context = context_klass(payload, '', self.BOUNDARY)
                 except TypeError:
                     # Attribute contexts
-                    context = context_klass(payload, '', '')
+                    context = context_klass(payload, '', '', self.BOUNDARY)
 
                 if context.can_break():
                     payload_broke_context = True
@@ -363,7 +373,8 @@ class TestXSSPayloadsBreak(TestCase):
 
             for payload in xss.PAYLOADS:
 
-                context = context_klass(payload, '')
+                payload = place_boundary(payload, self.BOUNDARY)
+                context = context_klass(payload, '', self.BOUNDARY)
 
                 if context.is_executable():
                     payload_broke_context = True
@@ -384,7 +395,8 @@ class TestXSSPayloadsBreak(TestCase):
 
             for payload in xss.PAYLOADS:
 
-                context = context_klass(payload, '')
+                payload = place_boundary(payload, self.BOUNDARY)
+                context = context_klass(payload, '', self.BOUNDARY)
 
                 if context.is_executable():
                     payload_broke_context = True

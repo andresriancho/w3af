@@ -25,18 +25,31 @@ from w3af.core.data.context.context.html import (ScriptText,
                                                  HtmlAttrSingleQuote,
                                                  HtmlAttrDoubleQuote)
 
+BOUNDARY = ('boundl', 'boundr')
+
 
 class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_script_single_quote(self):
         html = """
         <html>
             <script type="text/javascript">//<!--
-                init({login:'',foo:'PAYLOAD'})
+                init({login:'',foo:'boundlPAYLOADboundr'})
             </script>
         </html>
         """
-        payload = 'PAYLOAD'
-        context = get_context(html, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.can_break())
+
+    def test_payload_script_single_quote(self):
+        html = """
+        <html>
+            <script type="text/javascript">//<!--
+                init({login:'',foo:'boundlPAYLOADboundr'})
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
         self.assertIsInstance(context, ScriptText)
         self.assertFalse(context.can_break())
 
@@ -44,14 +57,123 @@ class TestJavaScriptInHTML(unittest.TestCase):
         html = """
         <html>
             <script>
-                init({login:'',foo:'PAYLOAD'BREAK'})
+                init({login:'',foo:'boundl'boundr'})
             </script>
         </html>
         """
-        payload = "PAYLOAD'BREAK"
-        context = get_context(html, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertIsInstance(context, ScriptText)
         self.assertTrue(context.can_break())
+
+    def test_payload_script_multi_line_comment(self):
+        html = """
+        <html>
+            <script type="text/javascript">
+                /* boundlPAYLOADboundr */
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.can_break())
+
+    def test_payload_script_multi_line_comment_can_break(self):
+        html = """
+        <html>
+            <script>
+                /*
+                boundl*/boundr
+                */
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.can_break())
+
+    def test_payload_script_single_line_comment(self):
+        html = """
+        <html>
+            <script type="text/javascript">
+                // boundlPAYLOADboundr
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.can_break())
+
+    def test_payload_script_single_line_comment_can_break_lf(self):
+        html = """
+        <html>
+            <script>
+                // boundl\nboundr
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.can_break())
+
+    def test_payload_script_single_line_comment_can_break_ls(self):
+        html = """
+        <html>
+            <script>
+                // boundl\xe2\x80\xa8boundr
+            </script>
+        </html>
+        """
+        context = get_context(html.decode('utf-8'), BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.can_break())
+
+    def test_payload_script_single_line_html_comment(self):
+        html = """
+        <html>
+            <script type="text/javascript">
+                <!-- boundlPAYLOADboundr
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.can_break())
+
+    def test_payload_script_single_line_html_comment_can_break_lf(self):
+        html = """
+        <html>
+            <script>
+                <!-- boundl\rboundr
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.can_break())
+
+    def test_payload_script_can_break_html(self):
+        html = """
+        <html>
+            <script>
+                'foo: boundl</script>boundr'
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertTrue(context.can_break())
+
+    def test_payload_script_can_break_html_fp(self):
+        html = """
+        <html>
+            <script>
+                'foo: boundl<boundr'
+            </script>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+        self.assertIsInstance(context, ScriptText)
+        self.assertFalse(context.can_break())
 
     def test_payload_javascript_value(self):
         """
@@ -60,16 +182,15 @@ class TestJavaScriptInHTML(unittest.TestCase):
 
         :return: Should not find a XSS
         """
-        payload = 'PAYLOAD:PAYLOAD'
         html = """
         <html>
             <form>
-                <input type="text" name="test" value="%s">
+                <input type="text" name="test" value="boundl:boundr">
                 <input type="submit">
             </form>
         </html>
         """
-        context = get_context(html % payload, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertFalse(context.is_executable())
         self.assertFalse(context.can_break())
@@ -77,51 +198,50 @@ class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_javascript_href(self):
         html = """
         <html>
-            <a href="javascript:PAYLOAD">foo</a>
+            <a href="javascript:boundlPAYLOADboundr">foo</a>
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
 
     def test_payload_javascript_href_append(self):
         html = """
         <html>
-            <a href="javascript:foo();PAYLOAD">foo</a>
+            <a href="javascript:foo();boundlPAYLOADboundr">foo</a>
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
 
     def test_payload_javascript_href_start_with_space(self):
         html = """
         <html>
-            <a href=" javascript:foo();PAYLOAD">foo</a>
+            <a href=" javascript:foo();boundlPAYLOADboundr">foo</a>
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
 
     def test_payload_href_append_no_exec(self):
         html = """
         <html>
-            <a href="http://w3af.org/PAYLOAD">foo</a>
+            <a href="http://w3af.org/boundlPAYLOADboundr">foo</a>
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertFalse(context.is_executable())
 
     def test_payload_js_doublequote(self):
         html = """
         <html>
-            <input type="button" value="ClickMe" onClick="PAYLOAD">
+            <input type="button" value="ClickMe" onClick="boundlPAYLOADboundr">
         </html>
         """
-        payload = 'PAYLOAD'
-        contexts = get_context(html, payload)
+        contexts = get_context(html, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -133,11 +253,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_onclick_payload_between_single_quotes(self):
         html = """
         <html>
-            <input type="button" onClick="foo('PAYLOAD'BREAK')">
+            <input type="button" onClick="foo('boundl'boundr')">
         </html>
         """
-        payload = "PAYLOAD'BREAK"
-        context = get_context(html, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
 
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
@@ -146,24 +265,64 @@ class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_onclick_payload_between_single_quotes_append(self):
         html = """
         <html>
-            <input type="button" onClick="foo('XXX-PAYLOAD'BREAK')">
+            <input type="button" onClick="foo('XXX-boundl'boundr')">
         </html>
         """
-        payload = "PAYLOAD'BREAK"
-        context = get_context(html, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
 
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
         self.assertTrue(context.can_break())
 
+    def test_payload_onclick_htmlencoded_payload_between_single_quotes(self):
+        html = """
+        <html>
+            <input type="button" onClick="
+                foo(&apos;boundl&#39;boundr&#x27;)
+            ">
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertTrue(context.can_break())
+
+    def test_payload_onclick_htmlencoded_payload_escaped_payload_fp(self):
+        html = """
+        <html>
+            <input type="button" onClick="
+                foo(&apos;boundl&amp;#39;boundr&#x27;)
+            ">
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertFalse(context.can_break())
+        self.assertFalse(context.is_executable())
+
+    def test_payload_onclick_htmlencoded_payload_escaped_literal_fp(self):
+        html = """
+        <html>
+            <input type="button" onClick="
+                foo('&amp;#39;boundlPAYLOADboundr&amp;#39;')
+            ">
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
+
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertFalse(context.can_break())
+        self.assertFalse(context.is_executable())
+
     def test_payload_onclick_payload_append(self):
         html = """
         <html>
-            <input type="button" onClick="XXX - PAYLOAD">
+            <input type="button" onClick="XXX - boundlPAYLOADboundr">
         </html>
         """
-        payload = "PAYLOAD"
-        context = get_context(html, payload)[0]
+
+        context = get_context(html, BOUNDARY)[0]
 
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertFalse(context.can_break())
@@ -172,16 +331,40 @@ class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_onclick_payload_between_double_quotes(self):
         html = """
         <html>
-            <input type="button" onClick="foo('PAYLOAD'BREAK')">
+            <input type="button" onClick='foo("boundl"boundr")'>
         </html>
         """
-        payload = "PAYLOAD'BREAK"
-
-        contexts = get_context(html, payload)
+        contexts = get_context(html, BOUNDARY)
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
 
-        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+        self.assertIsInstance(context, HtmlAttrSingleQuote)
+        self.assertTrue(context.can_break())
+
+    def test_payload_onclick_payload_htmlencoded_between_double_quotes(self):
+        html = """
+        <html>
+            <input type="button" onClick='foo("boundl&quot;boundr")'>
+        </html>
+        """
+        contexts = get_context(html, BOUNDARY)
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, HtmlAttrSingleQuote)
+        self.assertTrue(context.can_break())
+
+    def test_payload_onclick_payload_comment_between_double_quotes(self):
+        html = """
+        <html>
+            <input type="button" onClick='foo("foo", /*"boundl*/boundr"*/)'>
+        </html>
+        """
+        contexts = get_context(html, BOUNDARY)
+        self.assertEqual(len(contexts), 1, contexts)
+        context = contexts[0]
+
+        self.assertIsInstance(context, HtmlAttrSingleQuote)
         self.assertTrue(context.can_break())
 
     def test_payload_onclick_payload_no_quotes(self):
@@ -192,11 +375,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         html = """
         <html>
-            <input type="button" onClick="foo(PAYLOAD)">
+            <input type="button" onClick="foo(boundlPAYLOADboundr)">
         </html>
         """
-        payload = 'PAYLOAD'
-        context = get_context(html, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
 
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
@@ -205,11 +387,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_onclick_payload_separated_with_semicolon(self):
         html = """
         <html>
-            <input type="button" onclick="foo();PAYLOAD;bar()">
+            <input type="button" onclick="foo();boundlPAYLOADboundr;bar()">
         </html>
         """
-        payload = 'PAYLOAD'
-        context = get_context(html, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
 
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
@@ -225,11 +406,10 @@ class TestJavaScriptInHTML(unittest.TestCase):
         html = """
         <html>
             <frame name='frame2' id='frame2'
-                   src='javascript:var name="PAYLOAD"BREAK"; alert(name);'>
+                   src='javascript:var name="boundl"boundr"; alert(name);'>
         </html>
         """
-        payload = 'PAYLOAD"BREAK'
-        context = get_context(html, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
 
         self.assertIsInstance(context, HtmlAttrSingleQuote)
         self.assertTrue(context.can_break())
@@ -237,32 +417,40 @@ class TestJavaScriptInHTML(unittest.TestCase):
     def test_payload_src(self):
         html = """
         <html>
-            <img src="%s" />
+            <img src="boundljavascript:boundr" />
         </html>
         """
-        payload = 'PAYLOAD:'
-        context = get_context(html % payload, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertTrue(context.can_break())
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
     def test_payload_handler(self):
         html = """
         <html>
-            <a onclick="PAYLOAD">foo</a>
+            <a onclick="boundlPAYLOADboundr">foo</a>
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertTrue(context.is_executable())
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
     def test_payload_href(self):
-        payload = 'PAYLOAD:'
         html = """
         <html>
-            <a href="%s">foo</a>
+            <a href="boundljavascript:boundr">foo</a>
         </html>
         """
-        context = get_context(html % payload, payload)[0]
+        context = get_context(html, BOUNDARY)[0]
+        self.assertTrue(context.can_break())
+        self.assertIsInstance(context, HtmlAttrDoubleQuote)
+
+    def test_payload_href_escaped(self):
+        html = """
+        <html>
+            <a href="boundljavascript&colon;boundr">foo</a>
+        </html>
+        """
+        context = get_context(html, BOUNDARY)[0]
         self.assertTrue(context.can_break())
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
 
@@ -270,11 +458,11 @@ class TestJavaScriptInHTML(unittest.TestCase):
         html = """
         <html>
             <script>
-                <!-- foo();PAYLOAD;bar(); -->
+                <!-- foo();boundlPAYLOADboundr;bar(); -->
             </script>
         </html>
         """
-        self.assertIsInstance(get_context(html, 'PAYLOAD')[0], ScriptText)
+        self.assertIsInstance(get_context(html, BOUNDARY)[0], ScriptText)
 
     def test_payload_with_space_equal_not_executable_attr(self):
         """
@@ -284,21 +472,8 @@ class TestJavaScriptInHTML(unittest.TestCase):
         """
         html = """
         <html>
-            <frame bar="PAYLOAD">
+            <frame bar="boundlPAYLOADboundr">
         </html>
         """
-        context = get_context(html, 'PAYLOAD')[0]
+        context = get_context(html, BOUNDARY)[0]
         self.assertFalse(context.is_executable())
-
-    def test_payload_with_space_equal_src_executable(self):
-        """
-        Related with:
-            https://github.com/andresriancho/w3af/issues/1557
-            https://github.com/andresriancho/w3af/issues/2919
-        """
-        html = """
-        <html>
-            <frame src="5vrws =">
-        </html>
-        """
-        self.assertEqual(get_context(html, '5vrws%20%3D'), [])

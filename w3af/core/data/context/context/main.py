@@ -22,24 +22,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from HTMLParser import HTMLParser, HTMLParseError
 
 from w3af.core.data.context.constants import CONTEXT_DETECTOR
+from w3af.core.data.context.utils import encode_payloads, decode_payloads
 from .html import (HtmlAttrSingleQuote, HtmlAttrDoubleQuote,
-                   HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlText,
-                   HtmlComment, HtmlTagClose, HtmlAttrNoQuote,
+                   HtmlAttrBackticks, HtmlAttr, HtmlTag, HtmlRawText,
+                   HtmlText, HtmlComment, HtmlTagClose, HtmlAttrNoQuote,
                    HtmlDeclaration, HtmlProcessingInstruction,
                    CSSText, ScriptText)
 
 
-def get_context(data, payload):
-    """
-    :return: A list which contains lists of all contexts where the payload lives
-    """
-    return [c for c in get_context_iter(data, payload)]
-
-
-def get_context_iter(data, payload):
+def get_context(data, boundary):
     """
     :param data: The HTML where the payload might be in
-    :param payload: The payload as sent to the web application
+    :param boundary: The payload border as sent to the web application
+
+    :return: A list which contains lists of all contexts where the payload lives
+    """
+    return [c for c in get_context_iter(data, boundary)]
+
+
+def get_context_iter(data, boundary):
+    """
+    :param data: The HTML where the payload might be in
+    :param boundary: The payload border as sent to the web application
 
     :return: A context iterator
 
@@ -51,17 +55,17 @@ def get_context_iter(data, payload):
     #
     # Remember that some payloads we use do contain letters which might be
     # affected by those filters; we don't just send the special characters.
-    payload = payload.lower()
-    data = data.lower()
 
-    if payload not in data:
-        return
+    data = data.lower()
+    for bound in boundary:
+        if bound not in data:
+            return
 
     # We replace the "context breaking payload" with an innocent string
-    data = data.replace(payload, CONTEXT_DETECTOR)
+    data = encode_payloads(boundary, data)
 
     # Parse!
-    context_detector = ContextDetectorHTMLParser(payload)
+    context_detector = ContextDetectorHTMLParser(boundary)
     try:
         context_detector.feed(data)
     except HTMLParseError:
@@ -78,16 +82,21 @@ def get_context_iter(data, payload):
 
 class ContextDetectorHTMLParser(HTMLParser):
 
-    def __init__(self, payload):
+    RAW_TEXT_TAG = {
+        'title',
+        'textarea',
+        'plaintext',
+        'xmp',
+        'listing'
+    }
+
+    def __init__(self, bound):
         HTMLParser.__init__(self)
-        self.payload = payload
+        self.bound = bound
         self.contexts = []
         self.current_tag = None
         self.noscript_parent = False
 
-    def untidy(self, content):
-        return content.replace(CONTEXT_DETECTOR, self.payload)
-    
     def append_context(self, context):
         # We just ignore all the contexts which are inside <noscript>
         if self.noscript_parent:
@@ -113,16 +122,21 @@ class ContextDetectorHTMLParser(HTMLParser):
             self.noscript_parent = True
 
         if CONTEXT_DETECTOR in tag:
-            self.append_context(HtmlTag(self.payload, self.untidy(tag)))
+            payloads, context_content = decode_payloads(tag)
+            self.append_context(HtmlTag(payloads.pop(),
+                                        context_content,
+                                        self.bound))
 
         for attr_name, attr_value in attrs:
             if CONTEXT_DETECTOR in attr_name:
-                self.append_context(HtmlAttr(self.payload,
-                                             self.untidy(attr_name)))
+                payloads, context_content = decode_payloads(attr_name)
+                self.append_context(HtmlAttr(payloads.pop(),
+                                             context_content,
+                                             self.bound))
 
             if attr_value and CONTEXT_DETECTOR in attr_value:
-                context = self.get_attr_value_context(attr_name, attr_value)
-                if context is not None:
+                contexts = self.get_attr_value_context(attr_name, attr_value)
+                for context in contexts:
                     self.append_context(context)
 
     handle_startendtag = handle_starttag
@@ -131,6 +145,9 @@ class ContextDetectorHTMLParser(HTMLParser):
         """
         Use HTMLParser.get_starttag_text to find which quote delimiter was used
         in this tag.
+
+        :param attr_name: The tag attribute name
+        :param attr_value:  The tag attribute value
 
         :return: The context instance, one of:
                     * HtmlAttrDoubleQuote
@@ -147,62 +164,106 @@ class ContextDetectorHTMLParser(HTMLParser):
         # Analyze the generic cases
         all_contexts = [HtmlAttrDoubleQuote,
                         HtmlAttrSingleQuote]
+        attr_context_klass = None
+
+        payloads, context_content = decode_payloads(attr_value)
+        # Since the attr_value was unescaped, we need to unescape payloads in
+        # context_content too to be able to analyse
+        for payload in payloads:
+            un_payload = self.unescape(payload)
+            context_content = context_content.replace(payload, un_payload)
 
         for context_klass in all_contexts:
             attr_match = '%s%s%s' % (context_klass.ATTR_DELIMITER,
                                      attr_value,
                                      context_klass.ATTR_DELIMITER)
             if attr_match in full_tag_text:
-                return context_klass(self.payload,
-                                     attr_name,
-                                     self.untidy(attr_value))
+                attr_context_klass = context_klass
+                break
 
         # Special case for HtmlAttrBackticks
-        if attr_value.startswith(HtmlAttrBackticks.ATTR_DELIMITER) and \
+        if not attr_context_klass and \
+           attr_value.startswith(HtmlAttrBackticks.ATTR_DELIMITER) and \
            attr_value.endswith(HtmlAttrBackticks.ATTR_DELIMITER):
-            return HtmlAttrBackticks(self.payload,
-                                     attr_name,
-                                     self.untidy(attr_value))
+            attr_context_klass = HtmlAttrBackticks
 
         # And if we don't have any quotes... then...
-        return HtmlAttrNoQuote(self.payload,
-                               attr_name,
-                               self.untidy(attr_value))
+        if not attr_context_klass:
+            attr_context_klass = HtmlAttrNoQuote
+
+        for payload in payloads:
+            yield attr_context_klass(
+                payload,
+                attr_name,
+                context_content,
+                self.bound)
 
     def handle_endtag(self, tag):
         if tag == 'noscript':
             self.noscript_parent = False
 
-        if CONTEXT_DETECTOR in tag:
-            self.append_context(HtmlTagClose(self.payload, self.untidy(tag)))
+        if CONTEXT_DETECTOR not in tag:
+            return
+
+        payloads, context_content = decode_payloads(tag)
+        for payload in payloads:
+            self.append_context(HtmlTagClose(payload,
+                                             context_content,
+                                             self.bound))
 
     def handle_data(self, text_data):
         if CONTEXT_DETECTOR not in text_data:
             return
 
+        payloads, context_content = decode_payloads(text_data)
+
         if self.current_tag == 'script':
-            self.append_context(ScriptText(self.payload,
-                                           self.untidy(text_data)))
+            self.append_context(ScriptText(payloads,
+                                           context_content,
+                                           self.bound))
 
         elif self.current_tag == 'style':
-            self.append_context(CSSText(self.payload,
-                                        self.untidy(text_data)))
+            self.append_context(CSSText(payloads,
+                                        context_content,
+                                        self.bound))
 
         elif CONTEXT_DETECTOR in text_data:
-            self.append_context(HtmlText(self.payload,
-                                         self.untidy(text_data)))
+            for payload in payloads:
+                if self.current_tag in self.RAW_TEXT_TAG:
+                    self.append_context(HtmlRawText(payload,
+                                                    context_content,
+                                                    self.bound))
+                else:
+                    self.append_context(HtmlText(payload,
+                                                 context_content,
+                                                 self.bound))
 
     def handle_comment(self, comment_text):
-        if CONTEXT_DETECTOR in comment_text:
-            self.append_context(HtmlComment(self.payload,
-                                            self.untidy(comment_text)))
+        if CONTEXT_DETECTOR not in comment_text:
+            return
+
+        payloads, context_content = decode_payloads(comment_text)
+        for payload in payloads:
+            self.append_context(HtmlComment(payload,
+                                            context_content,
+                                            self.bound))
 
     def handle_decl(self, data):
-        if CONTEXT_DETECTOR in data:
-            self.append_context(HtmlDeclaration(self.payload,
-                                                self.untidy(data)))
+        if CONTEXT_DETECTOR not in data:
+            return
+
+        payloads, context_content = decode_payloads(data)
+        for payload in payloads:
+            self.append_context(HtmlDeclaration(payload,
+                                                context_content,
+                                                self.bound))
 
     def handle_pi(self, data):
-        if CONTEXT_DETECTOR in data:
-            self.append_context(HtmlProcessingInstruction(self.payload,
-                                                          self.untidy(data)))
+        if CONTEXT_DETECTOR not in data:
+            return
+
+        payloads, context_content = decode_payloads(data)
+        for payload in payloads:
+            self.append_context(HtmlProcessingInstruction(payload,
+                                                          context_content,
+                                                          self.bound))

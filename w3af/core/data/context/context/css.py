@@ -23,6 +23,8 @@ from StringIO import StringIO
 
 from w3af.core.data.context.context.base import BaseContext
 from w3af.core.data.context.constants import CONTEXT_DETECTOR
+from w3af.core.data.context.utils import encode_payloads, decode_payloads
+
 
 STRING_DELIMITERS = {'"', "'"}
 
@@ -35,6 +37,12 @@ class StyleContext(BaseContext):
         """
         return self.all_in(self.CAN_BREAK, self.payload)
 
+    def get_payloads(self):
+        if not self.CAN_BREAK:
+            return {}
+
+        return {''.join(self.CAN_BREAK)}
+
 
 class GenericStyleContext(StyleContext):
     # These break characters are required for exploits like:
@@ -42,12 +50,37 @@ class GenericStyleContext(StyleContext):
     CAN_BREAK = {':', '('}
 
 
-class StyleSingleQuoteString(StyleContext):
-    CAN_BREAK = {"'", ':', '('}
+class StyleStringGeneric(GenericStyleContext):
+    ATTR_DELIMITER = None
+
+    def can_break(self):
+        """
+        :return: True if we can break out
+        """
+
+        escaped = False
+        for i, c in enumerate(self.payload):
+            if c == '\\':
+                escaped = not escaped
+            elif c == self.ATTR_DELIMITER and not escaped:
+                return self.all_in(self.CAN_BREAK, self.payload[i:])
+            else:
+                escaped = False
+
+        return False
+
+    def get_payloads(self):
+        breaks = ''.join(self.CAN_BREAK)
+        payload = '%s%s' % (self.ATTR_DELIMITER, breaks)
+        return {payload, '\\%s' % payload}
 
 
-class StyleDoubleQuoteString(StyleContext):
-    CAN_BREAK = {'"', ':', '('}
+class StyleSingleQuoteString(StyleStringGeneric):
+    ATTR_DELIMITER = "'"
+
+
+class StyleDoubleQuoteString(StyleStringGeneric):
+    ATTR_DELIMITER = '"'
 
 
 class StyleComment(StyleContext):
@@ -58,25 +91,31 @@ ALL_CONTEXTS = [GenericStyleContext, StyleSingleQuoteString,
                 StyleDoubleQuoteString, StyleComment]
 
 
-def get_css_context(data, payload):
+def get_css_context(data, boundary):
     """
+    :param data: The CSS Style code where the payload might be in
+    :param boundary: The payload border as sent to the web application
+
     :return: A list which contains lists of all contexts where the payload lives
     """
-    return [c for c in get_css_context_iter(data, payload)]
+    return [c for c in get_css_context_iter(data, boundary)]
 
 
-def get_css_context_iter(data, payload):
+def get_css_context_iter(data, boundary):
     """
     We parse the CSS Style code and find the payload context name.
 
+    :param data: The CSS Style code where the payload might be in
+    :param boundary: The payload border as sent to the web application
+
     :return: A context iterator
     """
-    if payload not in data:
-        return
+    for bound in boundary:
+        if bound not in data:
+            return
 
     # We replace the "context breaking payload" with an innocent string
-    data = data.replace(payload, CONTEXT_DETECTOR)
-    untidy = lambda text: text.replace(CONTEXT_DETECTOR, payload)
+    data = encode_payloads(boundary, data)
 
     inside_string = False
     escape_next = False
@@ -110,12 +149,16 @@ def get_css_context_iter(data, payload):
             if c == string_delim:
 
                 if CONTEXT_DETECTOR in context_content:
-                    if string_delim == "'":
-                        yield StyleSingleQuoteString(payload,
-                                                     untidy(context_content))
-                    else:
-                        yield StyleDoubleQuoteString(payload,
-                                                     untidy(context_content))
+                    payloads, content = decode_payloads(context_content)
+                    for payload in payloads:
+                        if string_delim == "'":
+                            yield StyleSingleQuoteString(payload,
+                                                         content,
+                                                         boundary)
+                        else:
+                            yield StyleDoubleQuoteString(payload,
+                                                         content,
+                                                         boundary)
 
                 context_content = ''
                 inside_string = False
@@ -131,7 +174,11 @@ def get_css_context_iter(data, payload):
 
                 if c == '/':
                     if CONTEXT_DETECTOR in context_content:
-                        yield StyleComment(payload, untidy(context_content))
+                        payloads, content = decode_payloads(context_content)
+                        for payload in payloads:
+                            yield StyleComment(payload,
+                                               content,
+                                               boundary)
                     inside_comment = False
                     context_content = ''
             continue
@@ -141,7 +188,11 @@ def get_css_context_iter(data, payload):
 
             # This analyzes the context content before the string start
             if CONTEXT_DETECTOR in context_content:
-                yield GenericStyleContext(payload, untidy(context_content))
+                payloads, content = decode_payloads(context_content)
+                for payload in payloads:
+                    yield GenericStyleContext(payload,
+                                              content,
+                                              boundary)
 
             inside_string = True
             string_delim = c
@@ -158,11 +209,17 @@ def get_css_context_iter(data, payload):
 
                 # This analyzes the context content before the comment start
                 if CONTEXT_DETECTOR in context_content:
-                    yield GenericStyleContext(payload, untidy(context_content))
+                    payloads, content = decode_payloads(context_content)
+                    for payload in payloads:
+                        yield GenericStyleContext(payload,
+                                                  content,
+                                                  boundary)
 
                 context_content = ''
                 continue
 
     # Handle the remaining bytes from the CSS code:
     if CONTEXT_DETECTOR in context_content:
-        yield GenericStyleContext(payload, untidy(context_content))
+        payloads, content = decode_payloads(context_content)
+        for payload in payloads:
+            yield GenericStyleContext(payload, content, boundary)
