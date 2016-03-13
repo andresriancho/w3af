@@ -84,10 +84,7 @@ class ContextDetectorHTMLParser(HTMLParser):
 
     RAW_TEXT_TAG = {
         'title',
-        'textarea',
-        'plaintext',
-        'xmp',
-        'listing'
+        'textarea'
     }
 
     def __init__(self, bound):
