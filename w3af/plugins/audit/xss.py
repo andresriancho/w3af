@@ -35,19 +35,46 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.context.context import get_context_iter
 
 
+RANDOMIZE = 'RANDOMIZE'
+
+
 class xss(AuditPlugin):
     """
     Identify cross site scripting vulnerabilities.
     
-    :author: Andres Riancho ( andres.riancho@gmail.com )
-    :author: Taras ( oxdef@oxdef.info )
+    :author: Andres Riancho (andres.riancho@gmail.com)
+    :author: Taras (oxdef@oxdef.info)
     """
-    PAYLOADS = ['RANDOMIZE</->',
-                'RANDOMIZE/*',
-                'RANDOMIZE"RANDOMIZE',
-                "RANDOMIZE'RANDOMIZE",
-                "RANDOMIZE`RANDOMIZE",
-                "RANDOMIZE ="]
+    # TODO: Reduce the number of payloads by concatenating similar/related ones
+    PAYLOADS = [
+        # Start a new tag
+        '<',
+
+        # Escape HTML comments
+        '-->',
+
+        # Escape JavaScript multi line and CSS comments
+        '*/',
+
+        # Escapes for CSS
+        '*/:("\'',
+
+        # The ":" is useful in cases where we want to add the javascript
+        # protocol like <a href="PAYLOAD">   -->   <a href="javascript:alert()">
+        ':',
+
+        # Escape single line comments in JavaScript
+        "\n",
+
+        # Escape the HTML attribute value string delimiter
+        '"',
+        "'",
+        "`",
+
+        # Escape HTML attribute values without string delimiters
+        " =",
+    ]
+    PAYLOADS = ['%s%s%s' % (RANDOMIZE, p, RANDOMIZE) for p in PAYLOADS]
         
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -87,13 +114,14 @@ class xss(AuditPlugin):
         
         :return: None
         """
+
         csp = CSP()
         csp.init_from_response(response)
         csp_protects = csp.protects_against_xss()
         vuln_severity = severity.LOW if csp_protects else severity.MEDIUM
         
         desc = 'A Cross Site Scripting vulnerability was found at: %s'
-        desc = desc % mutant.found_at()
+        desc %= mutant.found_at()
         
         if csp_protects:
             desc += ('The risk associated with this vulnerability was lowered'
@@ -126,7 +154,17 @@ class xss(AuditPlugin):
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
             self._xss_mutants.append((trivial_mutant, response.id))
-        
+
+        # This is something I've seen in as a false positive during my
+        # assessments and is better explained in this stackoverflow question
+        # https://goo.gl/BgXVJY
+        ct_options, _ = response.get_headers().iget('X-Content-Type-Options')
+        content_type, _ = response.get_headers().iget('Content-Type')
+
+        if content_type == 'application/json' and ct_options == 'nosniff':
+            # No luck exploiting this JSON XSS
+            return False
+
         if payload in response.get_body().lower():
             self._report_vuln(mutant, response, payload)
             return True
@@ -138,7 +176,7 @@ class xss(AuditPlugin):
         Analyze the mutant for reflected XSS.
         
         @parameter mutant: A mutant that was used to test if the parameter
-            was echoed back or not
+                           was echoed back or not
         """
         xss_strings = [replace_randomize(i) for i in self.PAYLOADS]
         fuzzable_params = [mutant.get_token_name()]
@@ -168,11 +206,12 @@ class xss(AuditPlugin):
             
             sent_payload = mutant.get_token_payload()
 
+            # TODO: https://github.com/andresriancho/w3af/issues/12305
             body_lower = response.get_body().lower()
             sent_payload_lower = sent_payload.lower()
 
             for context in get_context_iter(body_lower, sent_payload_lower):
-                if context.is_executable() or context.can_break(sent_payload_lower):
+                if context.is_executable() or context.can_break():
                     self._report_vuln(mutant, response, sent_payload)
                     return
 
@@ -211,18 +250,17 @@ class xss(AuditPlugin):
         
         :return: None, Vuln (if any) are saved to the kb.
         """
-        body_lower = response.get_body().lower()
-        
+        body = response.get_body()
+
         for mutant, mutant_response_id in self._xss_mutants:
 
             sent_payload = mutant.get_token_payload()
-            sent_payload_lower = sent_payload.lower()
 
-            for context in get_context_iter(body_lower, sent_payload):
-                if context.is_executable() or context.can_break(sent_payload_lower):
+            for context in get_context_iter(body, sent_payload):
+                if context.is_executable() or context.can_break():
                     self._report_persistent_vuln(mutant, response,
                                                  mutant_response_id,
-                                                 sent_payload_lower,
+                                                 sent_payload,
                                                  fuzzable_request)
                     break
     
@@ -236,11 +274,11 @@ class xss(AuditPlugin):
         response_ids = [response.id, mutant_response_id]
         name = 'Persistent Cross-Site Scripting vulnerability'
         
-        desc = 'A persistent Cross Site Scripting vulnerability'\
-               ' was found by sending "%s" to the "%s" parameter'\
-               ' at %s, which is echoed when browsing to %s.'
-        desc = desc % (mod_value, mutant.get_token_name(), mutant.get_url(),
-                       response.get_url())
+        desc = ('A persistent Cross Site Scripting vulnerability'
+                ' was found by sending "%s" to the "%s" parameter'
+                ' at %s, which is echoed when browsing to %s.')
+        desc %= (mod_value, mutant.get_token_name(), mutant.get_url(),
+                 response.get_url())
         
         csp = CSP()
         csp.init_from_response(response)
@@ -248,11 +286,11 @@ class xss(AuditPlugin):
         vuln_severity = severity.MEDIUM if csp_protects else severity.HIGH
         
         if csp_protects:
-            desc += 'The risk associated with this vulnerability was lowered'\
-                    ' because the site correctly implements CSP. The'\
-                    ' vulnerability is still a risk for the application since'\
-                    ' only the latest versions of some browsers implement CSP'\
-                    ' checking.'
+            desc += ('The risk associated with this vulnerability was lowered'
+                     ' because the site correctly implements CSP. The'
+                     ' vulnerability is still a risk for the application since'
+                     ' only the latest versions of some browsers implement CSP'
+                     ' checking.')
                     
         v = Vuln.from_mutant(name, desc, vuln_severity,
                              response_ids, self.get_name(),
@@ -273,9 +311,9 @@ class xss(AuditPlugin):
         ol = OptionList()
         
         d1 = 'Identify persistent cross site scripting vulnerabilities'
-        h1 = 'If set to True, w3af will navigate all pages of the target one'\
-             ' more time, searching for persistent cross site scripting'\
-             ' vulnerabilities.'
+        h1 = ('If set to True, w3af will navigate all pages of the target one'
+              ' more time, searching for persistent cross site scripting'
+              ' vulnerabilities.')
         o1 = opt_factory('persistent_xss', self._check_persistent_xss, d1,
                          'boolean', help=h1)
         ol.add(o1)
@@ -313,4 +351,4 @@ class xss(AuditPlugin):
 
 def replace_randomize(data):
     rand_str = rand_alnum(5).lower()
-    return data.replace("RANDOMIZE", rand_str)
+    return data.replace(RANDOMIZE, rand_str)
