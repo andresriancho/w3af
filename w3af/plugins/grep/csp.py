@@ -39,7 +39,7 @@ class csp(GrepPlugin):
         Class init
         """
         GrepPlugin.__init__(self)
-        self._urls_without_csp = set()
+        self._responses_without_csp = set()
         # We don't use disk_* here because 
         # the list should be too small for such storage
         # e.g. it is common for web app to have only **one** CSP policy
@@ -53,14 +53,15 @@ class csp(GrepPlugin):
         :param request: HTTP request
         :param response: HTTP response  
         """
-        urls_without_csp_limit = 10
+        without_csp_limit = 10
         csp = CSP()
         csp.source_limit = self._source_limit
         csp.trusted_hosts = self._trusted_hosts
         if csp.init_from_response(response): 
             self.csps.add(csp)
-        elif len(self._urls_without_csp) < urls_without_csp_limit:
-            self._urls_without_csp.add(response.get_url().uri2url())
+        elif len(self._responses_without_csp) < without_csp_limit:
+            self._responses_without_csp.add((response.id, 
+                response.get_url().uri2url()))
 
     def end(self):
         """
@@ -71,8 +72,9 @@ class csp(GrepPlugin):
 
         if not self.csps:
             result += self.vuln_no_csp_tpl + self.vuln_footer_tpl 
-            v = Vuln(self.VULN_NAME, result, severity.MEDIUM, [],
-                     self.get_name())
+            v = Vuln(self.VULN_NAME, result, severity.MEDIUM, 
+                    [r[0] for r in self._responses_without_csp],
+                    self.get_name())
             self.kb_append(self, 'csp', v)
             return
 
@@ -85,12 +87,14 @@ class csp(GrepPlugin):
         
         if csp_vulns:
             result += self.vuln_csp_tpl + csp_vulns
-        if self._urls_without_csp:
-            result += self.vuln_without_tpl % "\n".join(self._urls_without_csp)
+        if self._responses_without_csp:
+            result += self.vuln_without_tpl % "\n".join(
+                    [r[1] for r in self._responses_without_csp])
         result += self.vuln_footer_tpl
 
-        v = Vuln(self.VULN_NAME, result, severity.MEDIUM, [csp.response_id for csp in self.csps],
-                 self.get_name())
+        v = Vuln(self.VULN_NAME, result, severity.MEDIUM, 
+                [csp.response_id for csp in self.csps],
+                self.get_name())
         self.kb_append(self, 'csp', v)
 
     def get_options(self):
