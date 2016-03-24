@@ -346,7 +346,7 @@ class TestUtils(unittest.TestCase):
         """
         Test case in which we add untrusted hosts into somes policies.
         """  
-        header_value = "default-src 'self'; script-src 'self' trust.com evil.com;"
+        header_value = "default-src 'self'; script-src blob: data: 'self' trust.com evil.com;"
         csp = CSPPolicy()
         csp.trusted_hosts = ['trust.com']
         csp.init_value(header_value)

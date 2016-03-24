@@ -43,6 +43,7 @@ class CSPDirective(object):
     value = ""
     source_list = []
     _source_limit = None
+    trusted_hosts = []
 
     vuln_wildcard_tpl = "Directive '%s' allows all sources."
     vuln_inline_tpl = "Directive '%s' allows unsafe-inline. Use nonces or hashes."
@@ -111,6 +112,8 @@ class CSPDirective(object):
         tmp = self._normalize_host_source(token)
         o = urlparse(tmp)
         if re.search("[^a-zA-Z:*0-9.-]", o.netloc):
+            return False
+        if not o.hostname:
             return False
         if o.geturl() == tmp:
             return True
@@ -214,13 +217,19 @@ class CSPDirective(object):
         """
         untrusted = []
         vulns_lst = []
+        if not self.trusted_hosts:
+            return []
+
         for source in self.source_list:
             if self._is_host_source(source):
                 tmp = self._normalize_host_source(source)
                 o = urlparse(tmp)
                 for t_host in self.trusted_hosts:
-                    if not o.hostname.endswith(t_host):
-                        untrusted.append(source)
+                    if o.hostname.endswith(t_host):
+                        break
+                else:
+                    untrusted.append(source)
+        
         if untrusted:
             vuln = CSPVulnerability(self.vuln_untrust_tpl % (self.name, ",".join(untrusted)), 
                     severity.LOW, 'untrust', self.name)
@@ -459,7 +468,8 @@ class CSPPolicy(object):
         """
         :return: pretty string representation of CSP policy
         """
-        return self.get_header_name() + ":\n" + ";\n".join([str(d) for d in self.directives])
+        return self.get_header_name() + ":\n    " \
+                + ";\n    ".join([str(d) for d in self.directives])
 
     def __str__(self):
         return self.get_header_name() + ": " + self.value
