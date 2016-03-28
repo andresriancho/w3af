@@ -45,7 +45,9 @@ class URLParameterHandler(urllib2.BaseHandler):
         url_instance.set_param(self._url_parameter)
 
         new_request = HTTPRequest(url_instance,
-                                  headers=req.headers,
+                                  method=req.get_method(),
+                                  data=req.get_data(),
+                                  headers=req.get_headers(),
                                   origin_req_host=req.get_origin_req_host(),
                                   unverifiable=req.is_unverifiable(),
                                   retries=req.retries_left,
