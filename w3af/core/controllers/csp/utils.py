@@ -231,7 +231,7 @@ class CSPDirective(object):
                     untrusted.append(source)
         
         if untrusted:
-            vuln = CSPVulnerability(self.vuln_untrust_tpl % (self.name, ",".join(untrusted)), 
+            vuln = CSPVulnerability(self.vuln_untrust_tpl % (self.name, ", ".join(untrusted)), 
                     severity.LOW, 'untrust', self.name)
             vulns_lst = [vuln]
         return vulns_lst

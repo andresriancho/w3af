@@ -118,7 +118,6 @@ class TestUtils(unittest.TestCase):
         """
         header_value = "default-src ' '; img-src ' '"
         csp = CSPPolicy()
-        print csp.init_value(header_value), csp.directives
         self.assertFalse(csp.init_value(header_value))
         
     def test_provides_csp_features_yes_case01(self):

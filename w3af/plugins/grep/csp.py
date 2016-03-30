@@ -103,12 +103,17 @@ class csp(GrepPlugin):
         """
         ol = OptionList()
 
-        d = 'Maximum number of sources in source list'
-        o = opt_factory('source_limit', self._source_limit, d, 'integer')
+        d = 'Maximum number limit of sources in source list of directive'
+        h = ('The plugin will report a vulnerability when detects '
+        'that number of sources in source list of any directive '
+        'is bigger then this limit.')
+        o = opt_factory('source_limit', self._source_limit, d, 'integer', help=h)
         ol.add(o)
 
-        d = 'Trusted hosts for finding untrusted ones in source list'
-        o = opt_factory('trusted_hosts', self._trusted_hosts, d, 'list')
+        d = 'List of trusted hosts for finding untrusted ones in source list of directive'
+        h = ('The plugin will report a vulnerability when detects '
+        'that source list of any directive consists of ones from the list')
+        o = opt_factory('trusted_hosts', self._trusted_hosts, d, 'list', help=h)
         ol.add(o)
 
         return ol
@@ -177,5 +182,5 @@ There were found URL without CSP. Please, review it:
 """
 
     vuln_no_csp_tpl = """
-    The whole target has no CSP protection.
+The whole target has no CSP protection.
 """
