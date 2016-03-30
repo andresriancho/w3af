@@ -94,6 +94,17 @@ class TestUtils(unittest.TestCase):
         uri_set = csp.get_report_uri()
         self.assertEqual("foo.com/myrelativeuri", uri_set)
 
+    def test_report_no_report_uri(self):
+        """
+        Test case in which site do not provides CSP report uri and we need to know about it.
+        """
+        csp_value = "default-src 'self';"
+        csp = CSPPolicy()
+        csp.report_no_report_uri = True
+        csp.init_value(csp_value)
+        vulns = csp.find_vulns()
+        self.assertEqual(len(vulns), 1)
+
     def test_provides_csp_features_no_case01(self):
         """
         Test case in which site do not provides CSP features.
@@ -306,6 +317,18 @@ class TestUtils(unittest.TestCase):
         csp = CSPPolicy()
         csp.init_value(header_value)
         self.assertTrue(csp.protects_against_xss())
+
+    def test_not_report_eval(self):
+        """
+        Test case in witch site provide CSP features and enable use of the
+        javascript "eval()" function into is CSP Script policies AND we DON'T want to know about it.
+        """
+        header_value = "default-src 'self'; script-src 'self' 'unsafe-eval'"
+        csp = CSPPolicy()
+        csp.report_eval = False
+        csp.init_value(header_value)
+        vulns = csp.find_vulns()
+        self.assertEqual(len(vulns), 0)
         
     def test_site_protected_against_xss_by_csp_case06(self):
         """

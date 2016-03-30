@@ -33,6 +33,8 @@ class csp(GrepPlugin):
     VULN_NAME = 'CSP vulnerability'
     _trusted_hosts = []
     _source_limit = 10
+    _report_eval = True
+    _report_no_report_uri = False
 
     def __init__(self):
         """
@@ -57,6 +59,8 @@ class csp(GrepPlugin):
         csp = CSP()
         csp.source_limit = self._source_limit
         csp.trusted_hosts = self._trusted_hosts
+        csp.report_eval = self._report_eval
+        csp.report_no_report_uri = self._report_no_report_uri
         if csp.init_from_response(response): 
             self.csps.add(csp)
         elif len(self._responses_without_csp) < without_csp_limit:
@@ -81,8 +85,10 @@ class csp(GrepPlugin):
         for csp in self.csps:
             tmp = "URL: %s" % csp.response_url
             for policy in csp.policies:
-                tmp += self.policy_tpl % (policy.pretty(), 
-                        "\n".join([v.desc for v in policy.find_vulns()]))
+                vulns = "There is no issues for this CSP policy."
+                if policy.find_vulns():
+                    vulns = " * " + "\n * ".join([v.desc for v in policy.find_vulns()])
+                tmp += self.policy_tpl % (policy.pretty(), vulns)
             csp_vulns += tmp
         
         if csp_vulns:
@@ -112,8 +118,21 @@ class csp(GrepPlugin):
 
         d = 'List of trusted hosts for finding untrusted ones in source list of directive'
         h = ('The plugin will report a vulnerability when detects '
-        'that source list of any directive consists of ones from the list')
+        'that source list of any directive contains untrusted host')
         o = opt_factory('trusted_hosts', self._trusted_hosts, d, 'list', help=h)
+        ol.add(o)
+
+        d = "Report when detects usage of 'unsafe-eval' in source list of directive"
+        h = ("Unfortunately it is very hard to switch off 'unsafe-eval' "
+        'in e.g. script-src directive because a lot of JS staff use eval().')
+        o = opt_factory('report_eval', self._report_eval, d, 'boolean', help=h)
+        ol.add(o)
+
+        d = 'Report when detects that report-uri directive is not set'
+        h = ('Monitoring a policy is useful for testing whether '
+                'enforcing the policy will cause the web application to malfunction. '
+                'The plugin will report when detects that report-uri directive is not set')
+        o = opt_factory('report_no_report_uri', self._report_no_report_uri, d, 'boolean', help=h)
         ol.add(o)
 
         return ol
@@ -129,6 +148,8 @@ class csp(GrepPlugin):
 
         self._source_limit = option_list['source_limit'].get_value()
         self._trusted_hosts = option_list['trusted_hosts'].get_value()
+        self._report_eval = option_list['report_eval'].get_value()
+        self._report_no_report_uri = option_list['report_no_report_uri'].get_value()
 
     def get_long_desc(self):
         """
@@ -172,7 +193,6 @@ Additional information:
 Issues
 
 %s
-
 """
 
     vuln_without_tpl = """

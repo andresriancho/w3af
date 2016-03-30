@@ -48,8 +48,8 @@ class CSPDirective(object):
     vuln_wildcard_tpl = "Directive '%s' allows all sources."
     vuln_inline_tpl = "Directive '%s' allows unsafe-inline. Use nonces or hashes."
     vuln_eval_tpl = "Directive '%s' allows unsafe-eval."
-    vuln_untrust_tpl = "Directive '%s' consists of untrusted sources: %s."
-    vuln_source_limit_tpl = "Directive '%s' consists of too many sources in source list."
+    vuln_untrust_tpl = "Directive '%s' contains untrusted sources: %s."
+    vuln_source_limit_tpl = "Directive '%s' contains too many sources in source list."
     vuln_required_tpl = """Directive '%s' is not defined. NB! It does not fall back 
     to the default sources when the directive is not defined."""
 
@@ -255,7 +255,7 @@ class CSPDirective(object):
         if self.unsafe_inline_enabled() and not self._inline_signed():
             vuln = CSPVulnerability(self.vuln_inline_tpl % self.name, severity.HIGH, 'inline', self.name)
             vulns.append(vuln)
-        if "'unsafe-eval'" in self.source_list:
+        if "'unsafe-eval'" in self.source_list and self.report_eval:
             vuln = CSPVulnerability(self.vuln_eval_tpl % self.name, severity.MEDIUM, 'eval', self.name)
             vulns.append(vuln)
         return vulns
@@ -451,8 +451,11 @@ class CSPPolicy(object):
     syntax_errors = []
     value = ""
     trusted_hosts = []
+    report_no_report_uri = False
+    report_eval = True
     source_limit = None
     vuln_syntax_tpl = "Can't parse the CSP policy %s."
+    vuln_no_report_uri_tpl = "The CSP policy doesn't contain 'report-uri' directive."
 
     def get_header_name(self, report_only=False):
         """
@@ -546,6 +549,7 @@ class CSPPolicy(object):
         if directive:
             directive.source_limit = self.source_limit
             directive.trusted_hosts = self.trusted_hosts
+            directive.report_eval = self.report_eval
             return directive
         else:
             return None
@@ -607,6 +611,10 @@ class CSPPolicy(object):
             d_vulns  = d.find_vulns()
             if d_vulns:
                 vulns.extend(d_vulns)
+        if self.report_no_report_uri and not self.get_report_uri():
+            vulns.append(CSPVulnerability(self.vuln_no_report_uri_tpl, 
+                severity.LOW, 'reporting', ''))
+         
         return vulns + self.syntax_errors
     
     def find_vulns_by_directive(self, directive_name):
@@ -683,6 +691,8 @@ class CSP(object):
     response_url = None
     trusted_hosts = []
     source_limit = None
+    report_eval = True
+    report_no_report_uri = False
 
     def header_provides_csp(self, header_name):
         """
@@ -728,6 +738,8 @@ class CSP(object):
             csp = CSPPolicy()
             csp.source_limit = self.source_limit
             csp.trusted_hosts = self.trusted_hosts
+            csp.report_eval = self.report_eval
+            csp.report_no_report_uri = self.report_no_report_uri
             if csp.init_value(csp_value, banned_directives=banned):
                 result.append(csp)
          
@@ -751,6 +763,8 @@ class CSP(object):
                 csp = CSPPolicy()
                 csp.source_limit = self.source_limit
                 csp.trusted_hosts = self.trusted_hosts
+                csp.report_eval = self.report_eval
+                csp.report_no_report_uri = self.report_no_report_uri
                 if csp.init_from_header(header_name, headers[header_name]):
                     self.policies.append(csp)
         # From meta tag
