@@ -318,6 +318,27 @@ class TestUtils(unittest.TestCase):
         csp.init_value(header_value)
         self.assertTrue(csp.protects_against_xss())
 
+    def test_site_protected_against_xss_by_csp_case05(self):
+        """
+        Test case in witch site provide CSP features and have a vuln 
+        on Script policies (data:).
+        """
+        header_value = "script-src data:"
+        csp = CSPPolicy()
+        csp.init_value(header_value)
+        self.assertFalse(csp.protects_against_xss())
+
+    def test_report_eval(self):
+        """
+        Test case in witch site provide CSP features and enable use of the
+        javascript "eval()" function into is CSP Script policies AND we want to report it.
+        """
+        header_value = "default-src 'self' blob:; script-src 'self' 'unsafe-eval'"
+        csp = CSPPolicy()
+        csp.init_value(header_value)
+        vulns = csp.find_vulns()
+        self.assertEqual(len(vulns), 2)
+        
     def test_not_report_eval(self):
         """
         Test case in witch site provide CSP features and enable use of the
@@ -368,7 +389,7 @@ class TestUtils(unittest.TestCase):
         """
         Test case in which we add untrusted hosts into somes policies.
         """  
-        header_value = "default-src 'self'; script-src blob: data: 'self' trust.com evil.com;"
+        header_value = "default-src 'self'; script-src 'self' trust.com evil.com;"
         csp = CSPPolicy()
         csp.trusted_hosts = ['trust.com']
         csp.init_value(header_value)

@@ -46,12 +46,15 @@ class CSPDirective(object):
     trusted_hosts = []
 
     vuln_wildcard_tpl = "Directive '%s' allows all sources."
-    vuln_inline_tpl = "Directive '%s' allows unsafe-inline. Use nonces or hashes."
-    vuln_eval_tpl = "Directive '%s' allows unsafe-eval."
+    vuln_inline_tpl = "Directive '%s' allows 'unsafe-inline'. Use nonces or hashes."
+    vuln_eval_tpl = """Directive '%s' contains risky 'unsafe-eval' keyword source 
+or equivalent like blob: or filesystem:. Found: %s."""
     vuln_untrust_tpl = "Directive '%s' contains untrusted sources: %s."
     vuln_source_limit_tpl = "Directive '%s' contains too many sources in source list."
+    vuln_data_source_tpl = """Directive '%s' contains 'data:' in source list. 
+Allowing 'data:' URLs is equivalent to 'unsafe-inline'."""
     vuln_required_tpl = """Directive '%s' is not defined. NB! It does not fall back 
-    to the default sources when the directive is not defined."""
+to the default sources when the directive is not defined."""
 
     def __init__(self, name=None):
         if name:
@@ -186,12 +189,51 @@ class CSPDirective(object):
         :param severity: Severity for results 
         :return: list of vulnerabilities
         """
-        vulns_lst = []
+        vulns = []
         if "*" in self.source_list:
             vuln = CSPVulnerability(self.vuln_wildcard_tpl % self.name,
                     severity, 'wildcard', self.name)
-            vulns_lst = [vuln]
-        return vulns_lst
+            vulns = [vuln]
+        return vulns
+
+    def _check_data_source(self):
+        """
+        Check if data: is included in source list of risky directives 
+
+        :return: list of vulnerabilities
+        """
+        vulns = []
+        if 'data:' in self.source_list \
+                and self.name in ['default-src', 'script-src', 'object-src']:
+            vuln = CSPVulnerability(self.vuln_data_source_tpl % self.name, 
+                    severity.HIGH, 'data_source', self.name)
+            vulns = [vuln]
+        return vulns
+
+    def _find_eval_vulns(self):
+        """
+        Check if 'unsafe-eval' or equivalent is included in source list of directive. 
+
+        :return: list of vulnerabilities
+        """
+        if not self.report_eval:
+            return []
+
+        vulns = []
+        result = filter(lambda x: x == "'unsafe-eval'", self.source_list)
+        # See "Security Considerations for GUID URL schemes"
+        # https://www.w3.org/TR/CSP/#source-list-guid-matching
+        risky_schemes = filter(lambda x: x in ['blob:', 'filesystem:'], 
+                self.source_list)
+
+        if self.name in ['default-src', 'script-src'] and risky_schemes:
+            result.extend(risky_schemes)
+        
+        if result:
+            vulns.append(CSPVulnerability(
+                self.vuln_eval_tpl % (self.name, ', '.join(result)), 
+                severity.MEDIUM, 'eval', self.name))
+        return vulns
 
     def _check_source_limit(self):
         """
@@ -200,14 +242,14 @@ class CSPDirective(object):
 
         :return: list of vulnerabilities
         """
-        vulns_lst = []
+        vulns = []
         if not self.source_limit:
-            return vulns_lst
+            return []
         if  len(self.source_list) > self.source_limit:
             vuln = CSPVulnerability(self.vuln_source_limit_tpl % self.name, 
                     severity.LOW, 'source_limit', self.name)
-            vulns_lst = [vuln]
-        return vulns_lst
+            vulns = [vuln]
+        return vulns
 
     def _check_untrusted_sources(self):
         """
@@ -216,7 +258,7 @@ class CSPDirective(object):
         :return: list of vulnerabilities
         """
         untrusted = []
-        vulns_lst = []
+        vulns = []
         if not self.trusted_hosts:
             return []
 
@@ -233,8 +275,8 @@ class CSPDirective(object):
         if untrusted:
             vuln = CSPVulnerability(self.vuln_untrust_tpl % (self.name, ", ".join(untrusted)), 
                     severity.LOW, 'untrust', self.name)
-            vulns_lst = [vuln]
-        return vulns_lst
+            vulns = [vuln]
+        return vulns
 
     def find_vulns(self):
         """
@@ -244,19 +286,17 @@ class CSPDirective(object):
         """
         # TODO 
         # 1. Check for random value in nonce
-        # 3. Check for data: & blob: in script-src & default-src 
         # https://www.w3.org/TR/CSP/#source-list-guid-matching
         #
         vulns = []
         vulns.extend(self._find_wildcard_vulns(severity.MEDIUM))
         vulns.extend(self._check_source_limit())
         vulns.extend(self._check_untrusted_sources())
+        vulns.extend(self._check_data_source())
+        vulns.extend(self._find_eval_vulns())
 
         if self.unsafe_inline_enabled() and not self._inline_signed():
             vuln = CSPVulnerability(self.vuln_inline_tpl % self.name, severity.HIGH, 'inline', self.name)
-            vulns.append(vuln)
-        if "'unsafe-eval'" in self.source_list and self.report_eval:
-            vuln = CSPVulnerability(self.vuln_eval_tpl % self.name, severity.MEDIUM, 'eval', self.name)
             vulns.append(vuln)
         return vulns
      
