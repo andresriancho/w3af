@@ -35,7 +35,7 @@ class csp(GrepPlugin):
     _source_limit = 10
     _report_eval = True
     _report_no_report_uri = False
-
+    
     def __init__(self):
         """
         Class init
@@ -46,6 +46,7 @@ class csp(GrepPlugin):
         # the list should be too small for such storage
         # e.g. it is common for web app to have only **one** CSP policy
         self.csps = set()
+        self.csp_cache = []
                 
     def grep(self, request, response):
         """
@@ -56,6 +57,7 @@ class csp(GrepPlugin):
         :param response: HTTP response  
         """
         without_csp_limit = 10
+        csp_cache_limit = 3
         csp = CSP()
         csp.source_limit = self._source_limit
         csp.trusted_hosts = self._trusted_hosts
@@ -63,6 +65,8 @@ class csp(GrepPlugin):
         csp.report_no_report_uri = self._report_no_report_uri
         if csp.init_from_response(response): 
             self.csps.add(csp)
+            if len(self.csp_cache) < csp_cache_limit:
+                self.csp_cache.append(csp)
         elif len(self._responses_without_csp) < without_csp_limit:
             self._responses_without_csp.add((response.id, 
                 response.get_url().uri2url()))
@@ -93,9 +97,18 @@ class csp(GrepPlugin):
         
         if csp_vulns:
             result += self.vuln_csp_tpl + csp_vulns
+
         if self._responses_without_csp:
             result += self.vuln_without_tpl % "\n".join(
                     [r[1] for r in self._responses_without_csp])
+        
+        if len(self.csp_cache) > 1:
+            csp = self.csp_cache[0]
+            nonce_vulns = csp.find_nonce_vulns(self.csp_cache[1:])
+            if nonce_vulns:
+                vulns = " * " + "\n * ".join([v.desc for v in nonce_vulns])
+                result += self.common_tpl % vulns
+
         result += self.vuln_footer_tpl
 
         v = Vuln(self.VULN_NAME, result, severity.MEDIUM, 
@@ -203,4 +216,9 @@ There were found URL without CSP. Please, review it:
 
     vuln_no_csp_tpl = """
 The whole target has no CSP protection.
+"""
+    common_tpl = """
+Common CSP related issues:
+
+%s
 """

@@ -173,7 +173,7 @@ class TestUtils(unittest.TestCase):
                        " object-src media1.example.com media2.example.com"\
                        " *.cdn.example.com; script-src trustedscripts.example.com;"\
                        " form-action foo.com/ctxroot/action1 foo.com/ctxroot/action2;"\
-                       " plugin-types application/pdf audio/ogg;"
+                       " plugin-types application/pdf;"
         csp = CSPPolicy()
         csp.init_value(header_value)
         
@@ -197,9 +197,8 @@ class TestUtils(unittest.TestCase):
         self.assertTrue("foo.com/ctxroot/action1" in d.source_list)
         self.assertTrue("foo.com/ctxroot/action2" in d.source_list)
         d = csp.get_directive_by_name("plugin-types")
-        self.assertEqual(len(d.media_type_list), 2)
+        self.assertEqual(len(d.media_type_list), 1)
         self.assertTrue("application/pdf" in d.media_type_list)
-        self.assertTrue("audio/ogg" in d.media_type_list)
 
     def test_retrieve_csp_policies_with_special_policies_case02(self):
         """
@@ -395,3 +394,21 @@ class TestUtils(unittest.TestCase):
         csp.init_value(header_value)
         vulns = csp.find_vulns()
         self.assertEqual(len(vulns), 1)
+
+    def test_weak_nonces(self):
+        """
+        Test case in witch site provide CSP policy with **static** nonces in script-src.
+        """
+        header_value = "default-src 'self'; script-src 'self' 'nonce-AABBCC'"
+        headers = Headers({'Content-Security-Policy': header_value}.items())
+        http_response = HTTPResponse(200, '', headers, self.url, self.url)
+        csp1 = CSP()
+        csp1.init_from_response(http_response)
+
+        header_value = "default-src 'none'; script-src 'self' 'nonce-AABBCC' 'nonce-CCDDEE'"
+        headers = Headers({'Content-Security-Policy': header_value}.items())
+        http_response = HTTPResponse(200, '', headers, self.url, self.url)
+        csp2 = CSP()
+        csp2.init_from_response(http_response)
+ 
+        self.assertEqual(len(csp1.find_nonce_vulns([csp2])), 1)

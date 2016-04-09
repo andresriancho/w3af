@@ -169,17 +169,25 @@ to the default sources when the directive is not defined."""
                 result.append(token)
         return result
 
-    def _inline_signed(self):
+    def get_nonces_hashes(self, nonces=True, hashes=True):
         """
-        Check if there are nonces or hashes in source list.
+        Find nonces and hashes in source list.
 
-        :return: True if there are nonces or hashes in source list
+        :return: list of hashes and nonces
         """
-        result = False
+        result = []
+        targets = []
+
+        if nonces:
+            targets.append("'nonce-")
+
+        if hashes:
+            targets.extend(["'sha256-", "'sha384-", "'sha512-"])
+
         for source_expression in self.source_list:
-            for s in ["'nonce-", "'sha256-", "'sha384-", "'sha512-"]:
+            for s in targets:
                 if source_expression.startswith(s):
-                    result = True
+                    result.append(source_expression)
         return result
 
     def _find_wildcard_vulns(self, severity):
@@ -295,7 +303,7 @@ to the default sources when the directive is not defined."""
         vulns.extend(self._check_data_source())
         vulns.extend(self._find_eval_vulns())
 
-        if self.unsafe_inline_enabled() and not self._inline_signed():
+        if self.unsafe_inline_enabled() and not self.get_nonces_hashes():
             vuln = CSPVulnerability(self.vuln_inline_tpl % self.name, severity.HIGH, 'inline', self.name)
             vulns.append(vuln)
         return vulns
@@ -723,6 +731,17 @@ class CSPPolicy(object):
                 return True
         return False
 
+    def get_nonces(self):
+        """
+        Find nonces in source list of directives.
+
+        :return: list of nonces
+        """
+        result = []
+        for d in self.directives:
+            result.extend(d.get_nonces_hashes(nonces=True, hashes=False))
+        return result
+  
 class CSP(object):
     """Content Security Policy Level 2
     https://www.w3.org/TR/CSP/"""
@@ -836,3 +855,50 @@ class CSP(object):
 
     def __eq__(self, other):
         return hash(self) == hash(other)
+
+    def get_nonces(self):
+        """
+        Find nonces in source list of all directives in all policies.
+
+        :return: set of nonces
+        """
+        result = set()
+        for policy in self.policies:
+            for nonce in policy.get_nonces():
+                result.add(nonce)
+        return result
+ 
+    def find_nonce_vulns(self, csps):
+        """
+        Find cases when nonces in source list of CSP 
+        policy directives are not random in responses.
+
+        :return: list of vulns
+        """
+        vulns = []
+        filtered_csps = filter(lambda x: x.get_nonces(), csps)
+
+        if self.get_nonces():
+            filtered_csps.insert(0, self)
+
+        if len(filtered_csps) < 2:
+            return []
+
+        prev = filtered_csps[0]
+        for csp in filtered_csps[1:]:
+            for policy in csp.policies:
+                tmp = policy.get_nonces()
+                if not tmp:
+                    continue
+                nonces = set(prev.get_nonces()).intersection(set(tmp))
+                # Get intersection between nonces of policies!
+                if nonces:
+                    vulns.append(CSPVulnerability(
+                        self.vuln_nonce_intersection_tpl % ", ".join(nonces), 
+                        severity.HIGH, 'nonce_intersection', ''))
+                    return vulns
+            prev = policy
+        return vulns
+
+    vuln_nonce_intersection_tpl = """There is intersection between nonces of at least two policies from different responses.
+It means that nonce value is not random for every responose. Not random nonces: %s"""
