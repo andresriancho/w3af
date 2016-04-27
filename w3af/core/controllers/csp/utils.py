@@ -135,11 +135,11 @@ to the default sources when the directive is not defined."""
         if token in ["'self'", "'unsafe-inline'", "'unsafe-eval'"]:
             return True
         # nonce-source
-        p = re.compile("'nonce-[a-zA-Z0-9=]+'")
+        p = re.compile("'nonce-[a-zA-Z0-9+/]+[=]{0,2}'")
         if p.match(token):
             return True
         # hash-source
-        p = re.compile("'(sha256|sha384|sha512)-[a-zA-Z0-9=]+'")
+        p = re.compile("'(sha256|sha384|sha512)-[a-zA-Z0-9+/]+[=]{0,2}'")
         if p.match(token):
             return True
         # scheme-source 

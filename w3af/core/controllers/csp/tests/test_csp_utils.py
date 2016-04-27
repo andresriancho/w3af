@@ -412,3 +412,15 @@ class TestUtils(unittest.TestCase):
         csp2.init_from_response(http_response)
  
         self.assertEqual(len(csp1.find_nonce_vulns([csp2])), 1)
+
+    def test_retrieve_csp_policies_with_hashes(self):
+        """
+        Test case in which directive includes hashes.
+        """
+        header_value = "script-src 'sha256-nP0EI9B9ad8IoFUti2q7EQBabcE5MS5v0nkvRfUbYnM='"\
+                " 'sha256-pH+KSy1ZHTi4vu+kNocszrH0NtTuvixRZIV38uhbnlM=';"
+        csp = CSPPolicy()
+        csp.init_value(header_value)
+        d = csp.get_directive_by_name("script-src")
+        self.assertIsNotNone(d)
+        self.assertEqual(len(d.source_list), 2) 
