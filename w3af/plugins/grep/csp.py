@@ -76,32 +76,37 @@ class csp(GrepPlugin):
         Perform global analysis for all vulnerabilities found.
         """
         csp_vulns = ""
-        result = self.vuln_header_tpl 
+        result = ""
 
+        # The whole target has no CSP protection
         if not self.csps:
-            result += self.vuln_no_csp_tpl + self.vuln_footer_tpl 
+            result = self.vuln_tpl % self.vuln_no_csp_tpl
             v = Vuln(self.VULN_NAME, result, severity.MEDIUM, 
                     [r[0] for r in self._responses_without_csp],
                     self.get_name())
             self.kb_append(self, 'csp', v)
             return
 
+        # Vulns in csps
         for csp in self.csps:
-            tmp = "URL: %s" % csp.response_url
+            tmp = ""
             for policy in csp.policies:
-                vulns = "There is no issues for this CSP policy."
                 if policy.find_vulns():
                     vulns = " * " + "\n * ".join([v.desc for v in policy.find_vulns()])
-                tmp += self.policy_tpl % (policy.pretty(), vulns)
-            csp_vulns += tmp
+                    tmp += self.policy_tpl % (policy.pretty(), vulns)
+            if tmp:
+                csp_vulns += "URL: %s" % csp.response_url + tmp
         
         if csp_vulns:
             result += self.vuln_csp_tpl + csp_vulns
 
+        # If there were found URLs without CSP
         if self._responses_without_csp:
+            csp_vulns_detected = True
             result += self.vuln_without_tpl % "\n".join(
                     [r[1] for r in self._responses_without_csp])
         
+        # Try to find weak nonces
         if len(self.csp_cache) > 1:
             csp = self.csp_cache[0]
             nonce_vulns = csp.find_nonce_vulns(self.csp_cache[1:])
@@ -109,12 +114,11 @@ class csp(GrepPlugin):
                 vulns = " * " + "\n * ".join([v.desc for v in nonce_vulns])
                 result += self.common_tpl % vulns
 
-        result += self.vuln_footer_tpl
-
-        v = Vuln(self.VULN_NAME, result, severity.MEDIUM, 
-                [csp.response_id for csp in self.csps],
-                self.get_name())
-        self.kb_append(self, 'csp', v)
+        if result:
+            v = Vuln(self.VULN_NAME, self.vuln_tpl % result, severity.MEDIUM, 
+                    [csp.response_id for csp in self.csps],
+                    self.get_name())
+            self.kb_append(self, 'csp', v)
 
     def get_options(self):
         """
@@ -182,17 +186,17 @@ class csp(GrepPlugin):
             - trusted_hosts
         """        
 
-    vuln_header_tpl = """
-Content Security Policy related information
-"""
-
     vuln_csp_tpl = """
 There were identified incorrect or too permissive CSP2
 policies returned by the web application under analysis.
 
 """
 
-    vuln_footer_tpl = """
+    vuln_tpl = """
+Content Security Policy related information
+
+%s
+
 Additional information: 
 
  * https://www.owasp.org/index.php/Content_Security_Policy
