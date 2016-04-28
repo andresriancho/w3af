@@ -286,6 +286,14 @@ to the default sources when the directive is not defined."""
             vulns = [vuln]
         return vulns
 
+    def _find_vulns(self):
+        """
+        Find all vulnerabilities in child directive.
+
+        :return: list of vulnerabilities
+        """
+        return []
+ 
     def find_vulns(self):
         """
         Find all vulnerabilities in directive.
@@ -302,6 +310,7 @@ to the default sources when the directive is not defined."""
         vulns.extend(self._check_untrusted_sources())
         vulns.extend(self._check_data_source())
         vulns.extend(self._find_eval_vulns())
+        vulns.extend(self._find_vulns())
 
         if self.unsafe_inline_enabled() and not self.get_nonces_hashes():
             vuln = CSPVulnerability(self.vuln_inline_tpl % self.name, severity.HIGH, 'inline', self.name)
@@ -327,6 +336,8 @@ class DefaultSrcDirective(CSPDirective):
     Represents CSP 'default-src' directive.
     """
     name = "default-src"
+    strictness = 0
+    vuln_strictness_tpl = "Level of strictness for directive 'default-src' permits only value %s."
 
     @CSPDirective.source_limit.setter
     def source_limit(self, value):
@@ -337,6 +348,27 @@ class DefaultSrcDirective(CSPDirective):
         """
         value = value if not value else int(value/2)
         self._source_limit = value
+
+    def _find_vulns(self):
+        """
+        Find all issues because of strictness level for default-src.
+
+        :return: list of vulnerabilities
+        """
+        if not self.strictness:
+            return []
+
+        vulns = []
+        strictness_levels = [(1, "'self'"), (2, "'none'")]
+
+        for strictness, value in strictness_levels:
+            if self.strictness == strictness \
+                    and (len(self.source_list) > 1 or self.source_list[0] != value):
+                vuln = CSPVulnerability(self.vuln_strictness_tpl % value, severity.MEDIUM, 
+                        'default_src_strictness', self.name)
+                vulns.append(vuln)
+
+        return vulns
 
 class ScriptSrcDirective(CSPDirective):
     """
@@ -360,7 +392,7 @@ class FrameAncestorsDirective(CSPDirective):
     """
     name = "frame-ancestors"
     
-    def find_vulns(self):
+    def _find_vulns(self):
         """
         Find all vulnerabilities in the directive.
 
@@ -370,7 +402,6 @@ class FrameAncestorsDirective(CSPDirective):
         if not self.source_list:
             vuln = CSPVulnerability(self.vuln_required_tpl % self.name, severity.MEDIUM)
             vulns.append(vuln)
-        vulns.extend(super(FrameAncestorsDirective, self).find_vulns())
         return vulns
 
 class FormActionDirective(CSPDirective):
@@ -379,7 +410,7 @@ class FormActionDirective(CSPDirective):
     """
     name = "form-action"
 
-    def find_vulns(self):
+    def _find_vulns(self):
         """
         Find all vulnerabilities in the directive.
 
@@ -390,7 +421,6 @@ class FormActionDirective(CSPDirective):
             vuln = CSPVulnerability(self.vuln_required_tpl % self.name, severity.MEDIUM,
                     'required', self.name)
             vulns.append(vuln)
-        vulns.extend(super(FormActionDirective, self).find_vulns())
         return vulns
  
 class SandboxDirective(CSPDirective):
@@ -504,6 +534,7 @@ class CSPPolicy(object):
     source_limit = None
     vuln_syntax_tpl = "Can't parse the CSP policy %s."
     vuln_no_report_uri_tpl = "The CSP policy doesn't contain 'report-uri' directive."
+    default_src_strictness = 0
 
     def get_header_name(self, report_only=False):
         """
@@ -583,6 +614,7 @@ class CSPPolicy(object):
             directive = CSPDirective(dname)
         elif "default-src" == dname:
             directive = DefaultSrcDirective()
+            directive.strictness = self.default_src_strictness
         elif "script-src" == dname:
             directive = ScriptSrcDirective()
         elif "frame-ancestors" == dname:
@@ -752,6 +784,7 @@ class CSP(object):
     source_limit = None
     report_eval = True
     report_no_report_uri = False
+    default_src_strictness = 0
 
     def header_provides_csp(self, header_name):
         """
@@ -799,6 +832,7 @@ class CSP(object):
             csp.trusted_hosts = self.trusted_hosts
             csp.report_eval = self.report_eval
             csp.report_no_report_uri = self.report_no_report_uri
+            csp.default_src_strictness = self.default_src_strictness
             if csp.init_value(csp_value, banned_directives=banned):
                 result.append(csp)
          
@@ -824,6 +858,7 @@ class CSP(object):
                 csp.trusted_hosts = self.trusted_hosts
                 csp.report_eval = self.report_eval
                 csp.report_no_report_uri = self.report_no_report_uri
+                csp.default_src_strictness = self.default_src_strictness
                 if csp.init_from_header(header_name, headers[header_name]):
                     self.policies.append(csp)
         # From meta tag

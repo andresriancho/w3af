@@ -35,6 +35,7 @@ class csp(GrepPlugin):
     _source_limit = 10
     _report_eval = True
     _report_no_report_uri = False
+    _default_src_strictness = 0
     
     def __init__(self):
         """
@@ -63,6 +64,8 @@ class csp(GrepPlugin):
         csp.trusted_hosts = self._trusted_hosts
         csp.report_eval = self._report_eval
         csp.report_no_report_uri = self._report_no_report_uri
+        csp.default_src_strictness = self._default_src_strictness
+
         if csp.init_from_response(response): 
             self.csps.add(csp)
             if len(self.csp_cache) < csp_cache_limit:
@@ -152,6 +155,13 @@ class csp(GrepPlugin):
         o = opt_factory('report_no_report_uri', self._report_no_report_uri, d, 'boolean', help=h)
         ol.add(o)
 
+        d = 'Default-src level of strictness'
+        h = ('The plugin will report a vulnerability when detects '
+        'that default-src value conflicts with level of strictness for this directive '
+        "0 is for level without restrictions, 1 permits only 'self' value and 2 is for only 'none' value")
+        o = opt_factory('default_src_strictness', self._default_src_strictness, d, 'integer', help=h)
+        ol.add(o)
+
         return ol
 
     def set_options(self, option_list):
@@ -167,6 +177,7 @@ class csp(GrepPlugin):
         self._trusted_hosts = option_list['trusted_hosts'].get_value()
         self._report_eval = option_list['report_eval'].get_value()
         self._report_no_report_uri = option_list['report_no_report_uri'].get_value()
+        self._default_src_strictness = option_list['default_src_strictness'].get_value()
 
     def get_long_desc(self):
         """

@@ -424,3 +424,36 @@ class TestUtils(unittest.TestCase):
         d = csp.get_directive_by_name("script-src")
         self.assertIsNotNone(d)
         self.assertEqual(len(d.source_list), 2) 
+
+    def test_strict_default0(self):
+        """
+        Test case in which we set strictness level for default-src 0 (all sources permitted).
+        """  
+        header_value = "default-src 'self' foo.com;"
+        csp = CSPPolicy()
+        csp.default_src_strictness = 0
+        csp.init_value(header_value)
+        vulns = csp.find_vulns()
+        self.assertEqual(len(vulns), 0)
+
+    def test_strict_default1(self):
+        """
+        Test case in which we set strictness level for default-src 1 (only 'self').
+        """  
+        header_value = "default-src 'self' foo.com;"
+        csp = CSPPolicy()
+        csp.default_src_strictness = 1
+        csp.init_value(header_value)
+        vulns = csp.find_vulns()
+        self.assertEqual(len(vulns), 1)
+
+    def test_strict_default2(self):
+        """
+        Test case in which we set strictness level for default-src 2 (only 'none').
+        """  
+        header_value = "default-src 'self';"
+        csp = CSPPolicy()
+        csp.default_src_strictness = 2
+        csp.init_value(header_value)
+        vulns = csp.find_vulns()
+        self.assertEqual(len(vulns), 1)
