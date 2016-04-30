@@ -26,6 +26,7 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.csp.utils import CSP
 from w3af.core.data.kb.vuln import Vuln
 
+
 class csp(GrepPlugin):
     """
     Identifies incorrect or too permissive Content Security Policy headers.
@@ -36,6 +37,7 @@ class csp(GrepPlugin):
     _report_eval = True
     _report_no_report_uri = False
     _default_src_strictness = 0
+    _report_not_fallback = False
     
     def __init__(self):
         """
@@ -65,6 +67,7 @@ class csp(GrepPlugin):
         csp.report_eval = self._report_eval
         csp.report_no_report_uri = self._report_no_report_uri
         csp.default_src_strictness = self._default_src_strictness
+        csp.report_not_fallback = self._report_not_fallback
 
         if csp.init_from_response(response): 
             self.csps.add(csp)
@@ -162,6 +165,12 @@ class csp(GrepPlugin):
         o = opt_factory('default_src_strictness', self._default_src_strictness, d, 'integer', help=h)
         ol.add(o)
 
+        d = 'Report about absent directives which do not fall back to the default sources'
+        h = ("The plugin will report a vulnerability when don't find directive from the list: "
+        "base-uri, form-action, frame-ancestors. These directives do not fall back to the default sources")
+        o = opt_factory('report_not_fallback', self._report_not_fallback, d, 'boolean', help=h)
+        ol.add(o)
+
         return ol
 
     def set_options(self, option_list):
@@ -178,6 +187,7 @@ class csp(GrepPlugin):
         self._report_eval = option_list['report_eval'].get_value()
         self._report_no_report_uri = option_list['report_no_report_uri'].get_value()
         self._default_src_strictness = option_list['default_src_strictness'].get_value()
+        self._report_not_fallback = option_list['report_not_fallback'].get_value()
 
     def get_long_desc(self):
         """
