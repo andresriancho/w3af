@@ -28,7 +28,7 @@ from ..requirements import CORE, GUI
 
 class Fedora(Platform):
     SYSTEM_NAME = 'fedora'
-    PKG_MANAGER_CMD = 'sudo yum install'
+    PKG_MANAGER_CMD = 'sudo dnf install'
     PIP_CMD = 'python-pip'
 
     CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'python-setuptools',
