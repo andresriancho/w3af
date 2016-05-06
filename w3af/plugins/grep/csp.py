@@ -110,7 +110,7 @@ class csp(GrepPlugin):
         if self._responses_without_csp:
             csp_vulns_detected = True
             result += self.vuln_without_tpl % "\n".join(
-                    [r[1] for r in self._responses_without_csp])
+                    [str(r[1]) for r in self._responses_without_csp])
         
         # Try to find weak nonces
         if len(self.csp_cache) > 1:
@@ -236,7 +236,7 @@ Issues
     vuln_without_tpl = """
 There were found URL without CSP. Please, review it:
 
-    %s
+%s
 """
 
     vuln_no_csp_tpl = """
