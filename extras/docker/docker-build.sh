@@ -5,6 +5,9 @@ set -e
 
 cp Dockerfile ../../
 cp .dockerignore ../../
+cp install.sh ../../
+cp cleanup.sh ../../
+cp add_user.sh ../../
 
 cd ../../
 
@@ -27,6 +30,7 @@ docker push andresriancho/w3af:${NEW_TAG}
 
 rm -rf Dockerfile
 rm -rf .dockerignore
+rm -f install.sh cleanup.sh add_user.sh
 
 cd extras/docker/
 
