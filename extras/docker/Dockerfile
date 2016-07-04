@@ -1,4 +1,8 @@
+# w3af.org
+# https://github.com/andresriancho/w3af/tree/master/extras
+
 FROM ubuntu:14.04
+MAINTAINER Andres Riancho <andres.riancho@gmail.com>
 
 ADD . /w3af
 RUN apt-get update && apt-get upgrade -y && \
