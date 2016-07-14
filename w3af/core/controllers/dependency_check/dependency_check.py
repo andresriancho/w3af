@@ -48,16 +48,16 @@ from .helper_requirements_txt import generate_requirements_txt
 from .platforms.current_platform import get_current_platform
 from .platforms.base_platform import CORE
 
-    
+
 def dependency_check(dependency_set=CORE, exit_on_failure=True):
     """
     This function verifies that the dependencies that are needed by the
     framework core are met.
-    
+
     :return: True if the process should exit
     """
     verify_python_version()
-    
+
     disable_warnings()
 
     platform = get_current_platform()
@@ -66,8 +66,8 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     #    Check for missing python modules
     #
     failed_deps = []
-    pip_distributions = pip.get_installed_distributions()
-    
+    pip_distributions = pip.get_installed_distributions(local_only=False)
+
     for w3af_req in platform.PIP_PACKAGES[dependency_set]:
         for dist in pip_distributions:
             if w3af_req.package_name.lower() == dist.project_name.lower():
@@ -88,7 +88,7 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     for os_package in platform.SYSTEM_PACKAGES[dependency_set]:
         if not platform.os_package_is_installed(os_package):
             missing_os_packages.append(os_package)
-    
+
     os_packages = list(set(missing_os_packages))
 
     # All installed?
@@ -106,19 +106,19 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     #
     msg = ('w3af\'s requirements are not met, one or more third-party'
            ' libraries need to be installed.\n\n')
-          
+
     if os_packages:
         missing_pkgs = ' '.join(os_packages)
-        
+
         msg += ('On %s systems please install the following operating'
                 ' system packages before running the pip installer:\n'
                 '    %s %s\n')
         print(msg % (platform.SYSTEM_NAME, platform.PKG_MANAGER_CMD,
                      missing_pkgs))
-        
+
     #
     #    Report all missing python modules
-    #    
+    #
     if failed_deps:
         # pylint: disable=E1101
         msg = ('Your python installation needs the following modules'
@@ -127,33 +127,33 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
         print(msg)
         print('\n')
         # pylint: enable=E1101
-        
+
         #
         #    Report missing pip packages
         #
         not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
         git_pkgs = [fdep.git_src for fdep in failed_deps if fdep.is_git]
-        
+
         msg = ('After installing any missing operating system packages, use'
                ' pip to install the remaining modules:\n')
-        
+
         if not_git_pkgs:
             cmd = generate_pip_install_non_git(platform.PIP_CMD, not_git_pkgs)
             msg += '    %s\n' % cmd
-        
+
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
                 msg += '    %s\n' % generate_pip_install_git(platform.PIP_CMD,
                                                              missing_git_pkg)
-        
+
         print(msg)
-    
+
     msg = 'A script with these commands has been created for you at %s'
     print(msg % script_path)
-    
+
     enable_warnings()
     platform.after_hook()
-    
+
     if exit_on_failure:
         sys.exit(1)
     else:
@@ -171,6 +171,6 @@ def disable_warnings():
 def enable_warnings():
     # Enable warnings once again
     warnings.resetwarnings()
-    
+
     # re-enable the logging module
     logging.disable(logging.NOTSET)
