@@ -120,6 +120,7 @@ class html_file(OutputPlugin):
         """
         self._output_file_name = option_list['output_file'].get_value()
         self._verbose = option_list['verbose'].get_value()
+        self._template = option_list['template'].get_value()
 
     def get_options(self):
         """

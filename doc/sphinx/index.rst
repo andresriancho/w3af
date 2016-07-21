@@ -65,7 +65,8 @@ Contents
    authentication
    common-use-cases
    advanced-use-cases
-   
+   docker
+
    exploitation
    advanced-exploitation
 

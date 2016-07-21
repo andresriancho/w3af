@@ -9,6 +9,7 @@ DOCKER_RUN = ('docker run'
               ' -d'
               ' -v ~/.w3af:/root/.w3af'
               ' -v ~/w3af-shared:/root/w3af-shared'
+              ' -p 44444:44444'
               ' andresriancho/w3af')
 
 

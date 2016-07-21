@@ -218,5 +218,5 @@ class archive_dot_org(CrawlPlugin):
         return """
         This plugin does a search in archive.org and parses the results. It
         then uses the results to find new URLs in the target site. This plugin
-        is a time machine !
+        is a time machine!
         """

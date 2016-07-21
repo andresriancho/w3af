@@ -87,6 +87,6 @@ RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 RUN rm -rf /tmp/pip-build-root
 
-EXPOSE 22
+EXPOSE 22 44444
 
 CMD ["/usr/sbin/sshd", "-D"]

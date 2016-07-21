@@ -79,7 +79,7 @@ class rootMenu(menu):
         """
         # Check if the console output plugin is enabled or not, and warn.
         output_plugins = self._w3af.plugins.get_enabled_plugins('output')
-        if 'console' not in output_plugins:
+        if 'console' not in output_plugins and len(output_plugins) == 0:
             msg = ("\nWarning: You disabled the console output plugin. If you"
                    " start a new scan, the discovered vulnerabilities won\'t be"
                    " printed to the console, we advise you to enable at least"

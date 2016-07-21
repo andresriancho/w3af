@@ -1,7 +1,7 @@
 """
-kali.py
+kali2.py
 
-Copyright 2014 Andres Riancho
+Copyright 2015 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -21,32 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import platform
 
-from .ubuntu1204 import Ubuntu1204
-
-KALI_MESSAGE = '''
-According to Kali's documentation [0] in order to avoid breaking the packaged\
- w3af version you should run the following commands:
-
-cd ~
-apt-get install -y python-pip
-pip install --upgrade pip
-git clone https/github.com/andresriancho/w3af.git
-cd w3af
-./w3af_console
-. /tmp/w3af_dependency_install.sh
-
-[0] http://www.kali.org/kali-monday/bleeding-edge-kali-repositories/
-'''
+from .kali import Kali
 
 
-class Kali(Ubuntu1204):
-    SYSTEM_NAME = 'Kali'
-
-    @staticmethod
-    def after_hook():
-        print(KALI_MESSAGE)
+class Kali2(Kali):
+    SYSTEM_NAME = 'Kali 2.0'
 
     @staticmethod
     def is_current_platform():
-        return 'debian' in platform.dist() and 'kali' in platform.release()
+        return 'Kali' in platform.dist() and '2.0' in platform.dist()
+
 
