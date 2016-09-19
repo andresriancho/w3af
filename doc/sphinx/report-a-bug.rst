@@ -24,7 +24,7 @@ it is a good idea to include `detailed system information <https://gist.githubus
 
 .. code-block:: none
 
-	user@box:~/w3af$ wget http://goo.gl/eXpPDl
+	user@box:~/w3af$ wget http://goo.gl/eXpPDl -O collect-sysinfo.py
 	user@box:~/w3af$ chmod +x collect-sysinfo.py
 	user@box:~/w3af$ ./collect-sysinfo.py
 
