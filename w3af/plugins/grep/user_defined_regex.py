@@ -196,7 +196,7 @@ class user_defined_regex(GrepPlugin):
         one regex), if both are specified, the single_regex will be added to
         the list of regular expressions extracted from the file.
 
-        A list of example regular expressions can be found at:
+        Sample files containing interesting regular expressions can be found at:
             "plugins/grep/user_defined_regex/".
 
         For every match an information message is shown.
