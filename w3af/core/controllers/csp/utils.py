@@ -372,7 +372,7 @@ class DefaultSrcDirective(CSPDirective):
 
         for strictness, value in strictness_levels:
             if self.strictness == strictness \
-                    and (len(self.source_list) > 1 or self.source_list[0] != value):
+                    and (len(self.source_list) > 1 or (self.source_list and self.source_list[0] != value)):
                 vuln = CSPVulnerability(self.vuln_strictness_tpl % value, severity.MEDIUM,
                     'default_src_strictness', self.name)
                 vulns.append(vuln)
