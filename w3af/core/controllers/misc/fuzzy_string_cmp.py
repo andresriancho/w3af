@@ -58,10 +58,10 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
         return False
     else:
         # Bad, we can't optimize anything here
-        return threshold > difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+        return threshold <= difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
     
 def upper_bound_similarity(a, b):
-    return 2.0*(len(a))/(len(a)+len(b))
+    return (2.0*len(a))/(len(a)+len(b))
 
 def fuzzy_equal(a_str, b_str, threshold=0.6):
     """
@@ -104,11 +104,8 @@ def relative_distance(a_str, b_str):
 
 
 if __name__ == "__main__":
-    # Uncomment next function call to generate 'upper_bounds.py' module
-    #_generate_upper_bounds()
-
     # These tests should be reallocated in a test module.
-    import time
+    """import time
     import urllib2
 
     performance_tests = []
@@ -209,5 +206,5 @@ if __name__ == "__main__":
     print '-----------'
     print 'Boolean:', boolean_time_sum / numOfOverallTests
     print 'Original:', original_time_sum / numOfOverallTests
-
+    """
 
