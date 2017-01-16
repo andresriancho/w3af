@@ -506,8 +506,13 @@ def get_clean_body(response):
 
     if response.is_text_or_html():
         url = response.get_url()
-        to_replace = url.url_string.split('/')
-        to_replace.append(url.url_string)
+
+        # The order in which things are replaced matters! First try to replace
+        # the longer strings! If we don't do it like this we might "break" larger
+        # replacements
+        to_replace = [url.url_string]
+        to_replace.extend(url.url_string.split('/'))
+        to_replace.sort(cmp=lambda x, y: cmp(len(y), len(x)))
 
         for repl in to_replace:
             if len(repl) > 6:
