@@ -505,20 +505,32 @@ def get_clean_body(response):
     body = response.body
 
     if response.is_text_or_html():
-        url = response.get_url()
+        base_urls = [response.get_url(),
+                     response.get_url().switch_protocol(),
+                     response.get_uri(),
+                     response.get_uri().switch_protocol()]
+
+        to_replace = []
+        for base_url in base_urls:
+            to_replace.extend([u.url_string for u in base_url.get_directories()])
+            to_replace.extend(base_url.url_string.split('/'))
+            to_replace.extend([base_url.url_string,
+                               base_url.all_but_scheme(),
+                               base_url.get_path_qs(),
+                               base_url.get_path()])
+
+        to_replace = list(set(to_replace))
 
         # The order in which things are replaced matters! First try to replace
         # the longer strings! If we don't do it like this we might "break" larger
         # replacements
-        to_replace = [url.url_string]
-        to_replace.extend(url.url_string.split('/'))
         to_replace.sort(cmp=lambda x, y: cmp(len(y), len(x)))
 
-        for repl in to_replace:
-            if len(repl) > 6:
-                body = body.replace(repl, '')
-                body = body.replace(urllib.unquote_plus(repl), '')
-                body = body.replace(cgi.escape(repl), '')
-                body = body.replace(cgi.escape(urllib.unquote_plus(repl)), '')
+        for to_repl in to_replace:
+            if len(to_repl) > 6:
+                body = body.replace(to_repl, '')
+                body = body.replace(urllib.unquote_plus(to_repl), '')
+                body = body.replace(cgi.escape(to_repl), '')
+                body = body.replace(cgi.escape(urllib.unquote_plus(to_repl)), '')
 
     return body

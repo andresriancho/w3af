@@ -39,7 +39,6 @@ class TestGetCleanBody(unittest.TestCase):
         headers = Headers([('Content-Type', 'text/html')])
         response = HTTPResponse(200, body, headers, url, url)
 
-
         freq = FuzzableRequest(URL('http://w3af.com/?a=1'))
         created_mutants = FakeMutant.create_mutants(freq, [payload], [],
                                                     False, {})

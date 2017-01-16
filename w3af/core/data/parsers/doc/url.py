@@ -552,6 +552,22 @@ class URL(DiskItem):
         """
         self.scheme = protocol
 
+    def switch_protocol(self):
+        """
+        http -> https
+        https -> http
+
+        :return: A copy of the current object, with the protocol switched
+        """
+        proto = self.get_protocol()
+        changed_proto_url = self.copy()
+        if proto == 'https':
+            changed_proto_url.set_protocol('http')
+        else:
+            changed_proto_url.set_protocol('https')
+
+        return changed_proto_url
+
     def get_root_domain(self):
         """
         Get the root domain name. Examples:
