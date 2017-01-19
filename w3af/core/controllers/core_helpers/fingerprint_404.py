@@ -154,7 +154,8 @@ class fingerprint_404(object):
         not_exist_resp_lst = []
         
         for not_exist_resp in imap_unordered(self._send_404, test_urls):
-            not_exist_resp_lst.append(not_exist_resp)
+            four_oh_data = FourOhFourResponseFactory(not_exist_resp)
+            not_exist_resp_lst.append(four_oh_data)
 
         #
         # I have the 404 responses in not_exist_resp_lst, but maybe they
@@ -164,13 +165,12 @@ class fingerprint_404(object):
         # "unique"
         #
         if len(not_exist_resp_lst):
-            http_response = not_exist_resp_lst[0]
-            four_oh_data = FourOhFourResponseFactory(http_response)
+            four_oh_data = not_exist_resp_lst[0]
             self._404_responses.append(four_oh_data)
 
         # And now add the unique responses
         for i in not_exist_resp_lst:
-            for j in not_exist_resp_lst:
+            for j in self._404_responses:
 
                 if i is j:
                     continue
@@ -181,8 +181,7 @@ class fingerprint_404(object):
                 else:
                     # They are no equal, this means that we'll have to add this
                     # one to the 404 responses
-                    four_oh_data = FourOhFourResponseFactory(j)
-                    self._404_responses.append(four_oh_data)
+                    self._404_responses.append(i)
 
         # And I return the ones I need
         msg_fmt = 'The 404 body result database has a length of %s.'
@@ -506,15 +505,32 @@ def get_clean_body(response):
     body = response.body
 
     if response.is_text_or_html():
-        url = response.get_url()
-        to_replace = url.url_string.split('/')
-        to_replace.append(url.url_string)
+        base_urls = [response.get_url(),
+                     response.get_url().switch_protocol(),
+                     response.get_uri(),
+                     response.get_uri().switch_protocol()]
 
-        for repl in to_replace:
-            if len(repl) > 6:
-                body = body.replace(repl, '')
-                body = body.replace(urllib.unquote_plus(repl), '')
-                body = body.replace(cgi.escape(repl), '')
-                body = body.replace(cgi.escape(urllib.unquote_plus(repl)), '')
+        to_replace = []
+        for base_url in base_urls:
+            to_replace.extend([u.url_string for u in base_url.get_directories()])
+            to_replace.extend(base_url.url_string.split('/'))
+            to_replace.extend([base_url.url_string,
+                               base_url.all_but_scheme(),
+                               base_url.get_path_qs(),
+                               base_url.get_path()])
+
+        to_replace = list(set(to_replace))
+
+        # The order in which things are replaced matters! First try to replace
+        # the longer strings! If we don't do it like this we might "break" larger
+        # replacements
+        to_replace.sort(cmp=lambda x, y: cmp(len(y), len(x)))
+
+        for to_repl in to_replace:
+            if len(to_repl) > 6:
+                body = body.replace(to_repl, '')
+                body = body.replace(urllib.unquote_plus(to_repl), '')
+                body = body.replace(cgi.escape(to_repl), '')
+                body = body.replace(cgi.escape(urllib.unquote_plus(to_repl)), '')
 
     return body

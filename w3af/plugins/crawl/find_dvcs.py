@@ -47,17 +47,9 @@ class find_dvcs(CrawlPlugin):
         self._analyzed_dirs = ScalableBloomFilter()
         self._analyzed_filenames = ScalableBloomFilter()
 
-        self._dvcs = {}
-        self._dvcs['git repository'] = {}
-        self._dvcs['git ignore'] = {}
-        self._dvcs['hg repository'] = {}
-        self._dvcs['hg ignore'] = {}
-        self._dvcs['bzr repository'] = {}
-        self._dvcs['bzr ignore'] = {}
-        self._dvcs['svn repository'] = {}
-        self._dvcs['svn ignore'] = {}
-        self._dvcs['cvs repository'] = {}
-        self._dvcs['cvs ignore'] = {}
+        self._dvcs = {'git repository': {}, 'git ignore': {}, 'hg repository': {}, 'hg ignore': {},
+                      'bzr repository': {}, 'bzr ignore': {}, 'svn repository': {}, 'svn ignore': {},
+                      'cvs repository': {}, 'cvs ignore': {}}
 
         self._dvcs['git repository']['filename'] = '.git/index'
         self._dvcs['git repository']['function'] = self.git_index
@@ -94,7 +86,7 @@ class find_dvcs(CrawlPlugin):
         For every directory, fetch a list of files and analyze the response.
 
         :param fuzzable_request: A fuzzable_request instance that contains
-                                    (among other things) the URL to test.
+                                 (among other things) the URL to test.
         """
         domain_path = fuzzable_request.get_url().get_domain_path()
 
@@ -103,7 +95,7 @@ class find_dvcs(CrawlPlugin):
 
             test_generator = self._url_generator(domain_path)
             self.worker_pool.map_multi_args(self._send_and_check,
-                                               test_generator)
+                                            test_generator)
 
     def _url_generator(self, domain_path):
         """
@@ -145,32 +137,33 @@ class find_dvcs(CrawlPlugin):
         """
         http_response = self.http_get_and_parse(repo_url)
 
-        if not is_404(http_response):
+        if is_404(http_response):
+            return
 
-            filenames = repo_get_files(http_response.get_body())
+        filenames = repo_get_files(http_response.get_body())
 
-            parsed_url_set = set()
+        parsed_url_set = set()
 
-            for filename in self._clean_filenames(filenames):
-                test_url = domain_path.url_join(filename)
-                if test_url not in self._analyzed_filenames:
-                    parsed_url_set.add(test_url)
-                    self._analyzed_filenames.add(filename)
+        for filename in self._clean_filenames(filenames):
+            test_url = domain_path.url_join(filename)
+            if test_url not in self._analyzed_filenames:
+                parsed_url_set.add(test_url)
+                self._analyzed_filenames.add(filename)
 
-            self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
+        self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
-            if parsed_url_set:
-                desc = 'A %s was found at: "%s"; this could indicate that'\
-                       ' a %s is accessible. You might be able to download'\
-                       ' the Web application source code.'
-                desc = desc % (repo, http_response.get_url(), repo)
-                
-                v = Vuln('Source code repository', desc, severity.MEDIUM,
-                         http_response.id, self.get_name())
-                v.set_url(http_response.get_url())
-                
-                kb.kb.append(self, repo, v)
-                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+        if parsed_url_set:
+            desc = 'A %s was found at: "%s"; this could indicate that'\
+                   ' a %s is accessible. You might be able to download'\
+                   ' the Web application source code.'
+            desc %= repo, http_response.get_url(), repo
+
+            v = Vuln('Source code repository', desc, severity.MEDIUM,
+                     http_response.id, self.get_name())
+            v.set_url(http_response.get_url())
+
+            kb.kb.append(self, repo, v)
+            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def git_index(self, body):
         """
