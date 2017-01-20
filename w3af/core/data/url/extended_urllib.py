@@ -1052,7 +1052,7 @@ class ExtendedUrllib(object):
         # Sadly this time the error would be fatal since the scan would
         # stop.
         timeout = self.get_timeout(host) * 4
-        self.set_timeout(timeout)
+        self.set_timeout(timeout, host)
 
         req = HTTPRequest(root_url, cookies=True, cache=False,
                           error_handling=False, method='GET', retries=0,
