@@ -180,9 +180,9 @@ class BlindSqliResponseDiff(object):
             
             desc = 'Blind SQL injection was found at: "%s", using'\
                    ' HTTP method %s. The injectable parameter is: "%s"'
-            desc = desc % (mutant.get_url(),
-                           mutant.get_method(),
-                           mutant.get_token_name())
+            desc %= (mutant.get_url(),
+                     mutant.get_method(),
+                     mutant.get_token_name())
             
             v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
                                  severity.HIGH, response_ids, 'blind_sqli',
@@ -212,5 +212,4 @@ class BlindSqliResponseDiff(object):
         self.debug('Result: %s' % cmp_res)
 
         return cmp_res
-
 
