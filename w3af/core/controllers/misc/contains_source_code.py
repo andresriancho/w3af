@@ -72,17 +72,17 @@ SOURCE_CODE = (
     ('#!\/usr', {SHELL}),
     ('#!\/bin', {SHELL}),
 
-    ('import java\.', {JAVA}),
-    ('public class .+\{', {JAVA}),
-    ('package\s\w+\;', {JAVA}),
+    ('(^|\W)import java\.', {JAVA}),
+    ('(^|\W)public class .+\{', {JAVA}),
+    ('(^|\W)package\s\w+\;', {JAVA}),
 
     ('<!--g:render', {GROOVY}),
 
     # Python
-    ('def .*?\(.*?\):\n', {PYTHON}),
+    ('(^|\W)def .*?\(.*?\):(\n|\r)', {PYTHON}),
 
     # Ruby
-    ('class .*?< .*?end', {RUBY}),
+    ('(^|\W)class \w{1,60}\s*<?\s*[a-zA-Z0-9_:]{0,90}.*?\W(def|validates)\s.*?\send($|\W)', {RUBY}),
 )
 
 BLACKLIST = {'xml', 'xpacket'}

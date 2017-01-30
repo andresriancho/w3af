@@ -82,7 +82,7 @@ class TestContainsSourceCode(unittest.TestCase):
         self.assertNotEqual(match, None)
         self.assertEqual(lang, {PYTHON})
 
-    def test_code_ruby(self):
+    def test_code_ruby_01(self):
         source = self.create_response('''class Person < ActiveRecord::Base
                         validates :name, presence: true
                     end''')
@@ -91,10 +91,48 @@ class TestContainsSourceCode(unittest.TestCase):
         self.assertNotEqual(match, None)
         self.assertEqual(lang, {RUBY})
 
-    def test_code_false_positive_remove(self):
+    def test_code_ruby_02(self):
+        source = self.create_response('''class Person
+                        def say_hi
+                            puts 'hi'
+                        end
+                    end''')
+        match, lang = contains_source_code(source)
+
+        self.assertNotEqual(match, None)
+        self.assertEqual(lang, {RUBY})
+
+    def test_code_false_positive_remove_01(self):
         source = self.create_response('var f=_.template("<div class="alert'
                                       ' alert-error <% if (title) { %>'
                                       ' alert-block <% } %>',
+                                      content_type='application/javascript')
+        match, lang = contains_source_code(source)
+        self.assertEqual(match, None)
+
+    def test_code_false_positive_remove_02(self):
+        source = self.create_response('class IPs on VPS or Dedicated Server'
+                                      ' <a href="/seo-hosting/">def</a>'
+                                      ' ga("send',
+                                      content_type='application/javascript')
+        match, lang = contains_source_code(source)
+        self.assertEqual(match, None)
+
+    def test_code_false_positive_remove_03(self):
+        source = self.create_response('class IPs on VPS or Dedicated Server'
+                                      ' <a href="/seo-hosting/"> def </a>'
+                                      ' ga("send',
+                                      content_type='application/javascript')
+        match, lang = contains_source_code(source)
+        self.assertEqual(match, None)
+
+    def test_code_false_positive_remove_04(self):
+        """
+        Will not match because of the </a> before end. End requires a space (\s)
+        before the token.
+        """
+        source = self.create_response('class IPs on VPS or Dedicated Server'
+                                      ' <a href="/seo-hosting/"> def </a>end',
                                       content_type='application/javascript')
         match, lang = contains_source_code(source)
         self.assertEqual(match, None)
