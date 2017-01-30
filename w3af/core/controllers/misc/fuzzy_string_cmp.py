@@ -59,9 +59,11 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     else:
         # Bad, we can't optimize anything here
         return threshold <= difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
-    
+
+
 def upper_bound_similarity(a, b):
     return (2.0*len(a))/(len(a)+len(b))
+
 
 def fuzzy_equal(a_str, b_str, threshold=0.6):
     """
