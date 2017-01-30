@@ -107,10 +107,16 @@ def get_clean_body(mutant, response):
         urlencoded_plus = urllib.quote_plus(mod_value)
         urlencoded_20 = urllib.quote(mod_value)
 
+        # double encoding
+        urlencoded_plus_plus = urllib.quote_plus(urlencoded_plus)
+        urlencoded_20_20 = urllib.quote(urlencoded_20)
+
         to_replace_lst = [mod_value,
                           unquoted,
                           urlencoded_plus,
                           urlencoded_20,
+                          urlencoded_plus_plus,
+                          urlencoded_20_20,
                           cgi_escape(mod_value),
                           cgi_escape(unquoted)]
 
