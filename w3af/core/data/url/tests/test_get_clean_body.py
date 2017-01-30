@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import urllib
 
 from w3af.core.data.url.helpers import get_clean_body
 from w3af.core.data.parsers.doc.url import URL
@@ -48,4 +49,23 @@ class TestGetCleanBody(unittest.TestCase):
         clean_body = get_clean_body(mutant, response)
 
         self.assertEqual(clean_body, body.replace(payload, ''))
+        self.assertIsInstance(clean_body, unicode)
+
+    def test_get_clean_body_encoded(self):
+        payload = 'hello/world'
+
+        body = 'abc %s def' % urllib.urlencode({'a': payload})
+        url = URL('http://w3af.com')
+        headers = Headers([('Content-Type', 'text/html')])
+        response = HTTPResponse(200, body, headers, url, url)
+
+        freq = FuzzableRequest(URL('http://w3af.com/?a=1'))
+        created_mutants = FakeMutant.create_mutants(freq, [payload], [],
+                                                    False, {})
+
+        mutant = created_mutants[0]
+
+        clean_body = get_clean_body(mutant, response)
+
+        self.assertEqual(clean_body, 'abc a= def')
         self.assertIsInstance(clean_body, unicode)

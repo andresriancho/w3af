@@ -97,13 +97,27 @@ def get_clean_body(mutant, response):
         mod_value = smart_unicode(mod_value, errors=PERCENT_ENCODE)
 
         empty = u''
-        unquoted = urllib.unquote_plus(mod_value)
         cgi_escape = cgi.escape
 
-        body = body.replace(mod_value, empty)
-        body = body.replace(unquoted, empty)
-        body = body.replace(cgi_escape(mod_value), empty)
-        body = body.replace(cgi_escape(unquoted), empty)
+        # unquote, just in case...
+        unquoted = urllib.unquote_plus(mod_value)
+
+        # encoding in two different ways since we don't know how the server-side
+        # will encode, and we want to remove both options
+        urlencoded_plus = urllib.quote_plus(mod_value)
+        urlencoded_20 = urllib.quote(mod_value)
+
+        to_replace_lst = [mod_value,
+                          unquoted,
+                          urlencoded_plus,
+                          urlencoded_20,
+                          cgi_escape(mod_value),
+                          cgi_escape(unquoted)]
+
+        to_replace_lst.sort(lambda x, y: cmp(len(y), len(x)))
+
+        for to_replace in to_replace_lst:
+            body = body.replace(to_replace, empty)
 
     return body
 
