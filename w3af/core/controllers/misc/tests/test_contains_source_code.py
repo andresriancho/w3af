@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from w3af.core.controllers.misc.contains_source_code import contains_source_code
-from w3af.core.controllers.misc.contains_source_code import PHP, PYTHON, RUBY
+from w3af.core.controllers.misc.contains_source_code import PHP, PYTHON, RUBY, JAVA
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
@@ -82,6 +82,19 @@ class TestContainsSourceCode(unittest.TestCase):
         self.assertNotEqual(match, None)
         self.assertEqual(lang, {PYTHON})
 
+    def test_code_java(self):
+        source = self.create_response('''
+                 public class Person{
+                    public void printPerson() {
+                      System.out.println(name + ", " + this.getAge());
+                    }
+                 }
+                 ''')
+        match, lang = contains_source_code(source)
+
+        self.assertNotEqual(match, None)
+        self.assertEqual(lang, {JAVA})
+
     def test_code_ruby_01(self):
         source = self.create_response('''class Person < ActiveRecord::Base
                         validates :name, presence: true
@@ -102,7 +115,7 @@ class TestContainsSourceCode(unittest.TestCase):
         self.assertNotEqual(match, None)
         self.assertEqual(lang, {RUBY})
 
-    def test_code_false_positive_remove_01(self):
+    def test_code_false_positive_ruby_01(self):
         source = self.create_response('var f=_.template("<div class="alert'
                                       ' alert-error <% if (title) { %>'
                                       ' alert-block <% } %>',
@@ -110,7 +123,7 @@ class TestContainsSourceCode(unittest.TestCase):
         match, lang = contains_source_code(source)
         self.assertEqual(match, None)
 
-    def test_code_false_positive_remove_02(self):
+    def test_code_false_positive_ruby_02(self):
         source = self.create_response('class IPs on VPS or Dedicated Server'
                                       ' <a href="/seo-hosting/">def</a>'
                                       ' ga("send',
@@ -118,7 +131,7 @@ class TestContainsSourceCode(unittest.TestCase):
         match, lang = contains_source_code(source)
         self.assertEqual(match, None)
 
-    def test_code_false_positive_remove_03(self):
+    def test_code_false_positive_ruby_03(self):
         source = self.create_response('class IPs on VPS or Dedicated Server'
                                       ' <a href="/seo-hosting/"> def </a>'
                                       ' ga("send',
@@ -126,7 +139,7 @@ class TestContainsSourceCode(unittest.TestCase):
         match, lang = contains_source_code(source)
         self.assertEqual(match, None)
 
-    def test_code_false_positive_remove_04(self):
+    def test_code_false_positive_ruby_04(self):
         """
         Will not match because of the </a> before end. End requires a space (\s)
         before the token.
@@ -134,5 +147,30 @@ class TestContainsSourceCode(unittest.TestCase):
         source = self.create_response('class IPs on VPS or Dedicated Server'
                                       ' <a href="/seo-hosting/"> def </a>end',
                                       content_type='application/javascript')
+        match, lang = contains_source_code(source)
+        self.assertEqual(match, None)
+
+    def test_code_false_positive_java_01(self):
+        """
+        Java source code regex matches bootstrap.js
+        """
+        source = self.create_response("""PUBLIC CLASS DEFINITION
+                                      // ==============================
+
+                                      var Button = function (element, options) {
+                                        this.$element  = $(element)
+                                        this.options   = $.extend({}, Button.DEFAULTS, options)
+                                        this.isLoading = false
+                                      }
+                                      """,
+                                      content_type='application/javascript')
+        match, lang = contains_source_code(source)
+        self.assertEqual(match, None)
+
+    def test_code_false_positive_java_02(self):
+        source = self.create_response('''
+                 public class Person{
+                 }
+                 ''')
         match, lang = contains_source_code(source)
         self.assertEqual(match, None)

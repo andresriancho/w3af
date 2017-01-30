@@ -73,7 +73,7 @@ SOURCE_CODE = (
     ('#!\/bin', {SHELL}),
 
     ('(^|\W)import java\.', {JAVA}),
-    ('(^|\W)public class .+\{', {JAVA}),
+    ('(^|\W)public class \w{1,60}\s?\{\s.*\Wpublic', {JAVA}),
     ('(^|\W)package\s\w+\;', {JAVA}),
 
     ('<!--g:render', {GROOVY}),
