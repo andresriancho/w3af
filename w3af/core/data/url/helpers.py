@@ -114,6 +114,8 @@ def get_clean_body(mutant, response):
                           cgi_escape(mod_value),
                           cgi_escape(unquoted)]
 
+        # uniq sorted
+        to_replace_lst = list(set(to_replace_lst))
         to_replace_lst.sort(lambda x, y: cmp(len(y), len(x)))
 
         for to_replace in to_replace_lst:
