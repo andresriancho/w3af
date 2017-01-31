@@ -220,10 +220,6 @@ class ConsoleUI(object):
     def _get_history(self):
         return self._context.get_history()
 
-    def _setHistory(self, hist):
-        path = self._context.get_path()
-        self._history[path] = (hist, [])
-
     def _handleKey(self, key):
         try:
             if key in self._handlers:
