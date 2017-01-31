@@ -60,6 +60,6 @@ class TestSQLMapUpdate(unittest.TestCase):
                'Worse case scenario you will have to setup the remote:\n'
                '%s')
 
-        msg = msg % (maintain_str, setup_str)
+        msg %= (maintain_str, setup_str)
         
         self.assertLess(days, 30, msg)
