@@ -471,5 +471,5 @@ if __name__ == "__main__":
             200, 'my data likes me', {}, url_instance, url_instance, _id=5)
     ]
 
-    cl_win = ClusterCellWindow(data=data)
+    cl_win = ClusterCellWindow(None, data=data)
     main()

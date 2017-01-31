@@ -582,6 +582,7 @@ class FileDiff(object):
                 continue
             if change[1] > end_line:
                 break
+            # pylint: disable=E1136
             if last_change and change[1] <= last_change[2]:
                 last_change = ("conflict", last_change[1],
                                max(last_change[2], change[2]))
@@ -589,6 +590,7 @@ class FileDiff(object):
                 if last_change:
                     draw_change(last_change)
                 last_change = change
+            # pylint: enable=E1136
         if last_change:
             draw_change(last_change)
 
