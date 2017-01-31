@@ -40,7 +40,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
                      # We need 0.1.8 because of mitmproxy
-                     PIPDependency('pyasn1', 'pyasn1', '0.1.8'),
+                     PIPDependency('pyasn1', 'pyasn1', '0.1.9'),
 
                      PIPDependency('lxml', 'lxml', '3.4.4'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
@@ -72,7 +72,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      # Only used by the REST API, but in the future the console
                      # and GUI will consume it so it's ok to put this here
                      PIPDependency('Flask', 'Flask', '0.10.1'),
-                     PIPDependency('yaml', 'PyYAML', '3.11'),
+                     PIPDependency('yaml', 'PyYAML', '3.12'),
 
                      # tldextract extracts the tld from any domain name
                      PIPDependency('tldextract', 'tldextract', '1.7.2'),
