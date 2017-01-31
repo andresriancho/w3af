@@ -55,7 +55,7 @@ class TestSQLMapUpdate(unittest.TestCase):
         
         msg = ('\nYou need to update the sqlmap installation that\'s embedded'
                ' with w3af. If you run "git remote" and sqlmap appears in the'
-               'output just run:\n'
+               ' output just run:\n'
                '%s\n'
                'Worse case scenario you will have to setup the remote:\n'
                '%s')
