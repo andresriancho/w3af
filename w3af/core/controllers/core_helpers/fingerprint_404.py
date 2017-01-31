@@ -226,10 +226,12 @@ class fingerprint_404(object):
         :param http_response: The HTTP response which we want to know if it
                                   is a 404 or not.
         """
+        domain_path = http_response.get_url().get_domain_path()
+        extension = http_response.get_url().get_extension()
+
         #
         #   First we handle the user configured exceptions:
         #
-        domain_path = http_response.get_url().get_domain_path()
         if domain_path in cf.cf.get('always_404'):
             return True
         elif domain_path in cf.cf.get('never_404'):
@@ -257,7 +259,8 @@ class fingerprint_404(object):
         #    return 404 codes for files that do not exist, AND this is NOT a 404
         #    then we're return False!
         #
-        if domain_path in self._directory_uses_404_codes and \
+        path_extension = (domain_path, extension)
+        if path_extension in self._directory_uses_404_codes and \
         http_response.get_code() != 404:
             return False
 
@@ -458,9 +461,12 @@ class fingerprint_404(object):
         response_404 = self._send_404(url_404)
         clean_response_404_body = get_clean_body(response_404)
 
+        path_extension = (url_404.get_domain_path(),
+                          url_404.get_extension())
+
         if response_404.get_code() == 404 and \
-        url_404.get_domain_path() not in self._directory_uses_404_codes:
-            self._directory_uses_404_codes.add(url_404.get_domain_path())
+        path_extension not in self._directory_uses_404_codes:
+            self._directory_uses_404_codes.add(path_extension)
 
         return fuzzy_equal(clean_response_404_body, clean_resp_body,
                            IS_EQUAL_RATIO)
