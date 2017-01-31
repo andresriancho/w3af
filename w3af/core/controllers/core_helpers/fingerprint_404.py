@@ -176,8 +176,9 @@ class fingerprint_404(object):
                     continue
 
                 if fuzzy_equal(i.body, j.body, IS_EQUAL_RATIO):
-                    # They are equal, just ignore it
-                    continue
+                    # i already exists in the self._404_responses, no need
+                    # to compare any further
+                    break
                 else:
                     # They are no equal, this means that we'll have to add this
                     # one to the 404 responses
