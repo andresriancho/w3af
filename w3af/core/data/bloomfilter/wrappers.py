@@ -40,7 +40,9 @@ class GenericBloomFilter(object):
         self.bf = None
 
     def __contains__(self, key):
+        # pylint: disable=E1135
         return key in self.bf
+        # pylint: enable=E1135
 
     def __len__(self):
         return len(self.bf)

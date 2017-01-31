@@ -94,10 +94,12 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
         """
         lst = []
 
+        # pylint: disable=E1133
         for k, v in self.items():
             to_app = u'%s%s%s' % (k, key_val_sep,
                                   smart_unicode(v, encoding=UTF8))
             lst.append(to_app)
+        # pylint: enable=E1133
 
         return pair_sep.join(lst)
 
@@ -109,9 +111,11 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
                     * The token path
                     * The setter to modify the value
         """
+        # pylint: disable=E1133
         for k, v in self.items():
             if self.token_filter((k,), v):
                 yield k, v, (k,), partial(self.__setitem__, k)
+        # pylint: enable=E1133
 
     def __str__(self):
         """
@@ -136,11 +140,13 @@ class NonRepeatKeyValueContainer(DataContainer, OrderedDict):
 
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
+            # pylint: disable=E1133
             for k, v in self.items():
                 if isinstance(v, DataToken):
                     dt_str = '%s=%s' % (filter_non_printable(v.get_name()),
                                         filter_non_printable(v.get_value()))
                     return '...%s...' % dt_str[:self.MAX_PRINTABLE]
+            # pylint: enable=E1133
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved

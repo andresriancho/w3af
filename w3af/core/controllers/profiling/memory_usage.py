@@ -61,8 +61,10 @@ def dump_objects():
     """
     This is a thread target which every X minutes
     """
+    # pylint: disable=E0401
     from meliae import scanner
     scanner.dump_all_objects(PROFILING_OUTPUT_FMT % get_filename_fmt())
+    # pylint: enable=E0401
 
 
 @should_profile_memory

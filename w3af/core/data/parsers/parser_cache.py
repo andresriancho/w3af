@@ -24,7 +24,9 @@ from __future__ import with_statement, print_function
 import atexit
 import threading
 
+# pylint: disable=E0401
 from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
 
 from w3af.core.controllers.threads.is_main_process import is_main_process
 from w3af.core.controllers.exceptions import BaseFrameworkException

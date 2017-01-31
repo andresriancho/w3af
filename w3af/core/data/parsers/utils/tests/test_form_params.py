@@ -101,9 +101,11 @@ class TestFormParams(unittest.TestCase):
                 form_input_type = new_form.get_parameter_type(elem_name)
                 self.assertEqual(form_input_type, elem_type)
 
+                # pylint: disable=E1133
                 for value in values:
                     if elem_type == INPUT_TYPE_SELECT:
                         self.assertIn(value, elem['values'])
+                # pylint: enable=E1133
 
     def test_variants_do_not_modify_original(self):
         bigform_data = form_with_radio + form_select_misc

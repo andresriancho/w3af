@@ -177,10 +177,12 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         self.assertEqual(self.uri_opener.set_timeout.call_count, 1)
 
+        # pylint: disable=E1136
         rtt = self.uri_opener.get_average_rtt()[0]
         adjusted_tout = self.uri_opener.set_timeout.call_args[0][0]
         expected_tout = TIMEOUT_MULT_CONST * rtt
         delta = rtt * 0.2
+        # pylint: enable=E1136
 
         self.assertGreaterEqual(adjusted_tout, expected_tout - delta)
         self.assertLessEqual(adjusted_tout, expected_tout + delta)

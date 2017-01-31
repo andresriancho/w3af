@@ -264,9 +264,11 @@ class TestXUrllib(unittest.TestCase):
         if not hasattr(ssl, 'PROTOCOL_SSLv3'):
             return
 
+        # pylint: disable=E1101
         ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv3)
         ssl_daemon.start()
         ssl_daemon.wait_for_start()
+        # pylint: disable=E1101
 
         port = ssl_daemon.get_port()
 

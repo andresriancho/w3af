@@ -108,6 +108,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
                     * The token path
                     * The setter to modify the value
         """
+        # pylint: disable=E1133
         for k, v in self.iteritems():
             for idx, ele in enumerate(v):
 
@@ -115,6 +116,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
                 if self.token_filter(token_path, ele):
                     yield k, ele, token_path, partial(v.__setitem__, idx)
+        # pylint: enable=E1133
 
     def _to_str_with_separators(self, key_val_sep, pair_sep, errors='strict'):
         """
@@ -123,11 +125,13 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         lst = []
 
+        # pylint: disable=E1133
         for key, value_list in self.items():
             for value in value_list:
                 value = smart_unicode(value, encoding=UTF8, errors=errors)
                 to_app = u'%s%s%s' % (key, key_val_sep, value)
                 lst.append(to_app)
+        # pylint: enable=E1133
 
         return pair_sep.join(lst)
 
@@ -140,12 +144,14 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
+            # pylint: disable=E1133
             for k, v in self.items():
                 for ele in v:
                     if isinstance(ele, DataToken):
                         dt_str = '%s=%s' % (filter_non_printable(ele.get_name()),
                                             filter_non_printable(ele.get_value()))
                         return '...%s...' % dt_str[:self.MAX_PRINTABLE]
+            # pylint: enable=E1133
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved

@@ -254,10 +254,12 @@ class FormParameters(OrderedDict):
                 if isinstance(v, FileFormField):
                     file_keys.add(k)
 
+        # pylint: disable=E1133
         for k, v_lst in self.items():
             for v in v_lst:
                 if is_file_like(v):
                     file_keys.add(k)
+        # pylint: enable=E1133
 
         return list(file_keys)
 
@@ -596,10 +598,12 @@ class FormParameters(OrderedDict):
     def __repr__(self):
         items = []
 
+        # pylint: disable=E1133
         for key, value_list in self.iteritems():
             for value in value_list:
                 kv = "'%s': '%s'" % (key, value)
                 items.append(kv)
+        # pylint: enable=E1133
 
         data = ', '.join(items)
 
