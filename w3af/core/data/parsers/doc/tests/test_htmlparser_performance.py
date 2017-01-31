@@ -69,7 +69,9 @@ class TestHTMLParserPerformance(unittest.TestCase):
         time.sleep(360)
 
     def measure_memory(self, _id):
+        # pylint: disable=E0401
         from meliae import scanner, loader
+        # pylint: enable=E0401
         scanner.dump_all_objects(self.MEMORY_DUMP % _id)
 
         om = loader.load(self.MEMORY_DUMP % _id)

@@ -27,8 +27,10 @@ import functools
 from functools import wraps
 
 import w3af.core.controllers.output_manager as om
-from darts.lib.utils.lru import SynchronizedLRUDict
 
+# pylint: disable=E0401
+from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
 
 def runonce(exc_class=Exception):
     """

@@ -30,7 +30,9 @@ from collections import namedtuple
 from functools import wraps
 from itertools import izip_longest
 
+# pylint: disable=E0401
 from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
