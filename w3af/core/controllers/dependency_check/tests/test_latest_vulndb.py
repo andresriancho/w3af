@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import pkg_resources
 
-from yolk.yolklib import get_highest_version, Distributions
+from yolk.yolklib import get_highest_version, get_distributions, get_highest_installed
 from yolk.pypi import CheeseShop
 
 MESSAGE = ('There is a new vulndb available at pypi! These are the steps'
@@ -35,12 +35,11 @@ MESSAGE = ('There is a new vulndb available at pypi! These are the steps'
 
 class TestLatestVulnDB(unittest.TestCase):
     def test_latest_vulndb(self):
-        dists = Distributions()
         pkg = 'vulndb'
         found = None
         pypi = CheeseShop(False)
-        all_dists = dists.get_distributions('all', pkg,
-                                            dists.get_highest_installed(pkg))
+        all_dists = get_distributions('all', pkg,
+                                      get_highest_installed(pkg))
 
         for dist, active in all_dists:
             project_name, versions = pypi.query_versions_pypi(dist.project_name)
@@ -52,8 +51,7 @@ class TestLatestVulnDB(unittest.TestCase):
                 newest = get_highest_version(versions)
                 if newest != dist.version:
 
-                    #We may have newer than what PyPI knows about
-
+                    # We may have newer than what PyPI knows about
                     if pkg_resources.parse_version(dist.version) < \
                     pkg_resources.parse_version(newest):
                         found = True
