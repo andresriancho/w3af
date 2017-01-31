@@ -1,16 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   This file contains identification data to identify WordPress versions.
   http://wordpress.org/download/release-archive/
 
-  Position is important, DO NOT change anything unless you know what you are doing :)
+  Position is important, DO NOT change anything unless you know what you are doing :p
 -->
-
-<wp-versions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:noNamespaceSchemaLocation="wp_versions.xsd">
+<wp-versions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wp_versions.xsd">
 
   <file src="readme.html">
+    <hash md5="df0f4d66b59b3338a5d012d52bc435fa">
+      <version>4.6.1</version>
+    </hash>
+    <hash md5="03f530e9ec1ab1735e062d38149ff4ab">
+      <version>4.5.4</version>
+    </hash>
+    <hash md5="29c8aa59c025e67a8ac1d7a2270859ae">
+      <version>4.5.3</version>
+    </hash>
+    <hash md5="d7d38b02f37be897fca290cfacfba50a">
+      <version>4.4.5</version>
+    </hash>
+    <hash md5="3d896637a80f2816b92684ae9276cddd">
+      <version>4.3.6</version>
+    </hash>
+    <hash md5="162ee7badad63243dfe7c4679af1c019">
+      <version>4.2.10</version>
+    </hash>
+    <hash md5="fb4c2052b147355ba0b658d7860c37a5">
+      <version>4.1.13</version>
+    </hash>
+    <hash md5="01054cfb251b2bd00dc51f3a1c4beb5d">
+      <version>4.0.13</version>
+    </hash>
+    <hash md5="38cbc7bd229691e2f7570f39e2ed79f0">
+      <version>3.9.14</version>
+    </hash>
+    <hash md5="fbf520feecde27820e9f27ed409440d5">
+      <version>3.8.16</version>
+    </hash>
+    <hash md5="c6719b2bf475a6adfc49fd309935d0f4">
+      <version>3.7.16</version>
+    </hash>
+    <hash md5="51ddc54e156a2eb1178dde690701afe3">
+      <version>4.5.2</version>
+    </hash>
+    <hash md5="5a06021dcac8af1d9790c5a3927d5235">
+      <version>4.5.1</version>
+    </hash>
+    <hash md5="7abbf8d3edc718acefcbe963ecb4eb61">
+      <version>4.5</version>
+    </hash>
+    <hash md5="02c45477bc7ab7d9ab792919f41833cc">
+      <version>4.4.4</version>
+    </hash>
+    <hash md5="bb98b2cfe4e40d32280f8e79f18a3171">
+      <version>4.4.3</version>
+    </hash>
+    <hash md5="c17664e85bfe1b94a71597f49af06f77">
+      <version>4.4.2</version>
+    </hash>
+    <hash md5="4aa090adebb81f9d0aeb38e1fd9ce2ec">
+      <version>4.4.1</version>
+    </hash>
+    <hash md5="30d62b21a621e81280b10e73945a5c38">
+      <version>4.4</version>
+    </hash>
+    <hash md5="f957307acd12e95204a2c383272ce0fd">
+      <version>4.3.5</version>
+    </hash>
+     <hash md5="06c8085308f4e22411c477710338518c">
+      <version>4.3.4</version>
+    </hash>
+    <hash md5="324635de8b1d97e1e51d22b2dd79d472">
+      <version>4.3.3</version>
+    </hash>
+    <hash md5="80e2027d2ae1394172820adc117d51af">
+      <version>4.3.2</version>
+    </hash>
+    <hash md5="29c26e3150a452ccea556ee308935691">
+      <version>4.3.1</version>
+    </hash>
+    <hash md5="0d302db33ba0e49aaac1698423ef4b54">
+      <version>4.3</version>
+    </hash>
+    <hash md5="7346ab0a4d46d23cef6b6888a0727260">
+      <version>4.2.9</version>
+    </hash>
+    <hash md5="6adca796716ba77896b2a68c16ae99f2">
+      <version>4.2.8</version>
+    </hash>
+    <hash md5="60598928e506e91491f9322e94cf52a6">
+      <version>4.2.7</version>
+    </hash>
+    <hash md5="3296a741eaf6388b41f2b1e3d78783b8">
+      <version>4.2.6</version>
+    </hash>
+    <hash md5="37e612ca4b342f682e0ad48b78de6cc9">
+      <version>4.2.5</version>
+    </hash>
+    <hash md5="31053c9e79e9e63bc76b8eb92f68ec75">
+      <version>4.2.4</version>
+    </hash>
+    <hash md5="3ed7c1a6e718ccce554978fdaab6526a">
+      <version>4.2.3</version>
+    </hash>
     <hash md5="8592124f91d6da8273fc42b419f384b0">
       <version>4.2.2</version>
     </hash>
@@ -19,6 +112,27 @@
     </hash>
     <hash md5="ded215e7acec9f6d04f3e370f486d3aa">
       <version>4.2</version>
+    </hash>
+    <hash md5="b0289dd7b86fb56f07708bb14f3795fc">
+      <version>4.1.1</version>
+    </hash>
+    <hash md5="6c1415726fe2f04ad0157c6174d1f734">
+      <version>4.1.12</version>
+    </hash>
+    <hash md5="04815654ef433ae5b019786e7c3753f1">
+      <version>4.1.10</version>
+    </hash>
+    <hash md5="db5c7b4f7bab8f481dbc78262bb92c2b">
+      <version>4.1.9</version>
+    </hash>
+    <hash md5="97fa4d86c9b424b8810f872d1803d118">
+      <version>4.1.8</version>
+    </hash>
+    <hash md5="f91912f2fad5f1383927c9e98d3a7746">
+      <version>4.1.7</version>
+    </hash>
+    <hash md5="0b91870a4cc0857bbcd9c140791ddede">
+      <version>4.1.6</version>
     </hash>
     <hash md5="30215f440132ce7414c4c48d1f520767">
       <version>4.1.5</version>
@@ -38,6 +152,27 @@
     <hash md5="321aad4ba63043f888cb072cedf9ef78">
       <version>4.1</version>
     </hash>
+    <hash md5="21a788d3e8b7945c20a47b975b3fc915">
+      <version>4.0.12</version>
+    </hash>
+    <hash md5="1b7fdd91e1cea1cb18779262e7b13dd0">
+      <version>4.0.11</version>
+    </hash>
+    <hash md5="ac4edd239f424cd811d0bb0097354405">
+      <version>4.0.10</version>
+    </hash>
+    <hash md5="288f36185879e687f7cae3a7a41f8d6c">
+      <version>4.0.9</version>
+    </hash>
+    <hash md5="009dd49817e70b9859b50d7d7e2b8152">
+      <version>4.0.8</version>
+    </hash>
+    <hash md5="4ad554f864ffaf1ac491a610ba054e49">
+      <version>4.0.7</version>
+    </hash>
+    <hash md5="62a283e6ecb4bb247123392312469b40">
+      <version>4.0.6</version>
+    </hash>
     <hash md5="1adf30a1d6fe172f37da7dca83496c7d">
       <version>4.0.5</version>
     </hash>
@@ -55,6 +190,27 @@
     </hash>
     <hash md5="f00855fca05f89294d0fcee6bebea64a">
       <version>4.0</version>
+    </hash>
+    <hash md5="ae364ca23dae20cbdbfa5f861aa70e13">
+      <version>3.9.13</version>
+    </hash>
+    <hash md5="5cb6e5fcb570702e99792352d0288a8a">
+      <version>3.9.12</version>
+    </hash>
+    <hash md5="342344249a8f5cbfb205262aaf353a16">
+      <version>3.9.11</version>
+    </hash>
+    <hash md5="d517492c730895ce405875758f5942b3">
+      <version>3.9.10</version>
+    </hash>
+    <hash md5="87f4b1dd4ea5e17b30233722077adb0c">
+      <version>3.9.9</version>
+    </hash>
+    <hash md5="c4371f9433505dd8cea5f03bf5e6c328">
+      <version>3.9.8</version>
+    </hash>
+    <hash md5="1a6acdaa1de27568ce672ff9748914e0">
+      <version>3.9.7</version>
     </hash>
     <hash md5="2e7463a0999c6495b6d1c79a48c81d46">
       <version>3.9.6</version>
@@ -76,6 +232,27 @@
     </hash>
     <hash md5="84b54c54aa48ae72e633685c17e67457">
       <version>3.9</version>
+    </hash>
+    <hash md5="3abfa03d4f3a5a52f55ddc31fc536933">
+      <version>3.8.15</version>
+    </hash>
+    <hash md5="e55306288cf2edc63e25414fbb22de37">
+      <version>3.8.14</version>
+    </hash>
+    <hash md5="6d479ec8dfb4917d96f3cee805cd36ae">
+      <version>3.8.13</version>
+    </hash>
+    <hash md5="2d2914c37b51e6f266ab50b561574dd6">
+      <version>3.8.12</version>
+    </hash>
+    <hash md5="5bbd02dd56f85902dfe6f79081bc1e14">
+      <version>3.8.11</version>
+    </hash>
+    <hash md5="ebdf3445a03dca2d2f3d4097a3db9e30">
+      <version>3.8.10</version>
+    </hash>
+    <hash md5="38ce781f075385a61979a705ee120de6">
+      <version>3.8.9</version>
     </hash>
     <hash md5="eef2236f174830a5ea4ef6346c9b6d23">
       <version>3.8.8</version>
@@ -103,6 +280,27 @@
     </hash>
     <hash md5="38ee273095b8f25b9ffd5ce5018fc4f0">
       <version>3.8</version>
+    </hash>
+    <hash md5="43687e50ed6f31595eb912e27716c130">
+      <version>3.7.15</version>
+    </hash>
+    <hash md5="87926a66b3e42919c6d47fe9d8655287">
+      <version>3.7.14</version>
+    </hash>
+    <hash md5="81fc07a5d7ffed7de5523d31787718ae">
+      <version>3.7.13</version>
+    </hash>
+    <hash md5="848745041001ecc0833a5cb09d9e1240">
+      <version>3.7.12</version>
+    </hash>
+    <hash md5="375f2e632c542152037551a335fda8c4">
+      <version>3.7.11</version>
+    </hash>
+    <hash md5="985a1a42445325fc2f7d6bd121d19696">
+      <version>3.7.10</version>
+    </hash>
+    <hash md5="24316a634083214fd1c4b99472ef8fbd">
+      <version>3.7.9</version>
     </hash>
     <hash md5="2bc39c43b8540a7fedeb7bbd9de1ce58">
       <version>3.7.8</version>
@@ -188,7 +386,7 @@
     <hash md5="0538342b887f11ed4a306d3e7c7d6ea7">
       <version>3.0.2</version>
     </hash>
-    <hash md5=" a73cac84b8b9a99377917a6974c9eea2">
+    <hash md5="a73cac84b8b9a99377917a6974c9eea2">
       <version>3.0.1</version>
     </hash>
     <hash md5="9ea06ab0184049bf4ea2410bf51ce402">
@@ -202,24 +400,57 @@
     </hash>
   </file>
 
+  <file src="wp-includes/css/editor.min.css">
+    <hash md5="eeae1118610e5531c31ba2bcb9307e53">
+      <version>4.6.1</version>
+    </hash>
+    <hash md5="7f1d9aa97951aa4ef795807cacd48ed8">
+      <version>4.6</version>
+    </hash>
+  </file>
+
+  <file src="wp-includes/js/wp-emoji-loader.min.js">
+    <hash md5="4499553cf177cb964b0df8c445ebc798">
+      <version>4.5</version>
+    </hash>
+    <hash md5="d528caab721209ac3e971fd97384379d">
+      <version>4.4.3</version>
+    </hash>
+    <hash md5="2a684c8e10b5294903e28dcd9cac377b">
+      <version>4.4.2</version>
+    </hash>
+    <hash md5="8569719eaedca791a2136e7bad07de29">
+      <version>4.4.1</version>
+    </hash>
+    <hash md5="05fa167592d86e9c03dc30b4f868c00d">
+      <version>4.4</version>
+    </hash>
+  </file>
+
+  <file src="wp-includes/js/mediaelement/mediaelement-and-player.min.js">
+    <hash md5="7c839ada5992116eb525cabad56fec5a">
+      <version>4.3.4</version>
+    </hash>
+    <hash md5="906a6c1b6d7568099ef0358ecafdd754">
+      <version>4.2.8</version>
+    </hash>
+  </file>
+
   <file src="wp-includes/js/tinymce/wp-tinymce.js.gz">
+    <hash md5="40de3da265b56fb06463a946ccc6aa40">
+      <version>4.5</version>
+    </hash>
+    <hash md5="b8177e0d45cb3b1f1f369148b64e9cdb">
+      <version>4.3</version>
+    </hash>
     <hash md5="937d1ec0bf894d9686332fc3f71e6d22">
       <version>4.2.2</version>
-    </hash>
-    <hash md5="f3e951b15db00c5e82cb46f6d941104f">
-      <version>4.1.5</version>
     </hash>
     <hash md5="66ff6b408c58c3207ff4b20e75ec5e68">
       <version>4.1</version>
     </hash>
-    <hash md5="e0a1a03f8f8c38df813528fe5bc7f913">
-      <version>4.0.5</version>
-    </hash>
     <hash md5="21f15ceb6c245e6dc0edc510761049ba">
       <version>4.0</version>
-    </hash>
-    <hash md5="5e93aac0321c9a2b8e95e3826d32ba13">
-      <version>3.9.6</version>
     </hash>
     <hash md5="1d52314b1767c557b7232ae192c80318">
       <version>3.9</version>
@@ -250,6 +481,16 @@
       <version>3.4.2</version>
     </hash>
   </file>
+
+  <file src="wp-admin/js/customize-nav-menus.min.js">
+    <hash md5="0bc26c3f8248b01d3431b73ac6d886a7">
+      <version>4.3.2</version>
+    </hash>
+    <hash md5="b19dec30505b46afbc06a72e9fc175e6">
+      <version>4.3.1</version>
+    </hash>
+  </file>
+
 
   <file src="wp-admin/js/customize-controls.js">
     <hash md5="aa0d38bd6f590ad8c3126074145b1bf1">
