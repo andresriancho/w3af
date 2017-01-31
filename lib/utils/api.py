@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
+import contextlib
 import logging
 import os
 import re
 import shlex
+import socket
 import sqlite3
 import sys
 import tempfile
@@ -30,11 +32,15 @@ from lib.core.data import logger
 from lib.core.datatype import AttribDict
 from lib.core.defaults import _defaults
 from lib.core.enums import CONTENT_STATUS
+from lib.core.enums import MKSTEMP_PREFIX
 from lib.core.enums import PART_RUN_CONTENT_TYPES
 from lib.core.exception import SqlmapConnectionException
 from lib.core.log import LOGGER_HANDLER
 from lib.core.optiondict import optDict
+from lib.core.settings import RESTAPI_DEFAULT_ADAPTER
 from lib.core.settings import IS_WIN
+from lib.core.settings import RESTAPI_DEFAULT_ADDRESS
+from lib.core.settings import RESTAPI_DEFAULT_PORT
 from lib.core.subprocessng import Popen
 from lib.parse.cmdline import cmdLineParser
 from thirdparty.bottle.bottle import error as return_error
@@ -44,9 +50,6 @@ from thirdparty.bottle.bottle import post
 from thirdparty.bottle.bottle import request
 from thirdparty.bottle.bottle import response
 from thirdparty.bottle.bottle import run
-
-RESTAPI_SERVER_HOST = "127.0.0.1"
-RESTAPI_SERVER_PORT = 8775
 
 
 # global settings
@@ -161,6 +164,8 @@ class Task(object):
     def engine_start(self):
         if os.path.exists("sqlmap.py"):
             self.process = Popen(["python", "sqlmap.py", "--pickled-options", base64pickle(self.options)], shell=False, close_fds=not IS_WIN)
+        elif os.path.exists(os.path.join(os.getcwd(), "sqlmap.py")):
+            self.process = Popen(["python", "sqlmap.py", "--pickled-options", base64pickle(self.options)], shell=False, cwd=os.getcwd(), close_fds=not IS_WIN)
         else:
             self.process = Popen(["sqlmap", "--pickled-options", base64pickle(self.options)], shell=False, close_fds=not IS_WIN)
 
@@ -176,10 +181,12 @@ class Task(object):
 
     def engine_kill(self):
         if self.process:
-            self.process.kill()
-            return self.process.wait()
-        else:
-            return None
+            try:
+                self.process.kill()
+                return self.process.wait()
+            except:
+                pass
+        return None
 
     def engine_get_id(self):
         if self.process:
@@ -220,7 +227,7 @@ class StdDbOut(object):
                     # Ignore all non-relevant messages
                     return
 
-            output = conf.database_cursor.execute(
+            output = conf.databaseCursor.execute(
                 "SELECT id, status, value FROM data WHERE taskid = ? AND content_type = ?",
                 (self.taskid, content_type))
 
@@ -228,25 +235,25 @@ class StdDbOut(object):
             if status == CONTENT_STATUS.COMPLETE:
                 if len(output) > 0:
                     for index in xrange(len(output)):
-                        conf.database_cursor.execute("DELETE FROM data WHERE id = ?",
+                        conf.databaseCursor.execute("DELETE FROM data WHERE id = ?",
                                                      (output[index][0],))
 
-                conf.database_cursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)",
+                conf.databaseCursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)",
                                              (self.taskid, status, content_type, jsonize(value)))
                 if kb.partRun:
                     kb.partRun = None
 
             elif status == CONTENT_STATUS.IN_PROGRESS:
                 if len(output) == 0:
-                    conf.database_cursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)",
+                    conf.databaseCursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)",
                                                  (self.taskid, status, content_type,
                                                   jsonize(value)))
                 else:
                     new_value = "%s%s" % (dejsonize(output[0][2]), value)
-                    conf.database_cursor.execute("UPDATE data SET value = ? WHERE id = ?",
+                    conf.databaseCursor.execute("UPDATE data SET value = ? WHERE id = ?",
                                                  (jsonize(new_value), output[0][0]))
         else:
-            conf.database_cursor.execute("INSERT INTO errors VALUES(NULL, ?, ?)",
+            conf.databaseCursor.execute("INSERT INTO errors VALUES(NULL, ?, ?)",
                                          (self.taskid, str(value) if value else ""))
 
     def flush(self):
@@ -265,7 +272,7 @@ class LogRecorder(logging.StreamHandler):
         Record emitted events to IPC database for asynchronous I/O
         communication with the parent process
         """
-        conf.database_cursor.execute("INSERT INTO logs VALUES(NULL, ?, ?, ?, ?)",
+        conf.databaseCursor.execute("INSERT INTO logs VALUES(NULL, ?, ?, ?, ?)",
                                      (conf.taskid, time.strftime("%X"), record.levelname,
                                       record.msg % record.args if record.args else record.msg))
 
@@ -273,8 +280,8 @@ class LogRecorder(logging.StreamHandler):
 def setRestAPILog():
     if hasattr(conf, "api"):
         try:
-            conf.database_cursor = Database(conf.database)
-            conf.database_cursor.connect("client")
+            conf.databaseCursor = Database(conf.database)
+            conf.databaseCursor.connect("client")
         except sqlite3.OperationalError, ex:
             raise SqlmapConnectionException, "%s ('%s')" % (ex, conf.database)
 
@@ -390,12 +397,11 @@ def task_flush(taskid):
     """
     Flush task spool (delete all tasks)
     """
-    if is_admin(taskid):
-        DataStore.tasks = dict()
-    else:
-        for key in list(DataStore.tasks):
-            if DataStore.tasks[key].remote_addr == request.remote_addr:
-                del DataStore.tasks[key]
+
+    for key in list(DataStore.tasks):
+        if is_admin(taskid) or DataStore.tasks[key].remote_addr == request.remote_addr:
+            DataStore.tasks[key].engine_kill()
+            del DataStore.tasks[key]
 
     logger.debug("[%s] Flushed task pool (%s)" % (taskid, "admin" if is_admin(taskid) else request.remote_addr))
     return jsonize({"success": True})
@@ -620,14 +626,13 @@ def download(taskid, target, filename):
         logger.warning("[%s] Invalid task ID provided to download()" % taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
-    # Prevent file path traversal - the lame way
-    if ".." in target:
+    path = os.path.abspath(os.path.join(paths.SQLMAP_OUTPUT_PATH, target, filename))
+    # Prevent file path traversal
+    if not path.startswith(paths.SQLMAP_OUTPUT_PATH):
         logger.warning("[%s] Forbidden path (%s)" % (taskid, target))
         return jsonize({"success": False, "message": "Forbidden path"})
 
-    path = os.path.join(paths.SQLMAP_OUTPUT_PATH, target)
-
-    if os.path.exists(path):
+    if os.path.isfile(path):
         logger.debug("[%s] Retrieved content of file %s" % (taskid, target))
         with open(path, 'rb') as inf:
             file_content = inf.read()
@@ -637,12 +642,17 @@ def download(taskid, target, filename):
         return jsonize({"success": False, "message": "File does not exist"})
 
 
-def server(host="0.0.0.0", port=RESTAPI_SERVER_PORT):
+def server(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, adapter=RESTAPI_DEFAULT_ADAPTER):
     """
     REST-JSON API server
     """
     DataStore.admin_id = hexencode(os.urandom(16))
-    Database.filepath = tempfile.mkstemp(prefix="sqlmapipc-", text=False)[1]
+    Database.filepath = tempfile.mkstemp(prefix=MKSTEMP_PREFIX.IPC, text=False)[1]
+
+    if port == 0:  # random
+        with contextlib.closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+            s.bind((host, 0))
+            port = s.getsockname()[1]
 
     logger.info("Running REST-JSON API server at '%s:%d'.." % (host, port))
     logger.info("Admin ID: %s" % DataStore.admin_id)
@@ -654,8 +664,25 @@ def server(host="0.0.0.0", port=RESTAPI_SERVER_PORT):
     DataStore.current_db.init()
 
     # Run RESTful API
-    run(host=host, port=port, quiet=True, debug=False)
-
+    try:
+        if adapter == "gevent":
+            from gevent import monkey
+            monkey.patch_all()
+        elif adapter == "eventlet":
+            import eventlet
+            eventlet.monkey_patch()
+        logger.debug("Using adapter '%s' to run bottle" % adapter)
+        run(host=host, port=port, quiet=True, debug=False, server=adapter)
+    except socket.error, ex:
+        if "already in use" in getSafeExString(ex):
+            logger.error("Address already in use ('%s:%s')" % (host, port))
+        else:
+            raise
+    except ImportError:
+        errMsg = "Adapter '%s' is not available on this system" % adapter
+        if adapter in ("gevent", "eventlet"):
+            errMsg += " (e.g.: 'sudo apt-get install python-%s')" % adapter
+        logger.critical(errMsg)
 
 def _client(url, options=None):
     logger.debug("Calling %s" % url)
@@ -673,10 +700,18 @@ def _client(url, options=None):
     return text
 
 
-def client(host=RESTAPI_SERVER_HOST, port=RESTAPI_SERVER_PORT):
+def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT):
     """
     REST-JSON API client
     """
+
+    dbgMsg = "Example client access from command line:"
+    dbgMsg += "\n\t$ taskid=$(curl http://%s:%d/task/new 2>1 | grep -o -I '[a-f0-9]\{16\}') && echo $taskid" % (host, port)
+    dbgMsg += "\n\t$ curl -H \"Content-Type: application/json\" -X POST -d '{\"url\": \"http://testphp.vulnweb.com/artists.php?artist=1\"}' http://%s:%d/scan/$taskid/start" % (host, port)
+    dbgMsg += "\n\t$ curl http://%s:%d/scan/$taskid/data" % (host, port)
+    dbgMsg += "\n\t$ curl http://%s:%d/scan/$taskid/log" % (host, port)
+    logger.debug(dbgMsg)
+
     addr = "http://%s:%d" % (host, port)
     logger.info("Starting REST-JSON API client to '%s'..." % addr)
 
@@ -684,7 +719,7 @@ def client(host=RESTAPI_SERVER_HOST, port=RESTAPI_SERVER_PORT):
         _client(addr)
     except Exception, ex:
         if not isinstance(ex, urllib2.HTTPError):
-            errMsg = "there has been a problem while connecting to the "
+            errMsg = "There has been a problem while connecting to the "
             errMsg += "REST-JSON API server at '%s' " % addr
             errMsg += "(%s)" % ex
             logger.critical(errMsg)
@@ -695,7 +730,8 @@ def client(host=RESTAPI_SERVER_HOST, port=RESTAPI_SERVER_PORT):
 
     while True:
         try:
-            command = raw_input("api%s> " % (" (%s)" % taskid if taskid else "")).strip().lower()
+            command = raw_input("api%s> " % (" (%s)" % taskid if taskid else "")).strip()
+            command = re.sub(r"\A(\w+)", lambda match: match.group(1).lower(), command)
         except (EOFError, KeyboardInterrupt):
             print
             break

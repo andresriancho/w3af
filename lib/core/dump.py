@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -9,10 +9,12 @@ import cgi
 import hashlib
 import os
 import re
+import shutil
 import tempfile
 import threading
 
 from lib.core.common import Backend
+from lib.core.common import checkFile
 from lib.core.common import dataToDumpFile
 from lib.core.common import dataToStdout
 from lib.core.common import getSafeExString
@@ -37,6 +39,7 @@ from lib.core.exception import SqlmapGenericException
 from lib.core.exception import SqlmapValueException
 from lib.core.exception import SqlmapSystemException
 from lib.core.replication import Replication
+from lib.core.settings import DUMP_FILE_BUFFER_SIZE
 from lib.core.settings import HTML_DUMP_CSS_STYLE
 from lib.core.settings import IS_WIN
 from lib.core.settings import METADB_SUFFIX
@@ -116,8 +119,14 @@ class Dump(object):
         elif data is not None:
             _ = getUnicode(data)
 
-            if _ and _[-1] == '\n':
+            if _.endswith("\r\n"):
+                _ = _[:-2]
+
+            elif _.endswith("\n"):
                 _ = _[:-1]
+
+            if _.strip(' '):
+                _ = _.strip(' ')
 
             if "\n" in _:
                 self._write("%s:\n---\n%s\n---" % (header, _))
@@ -160,7 +169,7 @@ class Dump(object):
     def currentDb(self, data):
         if Backend.isDbms(DBMS.MAXDB):
             self.string("current database (no practical usage on %s)" % Backend.getIdentifiedDbms(), data, content_type=CONTENT_TYPE.CURRENT_DB)
-        elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.PGSQL):
+        elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.PGSQL, DBMS.HSQLDB):
             self.string("current schema (equivalent to database on %s)" % Backend.getIdentifiedDbms(), data, content_type=CONTENT_TYPE.CURRENT_DB)
         else:
             self.string("current database", data, content_type=CONTENT_TYPE.CURRENT_DB)
@@ -398,13 +407,7 @@ class Dump(object):
             self._write(tableValues, content_type=CONTENT_TYPE.DUMP_TABLE)
             return
 
-        _ = re.sub(r"[^\w]", "_", normalizeUnicode(unsafeSQLIdentificatorNaming(db)))
-        if len(_) < len(db) or IS_WIN and db.upper() in WINDOWS_RESERVED_NAMES:
-            _ = unicodeencode(re.sub(r"[^\w]", "_", unsafeSQLIdentificatorNaming(db)))
-            dumpDbPath = os.path.join(conf.dumpPath, "%s-%s" % (_, hashlib.md5(unicodeencode(db)).hexdigest()[:8]))
-            warnFile = True
-        else:
-            dumpDbPath = os.path.join(conf.dumpPath, _)
+        dumpDbPath = os.path.join(conf.dumpPath, unsafeSQLIdentificatorNaming(db))
 
         if conf.dumpFormat == DUMP_FORMAT.SQLITE:
             replication = Replication(os.path.join(conf.dumpPath, "%s.sqlite3" % unsafeSQLIdentificatorNaming(db)))
@@ -412,33 +415,65 @@ class Dump(object):
             if not os.path.isdir(dumpDbPath):
                 try:
                     os.makedirs(dumpDbPath, 0755)
-                except (OSError, IOError), ex:
-                    try:
-                        tempDir = tempfile.mkdtemp(prefix="sqlmapdb")
-                    except IOError, _:
-                        errMsg = "unable to write to the temporary directory ('%s'). " % _
-                        errMsg += "Please make sure that your disk is not full and "
-                        errMsg += "that you have sufficient write permissions to "
-                        errMsg += "create temporary files and/or directories"
-                        raise SqlmapSystemException(errMsg)
+                except:
+                    warnFile = True
 
-                    warnMsg = "unable to create dump directory "
-                    warnMsg += "'%s' (%s). " % (dumpDbPath, ex)
-                    warnMsg += "Using temporary directory '%s' instead" % tempDir
-                    logger.warn(warnMsg)
+                    _ = unicodeencode(re.sub(r"[^\w]", "_", unsafeSQLIdentificatorNaming(db)))
+                    dumpDbPath = os.path.join(conf.dumpPath, "%s-%s" % (_, hashlib.md5(unicodeencode(db)).hexdigest()[:8]))
 
-                    dumpDbPath = tempDir
+                    if not os.path.isdir(dumpDbPath):
+                        try:
+                            os.makedirs(dumpDbPath, 0755)
+                        except Exception, ex:
+                            try:
+                                tempDir = tempfile.mkdtemp(prefix="sqlmapdb")
+                            except IOError, _:
+                                errMsg = "unable to write to the temporary directory ('%s'). " % _
+                                errMsg += "Please make sure that your disk is not full and "
+                                errMsg += "that you have sufficient write permissions to "
+                                errMsg += "create temporary files and/or directories"
+                                raise SqlmapSystemException(errMsg)
 
-            _ = re.sub(r"[^\w]", "_", normalizeUnicode(unsafeSQLIdentificatorNaming(table)))
-            if len(_) < len(table) or IS_WIN and table.upper() in WINDOWS_RESERVED_NAMES:
-                _ = unicodeencode(re.sub(r"[^\w]", "_", unsafeSQLIdentificatorNaming(table)))
-                dumpFileName = os.path.join(dumpDbPath, "%s-%s.%s" % (_, hashlib.md5(unicodeencode(table)).hexdigest()[:8], conf.dumpFormat.lower()))
-                warnFile = True
+                            warnMsg = "unable to create dump directory "
+                            warnMsg += "'%s' (%s). " % (dumpDbPath, getSafeExString(ex))
+                            warnMsg += "Using temporary directory '%s' instead" % tempDir
+                            logger.warn(warnMsg)
+
+                            dumpDbPath = tempDir
+
+            dumpFileName = os.path.join(dumpDbPath, "%s.%s" % (unsafeSQLIdentificatorNaming(table), conf.dumpFormat.lower()))
+            if not checkFile(dumpFileName, False):
+                try:
+                    openFile(dumpFileName, "w+b").close()
+                except SqlmapSystemException:
+                    raise
+                except:
+                    warnFile = True
+
+                    _ = re.sub(r"[^\w]", "_", normalizeUnicode(unsafeSQLIdentificatorNaming(table)))
+                    if len(_) < len(table) or IS_WIN and table.upper() in WINDOWS_RESERVED_NAMES:
+                        _ = unicodeencode(re.sub(r"[^\w]", "_", unsafeSQLIdentificatorNaming(table)))
+                        dumpFileName = os.path.join(dumpDbPath, "%s-%s.%s" % (_, hashlib.md5(unicodeencode(table)).hexdigest()[:8], conf.dumpFormat.lower()))
+                    else:
+                        dumpFileName = os.path.join(dumpDbPath, "%s.%s" % (_, conf.dumpFormat.lower()))
             else:
-                dumpFileName = os.path.join(dumpDbPath, "%s.%s" % (_, conf.dumpFormat.lower()))
+                appendToFile = any((conf.limitStart, conf.limitStop))
 
-            appendToFile = os.path.isfile(dumpFileName) and any((conf.limitStart, conf.limitStop))
-            dumpFP = openFile(dumpFileName, "wb" if not appendToFile else "ab")
+                if not appendToFile:
+                    count = 1
+                    while True:
+                        candidate = "%s.%d" % (dumpFileName, count)
+                        if not checkFile(candidate, False):
+                            try:
+                                shutil.copyfile(dumpFileName, candidate)
+                            except IOError:
+                                pass
+                            finally:
+                                break
+                        else:
+                            count += 1
+
+            dumpFP = openFile(dumpFileName, "wb" if not appendToFile else "ab", buffering=DUMP_FILE_BUFFER_SIZE)
 
         count = int(tableValues["__infos__"]["count"])
         separator = str()
@@ -578,7 +613,8 @@ class Dump(object):
                                 if not os.path.isdir(dumpDbPath):
                                     os.makedirs(dumpDbPath, 0755)
 
-                                filepath = os.path.join(dumpDbPath, "%s-%d.bin" % (unsafeSQLIdentificatorNaming(column), randomInt(8)))
+                                _ = re.sub(r"[^\w]", "_", normalizeUnicode(unsafeSQLIdentificatorNaming(column)))
+                                filepath = os.path.join(dumpDbPath, "%s-%d.bin" % (_, randomInt(8)))
                                 warnMsg = "writing binary ('%s') content to file '%s' " % (mimetype, filepath)
                                 logger.warn(warnMsg)
 

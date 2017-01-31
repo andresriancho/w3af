@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -30,6 +30,7 @@ from lib.core.settings import MAX_SINGLE_URL_REDIRECTIONS
 from lib.core.settings import MAX_TOTAL_REDIRECTIONS
 from lib.core.threads import getCurrentThreadData
 from lib.request.basic import decodePage
+from lib.request.basic import parseResponse
 
 class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
     def _get_header_redirect(self, headers):
@@ -37,9 +38,9 @@ class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
 
         if headers:
             if "location" in headers:
-                retVal = headers.getheaders("location")[0].split("?")[0]
+                retVal = headers.getheaders("location")[0]
             elif "uri" in headers:
-                retVal = headers.getheaders("uri")[0].split("?")[0]
+                retVal = headers.getheaders("uri")[0]
 
         return retVal
 
@@ -70,7 +71,7 @@ class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
 
     def http_error_302(self, req, fp, code, msg, headers):
         content = None
-        redurl = self._get_header_redirect(headers)
+        redurl = self._get_header_redirect(headers) if not conf.ignoreRedirects else None
 
         try:
             content = fp.read(MAX_CONNECTION_TOTAL_SIZE)
@@ -118,6 +119,8 @@ class SmartRedirectHandler(urllib2.HTTPRedirectHandler):
                 result = fp
 
         if redurl and kb.redirectChoice == REDIRECTION.YES:
+            parseResponse(content, headers)
+
             req.headers[HTTP_HEADER.HOST] = getHostHeader(redurl)
             if headers and HTTP_HEADER.SET_COOKIE in headers:
                 req.headers[HTTP_HEADER.COOKIE] = headers[HTTP_HEADER.SET_COOKIE].split(conf.cookieDel or DEFAULT_COOKIE_DELIMITER)[0]

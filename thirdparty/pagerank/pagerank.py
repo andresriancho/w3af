@@ -12,15 +12,17 @@
 #
 #  Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 
+import sys
 import urllib
+import urllib2
 
-def get_pagerank(url):
+def get_pagerank(url, timeout=10):
     url = url.encode('utf8') if isinstance(url, unicode) else url
     _ = 'http://toolbarqueries.google.com/tbr?client=navclient-auto&features=Rank&ch=%s&q=info:%s' % (check_hash(hash_url(url)), urllib.quote(url))
     try:
-        f = urllib.urlopen(_)
-        rank = f.read().strip()[9:]
-    except Exception:
+        req = urllib2.Request(_)
+        rank = urllib2.urlopen(req, timeout=timeout).read().strip()[9:]
+    except:
         rank = 'N/A'
     else:
         rank = '0' if not rank or not rank.isdigit() else rank
@@ -77,3 +79,9 @@ def check_hash(hash_int):
             check_byte >>= 1
 
     return '7' + str(check_byte) + hash_str
+
+def main():
+    print get_pagerank(sys.argv[1]) if len(sys.argv) > 1 else "[x] missing hostname"
+
+if __name__ == "__main__":
+    main()
