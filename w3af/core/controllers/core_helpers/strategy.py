@@ -356,10 +356,14 @@ class CoreStrategy(object):
                ' incorrect, the port is closed, there is a firewall blocking'
                ' our packets or there is no HTTP daemon listening on that'
                ' port.\n\n'
-               'Please verify your target configuration and try again.')
+               'Please verify your target configuration and try again. The'
+               ' tested targets were:\n'
+               ' %s\n')
+
+        targets = cf.cf.get('targets')
 
         while sent_requests < MAX_ERROR_COUNT * 1.5:
-            for url in cf.cf.get('targets'):
+            for url in targets:
                 try:
                     self._w3af_core.uri_opener.GET(url, cache=False)
                 except ScanMustStopByUserRequest:
@@ -369,7 +373,9 @@ class CoreStrategy(object):
                     dbg = 'Exception found during verify_target_server: "%s"'
                     om.out.debug(dbg % e)
 
-                    raise ScanMustStopException(msg)
+                    target_list = '\n'.join(' - %s\n' % url for url in targets)
+
+                    raise ScanMustStopException(msg % target_list)
                 else:
                     sent_requests += 1
 
