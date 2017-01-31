@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -28,6 +28,7 @@ from lib.core.enums import CHARSET_TYPE
 from lib.core.enums import EXPECTED
 from lib.core.enums import PAYLOAD
 from lib.core.exception import SqlmapUndefinedMethod
+from lib.core.settings import UNICODE_ENCODING
 from lib.request import inject
 
 class Filesystem:
@@ -52,7 +53,12 @@ class Filesystem:
 
             lengthQuery = "SELECT DATALENGTH(%s) FROM %s" % (self.tblField, self.fileTblName)
 
-        localFileSize = os.path.getsize(localFile)
+        try:
+            localFileSize = os.path.getsize(localFile)
+        except OSError:
+            warnMsg = "file '%s' is missing" % localFile
+            logger.warn(warnMsg)
+            localFileSize = 0
 
         if fileRead and Backend.isDbms(DBMS.PGSQL):
             logger.info("length of read file '%s' cannot be checked on PostgreSQL" % remoteFile)
@@ -64,7 +70,7 @@ class Filesystem:
 
             if isNumPosStrValue(remoteFileSize):
                 remoteFileSize = long(remoteFileSize)
-                localFile = getUnicode(localFile, encoding=sys.getfilesystemencoding())
+                localFile = getUnicode(localFile, encoding=sys.getfilesystemencoding() or UNICODE_ENCODING)
                 sameFile = False
 
                 if localFileSize == remoteFileSize:
@@ -82,7 +88,7 @@ class Filesystem:
             else:
                 sameFile = False
                 warnMsg = "it looks like the file has not been written (usually "
-                warnMsg += "occurs if the DBMS process' user has no write "
+                warnMsg += "occurs if the DBMS process user has no write "
                 warnMsg += "privileges in the destination path)"
                 logger.warn(warnMsg)
 
@@ -113,6 +119,8 @@ class Filesystem:
         Called by MySQL and PostgreSQL plugins to write a file on the
         back-end DBMS underlying file system
         """
+
+        checkFile(fileName)
 
         with open(fileName, "rb") as f:
             content = f.read()

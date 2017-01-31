@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -175,14 +175,17 @@ class Search:
                 infoMsg += "s LIKE"
             infoMsg += " '%s'" % unsafeSQLIdentificatorNaming(tbl)
 
-            if dbCond and conf.db and conf.db != CURRENT_DB:
+            if conf.db == CURRENT_DB:
+                conf.db = self.getCurrentDb()
+
+            if dbCond and conf.db:
                 _ = conf.db.split(",")
                 whereDbsQuery = " AND (" + " OR ".join("%s = '%s'" % (dbCond, unsafeSQLIdentificatorNaming(db)) for db in _) + ")"
                 infoMsg += " for database%s '%s'" % ("s" if len(_) > 1 else "", ", ".join(db for db in _))
             elif conf.excludeSysDbs:
                 whereDbsQuery = "".join(" AND '%s' != %s" % (unsafeSQLIdentificatorNaming(db), dbCond) for db in self.excludeDbsList)
-                infoMsg2 = "skipping system database%s '%s'" % ("s" if len(self.excludeDbsList) > 1 else "", ", ".join(db for db in self.excludeDbsList))
-                logger.info(infoMsg2)
+                msg = "skipping system database%s '%s'" % ("s" if len(self.excludeDbsList) > 1 else "", ", ".join(db for db in self.excludeDbsList))
+                logger.info(msg)
             else:
                 whereDbsQuery = ""
 
@@ -400,14 +403,17 @@ class Search:
                 whereTblsQuery = " AND (" + " OR ".join("%s = '%s'" % (tblCond, unsafeSQLIdentificatorNaming(tbl)) for tbl in _) + ")"
                 infoMsgTbl = " for table%s '%s'" % ("s" if len(_) > 1 else "", ", ".join(unsafeSQLIdentificatorNaming(tbl) for tbl in _))
 
-            if conf.db and conf.db != CURRENT_DB:
+            if conf.db == CURRENT_DB:
+                conf.db = self.getCurrentDb()
+
+            if conf.db:
                 _ = conf.db.split(",")
                 whereDbsQuery = " AND (" + " OR ".join("%s = '%s'" % (dbCond, unsafeSQLIdentificatorNaming(db)) for db in _) + ")"
                 infoMsgDb = " in database%s '%s'" % ("s" if len(_) > 1 else "", ", ".join(unsafeSQLIdentificatorNaming(db) for db in _))
             elif conf.excludeSysDbs:
                 whereDbsQuery = "".join(" AND %s != '%s'" % (dbCond, unsafeSQLIdentificatorNaming(db)) for db in self.excludeDbsList)
-                infoMsg2 = "skipping system database%s '%s'" % ("s" if len(self.excludeDbsList) > 1 else "", ", ".join(unsafeSQLIdentificatorNaming(db) for db in self.excludeDbsList))
-                logger.info(infoMsg2)
+                msg = "skipping system database%s '%s'" % ("s" if len(self.excludeDbsList) > 1 else "", ", ".join(unsafeSQLIdentificatorNaming(db) for db in self.excludeDbsList))
+                logger.info(msg)
             else:
                 infoMsgDb = " across all databases"
 

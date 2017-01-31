@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import os
 import re
+import select
 import sys
 import tempfile
 import time
@@ -47,8 +48,6 @@ from lib.core.subprocessng import recv_some
 
 if IS_WIN:
     import msvcrt
-else:
-    from select import select
 
 class Metasploit:
     """
@@ -430,10 +429,12 @@ class Metasploit:
                 self._payloadCmd += " X > \"%s\"" % outFile
         else:
             if extra == "BufferRegister=EAX":
-                self._payloadCmd += " -a x86 -e %s -f %s > \"%s\"" % (self.encoderStr, format, outFile)
+                self._payloadCmd += " -a x86 -e %s -f %s" % (self.encoderStr, format)
 
                 if extra is not None:
                     self._payloadCmd += " %s" % extra
+
+                self._payloadCmd += " > \"%s\"" % outFile
             else:
                 self._payloadCmd += " -f exe > \"%s\"" % outFile
 
@@ -550,7 +551,7 @@ class Metasploit:
                             # Probably the child has exited
                             pass
                 else:
-                    ready_fds = select([stdin_fd], [], [], 1)
+                    ready_fds = select.select([stdin_fd], [], [], 1)
 
                     if stdin_fd in ready_fds[0]:
                         try:
@@ -598,7 +599,7 @@ class Metasploit:
                     else:
                         proc.kill()
 
-            except (EOFError, IOError):
+            except (EOFError, IOError, select.error):
                 return proc.returncode
 
     def createMsfShellcode(self, exitfunc, format, extra, encode):

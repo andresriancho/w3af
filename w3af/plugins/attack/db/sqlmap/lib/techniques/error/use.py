@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -16,6 +16,7 @@ from lib.core.common import calculateDeltaSeconds
 from lib.core.common import dataToStdout
 from lib.core.common import decodeHexValue
 from lib.core.common import extractRegexResult
+from lib.core.common import getConsoleWidth
 from lib.core.common import getPartRun
 from lib.core.common import getUnicode
 from lib.core.common import hashDBRetrieve
@@ -37,11 +38,13 @@ from lib.core.dicts import FROM_DUMMY_TABLE
 from lib.core.enums import DBMS
 from lib.core.enums import HASHDB_KEYS
 from lib.core.enums import HTTP_HEADER
+from lib.core.exception import SqlmapDataException
 from lib.core.settings import CHECK_ZERO_COLUMNS_THRESHOLD
 from lib.core.settings import MIN_ERROR_CHUNK_LENGTH
 from lib.core.settings import MAX_ERROR_CHUNK_LENGTH
 from lib.core.settings import NULL
 from lib.core.settings import PARTIAL_VALUE_MARKER
+from lib.core.settings import ROTATING_CHARS
 from lib.core.settings import SLOW_ORDER_COUNT_THRESHOLD
 from lib.core.settings import SQL_SCALAR_REGEX
 from lib.core.settings import TURN_OFF_RESUME_INFO_LIMIT
@@ -53,6 +56,7 @@ from lib.utils.progress import ProgressBar
 
 def _oneShotErrorUse(expression, field=None, chunkTest=False):
     offset = 1
+    rotator = 0
     partialValue = None
     threadData = getCurrentThreadData()
     retVal = hashDBRetrieve(expression, checkConf=True)
@@ -73,12 +77,15 @@ def _oneShotErrorUse(expression, field=None, chunkTest=False):
             testChar = str(current % 10)
             testQuery = "SELECT %s('%s',%d)" % ("REPEAT" if Backend.isDbms(DBMS.MYSQL) else "REPLICATE", testChar, current)
             result = unArrayizeValue(_oneShotErrorUse(testQuery, chunkTest=True))
-            if result and testChar in result:
+
+            if (result or "").startswith(testChar):
                 if result == testChar * current:
                     kb.errorChunkLength = current
                     break
                 else:
-                    current = len(result) - len(kb.chars.stop)
+                    result = re.search(r"\A\w+", result).group(0)
+                    candidate = len(result) - len(kb.chars.stop)
+                    current = candidate if candidate != current else current - 1
             else:
                 current = current / 2
 
@@ -90,8 +97,8 @@ def _oneShotErrorUse(expression, field=None, chunkTest=False):
     if retVal is None or partialValue:
         try:
             while True:
-                check = "%s(?P<result>.*?)%s" % (kb.chars.start, kb.chars.stop)
-                trimcheck = "%s(?P<result>[^<]*)" % (kb.chars.start)
+                check = r"%s(?P<result>.*?)%s" % (kb.chars.start, kb.chars.stop)
+                trimcheck = r"%s(?P<result>[^<\n]*)" % (kb.chars.start)
 
                 if field:
                     nulledCastedField = agent.nullAndCastField(field)
@@ -149,7 +156,7 @@ def _oneShotErrorUse(expression, field=None, chunkTest=False):
                             logger.warn(warnMsg)
 
                         if not kb.testMode:
-                            check = "(?P<result>.*?)%s" % kb.chars.stop[:2]
+                            check = r"(?P<result>[^<>\n]*?)%s" % kb.chars.stop[:2]
                             output = extractRegexResult(check, trimmed, re.IGNORECASE)
 
                             if not output:
@@ -169,8 +176,16 @@ def _oneShotErrorUse(expression, field=None, chunkTest=False):
                     else:
                         break
 
-                    if kb.fileReadMode and output:
-                        dataToStdout(_formatPartialContent(output).replace(r"\n", "\n").replace(r"\t", "\t"))
+                    if output:
+                        if kb.fileReadMode:
+                            dataToStdout(_formatPartialContent(output).replace(r"\n", "\n").replace(r"\t", "\t"))
+                        elif offset > 1:
+                            rotator += 1
+
+                            if rotator >= len(ROTATING_CHARS):
+                                rotator = 0
+
+                            dataToStdout("\r%s\r" % ROTATING_CHARS[rotator])
                 else:
                     retVal = output
                     break
@@ -199,6 +214,7 @@ def _errorFields(expression, expressionFields, expressionFieldsList, num=None, e
     values = []
     origExpr = None
 
+    width = getConsoleWidth()
     threadData = getCurrentThreadData()
 
     for field in expressionFieldsList:
@@ -225,7 +241,12 @@ def _errorFields(expression, expressionFields, expressionFieldsList, num=None, e
             if kb.fileReadMode and output and output.strip():
                 print
             elif output is not None and not (threadData.resumed and kb.suppressResumeInfo) and not (emptyFields and field in emptyFields):
-                dataToStdout("[%s] [INFO] %s: %s\n" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", safecharencode(output)))
+                status = "[%s] [INFO] %s: %s" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", output if kb.safeCharEncode else safecharencode(output))
+
+                if len(status) > width:
+                    status = "%s..." % status[:width - 3]
+
+                dataToStdout("%s\n" % status)
 
         if isinstance(num, int):
             expression = origExpr
@@ -345,7 +366,14 @@ def errorUse(expression, dump=False):
             numThreads = min(conf.threads, (stopLimit - startLimit))
 
             threadData = getCurrentThreadData()
-            threadData.shared.limits = iter(xrange(startLimit, stopLimit))
+
+            try:
+                threadData.shared.limits = iter(xrange(startLimit, stopLimit))
+            except OverflowError:
+                errMsg = "boundary limits (%d,%d) are too large. Please rerun " % (startLimit, stopLimit)
+                errMsg += "with switch '--fresh-queries'"
+                raise SqlmapDataException(errMsg)
+
             threadData.shared.value = BigArray()
             threadData.shared.buffered = []
             threadData.shared.counter = 0

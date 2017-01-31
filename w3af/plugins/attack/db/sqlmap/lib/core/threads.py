@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
 import difflib
+import random
+import thread
 import threading
 import time
 import traceback
-
-from thread import error as ThreadError
 
 from lib.core.data import conf
 from lib.core.data import kb
@@ -19,6 +19,7 @@ from lib.core.datatype import AttribDict
 from lib.core.enums import PAYLOAD
 from lib.core.exception import SqlmapConnectionException
 from lib.core.exception import SqlmapThreadException
+from lib.core.exception import SqlmapUserQuitException
 from lib.core.exception import SqlmapValueException
 from lib.core.settings import MAX_NUMBER_OF_THREADS
 from lib.core.settings import PYVERSION
@@ -41,8 +42,10 @@ class _ThreadData(threading.local):
         self.disableStdOut = False
         self.hashDBCursor = None
         self.inTransaction = False
+        self.lastCode = None
         self.lastComparisonPage = None
         self.lastComparisonHeaders = None
+        self.lastComparisonCode = None
         self.lastErrorPage = None
         self.lastHTTPError = None
         self.lastRedirectMsg = None
@@ -51,10 +54,12 @@ class _ThreadData(threading.local):
         self.lastRequestMsg = None
         self.lastRequestUID = 0
         self.lastRedirectURL = None
+        self.random = random.WichmannHill()
         self.resumed = False
         self.retriesCount = 0
         self.seqMatcher = difflib.SequenceMatcher(None)
         self.shared = shared
+        self.validationRun = 0
         self.valueStack = []
 
 ThreadData = _ThreadData()
@@ -145,7 +150,7 @@ def runThreads(numThreads, threadFunction, cleanupFunction=None, forwardExceptio
 
             try:
                 thread.start()
-            except ThreadError, ex:
+            except thread.error, ex:
                 errMsg = "error occurred while starting new thread ('%s')" % ex.message
                 logger.critical(errMsg)
                 break
@@ -161,13 +166,13 @@ def runThreads(numThreads, threadFunction, cleanupFunction=None, forwardExceptio
                     alive = True
                     time.sleep(0.1)
 
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, SqlmapUserQuitException), ex:
         print
         kb.threadContinue = False
         kb.threadException = True
 
         if numThreads > 1:
-            logger.info("waiting for threads to finish (Ctrl+C was pressed)")
+            logger.info("waiting for threads to finish%s" % (" (Ctrl+C was pressed)" if isinstance(ex, KeyboardInterrupt) else ""))
         try:
             while (threading.activeCount() > 1):
                 pass
@@ -199,8 +204,11 @@ def runThreads(numThreads, threadFunction, cleanupFunction=None, forwardExceptio
         kb.threadException = False
 
         for lock in kb.locks.values():
-            if lock.locked_lock():
-                lock.release()
+            if lock.locked():
+                try:
+                    lock.release()
+                except thread.error:
+                    pass
 
         if conf.get("hashDB"):
             conf.hashDB.flush(True)

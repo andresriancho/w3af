@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -10,10 +10,13 @@ import re
 from lib.core.common import Backend
 from lib.core.common import Format
 from lib.core.common import getUnicode
+from lib.core.common import hashDBRetrieve
+from lib.core.common import hashDBWrite
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
 from lib.core.enums import DBMS
+from lib.core.enums import HASHDB_KEYS
 from lib.core.enums import OS
 from lib.core.session import setDbms
 from lib.core.settings import MYSQL_ALIASES
@@ -37,17 +40,18 @@ class Fingerprint(GenericFingerprint):
 
             return None
 
-        # MySQL valid versions updated on 04/2011
+        # Reference: https://downloads.mysql.com/archives/community/
         versions = (
                      (32200, 32235),    # MySQL 3.22
                      (32300, 32359),    # MySQL 3.23
                      (40000, 40032),    # MySQL 4.0
                      (40100, 40131),    # MySQL 4.1
                      (50000, 50092),    # MySQL 5.0
-                     (50100, 50156),    # MySQL 5.1
+                     (50100, 50172),    # MySQL 5.1
                      (50400, 50404),    # MySQL 5.4
-                     (50500, 50521),    # MySQL 5.5
-                     (50600, 50604),    # MySQL 5.6
+                     (50500, 50552),    # MySQL 5.5
+                     (50600, 50633),    # MySQL 5.6
+                     (50700, 50715),    # MySQL 5.7
                      (60000, 60014),    # MySQL 6.0
                    )
 
@@ -103,6 +107,10 @@ class Fingerprint(GenericFingerprint):
         value += "back-end DBMS: "
         actVer = Format.getDbms()
 
+        _ = hashDBRetrieve(HASHDB_KEYS.DBMS_FORK)
+        if _:
+            actVer += " (%s fork)" % _
+
         if not conf.extensiveFp:
             value += actVer
             return value
@@ -145,12 +153,6 @@ class Fingerprint(GenericFingerprint):
         if not conf.extensiveFp and (Backend.isDbmsWithin(MYSQL_ALIASES) \
            or (conf.dbms or "").lower() in MYSQL_ALIASES) and Backend.getVersion() and \
            Backend.getVersion() != UNKNOWN_DBMS_VERSION:
-            v = Backend.getVersion().replace(">", "")
-            v = v.replace("=", "")
-            v = v.replace(" ", "")
-
-            Backend.setVersion(v)
-
             setDbms("%s %s" % (DBMS.MYSQL, Backend.getVersion()))
 
             if Backend.isVersionGreaterOrEqualThan("5"):
@@ -169,13 +171,16 @@ class Fingerprint(GenericFingerprint):
             infoMsg = "confirming %s" % DBMS.MYSQL
             logger.info(infoMsg)
 
-            result = inject.checkBooleanExpression("USER() LIKE USER()")
+            result = inject.checkBooleanExpression("SESSION_USER() LIKE USER()")
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.MYSQL
                 logger.warn(warnMsg)
 
                 return False
+
+            if hashDBRetrieve(HASHDB_KEYS.DBMS_FORK) is None:
+                hashDBWrite(HASHDB_KEYS.DBMS_FORK, inject.checkBooleanExpression("VERSION() LIKE '%MariaDB%'") and "MariaDB" or "")
 
             # reading information_schema on some platforms is causing annoying timeout exits
             # Reference: http://bugs.mysql.com/bug.php?id=15855

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2015 sqlmap developers (http://sqlmap.org/)
+Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
@@ -43,7 +43,6 @@ from lib.core.settings import NULL
 from lib.request import inject
 from lib.utils.hash import attackDumpedTable
 from lib.utils.pivotdumptable import pivotDumpTable
-from lib.utils.pivotdumptable import whereQuery
 
 class Entries:
     """
@@ -110,7 +109,10 @@ class Entries:
                 kb.data.cachedColumns = foundData
 
             try:
-                kb.dumpTable = "%s.%s" % (conf.db, tbl)
+                if Backend.isDbms(DBMS.INFORMIX):
+                    kb.dumpTable = "%s:%s" % (conf.db, tbl)
+                else:
+                    kb.dumpTable = "%s.%s" % (conf.db, tbl)
 
                 if not safeSQLIdentificatorNaming(conf.db) in kb.data.cachedColumns \
                    or safeSQLIdentificatorNaming(tbl, True) not in \
@@ -137,6 +139,7 @@ class Entries:
                     logger.warn(warnMsg)
                     continue
 
+                kb.dumpColumns = colList
                 colNames = colString = ", ".join(column for column in colList)
                 rootQuery = queries[Backend.getIdentifiedDbms()].dump_table
 
@@ -167,7 +170,14 @@ class Entries:
                         if not (isTechniqueAvailable(PAYLOAD.TECHNIQUE.UNION) and kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.ORIGINAL):
                             table = "%s.%s" % (conf.db, tbl)
 
-                            retVal = pivotDumpTable(table, colList, blind=False)
+                            try:
+                                retVal = pivotDumpTable(table, colList, blind=False)
+                            except KeyboardInterrupt:
+                                retVal = None
+                                kb.dumpKeyboardInterrupt = True
+                                clearConsoleLine()
+                                warnMsg = "Ctrl+C detected in dumping phase"
+                                logger.warn(warnMsg)
 
                             if retVal:
                                 entries, _ = retVal
@@ -179,7 +189,7 @@ class Entries:
                     else:
                         query = rootQuery.inband.query % (colString, conf.db, tbl)
 
-                    query = whereQuery(query)
+                    query = agent.whereQuery(query)
 
                     if not entries and query:
                         entries = inject.getValue(query, blind=False, time=False, dump=True)
@@ -205,8 +215,7 @@ class Entries:
                                 else:
                                     colEntry = unArrayizeValue(entry[index]) if index < len(entry) else u''
 
-                                _ = len(DUMP_REPLACEMENTS.get(getUnicode(colEntry), getUnicode(colEntry)))
-                                maxLen = max(len(column), _)
+                                maxLen = max(len(column), len(DUMP_REPLACEMENTS.get(getUnicode(colEntry), getUnicode(colEntry))))
 
                                 if maxLen > kb.data.dumpedTable[column]["length"]:
                                     kb.data.dumpedTable[column]["length"] = maxLen
@@ -229,10 +238,12 @@ class Entries:
                         query = rootQuery.blind.count % ("%s.%s" % (conf.db, tbl))
                     elif Backend.isDbms(DBMS.MAXDB):
                         query = rootQuery.blind.count % tbl
+                    elif Backend.isDbms(DBMS.INFORMIX):
+                        query = rootQuery.blind.count % (conf.db, tbl)
                     else:
                         query = rootQuery.blind.count % (conf.db, tbl)
 
-                    query = whereQuery(query)
+                    query = agent.whereQuery(query)
 
                     count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
 
@@ -267,7 +278,14 @@ class Entries:
                         elif Backend.isDbms(DBMS.MAXDB):
                             table = "%s.%s" % (conf.db, tbl)
 
-                        retVal = pivotDumpTable(table, colList, count, blind=True)
+                        try:
+                            retVal = pivotDumpTable(table, colList, count, blind=True)
+                        except KeyboardInterrupt:
+                            retVal = None
+                            kb.dumpKeyboardInterrupt = True
+                            clearConsoleLine()
+                            warnMsg = "Ctrl+C detected in dumping phase"
+                            logger.warn(warnMsg)
 
                         if retVal:
                             entries, lengths = retVal
@@ -278,8 +296,11 @@ class Entries:
                         indexRange = getLimitRange(count, plusOne=plusOne)
 
                         if len(colList) < len(indexRange) > CHECK_ZERO_COLUMNS_THRESHOLD:
+                            debugMsg = "checking for empty columns"
+                            logger.debug(infoMsg)
+
                             for column in colList:
-                                if inject.getValue("SELECT COUNT(%s) FROM %s" % (column, kb.dumpTable), union=False, error=False) == '0':
+                                if not inject.checkBooleanExpression("(SELECT COUNT(%s) FROM %s)>0" % (column, kb.dumpTable)):
                                     emptyColumns.append(column)
                                     debugMsg = "column '%s' of table '%s' will not be " % (column, kb.dumpTable)
                                     debugMsg += "dumped as it appears to be empty"
@@ -296,28 +317,27 @@ class Entries:
                                     if column not in entries:
                                         entries[column] = BigArray()
 
-                                    if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL):
+                                    if Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB):
                                         query = rootQuery.blind.query % (agent.preprocessField(tbl, column), conf.db, conf.tbl, sorted(colList, key=len)[0], index)
                                     elif Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2):
-                                        query = rootQuery.blind.query % (agent.preprocessField(tbl, column),
-                                                                        tbl.upper() if not conf.db else ("%s.%s" % (conf.db.upper(), tbl.upper())),
-                                                                        index)
+                                        query = rootQuery.blind.query % (agent.preprocessField(tbl, column), tbl.upper() if not conf.db else ("%s.%s" % (conf.db.upper(), tbl.upper())), index)
                                     elif Backend.isDbms(DBMS.SQLITE):
                                         query = rootQuery.blind.query % (agent.preprocessField(tbl, column), tbl, index)
-
                                     elif Backend.isDbms(DBMS.FIREBIRD):
                                         query = rootQuery.blind.query % (index, agent.preprocessField(tbl, column), tbl)
+                                    elif Backend.isDbms(DBMS.INFORMIX):
+                                        query = rootQuery.blind.query % (index, agent.preprocessField(tbl, column), conf.db, tbl, sorted(colList, key=len)[0])
 
-                                    query = whereQuery(query)
+                                    query = agent.whereQuery(query)
 
                                     value = NULL if column in emptyColumns else inject.getValue(query, union=False, error=False, dump=True)
                                     value = '' if value is None else value
 
-                                    _ = DUMP_REPLACEMENTS.get(getUnicode(value), getUnicode(value))
-                                    lengths[column] = max(lengths[column], len(_))
+                                    lengths[column] = max(lengths[column], len(DUMP_REPLACEMENTS.get(getUnicode(value), getUnicode(value))))
                                     entries[column].append(value)
 
                         except KeyboardInterrupt:
+                            kb.dumpKeyboardInterrupt = True
                             clearConsoleLine()
                             warnMsg = "Ctrl+C detected in dumping phase"
                             logger.warn(warnMsg)
@@ -354,6 +374,7 @@ class Entries:
                 logger.critical(errMsg)
 
             finally:
+                kb.dumpColumns = None
                 kb.dumpTable = None
 
     def dumpAll(self):
