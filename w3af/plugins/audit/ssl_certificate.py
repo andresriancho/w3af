@@ -89,10 +89,12 @@ class ssl_certificate(AuditPlugin):
         # SSLv2 check
         # NB! From OpenSSL lib ver >= 1.0 there is no support for SSLv2
         try:
+            # pylint: disable=E1101
             ssl_sock = ssl.wrap_socket(s,
                                        cert_reqs=ssl.CERT_NONE,
                                        ssl_version=ssl.PROTOCOL_SSLv2)
             ssl_sock.connect((domain, url.get_port()))
+            # pylint: enable=E1101
         except Exception, e:
             pass
         else:

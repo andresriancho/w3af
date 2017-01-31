@@ -48,7 +48,7 @@ class route(Payload):
         return result
 
     def run_read(self):
-        api_result = self.api_read
+        api_result = self.api_read()
 
         if not api_result['route']:
             return 'Remote host routes could not be retrieved.'
