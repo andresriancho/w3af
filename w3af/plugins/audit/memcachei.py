@@ -70,8 +70,8 @@ class memcachei(AuditPlugin):
 
             if fuzzy_equal(orig_body, body_error_1_response, self._eq_limit):
                 #
-                # if we manage to break execution flow, there is a potential
-                # injection otherwise - no injection!
+                # if we manage to break execution flow with the invalid memcache
+                # syntax, there is a potential injection otherwise - no injection!
                 #
                 continue
 
@@ -97,6 +97,12 @@ class memcachei(AuditPlugin):
                 # now requests should be different again, otherwise injection
                 # is not confirmed
                 #
+                continue
+
+            # The two errors should look very similar for a memcache inj to exist
+            if not fuzzy_equal(body_error_1_response,
+                               body_error_2_response,
+                               self._eq_limit):
                 continue
 
             response_ids = [error_1_response.id,
