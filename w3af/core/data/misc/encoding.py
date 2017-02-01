@@ -86,7 +86,11 @@ def smart_unicode(s, encoding=DEFAULT_ENCODING, errors='strict',
             if not on_error_guess:
                 raise
 
-            guessed_encoding = chardet.detect(s)['encoding']
+            try:
+                guessed_encoding = chardet.detect(s)['encoding']
+            except TypeError:
+                # https://github.com/andresriancho/w3af/issues/13819
+                guessed_encoding = None
 
             if guessed_encoding is None:
                 # Chardet failed to guess the encoding! This is really broken
