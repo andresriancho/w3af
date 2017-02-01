@@ -18,8 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import re
 import unittest
 import threading
+import httpretty
 
 from mock import Mock
 from nose.plugins.attrib import attr
@@ -36,6 +38,9 @@ class TestStrategy(unittest.TestCase):
     
     TARGET_URL = get_moth_http('/audit/sql_injection/'
                                'where_integer_qs.py?id=1')
+
+    def setUp(self):
+        kb.cleanup()
 
     def test_strategy_run(self):
         core = w3afCore()
@@ -117,7 +122,7 @@ class TestStrategy(unittest.TestCase):
 
         self._assert_thread_names()
         
-    def test_strategy_verify_target_server(self):
+    def test_strategy_verify_target_server_up(self):
         core = w3afCore()
         
         # TODO: Change 2312 by an always closed/non-http port
@@ -142,3 +147,92 @@ class TestStrategy(unittest.TestCase):
             self.assertIn('Please verify your target configuration', message)
         else:
             self.assertTrue(False)
+
+    @httpretty.activate
+    def test_alert_if_target_is_301_all_proto_redir(self):
+        """
+        Tests that the protocol redirection is detected and reported in
+        the kb
+        """
+        core = w3afCore()
+
+        httpretty.register_uri(httpretty.GET,
+                               re.compile("w3af.com/(.*)"),
+                               body='301',
+                               status=301,
+                               adding_headers={'Location': 'https://w3af.com/'})
+
+        target = core.target.get_options()
+        target['target'].set_value('http://w3af.com/')
+        core.target.set_options(target)
+
+        core.plugins.set_plugins(['sqli'], 'audit')
+        core.plugins.init_plugins()
+
+        core.verify_environment()
+        core.scan_start_hook()
+
+        strategy = CoreStrategy(core)
+        strategy.start()
+
+        infos = kb.get('core', 'core')
+        self.assertEqual(len(infos), 1, infos)
+
+    @httpretty.activate
+    def test_alert_if_target_is_301_all_domain_redir(self):
+        """
+        Tests that the domain redirection is detected and reported in
+        the kb
+        """
+        core = w3afCore()
+
+        httpretty.register_uri(httpretty.GET,
+                               re.compile("w3af.com/(.*)"),
+                               body='301',
+                               status=301,
+                               adding_headers={'Location': 'http://www.w3af.com/'})
+
+        target = core.target.get_options()
+        target['target'].set_value('http://w3af.com/')
+        core.target.set_options(target)
+
+        core.plugins.set_plugins(['sqli'], 'audit')
+        core.plugins.init_plugins()
+
+        core.verify_environment()
+        core.scan_start_hook()
+
+        strategy = CoreStrategy(core)
+        strategy.start()
+
+        infos = kb.get('core', 'core')
+        self.assertEqual(len(infos), 1, infos)
+
+    @httpretty.activate
+    def test_alert_if_target_is_301_all_internal_redir(self):
+        """
+        Tests that no info is created if the site redirects internally
+        """
+        core = w3afCore()
+
+        httpretty.register_uri(httpretty.GET,
+                               re.compile("w3af.com/(.*)"),
+                               body='301',
+                               status=301,
+                               adding_headers={'Location': 'http://w3af.com/xyz'})
+
+        target = core.target.get_options()
+        target['target'].set_value('http://w3af.com/')
+        core.target.set_options(target)
+
+        core.plugins.set_plugins(['sqli'], 'audit')
+        core.plugins.init_plugins()
+
+        core.verify_environment()
+        core.scan_start_hook()
+
+        strategy = CoreStrategy(core)
+        strategy.start()
+
+        infos = kb.get('core', 'core')
+        self.assertEqual(len(infos), 0, infos)

@@ -25,10 +25,13 @@ import Queue
 from multiprocessing import TimeoutError
 
 import w3af.core.data.kb.config as cf
+import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.extended_urllib import MAX_ERROR_COUNT
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.kb.info import Info
 
 from w3af.core.controllers.core_helpers.consumers.grep import grep
 from w3af.core.controllers.core_helpers.consumers.auth import auth
@@ -88,7 +91,8 @@ class CoreStrategy(object):
         :return: No value is returned.
         """
         try:
-            self.verify_target_server()
+            self.verify_target_server_up()
+            self.alert_if_target_is_301_all()
             
             self._setup_grep()
             self._setup_auth()
@@ -333,7 +337,7 @@ class CoreStrategy(object):
         """
         self._w3af_core.exception_handler.handle_exception_data(exception_data)
 
-    def verify_target_server(self):
+    def verify_target_server_up(self):
         """
         Well, it is more common than expected that the user configures a target
         which is offline, is not a web server, etc. So we're going to verify
@@ -357,7 +361,7 @@ class CoreStrategy(object):
                ' our packets or there is no HTTP daemon listening on that'
                ' port.\n\n'
                'Please verify your target configuration and try again. The'
-               ' tested targets were:\n'
+               ' tested targets were:\n\n'
                ' %s\n')
 
         targets = cf.cf.get('targets')
@@ -370,7 +374,7 @@ class CoreStrategy(object):
                     # Not a real error, the user stopped the scan
                     raise
                 except Exception, e:
-                    dbg = 'Exception found during verify_target_server: "%s"'
+                    dbg = 'Exception found during verify_target_server_up: "%s"'
                     om.out.debug(dbg % e)
 
                     target_list = '\n'.join(' - %s\n' % url for url in targets)
@@ -378,6 +382,89 @@ class CoreStrategy(object):
                     raise ScanMustStopException(msg % target_list)
                 else:
                     sent_requests += 1
+
+    def alert_if_target_is_301_all(self):
+        """
+        Alert the user when the configured target is set to a site which will
+        301 redirect all requests to https://
+
+        :see: https://github.com/andresriancho/w3af/issues/14976
+        :return: True if the site returns 301 for all resources. Also an Info
+                 instance is saved to the KB in order to alert the user.
+        """
+        site_does_redirect = False
+        msg = ('The configured target domain redirects all HTTP requests to a'
+               ' different location. The most common scenarios are:\n\n'
+               ''
+               '    * HTTP redirect to HTTPS\n'
+               '    * domain.com redirect to www.domain.com\n\n'
+               ''
+               'While the scan engine can identify URLs and vulnerabilities'
+               ' using the current configuration it might be wise to start'
+               ' a new scan setting the target URL to the redirect target.')
+
+        targets = cf.cf.get('targets')
+
+        for url in targets:
+            # We test if the target URLs are redirecting to a different protocol
+            # or domain.
+            try:
+                http_response = self._w3af_core.uri_opener.GET(url, cache=False)
+            except ScanMustStopByUserRequest:
+                # Not a real error, the user stopped the scan
+                raise
+            except Exception, e:
+                emsg = 'Exception found during alert_if_target_is_301_all(): "%s"'
+                emsg %= e
+
+                om.out.debug(emsg)
+                raise ScanMustStopException(emsg)
+            else:
+                if 300 <= http_response.get_code() <= 399:
+
+                    # Get the redirect target
+                    lower_headers = http_response.get_lower_case_headers()
+                    redirect_url = None
+
+                    for header_name in ('location', 'uri'):
+                        if header_name in lower_headers:
+                            header_value = lower_headers[header_name]
+                            header_value = header_value.strip()
+                            try:
+                                redirect_url = URL(header_value)
+                            except ValueError:
+                                # No special invalid URL handling required
+                                continue
+
+                    if not redirect_url:
+                        continue
+
+                    # Check if the protocol was changed:
+                    target_proto = url.get_protocol()
+                    redirect_proto = redirect_url.get_protocol()
+
+                    if target_proto != redirect_proto:
+                        site_does_redirect = True
+                        break
+
+                    # Check if the domain was changed:
+                    target_domain = url.get_domain()
+                    redirect_domain = redirect_url.get_domain()
+
+                    if target_domain != redirect_domain:
+                        site_does_redirect = True
+                        break
+
+        if site_does_redirect:
+            name = 'Target redirect'
+            info = Info(name, msg, http_response.id, name)
+            info.set_url(url)
+            info.add_to_highlight(http_response.get_redir_url().url_string)
+
+            kb.kb.append_uniq('core', 'core', info)
+            om.out.report_finding(info)
+
+        return site_does_redirect
 
     def _setup_404_detection(self):
         #
