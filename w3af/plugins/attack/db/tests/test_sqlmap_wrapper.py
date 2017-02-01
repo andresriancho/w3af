@@ -197,7 +197,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         
     def test_sqlmap(self):
         vulnerable = self.sqlmap.is_vulnerable()
-        self.assertTrue(vulnerable)
+        self.assertTrue(vulnerable, self.sqlmap.last_stdout)
         
         cmd, process = self.sqlmap.direct('--tables')
         output = process.stdout.read()
