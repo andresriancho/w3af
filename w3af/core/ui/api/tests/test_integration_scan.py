@@ -20,8 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import requests
 import base64
+
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 from w3af.core.ui.api.tests.utils.integration_test import IntegrationTest
 from w3af.core.ui.api.tests.utils.test_profile import (get_test_profile,
@@ -38,7 +41,8 @@ class APIScanTest(IntegrationTest):
         response = requests.post('%s/scans/' % self.api_url,
                                  auth=self.api_auth,
                                  data=json.dumps(data),
-                                 headers=self.headers)
+                                 headers=self.headers,
+                                 verify=False)
 
         scan_id = response.json()['id']
         self.assertEqual(response.json(), {u'message': u'Success',
@@ -63,7 +67,8 @@ class APIScanTest(IntegrationTest):
         # Get the detailed status
         #
         response = requests.get('%s/scans/%s/status' % (self.api_url, scan_id),
-                                auth=self.api_auth)
+                                auth=self.api_auth,
+                                verify=False)
         self.assertEqual(response.status_code, 200, response.text)
 
         json_data = response.json()
@@ -77,7 +82,8 @@ class APIScanTest(IntegrationTest):
         self.wait_until_finish()
 
         response = requests.get('%s/scans/%s/kb/' % (self.api_url, scan_id),
-                                auth=self.api_auth)
+                                auth=self.api_auth,
+                                verify=False)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_summaries = response.json()['items']
@@ -92,7 +98,8 @@ class APIScanTest(IntegrationTest):
         # Make sure I can access the vulnerability details
         #
         response = requests.get('%s/scans/%s/kb/0' % (self.api_url, scan_id),
-                                auth=self.api_auth)
+                                auth=self.api_auth,
+                                verify=False)
         self.assertEqual(response.status_code, 200, response.text)
 
         vuln_info = response.json()
@@ -110,7 +117,8 @@ class APIScanTest(IntegrationTest):
         #
         traffic_href = vuln_info['traffic_hrefs'][0]
         response = requests.get('%s%s' % (self.api_url, traffic_href),
-                                auth=self.api_auth)
+                                auth=self.api_auth,
+                                verify=False)
 
         traffic_data = response.json()
         self.assertIn('request', traffic_data)
@@ -122,7 +130,8 @@ class APIScanTest(IntegrationTest):
         # Get the scan log
         #
         response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id),
-                                auth=self.api_auth)
+                                auth=self.api_auth,
+                                verify=False)
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data = response.json()
@@ -141,7 +150,8 @@ class APIScanTest(IntegrationTest):
         # Clear the scan results
         #
         response = requests.delete('%s/scans/%s' % (self.api_url, scan_id),
-                                   auth=self.api_auth)
+                                   auth=self.api_auth,
+                                   verify=False)
         self.assertEqual(response.json(), {u'message': u'Success'})
 
         return scan_id
@@ -153,7 +163,8 @@ class APIScanTest(IntegrationTest):
         response = requests.post('%s/scans/' % self.api_url,
                                  auth=self.api_auth, 
                                  data=json.dumps(data),
-                                 headers=self.headers)
+                                 headers=self.headers,
+                                 verify=False)
 
         self.assertEqual(response.json(), {u'message': u'Success',
                                            u'href': u'/scans/0',
@@ -169,7 +180,8 @@ class APIScanTest(IntegrationTest):
         # Now stop the scan
         #
         response = requests.get('%s/scans/0/stop' % self.api_url, 
-                                auth=self.api_auth)
+                                auth=self.api_auth,
+                                verify=False)
         self.assertEqual(response.json(), {u'message': u'Stopping scan'})
 
         # Wait for it...
@@ -177,7 +189,8 @@ class APIScanTest(IntegrationTest):
 
         # Assert that we identify the logs associated with stopping the core
         response = requests.get('%s/scans/0/log' % self.api_url,
-                                auth=self.api_auth)
+                                auth=self.api_auth,
+                                verify=False)
         self.assertEqual(response.status_code, 200, response.text)
 
         log_data = response.json()['entries']
