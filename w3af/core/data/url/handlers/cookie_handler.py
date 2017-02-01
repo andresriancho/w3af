@@ -31,7 +31,11 @@ class CookieHandler(urllib2.HTTPCookieProcessor):
         requests without any cookies.
         """
         if request.cookies:
-            return urllib2.HTTPCookieProcessor.http_request(self, request)
+            try:
+                return urllib2.HTTPCookieProcessor.http_request(self, request)
+            except AttributeError:
+                # https://github.com/andresriancho/w3af/issues/13842
+                return request
         
         # Don't do any cookie stuff
         return request
