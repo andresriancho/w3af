@@ -62,6 +62,9 @@ class rosetta_flash(AuditPlugin):
         """
         content_type, _ = orig_response.get_headers().iget('Content-Type')
 
+        if not content_type:
+            return
+
         # Only check JSONP endpoints, other "reflections" like XSS are checked
         # in xss.py , have different severity, exploits, etc.
         if 'javascript' not in content_type or 'text/plain' not in content_type:
