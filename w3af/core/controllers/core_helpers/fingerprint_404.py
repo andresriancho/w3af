@@ -181,10 +181,11 @@ class fingerprint_404(object):
                     # i already exists in the self._404_responses, no need
                     # to compare any further
                     break
-                else:
-                    # They are no equal, this means that we'll have to add this
-                    # one to the 404 responses
-                    self._404_responses.append(i)
+            else:
+                # None of the 404_responses match the item from not_exist_resp_lst
+                # This means that this item is new and we should store it in the
+                # 404_responses db
+                self._404_responses.append(i)
 
         # And I return the ones I need
         msg_fmt = 'The 404 body result database has a length of %s.'
