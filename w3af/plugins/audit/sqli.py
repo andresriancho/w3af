@@ -193,7 +193,7 @@ class sqli(AuditPlugin):
                 if self._has_no_bug(mutant):
                     # Create the vuln,
                     desc = 'SQL injection in a %s was found at: %s'
-                    desc = desc % (dbms_type, mutant.found_at())
+                    desc %= dbms_type, mutant.found_at()
                                         
                     v = Vuln.from_mutant('SQL injection', desc, severity.HIGH,
                                          response.id, self.get_name(), mutant)

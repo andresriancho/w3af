@@ -57,7 +57,7 @@ def start_api():
                                preexec_fn=os.setsid,
                                cwd=w3af_api_path)
 
-    api_url = 'http://127.0.0.1:%s' % port
+    api_url = 'https://127.0.0.1:%s' % port
 
     # Now we wait until the API is ready to answer requests
     for i in xrange(75):
