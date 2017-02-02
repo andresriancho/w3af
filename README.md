@@ -1,4 +1,4 @@
-## w3af - Web application attack and audit framework
+## w3af - Web Application Attack and Audit Framework
 
 w3af is an [open source](https://www.gnu.org/licenses/gpl-2.0.txt) web 
 application security scanner which helps developers and penetration testers
