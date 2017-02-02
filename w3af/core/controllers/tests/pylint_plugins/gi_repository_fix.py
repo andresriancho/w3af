@@ -6,6 +6,7 @@ CODE_FIX = """
 class Notify(object):
     def Notification(*args, **kwds): pass
     def init(*args, **kwds): pass
+    def new(*args, **kwds): pass
 """
 
 
