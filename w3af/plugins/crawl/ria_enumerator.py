@@ -43,6 +43,9 @@ class ria_enumerator(CrawlPlugin):
     Fingerprint Rich Internet Apps - Google Gears Manifest files, Silverlight and Flash.
     :author: Jon Rose ( jrose@owasp.org )
     """
+    FILE_TAG_ATTR = {'crossdomain.xml': ('allow-access-from', 'domain'),
+                     'clientaccesspolicy.xml': ('domain', 'uri')}
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -108,19 +111,24 @@ class ria_enumerator(CrawlPlugin):
     def _analyze_gears_manifest(self, url, response, file_name):
         if '"entries":' in response:
             # Save it to the kb!
-            desc = 'A gears manifest file was found at: "%s".'\
-                   ' Each file should be manually reviewed for sensitive'\
-                   ' information that may get cached on the client.'
-            desc = desc % url
-            
+            desc = ('A gears manifest file was found at: "%s".'
+                    ' Each file should be manually reviewed for sensitive'
+                    ' information that may get cached on the client.')
+            desc %= url
+
             i = Info('Gears manifest resource', desc, response.id,
                      self.get_name())
             i.set_url(url)
-            
+
             kb.kb.append(self, url, i)
             om.out.information(i.get_desc())
 
     def _analyze_crossdomain_clientaccesspolicy(self, url, response, file_name):
+
+        # https://github.com/andresriancho/w3af/issues/14491
+        if file_name not in self.FILE_TAG_ATTR:
+            return
+
         try:
             dom = xml.dom.minidom.parseString(response.get_body())
         except Exception:
@@ -131,50 +139,48 @@ class ria_enumerator(CrawlPlugin):
             'cross-domain-access' in response.get_body():
 
                 desc = 'The "%s" file at: "%s" is not a valid XML.'
-                desc = desc % (file_name, response.get_url())
-            
+                desc %= (file_name, response.get_url())
+
                 i = Info('Invalid RIA settings file', desc, response.id,
                          self.get_name())
                 i.set_url(response.get_url())
-                
+
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
-        else:
-            if file_name == 'crossdomain.xml':
-                url_list = dom.getElementsByTagName("allow-access-from")
-                attribute = 'domain'
-            if file_name == 'clientaccesspolicy.xml':
-                url_list = dom.getElementsByTagName("domain")
-                attribute = 'uri'
 
-            for url in url_list:
-                url = url.getAttribute(attribute)
+            return
 
-                if url == '*':
-                    desc = 'The "%s" file at "%s" allows flash/silverlight'\
-                           ' access from any site.'
-                    desc = desc % (file_name, response.get_url())
+        tag, attribute = self.FILE_TAG_ATTR.get(file_name)
+        url_list = dom.getElementsByTagName(tag)
 
-                    v = Vuln('Insecure RIA settings', desc, severity.LOW,
-                             response.id, self.get_name())
-                    v.set_url(response.get_url())
-                    v.set_method('GET')
+        for url in url_list:
+            url = url.getAttribute(attribute)
 
-                    kb.kb.append(self, 'vuln', v)
-                    om.out.vulnerability(v.get_desc(),
-                                         severity=v.get_severity())
-                else:
-                    desc = 'The "%s" file at "%s" allows flash/silverlight'\
-                           ' access from "%s".'
-                    desc = desc % (file_name, response.get_url(), url)
+            if url == '*':
+                desc = 'The "%s" file at "%s" allows flash/silverlight'\
+                       ' access from any site.'
+                desc %= (file_name, response.get_url())
 
-                    i = Info('Cross-domain allow ACL', desc, response.id,
-                             self.get_name())
-                    i.set_url(response.get_url())
-                    i.set_method('GET')
+                v = Vuln('Insecure RIA settings', desc, severity.LOW,
+                         response.id, self.get_name())
+                v.set_url(response.get_url())
+                v.set_method('GET')
 
-                    kb.kb.append(self, 'info', i)
-                    om.out.information(i.get_desc())
+                kb.kb.append(self, 'vuln', v)
+                om.out.vulnerability(v.get_desc(),
+                                     severity=v.get_severity())
+            else:
+                desc = 'The "%s" file at "%s" allows flash/silverlight'\
+                       ' access from "%s".'
+                desc %= (file_name, response.get_url(), url)
+
+                i = Info('Cross-domain allow ACL', desc, response.id,
+                         self.get_name())
+                i.set_url(response.get_url())
+                i.set_method('GET')
+
+                kb.kb.append(self, 'info', i)
+                om.out.information(i.get_desc())
 
     def get_options(self):
         """
