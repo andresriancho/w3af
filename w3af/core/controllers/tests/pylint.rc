@@ -36,7 +36,7 @@ enable=E0101,E1103,E1124,E0611,E1123,E1120,E0202,E0203,E0100,E1305,E0221,E0222,E
 # can either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once).
-#disable=
+disable=F0010
 
 [REPORTS]
 
