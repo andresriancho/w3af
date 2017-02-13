@@ -31,7 +31,7 @@ class Fedora(Platform):
     PKG_MANAGER_CMD = 'sudo yum install'
     PIP_CMD = 'python-pip'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'python-setuptools',
+    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'python2-setuptools',
                             'libsqlite3x-devel', 'git', 'libxml2-devel',
                             'libxslt-devel', 'openssl-devel', 'libffi-devel']
 
