@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import json
 
-from collections import OrderedDict
-
 
 FORM_ID_FORMAT_ERROR = '''\
 The provided form-id JSON is incorrect. Form ids must be JSON objects with the
