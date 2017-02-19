@@ -84,3 +84,52 @@ consumed using a non-browser application:
     requests captured by the proxy. The manual step(s) where the user teaches
     ``w3af`` about all the API endpoints and parameters is key to the success
     of the security audit.
+
+Choosing which forms to ignore
+------------------------------
+
+``w3af`` allows users to configure which forms to ignore using a feature called
+form ID exclusions. This feature was created when users identified limitations in
+the previous (more simplistic) exclusion model which only allowed forms to be
+ignored using URL matching.
+
+Exclusions are configured using a list of form exclusions IDs provided in the
+following format:
+
+.. code-block:: json
+
+    [{"action":"/products/.*",
+      "inputs": ["comment"],
+      "attributes": {"class": "comments-form"},
+      "hosted-at-url": "/products/.*",
+      "method": "get"}]
+
+Where:
+
+ * ``action`` is a regular expression matching the URL path of the form action,
+ * ``inputs`` is a list containing the form inputs,
+ * ``attributes`` is a map containing the ``<form>`` tag attributes,
+ * ``hosted-at-url`` is a regular expression matching the URL path where the form was found,
+ * ``method`` is the HTTP method using to submit the form.
+
+So, for example, if a user wants to ignore all forms which are sent using the
+HTTP POST method he would configure the following form ID:
+
+.. code-block:: json
+
+    [{"method": "post"}]
+
+If the user decides to ignore all forms which are sent to a specific action and contain
+the ``class`` attribute with value ``comments-form`` he would configure:
+
+.. code-block:: json
+
+    [{"action":"/products/comments",
+      "attributes": {"class": "comments-form"}}]
+
+Ignoring all forms is also possible using:
+
+.. code-block:: json
+
+    [{}]
+
