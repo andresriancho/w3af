@@ -27,7 +27,7 @@ from w3af.core.controllers.misc.get_net_iface import get_net_iface
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.option_types import (URL_LIST, COMBO, BOOL, LIST,
-                                                 STRING, INT)
+                                                 STRING, INT, FORM_ID_LIST)
 
 
 class MiscSettings(Configurable):
@@ -208,7 +208,7 @@ class MiscSettings(Configurable):
              'Find more about form IDs in the "Advanced use cases" section'
              'of the w3af documentation.')
         opt = opt_factory('form_id_list', cf.cf.get('form_id_list'), desc,
-                          STRING, help=h, tabid='Exclusions')
+                          FORM_ID_LIST, help=h, tabid='Exclusions')
         ol.add(opt)
 
         desc = 'Define the form_id_list filter behaviour'
