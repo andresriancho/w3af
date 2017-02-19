@@ -47,6 +47,13 @@ class FormID(object):
         self.hosted_at_url = hosted_at_url
         self.method = method
 
+    def matches_one_of(self, form_matcher_list):
+        for form_matcher in form_matcher_list.get_form_ids():
+            if self.matches(form_matcher):
+                return True
+
+        return False
+
     def matches(self, form_matcher):
         """
         :param form_matcher: A FormIDMatcher instance as configured by the user
@@ -66,7 +73,7 @@ class FormID(object):
                 if (attribute, attribute_value) not in self_attribute_values:
                     return False
 
-        if form_matcher.method is not None:
+        if form_matcher.method is not None and self.method is not None:
             if form_matcher.method.lower() != self.method.lower():
                 return False
 

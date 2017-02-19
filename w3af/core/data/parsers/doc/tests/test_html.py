@@ -22,11 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
+import w3af.core.data.kb.config as cf
+
 from nose.plugins.attrib import attr
+
+from w3af.core.controllers.misc_settings import EXCLUDE, INCLUDE
 
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.parsers.utils.form_id_matcher_list import FormIDMatcherList
 from w3af.core.data.parsers.doc.html import HTMLParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.tests.test_sgml import build_http_response
@@ -316,3 +321,167 @@ class TestHTMLParser(unittest.TestCase):
         # But it translates to url-encoded form afterwards
         dc = dc_from_form_params(form)
         self.assertIsInstance(dc, URLEncodedForm)
+
+    def tearDown(self):
+        # set the defaults back
+        cf.cf.save('form_id_list', FormIDMatcherList('[]'))
+        cf.cf.save('form_id_action', EXCLUDE)
+
+    def test_form_exclude_two_of_two(self):
+        user_value = '[{"action": "/foo", "method": "get"}, {"action": "/bar", "method": "post"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+
+        body = """
+        <html>
+            <form action="/foo" method="get">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+
+            <form action="/bar" method="post">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 0)
+
+    def test_form_exclude_one_of_two(self):
+        user_value = '[{"action": "/foo", "method": "get"}, {"action": "/nomatch", "method": "post"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+
+        body = """
+        <html>
+            <form action="/foo" method="get">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+
+            <form action="/bar" method="post">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 1)
+        self.assertEquals(p.forms[0]._action, URL('http://w3af.com/bar'))
+
+    def test_form_exclude_zero_of_two(self):
+        user_value = '[{"action": "/foo", "method": "post"}, {"action": "/nomatch", "method": "post"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+
+        body = """
+        <html>
+            <form action="/foo" method="get">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+
+            <form action="/bar" method="post">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 2)
+
+    def test_form_include_zero_of_two(self):
+        user_value = '[{"action": "/foo", "method": "post"}, {"action": "/nomatch", "method": "post"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+        cf.cf.save('form_id_action', INCLUDE)
+
+        body = """
+        <html>
+            <form action="/foo" method="get">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+
+            <form action="/bar" method="post">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 0)
+
+    def test_form_include_one_of_two(self):
+        user_value = '[{"action": "/foo", "method": "get"}, {"action": "/nomatch", "method": "post"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+        cf.cf.save('form_id_action', INCLUDE)
+
+        body = """
+        <html>
+            <form action="/foo" method="get">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+
+            <form action="/bar" method="post">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 1)
+
+    def test_form_include_two_of_two(self):
+        user_value = '[{"action": "/foo", "method": "get"}, {"action": "/bar", "method": "post"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+        cf.cf.save('form_id_action', INCLUDE)
+
+        body = """
+        <html>
+            <form action="/foo" method="get">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+
+            <form action="/bar" method="post">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 2)
+
+    def test_form_include_two_of_two_one_form_id(self):
+        user_value = '[{"action": "/abc.*"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+        cf.cf.save('form_id_action', INCLUDE)
+
+        body = """
+        <html>
+            <form action="/abc/foo" method="get">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+
+            <form action="/abc/bar" method="post">
+                <input type="text" name="test" value="hello">
+                <input type="submit" name="submit">
+            </form>
+        </html>"""
+        r = build_http_response(self.url, body)
+        p = RaiseHTMLParser(r)
+        p.parse()
+
+        self.assertEqual(len(p.forms), 2)

@@ -24,6 +24,7 @@ import unittest
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_id import FormID
 from w3af.core.data.parsers.utils.form_id_matcher import FormIDMatcher
+from w3af.core.data.parsers.utils.form_id_matcher_list import FormIDMatcherList
 
 
 class TestFormID(unittest.TestCase):
@@ -218,3 +219,44 @@ class TestFormID(unittest.TestCase):
         match = found_form_id.matches(form_matcher)
 
         self.assertFalse(match)
+
+    def test_matches_one_of_false_1(self):
+        user_value = '[{"action": "/foo"}, {"action": "/bar", "method": "get"}]'
+        form_list = FormIDMatcherList(user_value)
+
+        found_form_id = FormID(action=self.ACTION_URL,
+                               inputs=['comment', 'submit'],
+                               hosted_at_url=self.HOSTED_AT_URL,
+                               attributes={'class': 'comment-css'})
+
+        match = found_form_id.matches_one_of(form_list)
+
+        self.assertFalse(match)
+
+    def test_matches_one_of_false_2(self):
+        user_value = '[{"action": "/foo", "method": "post"}, {"action": "/products/product-.*", "method": "get"}]'
+        form_list = FormIDMatcherList(user_value)
+
+        found_form_id = FormID(action=URL('http://w3af.org/products/product-132'),
+                               inputs=['comment', 'submit'],
+                               hosted_at_url=self.HOSTED_AT_URL,
+                               method='post',
+                               attributes={'class': 'comment-css'})
+
+        match = found_form_id.matches_one_of(form_list)
+
+        self.assertFalse(match)
+
+    def test_matches_one_of_true(self):
+        user_value = '[{"action": "/foo", "method": "post"}, {"action": "/products/product-.*", "method": "get"}]'
+        form_list = FormIDMatcherList(user_value)
+
+        found_form_id = FormID(action=URL('http://w3af.org/products/product-132'),
+                               inputs=['comment', 'submit'],
+                               hosted_at_url=self.HOSTED_AT_URL,
+                               method='get',
+                               attributes={'class': 'comment-css'})
+
+        match = found_form_id.matches_one_of(form_list)
+
+        self.assertTrue(match)

@@ -29,6 +29,9 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.option_types import (URL_LIST, COMBO, BOOL, LIST,
                                                  STRING, INT, FORM_ID_LIST)
 
+EXCLUDE = 'exclude'
+INCLUDE = 'include'
+
 
 class MiscSettings(Configurable):
     """
@@ -87,7 +90,7 @@ class MiscSettings(Configurable):
 
         # Form exclusion via IDs
         cf.cf.save('form_id_list', '[]')
-        cf.cf.save('form_id_action', 'exclude')
+        cf.cf.save('form_id_action', EXCLUDE)
 
     def get_options(self):
         """
@@ -216,7 +219,7 @@ class MiscSettings(Configurable):
              ' forms needs to be scanned. If forms matching the form_id_list'
              ' parameters need to be excluded then set this value to "exclude".')
 
-        form_id_actions = ['exclude', 'include']
+        form_id_actions = [EXCLUDE, INCLUDE]
         tmp_list = form_id_actions[:]
         tmp_list.remove(cf.cf.get('form_id_action'))
         tmp_list.insert(0, cf.cf.get('form_id_action'))
