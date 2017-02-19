@@ -33,17 +33,19 @@ class FormID(object):
     :see: https://github.com/andresriancho/w3af/issues/15161
     """
     def __init__(self, action=None, inputs=None, attributes=None,
-                 hosted_at_url=None):
+                 hosted_at_url=None, method=None):
         """
         :param action: URL (object) where the form is sent
         :param inputs: A list with the names of the form parameters
         :param attributes: The form tag attributes as seen in the HTML
         :param hosted_at_url: The URL (object) where the form appeared
+        :param method: The HTTP method used to submit the form
         """
         self.action = action
         self.inputs = inputs
         self.attributes = attributes
         self.hosted_at_url = hosted_at_url
+        self.method = method
 
     def matches(self, form_matcher):
         """
@@ -63,6 +65,10 @@ class FormID(object):
             for attribute, attribute_value in form_matcher.attributes.iteritems():
                 if (attribute, attribute_value) not in self_attribute_values:
                     return False
+
+        if form_matcher.method is not None:
+            if form_matcher.method.lower() != self.method.lower():
+                return False
 
         # Now we match the slower things, which have more impact on performance
         if form_matcher.action is not None:
@@ -87,5 +93,6 @@ class FormID(object):
         data = OrderedDict([('action', self.action.get_path()),
                             ('hosted_at_url', self.hosted_at_url.get_path()),
                             ('inputs', self.inputs),
-                            ('attributes', self.attributes)])
+                            ('attributes', self.attributes),
+                            ('method', self.method)])
         return json.dumps(data)

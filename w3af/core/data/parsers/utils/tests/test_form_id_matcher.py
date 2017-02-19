@@ -43,13 +43,15 @@ class TestFormIDMatcher(unittest.TestCase):
         json_string = json.dumps({'hosted_at_url': '/products/.*',
                                   'action': '/comments',
                                   'attributes': {'class': 'comment-css'},
-                                  'inputs': ['comment']})
+                                  'inputs': ['comment'],
+                                  'method': 'get'})
         form_idm = FormIDMatcher.from_json(json_string)
 
         self.assertIsInstance(form_idm.hosted_at_url, re._pattern_type)
         self.assertIsInstance(form_idm.action, re._pattern_type)
         self.assertEqual(form_idm.inputs, ['comment'])
         self.assertEqual(form_idm.attributes, {'class': 'comment-css'})
+        self.assertEqual(form_idm.method, 'get')
 
     def test_form_id_matcher_from_json_missing_is_none_hosted(self):
         json_string = json.dumps({'action': '/comments',

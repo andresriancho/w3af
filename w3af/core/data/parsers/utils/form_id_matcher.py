@@ -55,6 +55,7 @@ class FormIDMatcher(object):
 
         {"action":"/products/.*",
          "inputs": ["comment"],
+         "method": "get",
          "attributes": {"class": "comments-form"},
          "hosted-at-url": "/products/.*"}
 
@@ -63,7 +64,7 @@ class FormIDMatcher(object):
     :see: https://github.com/andresriancho/w3af/issues/15161
     """
     def __init__(self, action=None, inputs=None, attributes=None,
-                 hosted_at_url=None):
+                 hosted_at_url=None, method=None):
         """
         :param action: Regular expression object matching URL where
                        the form is sent
@@ -71,15 +72,19 @@ class FormIDMatcher(object):
         :param attributes: The form tag attributes as seen in the HTML
         :param hosted_at_url: Regular expression object matching URL
                               where the form should
+        :param method: The HTTP method used to submit the form
         """
-        self.verify_data_types(action, inputs, attributes, hosted_at_url)
+        self.verify_data_types(action, inputs, attributes, hosted_at_url,
+                               method)
 
         self.action = action
         self.inputs = inputs
         self.attributes = attributes
         self.hosted_at_url = hosted_at_url
+        self.method = method
 
-    def verify_data_types(self, action, inputs, attributes, hosted_at_url):
+    def verify_data_types(self, action, inputs, attributes, hosted_at_url,
+                          method):
         """
         Strict attribute type checking to make sure we get what we expect from
         all the callers
@@ -118,6 +123,10 @@ class FormIDMatcher(object):
             if not isinstance(hosted_at_url, re._pattern_type):
                 raise ValueError(FORM_ID_FORMAT_ERROR)
 
+        if method is not None:
+            if not isinstance(method, basestring):
+                raise ValueError(FORM_ID_FORMAT_ERROR)
+
         return True
 
     @classmethod
@@ -143,6 +152,7 @@ class FormIDMatcher(object):
         inputs = json_data.get('inputs', None)
         attributes = json_data.get('attributes', None)
         hosted_at_url = json_data.get('hosted_at_url', None)
+        method = json_data.get('method', None)
 
         # User configured action and hosted_at_url must be valid regular expressions
         if action is not None:
@@ -158,4 +168,7 @@ class FormIDMatcher(object):
                 raise ValueError(FORM_ID_FORMAT_ERROR)
 
         # Strict input checks are done in __init__ -> verify_data_types
-        return cls(action, inputs, attributes, hosted_at_url)
+        return cls(action, inputs, attributes, hosted_at_url, method)
+
+    def __str__(self):
+        return '<FormIDMatcher: %s>' % self.__dict__

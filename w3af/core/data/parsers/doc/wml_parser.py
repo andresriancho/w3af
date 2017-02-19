@@ -79,7 +79,9 @@ class WMLParser(SGMLParser):
                 action = self._source_url
 
         # Create the form
-        f = FormParameters(encoding=self._encoding)
+        f = FormParameters(encoding=self._encoding,
+                           attributes=attrs,
+                           hosted_at_url=self._source_url)
         f.set_method(method)
         f.set_action(action)
 

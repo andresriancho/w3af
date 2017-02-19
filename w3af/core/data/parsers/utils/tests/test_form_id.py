@@ -34,18 +34,21 @@ class TestFormID(unittest.TestCase):
         form_id = FormID(hosted_at_url=self.HOSTED_AT_URL,
                          inputs=['comment'],
                          action=self.ACTION_URL,
-                         attributes={'class': 'comment-css'})
+                         attributes={'class': 'comment-css'},
+                         method='get')
 
         self.assertEqual(form_id.hosted_at_url, self.HOSTED_AT_URL)
         self.assertEqual(form_id.inputs, ['comment'])
         self.assertEqual(form_id.action, self.ACTION_URL)
         self.assertEqual(form_id.attributes, {'class': 'comment-css'})
+        self.assertEqual(form_id.method, 'get')
 
     def test_form_id_to_json(self):
         form_id = FormID(hosted_at_url=self.HOSTED_AT_URL,
                          inputs=['comment'],
                          action=self.ACTION_URL,
-                         attributes={'class': 'comment-css'})
+                         attributes={'class': 'comment-css'},
+                         method='post')
 
         form_id_json = form_id.to_json()
         loaded_form_id = json.loads(form_id_json)
@@ -54,6 +57,7 @@ class TestFormID(unittest.TestCase):
         self.assertEqual(loaded_form_id['hosted_at_url'], form_id.hosted_at_url.get_path())
         self.assertEqual(loaded_form_id['inputs'], form_id.inputs)
         self.assertEqual(loaded_form_id['attributes'], form_id.attributes)
+        self.assertEqual(loaded_form_id['method'], form_id.method)
 
     def create_form_matcher(self, form_matcher_data):
         json_data = json.dumps(form_matcher_data)
@@ -83,6 +87,28 @@ class TestFormID(unittest.TestCase):
         match = found_form_id.matches(form_matcher)
 
         self.assertTrue(match)
+
+    def test_match_method(self):
+        user_configured_json = {'method': 'get'}
+        form_matcher = self.create_form_matcher(user_configured_json)
+        found_form_id = FormID(action=self.ACTION_URL,
+                               inputs=['comment', 'submit'],
+                               method='get')
+
+        match = found_form_id.matches(form_matcher)
+
+        self.assertTrue(match)
+
+    def test_not_match_method(self):
+        user_configured_json = {'method': 'get'}
+        form_matcher = self.create_form_matcher(user_configured_json)
+        found_form_id = FormID(action=self.ACTION_URL,
+                               inputs=['comment', 'submit'],
+                               method='post')
+
+        match = found_form_id.matches(form_matcher)
+
+        self.assertFalse(match)
 
     def test_match_action_regex(self):
         user_configured_json = {'action': '/products/comm.*'}

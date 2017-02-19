@@ -32,6 +32,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.dc.utils.multipart import is_file_like
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.parsers.utils.form_id import FormID
 from w3af.core.data.parsers.utils.form_fields import (FileFormField,
                                                       get_value_by_key,
                                                       SelectFormField,
@@ -88,8 +89,19 @@ class FormParameters(OrderedDict):
                             INPUT_TYPE_SELECT}
 
     def __init__(self, init_vals=(), meta=None, encoding=DEFAULT_ENCODING,
-                 method='GET', action=None,
-                 form_encoding=DEFAULT_FORM_ENCODING):
+                 method='GET', action=None, form_encoding=DEFAULT_FORM_ENCODING,
+                 attributes=None, hosted_at_url=None):
+        """
+
+        :param init_vals: Initial form params
+        :param meta: Form parameter meta-data (indicates the input type)
+        :param encoding: Form encoding
+        :param method: GET, POST, etc.
+        :param action: URL where the form is sent
+        :param form_encoding: url, multipart, etc.
+        :param attributes: The form tag attributes as seen in the HTML
+        :param hosted_at_url: The URL where the form appeared
+        """
         # pylint: disable=E1002
         super(FormParameters, self).__init__(init_vals)
         # pylint: enable=E1002
@@ -116,6 +128,22 @@ class FormParameters(OrderedDict):
         self.set_method(method)
         self.set_action(action)
         self.set_form_encoding(form_encoding)
+
+        # We need these for the form-id matching feature
+        # https://github.com/andresriancho/w3af/issues/15161
+        self._hosted_at_url = hosted_at_url
+        self._attributes = attributes
+
+    def get_form_id(self):
+        """
+        :return: A FormID which can be used to compare two forms
+        :see: https://github.com/andresriancho/w3af/issues/15161
+        """
+        return FormID(action=self._action,
+                      inputs=self.meta.keys(),
+                      attributes=self._attributes,
+                      hosted_at_url=self._hosted_at_url,
+                      method=self._method)
 
     def get_form_encoding(self):
         return self._form_encoding
@@ -575,7 +603,10 @@ class FormParameters(OrderedDict):
         :return: A copy of myself.
         """
         init_val = copy.deepcopy(self.items())
-        self_copy = FormParameters(init_vals=init_val, meta=self.meta)
+        self_copy = FormParameters(init_vals=init_val,
+                                   meta=self.meta,
+                                   attributes=self._attributes,
+                                   hosted_at_url=self._hosted_at_url)
 
         # Internal variables
         self_copy.set_method(self.get_method())

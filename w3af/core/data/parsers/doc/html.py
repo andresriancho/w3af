@@ -168,7 +168,9 @@ class HTMLParser(SGMLParser):
         form_params = FormParameters(encoding=self._encoding,
                                      method=method,
                                      action=action,
-                                     form_encoding=form_encoding)
+                                     form_encoding=form_encoding,
+                                     attributes=attrs,
+                                     hosted_at_url=self._source_url)
         form_params.set_autocomplete(autocomplete)
 
         self._forms.append(form_params)
