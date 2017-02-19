@@ -15,7 +15,7 @@ var page = require('webpage').create(),
     pageTimeoutTimer;
 
 if (system.args.length === 1) {
-    console.log('Usage: render.js http(s)://<host>[:port][/path] [{"method":"post", "data":"a=1&b=2"}]');
+    console.log('Usage: render.js http(s)://<host>[:port][/path] \'{"method":"post", "data":"a=1&b=2"}\'');
     return phantom.exit(1);
 }
 
@@ -121,6 +121,13 @@ page.settings.loadImages = (opt.loadImages = (!opt.loadImages === false));
 
 // to handle any headers-related manipulation and configuration
 page.customHeaders = headers.setReqHeaders(opt.headers || {}, opt.startHostname);
+
+
+function debug(message) {
+    if (opt.debug) {
+        console.log('[debug] ' + message)
+    }
+}
 
 // if (opt.debug) {
     // console.log('Cookies: ' + JSON.stringify(phantom.cookies));
@@ -337,6 +344,7 @@ events.addListener('DomChanged', function(data) {
 page.onConfirm = function(msg){return true};
 
 // main()
+debug('Browsing to ' + url);
 page.openUrl(url, {
     operation: opt.method,
     data: opt.data    // String expected

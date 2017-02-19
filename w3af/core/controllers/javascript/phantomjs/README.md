@@ -9,7 +9,8 @@ w3af's JS crawler is based on [gryffin](https://github.com/yahoo/gryffin). The a
  
 ## Requirements
 
-For the user the requirement is very simple: "Install phantomjs version > 2.0"
+For the user the requirement is very simple: "Install phantomjs version > 2.0". This
+is solved with `apt install phantomjs` in Debian based distributions.
 
 ## Running the crawler
  
@@ -23,3 +24,13 @@ phantomjs --ssl-protocol=any --ignore-ssl-errors=true --proxy=127.0.0.1:8080 \
 Remember to start Burp suite or any other proxy on `127.0.0.1:8080` before running that
 command. Also note that the target URL is set to WIVET's test number 11, change the URL
 to the real target you want to crawl.
+
+## Debugging
+
+`--debug=true` is very powerful and can be added as a phantomjs parameter.
+
+`'{"debug":true}'` will be parsed by `render.js` and used to print debugging information.
+
+```
+phantomjs --debug=true ... render.js <url> '{"debug":true}'
+```
