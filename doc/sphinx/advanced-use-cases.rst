@@ -93,8 +93,7 @@ form ID exclusions. This feature was created when users identified limitations i
 the previous (more simplistic) exclusion model which only allowed forms to be
 ignored using URL matching.
 
-Exclusions are configured using a list of form exclusions IDs provided in the
-following format:
+Exclusions are configured using a list of form IDs provided in the following format:
 
 .. code-block:: json
 
@@ -127,9 +126,32 @@ the ``class`` attribute with value ``comments-form`` he would configure:
     [{"action":"/products/comments",
       "attributes": {"class": "comments-form"}}]
 
+More than one form ID can be specified in the list, for example the following will
+exclude all forms with methods ``POST`` and ``PUT``:
+
+.. code-block:: json
+
+    [{"method": "post"}, {"method": "put"}]
+
 Ignoring all forms is also possible using:
 
 .. code-block:: json
 
     [{}]
 
+This feature is configured using two variables in the ``misc-settings`` menu:
+
+ * ``form_id_list``: A string containing the format explained above to match forms.
+ * ``form_id_action``: The default action is to exclude the forms which are found
+   by ``w3af`` and match at least one of the form IDs specified in ``form_id_list``,
+   but the user can also specify ``include`` to only scan the forms which match at least
+   one of the form IDs in the list.
+
+To ease the configuration of this setting ``w3af`` will add a ``debug`` line to the
+output (make sure to set verbose to true to see these lines in the output file plugin)
+containing the form ID of each identified form.
+
+.. note::
+
+    This feature works well together with ``non_targets``.
+    ``w3af`` will only send requests to the target if they match both filters.
