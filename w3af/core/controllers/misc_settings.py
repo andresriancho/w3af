@@ -24,6 +24,7 @@ import w3af.core.data.kb.config as cf
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_net_iface import get_net_iface
+from w3af.core.data.parsers.utils.form_id_matcher_list import FormIDMatcherList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.option_types import (URL_LIST, COMBO, BOOL, LIST,
@@ -89,7 +90,7 @@ class MiscSettings(Configurable):
         cf.cf.save('stop_on_first_exception', False)
 
         # Form exclusion via IDs
-        cf.cf.save('form_id_list', '[]')
+        cf.cf.save('form_id_list', FormIDMatcherList('[]'))
         cf.cf.save('form_id_action', EXCLUDE)
 
     def get_options(self):

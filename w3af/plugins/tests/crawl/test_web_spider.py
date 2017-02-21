@@ -355,3 +355,7 @@ class TestFormExclusions(PluginTest):
         found_urls = set(str(u).decode('utf-8') for u in urls)
 
         self.assertEquals(found_urls, expected_urls)
+
+        # revert any changes to the default so we don't affect other tests
+        cf.cf.save('form_id_list', FormIDMatcherList('[]'))
+        cf.cf.save('form_id_action', EXCLUDE)
