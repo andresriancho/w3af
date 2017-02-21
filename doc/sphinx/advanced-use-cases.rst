@@ -100,7 +100,7 @@ Exclusions are configured using a list of form IDs provided in the following for
     [{"action":"/products/.*",
       "inputs": ["comment"],
       "attributes": {"class": "comments-form"},
-      "hosted-at-url": "/products/.*",
+      "hosted_at_url": "/products/.*",
       "method": "get"}]
 
 Where:

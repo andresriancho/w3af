@@ -30,13 +30,13 @@ following structure:
 {"action":"/products/.*",
  "inputs": ["comment"],
  "attributes": {"class": "comments-form"},
- "hosted-at-url": "/products/.*"}
+ "hosted_at_url": "/products/.*"}
 
 Any of the top level object attributes can be missing but no extra top level
 attributes are allowed. Also, the types associated with each key needs to match
 the example above.
 
-Note that the values for "action" and "hosted-at-url" need to be valid regular
+Note that the values for "action" and "hosted_at_url" need to be valid regular
 expressions.
 
 Please read the documentation for more details and examples on how to configure
@@ -55,7 +55,7 @@ class FormIDMatcher(object):
          "inputs": ["comment"],
          "method": "get",
          "attributes": {"class": "comments-form"},
-         "hosted-at-url": "/products/.*"}
+         "hosted_at_url": "/products/.*"}
 
     And then used in a call to FormID.match(...)
 

@@ -36,7 +36,7 @@ class FormIDMatcherList(object):
           "inputs": ["comment"],
           "method": "get",
           "attributes": {"class": "comments-form"},
-          "hosted-at-url": "/products/.*"}]
+          "hosted_at_url": "/products/.*"}]
 
     And then used in a call to FormID.matches_one_of(...)
 
