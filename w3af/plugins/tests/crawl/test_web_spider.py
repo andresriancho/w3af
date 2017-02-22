@@ -23,17 +23,18 @@ import urllib2
 import re
 import os
 
+import w3af.core.data.kb.config as cf
+
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
-from w3af.plugins.crawl.web_spider import web_spider
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wivet import get_wivet_http
+from w3af.core.controllers.misc_settings import EXCLUDE, INCLUDE
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.dc.headers import Headers
-from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.parsers.utils.form_id_matcher_list import FormIDMatcherList
 
 
 class TestWebSpider(PluginTest):
@@ -308,3 +309,53 @@ class TestDeadLock(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
 
+class TestFormExclusions(PluginTest):
+    """
+    This is an integration test for form exclusions
+
+    :see: https://github.com/andresriancho/w3af/issues/15161
+    """
+    target_url = 'http://mock/'
+
+    scan_config = {
+        'target': target_url,
+        'plugins': {'crawl': (PluginConfig('web_spider'),)}
+    }
+
+    MOCK_RESPONSES = [MockResponse('http://mock/',
+                                   '<html>'
+                                   ''
+                                   '<form action="/out/" method="POST">'
+                                   '<input name="x" /></form>'
+                                   ''
+                                   '<form action="/in/" method="POST">'
+                                   '<input name="x" /></form>'
+                                   ''
+                                   '</html>'),
+                      MockResponse('http://mock/out/', 'Thanks.', method='POST'),
+                      MockResponse('http://mock/in/', 'Thanks.', method='POST')]
+
+    def test_form_exclusions(self):
+        user_value = '[{"action": "/out.*"}]'
+        cf.cf.save('form_id_list', FormIDMatcherList(user_value))
+        cf.cf.save('form_id_action', EXCLUDE)
+
+        self._scan(self.scan_config['target'],
+                   self.scan_config['plugins'])
+
+        # Define the expected/desired output
+        expected_files = ['',
+                          '/in/']
+        expected_urls = set(URL(self.target_url).url_join(end).url_string for end
+                            in expected_files)
+
+        # pylint: disable=E1101
+        # Pylint fails to detect the object types that come out of the KB
+        urls = self.kb.get_all_known_urls()
+        found_urls = set(str(u).decode('utf-8') for u in urls)
+
+        self.assertEquals(found_urls, expected_urls)
+
+        # revert any changes to the default so we don't affect other tests
+        cf.cf.save('form_id_list', FormIDMatcherList('[]'))
+        cf.cf.save('form_id_action', EXCLUDE)

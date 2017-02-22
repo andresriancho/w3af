@@ -24,10 +24,14 @@ import w3af.core.data.kb.config as cf
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_net_iface import get_net_iface
+from w3af.core.data.parsers.utils.form_id_matcher_list import FormIDMatcherList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.option_types import (URL_LIST, COMBO, BOOL, LIST,
-                                                 STRING, INT)
+                                                 STRING, INT, FORM_ID_LIST)
+
+EXCLUDE = 'exclude'
+INCLUDE = 'include'
 
 
 class MiscSettings(Configurable):
@@ -85,13 +89,19 @@ class MiscSettings(Configurable):
         cf.cf.save('non_targets', [])
         cf.cf.save('stop_on_first_exception', False)
 
+        # Form exclusion via IDs
+        cf.cf.save('form_id_list', FormIDMatcherList('[]'))
+        cf.cf.save('form_id_action', EXCLUDE)
+
     def get_options(self):
         """
         :return: A list of option objects for this plugin.
         """
         ol = OptionList()
 
-        ######## Fuzzer parameters ########
+        #
+        # Fuzzer parameters
+        #
         d = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
         opt = opt_factory('fuzz_cookies', cf.cf.get('fuzz_cookies'), d, BOOL,
                           tabid='Fuzzer parameters')
@@ -149,7 +159,9 @@ class MiscSettings(Configurable):
                           tabid='Fuzzer parameters')
         ol.add(opt)
 
-        ######## Core parameters ########
+        #
+        # Core parameters
+        #
         desc = 'Stop scan after first unhandled exception'
         h = ('This feature is only useful for developers that want their scan'
              ' to stop on the first exception that is raised by a plugin.'
@@ -169,7 +181,9 @@ class MiscSettings(Configurable):
                           desc, INT, help=h, tabid='Core settings')
         ol.add(opt)
 
-        ######## Network parameters ########
+        #
+        # Network parameters
+        #
         desc = 'Local interface name to use when sniffing, doing reverse'\
                ' connections, etc.'
         opt = opt_factory('interface', cf.cf.get('interface'), desc,
@@ -181,16 +195,43 @@ class MiscSettings(Configurable):
                           desc, STRING, tabid='Network settings')
         ol.add(opt)
 
-        ######### Misc ###########
-        desc = ('A comma separated list of URLs that w3af should completely'
-                ' ignore')
-        h = ('Sometimes it\'s a good idea to ignore some URLs and test them'
-             ' manually')
+        #
+        # URL and form exclusions
+        #
+        desc = 'A comma separated list of URLs that w3af should ignore'
+        h = 'No HTTP requests will be sent to these URLs'
         opt = opt_factory('non_targets', cf.cf.get('non_targets'), desc,
-                          URL_LIST, help=h, tabid='Misc settings')
+                          URL_LIST, help=h, tabid='Exclusions')
         ol.add(opt)
 
-        ######### Metasploit ###########
+        desc = 'Filter forms to scan using form IDs'
+        h = ('Form IDs allow the user to specify which forms will be either'
+             ' included of excluded in the scan. The form IDs identified by'
+             ' w3af will be written to the log (when verbose is set to true)'
+             ' and can be used to define this setting for new scans.\n\n'
+             'Find more about form IDs in the "Advanced use cases" section'
+             'of the w3af documentation.')
+        opt = opt_factory('form_id_list', cf.cf.get('form_id_list'), desc,
+                          FORM_ID_LIST, help=h, tabid='Exclusions')
+        ol.add(opt)
+
+        desc = 'Define the form_id_list filter behaviour'
+        h = ('Change this setting to "include" if only a very specific set of'
+             ' forms needs to be scanned. If forms matching the form_id_list'
+             ' parameters need to be excluded then set this value to "exclude".')
+
+        form_id_actions = [EXCLUDE, INCLUDE]
+        tmp_list = form_id_actions[:]
+        tmp_list.remove(cf.cf.get('form_id_action'))
+        tmp_list.insert(0, cf.cf.get('form_id_action'))
+
+        opt = opt_factory('form_id_action', tmp_list, desc,
+                          COMBO, help=h, tabid='Exclusions')
+        ol.add(opt)
+
+        #
+        # Metasploit
+        #
         desc = ('Full path of Metasploit framework binary directory (%s in '
                 'most linux installs)' % cf.cf.get('msf_location'))
         opt = opt_factory('msf_location', cf.cf.get('msf_location'),
@@ -216,7 +257,7 @@ class MiscSettings(Configurable):
                    'form_fuzzing_mode', 'max_discovery_time',
                    'fuzzable_headers', 'interface', 'local_ip_address',
                    'msf_location', 'stop_on_first_exception',
-                   'non_targets')
+                   'non_targets', 'form_id_action', 'form_id_list')
 
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())

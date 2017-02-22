@@ -129,6 +129,10 @@ class web_spider(CrawlPlugin):
         mode = cf.cf.get('form_fuzzing_mode')
         for form_params in dp.get_forms():
 
+            # Form exclusion #15161
+            form_id_json = form_params.get_form_id().to_json()
+            om.out.debug('A new form was found! Form-id is: "%s"' % form_id_json)
+
             if not self._should_analyze_url(form_params.get_action()):
                 continue
 

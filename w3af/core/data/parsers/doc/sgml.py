@@ -28,7 +28,10 @@ import StringIO
 from lxml import etree
 from collections import namedtuple
 
+import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
+
+from w3af.core.controllers.misc_settings import EXCLUDE, INCLUDE
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
@@ -393,12 +396,32 @@ class SGMLParser(BaseParser):
                 # Save url
                 self._tag_and_url.add((tag_name, url))
 
-    ## Properties ##
+    #
+    # Properties
+    #
     @property
     def forms(self):
         """
-        :return: Return list of forms.
+        :return: Return list of forms filtered using the form_id_list and
+                 form_id_action user configuration settings.
         """
+        form_id_list = cf.cf.get('form_id_list')
+        form_id_action = cf.cf.get('form_id_action') or EXCLUDE
+
+        if form_id_list is not None and len(form_id_list.get_form_ids()):
+            filtered_forms = []
+
+            for form in self._forms:
+                form_id = form.get_form_id()
+                matches_one_config_filter = form_id.matches_one_of(form_id_list)
+
+                if matches_one_config_filter and form_id_action == INCLUDE:
+                    filtered_forms.append(form)
+                elif not matches_one_config_filter and form_id_action == EXCLUDE:
+                    filtered_forms.append(form)
+
+            return filtered_forms
+
         return self._forms
 
     def get_forms(self):
