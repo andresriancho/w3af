@@ -32,6 +32,8 @@ from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolea
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.kb.vuln import Vuln
+import w3af.core.data.parsers.parser_cache as parser_cache
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 COMMON_CSRF_NAMES = (
@@ -70,7 +72,7 @@ class csrf(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
-        if not self._is_suitable(freq):
+        if not self._is_suitable(freq, orig_response):
             return
 
         # Referer/Origin check
@@ -111,13 +113,23 @@ class csrf(AuditPlugin):
 
         return True
 
-    def _is_suitable(self, freq):
+    def _is_suitable(self, freq, response):
         """
         For CSRF attack we need request with payload and persistent/session
-        cookies.
+        cookies and response with forms.
 
         :return: True if the request can have a CSRF vulnerability
         """
+        # Does the response have forms?
+        try:
+            dp = parser_cache.dpc.get_document_parser_for(response)
+        except BaseFrameworkException:
+            # Failed to find a suitable parser for the document
+            return False
+
+        if not dp.get_forms():
+            return False
+
         # Does the application send cookies?
         #
         # By checking like this we're loosing the opportunity to detect any
