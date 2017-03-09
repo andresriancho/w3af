@@ -443,6 +443,7 @@ class ConsoleUI(object):
             result = shlex.split(line)
         except ValueError, ve:
             term.write(str(ve) + '\n')
+            return []
         else:
             return result
 
