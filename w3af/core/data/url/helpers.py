@@ -64,6 +64,34 @@ def new_no_content_resp(uri, add_id=False):
     return no_content_response
 
 
+HTML_ESCAPE_TABLE_BY_NAME = {
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&apos;",
+    ">": "&gt;",
+    "<": "&lt;",
+    }
+
+
+def html_escape_by_name(text):
+    """Produce entities within text."""
+    return "".join(HTML_ESCAPE_TABLE_BY_NAME.get(c, c) for c in text)
+
+
+HTML_ESCAPE_TABLE_BY_CODE = {
+    "&": "&#x26;",
+    '"': "&#x22;",
+    "'": "&#x27;",
+    ">": "&#x3e;",
+    "<": "&#x3c;",
+    }
+
+
+def html_escape_by_code(text):
+    """Produce entities within text."""
+    return "".join(HTML_ESCAPE_TABLE_BY_NAME.get(c, c) for c in text)
+
+
 def get_clean_body(mutant, response):
     """
     @see: Very similar to fingerprint_404.py get_clean_body() bug not quite
@@ -117,6 +145,10 @@ def get_clean_body(mutant, response):
                           urlencoded_20,
                           urlencoded_plus_plus,
                           urlencoded_20_20,
+                          html_escape_by_name(mod_value),
+                          html_escape_by_name(unquoted),
+                          html_escape_by_code(mod_value),
+                          html_escape_by_code(unquoted),
                           cgi_escape(mod_value),
                           cgi_escape(unquoted)]
 
