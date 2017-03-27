@@ -38,6 +38,8 @@ class BlindSqliResponseDiff(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
+    SPECIAL_CHARS = '"\'=()'
+
     def __init__(self, uri_opener):
         # User configured variables
         self._eq_limit = 0.8
@@ -102,6 +104,25 @@ class BlindSqliResponseDiff(object):
 
         return res
 
+    def _remove_all_special_chars(self, sql_statement):
+        """
+        :param sql_statement: A SQL injection such as 47" OR "47"="47" OR "47"="47
+        :return: 47 OR 47 47 OR 47 47
+
+        This is useful to test if the parameter we're testing is actually
+        a search engine which is returning search results, and not a sql engine
+        which is being injected.
+        """
+        for special_char in self.SPECIAL_CHARS:
+            sql_statement = sql_statement.replace(special_char, ' ')
+
+        # escape double white spaces, not sure if this has any logical value
+        # in the search engine, but just in case...
+        while '  ' in sql_statement:
+            sql_statement = sql_statement.replace('  ', ' ')
+
+        return sql_statement
+
     def _find_bsql(self, mutant, statement_tuple, statement_type):
         """
         Is the main algorithm for finding blind SQL injections.
@@ -129,7 +150,8 @@ class BlindSqliResponseDiff(object):
 
         compare_diff = False
 
-        om.out.debug('Comparing body_true_response and body_false_response.')
+        om.out.debug('[%s] Comparing body_true_response and'
+                     'body_false_response.' % statement_type)
         if self.equal_with_limit(body_true_response, body_false_response,
                                  compare_diff):
             #
@@ -144,13 +166,26 @@ class BlindSqliResponseDiff(object):
         mutant.set_token_value(syntax_error)
         syntax_error_response, body_syntax_error_response = send_clean(mutant)
 
-        self.debug('Comparing body_true_response and'
-                   ' body_syntax_error_response.')
+        self.debug('[%s] Comparing body_true_response and'
+                   ' body_syntax_error_response.' % statement_type)
         if self.equal_with_limit(body_true_response,
                                  body_syntax_error_response,
                                  compare_diff):
             return None
-        
+
+        # Check if its a search engine before we dig any deeper...
+        search_disambiguator = self._remove_all_special_chars(true_statement)
+        mutant.set_token_value(search_disambiguator)
+        _, body_search_response = send_clean(mutant)
+
+        # If they are equal then we have a search engine
+        self.debug('[%s] Comparing body_true_response and'
+                   ' body_search_response.' % statement_type)
+        if self.equal_with_limit(body_true_response,
+                                 body_search_response,
+                                 compare_diff):
+            return None
+
         # Verify the injection!
         statements = self._get_statements(mutant)
         second_true_stm = statements[statement_type][0]
@@ -162,15 +197,15 @@ class BlindSqliResponseDiff(object):
         mutant.set_token_value(second_false_stm)
         second_false_response, body_second_false_response = send_clean(mutant)
 
-        self.debug('Comparing body_second_true_response and'
-                   ' body_true_response.')
+        self.debug('[%s] Comparing body_second_true_response and'
+                   ' body_true_response.' % statement_type)
         if not self.equal_with_limit(body_second_true_response,
                                      body_true_response,
                                      compare_diff):
             return None
         
-        self.debug('Comparing body_second_false_response and'
-                   ' body_false_response.')
+        self.debug('[%s] Comparing body_second_false_response and'
+                   ' body_false_response.' % statement_type)
         if self.equal_with_limit(body_second_false_response,
                                  body_false_response,
                                  compare_diff):
@@ -209,7 +244,7 @@ class BlindSqliResponseDiff(object):
             body1, body2 = diff(body1, body2)
 
         cmp_res = relative_distance_boolean(body1, body2, self._eq_limit)
-        self.debug('Result: %s' % cmp_res)
+        self.debug('Strings are equal? %s' % cmp_res)
 
         return cmp_res
 
