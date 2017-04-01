@@ -86,41 +86,18 @@ class xml_file(OutputPlugin):
         self._timestamp = str(int(time.time()))
         self._long_timestamp = str(time.strftime(TIME_FORMAT, time.localtime()))
 
-        # Set defaults foe scan metadata
+        # Set defaults for scan metadata
         self._plugins_dict = {}
         self._options_dict = {}
 
         # List with additional xml elements
         self._errors = DiskList()
 
-        # HistoryItem to get requests/responses
-        self._history = HistoryItem()
-
         # xml document that helps with the creation of new elements
         # this is an empty document until we want to write to the
         # output file, where we populate it, serialize it to the file,
         # and empty it again
-        self._xml = xml.dom.minidom.Document()
-
-    def _empty_xml_root(self):
-        self._xml = xml.dom.minidom.Document()
-
-    def _create_root_xml_elems(self):
-        # The scan tag, with all vulnerabilities as childs
-        self._top_elem = self._xml.createElement('w3af-run')
-        self._top_elem.setAttribute('start', self._timestamp)
-        self._top_elem.setAttribute('start-long', self._long_timestamp)
-        self._top_elem.setAttribute('version', self.XML_OUTPUT_VERSION)
-
-        # Add in the version details
-        version_element = self._xml.createElement('w3af-version')
-        version = xml_str(get_w3af_version.get_w3af_version())
-        version_data = self._xml.createTextNode(version)
-        version_element.appendChild(version_data)
-        self._top_elem.appendChild(version_element)
-
-        # The scan info
-        self._scan_info = self._xml.createElement('scan-info')
+        self._xml = None
 
     def open_file(self):
         self._file_name = os.path.expanduser(self._file_name)
@@ -178,29 +155,6 @@ class xml_file(OutputPlugin):
 
         return ol
 
-    def _build_plugin_scaninfo(self, group_name, plugin_list, options_dict):
-        """
-        This method builds the xml structure for the plugins and their
-        configuration
-        """
-        node = self._xml.createElement(xml_str(group_name))
-        for plugin_name in plugin_list:
-            plugin_node = self._xml.createElement('plugin')
-            plugin_node.setAttribute('name', xml_str(plugin_name))
-
-            if plugin_name in options_dict:
-                for plugin_option in options_dict[plugin_name]:
-                    config_node = self._xml.createElement('config')
-                    config_node.setAttribute('parameter',
-                                             xml_str(plugin_option.get_name()))
-                    config_node.setAttribute('value',
-                                             xml_str(plugin_option.get_value()))
-                    plugin_node.appendChild(config_node)
-
-            node.appendChild(plugin_node)
-            
-        self._scan_info.appendChild(node)
-
     def log_enabled_plugins(self, plugins_dict, options_dict):
         """
         This method is called from the output manager object. This method should
@@ -216,124 +170,16 @@ class xml_file(OutputPlugin):
         self._plugins_dict = plugins_dict
         self._options_dict = options_dict
 
-    def _log_enabled_plugins_to_xml(self):
-        """
-        The previous versions of this plugin kept a lot of data in memory, using
-        a xml.dom.minidom.Document. Now we keep the data in raw format in memory and
-        just open the XML when we're writing to it.
-
-        :return: None
-        """
-        # Add the user configured targets to scan-info
-        str_targets = ','.join([xml_str(t.url_string) for t in cf.cf.get('targets')])
-        self._scan_info.setAttribute('target', str_targets)
-
-        # Add enabled plugins and their configuration to scan-info
-        for plugin_type in self._plugins_dict:
-            self._build_plugin_scaninfo(plugin_type,
-                                        self._plugins_dict[plugin_type],
-                                        self._options_dict[plugin_type])
-
-        # Add scan-info to the report
-        self._top_elem.appendChild(self._scan_info)
-
-    def report_http_action(self, parent_node, action):
-        """
-        Write out the request/response in a more parseable XML format will
-        factor anything with a content-type not prefixed with a text/ in a
-        CDATA.
-
-        parent - the parent node (eg http-request/http-response)
-        action - either a details.request or details.response
-        """
-        headers, body = self.handle_headers(parent_node, action)
-        
-        if body:
-            self.handle_body(parent_node, headers, body)
-
-    def handle_headers(self, parent_node, action):
-        if isinstance(action, HTTPRequest):
-            headers = action.get_headers()
-            body = xml_str(action.get_data() or '')
-            status = xml_str(action.get_request_line())
-        else:
-            headers = action.headers
-            body = xml_str(action.body or '')
-            status = xml_str(action.get_status_line())
-
-        # Put out the status as an element
-        action_status_node = self._xml.createElement('status')
-        # strip is to remove the extraneous newline
-        action_status = self._xml.createTextNode(status.strip())
-        action_status_node.appendChild(action_status)
-        parent_node.appendChild(action_status_node)
-
-        # Put out the headers as XML entity
-        action_headers_node = self._xml.createElement('headers')
-        for header, header_content in headers.iteritems():
-            header_detail = self._xml.createElement('header')
-            header_detail.setAttribute('content', xml_str(header_content))
-            header_detail.setAttribute('field', xml_str(header))
-            action_headers_node.appendChild(header_detail)
-
-        parent_node.appendChild(action_headers_node)
-
-        return headers, body
-    
-    def handle_body(self, parent_node, headers, body):
-        """
-        Create the XML tags that hold the http request or response body
-        """
-        action_body_node = self._xml.createElement('body')
-        action_body_node.setAttribute('content-encoding', 'text')
-        
-        # https://github.com/andresriancho/w3af/issues/264 is fixed by encoding
-        # the ']]>', which in some cases would end up in a CDATA section and
-        # break it, using base64 encoding
-        if '\0' in body or ']]>' in body:
-            # irrespective of the mimetype; if the NULL char is present; then
-            # base64.encode it
-            encoded = base64.encodestring(body)
-            action_body_content = self._xml.createTextNode(encoded)
-            action_body_node.setAttribute('content-encoding', 'base64')
-
-        else:
-            # try and extract the Content-Type header
-            content_type, _ = headers.iget('Content-Type', '')
-            
-            try:
-                # if we know the Content-Type (ie it's in the headers)
-                mime_type, sub_type = content_type.split('/', 1)
-            except ValueError:
-                # not strictly valid mime-type, it doesn't respect the usual
-                # foo/bar format. Play it safe with the content by forcing it
-                # to be written in base64 encoded form
-                mime_type = 'application'
-                sub_type = 'octet-stream'
-
-            if mime_type == 'text':
-                action_body_content = self._xml.createTextNode(body)
-                
-            elif mime_type == 'application' and sub_type in NON_BIN:
-                # Textual type application, eg json, javascript
-                # which for readability we'd rather not base64.encode
-                action_body_content = self._xml.createCDATASection(body)
-                
-            else:
-                # either known (image, audio, video) or unknown binary format
-                # Write it as base64encoded text
-                encoded = base64.encodestring(body)
-                action_body_content = self._xml.createTextNode(encoded)
-                action_body_node.setAttribute('content-encoding', 'base64')
-
-        action_body_node.appendChild(action_body_content)
-        parent_node.appendChild(action_body_node)
-
     def end(self):
         """
         This method is called when the scan has finished.
         """
         self.flush()
+
+        # Free some memory and disk space
+        self._plugins_dict = {}
+        self._options_dict = {}
+        self._errors.cleanup()
 
     def flush(self):
         """
@@ -351,6 +197,26 @@ class xml_file(OutputPlugin):
 
         # Free some memory
         self._empty_xml_root()
+
+    def _empty_xml_root(self):
+        self._xml = xml.dom.minidom.Document()
+
+    def _create_root_xml_elems(self):
+        # The scan tag, with all vulnerabilities as childs
+        self._top_elem = self._xml.createElement('w3af-run')
+        self._top_elem.setAttribute('start', self._timestamp)
+        self._top_elem.setAttribute('start-long', self._long_timestamp)
+        self._top_elem.setAttribute('version', self.XML_OUTPUT_VERSION)
+
+        # Add in the version details
+        version_element = self._xml.createElement('w3af-version')
+        version = xml_str(get_w3af_version.get_w3af_version())
+        version_data = self._xml.createTextNode(version)
+        version_element.appendChild(version_data)
+        self._top_elem.appendChild(version_element)
+
+        # The scan info
+        self._scan_info = self._xml.createElement('scan-info')
 
     def _write_xml_to_file(self):
         """
@@ -387,6 +253,9 @@ class xml_file(OutputPlugin):
         Write all the findings to the XML file
         :return: None, we write the data to the XML
         """
+        # HistoryItem to get requests/responses
+        req_history = HistoryItem()
+
         for i in kb.kb.get_all_findings():
             message_node = self._xml.createElement('vulnerability')
 
@@ -444,7 +313,7 @@ class xml_file(OutputPlugin):
 
                 for request_id in i.get_id():
                     try:
-                        details = self._history.read(request_id)
+                        details = req_history.read(request_id)
                     except DBException:
                         msg = 'Failed to retrieve request with id %s from DB.'
                         print(msg % request_id)
@@ -464,6 +333,142 @@ class xml_file(OutputPlugin):
                     action_set.appendChild(response_node)
 
             self._top_elem.appendChild(message_node)
+
+    def _log_enabled_plugins_to_xml(self):
+        """
+        The previous versions of this plugin kept a lot of data in memory, using
+        a xml.dom.minidom.Document. Now we keep the data in raw format in memory and
+        just open the XML when we're writing to it.
+
+        :return: None
+        """
+        # Add the user configured targets to scan-info
+        str_targets = ','.join([xml_str(t.url_string) for t in cf.cf.get('targets')])
+        self._scan_info.setAttribute('target', str_targets)
+
+        # Add enabled plugins and their configuration to scan-info
+        for plugin_type in self._plugins_dict:
+            self._build_plugin_scaninfo(plugin_type,
+                                        self._plugins_dict[plugin_type],
+                                        self._options_dict[plugin_type])
+
+        # Add scan-info to the report
+        self._top_elem.appendChild(self._scan_info)
+
+    def _build_plugin_scaninfo(self, group_name, plugin_list, options_dict):
+        """
+        This method builds the xml structure for the plugins and their
+        configuration
+        """
+        node = self._xml.createElement(xml_str(group_name))
+        for plugin_name in plugin_list:
+            plugin_node = self._xml.createElement('plugin')
+            plugin_node.setAttribute('name', xml_str(plugin_name))
+
+            if plugin_name in options_dict:
+                for plugin_option in options_dict[plugin_name]:
+                    config_node = self._xml.createElement('config')
+                    config_node.setAttribute('parameter',
+                                             xml_str(plugin_option.get_name()))
+                    config_node.setAttribute('value',
+                                             xml_str(plugin_option.get_value()))
+                    plugin_node.appendChild(config_node)
+
+            node.appendChild(plugin_node)
+
+        self._scan_info.appendChild(node)
+
+    def report_http_action(self, parent_node, action):
+        """
+        Write out the request/response in a more parseable XML format will
+        factor anything with a content-type not prefixed with a text/ in a
+        CDATA.
+
+        parent - the parent node (eg http-request/http-response)
+        action - either a details.request or details.response
+        """
+        headers, body = self.handle_headers(parent_node, action)
+
+        if body:
+            self.handle_body(parent_node, headers, body)
+
+    def handle_headers(self, parent_node, action):
+        if isinstance(action, HTTPRequest):
+            headers = action.get_headers()
+            body = xml_str(action.get_data() or '')
+            status = xml_str(action.get_request_line())
+        else:
+            headers = action.headers
+            body = xml_str(action.body or '')
+            status = xml_str(action.get_status_line())
+
+        # Put out the status as an element
+        action_status_node = self._xml.createElement('status')
+        # strip is to remove the extraneous newline
+        action_status = self._xml.createTextNode(status.strip())
+        action_status_node.appendChild(action_status)
+        parent_node.appendChild(action_status_node)
+
+        # Put out the headers as XML entity
+        action_headers_node = self._xml.createElement('headers')
+        for header, header_content in headers.iteritems():
+            header_detail = self._xml.createElement('header')
+            header_detail.setAttribute('content', xml_str(header_content))
+            header_detail.setAttribute('field', xml_str(header))
+            action_headers_node.appendChild(header_detail)
+
+        parent_node.appendChild(action_headers_node)
+
+        return headers, body
+
+    def handle_body(self, parent_node, headers, body):
+        """
+        Create the XML tags that hold the http request or response body
+        """
+        action_body_node = self._xml.createElement('body')
+        action_body_node.setAttribute('content-encoding', 'text')
+
+        # https://github.com/andresriancho/w3af/issues/264 is fixed by encoding
+        # the ']]>', which in some cases would end up in a CDATA section and
+        # break it, using base64 encoding
+        if '\0' in body or ']]>' in body:
+            # irrespective of the mimetype; if the NULL char is present; then
+            # base64.encode it
+            encoded = base64.encodestring(body)
+            action_body_content = self._xml.createTextNode(encoded)
+            action_body_node.setAttribute('content-encoding', 'base64')
+
+        else:
+            # try and extract the Content-Type header
+            content_type, _ = headers.iget('Content-Type', '')
+
+            try:
+                # if we know the Content-Type (ie it's in the headers)
+                mime_type, sub_type = content_type.split('/', 1)
+            except ValueError:
+                # not strictly valid mime-type, it doesn't respect the usual
+                # foo/bar format. Play it safe with the content by forcing it
+                # to be written in base64 encoded form
+                mime_type = 'application'
+                sub_type = 'octet-stream'
+
+            if mime_type == 'text':
+                action_body_content = self._xml.createTextNode(body)
+
+            elif mime_type == 'application' and sub_type in NON_BIN:
+                # Textual type application, eg json, javascript
+                # which for readability we'd rather not base64.encode
+                action_body_content = self._xml.createCDATASection(body)
+
+            else:
+                # either known (image, audio, video) or unknown binary format
+                # Write it as base64encoded text
+                encoded = base64.encodestring(body)
+                action_body_content = self._xml.createTextNode(encoded)
+                action_body_node.setAttribute('content-encoding', 'base64')
+
+        action_body_node.appendChild(action_body_content)
+        parent_node.appendChild(action_body_node)
 
     def get_long_desc(self):
         """
