@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import cgi
 import ssl
 import socket
 import urllib
@@ -27,6 +26,8 @@ import urllib2
 import httplib
 import OpenSSL
 
+from collections import OrderedDict
+from w3af.core.controllers.misc.itertools_toolset import unique_everseen
 from errno import (ECONNREFUSED, EHOSTUNREACH, ECONNRESET, ENETDOWN,
                    ENETUNREACH, ETIMEDOUT, ENOSPC)
 
@@ -63,47 +64,102 @@ def new_no_content_resp(uri, add_id=False):
 
     return no_content_response
 
-
-HTML_ESCAPE_TABLE_BY_NAME = {
-    "&": "&amp;",
-    '"': "&quot;",
-    "'": "&apos;",
-    ">": "&gt;",
-    "<": "&lt;",
-    }
-
-
-HTML_ESCAPE_TABLE_BY_HEX_CODE = {
-    "&": "&#x26;",
-    '"': "&#x22;",
-    "'": "&#x27;",
-    ">": "&#x3e;",
-    "<": "&#x3c;",
-    }
-
-
-HTML_ESCAPE_TABLE_BY_DEC_CODE = {
-    "&": "&#38;",
-    '"': "&#34;",
-    "'": "&#39;",
-    ">": "&#62;",
-    "<": "&#60;",
-    }
-
-
-def html_escape_by_name(text):
-    """Produce entities within text."""
-    return "".join(HTML_ESCAPE_TABLE_BY_NAME.get(c, c) for c in text)
+#
+# The number of encodings a developer can use is huge, and the frameworks
+# don't help either, since some will (for example) write &#034; and other
+# will write &#34;
+#
+# We want to make a real effort to cleanup all the bodies, so we are compiling
+# A list with all the ways a special character can be written, and then we
+# run all combinations to find the right one used in this page.
+#
+# Warning! The order in this table is not random! The first items are the ones
+# that appear in the escapes of the rest of the characters.
+ESCAPE_TABLE = OrderedDict([
+    ('#', ['#', '%23', '%2523']),
+    ('&', ['&', '&amp;',  '&#x26;', '&#38;', '&#038;']),
+    ('%', ['%',                                             '%25', '%2525']),
+    ('"', ['"', '&quot;', '&#x22;', '&#34;', '&#034;']),
+    ("'", ["'", '&apos;', '&#x27;', '&#39;', '&#039;']),
+    ('>', ['>', '&gt;',   '&#x3e;', '&#62;', '&#062;']),
+    ('=', ['=', '&eq;',   '&#x3d;', '&#61;', '&#061;',      '%3d', '%253d']),
+    (' ', [' ', '&nbsp;', '&#x20;', '&#32;', '&#032;', '+', '%20', '%2520']),
+    ('<', ['<', '&lt;',   '&#x3c;', '&#60;', '&#060;']),
+    (';', [';',                                             '%3b', '%253b']),
+    ('/', ['/',                                             '%2f', '%252f']),
+    (':', [':',                                             '%3a', '%253a']),
+    ('@', ['@',                                             '%40', '%2540']),
+    ('$', ['$',                                             '%24', '%2524']),
+    (',', [',',                                             '%2c', '%252c']),
+])
 
 
-def html_escape_by_hex_code(text):
-    """Produce entities within text."""
-    return "".join(HTML_ESCAPE_TABLE_BY_HEX_CODE.get(c, c) for c in text)
+def extend_escape_table_with_uppercase(escape_table):
+    """
+    Some ugly sites use &AMP; instead of &amp; and browsers support it.
+    Same thing with %3D and %3d
+
+    Since I don't want to make the ESCAPE_TABLE uglier with all the
+    upper case versions, I just extend it with this function.
+
+    :return: An extended table with uppercase
+    """
+    extended_table = escape_table.copy()
+
+    for char, escapes in escape_table.iteritems():
+        for escape in escapes:
+            upper_case_escape = escape.upper()
+
+            # Ignore those X in the HTML escape
+            if escape.startswith('&#x'):
+                upper_case_escape = upper_case_escape.replace('&#X', '&#x')
+
+            if upper_case_escape != escape:
+                extended_table[char].append(upper_case_escape)
+
+    return extended_table
 
 
-def html_escape_by_dec_code(text):
-    """Produce entities within text."""
-    return "".join(HTML_ESCAPE_TABLE_BY_DEC_CODE.get(c, c) for c in text)
+def apply_multi_escape_table(_input, escape_table=ESCAPE_TABLE):
+    inner_iter = _multi_escape_table_impl(_input,
+                                          escape_table=escape_table)
+    for x in unique_everseen(inner_iter):
+        yield x
+
+
+def _multi_escape_table_impl(_input, escape_table=ESCAPE_TABLE):
+    """
+    Replace all combinations in the escape table.
+
+    :param _input: The string with special characters
+    :param escape_table: The table used to find the special chars
+    :return: A string generator with all special characters replaced
+    """
+    yield _input
+
+    for table_char, escapes in escape_table.iteritems():
+
+        if table_char in _input:
+            for escape in escapes:
+                modified = _input.replace(table_char, escape)
+
+                # On the first call, and based on the way the table was created,
+                # this will yield the unmodified input string
+                yield modified
+
+                # This makes the recursion end
+                new_escape_table = escape_table.copy()
+                new_escape_table.pop(table_char)
+
+                # These lines are here to avoid double and triple encoding
+                for char in escape:
+                    new_escape_table.pop(char, None)
+
+                inner_generator = _multi_escape_table_impl(modified,
+                                                           escape_table=new_escape_table)
+
+                for modified in inner_generator:
+                    yield modified
 
 
 def get_clean_body(mutant, response):
@@ -119,16 +175,16 @@ def get_clean_body(mutant, response):
         - output:
             - self._clean_body( response ) == '...<x></x>...'
 
-    All injected values are removed encoded and "as is".
+    All injected values are removed encoded and 'as is'.
 
     :param mutant: The mutant where I can get the value from.
     :param response: The HTTPResponse object to clean
-    :return: A string that represents the "cleaned" response body.
+    :return: A string that represents the 'cleaned' response body.
     """
     body = response.body
 
     if response.is_text_or_html():
-        mod_value = mutant.get_token_value()
+        mod_value_1 = mutant.get_token_value()
 
         # Since the body is already in unicode, when we call body.replace() all
         # arguments are converted to unicode by python. If there are special
@@ -136,43 +192,27 @@ def get_clean_body(mutant, response):
         # I convert it myself with some error handling
         #
         # https://github.com/andresriancho/w3af/issues/8953
-        mod_value = smart_unicode(mod_value, errors=PERCENT_ENCODE)
+        mod_value_1 = smart_unicode(mod_value_1, errors=PERCENT_ENCODE)
+
+        # unquote, just in case the plugin did an extra encoding of some type.
+        # what we want to do here is get the original version of the string
+        mod_value_2 = urllib.unquote_plus(mod_value_1)
+
+        payloads_to_replace = [mod_value_1, mod_value_2]
+        encoded_payloads = []
+
+        extended_table = extend_escape_table_with_uppercase(ESCAPE_TABLE)
+
+        for payload in payloads_to_replace:
+            for encoded_payload in apply_multi_escape_table(payload, extended_table):
+                encoded_payloads.append(encoded_payload)
+
+        # uniq sorted by longest len
+        encoded_payloads = list(set(encoded_payloads))
+        encoded_payloads.sort(lambda x, y: cmp(len(y), len(x)))
 
         empty = u''
-        cgi_escape = cgi.escape
-
-        # unquote, just in case...
-        unquoted = urllib.unquote_plus(mod_value)
-
-        # encoding in two different ways since we don't know how the server-side
-        # will encode, and we want to remove both options
-        urlencoded_plus = urllib.quote_plus(mod_value)
-        urlencoded_20 = urllib.quote(mod_value)
-
-        # double encoding
-        urlencoded_plus_plus = urllib.quote_plus(urlencoded_plus)
-        urlencoded_20_20 = urllib.quote(urlencoded_20)
-
-        to_replace_lst = [mod_value,
-                          unquoted,
-                          urlencoded_plus,
-                          urlencoded_20,
-                          urlencoded_plus_plus,
-                          urlencoded_20_20,
-                          html_escape_by_name(mod_value),
-                          html_escape_by_name(unquoted),
-                          html_escape_by_hex_code(mod_value),
-                          html_escape_by_hex_code(unquoted),
-                          html_escape_by_dec_code(mod_value),
-                          html_escape_by_dec_code(unquoted),
-                          cgi_escape(mod_value),
-                          cgi_escape(unquoted)]
-
-        # uniq sorted
-        to_replace_lst = list(set(to_replace_lst))
-        to_replace_lst.sort(lambda x, y: cmp(len(y), len(x)))
-
-        for to_replace in to_replace_lst:
+        for to_replace in encoded_payloads:
             body = body.replace(to_replace, empty)
 
     return body
