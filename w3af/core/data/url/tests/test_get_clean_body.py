@@ -23,7 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib
 
-from w3af.core.data.url.helpers import get_clean_body, apply_multi_escape_table
+from w3af.core.data.url.helpers import (get_clean_body,
+                                        apply_multi_escape_table,
+                                        extend_escape_table_with_uppercase,
+                                        ESCAPE_TABLE)
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -88,6 +91,19 @@ class TestGetCleanBody(unittest.TestCase):
 
         self.assertEqual(clean_body, 'abc  def')
         self.assertIsInstance(clean_body, unicode)
+
+
+class TestExtendTable(unittest.TestCase):
+    def test_trivial(self):
+        et = extend_escape_table_with_uppercase(ESCAPE_TABLE)
+
+        self.assertEqual(et['"'],
+                         ['"', '&quot;', '&#x22;', '&#34;', '&#034;',
+                          '\\u0022', '\\"', '&QUOT;', '\\U0022'])
+
+        self.assertEqual(et['='],
+                         ['=', '&eq;', '&#x3d;', '&#61;', '&#061;', '%3d', '%253d',
+                          '&EQ;', '&#x3D;', '%3D', '%253D'])
 
 
 class TestApplyMultiEscapeTable(unittest.TestCase):
