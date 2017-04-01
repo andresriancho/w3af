@@ -66,7 +66,7 @@ class TestXMLOutput(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         kb_vulns = self.kb.get('sqli', 'sqli')
-        file_vulns = self._from_xml_get_vulns()
+        file_vulns = self._from_xml_get_vulns(self.FILENAME)
 
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
 
@@ -88,10 +88,10 @@ class TestXMLOutput(PluginTest):
         self.assertEqual(validate_xml(file(self.FILENAME).read(), self.XSD),
                          '')
 
-    def _from_xml_get_vulns(self):
+    def _from_xml_get_vulns(self, filename):
         xp = XMLParser()
         parser = etree.XMLParser(target=xp)
-        vulns = etree.fromstring(file(self.FILENAME).read(), parser)
+        vulns = etree.fromstring(file(filename).read(), parser)
         return vulns
 
     def tearDown(self):
@@ -114,9 +114,12 @@ class TestXMLOutput(PluginTest):
         # disk multiple times, this test makes sure I fixed that vulnerability
 
         # First we create one vulnerability in the KB
+        self.kb.cleanup()
         desc = 'Just a test for the XML file output plugin.'
         v = Vuln('SQL injection', desc, severity.HIGH, 1, 'sqli')
         self.kb.append('sqli', 'sqli', v)
+
+        self.assertEqual(len(self.kb.get_all_vulns()), 1)
 
         # Setup the plugin
         plugin_instance = xml_file()
@@ -131,19 +134,20 @@ class TestXMLOutput(PluginTest):
         plugin_instance.set_options(ol)
         plugin_instance.flush()
         plugin_instance.flush()
+        plugin_instance.flush()
 
         # Now we parse the vulnerabilities from disk and confirm only one
         # is there
-        file_vulns = self._from_xml_get_vulns()
-        self.assertEqual(len(file_vulns), 1)
+        file_vulns = self._from_xml_get_vulns(self.FILENAME)
+        self.assertEqual(len(file_vulns), 1, file_vulns)
 
 
 class XMLParser(object):
-    
-    vulns = []
 
-    _inside_body = False
-    _data_parts = []
+    def __init__(self):
+        self.vulns = []
+        self._inside_body = False
+        self._data_parts = []
     
     def start(self, tag, attrib):
         """
