@@ -46,7 +46,7 @@ class ldapi(AuditPlugin):
         'com.sun.jndi.ldap',
 
         # PHP
-        'Search: Bad search filter',
+        'Bad search filter',
 
         # http://support.microsoft.com/kb/218185
         'Protocol error occurred',
