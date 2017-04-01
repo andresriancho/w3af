@@ -20,11 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import ssl
+import copy
 import socket
 import urllib
 import urllib2
 import httplib
 import OpenSSL
+import string
 
 from collections import OrderedDict
 from w3af.core.controllers.misc.itertools_toolset import unique_everseen
@@ -91,6 +93,7 @@ ESCAPE_TABLE = OrderedDict([
     ('@', ['@',                                             '%40', '%2540']),
     ('$', ['$',                                             '%24', '%2524']),
     (',', [',',                                             '%2c', '%252c']),
+    ('?', ['?',                                             '%3f', '%253f']),
 ])
 
 
@@ -104,7 +107,7 @@ def extend_escape_table_with_uppercase(escape_table):
 
     :return: An extended table with uppercase
     """
-    extended_table = escape_table.copy()
+    extended_table = copy.deepcopy(escape_table)
 
     for char, escapes in escape_table.iteritems():
         for escape in escapes:
@@ -118,6 +121,42 @@ def extend_escape_table_with_uppercase(escape_table):
                 extended_table[char].append(upper_case_escape)
 
     return extended_table
+
+
+def extend_escape_table_with_printable_chars(escape_table):
+    """
+    Some ugly sites will output %41 when we send A, or even A when
+    we send "a"
+
+    Since I don't want to manually write a table with all those
+    characters I'm going to extend the original with string.printable
+
+    :return: An extended table with uppercase
+    """
+    extended_table = copy.deepcopy(escape_table)
+
+    for char in string.printable:
+        if char not in extended_table:
+
+            dec_val = ord(char)
+            hex_val = format(dec_val, 'x')
+
+            char_encodings = ['%' + hex_val,
+                              '%25' + hex_val,
+                              '&#x%s;' % hex_val,
+                              '&#%s;' % dec_val,
+                              '&#0%s;' % dec_val]
+            extended_table[char] = char_encodings
+
+    return extended_table
+
+# TODO: This can NOT be done! If you enable this line and call the
+#       get_clean_body function it will try too many combinations of
+#       encodings and use 100% CPU for a very long time.
+#
+# EXTENDED_TABLE = extend_escape_table_with_printable_chars(ESCAPE_TABLE)
+
+EXTENDED_TABLE = extend_escape_table_with_uppercase(ESCAPE_TABLE)
 
 
 def apply_multi_escape_table(_input, escape_table=ESCAPE_TABLE):
@@ -203,10 +242,10 @@ def get_clean_body(mutant, response):
         payloads_to_replace.add(mod_value_2)
 
         encoded_payloads = set()
-        extended_table = extend_escape_table_with_uppercase(ESCAPE_TABLE)
 
         for payload in payloads_to_replace:
-            for encoded_payload in apply_multi_escape_table(payload, extended_table):
+            for encoded_payload in apply_multi_escape_table(payload,
+                                                            EXTENDED_TABLE):
                 encoded_payloads.add(encoded_payload)
 
         # uniq sorted by longest len
