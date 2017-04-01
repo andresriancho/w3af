@@ -39,6 +39,7 @@ class BlindSqliResponseDiff(object):
     """
 
     SPECIAL_CHARS = '"\'=()'
+    SYNTAX_ERROR = u"a'b\"c'd\""
 
     def __init__(self, uri_opener):
         # User configured variables
@@ -150,20 +151,21 @@ class BlindSqliResponseDiff(object):
 
         compare_diff = False
 
-        om.out.debug('[%s] Comparing body_true_response and'
-                     'body_false_response.' % statement_type)
-        if self.equal_with_limit(body_true_response, body_false_response,
+        self.debug('[%s] Comparing body_true_response and'
+                   ' body_false_response.' % statement_type)
+        if self.equal_with_limit(body_true_response,
+                                 body_false_response,
                                  compare_diff):
             #
-            #    They might be equal because of various reasons, in the best
-            #    case scenario there IS a blind SQL injection but the % of the
-            #    HTTP response body controlled by it is so small that the equal
-            #    ratio is not catching it.
+            # They might be equal because of various reasons, in the best
+            # case scenario there IS a blind SQL injection but the % of the
+            # HTTP response body controlled by it is so small that the equal
+            # ratio is not catching it.
             #
+            self.debug('Setting compare_diff to True')
             compare_diff = True
 
-        syntax_error = u"a'b\"c'd\""
-        mutant.set_token_value(syntax_error)
+        mutant.set_token_value(self.SYNTAX_ERROR)
         syntax_error_response, body_syntax_error_response = send_clean(mutant)
 
         self.debug('[%s] Comparing body_true_response and'
@@ -244,7 +246,9 @@ class BlindSqliResponseDiff(object):
             body1, body2 = diff(body1, body2)
 
         cmp_res = relative_distance_boolean(body1, body2, self._eq_limit)
-        self.debug('Strings are equal? %s' % cmp_res)
+
+        args = (self._eq_limit, cmp_res)
+        self.debug('Strings are similar enough with limit %s? %s' % args)
 
         return cmp_res
 
