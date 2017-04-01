@@ -73,12 +73,7 @@ HTML_ESCAPE_TABLE_BY_NAME = {
     }
 
 
-def html_escape_by_name(text):
-    """Produce entities within text."""
-    return "".join(HTML_ESCAPE_TABLE_BY_NAME.get(c, c) for c in text)
-
-
-HTML_ESCAPE_TABLE_BY_CODE = {
+HTML_ESCAPE_TABLE_BY_HEX_CODE = {
     "&": "&#x26;",
     '"': "&#x22;",
     "'": "&#x27;",
@@ -87,9 +82,28 @@ HTML_ESCAPE_TABLE_BY_CODE = {
     }
 
 
-def html_escape_by_code(text):
+HTML_ESCAPE_TABLE_BY_DEC_CODE = {
+    "&": "&#38;",
+    '"': "&#34;",
+    "'": "&#39;",
+    ">": "&#62;",
+    "<": "&#60;",
+    }
+
+
+def html_escape_by_name(text):
     """Produce entities within text."""
     return "".join(HTML_ESCAPE_TABLE_BY_NAME.get(c, c) for c in text)
+
+
+def html_escape_by_hex_code(text):
+    """Produce entities within text."""
+    return "".join(HTML_ESCAPE_TABLE_BY_HEX_CODE.get(c, c) for c in text)
+
+
+def html_escape_by_dec_code(text):
+    """Produce entities within text."""
+    return "".join(HTML_ESCAPE_TABLE_BY_DEC_CODE.get(c, c) for c in text)
 
 
 def get_clean_body(mutant, response):
@@ -147,8 +161,10 @@ def get_clean_body(mutant, response):
                           urlencoded_20_20,
                           html_escape_by_name(mod_value),
                           html_escape_by_name(unquoted),
-                          html_escape_by_code(mod_value),
-                          html_escape_by_code(unquoted),
+                          html_escape_by_hex_code(mod_value),
+                          html_escape_by_hex_code(unquoted),
+                          html_escape_by_dec_code(mod_value),
+                          html_escape_by_dec_code(unquoted),
                           cgi_escape(mod_value),
                           cgi_escape(unquoted)]
 
