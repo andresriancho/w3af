@@ -76,7 +76,7 @@ def new_no_content_resp(uri, add_id=False):
 # Warning! The order in this table is not random! The first items are the ones
 # that appear in the escapes of the rest of the characters.
 ESCAPE_TABLE = OrderedDict([
-    ('#', ['#', '%23', '%2523']),
+    ('#', ['#',                                             '%23', '%2523']),
     ('&', ['&', '&amp;',  '&#x26;', '&#38;', '&#038;']),
     ('%', ['%',                                             '%25', '%2525']),
     ('"', ['"', '&quot;', '&#x22;', '&#34;', '&#034;',                      '\\u0022', '\\"']),
@@ -173,7 +173,7 @@ def get_clean_body(mutant, response):
             - response.get_body() == '...<x>1 OR 23=23</x>...'
 
         - output:
-            - self._clean_body( response ) == '...<x></x>...'
+            - self._clean_body(response) == '...<x></x>...'
 
     All injected values are removed encoded and 'as is'.
 
