@@ -220,41 +220,43 @@ def get_clean_body(mutant, response):
     :param response: The HTTPResponse object to clean
     :return: A string that represents the 'cleaned' response body.
     """
+    if not response.is_text_or_html():
+        return response.body
+
     body = response.body
+    mod_value_1 = mutant.get_token_value()
 
-    if response.is_text_or_html():
-        mod_value_1 = mutant.get_token_value()
+    # Since the body is already in unicode, when we call body.replace() all
+    # arguments are converted to unicode by python. If there are special
+    # chars in the mod_value then we end up with an UnicodeDecodeError, so
+    # I convert it myself with some error handling
+    #
+    # https://github.com/andresriancho/w3af/issues/8953
+    mod_value_1 = smart_unicode(mod_value_1, errors=PERCENT_ENCODE)
 
-        # Since the body is already in unicode, when we call body.replace() all
-        # arguments are converted to unicode by python. If there are special
-        # chars in the mod_value then we end up with an UnicodeDecodeError, so
-        # I convert it myself with some error handling
-        #
-        # https://github.com/andresriancho/w3af/issues/8953
-        mod_value_1 = smart_unicode(mod_value_1, errors=PERCENT_ENCODE)
+    # unquote, just in case the plugin did an extra encoding of some type.
+    # what we want to do here is get the original version of the string
+    mod_value_2 = urllib.unquote_plus(mod_value_1)
 
-        # unquote, just in case the plugin did an extra encoding of some type.
-        # what we want to do here is get the original version of the string
-        mod_value_2 = urllib.unquote_plus(mod_value_1)
+    payloads_to_replace = set()
+    payloads_to_replace.add(mod_value_1)
+    payloads_to_replace.add(mod_value_2)
 
-        payloads_to_replace = set()
-        payloads_to_replace.add(mod_value_1)
-        payloads_to_replace.add(mod_value_2)
+    encoded_payloads = set()
 
-        encoded_payloads = set()
+    for payload in payloads_to_replace:
+        for encoded_payload in apply_multi_escape_table(payload,
+                                                        EXTENDED_TABLE):
+            encoded_payloads.add(encoded_payload)
 
-        for payload in payloads_to_replace:
-            for encoded_payload in apply_multi_escape_table(payload,
-                                                            EXTENDED_TABLE):
-                encoded_payloads.add(encoded_payload)
+    # uniq sorted by longest len
+    encoded_payloads = list(encoded_payloads)
+    encoded_payloads.sort(lambda x, y: cmp(len(y), len(x)))
 
-        # uniq sorted by longest len
-        encoded_payloads = list(encoded_payloads)
-        encoded_payloads.sort(lambda x, y: cmp(len(y), len(x)))
-
-        empty = u''
-        for to_replace in encoded_payloads:
-            body = body.replace(to_replace, empty)
+    empty = u''
+    replace = unicode.replace
+    for to_replace in encoded_payloads:
+        body = replace(body, to_replace, empty)
 
     return body
 
