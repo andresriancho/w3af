@@ -198,17 +198,19 @@ def get_clean_body(mutant, response):
         # what we want to do here is get the original version of the string
         mod_value_2 = urllib.unquote_plus(mod_value_1)
 
-        payloads_to_replace = [mod_value_1, mod_value_2]
-        encoded_payloads = []
+        payloads_to_replace = set()
+        payloads_to_replace.add(mod_value_1)
+        payloads_to_replace.add(mod_value_2)
 
+        encoded_payloads = set()
         extended_table = extend_escape_table_with_uppercase(ESCAPE_TABLE)
 
         for payload in payloads_to_replace:
             for encoded_payload in apply_multi_escape_table(payload, extended_table):
-                encoded_payloads.append(encoded_payload)
+                encoded_payloads.add(encoded_payload)
 
         # uniq sorted by longest len
-        encoded_payloads = list(set(encoded_payloads))
+        encoded_payloads = list(encoded_payloads)
         encoded_payloads.sort(lambda x, y: cmp(len(y), len(x)))
 
         empty = u''
