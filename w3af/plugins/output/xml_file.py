@@ -99,7 +99,7 @@ class xml_file(OutputPlugin):
         # and empty it again
         self._xml = None
 
-    def open_file(self):
+    def _open_file(self):
         self._file_name = os.path.expanduser(self._file_name)
         try:
             self._file = open(self._file_name, 'w')
@@ -199,10 +199,15 @@ class xml_file(OutputPlugin):
         self._empty_xml_root()
 
     def _empty_xml_root(self):
-        self._xml = xml.dom.minidom.Document()
+        self._xml = None
+        self._top_elem = None
+        self._scan_info = None
 
     def _create_root_xml_elems(self):
-        # The scan tag, with all vulnerabilities as childs
+        # XML root
+        self._xml = xml.dom.minidom.Document()
+
+        # The scan tag, with all vulnerabilities as child
         self._top_elem = self._xml.createElement('w3af-run')
         self._top_elem.setAttribute('start', self._timestamp)
         self._top_elem.setAttribute('start-long', self._long_timestamp)
@@ -215,15 +220,12 @@ class xml_file(OutputPlugin):
         version_element.appendChild(version_data)
         self._top_elem.appendChild(version_element)
 
-        # The scan info
-        self._scan_info = self._xml.createElement('scan-info')
-
     def _write_xml_to_file(self):
         """
         Write xml report
         :return: None
         """
-        self.open_file()
+        self._open_file()
         self._xml.appendChild(self._top_elem)
 
         try:
@@ -342,6 +344,8 @@ class xml_file(OutputPlugin):
 
         :return: None
         """
+        self._scan_info = self._xml.createElement('scan-info')
+
         # Add the user configured targets to scan-info
         str_targets = ','.join([xml_str(t.url_string) for t in cf.cf.get('targets')])
         self._scan_info.setAttribute('target', str_targets)
