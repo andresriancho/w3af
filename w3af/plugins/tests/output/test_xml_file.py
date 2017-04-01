@@ -112,8 +112,10 @@ class XMLParser(object):
     
     def start(self, tag, attrib):
         """
-        <vulnerability id="[87]" method="GET" name="Cross site scripting vulnerability"
-                       plugin="xss" severity="Medium" url="http://moth/w3af/audit/xss/simple_xss_no_script_2.php"
+        <vulnerability id="[87]" method="GET"
+                       name="Cross site scripting vulnerability"
+                       plugin="xss" severity="Medium"
+                       url="http://moth/w3af/audit/xss/simple_xss_no_script_2.php"
                        var="text">
         """
         if tag == 'vulnerability':
