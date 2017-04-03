@@ -48,7 +48,7 @@ class os_commanding(AuditPlugin):
         #
         #   Some internal variables
         #
-        self._special_chars = ['', '&&', '|', ';']
+        self._special_chars = ['', '&&', '|', ';', '\n', '\r\n']
         self._file_compiled_regex = []
 
     def audit(self, freq, orig_response):
@@ -87,6 +87,8 @@ class os_commanding(AuditPlugin):
         only_command_strings = [v.get_command() for v in command_list]
         mutants = create_mutants(freq, only_command_strings,
                                  orig_resp=orig_response)
+        mutants.extend(create_mutants(freq, only_command_strings,
+                                 append=True, orig_resp=orig_response))
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -148,6 +150,7 @@ class os_commanding(AuditPlugin):
         :param freq: A FuzzableRequest
         """
         fake_mutants = create_mutants(freq, ['', ])
+        fake_mutants.extend(create_mutants(freq, ['', ], append=True))
 
         for mutant in fake_mutants:
 
