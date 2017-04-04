@@ -24,10 +24,17 @@ import StringIO
 from lxml import etree
 from nose.plugins.attrib import attr
 
+import w3af.core.data.constants.severity as severity
+
 from w3af import ROOT_PATH
-from w3af.core.data.kb.tests.test_vuln import MockVuln
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.options.option_types import OUTPUT_FILE
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.output.xml_file import xml_file
 
@@ -59,7 +66,7 @@ class TestXMLOutput(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         kb_vulns = self.kb.get('sqli', 'sqli')
-        file_vulns = self._from_xml_get_vulns()
+        file_vulns = self._from_xml_get_vulns(self.FILENAME)
 
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
 
@@ -81,10 +88,10 @@ class TestXMLOutput(PluginTest):
         self.assertEqual(validate_xml(file(self.FILENAME).read(), self.XSD),
                          '')
 
-    def _from_xml_get_vulns(self):
+    def _from_xml_get_vulns(self, filename):
         xp = XMLParser()
         parser = etree.XMLParser(target=xp)
-        vulns = etree.fromstring(file(self.FILENAME).read(), parser)
+        vulns = etree.fromstring(file(filename).read(), parser)
         return vulns
 
     def tearDown(self):
@@ -93,27 +100,61 @@ class TestXMLOutput(PluginTest):
             os.remove(self.FILENAME)
         except:
             pass
+        finally:
+            self.kb.cleanup()
 
     def test_error_null_byte(self):
-        """
-        https://github.com/andresriancho/w3af/issues/12924
-        """
+        # https://github.com/andresriancho/w3af/issues/12924
         plugin_instance = xml_file()
         plugin_instance.error('\0')
         plugin_instance.flush()
 
+    def test_no_duplicate_vuln_reports(self):
+        # The xml_file plugin had a bug where vulnerabilities were written to
+        # disk multiple times, this test makes sure I fixed that vulnerability
+
+        # First we create one vulnerability in the KB
+        self.kb.cleanup()
+        desc = 'Just a test for the XML file output plugin.'
+        v = Vuln('SQL injection', desc, severity.HIGH, 1, 'sqli')
+        self.kb.append('sqli', 'sqli', v)
+
+        self.assertEqual(len(self.kb.get_all_vulns()), 1)
+
+        # Setup the plugin
+        plugin_instance = xml_file()
+
+        # Set the output file for the unittest
+        ol = OptionList()
+        d = 'Output file name where to write the XML data'
+        o = opt_factory('output_file', self.FILENAME, d, OUTPUT_FILE)
+        ol.add(o)
+
+        # Then we flush() twice to disk, this reproduced the issue
+        plugin_instance.set_options(ol)
+        plugin_instance.flush()
+        plugin_instance.flush()
+        plugin_instance.flush()
+
+        # Now we parse the vulnerabilities from disk and confirm only one
+        # is there
+        file_vulns = self._from_xml_get_vulns(self.FILENAME)
+        self.assertEqual(len(file_vulns), 1, file_vulns)
+
 
 class XMLParser(object):
-    
-    vulns = []
 
-    _inside_body = False
-    _data_parts = []
+    def __init__(self):
+        self.vulns = []
+        self._inside_body = False
+        self._data_parts = []
     
     def start(self, tag, attrib):
         """
-        <vulnerability id="[87]" method="GET" name="Cross site scripting vulnerability"
-                       plugin="xss" severity="Medium" url="http://moth/w3af/audit/xss/simple_xss_no_script_2.php"
+        <vulnerability id="[87]" method="GET"
+                       name="Cross site scripting vulnerability"
+                       plugin="xss" severity="Medium"
+                       url="http://moth/w3af/audit/xss/simple_xss_no_script_2.php"
                        var="text">
         """
         if tag == 'vulnerability':
