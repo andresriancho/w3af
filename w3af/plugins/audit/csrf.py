@@ -73,13 +73,14 @@ class csrf(AuditPlugin):
         if not self._is_suitable(freq):
             return
 
-        # Referer/Origin check
+        # Referer / Origin check
         #
         # IMPORTANT NOTE: I'm aware that checking for the referer header does
         # NOT protect the application against all cases of CSRF, but it's a
         # very good first step. In order to exploit a CSRF in an application
         # that protects using this method an intruder would have to identify
-        # other vulnerabilities such as XSS or open redirects.
+        # other vulnerabilities, such as XSS or open redirects, in the same
+        # domain.
         #
         # TODO: This algorithm has lots of room for improvement
         if self._is_origin_checked(freq, orig_response):
@@ -91,7 +92,7 @@ class csrf(AuditPlugin):
             return
 
         # Ok, we have found vulnerable to CSRF attack request
-        msg = 'Cross Site Request Forgery has been found at: ' + freq.get_url()
+        msg = 'Cross Site Request Forgery has been found at: %s' % freq.get_url()
         
         v = Vuln.from_fr('CSRF vulnerability', msg, severity.MEDIUM,
                          orig_response.id, self.get_name(), freq)
@@ -122,6 +123,10 @@ class csrf(AuditPlugin):
         #
         # By checking like this we're loosing the opportunity to detect any
         # CSRF vulnerabilities in non-authenticated parts of the application
+        #
+        # Also note that the application running on freq.get_url().get_domain()
+        # might be just sending us a google tracking cookie (no real session
+        # cookie) and we might be returning true here.
         for cookie in self._uri_opener.get_cookies():
             if freq.get_url().get_domain() in cookie.domain:
                 break
@@ -134,9 +139,9 @@ class csrf(AuditPlugin):
 
         # Does the request have a payload?
         #
-        # By checking like this we're loosing the opportunity to find CSRF vulns
-        # in applications that use mod_rewrite. Example: A CSRF in this URL:
-        # http://host.tld/users/remove/id/123
+        # By checking like this we're loosing the opportunity to find CSRF
+        # vulnerabilities in applications that use mod_rewrite. Example: A CSRF
+        # in this URL: http://host.tld/users/remove/id/123
         if not freq.get_uri().has_query_string() and not freq.get_raw_data():
             return False
 

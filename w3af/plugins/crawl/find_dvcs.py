@@ -47,9 +47,16 @@ class find_dvcs(CrawlPlugin):
         self._analyzed_dirs = ScalableBloomFilter()
         self._analyzed_filenames = ScalableBloomFilter()
 
-        self._dvcs = {'git repository': {}, 'git ignore': {}, 'hg repository': {}, 'hg ignore': {},
-                      'bzr repository': {}, 'bzr ignore': {}, 'svn repository': {}, 'svn ignore': {},
-                      'cvs repository': {}, 'cvs ignore': {}}
+        self._dvcs = {'git repository': {},
+                      'git ignore': {},
+                      'hg repository': {},
+                      'hg ignore': {},
+                      'bzr repository': {},
+                      'bzr ignore': {},
+                      'svn repository': {},
+                      'svn ignore': {},
+                      'cvs repository': {},
+                      'cvs ignore': {}}
 
         self._dvcs['git repository']['filename'] = '.git/index'
         self._dvcs['git repository']['function'] = self.git_index
@@ -141,7 +148,6 @@ class find_dvcs(CrawlPlugin):
             return
 
         filenames = repo_get_files(http_response.get_body())
-
         parsed_url_set = set()
 
         for filename in self._clean_filenames(filenames):
@@ -153,9 +159,9 @@ class find_dvcs(CrawlPlugin):
         self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
         if parsed_url_set:
-            desc = 'A %s was found at: "%s"; this could indicate that'\
-                   ' a %s is accessible. You might be able to download'\
-                   ' the Web application source code.'
+            desc = ('A %s was found at: "%s"; this could indicate that'
+                    ' a %s is accessible. You might be able to download'
+                    ' the Web application source code.')
             desc %= repo, http_response.get_url(), repo
 
             v = Vuln('Source code repository', desc, severity.MEDIUM,
@@ -187,7 +193,7 @@ class find_dvcs(CrawlPlugin):
         elif version == 3:
             filename_offset = 63
         else:
-            return filenames
+            return set()
 
         for _ in range(0, index_entries):
             offset += filename_offset - 1

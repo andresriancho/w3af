@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+
+
+
+<html>
+
+<head><title>
+	Sjöbo kommun&nbsp;-&nbsp;Search for bookings and available times
+</title><meta http-equiv="content-type" content="text/html; charset=utf-8" /><link rel="stylesheet" type="text/css" href="styles/bokning.css" /><link rel="stylesheet" href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <script type="text/javascript" src="scripts/jquery-1.9.0.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script type="text/javascript" src="scripts/bokning.js"></script>
+    
+    <script type="text/javascript">
+        // fixar bugg med fokus vid validering
+        window.scrollTo = function (x, y) {
+            return true;
+        }
+    </script>
+
+<meta http-equiv="Refresh" content="1200; url=default.aspx" /></head>
+
+<body id="ctl00_bdyBokning">
+
+<script type="text/javascript" src="scripts/wz_tooltip.js"></script>
+
+    <form method="post" action="./" id="aspnetForm">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKLTk1NTYyMDg1Nw9kFgJmD2QWAgIED2QWAgIBD2QWDAIDDxYEHgNhbHQFGkxvZ290eXBlIGZvciBTasO2Ym8ga29tbXVuHgV0aXRsZQUaTG9nb3R5cGUgZm9yIFNqw7ZibyBrb21tdW5kAgUPDxYCHgRUZXh0BQ1TasO2Ym8ga29tbXVuZGQCBw9kFg4CAQ8WBB4JaW5uZXJodG1sBQhCb29raW5ncx8BBQhCb29raW5nc2QCAw8WAh4HVmlzaWJsZWhkAgUPZBYCZg8WBB8DBScmbmJzcDsmbmJzcDtTZWFyY2gvQm9vayBhdmFpbGFibGUgdGltZXMfAQUbU2VhcmNoL0Jvb2sgYXZhaWxhYmxlIHRpbWVzZAIHDxYCHwRoFgYCAQ8WBB8DBQdBZGQtb25zHwEFB0FkZC1vbnNkAgMPFgIfBGgWAmYPFgYeBGhyZWYFE2t1bmR0aWxsYWdnc29rLmFzcHgfAwUnJm5ic3A7Jm5ic3A7U2VhcmNoIGFkZC1vbnMmbmJzcDstJm5ic3A7HwEFEVNlYXJjaCBhZGQtb25zIC0gZAIFDxYCHwRoFgJmDxYEHwMFNSZuYnNwOyZuYnNwO1JlZ2lzdGVyIGN1c3RvbWVyIGNvbm5lY3RlZCBhZGQtb25zJm5ic3A7HwEFmQFIZXJlIHlvdSBjYW4gcmVnaXN0ZXIgYWRkLW9ucyB0aGF0IGFyZSBjb25uZWN0ZWQgZGlyZWN0bHkgdG8geW91IGFzIGN1c3RvbWVyLiBJZiB5b3Ugd2FudCBhbiBhZGQtb25zIHRvIHlvdXIgYm9va2luZ3MsIHRoZW4gdGhpcyBpcyBkb25lIHZpYSB0aGUgYm9va2luZy5kAgkPFgIfBGgWAgIBDxYEHwMFClNlbC4gY3VzdC4fAQUKU2VsLiBjdXN0LmQCCw8WBh4Hb25jbGljawVVcmV0dXJuIHBvcHVwc3RvcignaHR0cDovL3d3dy5pZGF2YWxsLnNlL2hlbHAvd2ViYi1ib2tuaW5nL2luZGV4Lmh0bScsNTUwLDUwMCwnSGVscCcpOx8DBQRIZWxwHwEFHEhlbHAgKG9wZW5zIGluIGEgbmV3IHdpbmRvdylkAg0PFgIfBGgWAgIBDxYEHwMFC0N1c3QuIGluZm8uHwEFTUNsaWNrIGhlcmUgdG8gc2VlIG1vcmUgaW5mb3JtYXRpb24gYWJvdXQgdGhlIGN1c3RvbWVyIChvcGVucyBpbiBhIG5ldyB3aW5kb3cpZAIJD2QWAgIBD2QWAmYPZBYEZg9kFgICAQ9kFgYCAw8PFgIfAmVkZAIHDw8WAh8CBQxNYWluIGFkZHJlc3NkZAIJDw8WAh8CBRVDaGFuZ2UmbmJzcDtMw7ZzZW5vcmRkZAIBD2QWAgIBD2QWDgIBDw8WAh8CBQ1BbnbDpG5kYXJuYW1uZGQCAw8PZBYCHgtwbGFjZWhvbGRlcgUNQW52w6RuZGFybmFtbmQCBQ8PFgIeDEVycm9yTWVzc2FnZQUaU3BlY2lmeSZuYnNwO0FudsOkbmRhcm5hbW5kZAIHDw8WAh8CBQlMw7ZzZW5vcmRkZAIJDw9kFgIfBwUJTMO2c2Vub3JkZAILDw8WAh8IBRZTcGVjaWZ5Jm5ic3A7TMO2c2Vub3JkZGQCDw8PFgIfAgUYRm9yZ290dGVuJm5ic3A7TMO2c2Vub3JkZGQCDQ9kFgICAQ9kFgICAQ9kFgoCAQ8WAh8EaGQCAw9kFgQCAQ8PFgIfAgUhVsOkbGtvbW1lbiB0aWxsIHbDpXIgYm9rbmluZ3NzaWRhZGQCAw8PFgIfAgWOAVDDpSBkZXNzYSBzaWRvciBrYW4gZHUgc8O2a2EgbGVkaWdhIHRpZGVyIHNhbXQgc8OkbmRhIGJva25pbmdzZsO2cmZyw6VnbmluZ2FyIHRpbGwgU2rDtmJvIGtvbW11bjxiciAvPjxiciAvPkt1bmRlciBtZWQgbMO2c2Vub3JkIGthbiBsb2dnYSBpbi5kZAIFD2QWKgIBDw9kFgIeBXN0eWxlBQ9kaXNwbGF5OmlubGluZTtkAgMPD2QWAh8JBQ1kaXNwbGF5Om5vbmU7ZAIFDw8WAh8CBRVWw6RsaiBncnVwcCBhdiBvYmpla3RkZAIHDxAWAh4Ib25jaGFuZ2UFtCB2aXNhT2JqZWt0KCc3Nnw3NHw3NXw3fDE1fDE2fDJ8OXwxMHwxM3wxNHw3OHwxMXwxMnwzM3wzNHwzNXwzNnw3OXw4OXwxMTZ8ODB8ODF8ODJ8ODN8ODR8ODV8ODZ8ODd8ODh8MTd8NDV8NDN8NDR8M3w0fDIwfDIxfDIyfDEyOXwxMzB8MjN8MTM4fDEzOXwyNXwxNDB8MTQxfDI0fDEzNXwxMzZ8MTM3fDI3fDI5fDMwfDI4fDMxfDMyfDExN3w7NDV8NDN8NDR8MjF8MjJ8MTI5fDEzMHwyM3wyNXwyNHwxMzV8MTM2fDEzN3wyN3wyOXwzMHwyOHwzMXwzMnw7MnwzfDR8Ozc2fDc0fDc1fDsxMnwzM3wzNHwzNXwzNnw7N3wxNXwxNnw5fDEwfDEzfDE0fDE3fDExN3w7ODl8ODB8ODF8ODJ8ODN8ODR8ODV8ODZ8ODd8ODh8OycsICdCaW9ncmFmdGVhdGVyIEZsb3JhL0JhZ2VyaWV0fEJpb2dyYWZ0ZWF0ZXIgRmxvcmEvQmlvc2Fsb25nZW58QmlvZ3JhZnRlYXRlciBGbG9yYS9DYWbDqXxCbGVudGFycHMgc3BvcnRoYWxsfEJsZW50YXJwcyBzcG9ydGhhbGwvSGFsdmEgMXxCbGVudGFycHMgc3BvcnRoYWxsL0hhbHZhIDJ8RW1hbnVlbHNrb2xhbi9HeW1uYXN0aWtzYWx8RsOkcnNpbmdhaGFsbGVuL0EtaGFsbHxGw6Ryc2luZ2FoYWxsZW4vQi1oYWxsfEbDpHJzaW5nYWhhbGxlbi9CLWhhbGwvSGFsdmEgMXxGw6Ryc2luZ2FoYWxsZW4vQi1oYWxsL0hhbHZhIDJ8RsOkcnNpbmdhaGFsbGVuL0tpb3NrZW58RsOkcnNpbmdhaGFsbGVuL1NpbWhhbGxlbnxGw6Ryc2luZ2FoYWxsZW4vU2ltaGFsbGVuL0Jhc3PDpG5nZW58RsOkcnNpbmdhaGFsbGVuL1NpbWhhbGxlbi9CYXNzw6RuZ2VuL0JhbmEgMXxGw6Ryc2luZ2FoYWxsZW4vU2ltaGFsbGVuL0Jhc3PDpG5nZW4vQmFuYSAyfEbDpHJzaW5nYWhhbGxlbi9TaW1oYWxsZW4vQmFzc8Okbmdlbi9CYW5hIDN8RsOkcnNpbmdhaGFsbGVuL1NpbWhhbGxlbi9CYXNzw6RuZ2VuL0JhbmEgNHxPcmViYWRldHxPcmViYWRldC9NZWxsYW5iYXNzw6RuZ2VufE9yZWJhZGV0L1Bhcmt8T3JlYmFkZXQvU3RvcmEgYmFzc8OkbmdlbnxPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgMXxPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgMnxPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgM3xPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgNHxPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgNXxPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgNnxPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgN3xPcmViYWRldC9TdG9yYSBiYXNzw6RuZ2VuL0JhbmEgOHxQaXJhdGVuaGFsbGVufFNhbHNiamVyIElkcm90dHNwbGF0cy9HcnVzcGxhbnxTYWxzYmplciBJZHJvdHRzcGxhdHMvR3LDpHNwbGFuIEF8U2Fsc2JqZXIgSWRyb3R0c3BsYXRzL0dyw6RzcGxhbiBCfFNhbmRiw6Rja3Nza29sYW58U2FuZGLDpGNrc3Nrb2xhbi9HeW1uYXN0aWtzYWx8U2rDtmJvIElkcm90dHNwbGF0c3xTasO2Ym8gSWRyb3R0c3BsYXRzL0EtcGxhbnxTasO2Ym8gSWRyb3R0c3BsYXRzL0ItcGxhbnxTasO2Ym8gSWRyb3R0c3BsYXRzL0ItcGxhbi9IYWx2YSAxfFNqw7ZibyBJZHJvdHRzcGxhdHMvQi1wbGFuL0hhbHZhIDJ8U2rDtmJvIElkcm90dHNwbGF0cy9DLXBsYW4gXCdHdW1wYXJwXCd8U2rDtmJvIElkcm90dHNwbGF0cy9DLXBsYW4gXCdHdW1wYXJwXCcvSGFsdmEgMXxTasO2Ym8gSWRyb3R0c3BsYXRzL0MtcGxhbiBcJ0d1bXBhcnBcJy9IYWx2YSAyfFNqw7ZibyBJZHJvdHRzcGxhdHMvRC1wbGFuIFwnR3VtcGFycFwnfFNqw7ZibyBJZHJvdHRzcGxhdHMvRC1wbGFuIFwnR3VtcGFycFwnL0hhbHZhIDF8U2rDtmJvIElkcm90dHNwbGF0cy9ELXBsYW4gXCdHdW1wYXJwXCcvSGFsdmEgMnxTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFufFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vRGVsIDEgYXYgM3xTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0RlbCAyIGF2IDN8U2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9EZWwgMyBhdiAzfFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vSGFsdmEgMXxTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0hhbHZhIDEvRGVsIEF8U2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9IYWx2YSAxL0RlbCBCfFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vSGFsdmEgMnxTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0hhbHZhIDIvRGVsIEF8U2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9IYWx2YSAyL0RlbCBCfMOWc3RyYSBGw6Ryc2hhbGxlbnw7U2Fsc2JqZXIgSWRyb3R0c3BsYXRzL0dydXNwbGFufFNhbHNiamVyIElkcm90dHNwbGF0cy9HcsOkc3BsYW4gQXxTYWxzYmplciBJZHJvdHRzcGxhdHMvR3LDpHNwbGFuIEJ8U2rDtmJvIElkcm90dHNwbGF0cy9BLXBsYW58U2rDtmJvIElkcm90dHNwbGF0cy9CLXBsYW58U2rDtmJvIElkcm90dHNwbGF0cy9CLXBsYW4vSGFsdmEgMXxTasO2Ym8gSWRyb3R0c3BsYXRzL0ItcGxhbi9IYWx2YSAyfFNqw7ZibyBJZHJvdHRzcGxhdHMvQy1wbGFuIFwnR3VtcGFycFwnfFNqw7ZibyBJZHJvdHRzcGxhdHMvRC1wbGFuIFwnR3VtcGFycFwnfFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW58U2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9EZWwgMSBhdiAzfFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vRGVsIDIgYXYgM3xTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0RlbCAzIGF2IDN8U2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9IYWx2YSAxfFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vSGFsdmEgMS9EZWwgQXxTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0hhbHZhIDEvRGVsIEJ8U2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9IYWx2YSAyfFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vSGFsdmEgMi9EZWwgQXxTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0hhbHZhIDIvRGVsIEJ8O0VtYW51ZWxza29sYW4vR3ltbmFzdGlrc2FsfFNhbmRiw6Rja3Nza29sYW58U2FuZGLDpGNrc3Nrb2xhbi9HeW1uYXN0aWtzYWx8O0Jpb2dyYWZ0ZWF0ZXIgRmxvcmEvQmFnZXJpZXR8QmlvZ3JhZnRlYXRlciBGbG9yYS9CaW9zYWxvbmdlbnxCaW9ncmFmdGVhdGVyIEZsb3JhL0NhZsOpfDtGw6Ryc2luZ2FoYWxsZW4vU2ltaGFsbGVuL0Jhc3PDpG5nZW58RsOkcnNpbmdhaGFsbGVuL1NpbWhhbGxlbi9CYXNzw6RuZ2VuL0JhbmEgMXxGw6Ryc2luZ2FoYWxsZW4vU2ltaGFsbGVuL0Jhc3PDpG5nZW4vQmFuYSAyfEbDpHJzaW5nYWhhbGxlbi9TaW1oYWxsZW4vQmFzc8Okbmdlbi9CYW5hIDN8RsOkcnNpbmdhaGFsbGVuL1NpbWhhbGxlbi9CYXNzw6RuZ2VuL0JhbmEgNHw7QmxlbnRhcnBzIHNwb3J0aGFsbHxCbGVudGFycHMgc3BvcnRoYWxsL0hhbHZhIDF8QmxlbnRhcnBzIHNwb3J0aGFsbC9IYWx2YSAyfEbDpHJzaW5nYWhhbGxlbi9BLWhhbGx8RsOkcnNpbmdhaGFsbGVuL0ItaGFsbHxGw6Ryc2luZ2FoYWxsZW4vQi1oYWxsL0hhbHZhIDF8RsOkcnNpbmdhaGFsbGVuL0ItaGFsbC9IYWx2YSAyfFBpcmF0ZW5oYWxsZW58w5ZzdHJhIEbDpHJzaGFsbGVufDtPcmViYWRldC9NZWxsYW5iYXNzw6RuZ2VufE9yZWJhZGV0L1N0b3JhIGJhc3PDpG5nZW58T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDF8T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDJ8T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDN8T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDR8T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDV8T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDZ8T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDd8T3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDh8OycsICcyMDE3LTAzLTIwOzIwMTctMDMtMjA7MjAxNy0wMy0yMDsyMDE3LTAzLTIwOzIwMTctMDMtMjA7MjAxNy0wMy0yMDsyMDE3LTAzLTIwOycsICcyMDE3LTAzLTI2OzIwMTctMDMtMjY7MjAxNy0wMy0yNjsyMDE3LTAzLTI2OzIwMTctMDMtMjY7MjAxNy0wMy0yNjsyMDE3LTAzLTI2OycsICcwOzA7MDswOzA7MDswOycpOxAVBwtBbGxhIG9iamVrdA5Gb3Rib2xsc3BsYW5lcg5HeW1uYXN0aWtzYWxhcg9TYW1saW5nc2xva2FsZXIHU2ltaGFsbAtTcG9ydGhhbGxhcgpVdG9taHVzYmFkFQcLQWxsYSBvYmpla3QORm90Ym9sbHNwbGFuZXIOR3ltbmFzdGlrc2FsYXIPU2FtbGluZ3Nsb2thbGVyB1NpbWhhbGwLU3BvcnRoYWxsYXIKVXRvbWh1c2JhZBQrAwdnZ2dnZ2dnZGQCCQ8WBh8DBR1TZWxlY3Qgb25lIG9yIHNldmVyYWwgb2JqZWN0cx8BBUpJbmZvcm1hdGlvbiBhYm91dCBzZWxlY3Rpbmcgb25lIG9yIHNldmVyYWwgb2JqZWN0cyAob3BlbnMgaW4gYSBuZXcgd2luZG93KR8GBVdyZXR1cm4gcG9wdXBzdG9yKCdodHRwOi8vd3d3LmlkYXZhbGwuc2UvaGVscC93ZWJiLWJva25pbmcvbWFya2VyYS5odG0nLDU1MCw1MDAsJ0hlbHAnKTtkAhEPEGQQFTocQmlvZ3JhZnRlYXRlciBGbG9yYS9CYWdlcmlldB9CaW9ncmFmdGVhdGVyIEZsb3JhL0Jpb3NhbG9uZ2VuGUJpb2dyYWZ0ZWF0ZXIgRmxvcmEvQ2Fmw6kTQmxlbnRhcnBzIHNwb3J0aGFsbBtCbGVudGFycHMgc3BvcnRoYWxsL0hhbHZhIDEbQmxlbnRhcnBzIHNwb3J0aGFsbC9IYWx2YSAyGkVtYW51ZWxza29sYW4vR3ltbmFzdGlrc2FsFkbDpHJzaW5nYWhhbGxlbi9BLWhhbGwWRsOkcnNpbmdhaGFsbGVuL0ItaGFsbB5Gw6Ryc2luZ2FoYWxsZW4vQi1oYWxsL0hhbHZhIDEeRsOkcnNpbmdhaGFsbGVuL0ItaGFsbC9IYWx2YSAyF0bDpHJzaW5nYWhhbGxlbi9LaW9za2VuGUbDpHJzaW5nYWhhbGxlbi9TaW1oYWxsZW4kRsOkcnNpbmdhaGFsbGVuL1NpbWhhbGxlbi9CYXNzw6RuZ2VuK0bDpHJzaW5nYWhhbGxlbi9TaW1oYWxsZW4vQmFzc8Okbmdlbi9CYW5hIDErRsOkcnNpbmdhaGFsbGVuL1NpbWhhbGxlbi9CYXNzw6RuZ2VuL0JhbmEgMitGw6Ryc2luZ2FoYWxsZW4vU2ltaGFsbGVuL0Jhc3PDpG5nZW4vQmFuYSAzK0bDpHJzaW5nYWhhbGxlbi9TaW1oYWxsZW4vQmFzc8Okbmdlbi9CYW5hIDQIT3JlYmFkZXQZT3JlYmFkZXQvTWVsbGFuYmFzc8Okbmdlbg1PcmViYWRldC9QYXJrGU9yZWJhZGV0L1N0b3JhIGJhc3PDpG5nZW4gT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDEgT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDIgT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDMgT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDQgT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDUgT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDYgT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDcgT3JlYmFkZXQvU3RvcmEgYmFzc8Okbmdlbi9CYW5hIDgNUGlyYXRlbmhhbGxlbh5TYWxzYmplciBJZHJvdHRzcGxhdHMvR3J1c3BsYW4hU2Fsc2JqZXIgSWRyb3R0c3BsYXRzL0dyw6RzcGxhbiBBIVNhbHNiamVyIElkcm90dHNwbGF0cy9HcsOkc3BsYW4gQhBTYW5kYsOkY2tzc2tvbGFuHVNhbmRiw6Rja3Nza29sYW4vR3ltbmFzdGlrc2FsE1Nqw7ZibyBJZHJvdHRzcGxhdHMaU2rDtmJvIElkcm90dHNwbGF0cy9BLXBsYW4aU2rDtmJvIElkcm90dHNwbGF0cy9CLXBsYW4iU2rDtmJvIElkcm90dHNwbGF0cy9CLXBsYW4vSGFsdmEgMSJTasO2Ym8gSWRyb3R0c3BsYXRzL0ItcGxhbi9IYWx2YSAyJFNqw7ZibyBJZHJvdHRzcGxhdHMvQy1wbGFuICdHdW1wYXJwJyxTasO2Ym8gSWRyb3R0c3BsYXRzL0MtcGxhbiAnR3VtcGFycCcvSGFsdmEgMSxTasO2Ym8gSWRyb3R0c3BsYXRzL0MtcGxhbiAnR3VtcGFycCcvSGFsdmEgMiRTasO2Ym8gSWRyb3R0c3BsYXRzL0QtcGxhbiAnR3VtcGFycCcsU2rDtmJvIElkcm90dHNwbGF0cy9ELXBsYW4gJ0d1bXBhcnAnL0hhbHZhIDEsU2rDtmJvIElkcm90dHNwbGF0cy9ELXBsYW4gJ0d1bXBhcnAnL0hhbHZhIDIiU2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi1TasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0RlbCAxIGF2IDMtU2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9EZWwgMiBhdiAzLVNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vRGVsIDMgYXYgMypTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0hhbHZhIDEwU2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9IYWx2YSAxL0RlbCBBMFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vSGFsdmEgMS9EZWwgQipTasO2Ym8gSWRyb3R0c3BsYXRzL0tvbnN0Z3LDpHNwbGFuL0hhbHZhIDIwU2rDtmJvIElkcm90dHNwbGF0cy9Lb25zdGdyw6RzcGxhbi9IYWx2YSAyL0RlbCBBMFNqw7ZibyBJZHJvdHRzcGxhdHMvS29uc3RncsOkc3BsYW4vSGFsdmEgMi9EZWwgQhLDlnN0cmEgRsOkcnNoYWxsZW4VOgI3NgI3NAI3NQE3AjE1AjE2ATIBOQIxMAIxMwIxNAI3OAIxMQIxMgIzMwIzNAIzNQIzNgI3OQI4OQMxMTYCODACODECODICODMCODQCODUCODYCODcCODgCMTcCNDUCNDMCNDQBMwE0AjIwAjIxAjIyAzEyOQMxMzACMjMDMTM4AzEzOQIyNQMxNDADMTQxAjI0AzEzNQMxMzYDMTM3AjI3AjI5AjMwAjI4AjMxAjMyAzExNxQrAzpnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZGQCHw8WBB4HY2hlY2tlZAUHY2hlY2tlZB4IZGlzYWJsZWQFCGRpc2FibGVkZAIiDw8WBB8CBQEwHgdFbmFibGVkaGRkAiQPDxYEHwIFAjI0Hw1oZGQCKA8PFgQfAgUBMB8NaGRkAiwPFgQfDAUIZGlzYWJsZWQfCwUHY2hlY2tlZGQCLw8WAh8EaGQCMw8WAh8MZGQCNg8WAh8MZGQCPw8PFgIfCAVdRGF0ZSZuYnNwO25vdCB2YWxpZC4mbmJzcDtVc2Ugb25lIG9mIHRoZSBmb3JtYXRzJm5ic3A7eXltbWRkLCB5eXl5bW1kZCwgeXktbW0tZGQsIHl5eXktbW0tZGQuZGQCQw8PFgIfCAVdRGF0ZSZuYnNwO25vdCB2YWxpZC4mbmJzcDtVc2Ugb25lIG9mIHRoZSBmb3JtYXRzJm5ic3A7eXltbWRkLCB5eXl5bW1kZCwgeXktbW0tZGQsIHl5eXktbW0tZGQuZGQCRQ8PFgIfCAUzRnJvbSBkYXRlJm5ic3A7bXVzdCBiZSBlYXJsaWVyIHRoYW4mbmJzcDtVbnRpbCBkYXRlZGQCRw8PFgIfCAUjTWF4Jm5ic3A7MzAmbmJzcDtkYXlzIG1heSBiZSBzb3VnaHRkZAJJD2QWAgICDw8WAh8CBQIzMGRkAk0PD2QWAh8JBQ9kaXNwbGF5OmlubGluZTtkAk8PD2QWAh8JBQ1kaXNwbGF5Om5vbmU7ZAIHDxYCHwRoZAIJDw8WAh4KSGVhZGVyVGV4dAWTATxzcGFuIGNsYXNzPSd2c0hlYWRlclRleHQnPlByb2JsZW1zIG9jY3VyZWQgdXBvbiByZWNlaXZpbmcgeW91ciBpbnF1aXJ5LjxiciAvPlBsZWFzZSBjaGFuZ2UgdGhlIGZvbGxvd2luZyBhbmQgY2xpY2sgb24gJ1N0YXJ0IHNlYXJjaCcgYWdhaW46PC9zcGFuPmRkAg8PDxYCHwIFkQFIYXIgZHUgZnLDpWdvciBlbGxlciBzeW5wdW5rdGVyIHDDpSBib2tuaW5nZW4gLSBrb250YWt0YSA8YSBjbGFzcz0nbGFua2FyJyBocmVmPSJtYWlsdG86bG9rYWxib2tuaW5nQHNqb2JvLnNlIj5Mb2thbGJva25pbmdlbjwvYT4gcMOlIDA0MTYtMjcyIDAyZGQYAgUeX19Db250cm9sc1JlcXVpcmVQb3N0QmFja0tleV9fFgsFH2N0bDAwJGNwaEh1dnVkJExpc3RhR3J1bmRzY2hlbWEFHGN0bDAwJGNwaEh1dnVkJExpc3RhT2JqdXJ2YWwFFmN0bDAwJGNwaEh1dnVkJHNva3R5cDAFFmN0bDAwJGNwaEh1dnVkJHNva3R5cDMFFmN0bDAwJGNwaEh1dnVkJHNva3R5cDEFHGN0bDAwJGNwaEh1dnVkJHNvcnRlcmFvYmpla3QFG2N0bDAwJGNwaEh1dnVkJHNvcnRlcmFkYXR1bQUUY3RsMDAkY3BoSHV2dWQkaWJuU3YFFGN0bDAwJGNwaEh1dnVkJGlibk5vBRRjdGwwMCRjcGhIdXZ1ZCRpYm5FbgUUY3RsMDAkY3BoSHV2dWQkaWJuSXMFFWN0bDAwJHVjTG9naW4kbXZMb2dpbg8PZAIBZJu8xUxx1JulJfYxrNGWvUtEWKbO1JHIGWTilEB0xDMM" />
+
+
+<script type="text/javascript">
+//<![CDATA[
+var __cultureInfo = {"name":"sv-SE","numberFormat":{"CurrencyDecimalDigits":2,"CurrencyDecimalSeparator":",","IsReadOnly":true,"CurrencyGroupSizes":[3],"NumberGroupSizes":[3],"PercentGroupSizes":[3],"CurrencyGroupSeparator":".","CurrencySymbol":"kr","NaNSymbol":"NaN","CurrencyNegativePattern":8,"NumberNegativePattern":1,"PercentPositivePattern":0,"PercentNegativePattern":0,"NegativeInfinitySymbol":"-INF","NegativeSign":"-","NumberDecimalDigits":2,"NumberDecimalSeparator":",","NumberGroupSeparator":" ","CurrencyPositivePattern":3,"PositiveInfinitySymbol":"INF","PositiveSign":"+","PercentDecimalDigits":2,"PercentDecimalSeparator":",","PercentGroupSeparator":" ","PercentSymbol":"%","PerMilleSymbol":"?","NativeDigits":["0","1","2","3","4","5","6","7","8","9"],"DigitSubstitution":1},"dateTimeFormat":{"AMDesignator":"","Calendar":{"MinSupportedDateTime":"\/Date(-62135596800000)\/","MaxSupportedDateTime":"\/Date(253402297199999)\/","AlgorithmType":1,"CalendarType":1,"Eras":[1],"TwoDigitYearMax":2029,"IsReadOnly":true},"DateSeparator":"-","FirstDayOfWeek":1,"CalendarWeekRule":2,"FullDateTimePattern":"\u0027den \u0027d MMMM yyyy HH:mm:ss","LongDatePattern":"\u0027den \u0027d MMMM yyyy","LongTimePattern":"HH:mm:ss","MonthDayPattern":"\u0027den \u0027d MMMM","PMDesignator":"","RFC1123Pattern":"ddd, dd MMM yyyy HH\u0027:\u0027mm\u0027:\u0027ss \u0027GMT\u0027","ShortDatePattern":"yyyy-MM-dd","ShortTimePattern":"HH:mm","SortableDateTimePattern":"yyyy\u0027-\u0027MM\u0027-\u0027dd\u0027T\u0027HH\u0027:\u0027mm\u0027:\u0027ss","TimeSeparator":":","UniversalSortableDateTimePattern":"yyyy\u0027-\u0027MM\u0027-\u0027dd HH\u0027:\u0027mm\u0027:\u0027ss\u0027Z\u0027","YearMonthPattern":"MMMM yyyy","AbbreviatedDayNames":["sö","må","ti","on","to","fr","lö"],"ShortestDayNames":["sö","må","ti","on","to","fr","lö"],"DayNames":["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"],"AbbreviatedMonthNames":["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec",""],"MonthNames":["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december",""],"IsReadOnly":true,"NativeCalendarName":"gregoriansk kalender","AbbreviatedMonthGenitiveNames":["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec",""],"MonthGenitiveNames":["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december",""]},"eras":[1,"A.D.",null,0]};//]]>
+</script>
+
+<script src="/bokning/ScriptResource.axd?d=WVhetSc5giB_Fpoasv22eDeYWCH5-vai7rz90ZYG2JVNWSqLcHJhvNw-rlPxWue417HPt6R8latKfeq2f6wI7u6JLtzidBiw7KzxWxavNjodad8uKpRMIBJY0MseSBFoPrqiq4WxRnfZGmdj-6-aLUs36oov_e5hM3Uu6V_CSjM1&amp;t=ffffffff977ec8ef" type="text/javascript"></script>
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="DA82B542" />
+<input type="hidden" name="__PREVIOUSPAGE" id="__PREVIOUSPAGE" value="pUHf8_a3mUTDk2iNZh2XUOki4A0PdVh6osh93U6_RivBKWJe1xHxG3l22OZKMd0E-5oNNmktL2VTEb0uc0xg-wEBLiSkogKBNraoa1uTXX41" />
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdAB/na40xWAI2YHRTY8pg8dKsijKzbuCLb2ucgNcexEVikrGJaD6bkN4Evj3QzUuTeqQd1BSPjcJ0Lte0fHC1tzOVjBc6CH2ZO+I29iUEs6LG8Oljjwcq+sTvPXXO6MepCa9pa9KgxegcCvCNDZM2Gg6kFLztJPy9xZVeQAsJFh1Bv9F0KcFTMN+f63BzaOO6j5vxXnCGGCks4owFuxL4C3uMC+FN13p1BfiiNcO5Gus875YY9U5EE2xPllTFefxuF7aJcda8nASgNON4+pwWf4oHIgllIm/firCKjcAIeiqL8t00z6mRJdpbisbKPvbuDrJRWCcyyeZq8UtVUrsAWZ+wIeW1JC+QSeilgqD2Ied3PenoneQ9/rjI6M16QZWtALmnkoYuKiDVI1tbThvVT/EDdZS6AO8IatKE9V1DhAKXZf0CMMvdwgC+YXPWskC6M0PUpk99dnj5lEXCNxzjvsJxc69QZMjsDVTkRNgNCl+HxFAYHAjsxNyu4+0TOOUkVEWZyh3kVnaQV0IU6J3uZFEagp3hvxPHj7NGV+obzWrDxKuVrDE86XW6lWoP5jlLCBjUaMflN+djHPWoXl3Uy2erqSop4kzsLs39bmHzUhSebdc0WAjvayLk1jdEp2MGtjZstU3RrWUea6Sgipl7dUj6prVWQyWyyFu2GoV4k3QPun6gmfg3gOTFsUoi2SSgvJc=" />
+    
+    
+    
+    <div id="page">
+
+        <div class="inner">
+    
+            <!-- start meny -->
+            <div class="meny_bakgrund" style="display:block; height:67px; z-index:2">
+
+                <div style="float:left; width:25%; max-height:100%;">
+                    <div class="logotyp" style="z-index:3">
+                        <img src="bilder/logga.gif" id="ctl00_imgLogga" alt="Logotype for Sjöbo kommun" title="Logotype for Sjöbo kommun" />
+                    </div>
+                </div>
+
+                <div style="float:left; width:50%">
+
+                    <table style="border-collapse:collapse; border:0px; margin:auto;">
+                        <tr><td style="height:10px">&nbsp;</td></tr>
+                        <tr style="height:40px;width:100%; text-align:center; vertical-align:top"><td>
+                            <span id="ctl00_lblRubrik" class="rubrik">Sjöbo kommun</span>
+                        </td></tr>
+                
+                        <tr><td style="width:100%; text-align:center">
+                        
+                                <ul id="ctl00_ulMeny" class="cssMenu">
+	                                <li>
+		                                <a href="#" id="ctl00_hrefBokningar" title="Bookings">Bookings</a>           
+		                                <ul>
+		                                    
+			                                <li id="ctl00_liBokning"><a href="default.aspx" id="ctl00_hrefBokning" title="Search/Book available times">&nbsp;&nbsp;Search/Book available times</a></li>
+		                                </ul>
+	                                </li>
+	                                
+	                                
+	                                <li>
+		                                <a href="javascript:void(0);" id="ctl00_hrefHjalp" onclick="return popupstor(&#39;http://www.idavall.se/help/webb-bokning/index.htm&#39;,550,500,&#39;Help&#39;);" title="Help (opens in a new window)">Help</a>
+	                                </li>
+	                                
+                                </ul>
+
+                        </td></tr>
+                
+                    </table>
+
+                </div>
+
+                <div style="float:left; width:25%">
+                    <div id="ctl00_divlogin" class="login" style="z-index:3">
+                        
+        <div>
+	
+            <table class="login rounded-corners">
+                <tr>
+                    <td>
+                        <label for="ctl00_ucLogin_txtAnvnamn" id="ctl00_ucLogin_lblAnvnamn">Användarnamn</label>
+                    </td>
+                    <td>
+                        <input name="ctl00$ucLogin$txtAnvnamn" type="text" maxlength="14" id="ctl00_ucLogin_txtAnvnamn" placeholder="Användarnamn" style="width:120px; text-transform:uppercase" />
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="ctl00_ucLogin_txtLosen" id="ctl00_ucLogin_lblLosen">Lösenord</label>
+                    </td>
+                    <td>
+                        <input name="ctl00$ucLogin$txtLosen" type="password" maxlength="15" id="ctl00_ucLogin_txtLosen" onkeypress="capLock(event)" placeholder="Lösenord" style="width:120px" />
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div id="divCapslock" class="validate" style="display:none;"><span id="ctl00_ucLogin_lblCapslock">Caps Lock is on</span></div> 
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a id="ctl00_ucLogin_hlnLosen" class="lankar" href="losenglomt.aspx">Forgotten&nbsp;Lösenord</a>&nbsp;
+                    </td>
+                    <td>
+                        <input type="submit" name="ctl00$ucLogin$btnLoggain" value="Sign in" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$ucLogin$btnLoggain&quot;, &quot;&quot;, true, &quot;valLogin&quot;, &quot;&quot;, false, false))" id="ctl00_ucLogin_btnLoggain" title="Sign in" class="knapp" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        
+                        
+                        
+                    </td>
+                </tr>
+            </table>
+        
+</div>
+
+        <script type="text/javascript">
+
+            // varnar för caps lock
+            function capLock(e) {
+                kc = e.keyCode ? e.keyCode : e.which;
+                sk = e.shiftKey ? e.shiftKey : ((kc == 16) ? true : false);
+                if (((kc >= 65 && kc <= 90) && !sk) || ((kc >= 97 && kc <= 122) && sk) || ((kc >= 196 && kc <= 197) && !sk) || ((kc == 214) && !sk)) {
+                    $("div#divCapslock").show();
+                }
+                else {
+                    $("div#divCapslock").hide();
+                }
+            }
+
+        </script>
+
+    
+
+
+
+                    </div>
+                </div>
+            
+            </div>
+            <!-- slut meny -->
+
+
+            <!-- start ny meny -->
+            
+            <!-- slut ny meny -->
+
+            <div id="ctl00_divMain" class="main">
+                
+
+<script type="text/javascript">
+
+    $(function () {
+        $("#hrefBrowser").click(function () {
+            $("[id$=divBrowser]").hide();
+
+            $.ajax({
+                type: "POST",
+                data: "session=" + "GammalIE" + "&value=" + "false",
+                url: "setsessionajax.aspx",
+                dataType: "html",
+                success: function (data, status, xhr) {
+                    // nothing
+                },
+                error: function (xhr, status, data) {
+                    // nothing
+                }
+            });
+
+        });
+    });
+
+
+    $(function () {
+        $("[id*=btnSok]").click(function () {
+            if (ValidatePage("valGrp") == false) {
+                return false;
+            }
+            ufShowLayer("idWait");
+        });
+    });
+
+
+    // antal valda objekt, ändrar i lista
+    $(function () {
+        $("[id*=ListaObjurval]").add("[id*=ListaGrundschema]").change(function () {
+            var antal = $("[id*=ListaObjurval] :selected").length;
+            var totantal = $("[id*=ListaObjurval]").find("option").length;
+            $("[id$=spnAntalvalda]").html(antal + " / " + totantal);
+        });
+    });
+
+
+    // markera alla
+    $(function () {
+        $("[id*=bnMarkeraAlla]").click(function () {
+            $("select[id$=ListaObjurval] option").prop("selected", true);
+            $("select[id*=ListaObjurval]").scrollTop(0);
+            var antal = $("[id*=ListaObjurval] :selected").length;
+            var totantal = $("[id*=ListaObjurval]").find("option").length;
+            $("[id$=spnAntalvalda]").html(antal + " / " + totantal);
+        });
+    });
+
+
+    // avmarkera alla
+    $(function () {
+        $("[id*=bnAvmarkeraAlla]").click(function () {
+            $("select[id$=ListaObjurval] option").prop("selected", false);
+            var antal = $("[id*=ListaObjurval] :selected").length;
+            var totantal = $("[id*=ListaObjurval]").find("option").length;
+            $("[id$=spnAntalvalda]").html(antal + " / " + totantal);
+        });
+    });
+
+
+    // antal valda objekt, sidan laddad
+    $(document).ready(function () {
+        var antal = $("[id*=ListaObjurval] :selected").length;
+        var totantal = $("[id*=ListaObjurval]").find("option").length;
+        $("[id$=spnAntalvalda]").html(antal + " / " + totantal);
+    });
+
+</script>
+
+
+    <div style="display:inline-block; width:600px;">
+	
+
+<noscript>
+    <div id="divScript" style="background-color:Yellow;">
+        <span>Aktivera javascript för att använda Webb-Bokning.</span><br />
+        <span>Enable javascript to use Webb-Booking.</span><br />
+    </div>
+</noscript>
+
+        
+
+        <div id="ctl00_cphHuvud_divHuvud" class="section">
+            <h2><span id="ctl00_cphHuvud_lblRubrik" class="rubrik">Välkommen till vår bokningssida</span></h2>
+            <p><span id="ctl00_cphHuvud_lblAllman">På dessa sidor kan du söka lediga tider samt sända bokningsförfrågningar till Sjöbo kommun<br /><br />Kunder med lösenord kan logga in.</span></p>
+        </div>
+
+        <div id="ctl00_cphHuvud_divSok">
+
+            <input type="submit" name="ctl00$cphHuvud$btnSok1" value="Start search" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$btnSok1&quot;, &quot;&quot;, true, &quot;valGrp&quot;, &quot;schema.aspx&quot;, false, false))" id="ctl00_cphHuvud_btnSok1" title="Shows the result of your selections" class="knapp" style="display:inline;" />
+            <input type="submit" name="ctl00$cphHuvud$btnSokObj1" value="Start search" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$btnSokObj1&quot;, &quot;&quot;, true, &quot;valGrp&quot;, &quot;objektinformation.aspx&quot;, false, false))" id="ctl00_cphHuvud_btnSokObj1" title="Shows the result of your selections" class="knapp" style="display:none;" />                    
+
+            <table style="width:100%; border:solid thin black; border-collapse:separate; border-spacing:3px; margin:5px 0px;" class="rounded-corners">
+                <tr>
+                    <td style="vertical-align:top; width:200px">
+                        <label for="ctl00_cphHuvud_ListaGrundschema" id="ctl00_cphHuvud_lblListaGrundschema" class="rubrik3">Välj grupp av objekt</label>
+                    </td>
+                    <td>
+                        <select name="ctl00$cphHuvud$ListaGrundschema" id="ctl00_cphHuvud_ListaGrundschema" size="5" style="width:98%" onchange="visaObjekt(&#39;76|74|75|7|15|16|2|9|10|13|14|78|11|12|33|34|35|36|79|89|116|80|81|82|83|84|85|86|87|88|17|45|43|44|3|4|20|21|22|129|130|23|138|139|25|140|141|24|135|136|137|27|29|30|28|31|32|117|;45|43|44|21|22|129|130|23|25|24|135|136|137|27|29|30|28|31|32|;2|3|4|;76|74|75|;12|33|34|35|36|;7|15|16|9|10|13|14|17|117|;89|80|81|82|83|84|85|86|87|88|;&#39;, &#39;Biografteater Flora/Bageriet|Biografteater Flora/Biosalongen|Biografteater Flora/Café|Blentarps sporthall|Blentarps sporthall/Halva 1|Blentarps sporthall/Halva 2|Emanuelskolan/Gymnastiksal|Färsingahallen/A-hall|Färsingahallen/B-hall|Färsingahallen/B-hall/Halva 1|Färsingahallen/B-hall/Halva 2|Färsingahallen/Kiosken|Färsingahallen/Simhallen|Färsingahallen/Simhallen/Bassängen|Färsingahallen/Simhallen/Bassängen/Bana 1|Färsingahallen/Simhallen/Bassängen/Bana 2|Färsingahallen/Simhallen/Bassängen/Bana 3|Färsingahallen/Simhallen/Bassängen/Bana 4|Orebadet|Orebadet/Mellanbassängen|Orebadet/Park|Orebadet/Stora bassängen|Orebadet/Stora bassängen/Bana 1|Orebadet/Stora bassängen/Bana 2|Orebadet/Stora bassängen/Bana 3|Orebadet/Stora bassängen/Bana 4|Orebadet/Stora bassängen/Bana 5|Orebadet/Stora bassängen/Bana 6|Orebadet/Stora bassängen/Bana 7|Orebadet/Stora bassängen/Bana 8|Piratenhallen|Salsbjer Idrottsplats/Grusplan|Salsbjer Idrottsplats/Gräsplan A|Salsbjer Idrottsplats/Gräsplan B|Sandbäcksskolan|Sandbäcksskolan/Gymnastiksal|Sjöbo Idrottsplats|Sjöbo Idrottsplats/A-plan|Sjöbo Idrottsplats/B-plan|Sjöbo Idrottsplats/B-plan/Halva 1|Sjöbo Idrottsplats/B-plan/Halva 2|Sjöbo Idrottsplats/C-plan \&#39;Gumparp\&#39;|Sjöbo Idrottsplats/C-plan \&#39;Gumparp\&#39;/Halva 1|Sjöbo Idrottsplats/C-plan \&#39;Gumparp\&#39;/Halva 2|Sjöbo Idrottsplats/D-plan \&#39;Gumparp\&#39;|Sjöbo Idrottsplats/D-plan \&#39;Gumparp\&#39;/Halva 1|Sjöbo Idrottsplats/D-plan \&#39;Gumparp\&#39;/Halva 2|Sjöbo Idrottsplats/Konstgräsplan|Sjöbo Idrottsplats/Konstgräsplan/Del 1 av 3|Sjöbo Idrottsplats/Konstgräsplan/Del 2 av 3|Sjöbo Idrottsplats/Konstgräsplan/Del 3 av 3|Sjöbo Idrottsplats/Konstgräsplan/Halva 1|Sjöbo Idrottsplats/Konstgräsplan/Halva 1/Del A|Sjöbo Idrottsplats/Konstgräsplan/Halva 1/Del B|Sjöbo Idrottsplats/Konstgräsplan/Halva 2|Sjöbo Idrottsplats/Konstgräsplan/Halva 2/Del A|Sjöbo Idrottsplats/Konstgräsplan/Halva 2/Del B|Östra Färshallen|;Salsbjer Idrottsplats/Grusplan|Salsbjer Idrottsplats/Gräsplan A|Salsbjer Idrottsplats/Gräsplan B|Sjöbo Idrottsplats/A-plan|Sjöbo Idrottsplats/B-plan|Sjöbo Idrottsplats/B-plan/Halva 1|Sjöbo Idrottsplats/B-plan/Halva 2|Sjöbo Idrottsplats/C-plan \&#39;Gumparp\&#39;|Sjöbo Idrottsplats/D-plan \&#39;Gumparp\&#39;|Sjöbo Idrottsplats/Konstgräsplan|Sjöbo Idrottsplats/Konstgräsplan/Del 1 av 3|Sjöbo Idrottsplats/Konstgräsplan/Del 2 av 3|Sjöbo Idrottsplats/Konstgräsplan/Del 3 av 3|Sjöbo Idrottsplats/Konstgräsplan/Halva 1|Sjöbo Idrottsplats/Konstgräsplan/Halva 1/Del A|Sjöbo Idrottsplats/Konstgräsplan/Halva 1/Del B|Sjöbo Idrottsplats/Konstgräsplan/Halva 2|Sjöbo Idrottsplats/Konstgräsplan/Halva 2/Del A|Sjöbo Idrottsplats/Konstgräsplan/Halva 2/Del B|;Emanuelskolan/Gymnastiksal|Sandbäcksskolan|Sandbäcksskolan/Gymnastiksal|;Biografteater Flora/Bageriet|Biografteater Flora/Biosalongen|Biografteater Flora/Café|;Färsingahallen/Simhallen/Bassängen|Färsingahallen/Simhallen/Bassängen/Bana 1|Färsingahallen/Simhallen/Bassängen/Bana 2|Färsingahallen/Simhallen/Bassängen/Bana 3|Färsingahallen/Simhallen/Bassängen/Bana 4|;Blentarps sporthall|Blentarps sporthall/Halva 1|Blentarps sporthall/Halva 2|Färsingahallen/A-hall|Färsingahallen/B-hall|Färsingahallen/B-hall/Halva 1|Färsingahallen/B-hall/Halva 2|Piratenhallen|Östra Färshallen|;Orebadet/Mellanbassängen|Orebadet/Stora bassängen|Orebadet/Stora bassängen/Bana 1|Orebadet/Stora bassängen/Bana 2|Orebadet/Stora bassängen/Bana 3|Orebadet/Stora bassängen/Bana 4|Orebadet/Stora bassängen/Bana 5|Orebadet/Stora bassängen/Bana 6|Orebadet/Stora bassängen/Bana 7|Orebadet/Stora bassängen/Bana 8|;&#39;, &#39;2017-03-20;2017-03-20;2017-03-20;2017-03-20;2017-03-20;2017-03-20;2017-03-20;&#39;, &#39;2017-03-26;2017-03-26;2017-03-26;2017-03-26;2017-03-26;2017-03-26;2017-03-26;&#39;, &#39;0;0;0;0;0;0;0;&#39;);">
+		<option selected="selected" value="Alla objekt">Alla objekt</option>
+		<option value="Fotbollsplaner">Fotbollsplaner</option>
+		<option value="Gymnastiksalar">Gymnastiksalar</option>
+		<option value="Samlingslokaler">Samlingslokaler</option>
+		<option value="Simhall">Simhall</option>
+		<option value="Sporthallar">Sporthallar</option>
+		<option value="Utomhusbad">Utomhusbad</option>
+	</select>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top; width:200px">
+                        <a href="javascript:void(0);" id="ctl00_cphHuvud_hrefListaObjurval" class="lankar rubrik3" title="Information about selecting one or several objects (opens in a new window)" onclick="return popupstor(&#39;http://www.idavall.se/help/webb-bokning/markera.htm&#39;,550,500,&#39;Help&#39;);">Select one or several objects</a><br />
+                        <br />
+                        <span id="spnAntalvalda"></span><span>&nbsp;</span><span id="ctl00_cphHuvud_lblAntalvalda">objects selected</span>
+                        <div>
+                            <input name="ctl00$cphHuvud$bnMarkeraAlla" type="button" id="ctl00_cphHuvud_bnMarkeraAlla" style="min-width:120px; max-width:200px;" class="knapp" value="Select all" title="Select all" />
+                            <br />
+                            <input name="ctl00$cphHuvud$bnAvmarkeraAlla" type="button" id="ctl00_cphHuvud_bnAvmarkeraAlla" style="min-width:120px; max-width:200px;" class="knapp" value="Deselect all" title="Deselect all" />
+                        </div>
+                    </td>
+                    <td>
+                        <select name="ctl00$cphHuvud$ListaObjurval" id="ctl00_cphHuvud_ListaObjurval" size="10" style="width:98%" multiple="multiple">
+		<option selected="selected" value="76">Biografteater Flora/Bageriet</option>
+		<option value="74">Biografteater Flora/Biosalongen</option>
+		<option value="75">Biografteater Flora/Caf&#233;</option>
+		<option value="7">Blentarps sporthall</option>
+		<option value="15">Blentarps sporthall/Halva 1</option>
+		<option value="16">Blentarps sporthall/Halva 2</option>
+		<option value="2">Emanuelskolan/Gymnastiksal</option>
+		<option value="9">F&#228;rsingahallen/A-hall</option>
+		<option value="10">F&#228;rsingahallen/B-hall</option>
+		<option value="13">F&#228;rsingahallen/B-hall/Halva 1</option>
+		<option value="14">F&#228;rsingahallen/B-hall/Halva 2</option>
+		<option value="78">F&#228;rsingahallen/Kiosken</option>
+		<option value="11">F&#228;rsingahallen/Simhallen</option>
+		<option value="12">F&#228;rsingahallen/Simhallen/Bass&#228;ngen</option>
+		<option value="33">F&#228;rsingahallen/Simhallen/Bass&#228;ngen/Bana 1</option>
+		<option value="34">F&#228;rsingahallen/Simhallen/Bass&#228;ngen/Bana 2</option>
+		<option value="35">F&#228;rsingahallen/Simhallen/Bass&#228;ngen/Bana 3</option>
+		<option value="36">F&#228;rsingahallen/Simhallen/Bass&#228;ngen/Bana 4</option>
+		<option value="79">Orebadet</option>
+		<option value="89">Orebadet/Mellanbass&#228;ngen</option>
+		<option value="116">Orebadet/Park</option>
+		<option value="80">Orebadet/Stora bass&#228;ngen</option>
+		<option value="81">Orebadet/Stora bass&#228;ngen/Bana 1</option>
+		<option value="82">Orebadet/Stora bass&#228;ngen/Bana 2</option>
+		<option value="83">Orebadet/Stora bass&#228;ngen/Bana 3</option>
+		<option value="84">Orebadet/Stora bass&#228;ngen/Bana 4</option>
+		<option value="85">Orebadet/Stora bass&#228;ngen/Bana 5</option>
+		<option value="86">Orebadet/Stora bass&#228;ngen/Bana 6</option>
+		<option value="87">Orebadet/Stora bass&#228;ngen/Bana 7</option>
+		<option value="88">Orebadet/Stora bass&#228;ngen/Bana 8</option>
+		<option value="17">Piratenhallen</option>
+		<option value="45">Salsbjer Idrottsplats/Grusplan</option>
+		<option value="43">Salsbjer Idrottsplats/Gr&#228;splan A</option>
+		<option value="44">Salsbjer Idrottsplats/Gr&#228;splan B</option>
+		<option value="3">Sandb&#228;cksskolan</option>
+		<option value="4">Sandb&#228;cksskolan/Gymnastiksal</option>
+		<option value="20">Sj&#246;bo Idrottsplats</option>
+		<option value="21">Sj&#246;bo Idrottsplats/A-plan</option>
+		<option value="22">Sj&#246;bo Idrottsplats/B-plan</option>
+		<option value="129">Sj&#246;bo Idrottsplats/B-plan/Halva 1</option>
+		<option value="130">Sj&#246;bo Idrottsplats/B-plan/Halva 2</option>
+		<option value="23">Sj&#246;bo Idrottsplats/C-plan &#39;Gumparp&#39;</option>
+		<option value="138">Sj&#246;bo Idrottsplats/C-plan &#39;Gumparp&#39;/Halva 1</option>
+		<option value="139">Sj&#246;bo Idrottsplats/C-plan &#39;Gumparp&#39;/Halva 2</option>
+		<option value="25">Sj&#246;bo Idrottsplats/D-plan &#39;Gumparp&#39;</option>
+		<option value="140">Sj&#246;bo Idrottsplats/D-plan &#39;Gumparp&#39;/Halva 1</option>
+		<option value="141">Sj&#246;bo Idrottsplats/D-plan &#39;Gumparp&#39;/Halva 2</option>
+		<option value="24">Sj&#246;bo Idrottsplats/Konstgr&#228;splan</option>
+		<option value="135">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Del 1 av 3</option>
+		<option value="136">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Del 2 av 3</option>
+		<option value="137">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Del 3 av 3</option>
+		<option value="27">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Halva 1</option>
+		<option value="29">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Halva 1/Del A</option>
+		<option value="30">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Halva 1/Del B</option>
+		<option value="28">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Halva 2</option>
+		<option value="31">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Halva 2/Del A</option>
+		<option value="32">Sj&#246;bo Idrottsplats/Konstgr&#228;splan/Halva 2/Del B</option>
+		<option value="117">&#214;stra F&#228;rshallen</option>
+	</select>
+                        <input name="ctl00$cphHuvud$grundschemanamn" type="hidden" id="ctl00_cphHuvud_grundschemanamn" value="Alla objekt" />
+                    </td>
+                </tr>
+            </table>
+
+            <table style="width:100%; border:solid thin black; border-collapse:separate; border-spacing:3px; margin:5px 0px;" class="rounded-corners">
+                <tr>
+                    <td style="vertical-align:top"><span id="ctl00_cphHuvud_lblPres" class="rubrik3">Select presentation</span></td>
+                    <td><input value="0" name="ctl00$cphHuvud$soktyp" type="radio" id="ctl00_cphHuvud_soktyp0" onclick="enabledisableCtrl();" checked="checked" /><label for="ctl00_cphHuvud_soktyp0" id="ctl00_cphHuvud_lblSoktyp0">Graphic schedule</label><br /></td>
+                </tr>
+                <tr id="ctl00_cphHuvud_trObjektinfo">
+		<td>&nbsp;</td>
+		<td><input value="3" name="ctl00$cphHuvud$soktyp" type="radio" id="ctl00_cphHuvud_soktyp3" onclick="enabledisableCtrl();" /><label for="ctl00_cphHuvud_soktyp3" id="ctl00_cphHuvud_lblSoktyp3">Object information</label><br /></td>
+	</tr>
+	
+                <tr>
+                    <td>&nbsp;</td>
+                    <td><input value="1" name="ctl00$cphHuvud$soktyp" type="radio" id="ctl00_cphHuvud_soktyp1" onclick="enabledisableCtrl();" /><label for="ctl00_cphHuvud_soktyp1" id="ctl00_cphHuvud_lblSoktyp1">List of available times/bookings</label></td>
+                </tr>
+                <tr>
+                <td>&nbsp;</td>
+                <td style="vertical-align:top">
+                    <input name="ctl00$cphHuvud$visalediga" type="checkbox" id="ctl00_cphHuvud_visalediga" value="2" onclick="enabledisablePass();" checked="checked" disabled="disabled" /><label for="ctl00_cphHuvud_visalediga" id="ctl00_cphHuvud_lblVisalediga">Show available times between</label>&nbsp;<input name="ctl00$cphHuvud$passstart" value="0" maxlength="2" id="ctl00_cphHuvud_passstart" disabled="disabled" class="aspNetDisabled" type="number" min="0" max="23" step="1" onchange="return validhour(this);" style="width:40px" /> &nbsp; - &nbsp;<input name="ctl00$cphHuvud$passslut" value="24" maxlength="2" id="ctl00_cphHuvud_passslut" disabled="disabled" class="aspNetDisabled" type="number" min="1" max="24" step="1" onchange="return validhour(this);" style="width:40px" /><br />
+                    <label for="ctl00_cphHuvud_passlangd" id="ctl00_cphHuvud_lblPasslangd1">who are at least</label>&nbsp;<input name="ctl00$cphHuvud$passlangd" value="0" maxlength="2" id="ctl00_cphHuvud_passlangd" disabled="disabled" class="aspNetDisabled" type="number" min="0" max="24" step="1" onchange="return validhour(this);" style="width:40px" />&nbsp;<label for="ctl00_cphHuvud_passlangd" id="ctl00_cphHuvud_lblPasslangd2">hours</label><br /><br />
+                    <input name="ctl00$cphHuvud$visabokade" type="checkbox" id="ctl00_cphHuvud_visabokade" value="1" disabled="disabled" checked="checked" /><label for="ctl00_cphHuvud_visabokade" id="ctl00_cphHuvud_lblVisabokade">Show bookings</label>
+                </td>
+                </tr>
+                
+                <tr>
+                    <td><span id="ctl00_cphHuvud_lblSortering" class="rubrik3">Select sorting</span></td>
+                    <td><input value="objekt" name="ctl00$cphHuvud$sortera" type="radio" id="ctl00_cphHuvud_sorteraobjekt" checked="checked" /><label for="ctl00_cphHuvud_sorteraobjekt" id="ctl00_cphHuvud_lblSorteraobjekt">object name</label>&nbsp;&nbsp;&nbsp;<input value="datum" name="ctl00$cphHuvud$sortera" type="radio" id="ctl00_cphHuvud_sorteradatum" /><label for="ctl00_cphHuvud_sorteradatum" id="ctl00_cphHuvud_lblSorteradatum">date</label></td>
+                </tr>
+            </table>
+
+            <table style="width:100%; border:solid thin black; border-collapse:separate; border-spacing:3px; margin:5px 0px;" class="rounded-corners">
+                <tr>
+                    <td><label for="ctl00_cphHuvud_txtFdat" id="ctl00_cphHuvud_lblPeriod" class="rubrik3">Select period</label></td>
+                    <td>
+                        <input name="ctl00$cphHuvud$hdnDatediff" type="hidden" id="ctl00_cphHuvud_hdnDatediff" value="6" />
+                        <input name="ctl00$cphHuvud$txtFdat" value="2017-03-20" id="ctl00_cphHuvud_txtFdat" type="date" onchange="adjustDate(this)" />
+                        
+                        <span>&nbsp;-&nbsp;</span>
+                        <input name="ctl00$cphHuvud$txtTdat" value="2017-03-26" id="ctl00_cphHuvud_txtTdat" type="date" />
+                        
+                         
+                         
+                        <span id="ctl00_cphHuvud_spnMaxdgr"><span id="ctl00_cphHuvud_lblMaxdgr1">Max</span>&nbsp;<span id="ctl00_cphHuvud_lblMaxdgrvarde">30</span>&nbsp;<span id="ctl00_cphHuvud_lblMaxdgr2">days may be sought</span></span>
+                        <input name="ctl00$cphHuvud$hdnMaxdgr" type="hidden" id="ctl00_cphHuvud_hdnMaxdgr" value="30" />
+                    </td>
+                </tr>
+            </table>
+
+            <input type="submit" name="ctl00$cphHuvud$btnSok2" value="Start search" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$btnSok2&quot;, &quot;&quot;, true, &quot;valGrp&quot;, &quot;schema.aspx&quot;, false, false))" id="ctl00_cphHuvud_btnSok2" title="Shows the result of your selections" class="knapp" style="display:inline;" />
+            <input type="submit" name="ctl00$cphHuvud$btnSokObj2" value="Start search" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$btnSokObj2&quot;, &quot;&quot;, true, &quot;valGrp&quot;, &quot;objektinformation.aspx&quot;, false, false))" id="ctl00_cphHuvud_btnSokObj2" title="Shows the result of your selections" class="knapp" style="display:none;" />
+
+        </div>
+
+        
+    
+        
+        <br />
+        &nbsp;
+
+        <div style="display:block">
+            <input type="image" name="ctl00$cphHuvud$ibnSv" id="ctl00_cphHuvud_ibnSv" title="Klicka här för svensk version" src="bilder/sweden_32.png" alt="Klicka här för svensk version" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$ibnSv&quot;, &quot;&quot;, true, &quot;&quot;, &quot;default.aspx&quot;, false, false))" />&nbsp;
+            <input type="image" name="ctl00$cphHuvud$ibnNo" id="ctl00_cphHuvud_ibnNo" title="Klikk her for norsk versjon" src="bilder/norway_32.png" alt="Klikk her for norsk versjon" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$ibnNo&quot;, &quot;&quot;, true, &quot;&quot;, &quot;default.aspx&quot;, false, false))" />&nbsp;
+            <input type="image" name="ctl00$cphHuvud$ibnEn" id="ctl00_cphHuvud_ibnEn" title="Click for english version" src="bilder/united-kingdom_32.png" alt="Click for english version" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$ibnEn&quot;, &quot;&quot;, true, &quot;&quot;, &quot;default.aspx&quot;, false, false))" />&nbsp;
+            <input type="image" name="ctl00$cphHuvud$ibnIs" id="ctl00_cphHuvud_ibnIs" title="Smellið til að fá íslenska síðu" src="bilder/iceland_32.png" alt="Smellið til að fá íslenska síðu" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$cphHuvud$ibnIs&quot;, &quot;&quot;, true, &quot;&quot;, &quot;default.aspx&quot;, false, false))" />
+        </div>
+
+    
+</div>
+
+
+            </div>
+
+            <footer>
+                <br />
+                <br />
+                <span id="ctl00_lblFotnot" class="lankar">Har du frågor eller synpunkter på bokningen - kontakta <a class='lankar' href="mailto:lokalbokning@sjobo.se">Lokalbokningen</a> på 0416-272 02</span>
+                <br />
+                <br />
+                <hr style="width:70%" />
+                <span id="ctl00_lblFot1"><b>FRI</b></span>&nbsp;<span id="ctl00_lblFot2"><b>Webb-Bokning</b></span><br />
+                <span id="ctl00_lblFot3"><b>FRI</b></span><sup>&reg;</sup>&nbsp;<span id="ctl00_lblFot4">is a registrered trademark of</span>&nbsp;<a href="http://www.idavall.se" target="_blank" class="lankar">Idavall Data AB</a>&nbsp;<span id="ctl00_lblFot5">.</span>
+            </footer>
+
+            <div class="vantskylt" id="idWait">
+                <span id="ctl00_lblVant1">Collecting information</span><br />
+                <span id="ctl00_lblVant2">Please wait</span><br />
+                <img src="bilder/loader.gif" alt="" />
+            </div>
+        
+            <div id="modalPage">
+                <div class="modalBackground">
+                </div>
+                <div class="modalContainer">
+                    <div class="modal">
+                        <div class="modalTop"><a href="javascript:hideModal()"><span id="ctl00_lblStang" title="Close the window"><b>Close</b></span> <img src="bilder/close.gif" alt="" /></a></div>
+                        <div id="divInfo" class="modalBody"></div>
+                    </div>
+                </div>
+            </div>        
+        
+        </div>
+    
+    </div>
+
+    &nbsp;
+
+    </form>
+    
+
+</body>
+</html>

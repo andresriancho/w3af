@@ -79,8 +79,7 @@ class TestHTMLParser(unittest.TestCase):
         """
         body = HTML_DOC % \
             {'head': '',
-                     'body': FORM_WITHOUT_METHOD % {'form_content': ''}
-             }
+             'body': FORM_WITHOUT_METHOD % {'form_content': ''}}
         resp = build_http_response(self.url, body)
         p = RaiseHTMLParser(resp)
         p.parse()

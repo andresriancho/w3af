@@ -148,11 +148,10 @@ class TestFormParams(unittest.TestCase):
 
         # Ensure we actually got the expected number of variants
         f = FormParameters()
-        expected = min(total_variants, f.TOP_VARIANTS)
-        self.assertEquals(len(variants), expected + 1)
+        self.assertEquals(len(variants), total_variants + 1)
 
         # Variants shouldn't appear duplicated
-        self.assertEquals(len(variants_set), expected)
+        self.assertEquals(len(variants_set), total_variants)
 
     def test_tmb_variants_large(self):
         """
@@ -168,7 +167,7 @@ class TestFormParams(unittest.TestCase):
                         form_select_misc_large)
         clean_data = get_grouped_data(bigform_data)
         new_bigform = create_form_params_helper(bigform_data)
-        total_variants = 2 * 3 * 3 * 3
+        # total_variants = 2 * 3 * 3 * 3
         variants_set = set()
         variants = [v for v in new_bigform.get_variants(mode=MODE_TMB)]
 
@@ -209,11 +208,10 @@ class TestFormParams(unittest.TestCase):
 
         # Ensure we actually got the expected number of variants
         f = FormParameters()
-        expected = min(total_variants, f.TOP_VARIANTS)
-        self.assertEquals(len(variants), expected + 1)
+        self.assertEquals(len(variants), f.TOP_VARIANTS + 1)
 
         # Variants shouldn't appear duplicated
-        self.assertEquals(len(variants_set), expected)
+        self.assertEquals(len(variants_set), f.TOP_VARIANTS)
 
     def test_all_variants(self):
         # 'all' mode variants
