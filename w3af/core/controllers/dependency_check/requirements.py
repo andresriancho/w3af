@@ -53,6 +53,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('jinja2', 'Jinja2', '2.7.3'),
                      PIPDependency('vulndb', 'vulndb', '0.0.19'),
                      PIPDependency('markdown', 'markdown', '2.6.1'),
+                     PIPDependency('wad', 'wad', '0.2.0'),
 
                      # This was used for testing, but now it's required for
                      # regular users too, do not remove!
