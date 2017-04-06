@@ -78,8 +78,8 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
                 if w3af_req_version == dist_version:
                     # It's installed and the version matches!
                     break
-        else:
-            failed_deps.append(w3af_req)
+                else:
+                    failed_deps.append(w3af_req)
 
     #
     #    Check for missing operating system packages
