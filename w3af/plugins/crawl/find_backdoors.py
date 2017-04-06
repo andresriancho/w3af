@@ -118,27 +118,30 @@ class find_backdoors(CrawlPlugin):
         except BaseFrameworkException:
             om.out.debug('Failed to GET webshell:' + web_shell_url)
         else:
-            signature = self._match_signature(response)
-            if signature is None:
+            if response.get_code() == 200:
+                signature = self._match_signature(response)
+                if signature is None:
+                    return
+
+                desc = (u'An HTTP response matching the web backdoor signature'
+                        u' "%s" was found at: "%s"; this could indicate that the'
+                        u' server has been compromised.')
+                desc %= (signature, response.get_url())
+
+                # It's probability is higher if we found a long signature
+                _severity = severity.HIGH if len(signature) > 8 else severity.MEDIUM
+
+                v = Vuln(u'Potential web backdoor', desc, _severity,
+                         response.id, self.get_name())
+                v.set_url(response.get_url())
+
+                kb.kb.append(self, 'backdoors', v)
+                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+
+                fr = FuzzableRequest.from_http_response(response)
+                self.output_queue.put(fr)
+            else:
                 return
-
-            desc = (u'An HTTP response matching the web backdoor signature'
-                    u' "%s" was found at: "%s"; this could indicate that the'
-                    u' server has been compromised.')
-            desc %= (signature, response.get_url())
-
-            # It's probability is higher if we found a long signature
-            _severity = severity.HIGH if len(signature) > 8 else severity.MEDIUM
-
-            v = Vuln(u'Potential web backdoor', desc, _severity,
-                     response.id, self.get_name())
-            v.set_url(response.get_url())
-
-            kb.kb.append(self, 'backdoors', v)
-            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-
-            fr = FuzzableRequest.from_http_response(response)
-            self.output_queue.put(fr)
 
     def _match_signature(self, response):
         """
@@ -149,7 +152,7 @@ class find_backdoors(CrawlPlugin):
         :return: A bool value
         """
         body_text = response.get_body()
-        
+
         for match, _, _, _ in self._signature_re.query(body_text):
             match_string = match.group(0)
             return match_string
