@@ -50,7 +50,7 @@ RUN pip install --upgrade pip
 #
 #tblib==0.2.0
 #
-RUN pip install clamd==1.0.1 PyGithub==1.21.0 GitPython==0.3.2.RC1 pybloomfiltermmap==0.3.14 \
+RUN pip install clamd==1.0.1 PyGithub==1.21.0 GitPython==2.1.3 pybloomfiltermmap==0.3.14 \
         esmre==0.3.1 phply==0.9.1 nltk==3.0.1 chardet==2.1.1 pdfminer==20140328 \
         futures==2.1.5 pyOpenSSL==0.15.1 scapy-real==2.2.0-dev guess-language==0.2 cluster==1.1.1b3 \
         msgpack-python==0.4.4 python-ntlm==1.0.1 halberd==0.2.4 darts.util.lru==0.5 \
