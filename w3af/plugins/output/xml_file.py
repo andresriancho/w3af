@@ -47,7 +47,7 @@ NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
 # https://stackoverflow.com/questions/8733233/filtering-out-certain-bytes-in-python
-INVALID_XML = u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+'
+INVALID_XML = re.compile(u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+')
 
 
 def xml_str(s):
@@ -62,7 +62,7 @@ def xml_str(s):
     :return: A string ready to be sent to the XML file
     """
     encoded_str = smart_str(s, encoding='utf8', errors='xmlcharrefreplace')
-    encoded_str = re.sub(INVALID_XML, '?', encoded_str)
+    encoded_str = INVALID_XML.sub('?', encoded_str)
     return encoded_str
 
 

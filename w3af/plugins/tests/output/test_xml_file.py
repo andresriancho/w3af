@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import StringIO
+import unittest
 
 from lxml import etree
 from nose.plugins.attrib import attr
@@ -36,7 +37,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from w3af.plugins.output.xml_file import xml_file
+from w3af.plugins.output.xml_file import xml_file, xml_str
 
 
 @attr('smoke')
@@ -210,3 +211,14 @@ def validate_xml(content, schema_content):
         return xml_schema.error_log
 
     return ''
+
+
+class TestXMLStr(unittest.TestCase):
+    def test_simple_xml_str(self):
+        self.assertEquals('a', xml_str('a'))
+
+    def test_replace_xml_str(self):
+        self.assertEquals('?', xml_str('\0'))
+
+    def test_mixed_xml_str(self):
+        self.assertEquals('a?b', xml_str('a\0b'))
