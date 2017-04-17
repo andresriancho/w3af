@@ -47,7 +47,7 @@ class ExactDelayController(DelayMixIn):
     # you'll only get slower scans when there is a vulnerability, which is not
     # the most common case
     #
-    DELAY_SECONDS = [12, 8, 15, 20]
+    DELAY_SECONDS = [12, 8, 15, 20, 4, 4, 4]
 
     def __init__(self, mutant, delay_obj, uri_opener):
         """
