@@ -119,8 +119,9 @@ class BlindSqliResponseDiff(object):
 
         # escape double white spaces, not sure if this has any logical value
         # in the search engine, but just in case...
-        while '  ' in sql_statement:
-            sql_statement = sql_statement.replace('  ', ' ')
+        double_spaces = '  '
+        while double_spaces in sql_statement:
+            sql_statement = sql_statement.replace(double_spaces, ' ')
 
         return sql_statement
 
@@ -142,11 +143,10 @@ class BlindSqliResponseDiff(object):
         _, body_false_response = send_clean(mutant)
 
         if body_true_response == body_false_response:
-            #
-            #    There is NO CHANGE between the true and false responses.
-            #    NO WAY I'm going to detect a blind SQL injection using
-            #    response diffs in this case.
-            #
+            msg = ('There is NO CHANGE between the true and false responses.'
+                   ' NO WAY w3af is going to detect a blind SQL injection'
+                   ' using response diffs in this case.')
+            self.debug(msg)
             return None
 
         compare_diff = False
