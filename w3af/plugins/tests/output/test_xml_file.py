@@ -37,7 +37,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from w3af.plugins.output.xml_file import xml_file, xml_str
+from w3af.plugins.output.xml_file import xml_file, xml_str, INVALID_XML
 
 
 @attr('smoke')
@@ -222,3 +222,12 @@ class TestXMLStr(unittest.TestCase):
 
     def test_mixed_xml_str(self):
         self.assertEquals('a?b', xml_str('a\0b'))
+
+    def test_re_match(self):
+        self.assertIsNotNone(INVALID_XML.search('a\0b'))
+
+    def test_re_match_false_1(self):
+        self.assertIsNone(INVALID_XML.search('ab'))
+
+    def test_re_match_false_2(self):
+        self.assertIsNone(INVALID_XML.search('ab\n'))

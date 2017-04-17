@@ -435,7 +435,7 @@ class xml_file(OutputPlugin):
         # https://github.com/andresriancho/w3af/issues/264 is fixed by encoding
         # the ']]>', which in some cases would end up in a CDATA section and
         # break it, using base64 encoding
-        if '\0' in body or ']]>' in body:
+        if INVALID_XML.search(body) or ']]>' in body:
             # irrespective of the mimetype; if the NULL char is present; then
             # base64.encode it
             encoded = base64.encodestring(body)
