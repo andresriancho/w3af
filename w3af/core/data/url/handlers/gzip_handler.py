@@ -60,10 +60,16 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
                     data = zlib.decompress(body)
                 else:
                     data = response.read()
-            except:
-                # I get here when the HTTP response body is corrupt
-                # return the same thing that I got... can't do magic yet!
-                return response
+            except Exception as e:
+                rfc1951 = "Error -3 while decompressing data: incorrect " \
+                          "header check"
+                if str(e) == rfc1951:
+                    # Body has been compressed per RFC 1951, not RFC 1950.
+                    data = zlib.decompress(body, -zlib.MAX_WBITS)
+                else:
+                    # I get here when the HTTP response body is corrupt
+                    # return the same thing that I got... can't do magic yet!
+                    return response
             else:
                 # The response was successfully unzipped
                 response.set_body(data)
