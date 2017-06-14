@@ -57,7 +57,7 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
                     data = gzip.GzipFile(fileobj=StringIO(body)).read()
                 elif "deflate" in enc_hdr:
                     body = response.read()
-                    data = zlib.decompress(body)
+                    data = zlib.decompress(body, -zlib.MAX_WBITS)
                 else:
                     data = response.read()
             except:
