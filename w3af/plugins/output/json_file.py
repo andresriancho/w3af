@@ -108,6 +108,11 @@ class json_file(OutputPlugin):
             * Vulnerable parameter
             * Base64 encoded POST-data
             * Unique vulnerability ID
+            * CWE IDs
+            * WASC IDs
+            * Tags
+            * VulnDB ID
+            * Severity
             * Description
         The JSON plugin should be used for quick and easy integrations with w3af,
         external tools which require more details, such as the HTTP request and
