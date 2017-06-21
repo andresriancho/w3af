@@ -74,7 +74,12 @@ class json_file(OutputPlugin):
                         "URL": str(info.get_url()),
                         "Vulnerable parameter": info.get_token_name(),
                         "POST data": base64.b64encode(info.get_mutant().get_data()),
-                        "Vulnerability ID": info.get_id(),
+                        "Vulnerability IDs": info.get_id(),
+                        "CWE IDs": getattr(info, "cwe_ids", []),
+                        "WASC IDs": getattr(info, "wasc_ids", []),
+                        "Tags": getattr(info, "tags", []),
+                        "VulnDB ID": info.get_vulndb_id(),
+                        "Severity": info.get_severity(),
                         "Description": info.get_desc()}
                 items.append(item)
             except Exception, e:
