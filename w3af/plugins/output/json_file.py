@@ -71,7 +71,7 @@ class json_file(OutputPlugin):
                 item = {"Severity": info.get_severity(),
                         "Name": info.get_name(),
                         "HTTP method": info.get_method(),
-                        "URL": info.get_uri(),
+                        "URL": str(info.get_url()),
                         "Vulnerable parameter": info.get_token_name(),
                         "POST data": base64.b64encode(info.get_mutant().get_data()),
                         "Vulnerability ID": info.get_id(),
