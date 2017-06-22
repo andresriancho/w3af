@@ -22,14 +22,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import base64
 import json
+import time
 
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
+from w3af.core.controllers.misc import get_w3af_version
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
+
+TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
 class json_file(OutputPlugin):
     """
@@ -41,6 +46,13 @@ class json_file(OutputPlugin):
     def __init__(self):
         OutputPlugin.__init__(self)
         self.output_file = '~/output-w3af.json'
+        self._timestamp = str(int(time.time()))
+        self._long_timestamp = str(time.strftime(TIME_FORMAT, time.localtime()))
+
+        # Set defaults for scan metadata
+        self._plugins_dict = {}
+        self._options_dict = {}        
+        self._enabled_plugins = {}        
     
     def do_nothing(self, *args, **kwargs):
         pass
@@ -50,6 +62,21 @@ class json_file(OutputPlugin):
 
     def end(self):
         self.flush()
+
+    def log_enabled_plugins(self, plugins_dict, options_dict):
+        """
+        This method is called from the output manager object. This method
+        should take an action for the enabled plugins and their configuration.
+        Usually, write the info to a file or print it somewhere.
+
+        :param plugins_dict: A dict with all the plugin types and the
+                                enabled plugins for that type of plugin.
+        :param options_dict: A dict with the options for every plugin.
+        """
+
+        # TODO: Improve so it contains the plugin configuration too
+        for plugin_type, enabled in plugins_dict.iteritems():
+            self._enabled_plugins[plugin_type] = enabled        
 
     def flush(self):
         """
@@ -65,6 +92,12 @@ class json_file(OutputPlugin):
             om.out.error(msg % ioe)
             return
 
+        target_urls = [t.url_string for t in cf.cf.get('targets')]
+        target_domain = cf.cf.get('target_domains')[0]
+        enabled_plugins = self._enabled_plugins
+        findings = [ x._desc for x in kb.kb.get_all_findings() ]
+        known_urls = [ str(x) for x in kb.kb.get_all_known_urls() ]
+                        
         items = []
         for info in kb.kb.get_all_findings():
             try:
@@ -87,10 +120,19 @@ class json_file(OutputPlugin):
                        ' vulnerabilities to the output file. Exception: "%s"')
                 om.out.error(msg % e)
                 output_handler.close()
-                print(e)
                 return
 
-        json.dump(items, output_handler)
+        res = {'w3af-version': get_w3af_version.get_w3af_version(),
+               'scan-info': {'target_urls': target_urls,
+                             'target_domain': target_domain,
+                             'enabled_plugins': enabled_plugins,
+                             'findings': findings,
+                             'known_urls': known_urls},
+               'start': self._timestamp,
+               'start-long': self._long_timestamp,
+               'items': items}
+
+        json.dump(res, output_handler, indent=4)
 
         output_handler.close()
 
@@ -100,7 +142,16 @@ class json_file(OutputPlugin):
         """
         return """
         This plugin exports all identified vulnerabilities to a JSON file.
-        Each item in the sequence contains the following fields:
+        
+        Each report contains information about the scan
+          * w3af-version
+          * Start time
+          * Known URLs
+          * Enabled plugins
+          * Target URLs
+          * Target domain
+          * Findings
+            Each finding in the sequence contains the following fields:
             * Severity
             * Name
             * HTTP method
