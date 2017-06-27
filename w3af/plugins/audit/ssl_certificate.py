@@ -360,9 +360,12 @@ class CertificateError(Exception):
     pass
 
 
-def _dnsname_to_pat(dn):
+def _dnsname_to_pat(dn, max_wildcards=2):
     pats = []
     for frag in dn.split(r'.'):
+        if frag.count('*') > max_wildcards:
+            raise CertificateError("too many wildcards in certificate name: "
+                                   + repr(dn))
         if frag == '*':
             # When '*' is a fragment by itself, it matches a non-empty dotless
             # fragment.
