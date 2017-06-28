@@ -25,6 +25,7 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 import w3af.core.data.constants.severity as severity
 
+
 @attr('ci_ready')
 @attr('smoke')
 class TestErrorPages(PluginTest):
