@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import cPickle
+import os
 from random import choice
 
 import msgpack
@@ -30,6 +31,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
+from w3af import ROOT_PATH
 
 
 TEST_RESPONSES = {
@@ -245,3 +247,16 @@ class TestHTTPResponse(unittest.TestCase):
 
         self.assertEqual(resp.dump_response_head(), expected_dump)
 
+    def test_http_response_with_binary_no_escape(self):
+        # This test reproduces issue
+        # https://github.com/andresriancho/w3af/issues/15741
+        CONTENT_TYPES = ['application/binary', 'text/html', 'binary']
+        TEST_FILE = os.path.join(ROOT_PATH, 'core', 'controllers', 'misc', 'tests',
+                                 'data', 'code-detect-false-positive.jpg')
+
+        body = file(TEST_FILE).read()
+
+        for content_type in CONTENT_TYPES:
+            headers = Headers([('Content-Type', content_type)])
+            resp = self.create_resp(headers, body)
+            self.assertNotIn('\\x01\\x01', resp.body, 'Incorrect escape!')
