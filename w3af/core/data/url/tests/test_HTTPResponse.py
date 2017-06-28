@@ -259,4 +259,4 @@ class TestHTTPResponse(unittest.TestCase):
         for content_type in CONTENT_TYPES:
             headers = Headers([('Content-Type', content_type)])
             resp = self.create_resp(headers, body)
-            self.assertNotIn('\\x01\\x01', resp.body, 'Incorrect escape!')
+            self.assertNotIn('\\xff\\xd8', resp.body, 'Incorrect escape!')
