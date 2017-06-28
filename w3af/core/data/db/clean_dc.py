@@ -46,7 +46,7 @@ def clean_data_container(data_container):
         else:
             _type = 'string'
 
-        result.append('%s=%s' % (key, _type))
+        result.append('%s=%s' % (key.encode(DEFAULT_ENCODING), _type))
 
     return '&'.join(result)
 
