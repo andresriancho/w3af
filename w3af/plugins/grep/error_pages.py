@@ -142,12 +142,15 @@ class error_pages(GrepPlugin):
     )
     _multi_re = multi_re(VERSION_REGEX)
 
+    MAX_REPORTED_PER_MSG = 10
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
         #   Internal variables
         self._potential_vulns = DiskList(table_prefix='error_pages')
 
+        self._already_reported_max_msg_exceeded = []
         self._already_reported_versions = []
         self._compiled_regex = []
 
@@ -175,6 +178,9 @@ class error_pages(GrepPlugin):
                 return
 
         for msg in self._multi_in.query(response.body):
+            if self._avoid_report(request, response, msg):
+                continue
+
             # We found a new error in a response!
             desc = 'The URL: "%s" contains the descriptive error: "%s".'
             desc %= (response.get_url(), msg)
@@ -187,6 +193,41 @@ class error_pages(GrepPlugin):
             # Just report one instance for each HTTP response, no
             # matter if multiple strings match
             break
+
+    def _avoid_report(self, request, response, msg):
+        # We should avoid multiple reports for the same error message
+        # the idea here is that the root cause for the same error
+        # message might be the same, and fixing one will fix all.
+        #
+        # So the user receives the first report with MAX_REPORTED_PER_MSG
+        # vulnerabilities, fixes the root cause, scans again and then
+        # all those instances go away.
+        #
+        # Without this code, the scanner will potentially report
+        # thousands of issues for the same error message. Which will
+        # overwhelm the user.
+        count = 0
+
+        for title, desc, _id, url, highlight in self._potential_vulns:
+            if highlight == msg:
+                count += 1
+
+        if count < self.MAX_REPORTED_PER_MSG:
+            return False
+
+        if msg not in self._already_reported_max_msg_exceeded:
+            self._already_reported_max_msg_exceeded.append(msg)
+
+            desc = ('The application returned multiple HTTP responses'
+                    ' containing detailed error pages containing exceptions'
+                    ' and internal information. The maximum number of'
+                    ' vulnerabilities for this issue type was reached'
+                    ' and no more issues will be reported.')
+
+            i = Info('Multiple descriptive error pages', desc, [], self.get_name())
+            self.kb_append_uniq(self, 'error_page', i)
+
+        return True
 
     def end(self):
         """
