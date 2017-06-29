@@ -100,7 +100,6 @@ class AproxDelayController(DelayMixIn):
         in place.
         """
         responses = []
-        
         multipliers_that_delay = []
         
         for _ in xrange(3):
