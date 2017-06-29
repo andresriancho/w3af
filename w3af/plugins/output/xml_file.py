@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import re
+import sys
 import time
 import base64
 import xml.dom.minidom
@@ -46,11 +47,26 @@ NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
-# https://stackoverflow.com/questions/8733233/filtering-out-certain-bytes-in-python
-INVALID_XML = u'[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\u10000-\u10FFFF]+'
+# https://stackoverflow.com/questions/1707890/fast-way-to-filter-illegal-xml-unicode-chars-in-python
+_illegal_unichrs = [(0x00, 0x08), (0x0B, 0x0C), (0x0E, 0x1F),
+                    (0x7F, 0x84), (0x86, 0x9F),
+                    (0xFDD0, 0xFDDF), (0xFFFE, 0xFFFF)]
+
+if sys.maxunicode >= 0x10000:  # not narrow build
+    _illegal_unichrs.extend([(0x1FFFE, 0x1FFFF), (0x2FFFE, 0x2FFFF),
+                             (0x3FFFE, 0x3FFFF), (0x4FFFE, 0x4FFFF),
+                             (0x5FFFE, 0x5FFFF), (0x6FFFE, 0x6FFFF),
+                             (0x7FFFE, 0x7FFFF), (0x8FFFE, 0x8FFFF),
+                             (0x9FFFE, 0x9FFFF), (0xAFFFE, 0xAFFFF),
+                             (0xBFFFE, 0xBFFFF), (0xCFFFE, 0xCFFFF),
+                             (0xDFFFE, 0xDFFFF), (0xEFFFE, 0xEFFFF),
+                             (0xFFFFE, 0xFFFFF), (0x10FFFE, 0x10FFFF)])
+
+_illegal_ranges = ['%s-%s' % (unichr(low), unichr(high)) for (low, high) in _illegal_unichrs]
+INVALID_XML = re.compile(u'[%s]' % u''.join(_illegal_ranges))
 
 
-def xml_str(s):
+def xml_str(s, replace_invalid=True):
     """
     Avoid encoding errors while generating objects' utf8 byte-string
     representations.
@@ -62,7 +78,10 @@ def xml_str(s):
     :return: A string ready to be sent to the XML file
     """
     encoded_str = smart_str(s, encoding='utf8', errors='xmlcharrefreplace')
-    encoded_str = re.sub(INVALID_XML, '?', encoded_str)
+
+    if replace_invalid:
+        encoded_str = INVALID_XML.sub('?', encoded_str)
+
     return encoded_str
 
 
@@ -399,11 +418,11 @@ class xml_file(OutputPlugin):
     def handle_headers(self, parent_node, action):
         if isinstance(action, HTTPRequest):
             headers = action.get_headers()
-            body = xml_str(action.get_data() or '')
+            body = action.get_data() or ''
             status = xml_str(action.get_request_line())
         else:
             headers = action.headers
-            body = xml_str(action.body or '')
+            body = action.body or ''
             status = xml_str(action.get_status_line())
 
         # Put out the status as an element
@@ -435,10 +454,10 @@ class xml_file(OutputPlugin):
         # https://github.com/andresriancho/w3af/issues/264 is fixed by encoding
         # the ']]>', which in some cases would end up in a CDATA section and
         # break it, using base64 encoding
-        if '\0' in body or ']]>' in body:
+        if INVALID_XML.search(body) or ']]>' in body:
             # irrespective of the mimetype; if the NULL char is present; then
             # base64.encode it
-            encoded = base64.encodestring(body)
+            encoded = base64.encodestring(xml_str(body, replace_invalid=False))
             action_body_content = self._xml.createTextNode(encoded)
             action_body_node.setAttribute('content-encoding', 'base64')
 
@@ -467,7 +486,7 @@ class xml_file(OutputPlugin):
             else:
                 # either known (image, audio, video) or unknown binary format
                 # Write it as base64encoded text
-                encoded = base64.encodestring(body)
+                encoded = base64.encodestring(xml_str(body, replace_invalid=False))
                 action_body_content = self._xml.createTextNode(encoded)
                 action_body_node.setAttribute('content-encoding', 'base64')
 

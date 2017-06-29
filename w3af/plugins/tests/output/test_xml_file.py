@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import StringIO
+import unittest
+import xml.etree.ElementTree as ElementTree
 
 from lxml import etree
 from nose.plugins.attrib import attr
@@ -35,8 +37,8 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
-from w3af.plugins.output.xml_file import xml_file
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.plugins.output.xml_file import xml_file, xml_str, INVALID_XML
 
 
 @attr('smoke')
@@ -210,3 +212,85 @@ def validate_xml(content, schema_content):
         return xml_schema.error_log
 
     return ''
+
+
+class TestXMLStr(unittest.TestCase):
+    TEST_FILE = os.path.join(ROOT_PATH, 'plugins', 'tests', 'output',
+                             'data', 'nsepa32.rpm')
+
+    def test_simple_xml_str(self):
+        self.assertEquals('a', xml_str('a'))
+
+    def test_replace_xml_str(self):
+        self.assertEquals('?', xml_str('\0'))
+
+    def test_mixed_xml_str(self):
+        self.assertEquals('a?b', xml_str('a\0b'))
+
+    def test_re_match(self):
+        self.assertIsNotNone(INVALID_XML.search('a\0b'))
+
+    def test_re_match_false_1(self):
+        self.assertIsNone(INVALID_XML.search('ab'))
+
+    def test_re_match_false_2(self):
+        self.assertIsNone(INVALID_XML.search('ab\n'))
+
+    def test_re_match_match_ffff(self):
+        self.assertIsNotNone(INVALID_XML.search(u'ab\uffffdef'))
+
+    def test_binary(self):
+        contents = file(self.TEST_FILE).read()
+        match_object = INVALID_XML.search(contents)
+        self.assertIsNotNone(match_object)
+
+
+class TestXMLOutputBinary(PluginTest):
+
+    target_url = 'http://rpm-path-binary/'
+
+    TEST_FILE = os.path.join(ROOT_PATH, 'plugins', 'tests', 'output',
+                             'data', 'nsepa32.rpm')
+
+    MOCK_RESPONSES = [
+              MockResponse(url='http://rpm-path-binary/',
+                           body=file(TEST_FILE).read(),
+                           content_type='text/plain',
+                           method='GET', status=200),
+    ]
+
+    FILENAME = 'output-unittest.xml'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('path_disclosure'),),
+                'output': (
+                    PluginConfig(
+                        'xml_file',
+                        ('output_file', FILENAME, PluginConfig.STR)),
+                )
+            },
+        }
+    }
+
+    def test_binary_handling_in_xml(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        try:
+            tree = ElementTree.parse(self.FILENAME)
+            tree.getroot()
+        except Exception, e:
+            self.assertTrue(False, 'Generated invalid XML: "%s"' % e)
+
+    def tearDown(self):
+        super(TestXMLOutputBinary, self).tearDown()
+        try:
+            os.remove(self.FILENAME)
+        except:
+            pass
+        finally:
+            self.kb.cleanup()
+

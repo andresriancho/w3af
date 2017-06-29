@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import time
+import random
 import unittest
 import multiprocessing
 
@@ -96,13 +97,7 @@ class TestMPDocumentParser(unittest.TestCase):
             try:
                 self.mpdoc.get_document_parser_for(http_resp)
             except BaseFrameworkException:
-                msg = '[timeout] The parser took more than %s seconds'\
-                      ' to complete parsing of "%s", killed it!'
-
-                error = msg % (MultiProcessingDocumentParser.PARSER_TIMEOUT,
-                               http_resp.get_url())
-
-                self.assertIn(call.debug(error), om_mock.mock_calls)
+                self._is_timeout_exception_message(om_mock, http_resp)
             else:
                 self.assertTrue(False)
 
@@ -117,6 +112,78 @@ class TestMPDocumentParser(unittest.TestCase):
 
             doc_parser = self.mpdoc.get_document_parser_for(http_resp)
             self.assertIsInstance(doc_parser._parser, HTMLParser)
+
+    def test_many_parsers_timing_out(self):
+        """
+        Received more reports of parsers timing out, and after that
+        w3af showing always "The parser took more than X seconds to complete
+        parsing of" for all calls to the parser.
+
+        Want to test how well the the parser recovers from many timeouts.
+        """
+        mmpdp = 'w3af.core.data.parsers.mp_document_parser.%s'
+        kmpdp = mmpdp % 'MultiProcessingDocumentParser.%s'
+        modp = 'w3af.core.data.parsers.document_parser.%s'
+
+        with patch(mmpdp % 'om.out') as om_mock,\
+             patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
+             patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
+             patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
+
+            # Prepare the HTTP responses
+            html_trigger_delay = '<html>DelayedParser!</html>%s'
+            html_ok = '<html>foo-</html>%s'
+
+            # Mocks
+            timeout_mock.return_value = 1
+            max_workers_mock.return_value = 5
+            parsers_mock.return_value = [DelayedParser, HTMLParser]
+
+            ITERATIONS = 25
+
+            #
+            # Lets timeout many sequentially
+            #
+            for i in xrange(ITERATIONS):
+                http_resp = _build_http_response(html_trigger_delay % i, u'text/html')
+
+                try:
+                    self.mpdoc.get_document_parser_for(http_resp)
+                except BaseFrameworkException:
+                    self._is_timeout_exception_message(om_mock, http_resp)
+                else:
+                    self.assertTrue(False)
+
+            #
+            # Lets timeout randomly
+            #
+            for i in xrange(ITERATIONS):
+                html = random.choice([html_trigger_delay, html_ok])
+                http_resp = _build_http_response(html % i, u'text/html')
+
+                try:
+                    parser = self.mpdoc.get_document_parser_for(http_resp)
+                except BaseFrameworkException:
+                    self._is_timeout_exception_message(om_mock, http_resp)
+                else:
+                    self.assertIsInstance(parser._parser, HTMLParser)
+
+            #
+            # Lets parse things we know should work
+            #
+            for i in xrange(ITERATIONS):
+                http_resp = _build_http_response(html_ok % i, u'text/html')
+                parser = self.mpdoc.get_document_parser_for(http_resp)
+                self.assertIsInstance(parser._parser, HTMLParser)
+
+    def _is_timeout_exception_message(self, om_mock, http_resp):
+        msg = '[timeout] The parser took more than %s seconds' \
+              ' to complete parsing of "%s", killed it!'
+
+        error = msg % (MultiProcessingDocumentParser.PARSER_TIMEOUT,
+                       http_resp.get_url())
+
+        self.assertIn(call.debug(error), om_mock.mock_calls)
 
     def test_daemon_child(self):
         """

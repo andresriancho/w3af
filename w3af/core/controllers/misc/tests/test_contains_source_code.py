@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import unittest
 
 from w3af.core.controllers.misc.contains_source_code import contains_source_code
@@ -27,9 +28,12 @@ from w3af.core.controllers.misc.contains_source_code import PHP, PYTHON, RUBY, J
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
+from w3af import ROOT_PATH
 
 
 class TestContainsSourceCode(unittest.TestCase):
+    TEST_FILE = os.path.join(ROOT_PATH, 'core', 'controllers', 'misc', 'tests',
+                             'data', 'code-detect-false-positive.jpg')
 
     def create_response(self, body, content_type=None):
         content_type = content_type if content_type is not None else 'text/html'
@@ -174,3 +178,10 @@ class TestContainsSourceCode(unittest.TestCase):
                  ''')
         match, lang = contains_source_code(source)
         self.assertEqual(match, None)
+
+    def test_code_false_positive_image(self):
+        no_source = self.create_response(file(self.TEST_FILE).read(),
+                                         content_type='image/jpeg')
+        match, lang = contains_source_code(no_source)
+        self.assertEqual(match, None)
+

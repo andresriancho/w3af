@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import string
 
 from w3af.core.data.esmre.multi_re import multi_re
 
@@ -132,5 +133,17 @@ def is_false_positive(http_response, match, detected_langs):
         if lang in {PHP, ASP, JSP, ASPX}:
             if 'javascript' in http_response.content_type:
                 return True
+
+    # Avoid some false positives in large binary files where we might
+    # have <% , then 182837 binary chars, and finally %>.
+    printable = 0.0
+    ratio = 0.9
+
+    for char in match_str:
+        if char in string.printable:
+            printable += 1
+
+    if (printable / len(match_str)) < ratio:
+        return True
 
     return False
