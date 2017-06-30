@@ -166,6 +166,7 @@ VULNS = {
          'DISCO resource': None,
          'Symfony Framework with CSRF protection disabled': None,
          'Descriptive error page': 73,
+         'Multiple descriptive error pages': 73,
          'Error page with information disclosure': 73,
          'Oracle application server': None,
          'Strange header': None,
