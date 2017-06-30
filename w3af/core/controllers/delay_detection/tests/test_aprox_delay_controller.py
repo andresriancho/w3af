@@ -47,19 +47,29 @@ class TestAproxDelayController(unittest.TestCase):
                   # Basic, very easy to pass
                   #    The first three 0.1 are for getting the original delay
                   #
-                  #    Then 0.13 and 0.5 are for showing that the second multiplier
-                  #    does delay the response
+                  #    The first multiplier is triggering a delay
                   #
-                  #    Then we repeat the same thing 3 times for each
-                  #    verification round
-                  (True, (0.1, 0.1, 0.1, 0.13, 0.5) * 3),
+                  #    Then we manage the three verification phase loops
+                  (True, (0.1, 0.1, 0.1, 0.9) * 4),
 
-                  # Setup phase changes
-                  (True, (0.1, 0.2, 0.15, 0.13, 0.5) * 3),
-                  (True, (0.1, 0.1, 0.1, 0.13, 0.3, 0.2, 0.2, 0.2, 0.23, 0.51, 0.2, 0.2, 0.1, 0.23, 0.59)),
+                  # Now the second multiplier is the one which delays
+                  (True, (0.1, 0.1, 0.1, 0.13, 0.9,
+                          0.1, 0.1, 0.1, 0.8,
+                          0.1, 0.1, 0.1, 0.9,
+                          0.1, 0.1, 0.1, 1.1)),
+
+                  # Random delays
+                  (False, (0.1, 1.1, 2.1, 1.9, 1.8, 1.9, 1.7)),
+
+                  # Now the third multiplier is the one which delays
+                  (True, (0.1, 0.1, 0.1, 0.13, 0.14, 0.9,
+                          0.1, 0.2, 0.2, 0.98,
+                          0.2, 0.1, 0.2, 1.1,
+                          0.1, 0.23, 0.19, 1.1)),
                   
                   # Unexpected delay
-                  (False, (0.1, 0.1, 0.1, 0.13, 0.3, 0.1, 0.1, 0.1, 0.75))
+                  (False, (0.1, 0.1, 0.1, 2.3, 0.1, 0.1, 0.1, 0.1)),
+                  (False, (0.1, 0.1, 0.1, 2.3, 0.1, 0.1, 0.1, 0.9, 0.1, 0.1, 0.1, 0.1))
                   ]
     
     def test_delay_controlled(self):
