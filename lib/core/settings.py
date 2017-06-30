@@ -19,7 +19,7 @@ from lib.core.enums import DBMS_DIRECTORY_NAME
 from lib.core.enums import OS
 
 # sqlmap version (<major>.<minor>.<month>.<monthly commit>)
-VERSION = "1.1.1.20"
+VERSION = "1.1.6.19"
 TYPE = "dev" if VERSION.count('.') > 2 and VERSION.split('.')[-1] != '0' else "stable"
 TYPE_COLORS = {"dev": 33, "stable": 90, "pip": 34}
 VERSION_STRING = "sqlmap/%s#%s" % ('.'.join(VERSION.split('.')[:-1]) if VERSION.count('.') > 2 and VERSION.split('.')[-1] == '0' else VERSION, TYPE)
@@ -109,7 +109,7 @@ DUMMY_SEARCH_USER_AGENT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:49.0) Geck
 TEXT_TAG_REGEX = r"(?si)<(abbr|acronym|b|blockquote|br|center|cite|code|dt|em|font|h\d|i|li|p|pre|q|strong|sub|sup|td|th|title|tt|u)(?!\w).*?>(?P<result>[^<]+)"
 
 # Regular expression used for recognition of IP addresses
-IP_ADDRESS_REGEX = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+IP_ADDRESS_REGEX = r"\b(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\b"
 
 # Regular expression used for recognition of generic "your ip has been blocked" messages
 BLOCKED_IP_REGEX = r"(?i)(\A|\b)ip\b.*\b(banned|blocked|block list|firewall)"
@@ -295,7 +295,7 @@ BLANK = "<blank>"
 CURRENT_DB = "CD"
 
 # Regular expressions used for finding file paths in error messages
-FILE_PATH_REGEXES = (r" in (file )?<b>(?P<result>.*?)</b> on line \d+", r"in (?P<result>[^<>]+?) on line \d+", r"(?:[>(\[\s])(?P<result>[A-Za-z]:[\\/][\w. \\/-]*)", r"(?:[>(\[\s])(?P<result>/\w[/\w.-]+)", r"href=['\"]file://(?P<result>/[^'\"]+)")
+FILE_PATH_REGEXES = (r"<b>(?P<result>[^<>]+?)</b> on line \d+", r"(?P<result>[^<>'\"]+?)['\"]? on line \d+", r"(?:[>(\[\s])(?P<result>[A-Za-z]:[\\/][\w. \\/-]*)", r"(?:[>(\[\s])(?P<result>/\w[/\w.-]+)", r"href=['\"]file://(?P<result>/[^'\"]+)")
 
 # Regular expressions used for parsing error messages (--parse-errors)
 ERROR_PARSING_REGEXES = (
@@ -303,6 +303,7 @@ ERROR_PARSING_REGEXES = (
     r"(?m)^(fatal|error|warning|exception):?\s*(?P<result>[^\n]+?)$",
     r"(?P<result>[^\n>]*SQL Syntax[^\n<]+)",
     r"<li>Error Type:<br>(?P<result>.+?)</li>",
+    r"CDbCommand (?P<result>[^<>\n]*SQL[^<>\n]+)",
     r"error '[0-9a-f]{8}'((<[^>]+>)|\s)+(?P<result>[^<>]+)",
     r"\[[^\n\]]+(ODBC|JDBC)[^\n\]]+\](\[[^\]]+\])?(?P<result>[^\n]+(in query expression|\(SQL| at /[^ ]+pdo)[^\n<]+)"
 )
@@ -358,6 +359,9 @@ MIN_RATIO = 0.0
 # Maximum value for comparison ratio
 MAX_RATIO = 1.0
 
+# Minimum length of sentence for automatic choosing of --string (in case of high matching ratio)
+CANDIDATE_SENTENCE_MIN_LENGTH = 10
+
 # Character used for marking injectable position inside provided data
 CUSTOM_INJECTION_MARK_CHAR = '*'
 
@@ -381,6 +385,9 @@ REFLECTED_BORDER_REGEX = r"[^A-Za-z]+"
 
 # Regular expression used for replacing non-alphanum characters
 REFLECTED_REPLACEMENT_REGEX = r".+"
+
+# Maximum time (in seconds) spent per reflective value(s) replacement
+REFLECTED_REPLACEMENT_TIMEOUT = 3
 
 # Maximum number of alpha-numerical parts in reflected regex (for speed purposes)
 REFLECTED_MAX_REGEX_PARTS = 10
@@ -482,6 +489,12 @@ IDS_WAF_CHECK_PAYLOAD = "AND 1=1 UNION ALL SELECT 1,NULL,'<script>alert(\"XSS\")
 
 # Data inside shellcodeexec to be filled with random string
 SHELLCODEEXEC_RANDOM_STRING_MARKER = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+# Generic address for checking the Internet connection while using switch --check-internet
+CHECK_INTERNET_ADDRESS = "http://ipinfo.io/"
+
+# Value to look for in response to CHECK_INTERNET_ADDRESS
+CHECK_INTERNET_VALUE = "IP Address Details"
 
 # Vectors used for provoking specific WAF/IPS/IDS behavior(s)
 WAF_ATTACK_VECTORS = (
@@ -692,7 +705,7 @@ MAX_HISTORY_LENGTH = 1000
 MIN_ENCODED_LEN_CHECK = 5
 
 # Timeout in seconds in which Metasploit remote session has to be initialized
-METASPLOIT_SESSION_TIMEOUT = 300
+METASPLOIT_SESSION_TIMEOUT = 120
 
 # Reference: http://www.postgresql.org/docs/9.0/static/catalog-pg-largeobject.html
 LOBLKSIZE = 2048

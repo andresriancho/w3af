@@ -5,6 +5,7 @@ Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
+import logging
 import random
 import re
 
@@ -52,8 +53,8 @@ def _findUnionCharCount(comment, place, parameter, value, prefix, suffix, where=
             query = agent.prefixQuery("ORDER BY %d" % cols, prefix=prefix)
             query = agent.suffixQuery(query, suffix=suffix, comment=comment)
             payload = agent.payload(newValue=query, place=place, parameter=parameter, where=where)
-            page, headers = Request.queryPage(payload, place=place, content=True, raise404=False)
-            return not any(re.search(_, page or "", re.I) and not re.search(_, kb.pageTemplate or "", re.I) for _ in ("(warning|error):", "order by", "unknown column", "failed")) and comparison(page, headers) or re.search(r"data types cannot be compared or sorted", page or "", re.I)
+            page, headers, code = Request.queryPage(payload, place=place, content=True, raise404=False)
+            return not any(re.search(_, page or "", re.I) and not re.search(_, kb.pageTemplate or "", re.I) for _ in ("(warning|error):", "order by", "unknown column", "failed")) and comparison(page, headers, code) or re.search(r"data types cannot be compared or sorted", page or "", re.I)
 
         if _orderByTest(1) and not _orderByTest(randomInt()):
             infoMsg = "'ORDER BY' technique appears to be usable. "
@@ -104,10 +105,10 @@ def _findUnionCharCount(comment, place, parameter, value, prefix, suffix, where=
         for count in xrange(lowerCount, upperCount + 1):
             query = agent.forgeUnionQuery('', -1, count, comment, prefix, suffix, kb.uChar, where)
             payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
-            page, headers = Request.queryPage(payload, place=place, content=True, raise404=False)
+            page, headers, code = Request.queryPage(payload, place=place, content=True, raise404=False)
             if not isNullValue(kb.uChar):
                 pages[count] = page
-            ratio = comparison(page, headers, getRatioValue=True) or MIN_RATIO
+            ratio = comparison(page, headers, code, getRatioValue=True) or MIN_RATIO
             ratios.append(ratio)
             min_, max_ = min(min_, ratio), max(max_, ratio)
             items.append((count, ratio))
@@ -154,7 +155,7 @@ def _findUnionCharCount(comment, place, parameter, value, prefix, suffix, where=
 
     if retVal:
         infoMsg = "target URL appears to be UNION injectable with %d columns" % retVal
-        singleTimeLogMessage(infoMsg)
+        singleTimeLogMessage(infoMsg, logging.INFO, re.sub(r"\d+", "N", infoMsg))
 
     return retVal
 
@@ -186,7 +187,7 @@ def _unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYLO
             payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
 
             # Perform the request
-            page, headers = Request.queryPage(payload, place=place, content=True, raise404=False)
+            page, headers, _ = Request.queryPage(payload, place=place, content=True, raise404=False)
             content = "%s%s".lower() % (removeReflectiveValues(page, payload) or "", \
                 removeReflectiveValues(listToStrValue(headers.headers if headers else None), \
                 payload, True) or "")
@@ -208,7 +209,7 @@ def _unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYLO
                     payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
 
                     # Perform the request
-                    page, headers = Request.queryPage(payload, place=place, content=True, raise404=False)
+                    page, headers, _ = Request.queryPage(payload, place=place, content=True, raise404=False)
                     content = "%s%s".lower() % (page or "", listToStrValue(headers.headers if headers else None) or "")
 
                     if not all(_ in content for _ in (phrase, phrase2)):
@@ -221,7 +222,7 @@ def _unionPosition(comment, place, parameter, prefix, suffix, count, where=PAYLO
                         payload = agent.payload(place=place, parameter=parameter, newValue=query, where=where)
 
                         # Perform the request
-                        page, headers = Request.queryPage(payload, place=place, content=True, raise404=False)
+                        page, headers, _ = Request.queryPage(payload, place=place, content=True, raise404=False)
                         content = "%s%s".lower() % (removeReflectiveValues(page, payload) or "", \
                             removeReflectiveValues(listToStrValue(headers.headers if headers else None), \
                             payload, True) or "")
@@ -282,8 +283,8 @@ def _unionTestByCharBruteforce(comment, place, parameter, value, prefix, suffix)
 
             if not conf.uChar and count > 1 and kb.uChar == NULL:
                 message = "injection not exploitable with NULL values. Do you want to try with a random integer value for option '--union-char'? [Y/n] "
-                test = readInput(message, default="Y")
-                if test[0] not in ("y", "Y"):
+
+                if not readInput(message, default="Y", boolean=True):
                     warnMsg += "usage of option '--union-char' "
                     warnMsg += "(e.g. '--union-char=1') "
                 else:

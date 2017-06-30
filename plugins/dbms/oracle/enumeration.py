@@ -5,7 +5,6 @@ Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from lib.core.common import Backend
 from lib.core.common import getLimitRange
 from lib.core.common import isAdminFromPrivileges
 from lib.core.common import isInferenceAvailable
@@ -51,7 +50,7 @@ class Enumeration(GenericEnumeration):
                 condition = rootQuery.inband.condition
 
             if conf.user:
-                users = conf.user.split(",")
+                users = conf.user.split(',')
                 query += " WHERE "
                 query += " OR ".join("%s = '%s'" % (condition, user) for user in sorted(users))
 
@@ -87,7 +86,7 @@ class Enumeration(GenericEnumeration):
 
         if not kb.data.cachedUsersRoles and isInferenceAvailable() and not conf.direct:
             if conf.user:
-                users = conf.user.split(",")
+                users = conf.user.split(',')
             else:
                 if not len(kb.data.cachedUsers):
                     users = self.getUsers()

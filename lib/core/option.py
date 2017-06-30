@@ -45,7 +45,6 @@ from lib.core.common import getConsoleWidth
 from lib.core.common import getFileItems
 from lib.core.common import getFileType
 from lib.core.common import getUnicode
-from lib.core.common import isListLike
 from lib.core.common import normalizePath
 from lib.core.common import ntToPosixSlashes
 from lib.core.common import openFile
@@ -58,12 +57,11 @@ from lib.core.common import readInput
 from lib.core.common import resetCookieJar
 from lib.core.common import runningAsAdmin
 from lib.core.common import safeExpandUser
+from lib.core.common import saveConfig
 from lib.core.common import setOptimize
 from lib.core.common import setPaths
 from lib.core.common import singleTimeWarnMessage
-from lib.core.common import UnicodeRawConfigParser
 from lib.core.common import urldecode
-from lib.core.convert import base64unpickle
 from lib.core.data import conf
 from lib.core.data import kb
 from lib.core.data import logger
@@ -112,7 +110,6 @@ from lib.core.settings import DEFAULT_PAGE_ENCODING
 from lib.core.settings import DEFAULT_TOR_HTTP_PORTS
 from lib.core.settings import DEFAULT_TOR_SOCKS_PORTS
 from lib.core.settings import DUMMY_URL
-from lib.core.settings import IGNORE_SAVE_OPTIONS
 from lib.core.settings import INJECT_HERE_MARK
 from lib.core.settings import IS_WIN
 from lib.core.settings import KB_CHARS_BOUNDARY_CHAR
@@ -243,6 +240,7 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
             if schemePort:
                 scheme = schemePort.group(1)
                 port = schemePort.group(2)
+                request = re.sub(r"\n=+\Z", "", request.split(schemePort.group(0))[-1].lstrip())
             else:
                 scheme, port = None, None
 
@@ -486,13 +484,13 @@ def _setRequestFromFile():
 
     conf.requestFile = safeExpandUser(conf.requestFile)
 
-    infoMsg = "parsing HTTP request from '%s'" % conf.requestFile
-    logger.info(infoMsg)
-
     if not os.path.isfile(conf.requestFile):
-        errMsg = "the specified HTTP request file "
+        errMsg = "specified HTTP request file '%s' " % conf.requestFile
         errMsg += "does not exist"
         raise SqlmapFilePathException(errMsg)
+
+    infoMsg = "parsing HTTP request from '%s'" % conf.requestFile
+    logger.info(infoMsg)
 
     _feedTargetsDict(conf.requestFile, addedTargetUrls)
 
@@ -545,8 +543,7 @@ def _doSearch():
             elif re.search(URI_INJECTABLE_REGEX, link, re.I):
                 if kb.data.onlyGETs is None and conf.data is None and not conf.googleDork:
                     message = "do you want to scan only results containing GET parameters? [Y/n] "
-                    test = readInput(message, default="Y")
-                    kb.data.onlyGETs = test.lower() != 'n'
+                    kb.data.onlyGETs = readInput(message, default='Y', boolean=True)
                 if not kb.data.onlyGETs or conf.googleDork:
                     kb.targets.add((link, conf.method, conf.data, conf.cookie, None))
 
@@ -573,9 +570,8 @@ def _doSearch():
             message += "for your search dork expression, but none of them "
             message += "have GET parameters to test for SQL injection. "
             message += "Do you want to skip to the next result page? [Y/n]"
-            test = readInput(message, default="Y")
 
-            if test[0] in ("n", "N"):
+            if not readInput(message, default='Y', boolean=True):
                 raise SqlmapSilentQuitException
             else:
                 conf.googlePage += 1
@@ -632,7 +628,7 @@ def _findPageForms():
     logger.info(infoMsg)
 
     if not any((conf.bulkFile, conf.googleDork, conf.sitemapUrl)):
-        page, _ = Request.queryPage(content=True)
+        page, _, _ = Request.queryPage(content=True)
         findPageForms(page, conf.url, True, True)
     else:
         if conf.bulkFile:
@@ -949,14 +945,14 @@ def _setTamperingFunctions():
                         message = "it appears that you might have mixed "
                         message += "the order of tamper scripts. "
                         message += "Do you want to auto resolve this? [Y/n/q] "
-                        test = readInput(message, default="Y")
+                        choice = readInput(message, default='Y').upper()
 
-                        if not test or test[0] in ("y", "Y"):
-                            resolve_priorities = True
-                        elif test[0] in ("n", "N"):
+                        if choice == 'N':
                             resolve_priorities = False
-                        elif test[0] in ("q", "Q"):
+                        elif choice == 'Q':
                             raise SqlmapUserQuitException
+                        else:
+                            resolve_priorities = True
 
                         check_priority = False
 
@@ -1689,10 +1685,10 @@ def _cleanupOptions():
         setOptimize()
 
     if conf.data:
-        conf.data = re.sub(INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.data, re.I)
+        conf.data = re.sub("(?i)%s" % INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.data)
 
     if conf.url:
-        conf.url = re.sub(INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.url, re.I)
+        conf.url = re.sub("(?i)%s" % INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.url)
 
     if conf.os:
         conf.os = conf.os.capitalize()
@@ -1771,13 +1767,13 @@ def _cleanupOptions():
         conf.torType = conf.torType.upper()
 
     if conf.col:
-        conf.col = re.sub(r"\s*,\s*", ",", conf.col)
+        conf.col = re.sub(r"\s*,\s*", ',', conf.col)
 
     if conf.excludeCol:
-        conf.excludeCol = re.sub(r"\s*,\s*", ",", conf.excludeCol)
+        conf.excludeCol = re.sub(r"\s*,\s*", ',', conf.excludeCol)
 
     if conf.binaryFields:
-        conf.binaryFields = re.sub(r"\s*,\s*", ",", conf.binaryFields)
+        conf.binaryFields = re.sub(r"\s*,\s*", ',', conf.binaryFields)
 
     if any((conf.proxy, conf.proxyFile, conf.tor)):
         conf.disablePrecon = True
@@ -1867,6 +1863,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.authHeader = None
     kb.bannerFp = AttribDict()
     kb.binaryField = False
+    kb.browserVerification = None
 
     kb.brute = AttribDict({"tables": [], "columns": []})
     kb.bruteMode = False
@@ -1906,6 +1903,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.dnsMode = False
     kb.dnsTest = None
     kb.docRoot = None
+    kb.droppingRequests = False
     kb.dumpColumns = None
     kb.dumpTable = None
     kb.dumpKeyboardInterrupt = False
@@ -1925,6 +1923,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.futileUnion = None
     kb.headersFp = {}
     kb.heuristicDbms = None
+    kb.heuristicExtendedDbms = None
     kb.heuristicMode = False
     kb.heuristicPage = False
     kb.heuristicTest = None
@@ -2107,53 +2106,7 @@ def _saveConfig():
     debugMsg = "saving command line options to a sqlmap configuration INI file"
     logger.debug(debugMsg)
 
-    config = UnicodeRawConfigParser()
-    userOpts = {}
-
-    for family in optDict.keys():
-        userOpts[family] = []
-
-    for option, value in conf.items():
-        for family, optionData in optDict.items():
-            if option in optionData:
-                userOpts[family].append((option, value, optionData[option]))
-
-    for family, optionData in userOpts.items():
-        config.add_section(family)
-
-        optionData.sort()
-
-        for option, value, datatype in optionData:
-            if datatype and isListLike(datatype):
-                datatype = datatype[0]
-
-            if option in IGNORE_SAVE_OPTIONS:
-                continue
-
-            if value is None:
-                if datatype == OPTION_TYPE.BOOLEAN:
-                    value = "False"
-                elif datatype in (OPTION_TYPE.INTEGER, OPTION_TYPE.FLOAT):
-                    if option in defaults:
-                        value = str(defaults[option])
-                    else:
-                        value = "0"
-                elif datatype == OPTION_TYPE.STRING:
-                    value = ""
-
-            if isinstance(value, basestring):
-                value = value.replace("\n", "\n ")
-
-            config.set(family, option, value)
-
-    confFP = openFile(conf.saveConfig, "wb")
-
-    try:
-        config.write(confFP)
-    except IOError, ex:
-        errMsg = "something went wrong while trying "
-        errMsg += "to write to the configuration file '%s' ('%s')" % (conf.saveConfig, getSafeExString(ex))
-        raise SqlmapSystemException(errMsg)
+    saveConfig(conf, conf.saveConfig)
 
     infoMsg = "saved command line options to the configuration file '%s'" % conf.saveConfig
     logger.info(infoMsg)
@@ -2229,26 +2182,6 @@ def _mergeOptions(inputOptions, overrideOptions):
     @type inputOptions: C{instance}
     """
 
-    if inputOptions.pickledOptions:
-        try:
-            unpickledOptions = base64unpickle(inputOptions.pickledOptions, unsafe=True)
-
-            if type(unpickledOptions) == dict:
-                unpickledOptions = AttribDict(unpickledOptions)
-
-            _normalizeOptions(unpickledOptions)
-
-            unpickledOptions["pickledOptions"] = None
-            for key in inputOptions:
-                if key not in unpickledOptions:
-                    unpickledOptions[key] = inputOptions[key]
-
-            inputOptions = unpickledOptions
-        except Exception, ex:
-            errMsg = "provided invalid value '%s' for option '--pickled-options'" % inputOptions.pickledOptions
-            errMsg += " (%s)" % repr(ex)
-            raise SqlmapSyntaxException(errMsg)
-
     if inputOptions.configFile:
         configFileParser(inputOptions.configFile)
 
@@ -2261,7 +2194,7 @@ def _mergeOptions(inputOptions, overrideOptions):
         if key not in conf or value not in (None, False) or overrideOptions:
             conf[key] = value
 
-    if not hasattr(conf, "api"):
+    if not conf.api:
         for key, value in conf.items():
             if value is not None:
                 kb.explicitSettings.add(key)
@@ -2324,7 +2257,7 @@ def _setProxyList():
         return
 
     conf.proxyList = []
-    for match in re.finditer(r"(?i)((http[^:]*|socks[^:]*)://)?([\w.]+):(\d+)", readCachedFileContent(conf.proxyFile)):
+    for match in re.finditer(r"(?i)((http[^:]*|socks[^:]*)://)?([\w\-.]+):(\d+)", readCachedFileContent(conf.proxyFile)):
         _, type_, address, port = match.groups()
         conf.proxyList.append("%s://%s:%s" % (type_ or "http", address, port))
 
@@ -2454,6 +2387,10 @@ def _basicOptionValidation():
 
     if conf.dumpTable and conf.search:
         errMsg = "switch '--dump' is incompatible with switch '--search'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.api and not conf.configFile:
+        errMsg = "switch '--api' requires usage of option '-c'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.data and conf.nullConnection:

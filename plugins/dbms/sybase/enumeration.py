@@ -5,7 +5,6 @@ Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'doc/COPYING' for copying permission
 """
 
-from lib.core.common import Backend
 from lib.core.common import filterPairValues
 from lib.core.common import isTechniqueAvailable
 from lib.core.common import randomStr
@@ -25,8 +24,8 @@ from lib.core.exception import SqlmapMissingMandatoryOptionException
 from lib.core.exception import SqlmapNoneDataException
 from lib.core.exception import SqlmapUserQuitException
 from lib.core.settings import CURRENT_DB
+from lib.utils.brute import columnExists
 from lib.utils.pivotdumptable import pivotDumpTable
-from lib.techniques.brute.use import columnExists
 from plugins.generic.enumeration import Enumeration as GenericEnumeration
 
 class Enumeration(GenericEnumeration):
@@ -125,7 +124,7 @@ class Enumeration(GenericEnumeration):
             conf.db = self.getCurrentDb()
 
         if conf.db:
-            dbs = conf.db.split(",")
+            dbs = conf.db.split(',')
         else:
             dbs = self.getDbs()
 
@@ -185,7 +184,7 @@ class Enumeration(GenericEnumeration):
         conf.db = safeSQLIdentificatorNaming(conf.db)
 
         if conf.col:
-            colList = conf.col.split(",")
+            colList = conf.col.split(',')
         else:
             colList = []
 
@@ -196,7 +195,7 @@ class Enumeration(GenericEnumeration):
             colList[colList.index(col)] = safeSQLIdentificatorNaming(col)
 
         if conf.tbl:
-            tblList = conf.tbl.split(",")
+            tblList = conf.tbl.split(',')
         else:
             self.getTables()
 
@@ -241,11 +240,11 @@ class Enumeration(GenericEnumeration):
                 return kb.data.cachedColumns
 
             message = "do you want to use common column existence check? [y/N/q] "
-            test = readInput(message, default="Y" if "Y" in message else "N")
+            choice = readInput(message, default='Y' if 'Y' in message else 'N').upper()
 
-            if test[0] in ("n", "N"):
+            if choice == 'N':
                 return
-            elif test[0] in ("q", "Q"):
+            elif choice == 'Q':
                 raise SqlmapUserQuitException
             else:
                 return columnExists(paths.COMMON_COLUMNS)

@@ -34,7 +34,7 @@ Per una lista di tutte le opzioni e di tutti i controlli:
     python sqlmap.py -hh
 
 Puoi trovare un esempio di esecuzione [qui](https://asciinema.org/a/46601).
-Per una panoramica delle capacità di sqlmap, una lista delle sue funzionalità e la descrizione di tutte le sue opzioni e controlli, insieme ad un gran numero di esempi, siete pregati di visitare lo [user's manual](https://github.com/sqlmapproject/sqlmap/wiki) (disponibile solo in inglese).
+Per una panoramica delle capacità di sqlmap, una lista delle sue funzionalità e la descrizione di tutte le sue opzioni e controlli, insieme ad un gran numero di esempi, siete pregati di visitare lo [user's manual](https://github.com/sqlmapproject/sqlmap/wiki/Usage) (disponibile solo in inglese).
 
 Link
 ----
@@ -45,9 +45,6 @@ Link
 * Issue tracker: https://github.com/sqlmapproject/sqlmap/issues
 * Manuale dell'utente: https://github.com/sqlmapproject/sqlmap/wiki
 * Domande più frequenti (FAQ): https://github.com/sqlmapproject/sqlmap/wiki/FAQ
-* Iscrizione alla Mailing list: https://lists.sourceforge.net/lists/listinfo/sqlmap-users
-* Mailing list RSS feed: http://rss.gmane.org/messages/complete/gmane.comp.security.sqlmap
-* Archivio della Mailing list: http://news.gmane.org/gmane.comp.security.sqlmap
 * Twitter: [@sqlmap](https://twitter.com/sqlmap)
 * Dimostrazioni: [http://www.youtube.com/user/inquisb/videos](http://www.youtube.com/user/inquisb/videos)
 * Screenshot: https://github.com/sqlmapproject/sqlmap/wiki/Screenshots

@@ -115,7 +115,6 @@ def main():
 
     try:
         checkEnvironment()
-
         setPaths(modulePath())
         banner()
 
@@ -123,7 +122,7 @@ def main():
         cmdLineOptions.update(cmdLineParser().__dict__)
         initOptions(cmdLineOptions)
 
-        if hasattr(conf, "api"):
+        if conf.get("api"):
             # heavy imports
             from lib.utils.api import StdDbOut
             from lib.utils.api import setRestAPILog
@@ -203,9 +202,10 @@ def main():
         print
         errMsg = unhandledExceptionMessage()
         excMsg = traceback.format_exc()
+        valid = checkIntegrity()
 
         try:
-            if not checkIntegrity():
+            if valid is False:
                 errMsg = "code integrity check failed (turning off automatic issue creation). "
                 errMsg += "You should retrieve the latest development version from official GitHub "
                 errMsg += "repository at '%s'" % GIT_PAGE
@@ -260,6 +260,13 @@ def main():
                 logger.error(errMsg)
                 raise SystemExit
 
+            elif "'DictObject' object has no attribute '" in excMsg and all(_ in errMsg for _ in ("(fingerprinted)", "(identified)")):
+                errMsg = "there has been a problem in enumeration. "
+                errMsg += "Because of a considerable chance of false-positive case "
+                errMsg += "you are advised to rerun with switch '--flush-session'"
+                logger.error(errMsg)
+                raise SystemExit
+
             elif all(_ in excMsg for _ in ("pymysql", "configparser")):
                 errMsg = "wrong initialization of pymsql detected (using Python3 dependencies)"
                 logger.error(errMsg)
@@ -285,7 +292,7 @@ def main():
             errMsg = maskSensitiveData(errMsg)
             excMsg = maskSensitiveData(excMsg)
 
-            if hasattr(conf, "api"):
+            if conf.get("api") or not valid:
                 logger.critical("%s\n%s" % (errMsg, excMsg))
             else:
                 logger.critical(errMsg)
@@ -326,7 +333,7 @@ def main():
             kb.clear()
             main()
 
-        if hasattr(conf, "api"):
+        if conf.get("api"):
             try:
                 conf.databaseCursor.disconnect()
             except KeyboardInterrupt:

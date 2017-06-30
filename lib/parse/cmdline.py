@@ -48,7 +48,8 @@ def cmdLineParser(argv=None):
 
     checkSystemEncoding()
 
-    _ = getUnicode(os.path.basename(argv[0]), encoding=sys.getfilesystemencoding() or UNICODE_ENCODING)
+    # Reference: https://stackoverflow.com/a/4012683 (Note: previously used "...sys.getfilesystemencoding() or UNICODE_ENCODING")
+    _ = getUnicode(os.path.basename(argv[0]), encoding=sys.stdin.encoding)
 
     usage = "%s%s [options]" % ("python " if not IS_WIN else "", \
             "\"%s\"" % _ if " " in _ else _)
@@ -482,10 +483,10 @@ def cmdLineParser(argv=None):
                                help="Use WHERE condition while table dumping")
 
         enumeration.add_option("--start", dest="limitStart", type="int",
-                               help="First query output entry to retrieve")
+                               help="First dump table entry to retrieve")
 
         enumeration.add_option("--stop", dest="limitStop", type="int",
-                               help="Last query output entry to retrieve")
+                               help="Last dump table entry to retrieve")
 
         enumeration.add_option("--first", dest="firstChar", type="int",
                                help="First query output word character to retrieve")
@@ -637,6 +638,10 @@ def cmdLineParser(argv=None):
         general.add_option("--charset", dest="charset",
                             help="Force character encoding used for data retrieval")
 
+        general.add_option("--check-internet", dest="checkInternet",
+                            action="store_true",
+                            help="Check Internet connection before assessing the target")
+
         general.add_option("--crawl", dest="crawlDepth", type="int",
                             help="Crawl the website starting from the target URL")
 
@@ -738,10 +743,6 @@ def cmdLineParser(argv=None):
                                   action="store_true",
                                   help="Work in offline mode (only use session data)")
 
-        miscellaneous.add_option("--page-rank", dest="pageRank",
-                                  action="store_true",
-                                  help="Display page rank (PR) for Google dork results")
-
         miscellaneous.add_option("--purge-output", dest="purgeOutput",
                                   action="store_true",
                                   help="Safely remove all content from output directory")
@@ -760,6 +761,9 @@ def cmdLineParser(argv=None):
         miscellaneous.add_option("--tmp-dir", dest="tmpDir",
                                   help="Local directory for storing temporary files")
 
+        miscellaneous.add_option("--web-root", dest="webRoot",
+                                  help="Web server document root directory (e.g. \"/var/www\")")
+
         miscellaneous.add_option("--wizard", dest="wizard",
                                   action="store_true",
                                   help="Simple wizard interface for beginner users")
@@ -771,10 +775,10 @@ def cmdLineParser(argv=None):
         parser.add_option("--murphy-rate", dest="murphyRate", type="int",
                           help=SUPPRESS_HELP)
 
-        parser.add_option("--pickled-options", dest="pickledOptions",
+        parser.add_option("--disable-precon", dest="disablePrecon", action="store_true",
                           help=SUPPRESS_HELP)
 
-        parser.add_option("--disable-precon", dest="disablePrecon", action="store_true",
+        parser.add_option("--disable-stats", dest="disableStats", action="store_true",
                           help=SUPPRESS_HELP)
 
         parser.add_option("--profile", dest="profile", action="store_true",
@@ -796,6 +800,14 @@ def cmdLineParser(argv=None):
                           help=SUPPRESS_HELP)
 
         parser.add_option("--run-case", dest="runCase", help=SUPPRESS_HELP)
+
+        # API options
+        parser.add_option("--api", dest="api", action="store_true",
+                          help=SUPPRESS_HELP)
+
+        parser.add_option("--taskid", dest="taskid", help=SUPPRESS_HELP)
+
+        parser.add_option("--database", dest="database", help=SUPPRESS_HELP)
 
         parser.add_option_group(target)
         parser.add_option_group(request)
@@ -837,8 +849,9 @@ def cmdLineParser(argv=None):
         advancedHelp = True
         extraHeaders = []
 
+        # Reference: https://stackoverflow.com/a/4012683 (Note: previously used "...sys.getfilesystemencoding() or UNICODE_ENCODING")
         for arg in argv:
-            _.append(getUnicode(arg, encoding=sys.getfilesystemencoding() or UNICODE_ENCODING))
+            _.append(getUnicode(arg, encoding=sys.stdin.encoding))
 
         argv = _
         checkDeprecatedOptions(argv)
@@ -961,7 +974,7 @@ def cmdLineParser(argv=None):
 
         if not any((args.direct, args.url, args.logFile, args.bulkFile, args.googleDork, args.configFile, \
             args.requestFile, args.updateAll, args.smokeTest, args.liveTest, args.wizard, args.dependencies, \
-            args.purgeOutput, args.pickledOptions, args.sitemapUrl)):
+            args.purgeOutput, args.sitemapUrl)):
             errMsg = "missing a mandatory option (-d, -u, -l, -m, -r, -g, -c, -x, --wizard, --update, --purge-output or --dependencies), "
             errMsg += "use -h for basic or -hh for advanced help\n"
             parser.error(errMsg)

@@ -34,7 +34,7 @@ To get a list of all options and switches use:
     python sqlmap.py -hh
 
 You can find a sample run [here](https://asciinema.org/a/46601).
-To get an overview of sqlmap capabilities, list of supported features and description of all options and switches, along with examples, you are advised to consult the [user's manual](https://github.com/sqlmapproject/sqlmap/wiki).
+To get an overview of sqlmap capabilities, list of supported features and description of all options and switches, along with examples, you are advised to consult the [user's manual](https://github.com/sqlmapproject/sqlmap/wiki/Usage).
 
 Links
 ----
@@ -45,9 +45,6 @@ Links
 * Issue tracker: https://github.com/sqlmapproject/sqlmap/issues
 * User's manual: https://github.com/sqlmapproject/sqlmap/wiki
 * Frequently Asked Questions (FAQ): https://github.com/sqlmapproject/sqlmap/wiki/FAQ
-* Mailing list subscription: https://lists.sourceforge.net/lists/listinfo/sqlmap-users
-* Mailing list RSS feed: http://rss.gmane.org/messages/complete/gmane.comp.security.sqlmap
-* Mailing list archive: http://news.gmane.org/gmane.comp.security.sqlmap
 * Twitter: [@sqlmap](https://twitter.com/sqlmap)
 * Demos: [http://www.youtube.com/user/inquisb/videos](http://www.youtube.com/user/inquisb/videos)
 * Screenshots: https://github.com/sqlmapproject/sqlmap/wiki/Screenshots
@@ -55,6 +52,7 @@ Links
 Translations
 ----
 
+* [Bulgarian](https://github.com/sqlmapproject/sqlmap/blob/master/doc/translations/README-bg-BG.md)
 * [Chinese](https://github.com/sqlmapproject/sqlmap/blob/master/doc/translations/README-zh-CN.md)
 * [Croatian](https://github.com/sqlmapproject/sqlmap/blob/master/doc/translations/README-hr-HR.md)
 * [French](https://github.com/sqlmapproject/sqlmap/blob/master/doc/translations/README-fr-FR.md)
