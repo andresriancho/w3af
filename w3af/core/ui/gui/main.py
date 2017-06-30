@@ -68,6 +68,7 @@ from w3af.core.ui.gui.tools.proxywin import ProxiedRequests
 print "Starting w3af, running on:"
 print get_versions()
 
+# pylint: disable=E1101
 # Threading initializer
 if sys.platform == "win32":
     gobject.threads_init()
@@ -76,7 +77,7 @@ if sys.platform == "win32":
 else:
     gtk.gdk.threads_init()
     gtk.gdk.threads_enter()
-
+# pylint: enable=E1101
 
 class FakeShelve(dict):
     def close(self):
