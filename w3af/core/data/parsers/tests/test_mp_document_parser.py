@@ -26,6 +26,7 @@ import unittest
 import multiprocessing
 
 from mock import patch, call, PropertyMock
+from nose.plugins.skip import SkipTest
 
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.doc.sgml import Tag
@@ -176,6 +177,75 @@ class TestMPDocumentParser(unittest.TestCase):
                 parser = self.mpdoc.get_document_parser_for(http_resp)
                 self.assertIsInstance(parser._parser, HTMLParser)
 
+    def test_parser_with_large_attr_killed_when_sending_to_queue(self):
+        """
+        https://docs.python.org/2/library/multiprocessing.html
+
+            Warning If a process is killed using Process.terminate()
+            or os.kill() while it is trying to use a Queue, then the
+            data in the queue is likely to become corrupted. This may
+            cause any other process to get an exception when it tries
+            to use the queue later on.
+
+        Try to kill the process while it is sending data to the queue
+        """
+        raise SkipTest('https://github.com/andresriancho/w3af/issues/9713')
+
+        mmpdp = 'w3af.core.data.parsers.mp_document_parser.%s'
+        kmpdp = mmpdp % 'MultiProcessingDocumentParser.%s'
+        modp = 'w3af.core.data.parsers.document_parser.%s'
+
+        with patch(mmpdp % 'om.out') as om_mock,\
+             patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
+             patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
+             patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
+
+            # Prepare the HTTP responses
+            html_trigger_delay = '<html>HugeClassAttrValueParser!</html>%s'
+            html_ok = '<html>foo-</html>%s'
+
+            # Mocks
+            timeout_mock.return_value = 1
+            max_workers_mock.return_value = 5
+            parsers_mock.return_value = [HugeClassAttrValueParser, HTMLParser]
+
+            ITERATIONS = 25
+
+            #
+            # Lets timeout many sequentially
+            #
+            for i in xrange(ITERATIONS):
+                http_resp = _build_http_response(html_trigger_delay % i, u'text/html')
+
+                try:
+                    self.mpdoc.get_document_parser_for(http_resp)
+                except BaseFrameworkException:
+                    self._is_timeout_exception_message(om_mock, http_resp)
+                else:
+                    self.assertTrue(False)
+
+            #
+            # Lets timeout randomly
+            #
+            for i in xrange(ITERATIONS):
+                html = random.choice([html_trigger_delay, html_ok])
+                http_resp = _build_http_response(html % i, u'text/html')
+
+                try:
+                    parser = self.mpdoc.get_document_parser_for(http_resp)
+                except BaseFrameworkException:
+                    self._is_timeout_exception_message(om_mock, http_resp)
+                else:
+                    self.assertIsInstance(parser._parser, HTMLParser)
+
+            #
+            # Lets parse things we know should work
+            #
+            for i in xrange(ITERATIONS):
+                http_resp = _build_http_response(html_ok % i, u'text/html')
+                parser = self.mpdoc.get_document_parser_for(http_resp)
+                self.assertIsInstance(parser._parser, HTMLParser)
+
     def _is_timeout_exception_message(self, om_mock, http_resp):
         msg = '[timeout] The parser took more than %s seconds' \
               ' to complete parsing of "%s", killed it!'
@@ -277,11 +347,32 @@ def daemon_child(queue):
 class DelayedParser(object):
     def __init__(self, http_response):
         self.http_response = http_response
-        time.sleep(3)
 
     @staticmethod
     def can_parse(http_response):
         return 'DelayedParser' in http_response.get_body()
+
+    def parse(self):
+        time.sleep(3)
+
+    def clear(self):
+        return True
+
+
+class HugeClassAttrValueParser(object):
+    parse_was_called = False
+
+    def __init__(self, http_response):
+        self.data_to_make_queue_busy = None
+        self.http_response = http_response
+
+    @staticmethod
+    def can_parse(http_response):
+        return 'HugeClassAttrValueParser' in http_response.get_body()
+
+    def parse(self):
+        self.data_to_make_queue_busy = 'A' * (2 ** 30)
+        self.parse_was_called = True
 
     def clear(self):
         return True
