@@ -76,6 +76,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
 
                      # tldextract extracts the tld from any domain name
                      PIPDependency('tldextract', 'tldextract', '1.7.2'),
+
+                     # pebble multiprocessing
+                     PIPDependency('pebble', 'pebble', '4.3.2'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

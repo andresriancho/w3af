@@ -97,8 +97,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
             try:
                 self.mpdoc.get_document_parser_for(http_resp)
-            except BaseFrameworkException:
-                self._is_timeout_exception_message(om_mock, http_resp)
+            except BaseFrameworkException, bfe:
+                self._is_timeout_exception_message(bfe, om_mock, http_resp)
             else:
                 self.assertTrue(False)
 
@@ -150,8 +150,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
 
@@ -164,8 +164,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
 
@@ -246,14 +246,14 @@ class TestMPDocumentParser(unittest.TestCase):
                 parser = self.mpdoc.get_document_parser_for(http_resp)
                 self.assertIsInstance(parser._parser, HTMLParser)
 
-    def _is_timeout_exception_message(self, om_mock, http_resp):
-        msg = '[timeout] The parser took more than %s seconds' \
-              ' to complete parsing of "%s", killed it!'
+    def _is_timeout_exception_message(self, bfe, om_mock, http_resp):
+        msg = ('[timeout] The parser took more than %s seconds to '
+               'complete parsing of "%s", killed it!')
 
         error = msg % (MultiProcessingDocumentParser.PARSER_TIMEOUT,
                        http_resp.get_url())
 
-        self.assertIn(call.debug(error), om_mock.mock_calls)
+        self.assertEquals(str(bfe), error)
 
     def test_daemon_child(self):
         """
