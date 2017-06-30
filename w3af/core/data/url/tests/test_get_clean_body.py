@@ -99,7 +99,8 @@ class TestExtendTable(unittest.TestCase):
 
         self.assertEqual(et['"'],
                          ['"', '&quot;', '&#x22;', '&#34;', '&#034;',
-                          '\\u0022', '\\"', '&QUOT;', '\\U0022'])
+                          '%22', '%2522', '\\u0022', '\\"', '&QUOT;',
+                          '\\U0022'])
 
         self.assertEqual(et['='],
                          ['=', '&eq;', '&#x3d;', '&#61;', '&#061;', '%3d', '%253d',
