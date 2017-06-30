@@ -79,7 +79,7 @@ class Entries:
             if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.DB2, DBMS.HSQLDB):
                 conf.tbl = conf.tbl.upper()
 
-            tblList = conf.tbl.split(",")
+            tblList = conf.tbl.split(',')
         else:
             self.getTables()
 
@@ -170,18 +170,44 @@ class Entries:
                         if not (isTechniqueAvailable(PAYLOAD.TECHNIQUE.UNION) and kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.ORIGINAL):
                             table = "%s.%s" % (conf.db, tbl)
 
-                            try:
-                                retVal = pivotDumpTable(table, colList, blind=False)
-                            except KeyboardInterrupt:
-                                retVal = None
-                                kb.dumpKeyboardInterrupt = True
-                                clearConsoleLine()
-                                warnMsg = "Ctrl+C detected in dumping phase"
-                                logger.warn(warnMsg)
+                            if Backend.isDbms(DBMS.MSSQL):
+                                query = rootQuery.blind.count % table
+                                query = agent.whereQuery(query)
 
-                            if retVal:
-                                entries, _ = retVal
-                                entries = zip(*[entries[colName] for colName in colList])
+                                count = inject.getValue(query, blind=False, time=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+                                if isNumPosStrValue(count):
+                                    try:
+                                        indexRange = getLimitRange(count, plusOne=True)
+
+                                        for index in indexRange:
+                                            row = []
+                                            for column in colList:
+                                                query = rootQuery.blind.query3 % (column, column, table, index)
+                                                query = agent.whereQuery(query)
+                                                value = inject.getValue(query, blind=False, time=False, dump=True) or ""
+                                                row.append(value)
+
+                                            entries.append(row)
+
+                                    except KeyboardInterrupt:
+                                        kb.dumpKeyboardInterrupt = True
+                                        clearConsoleLine()
+                                        warnMsg = "Ctrl+C detected in dumping phase"
+                                        logger.warn(warnMsg)
+
+                            if not entries and not kb.dumpKeyboardInterrupt:
+                                try:
+                                    retVal = pivotDumpTable(table, colList, blind=False)
+                                except KeyboardInterrupt:
+                                    retVal = None
+                                    kb.dumpKeyboardInterrupt = True
+                                    clearConsoleLine()
+                                    warnMsg = "Ctrl+C detected in dumping phase"
+                                    logger.warn(warnMsg)
+
+                                if retVal:
+                                    entries, _ = retVal
+                                    entries = zip(*[entries[colName] for colName in colList])
                         else:
                             query = rootQuery.inband.query % (colString, conf.db, tbl)
                     elif Backend.getIdentifiedDbms() in (DBMS.MYSQL, DBMS.PGSQL, DBMS.HSQLDB):
@@ -191,8 +217,15 @@ class Entries:
 
                     query = agent.whereQuery(query)
 
-                    if not entries and query:
-                        entries = inject.getValue(query, blind=False, time=False, dump=True)
+                    if not entries and query and not kb.dumpKeyboardInterrupt:
+                        try:
+                            entries = inject.getValue(query, blind=False, time=False, dump=True)
+                        except KeyboardInterrupt:
+                            entries = None
+                            kb.dumpKeyboardInterrupt = True
+                            clearConsoleLine()
+                            warnMsg = "Ctrl+C detected in dumping phase"
+                            logger.warn(warnMsg)
 
                     if not isNoneValue(entries):
                         if isinstance(entries, basestring):
@@ -278,17 +311,44 @@ class Entries:
                         elif Backend.isDbms(DBMS.MAXDB):
                             table = "%s.%s" % (conf.db, tbl)
 
-                        try:
-                            retVal = pivotDumpTable(table, colList, count, blind=True)
-                        except KeyboardInterrupt:
-                            retVal = None
-                            kb.dumpKeyboardInterrupt = True
-                            clearConsoleLine()
-                            warnMsg = "Ctrl+C detected in dumping phase"
-                            logger.warn(warnMsg)
+                        if Backend.isDbms(DBMS.MSSQL):
+                            try:
+                                indexRange = getLimitRange(count, plusOne=True)
 
-                        if retVal:
-                            entries, lengths = retVal
+                                for index in indexRange:
+                                    for column in colList:
+                                        query = rootQuery.blind.query3 % (column, column, table, index)
+                                        query = agent.whereQuery(query)
+
+                                        value = inject.getValue(query, union=False, error=False, dump=True) or ""
+
+                                        if column not in lengths:
+                                            lengths[column] = 0
+
+                                        if column not in entries:
+                                            entries[column] = BigArray()
+
+                                        lengths[column] = max(lengths[column], len(DUMP_REPLACEMENTS.get(getUnicode(value), getUnicode(value))))
+                                        entries[column].append(value)
+
+                            except KeyboardInterrupt:
+                                kb.dumpKeyboardInterrupt = True
+                                clearConsoleLine()
+                                warnMsg = "Ctrl+C detected in dumping phase"
+                                logger.warn(warnMsg)
+
+                        if not entries and not kb.dumpKeyboardInterrupt:
+                            try:
+                                retVal = pivotDumpTable(table, colList, count, blind=True)
+                            except KeyboardInterrupt:
+                                retVal = None
+                                kb.dumpKeyboardInterrupt = True
+                                clearConsoleLine()
+                                warnMsg = "Ctrl+C detected in dumping phase"
+                                logger.warn(warnMsg)
+
+                            if retVal:
+                                entries, lengths = retVal
 
                     else:
                         emptyColumns = []
@@ -415,9 +475,8 @@ class Entries:
 
     def dumpFoundColumn(self, dbs, foundCols, colConsider):
         message = "do you want to dump entries? [Y/n] "
-        output = readInput(message, default="Y")
 
-        if output and output[0] not in ("y", "Y"):
+        if not readInput(message, default='Y', boolean=True):
             return
 
         dumpFromDbs = []
@@ -428,14 +487,14 @@ class Entries:
                 message += "[%s]\n" % unsafeSQLIdentificatorNaming(db)
 
         message += "[q]uit"
-        test = readInput(message, default="a")
+        choice = readInput(message, default='a')
 
-        if not test or test in ("a", "A"):
+        if not choice or choice in ('a', 'A'):
             dumpFromDbs = dbs.keys()
-        elif test in ("q", "Q"):
+        elif choice in ('q', 'Q'):
             return
         else:
-            dumpFromDbs = test.replace(" ", "").split(",")
+            dumpFromDbs = choice.replace(" ", "").split(',')
 
         for db, tblData in dbs.items():
             if db not in dumpFromDbs or not tblData:
@@ -451,16 +510,16 @@ class Entries:
 
             message += "[s]kip\n"
             message += "[q]uit"
-            test = readInput(message, default="a")
+            choice = readInput(message, default='a')
 
-            if not test or test in ("a", "A"):
+            if not choice or choice in ('a', 'A'):
                 dumpFromTbls = tblData
-            elif test in ("s", "S"):
+            elif choice in ('s', 'S'):
                 continue
-            elif test in ("q", "Q"):
+            elif choice in ('q', 'Q'):
                 return
             else:
-                dumpFromTbls = test.replace(" ", "").split(",")
+                dumpFromTbls = choice.replace(" ", "").split(',')
 
             for table, columns in tblData.items():
                 if table not in dumpFromTbls:
@@ -472,7 +531,7 @@ class Entries:
                 if conf.excludeCol:
                     colList = [_ for _ in colList if _ not in conf.excludeCol.split(',')]
 
-                conf.col = ",".join(colList)
+                conf.col = ','.join(colList)
                 kb.data.cachedColumns = {}
                 kb.data.dumpedTable = {}
 
@@ -483,9 +542,8 @@ class Entries:
 
     def dumpFoundTables(self, tables):
         message = "do you want to dump tables' entries? [Y/n] "
-        output = readInput(message, default="Y")
 
-        if output and output[0].lower() != "y":
+        if not readInput(message, default='Y', boolean=True):
             return
 
         dumpFromDbs = []
@@ -496,14 +554,14 @@ class Entries:
                 message += "[%s]\n" % unsafeSQLIdentificatorNaming(db)
 
         message += "[q]uit"
-        test = readInput(message, default="a")
+        choice = readInput(message, default='a')
 
-        if not test or test.lower() == "a":
+        if not choice or choice.lower() == 'a':
             dumpFromDbs = tables.keys()
-        elif test.lower() == "q":
+        elif choice.lower() == 'q':
             return
         else:
-            dumpFromDbs = test.replace(" ", "").split(",")
+            dumpFromDbs = choice.replace(" ", "").split(',')
 
         for db, tablesList in tables.items():
             if db not in dumpFromDbs or not tablesList:
@@ -519,16 +577,16 @@ class Entries:
 
             message += "[s]kip\n"
             message += "[q]uit"
-            test = readInput(message, default="a")
+            choice = readInput(message, default='a')
 
-            if not test or test.lower() == "a":
+            if not choice or choice.lower() == 'a':
                 dumpFromTbls = tablesList
-            elif test.lower() == "s":
+            elif choice.lower() == 's':
                 continue
-            elif test.lower() == "q":
+            elif choice.lower() == 'q':
                 return
             else:
-                dumpFromTbls = test.replace(" ", "").split(",")
+                dumpFromTbls = choice.replace(" ", "").split(',')
 
             for table in dumpFromTbls:
                 conf.tbl = table

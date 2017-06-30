@@ -40,7 +40,7 @@ def prepare_email(content):
     msg = MIMEMultipart()
     msg["Subject"] = SUBJECT
     msg["From"] = FROM
-    msg["To"] = TO if isinstance(TO, basestring) else ",".join(TO)
+    msg["To"] = TO if isinstance(TO, basestring) else ','.join(TO)
 
     msg.attach(MIMEText(content))
 
@@ -83,7 +83,7 @@ def main():
     if stderr:
         failure_email("Execution of regression test failed with error:\n\n%s" % stderr)
 
-    failed_tests = re.findall("running live test case: (.+?) \((\d+)\/\d+\)[\r]*\n.+test failed (at parsing items: (.+))?\s*\- scan folder: (\/.+) \- traceback: (.*?)( - SQL injection not detected)?[\r]*\n", stdout, re.M)
+    failed_tests = re.findall("running live test case: (.+?) \((\d+)\/\d+\)[\r]*\n.+test failed (at parsing items: (.+))?\s*\- scan folder: (\/.+) \- traceback: (.*?)( - SQL injection not detected)?[\r]*\n", stdout)
 
     for failed_test in failed_tests:
         title = failed_test[0]

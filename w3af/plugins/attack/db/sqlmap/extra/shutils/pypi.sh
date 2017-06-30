@@ -132,7 +132,7 @@ You can find a sample run `here <https://asciinema.org/a/46601>`__. To
 get an overview of sqlmap capabilities, list of supported features and
 description of all options and switches, along with examples, you are
 advised to consult the `user's
-manual <https://github.com/sqlmapproject/sqlmap/wiki>`__.
+manual <https://github.com/sqlmapproject/sqlmap/wiki/Usage>`__.
 
 Links
 -----
@@ -147,12 +147,6 @@ Links
 -  User's manual: https://github.com/sqlmapproject/sqlmap/wiki
 -  Frequently Asked Questions (FAQ):
    https://github.com/sqlmapproject/sqlmap/wiki/FAQ
--  Mailing list subscription:
-   https://lists.sourceforge.net/lists/listinfo/sqlmap-users
--  Mailing list RSS feed:
-   http://rss.gmane.org/messages/complete/gmane.comp.security.sqlmap
--  Mailing list archive:
-   http://news.gmane.org/gmane.comp.security.sqlmap
 -  Twitter: [@sqlmap](https://twitter.com/sqlmap)
 -  Demos: http://www.youtube.com/user/inquisb/videos
 -  Screenshots: https://github.com/sqlmapproject/sqlmap/wiki/Screenshots

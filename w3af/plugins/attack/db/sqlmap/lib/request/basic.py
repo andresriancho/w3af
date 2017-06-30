@@ -95,16 +95,16 @@ def forgeHeaders(items=None):
                 if cookie.domain_specified and not conf.hostname.endswith(cookie.domain):
                     continue
 
-                if ("%s=" % getUnicode(cookie.name)) in headers[HTTP_HEADER.COOKIE]:
+                if ("%s=" % getUnicode(cookie.name)) in getUnicode(headers[HTTP_HEADER.COOKIE]):
                     if conf.loadCookies:
                         conf.httpHeaders = filter(None, ((item if item[0] != HTTP_HEADER.COOKIE else None) for item in conf.httpHeaders))
                     elif kb.mergeCookies is None:
                         message = "you provided a HTTP %s header value. " % HTTP_HEADER.COOKIE
                         message += "The target URL provided its own cookies within "
                         message += "the HTTP %s header which intersect with yours. " % HTTP_HEADER.SET_COOKIE
-                        message += "Do you want to merge them in futher requests? [Y/n] "
-                        _ = readInput(message, default="Y")
-                        kb.mergeCookies = not _ or _[0] in ("y", "Y")
+                        message += "Do you want to merge them in further requests? [Y/n] "
+
+                        kb.mergeCookies = readInput(message, default='Y', boolean=True)
 
                     if kb.mergeCookies and kb.injection.place != PLACE.COOKIE:
                         _ = lambda x: re.sub(r"(?i)\b%s=[^%s]+" % (re.escape(getUnicode(cookie.name)), conf.cookieDel or DEFAULT_COOKIE_DELIMITER), ("%s=%s" % (getUnicode(cookie.name), getUnicode(cookie.value))).replace('\\', r'\\'), x)
@@ -123,7 +123,7 @@ def forgeHeaders(items=None):
 
     return headers
 
-def parseResponse(page, headers):
+def parseResponse(page, headers, status=None):
     """
     @param page: the page to parse to feed the knowledge base htmlFp
     (back-end DBMS fingerprint based upon DBMS error messages return
@@ -135,7 +135,7 @@ def parseResponse(page, headers):
         headersParser(headers)
 
     if page:
-        htmlParser(page)
+        htmlParser(page if not status else "%s\n\n%s" % (status, page))
 
 @cachedmethod
 def checkCharEncoding(encoding, warn=True):
@@ -168,6 +168,8 @@ def checkCharEncoding(encoding, warn=True):
         encoding = encoding.replace("8858", "8859")  # iso-8858 -> iso-8859
     elif "8559" in encoding:
         encoding = encoding.replace("8559", "8859")  # iso-8559 -> iso-8859
+    elif "8895" in encoding:
+        encoding = encoding.replace("8895", "8859")  # iso-8895 -> iso-8859
     elif "5889" in encoding:
         encoding = encoding.replace("5889", "8859")  # iso-5889 -> iso-8859
     elif "5589" in encoding:
@@ -202,7 +204,7 @@ def checkCharEncoding(encoding, warn=True):
     # Reference: http://philip.html5.org/data/charsets-2.html
     if encoding in translate:
         encoding = translate[encoding]
-    elif encoding in ("null", "{charset}", "*") or not re.search(r"\w", encoding):
+    elif encoding in ("null", "{charset}", "charset", "*") or not re.search(r"\w", encoding):
         return None
 
     # Reference: http://www.iana.org/assignments/character-sets
@@ -338,12 +340,12 @@ def decodePage(page, contentEncoding, contentType):
 
     return page
 
-def processResponse(page, responseHeaders):
+def processResponse(page, responseHeaders, status=None):
     kb.processResponseCounter += 1
 
     page = page or ""
 
-    parseResponse(page, responseHeaders if kb.processResponseCounter < PARSE_HEADERS_LIMIT else None)
+    parseResponse(page, responseHeaders if kb.processResponseCounter < PARSE_HEADERS_LIMIT else None, status)
 
     if not kb.tableFrom and Backend.getIdentifiedDbms() in (DBMS.ACCESS,):
         kb.tableFrom = extractRegexResult(SELECT_FROM_TABLE_REGEX, page)
@@ -366,10 +368,19 @@ def processResponse(page, responseHeaders):
                         continue
                     else:
                         msg = "do you want to automatically adjust the value of '%s'? [y/N]" % name
-                        if readInput(msg, default='N').strip().upper() != 'Y':
+
+                        if not readInput(msg, default='N', boolean=True):
                             continue
+
                         conf.paramDict[PLACE.POST][name] = value
                 conf.parameters[PLACE.POST] = re.sub("(?i)(%s=)[^&]+" % re.escape(name), r"\g<1>%s" % re.escape(value), conf.parameters[PLACE.POST])
+
+    if not kb.browserVerification and re.search(r"(?i)browser.?verification", page or ""):
+        kb.browserVerification = True
+        warnMsg = "potential browser verification protection mechanism detected"
+        if re.search(r"(?i)CloudFlare", page):
+            warnMsg += " (CloudFlare)"
+        singleTimeWarnMessage(warnMsg)
 
     if not kb.captchaDetected and re.search(r"(?i)captcha", page or ""):
         for match in re.finditer(r"(?si)<form.+?</form>", page):

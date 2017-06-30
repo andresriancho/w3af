@@ -26,6 +26,7 @@ import string
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import urllib
 import urllib2
@@ -72,6 +73,7 @@ from lib.core.enums import HEURISTIC_TEST
 from lib.core.enums import HTTP_HEADER
 from lib.core.enums import HTTPMETHOD
 from lib.core.enums import MKSTEMP_PREFIX
+from lib.core.enums import OPTION_TYPE
 from lib.core.enums import OS
 from lib.core.enums import PLACE
 from lib.core.enums import PAYLOAD
@@ -112,6 +114,7 @@ from lib.core.settings import GITHUB_REPORT_OAUTH_TOKEN
 from lib.core.settings import GOOGLE_ANALYTICS_COOKIE_PREFIX
 from lib.core.settings import HASHDB_MILESTONE_VALUE
 from lib.core.settings import HOST_ALIASES
+from lib.core.settings import IGNORE_SAVE_OPTIONS
 from lib.core.settings import INFERENCE_UNKNOWN_CHAR
 from lib.core.settings import INVALID_UNICODE_CHAR_FORMAT
 from lib.core.settings import IP_ADDRESS_REGEX
@@ -137,6 +140,7 @@ from lib.core.settings import REFERER_ALIASES
 from lib.core.settings import REFLECTED_BORDER_REGEX
 from lib.core.settings import REFLECTED_MAX_REGEX_PARTS
 from lib.core.settings import REFLECTED_REPLACEMENT_REGEX
+from lib.core.settings import REFLECTED_REPLACEMENT_TIMEOUT
 from lib.core.settings import REFLECTED_VALUE_MARKER
 from lib.core.settings import REFLECTIVE_MISS_THRESHOLD
 from lib.core.settings import SENSITIVE_DATA_REGEX
@@ -268,7 +272,7 @@ class Format(object):
         infoApi = {}
 
         if info and "type" in info:
-            if hasattr(conf, "api"):
+            if conf.api:
                 infoApi["%s operating system" % target] = info
             else:
                 infoStr += "%s operating system: %s" % (target, Format.humanize(info["type"]))
@@ -286,12 +290,12 @@ class Format(object):
                     infoStr += " (%s)" % Format.humanize(info["codename"])
 
         if "technology" in info:
-            if hasattr(conf, "api"):
+            if conf.api:
                 infoApi["web application technology"] = Format.humanize(info["technology"], ", ")
             else:
                 infoStr += "\nweb application technology: %s" % Format.humanize(info["technology"], ", ")
 
-        if hasattr(conf, "api"):
+        if conf.api:
             return infoApi
         else:
             return infoStr.lstrip()
@@ -318,14 +322,14 @@ class Backend:
             msg += "correct [%s (default)/%s] " % (kb.dbms, dbms)
 
             while True:
-                _ = readInput(msg, default=kb.dbms)
+                choice = readInput(msg, default=kb.dbms)
 
-                if aliasToDbmsEnum(_) == kb.dbms:
+                if aliasToDbmsEnum(choice) == kb.dbms:
                     kb.dbmsVersion = []
                     kb.resolutionDbms = kb.dbms
                     break
-                elif aliasToDbmsEnum(_) == dbms:
-                    kb.dbms = aliasToDbmsEnum(_)
+                elif aliasToDbmsEnum(choice) == dbms:
+                    kb.dbms = aliasToDbmsEnum(choice)
                     break
                 else:
                     warnMsg = "invalid value"
@@ -378,12 +382,12 @@ class Backend:
             msg += "correct [%s (default)/%s] " % (kb.os, os)
 
             while True:
-                _ = readInput(msg, default=kb.os)
+                choice = readInput(msg, default=kb.os)
 
-                if _ == kb.os:
+                if choice == kb.os:
                     break
-                elif _ == os:
-                    kb.os = _.capitalize()
+                elif choice == os:
+                    kb.os = choice.capitalize()
                     break
                 else:
                     warnMsg = "invalid value"
@@ -417,10 +421,10 @@ class Backend:
         msg += "\n[2] 64-bit"
 
         while True:
-            _ = readInput(msg, default='1')
+            choice = readInput(msg, default='1')
 
-            if isinstance(_, basestring) and _.isdigit() and int(_) in (1, 2):
-                kb.arch = 32 if int(_) == 1 else 64
+            if isinstance(choice, basestring) and choice.isdigit() and int(choice) in (1, 2):
+                kb.arch = 32 if int(choice) == 1 else 64
                 break
             else:
                 warnMsg = "invalid value. Valid values are 1 and 2"
@@ -465,6 +469,8 @@ class Backend:
 
         if not kb:
             pass
+        elif not kb.get("testMode") and conf.get("dbmsHandler") and getattr(conf.dbmsHandler, "_dbms", None):
+            dbms = conf.dbmsHandler._dbms
         elif Backend.getForcedDbms() is not None:
             dbms = Backend.getForcedDbms()
         elif Backend.getDbms() is not None:
@@ -515,10 +521,9 @@ class Backend:
     # Comparison methods
     @staticmethod
     def isDbms(dbms):
-        if Backend.getDbms() is not None:
-            return Backend.getDbms() == aliasToDbmsEnum(dbms)
-        else:
-            return Backend.getIdentifiedDbms() == aliasToDbmsEnum(dbms)
+        if not kb.get("testMode") and all((Backend.getDbms(), Backend.getIdentifiedDbms())) and Backend.getDbms() != Backend.getIdentifiedDbms():
+            singleTimeWarnMessage("identified ('%s') and fingerprinted ('%s') DBMSes differ. If you experience problems in enumeration phase please rerun with '--flush-session'" % (Backend.getIdentifiedDbms(), Backend.getDbms()))
+        return Backend.getIdentifiedDbms() == aliasToDbmsEnum(dbms)
 
     @staticmethod
     def isDbmsWithin(aliases):
@@ -589,15 +594,15 @@ def paramToDict(place, parameters=None):
                       or re.search(r'\A9{3,}', _) or re.search(r'\A-\d+\Z', _) or re.search(DUMMY_USER_INJECTION, _))\
                       and not parameter.upper().startswith(GOOGLE_ANALYTICS_COOKIE_PREFIX):
                         warnMsg = "it appears that you have provided tainted parameter values "
-                        warnMsg += "('%s') with most probably leftover " % element
+                        warnMsg += "('%s') with most likely leftover " % element
                         warnMsg += "chars/statements from manual SQL injection test(s). "
                         warnMsg += "Please, always use only valid parameter values "
                         warnMsg += "so sqlmap could be able to run properly"
                         logger.warn(warnMsg)
 
                         message = "are you really sure that you want to continue (sqlmap could have problems)? [y/N] "
-                        test = readInput(message, default="N")
-                        if test[0] not in ("y", "Y"):
+
+                        if not readInput(message, default='N', boolean=True):
                             raise SqlmapSilentQuitException
                     elif not _:
                         warnMsg = "provided value for parameter '%s' is empty. " % parameter
@@ -613,7 +618,8 @@ def paramToDict(place, parameters=None):
                                 candidates = OrderedDict()
 
                                 def walk(head, current=None):
-                                    current = current or head
+                                    if current is None:
+                                        current = head
                                     if isListLike(current):
                                         for _ in current:
                                             walk(head, _)
@@ -621,7 +627,8 @@ def paramToDict(place, parameters=None):
                                         for key in current.keys():
                                             value = current[key]
                                             if isinstance(value, (list, tuple, set, dict)):
-                                                walk(head, value)
+                                                if value:
+                                                    walk(head, value)
                                             elif isinstance(value, (bool, int, float, basestring)):
                                                 original = current[key]
                                                 if isinstance(value, bool):
@@ -637,8 +644,8 @@ def paramToDict(place, parameters=None):
                                 if candidates:
                                     message = "it appears that provided value for %s parameter '%s' " % (place, parameter)
                                     message += "is JSON deserializable. Do you want to inject inside? [y/N] "
-                                    test = readInput(message, default="N")
-                                    if test[0] in ("y", "Y"):
+
+                                    if not readInput(message, default='N', boolean=True):
                                         del testableParameters[parameter]
                                         testableParameters.update(candidates)
                                     break
@@ -649,9 +656,9 @@ def paramToDict(place, parameters=None):
 
                             _ = re.sub(regex, "\g<1>%s\g<%d>" % (CUSTOM_INJECTION_MARK_CHAR, len(match.groups())), testableParameters[parameter])
                             message = "it appears that provided value for %s parameter '%s' " % (place, parameter)
-                            message += "has boundaries. Do you want to inject inside? ('%s') [y/N] " % _
-                            test = readInput(message, default="N")
-                            if test[0] in ("y", "Y"):
+                            message += "has boundaries. Do you want to inject inside? ('%s') [y/N] " % getUnicode(_)
+
+                            if readInput(message, default='N', boolean=True):
                                 testableParameters[parameter] = re.sub(regex, "\g<1>%s\g<2>" % BOUNDED_INJECTION_MARKER, testableParameters[parameter])
                             break
 
@@ -728,7 +735,11 @@ def getManualDirectories():
 
     directories = normalizePath(directories)
 
-    if directories:
+    if conf.webRoot:
+        directories = [conf.webRoot]
+        infoMsg = "using '%s' as web server document root" % conf.webRoot
+        logger.info(infoMsg)
+    elif directories:
         infoMsg = "retrieved the web server document root: '%s'" % directories
         logger.info(infoMsg)
     else:
@@ -743,17 +754,17 @@ def getManualDirectories():
         message += "[2] custom location(s)\n"
         message += "[3] custom directory list file\n"
         message += "[4] brute force search"
-        choice = readInput(message, default="1").strip()
+        choice = readInput(message, default='1')
 
-        if choice == "2":
+        if choice == '2':
             message = "please provide a comma separate list of absolute directory paths: "
             directories = readInput(message, default="").split(',')
-        elif choice == "3":
+        elif choice == '3':
             message = "what's the list file location?\n"
             listPath = readInput(message, default="")
             checkFile(listPath)
             directories = getFileItems(listPath)
-        elif choice == "4":
+        elif choice == '4':
             targets = set([conf.hostname])
             _ = conf.hostname.split('.')
 
@@ -887,7 +898,7 @@ def dataToStdout(data, forceOutput=False, bold=False, content_type=None, status=
                 message = data
 
             try:
-                if hasattr(conf, "api"):
+                if conf.get("api"):
                     sys.stdout.write(message, status, content_type)
                 else:
                     sys.stdout.write(setColor(message, bold))
@@ -954,7 +965,7 @@ def dataToOutFile(filename, data):
 
     return retVal
 
-def readInput(message, default=None, checkBatch=True):
+def readInput(message, default=None, checkBatch=True, boolean=False):
     """
     Reads input from terminal
     """
@@ -991,7 +1002,7 @@ def readInput(message, default=None, checkBatch=True):
     if retVal is None:
         if checkBatch and conf.get("batch"):
             if isListLike(default):
-                options = ",".join(getUnicode(opt, UNICODE_ENCODING) for opt in default)
+                options = ','.join(getUnicode(opt, UNICODE_ENCODING) for opt in default)
             elif default:
                 options = getUnicode(default, UNICODE_ENCODING)
             else:
@@ -1026,6 +1037,12 @@ def readInput(message, default=None, checkBatch=True):
 
             finally:
                 logging._releaseLock()
+
+    if retVal and default and isinstance(default, basestring) and len(default) == 1:
+        retVal = retVal.strip()
+
+    if boolean:
+        retVal = retVal.strip().upper() == 'Y'
 
     return retVal
 
@@ -1138,7 +1155,7 @@ def banner():
     This function prints sqlmap banner with its version
     """
 
-    if not any(_ in sys.argv for _ in ("--version", "--pickled-options")):
+    if not any(_ in sys.argv for _ in ("--version", "--api")):
         _ = BANNER
 
         if not getattr(LOGGER_HANDLER, "is_tty", False) or "--disable-coloring" in sys.argv:
@@ -1179,8 +1196,7 @@ def cleanQuery(query):
 
     for sqlStatements in SQL_STATEMENTS.values():
         for sqlStatement in sqlStatements:
-            sqlStatementEsc = sqlStatement.replace("(", "\\(")
-            queryMatch = re.search("(%s)" % sqlStatementEsc, query, re.I)
+            queryMatch = re.search("(?i)\b(%s)\b" % sqlStatement.replace("(", "").replace(")", "").strip(), query)
 
             if queryMatch and "sys_exec" not in query:
                 retVal = retVal.replace(queryMatch.group(1), sqlStatement.upper())
@@ -1427,13 +1443,13 @@ def parseTargetUrl():
     if not conf.referer and (intersect(REFERER_ALIASES, conf.testParameter, True) or conf.level >= 3):
         debugMsg = "setting the HTTP Referer header to the target URL"
         logger.debug(debugMsg)
-        conf.httpHeaders = filter(lambda (key, value): key != HTTP_HEADER.REFERER, conf.httpHeaders)
+        conf.httpHeaders = [_ for _ in conf.httpHeaders if _[0] != HTTP_HEADER.REFERER]
         conf.httpHeaders.append((HTTP_HEADER.REFERER, conf.url.replace(CUSTOM_INJECTION_MARK_CHAR, "")))
 
     if not conf.host and (intersect(HOST_ALIASES, conf.testParameter, True) or conf.level >= 5):
         debugMsg = "setting the HTTP Host header to the target URL"
         logger.debug(debugMsg)
-        conf.httpHeaders = filter(lambda (key, value): key != HTTP_HEADER.HOST, conf.httpHeaders)
+        conf.httpHeaders = [_ for _ in conf.httpHeaders if _[0] != HTTP_HEADER.HOST]
         conf.httpHeaders.append((HTTP_HEADER.HOST, getHostHeader(conf.url)))
 
     if conf.url != originalUrl:
@@ -1491,11 +1507,12 @@ def getLimitRange(count, plusOne=False):
     count = int(count)
     limitStart, limitStop = 1, count
 
-    if isinstance(conf.limitStop, int) and conf.limitStop > 0 and conf.limitStop < limitStop:
-        limitStop = conf.limitStop
+    if kb.dumpTable:
+        if isinstance(conf.limitStop, int) and conf.limitStop > 0 and conf.limitStop < limitStop:
+            limitStop = conf.limitStop
 
-    if isinstance(conf.limitStart, int) and conf.limitStart > 0 and conf.limitStart <= limitStop:
-        limitStart = conf.limitStart
+        if isinstance(conf.limitStart, int) and conf.limitStart > 0 and conf.limitStart <= limitStop:
+            limitStart = conf.limitStart
 
     retVal = xrange(limitStart, limitStop + 1) if plusOne else xrange(limitStart - 1, limitStop)
 
@@ -1755,7 +1772,7 @@ def safeStringFormat(format_, params):
                     break
     return retVal
 
-def getFilteredPageContent(page, onlyText=True):
+def getFilteredPageContent(page, onlyText=True, split=" "):
     """
     Returns filtered page content without script, style and/or comments
     or all HTML tags
@@ -1768,10 +1785,10 @@ def getFilteredPageContent(page, onlyText=True):
 
     # only if the page's charset has been successfully identified
     if isinstance(page, unicode):
-        retVal = re.sub(r"(?si)<script.+?</script>|<!--.+?-->|<style.+?</style>%s" % (r"|<[^>]+>|\t|\n|\r" if onlyText else ""), " ", page)
-        while retVal.find("  ") != -1:
-            retVal = retVal.replace("  ", " ")
-        retVal = htmlunescape(retVal.strip())
+        retVal = re.sub(r"(?si)<script.+?</script>|<!--.+?-->|<style.+?</style>%s" % (r"|<[^>]+>|\t|\n|\r" if onlyText else ""), split, page)
+        while retVal.find(2 * split) != -1:
+            retVal = retVal.replace(2 * split, split)
+        retVal = htmlunescape(retVal.strip().strip(split))
 
     return retVal
 
@@ -1949,7 +1966,7 @@ def getSQLSnippet(dbms, sfile, **variables):
 
     retVal = readCachedFileContent(filename)
     retVal = re.sub(r"#.+", "", retVal)
-    retVal = re.sub(r"(?s);\s+", "; ", retVal).strip("\r\n")
+    retVal = re.sub(r";\s+", "; ", retVal).strip("\r\n")
 
     for _ in variables.keys():
         retVal = re.sub(r"%%%s%%" % _, variables[_], retVal)
@@ -1967,9 +1984,8 @@ def getSQLSnippet(dbms, sfile, **variables):
         logger.error(errMsg)
 
         msg = "do you want to provide the substitution values? [y/N] "
-        choice = readInput(msg, default="N")
 
-        if choice and choice[0].lower() == "y":
+        if readInput(msg, default='N', boolean=True):
             for var in variables:
                 msg = "insert value for variable '%s': " % var
                 val = readInput(msg, default="")
@@ -2327,7 +2343,7 @@ def wasLastResponseDBMSError():
 
 def wasLastResponseHTTPError():
     """
-    Returns True if the last web request resulted in an errornous HTTP code (like 500)
+    Returns True if the last web request resulted in an erroneous HTTP code (like 500)
     """
 
     threadData = getCurrentThreadData()
@@ -2345,7 +2361,7 @@ def wasLastResponseDelayed():
     deviation = stdev(kb.responseTimes.get(kb.responseTimeMode, []))
     threadData = getCurrentThreadData()
 
-    if deviation and not conf.direct:
+    if deviation and not conf.direct and not conf.disableStats:
         if len(kb.responseTimes[kb.responseTimeMode]) < MIN_TIME_RESPONSES:
             warnMsg = "time-based standard deviation method used on a model "
             warnMsg += "with less than %d response times" % MIN_TIME_RESPONSES
@@ -2358,14 +2374,17 @@ def wasLastResponseDelayed():
             if kb.adjustTimeDelay is None:
                 msg = "do you want sqlmap to try to optimize value(s) "
                 msg += "for DBMS delay responses (option '--time-sec')? [Y/n] "
-                choice = readInput(msg, default='Y')
-                kb.adjustTimeDelay = ADJUST_TIME_DELAY.DISABLE if choice.upper() == 'N' else ADJUST_TIME_DELAY.YES
+
+                kb.adjustTimeDelay = ADJUST_TIME_DELAY.DISABLE if not readInput(msg, default='Y', boolean=True) else ADJUST_TIME_DELAY.YES
             if kb.adjustTimeDelay is ADJUST_TIME_DELAY.YES:
                 adjustTimeDelay(threadData.lastQueryDuration, lowerStdLimit)
 
         return retVal
     else:
-        return (threadData.lastQueryDuration - conf.timeSec) >= 0
+        delta = threadData.lastQueryDuration - conf.timeSec
+        if Backend.getIdentifiedDbms() in (DBMS.MYSQL,):  # MySQL's SLEEP(X) lasts 0.05 seconds shorter on average
+            delta += 0.05
+        return delta >= 0
 
 def adjustTimeDelay(lastQueryDuration, lowerStdLimit):
     """
@@ -2524,7 +2543,7 @@ def urlencode(value, safe="%&=-_", convall=False, limit=False, spaceplus=False):
         # corner case when character % really needs to be
         # encoded (when not representing URL encoded char)
         # except in cases when tampering scripts are used
-        if all(map(lambda x: '%' in x, [safe, value])) and not kb.tamperFunctions:
+        if all('%' in _ for _ in (safe, value)) and not kb.tamperFunctions:
             value = re.sub("%(?![0-9a-fA-F]{2})", "%25", value)
 
         while True:
@@ -2604,7 +2623,7 @@ def getPublicTypeMembers(type_, onlyValues=False):
     retVal = []
 
     for name, value in inspect.getmembers(type_):
-        if not name.startswith('__'):
+        if not name.startswith("__"):
             if not onlyValues:
                 retVal.append((name, value))
             else:
@@ -2664,7 +2683,7 @@ def extractTextTagContent(page):
         except MemoryError:
             page = page.replace(REFLECTED_VALUE_MARKER, "")
 
-    return filter(None, (_.group('result').strip() for _ in re.finditer(TEXT_TAG_REGEX, page)))
+    return filter(None, (_.group("result").strip() for _ in re.finditer(TEXT_TAG_REGEX, page)))
 
 def trimAlphaNum(value):
     """
@@ -2776,11 +2795,11 @@ def removeDynamicContent(page):
             if prefix is None and suffix is None:
                 continue
             elif prefix is None:
-                page = re.sub(r'(?s)^.+%s' % re.escape(suffix), suffix.replace('\\', r'\\'), page)
+                page = re.sub(r"(?s)^.+%s" % re.escape(suffix), suffix.replace('\\', r'\\'), page)
             elif suffix is None:
-                page = re.sub(r'(?s)%s.+$' % re.escape(prefix), prefix.replace('\\', r'\\'), page)
+                page = re.sub(r"(?s)%s.+$" % re.escape(prefix), prefix.replace('\\', r'\\'), page)
             else:
-                page = re.sub(r'(?s)%s.+%s' % (re.escape(prefix), re.escape(suffix)), '%s%s' % (prefix.replace('\\', r'\\'), suffix.replace('\\', r'\\')), page)
+                page = re.sub(r"(?s)%s.+%s" % (re.escape(prefix), re.escape(suffix)), "%s%s" % (prefix.replace('\\', r'\\'), suffix.replace('\\', r'\\')), page)
 
     return page
 
@@ -2916,6 +2935,58 @@ def setOptimize():
     if not conf.nullConnection:
         debugMsg = "turning off switch '--null-connection' used indirectly by switch '-o'"
         logger.debug(debugMsg)
+
+def saveConfig(conf, filename):
+    """
+    Saves conf to configuration filename
+    """
+
+    config = UnicodeRawConfigParser()
+    userOpts = {}
+
+    for family in optDict.keys():
+        userOpts[family] = []
+
+    for option, value in conf.items():
+        for family, optionData in optDict.items():
+            if option in optionData:
+                userOpts[family].append((option, value, optionData[option]))
+
+    for family, optionData in userOpts.items():
+        config.add_section(family)
+
+        optionData.sort()
+
+        for option, value, datatype in optionData:
+            if datatype and isListLike(datatype):
+                datatype = datatype[0]
+
+            if option in IGNORE_SAVE_OPTIONS:
+                continue
+
+            if value is None:
+                if datatype == OPTION_TYPE.BOOLEAN:
+                    value = "False"
+                elif datatype in (OPTION_TYPE.INTEGER, OPTION_TYPE.FLOAT):
+                    if option in defaults:
+                        value = str(defaults[option])
+                    else:
+                        value = "0"
+                elif datatype == OPTION_TYPE.STRING:
+                    value = ""
+
+            if isinstance(value, basestring):
+                value = value.replace("\n", "\n ")
+
+            config.set(family, option, value)
+
+    with openFile(filename, "wb") as f:
+        try:
+            config.write(f)
+        except IOError, ex:
+            errMsg = "something went wrong while trying "
+            errMsg += "to write to the configuration file '%s' ('%s')" % (filename, getSafeExString(ex))
+            raise SqlmapSystemException(errMsg)
 
 def initTechnique(technique=None):
     """
@@ -3118,10 +3189,28 @@ def decodeIntToUnicode(value):
 
     return retVal
 
+def md5File(filename):
+    """
+    Calculates MD5 digest of a file
+    Reference: http://stackoverflow.com/a/3431838
+    """
+
+    checkFile(filename)
+
+    digest = hashlib.md5()
+    with open(filename, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), ""):
+            digest.update(chunk)
+
+    return digest.hexdigest()
+
 def checkIntegrity():
     """
     Checks integrity of code files during the unhandled exceptions
     """
+
+    if not paths:
+        return
 
     logger.debug("running code integrity check")
 
@@ -3131,7 +3220,7 @@ def checkIntegrity():
         if not os.path.isfile(path):
             logger.error("missing file detected '%s'" % path)
             retVal = False
-        elif hashlib.md5(open(path, 'rb').read()).hexdigest() != checksum:
+        elif md5File(path) != checksum:
             logger.error("wrong checksum of file '%s' detected" % path)
             retVal = False
     return retVal
@@ -3193,11 +3282,11 @@ def createGithubIssue(errMsg, excMsg):
     msg += "with the unhandled exception information at "
     msg += "the official Github repository? [y/N] "
     try:
-        test = readInput(msg, default="N")
+        choice = readInput(msg, default='N', boolean=True)
     except:
-        test = None
+        choice = None
 
-    if test and test[0] in ("y", "Y"):
+    if choice:
         ex = None
         errMsg = errMsg[errMsg.find("\n"):]
 
@@ -3361,11 +3450,32 @@ def removeReflectiveValues(content, payload, suppressWarning=False):
                     else:
                         regex = r"%s\b" % regex
 
-                    retVal = re.sub(r"(?i)%s" % regex, REFLECTED_VALUE_MARKER, retVal)
+                    _retVal = [retVal]
+                    def _thread(regex):
+                        try:
+                            _retVal[0] = re.sub(r"(?i)%s" % regex, REFLECTED_VALUE_MARKER, _retVal[0])
 
-                    if len(parts) > 2:
-                        regex = REFLECTED_REPLACEMENT_REGEX.join(parts[1:])
-                        retVal = re.sub(r"(?i)\b%s\b" % regex, REFLECTED_VALUE_MARKER, retVal)
+                            if len(parts) > 2:
+                                regex = REFLECTED_REPLACEMENT_REGEX.join(parts[1:])
+                                _retVal[0] = re.sub(r"(?i)\b%s\b" % regex, REFLECTED_VALUE_MARKER, _retVal[0])
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            pass
+
+                    thread = threading.Thread(target=_thread, args=(regex,))
+                    thread.daemon = True
+                    thread.start()
+                    thread.join(REFLECTED_REPLACEMENT_TIMEOUT)
+
+                    if thread.isAlive():
+                        kb.reflectiveMechanism = False
+                        retVal = content
+                        if not suppressWarning:
+                            debugMsg = "turning off reflection removal mechanism (because of timeouts)"
+                            logger.debug(debugMsg)
+                    else:
+                        retVal = _retVal[0]
 
                 if retVal != content:
                     kb.reflectiveCounters[REFLECTIVE_COUNTER.HIT] += 1
@@ -3633,13 +3743,31 @@ def randomizeParameterValue(value):
     value = re.sub(r"%[0-9a-fA-F]{2}", "", value)
 
     for match in re.finditer('[A-Z]+', value):
-        retVal = retVal.replace(match.group(), randomStr(len(match.group())).upper())
+        while True:
+            original = match.group()
+            candidate = randomStr(len(match.group())).upper()
+            if original != candidate:
+                break
+
+        retVal = retVal.replace(original, candidate)
 
     for match in re.finditer('[a-z]+', value):
-        retVal = retVal.replace(match.group(), randomStr(len(match.group())).lower())
+        while True:
+            original = match.group()
+            candidate = randomStr(len(match.group())).lower()
+            if original != candidate:
+                break
+
+        retVal = retVal.replace(original, candidate)
 
     for match in re.finditer('[0-9]+', value):
-        retVal = retVal.replace(match.group(), str(randomInt(len(match.group()))))
+        while True:
+            original = match.group()
+            candidate = str(randomInt(len(match.group())))
+            if original != candidate:
+                break
+
+        retVal = retVal.replace(original, candidate)
 
     return retVal
 
@@ -4002,7 +4130,7 @@ def decodeHexValue(value, raw=False):
         retVal = value
         if value and isinstance(value, basestring):
             if len(value) % 2 != 0:
-                retVal = "%s?" % hexdecode(value[:-1])
+                retVal = "%s?" % hexdecode(value[:-1]) if len(value) > 1 else value
                 singleTimeWarnMessage("there was a problem decoding value '%s' from expected hexadecimal form" % value)
             else:
                 retVal = hexdecode(value)
@@ -4265,4 +4393,4 @@ def getSafeExString(ex, encoding=None):
     elif getattr(ex, "msg", None):
         retVal = ex.msg
 
-    return getUnicode(retVal, encoding=encoding)
+    return getUnicode(retVal or "", encoding=encoding).strip()
