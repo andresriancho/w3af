@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 VULNS = {
          'TestCase': None,
 
+         # Core
+         'Target redirect': None,
+
          # Audit
          'Blind SQL injection vulnerability': 46,
          'Buffer overflow vulnerability': None,
