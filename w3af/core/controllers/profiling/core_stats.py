@@ -121,8 +121,8 @@ def get_parser_cache_stats():
          'do_not_cache': parser_cache.dpc.get_do_not_cache()}
 
     if mp_doc_parser._pool is not None:
-        r['Parser pool worker size'] = mp_doc_parser._pool._processes
-        r['Parser pool input queue size'] = mp_doc_parser._pool._inqueue.qsize()
+        r['Parser pool worker size'] = mp_doc_parser._pool._context.workers
+        r['Parser pool input queue size'] = mp_doc_parser._pool._context.task_queue.qsize()
     else:
         r['Parser pool worker size'] = 0
         r['Parser pool input queue size'] = 0
