@@ -96,6 +96,7 @@ class MultiProcessingDocumentParser(object):
         """
         if self._pool is not None:
             self._pool.stop()
+            self._pool.join()
             self._pool = None
 
     def get_document_parser_for(self, http_response):
