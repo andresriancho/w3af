@@ -189,8 +189,6 @@ class TestMPDocumentParser(unittest.TestCase):
 
         Try to kill the process while it is sending data to the queue
         """
-        raise SkipTest('https://github.com/andresriancho/w3af/issues/9713')
-
         mmpdp = 'w3af.core.data.parsers.mp_document_parser.%s'
         kmpdp = mmpdp % 'MultiProcessingDocumentParser.%s'
         modp = 'w3af.core.data.parsers.document_parser.%s'
@@ -209,7 +207,7 @@ class TestMPDocumentParser(unittest.TestCase):
             max_workers_mock.return_value = 5
             parsers_mock.return_value = [HugeClassAttrValueParser, HTMLParser]
 
-            ITERATIONS = 25
+            ITERATIONS = 10
 
             #
             # Lets timeout many sequentially
@@ -219,8 +217,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
 
@@ -233,8 +231,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
 
