@@ -47,7 +47,7 @@ class ExactDelayController(DelayMixIn):
     # you'll only get slower scans when there is a vulnerability, which is not
     # the most common case
     #
-    DELAY_SECONDS = [12, 8, 15, 20, 4, 4, 4, 6, 2, 8, 4]
+    DELAY_SECONDS = [12, 8, 15, 20, 4, 4, 4, 6, 3, 8, 4]
 
     def __init__(self, mutant, delay_obj, uri_opener):
         """
@@ -151,7 +151,7 @@ class ExactDelayController(DelayMixIn):
         current_response_wait_time = response.get_wait_time()
         args = (id(self), current_response_wait_time, lower_bound)
         out.debug(u'(Test id: %s) %s > %s' % args)
-
+        
         if current_response_wait_time > lower_bound:
             return True, response
 
