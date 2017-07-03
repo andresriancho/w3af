@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import urllib
 
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.constants.severity as severity
@@ -138,14 +139,16 @@ class strange_parameters(GrepPlugin):
         """
         :return: True if the parameter value is strange
         """
+        decoded_parameter = urllib.unquote(parameter)
+
         # We don't care about URLs, these are most likely OK
-        if parameter.startswith('http://'):
+        if decoded_parameter.startswith('http://'):
             return False
 
-        if parameter.startswith('https://'):
+        if decoded_parameter.startswith('https://'):
             return False
 
-        if 'wicket:' in parameter:
+        if 'wicket:' in parameter or 'wicket:' in decoded_parameter:
             #
             # The wicket framework uses, by default, strange URLs like this:
             #
