@@ -75,6 +75,7 @@ def xml_str(s, replace_invalid=True):
     https://github.com/andresriancho/w3af/issues/12924
 
     :param s: The input string/unicode
+    :param replace_invalid: If there are invalid XML chars, replace them.
     :return: A string ready to be sent to the XML file
     """
     encoded_str = smart_str(s, encoding='utf8', errors='xmlcharrefreplace')
@@ -476,12 +477,19 @@ class xml_file(OutputPlugin):
                 sub_type = 'octet-stream'
 
             if mime_type == 'text':
-                action_body_content = self._xml.createTextNode(body)
+                # There shouldn't be any invalid chars, so for perf we just send
+                # false and avoid a RE sub call to the body
+                encoded_body = xml_str(body, replace_invalid=False)
+                action_body_content = self._xml.createTextNode(encoded_body)
 
             elif mime_type == 'application' and sub_type in NON_BIN:
                 # Textual type application, eg json, javascript
                 # which for readability we'd rather not base64.encode
-                action_body_content = self._xml.createCDATASection(body)
+                #
+                # There shouldn't be any invalid chars, so for perf we just send
+                # false and avoid a RE sub call to the body
+                encoded_body = xml_str(body, replace_invalid=False)
+                action_body_content = self._xml.createCDATASection(encoded_body)
 
             else:
                 # either known (image, audio, video) or unknown binary format
