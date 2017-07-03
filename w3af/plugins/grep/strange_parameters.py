@@ -138,6 +138,13 @@ class strange_parameters(GrepPlugin):
         """
         :return: True if the parameter value is strange
         """
+        # We don't care about URLs, these are most likely OK
+        if parameter.startswith('http://'):
+            return False
+
+        if parameter.startswith('https://'):
+            return False
+
         if 'wicket:' in parameter:
             #
             # The wicket framework uses, by default, strange URLs like this:
