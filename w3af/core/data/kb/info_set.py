@@ -21,9 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import uuid
 import textwrap
+import pprint
 
 from jinja2 import StrictUndefined, Environment
 
+import w3af.core.controllers.output_manager as om
+
+from w3af.core.data.misc.encoding import smart_str
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.kb.info import Info
 from w3af.core.controllers.misc.human_number import human_number
@@ -138,8 +142,19 @@ class InfoSet(object):
                    'plugin': self.get_plugin_name()}
         context.update(self.first_info.items())
 
-        template = self.JINJA2_ENV.from_string(textwrap.dedent(self.TEMPLATE))
-        return template.render(context)
+        template_str = textwrap.dedent(self.TEMPLATE)
+        template = self.JINJA2_ENV.from_string(template_str)
+        try:
+            rendered_desc = template.render(context)
+        except UnicodeDecodeError:
+            context_pp = pprint.pformat(context, indent=4)
+            msg = ('UnicodeDecodeError found while rendering:\n\n%s\n\n'
+                   'Using the following context:\n\n%r\n\n')
+            om.out.error(msg % (smart_str(template_str),
+                                smart_str(context_pp)))
+            raise
+
+        return rendered_desc
 
     def get_id(self):
         """
