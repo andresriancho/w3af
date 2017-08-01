@@ -9,7 +9,7 @@ machine:
     - docker
 
   python:
-    version: 2.7.3
+    version: 2.7.13
 
   post:
     # This was required to avoid issues with different builds of python being
