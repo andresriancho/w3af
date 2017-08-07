@@ -200,7 +200,7 @@ class find_dvcs(CrawlPlugin):
             length, = struct.unpack('>B', body[offset:offset + 1])
             if length > (len(body) - offset):
                 return set()
-            filename = body[offset + 1:offset + 1 + length]
+            filename = body[offset + 1:offset + 1 + length].decode('utf-8')
             padding = 8 - ((filename_offset + length) % 8)
             filenames.add(filename)
             offset += length + 1 + padding
