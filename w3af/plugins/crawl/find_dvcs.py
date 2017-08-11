@@ -29,6 +29,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.misc.encoding import smart_unicode
 
 
 class find_dvcs(CrawlPlugin):
@@ -200,7 +201,7 @@ class find_dvcs(CrawlPlugin):
             length, = struct.unpack('>B', body[offset:offset + 1])
             if length > (len(body) - offset):
                 return set()
-            filename = body[offset + 1:offset + 1 + length].decode('utf-8')
+            filename = smart_unicode(body[offset + 1:offset + 1 + length])
             padding = 8 - ((filename_offset + length) % 8)
             filenames.add(filename)
             offset += length + 1 + padding
