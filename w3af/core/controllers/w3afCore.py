@@ -330,6 +330,7 @@ class w3afCore(object):
 
         # Stop the parser subprocess
         parser_cache.dpc.clear()
+        remove_temp_dir(ignore_errors=True)
 
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
