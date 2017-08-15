@@ -30,7 +30,8 @@ from w3af.core.ui.api.db.master import SCANS
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           start_scan_helper,
                                           get_new_scan_id,
-                                          create_temp_profile)
+                                          create_temp_profile,
+                                          remove_temp_profile)
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -79,6 +80,7 @@ def start_scan():
     try:
         w3af_core.profiles.use_profile(scan_profile_file_name,
                                        workdir=profile_path)
+        remove_temp_profile(scan_profile_file_name)
     except BaseFrameworkException, bfe:
         abort(400, str(bfe))
 

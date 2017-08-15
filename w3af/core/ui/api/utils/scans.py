@@ -53,6 +53,18 @@ def create_temp_profile(scan_profile):
     return scan_profile_file, tempdir
 
 
+def remove_temp_profile(scan_profile_file_name):
+    """
+    Remove temp profile after using
+    :param scan_profile_file_name: path to the temp profile
+    :return: 
+    """
+    try:
+        os.remove(scan_profile_file_name)
+    except OSError:
+        pass
+
+
 def start_scan_helper(target_urls, scan_profile, scan_info_setup):
     """
     Create a new instance of w3afCore, save it to SCANS and run core.start()
@@ -110,4 +122,3 @@ def start_scan_helper(target_urls, scan_profile, scan_info_setup):
         except (AttributeError, IOError) as _:
             # Reduce some exceptions found during interpreter shutdown
             pass
-
