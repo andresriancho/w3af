@@ -40,6 +40,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.db.disk_deque import DiskDeque
+from w3af.core.data.url.helpers import _get_clean_body_impl
 
 from w3af.core.controllers.misc.decorators import retry
 from w3af.core.controllers.misc.fuzzy_string_cmp import (fuzzy_equal,
@@ -377,7 +378,7 @@ class fingerprint_404(object):
         :param filename: The original filename
         :return: A mutated filename
         """
-        split_filename = filename.rsplit('.', 1)
+        split_filename = filename.rsplit(u'.', 1)
         if len(split_filename) == 2:
             orig_filename, extension = split_filename
         else:
@@ -385,7 +386,9 @@ class fingerprint_404(object):
             orig_filename = split_filename[0]
 
         def grouper(iterable, n, fillvalue=None):
-            "Collect data into fixed-length chunks or blocks"
+            """
+            Collect data into fixed-length chunks or blocks
+            """
             # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
             args = [iter(iterable)] * n
             return izip_longest(fillvalue=fillvalue, *args)
@@ -409,7 +412,7 @@ class fingerprint_404(object):
 
         if mod_filename == orig_filename:
             # Damn!
-            plus_three_filename = ''
+            plus_three_filename = u''
             letters = string.letters
             digits = string.digits
             lletters = len(letters)
@@ -432,7 +435,7 @@ class fingerprint_404(object):
 
         final_result = mod_filename
         if extension is not None:
-            final_result += '.%s' % extension
+            final_result += u'.%s' % extension
 
         return final_result
 
@@ -495,8 +498,6 @@ def is_404(http_response):
 
 def get_clean_body(response):
     """
-    :see: BlindSqliResponseDiff.get_clean_body()
-
     Definition of clean in this method:
         - input:
             - response.get_url() == http://host.tld/aaaaaaa/
@@ -506,7 +507,7 @@ def get_clean_body(response):
             - self._clean_body( response ) == 'spam  eggs'
 
     The same works with file names.
-    All of them, are removed encoded and "as is".
+    All of them, are removed url-decoded and "as is".
 
     :param response: The HTTPResponse object to clean
     :return: A string that represents the "cleaned" response body of the
@@ -514,33 +515,26 @@ def get_clean_body(response):
     """
     body = response.body
 
-    if response.is_text_or_html():
-        base_urls = [response.get_url(),
-                     response.get_url().switch_protocol(),
-                     response.get_uri(),
-                     response.get_uri().switch_protocol()]
+    if not response.is_text_or_html():
+        return body
 
-        to_replace = []
-        for base_url in base_urls:
-            to_replace.extend([u.url_string for u in base_url.get_directories()])
-            to_replace.extend(base_url.url_string.split('/'))
-            to_replace.extend([base_url.url_string,
-                               base_url.all_but_scheme(),
-                               base_url.get_path_qs(),
-                               base_url.get_path()])
+    # Do some real work...
+    base_urls = [response.get_url(),
+                 response.get_url().switch_protocol(),
+                 response.get_uri(),
+                 response.get_uri().switch_protocol()]
 
-        to_replace = list(set(to_replace))
+    to_replace = []
+    for base_url in base_urls:
+        to_replace.extend([u.url_string for u in base_url.get_directories()])
+        to_replace.extend(base_url.url_string.split(u'/'))
+        to_replace.extend([base_url.url_string,
+                           base_url.all_but_scheme(),
+                           base_url.get_path_qs(),
+                           base_url.get_path()])
 
-        # The order in which things are replaced matters! First try to replace
-        # the longer strings! If we don't do it like this we might "break" larger
-        # replacements
-        to_replace.sort(cmp=lambda x, y: cmp(len(y), len(x)))
+    # Filter some strings
+    to_replace = [trs for trs in to_replace if len(trs) > 6]
+    to_replace = list(set(to_replace))
 
-        for to_repl in to_replace:
-            if len(to_repl) > 6:
-                body = body.replace(to_repl, '')
-                body = body.replace(urllib.unquote_plus(to_repl), '')
-                body = body.replace(cgi.escape(to_repl), '')
-                body = body.replace(cgi.escape(urllib.unquote_plus(to_repl)), '')
-
-    return body
+    return _get_clean_body_impl(response, to_replace, multi_encode=False)

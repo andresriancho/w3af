@@ -225,31 +225,60 @@ def get_clean_body(mutant, response):
     if not response.is_text_or_html():
         return response.body
 
+    strings_to_replace_list = [mutant.get_token_value()]
+    return _get_clean_body_impl(response, strings_to_replace_list)
+
+
+def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True):
+    """
+    This is a low level function which allows me to use all the improvements
+    I did in the helpers.get_clean_body() in fingerprint_404.get_clean_body().
+
+    Both helpers.get_clean_body() and fingerprint_404.get_clean_body() receive
+    different parameters, do some preparation work, and then call this function
+    to really do the replacements.
+
+    :param response: HTTP response object
+    :param strings_to_replace_list: A list of strings to replace. These can be
+                                    byte strings or unicode, we'll handle both
+                                    internally.
+    :param multi_encode: Apply the multiple encodings before replacing, setting
+                         this to True with many strings to replace in the list
+                         will consume considerable CPU time.
+    :return: The body as a unicode with all strings to replace removed.
+    """
     body = response.body
-    mod_value_1 = mutant.get_token_value()
+    unicodes_to_replace_set = set()
 
-    # Since the body is already in unicode, when we call body.replace() all
-    # arguments are converted to unicode by python. If there are special
-    # chars in the mod_value then we end up with an UnicodeDecodeError, so
-    # I convert it myself with some error handling
-    #
-    # https://github.com/andresriancho/w3af/issues/8953
-    mod_value_1 = smart_unicode(mod_value_1, errors=PERCENT_ENCODE)
+    for str_to_repl in strings_to_replace_list:
 
-    # unquote, just in case the plugin did an extra encoding of some type.
-    # what we want to do here is get the original version of the string
-    mod_value_2 = urllib.unquote_plus(mod_value_1)
+        # Since the body is already in unicode, when we call body.replace() all
+        # arguments are converted to unicode by python. If there are special
+        # chars in the mod_value then we end up with an UnicodeDecodeError, so
+        # I convert it myself with some error handling
+        #
+        # https://github.com/andresriancho/w3af/issues/8953
+        unicode_to_repl = smart_unicode(str_to_repl, errors=PERCENT_ENCODE)
 
-    payloads_to_replace = set()
-    payloads_to_replace.add(mod_value_1)
-    payloads_to_replace.add(mod_value_2)
+        # unquote, just in case the plugin did an extra encoding of some type.
+        # what we want to do here is get the original version of the string
+        unicode_to_repl_unquoted = urllib.unquote_plus(unicode_to_repl)
 
+        unicodes_to_replace_set.add(unicode_to_repl)
+        unicodes_to_replace_set.add(unicode_to_repl_unquoted)
+
+    # Now we apply multiple encodings to find in different responses
     encoded_payloads = set()
 
-    for payload in payloads_to_replace:
-        for encoded_payload in apply_multi_escape_table(payload,
-                                                        EXTENDED_TABLE):
-            encoded_payloads.add(encoded_payload)
+    if multi_encode:
+        # Populate the set with multiple versions of the same set
+        for unicode_to_repl in unicodes_to_replace_set:
+            for encoded_to_repl in apply_multi_escape_table(unicode_to_repl,
+                                                            EXTENDED_TABLE):
+                encoded_payloads.add(encoded_to_repl)
+    else:
+        # Just leave the the two we have
+        encoded_payloads = unicodes_to_replace_set
 
     # uniq sorted by longest len
     encoded_payloads = list(encoded_payloads)
@@ -257,6 +286,7 @@ def get_clean_body(mutant, response):
 
     empty = u''
     replace = unicode.replace
+
     for to_replace in encoded_payloads:
         body = replace(body, to_replace, empty)
 
