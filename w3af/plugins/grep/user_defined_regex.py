@@ -72,7 +72,7 @@ class user_defined_regex(GrepPlugin):
         if not self._all_in_one.search(html_string):
             return
 
-        #One of them is in there, now we need to find out which one
+        # One of them is in there, now we need to find out which one
         for index, regex_tuple in enumerate(self._regexlist_compiled):
 
             regex, info_inst = regex_tuple
@@ -80,10 +80,10 @@ class user_defined_regex(GrepPlugin):
 
             if match_object:
                 with self._plugin_lock:
-                    #Don't change the next line to "if info_inst:",
-                    #because the info_inst is an empty dict {}
-                    #which evaluates to false
-                    #but an info object is not the same as None
+                    # Don't change the next line to "if info_inst:",
+                    # because the info_inst is an empty dict {}
+                    # which evaluates to false
+                    # but an info object is not the same as None
                     if not info_inst is None:
                         ids = info_inst.get_id()
                         ids.append(response.id)
