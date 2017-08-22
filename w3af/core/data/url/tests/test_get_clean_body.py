@@ -99,7 +99,7 @@ class TestExtendTable(unittest.TestCase):
 
         self.assertEqual(et['"'],
                          ['"', '&quot;', '&#x22;', '&#34;', '&#034;',
-                          '\\u0022', '\\"', '&QUOT;', '\\U0022'])
+                          '%22', '%2522', '\\u0022', '\\"', '&QUOT;', '\\U0022'])
 
         self.assertEqual(et['='],
                          ['=', '&eq;', '&#x3d;', '&#61;', '&#061;', '%3d', '%253d',
@@ -125,45 +125,28 @@ class TestApplyMultiEscapeTable(unittest.TestCase):
         escaped = apply_multi_escape_table(' &')
         escaped = [i for i in escaped]
 
-        expected = [' &',
-                    '&nbsp;&',
-                    '&#x20;&',
-                    '&#32;&',
-                    '&#032;&',
-                    '+&',
-                    '%20&',
-                    '%2520&',
-                    ' &amp;',
-                    '&nbsp;&amp;',
-                    '&#x20;&amp;',
-                    '&#32;&amp;',
-                    '&#032;&amp;',
-                    '+&amp;',
-                    '%20&amp;',
-                    '%2520&amp;',
-                    ' &#x26;',
-                    '&nbsp;&#x26;',
-                    '&#x20;&#x26;',
-                    '&#32;&#x26;',
-                    '&#032;&#x26;',
-                    '+&#x26;',
-                    '%20&#x26;',
-                    '%2520&#x26;',
-                    ' &#38;',
-                    '&nbsp;&#38;',
-                    '&#x20;&#38;',
-                    '&#32;&#38;',
-                    '&#032;&#38;',
-                    '+&#38;',
-                    '%20&#38;',
-                    '%2520&#38;',
-                    ' &#038;',
-                    '&nbsp;&#038;',
-                    '&#x20;&#038;',
-                    '&#32;&#038;',
-                    '&#032;&#038;',
-                    '+&#038;',
-                    '%20&#038;',
-                    '%2520&#038;']
+        expected = [' &', '&nbsp;&', '&#x20;&', '&#32;&', '&#032;&', '+&',
+                    '%20&', '%2520&', ' &amp;', '&nbsp;&amp;', '&#x20;&amp;',
+                    '&#32;&amp;', '&#032;&amp;', '+&amp;', '%20&amp;', '%2520&amp;',
+                    ' &#x26;', '&nbsp;&#x26;', '&#x20;&#x26;', '&#32;&#x26;',
+                    '&#032;&#x26;', '+&#x26;', '%20&#x26;', '%2520&#x26;', ' &#38;',
+                    '&nbsp;&#38;', '&#x20;&#38;', '&#32;&#38;', '&#032;&#38;', '+&#38;',
+                    '%20&#38;', '%2520&#38;', ' &#038;', '&nbsp;&#038;',
+                    '&#x20;&#038;', '&#32;&#038;', '&#032;&#038;', '+&#038;',
+                    '%20&#038;', '%2520&#038;', ' %26', '&nbsp;%26', '&#x20;%26',
+                    '&#32;%26', '&#032;%26', '+%26', '%20%26', '%2520%26',
+                    ' %2526', '&nbsp;%2526', '&#x20;%2526', '&#32;%2526',
+                    '&#032;%2526', '+%2526', '%20%2526', '%2520%2526']
 
         self.assertEqual(escaped, expected, escaped)
+
+    def test_apply_multi_escape_table_size(self):
+        # One space
+        escaped_one = apply_multi_escape_table(' ')
+        escaped_one = [i for i in escaped_one]
+
+        # Two spaces
+        escaped_two = apply_multi_escape_table('  ')
+        escaped_two = [i for i in escaped_two]
+
+        self.assertEqual(len(escaped_one), len(escaped_two), escaped_two)
