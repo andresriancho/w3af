@@ -189,3 +189,55 @@ class TestKeyValueContainer(unittest.TestCase):
         token_2 = dc.set_token(('b', 1))
 
         self.assertIs(token_1, token_2)
+
+    def test_get_short_printable_repr(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc.set_token(('a', 0))
+
+        self.assertEqual(dc.get_short_printable_repr(), 'a=1&b=2&b=3')
+
+    def test_get_short_printable_repr_token_obj_reduce_printable(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        dc.MAX_PRINTABLE = 5
+        token = DataToken('a', '1', ('a', 0))
+        dc.set_token(token)
+
+        self.assertIsNotNone(dc.get_token())
+        self.assertEqual(dc.get_short_printable_repr(), '...a=1...')
+
+    def test_get_short_printable_repr_token_obj(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+        token = DataToken('a', '1', ('a', 0))
+        dc.set_token(token)
+
+        self.assertIsNotNone(dc.get_token())
+        self.assertEqual(dc.get_short_printable_repr(), 'a=1&b=2&b=3')
+
+    def test_get_short_printable_repr_no_token(self):
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
+
+        self.assertEqual(dc.get_short_printable_repr(), 'a=1&b=2&b=3')
+
+    def test_get_short_printable_repr_unicode_value(self):
+        dc = KeyValueContainer([(u'a', ['x']), (u'b', ['2', '3'])])
+        dc.MAX_PRINTABLE = 5
+        token = DataToken('a', 'é', ('a', 0))
+        dc.set_token(token)
+
+        self.assertEqual(dc.get_short_printable_repr(), '...a=....')
+
+    def test_get_short_printable_repr_unicode_value_key(self):
+        dc = KeyValueContainer([('aéb', ['céd']), (u'b', ['2', '3'])])
+        dc.MAX_PRINTABLE = 7
+        token = DataToken('aéb', 'céd', ('aéb', 0))
+        dc.set_token(token)
+
+        self.assertEqual(dc.get_short_printable_repr(), '...a.b=c.d...')
+
+    def test_get_short_printable_repr_unicode_value_unicode(self):
+        dc = KeyValueContainer([(u'aéb', [u'céd']), (u'b', ['2', '3'])])
+        dc.MAX_PRINTABLE = 7
+        token = DataToken(u'aéb', u'céd', (u'aéb', 0))
+        dc.set_token(token)
+
+        self.assertEqual(dc.get_short_printable_repr(), '...a.b=c.d...')

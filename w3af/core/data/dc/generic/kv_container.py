@@ -139,8 +139,10 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         :return: A string with a short printable representation of self
         """
-        if len(filter_non_printable(str(self))) <= self.MAX_PRINTABLE:
-            return filter_non_printable(str(self))
+        printable_self = filter_non_printable(str(self))
+
+        if len(printable_self) <= self.MAX_PRINTABLE:
+            return printable_self
 
         if self.get_token() is not None:
             # I want to show the token variable and value in the output
@@ -155,4 +157,4 @@ class KeyValueContainer(DataContainer, OrderedDict):
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved
-            return filter_non_printable(str(self))[:self.MAX_PRINTABLE]
+            return printable_self[:self.MAX_PRINTABLE]

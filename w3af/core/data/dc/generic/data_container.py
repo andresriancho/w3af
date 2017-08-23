@@ -27,6 +27,7 @@ from itertools import chain, izip_longest
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.dc.utils.token import DataToken
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 
 class DataContainer(DiskItem):
@@ -113,7 +114,7 @@ class DataContainer(DiskItem):
 
                 return token
 
-        path_str = lambda path: '(%s)' % ', '.join([str(i) for i in path])
+        path_str = lambda path: '(%s)' % ', '.join([smart_str_ignore(i) for i in path])
         ppath = path_str(token_path)
         vpath = ' - '.join([path_str(p) for _, _, p, _ in self.iter_setters()])
 
