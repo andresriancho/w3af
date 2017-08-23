@@ -233,8 +233,22 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         The following example shows that we sent d'z"0 but d\'z"0 will
         as well be recognised as sent
 
-        TODO: This function is called MANY times, and under some circumstances
-        it's performance REALLY matters. We need to review this function.
+        Note on performance:
+
+            At some point I thought about making all these calls lazy:
+                needles.add(unquote(needle))
+                needles.add(quote(needle))
+                needles.add(quote_plus(needle))
+                needles.add(self.make_comp(needle))
+                needles.add(self.make_comp(unquote(needle)))
+
+            To avoid the potentially unnecessary call to self.make_comp(...)
+            if the needle was found in a haystack before, making the result
+            of self.make_comp(...) unnecessary.
+
+            That would help, but the impact in real life is really small, since
+            in most scenarios this method will return False, which means that
+            all the comparisons need to be done anyways.
 
         :param needle: The string
         :return: True if something similar was sent
