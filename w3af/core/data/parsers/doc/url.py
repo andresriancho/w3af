@@ -31,12 +31,13 @@ from tldextract import TLDExtract
 
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.misc.encoding import smart_str, PERCENT_ENCODE
-from w3af.core.data.misc.encoding import is_known_encoding
+
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.dc.generic.data_container import DataContainer
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.db.disk_item import DiskItem
+from w3af.core.data.misc.encoding import (smart_str, PERCENT_ENCODE,
+                                          is_known_encoding, smart_unicode)
 
 
 def set_changed(meth):
@@ -828,6 +829,7 @@ class URL(DiskItem):
         """
         :return: True if "s" in url_string
         """
+        s = smart_unicode(s)
         return s in self.url_string
 
     def __add__(self, other):
