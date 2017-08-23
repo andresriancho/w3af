@@ -177,15 +177,15 @@ class TestFuzzableRequest(unittest.TestCase):
         self.assertEqual(repr(fr), '<fuzzable request | GET | %s>' % url)
 
     def test_sent_url_unicode_decode_1(self):
-        f = FuzzableRequest(URL('''http://example.com/a%c3b'''))
+        f = FuzzableRequest(URL('http://example.com/a%c3%83b'))
         self.assertTrue(f.sent('aÃb'))
 
     def test_sent_url_unicode_decode_2(self):
-        f = FuzzableRequest(URL('''http://example.com/aÃb'''))
+        f = FuzzableRequest(URL('http://example.com/aÃb'))
         self.assertTrue(f.sent('aÃb'))
 
     def test_sent_url_unicode_decode_3(self):
-        f = FuzzableRequest(URL('''http://example.com/aÃb'''))
+        f = FuzzableRequest(URL('http://example.com/aÃb'))
         self.assertTrue(f.sent(u'aÃb'))
 
     def test_sent_headers(self):
