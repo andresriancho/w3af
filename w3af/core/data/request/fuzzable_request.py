@@ -38,12 +38,19 @@ from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.request_mixin import RequestMixIn
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.misc.encoding import smart_unicode
 
 
 ALL_CHARS = ''.join(chr(i) for i in xrange(256))
 TRANS_TABLE = string.maketrans(ALL_CHARS, ALL_CHARS)
-DELETE_CHARS = ''.join(['\\', "'", '"', '+', ' ', chr(0), chr(int("0D", 16)),
-                       chr(int("0A", 16))])
+DELETE_CHARS = ''.join(['\\',
+                        "'",
+                        '"',
+                        '+',
+                        ' ',
+                        chr(0),
+                        chr(int("0D", 16)),
+                        chr(int("0A", 16))])
 
 
 TYPE_ERROR = 'FuzzableRequest __init__ parameter %s needs to be of %s type'
@@ -206,6 +213,15 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         raw_http_request = base64.b64decode(base64_data)
         return raw_http_request_parser(raw_http_request)
 
+    def make_comp(self, heterogen_string):
+        """
+        This basically removes characters that are hard to compare
+        """
+        heterogen_string = heterogen_string.encode('utf-8', errors='ignore')
+
+        return string.translate(heterogen_string, TRANS_TABLE,
+                                deletions=DELETE_CHARS)
+
     def sent(self, smth_instng):
         """
         Checks if something similar to `smth_instng` was sent in the request.
@@ -225,47 +241,76 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         :param smth_instng: The string
         :return: True if something similar was sent
         """
-        def make_comp(heterogen_string):
-            """
-            This basically removes characters that are hard to compare
-            """
-            heterogen_string = heterogen_string.encode('utf-8', errors='ignore')
+        smth_instng = smart_unicode(smth_instng)
 
-            return string.translate(heterogen_string, TRANS_TABLE,
-                                    deletions=DELETE_CHARS)
-
-        data = self.get_data()
-        # This is the easy part. If it was exactly like this in the request
-        if data and smth_instng in data or \
-        smth_instng in self.get_uri() or \
-        smth_instng in unquote(data) or \
-        smth_instng in unicode(self.get_uri().url_decode()):
+        # This is the easy part. Is the smth_instng string sent in the HTTP
+        # request without any modification?
+        if smth_instng in smart_unicode(self.get_uri()):
             return True
 
-        # Ok, it's not in it but maybe something similar
-        # Let's set up something we can compare
-        if self._sent_info_comp is None:
-            data_encoding = self._post_data.encoding
-            post_data = str(self.get_data())
-            dec_post_data = unquote(post_data).decode(data_encoding)
+        if smth_instng in smart_unicode(self.get_uri().url_decode()):
+            return True
 
-            data = u'%s%s%s' % (unicode(self.get_uri()), data, dec_post_data)
-
-            self._sent_info_comp = make_comp(data + unquote(data))
-
-        min_len = 3
-        # make the smth_instng comparable
-        smth_instng_comps = (make_comp(smth_instng),
-                             make_comp(unquote(smth_instng)))
-        for smth_intstng_comp in smth_instng_comps:
-            # We don't want false negatives just because the string is
-            # short after making comparable
-            if smth_intstng_comp in self._sent_info_comp and \
-            len(smth_intstng_comp) >= min_len:
+        data = self.get_data()
+        if data:
+            if smth_instng in data:
                 return True
 
-        # I didn't sent the smth_instng in any way
+            if smth_instng in unquote(data):
+                return True
+
+        # We get here when the string was not found as-is, but maybe
+        # it was encoded, let's try that...
+
+        # make the smth_instng comparable
+        smth_instng_comps = (self.make_comp(smth_instng),
+                             self.make_comp(unquote(smth_instng)))
+
+        for smth_intstng_comp in smth_instng_comps:
+
+            # We don't want false negatives just because the string is
+            # short after making comparable
+            if len(smth_intstng_comp) < 3:
+                continue
+
+            # Is the string in the HTTP request? (includes headers, data, etc.)
+            if smth_intstng_comp in self.sent_data_as_str:
+                return True
+
+        # I didn't send the smth_instng in any way
         return False
+
+    @property
+    def sent_data_as_str(self):
+        """
+        :return: A string with all the data we sent in the HTTP request,
+                 encoded in different ways so we can easily search if an
+                 arbitrary string is in it.
+        """
+        # Cache
+        if self._sent_info_comp is not None:
+            return self._sent_info_comp
+
+        # Work
+        data = self.get_data()
+        data_encoding = self._post_data.encoding
+
+        # TODO: Note that we're using unquote many times here without actually
+        #       knowing if the post-data is url-encoded, multipart, json, etc.
+        #       The good thing is that the unquote won't do anything bad / unexpected
+        #       for non-urlencoded data. The bad thing is that is inside a JSON
+        #       post-data there is a \uXXXX encoding, it won't be decoded.
+        post_data = smart_unicode(self.get_data(), encoding=data_encoding)
+        dec_post_data = smart_unicode(unquote(post_data), encoding=data_encoding)
+        uri = smart_unicode(self.get_uri())
+
+        headers = smart_unicode(self.get_all_headers(), encoding=data_encoding)
+
+        all_data = u'%s%s%s%s' % (headers, uri, data, dec_post_data)
+
+        # Note that we URL-decode
+        self._sent_info_comp = self.make_comp(all_data + unquote(all_data))
+        return self._sent_info_comp
 
     def __hash__(self):
         return hash(str(self.get_uri()) + self.get_data())
