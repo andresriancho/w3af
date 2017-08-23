@@ -131,6 +131,10 @@ def smart_str(s, encoding=DEFAULT_ENCODING, errors='strict'):
     return s
 
 
+def smart_str_ignore(s, encoding=DEFAULT_ENCODING):
+    return smart_str(s, encoding=DEFAULT_ENCODING, errors='ignore')
+
+
 def is_known_encoding(encoding):
     """
     :return: True if the encoding name is known.
