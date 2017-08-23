@@ -85,9 +85,8 @@ class TestHistoryItem(unittest.TestCase):
         results = h2.find(
             [('has_qs', 1, '=')], result_limit=1, orderData=[('id', 'desc')])
         self.assertEqual(results[0].id, 499)
-        search_data = []
-        search_data.append(('id', find_id + 1, "<"))
-        search_data.append(('id', find_id - 1, ">"))
+        search_data = [('id', find_id + 1, "<"),
+                       ('id', find_id - 1, ">")]
         self.assertEqual(len(h2.find(search_data)), 1)
 
     def test_mark(self):
@@ -222,3 +221,22 @@ class TestHistoryItem(unittest.TestCase):
         h2.load(tag_id)
         self.assertEqual(h2.tag, tag_value)
 
+    def test_save_load_unicode_decode_error(self):
+        url = URL('http://w3af.com/a/b/é.php?x=á')
+        request = HTTPRequest(url, data='a=1')
+        headers = Headers([('Content-Type', 'text/html')])
+
+        res = HTTPResponse(200, '<html>', headers, url, url)
+        res.set_id(1)
+
+        h1 = HistoryItem()
+        h1.request = request
+        h1.response = res
+        h1.save()
+
+        h2 = HistoryItem()
+        h2.load(1)
+
+        self.assertEqual(h1.request, h2.request)
+        self.assertEqual(h1.response.body, h2.response.body)
+        self.assertEqual(h1.request.url_object, h2.request.url_object)
