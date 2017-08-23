@@ -176,6 +176,28 @@ class TestFuzzableRequest(unittest.TestCase):
 
         self.assertEqual(repr(fr), '<fuzzable request | GET | %s>' % url)
 
+    def test_sent_url_unicode_decode_1(self):
+        f = FuzzableRequest(URL('''http://example.com/a%c3b'''))
+        self.assertTrue(f.sent('aÃb'))
+
+    def test_sent_url_unicode_decode_2(self):
+        f = FuzzableRequest(URL('''http://example.com/aÃb'''))
+        self.assertTrue(f.sent('aÃb'))
+
+    def test_sent_url_unicode_decode_3(self):
+        f = FuzzableRequest(URL('''http://example.com/aÃb'''))
+        self.assertTrue(f.sent(u'aÃb'))
+
+    def test_sent_headers(self):
+        f = FuzzableRequest(URL('''http://example.com/'''),
+                            headers=Headers([('User-Agent', 'payload')]))
+        self.assertTrue(f.sent(u'payload'))
+
+    def test_sent_headers_false(self):
+        f = FuzzableRequest(URL('''http://example.com/'''),
+                            headers=Headers([('User-Agent', 'payload')]))
+        self.assertFalse(f.sent(u'payload-not-sent'))
+
     def test_sent_url(self):
         f = FuzzableRequest(URL('''http://example.com/a?p=d'z"0&paged=2'''))
         self.assertTrue(f.sent('d%5C%27z%5C%220'))
