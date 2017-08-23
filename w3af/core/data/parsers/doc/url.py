@@ -286,9 +286,14 @@ class URL(DiskItem):
         """
         :return: A <unicode> representation of the URL
         """
-        data = (self.scheme, self.netloc, self.path,
-                self.params, unicode(self.querystring),
+        data = (self.scheme,
+                self.netloc,
+                self.path,
+                self.params,
+                self.querystring,
                 self.fragment)
+        data = [smart_unicode(s) for s in data]
+
         calc = urlparse.urlunparse(data)
 
         # ensuring this is actually unicode

@@ -493,9 +493,31 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(str(URL('http://w3af.com:80/')),
                          'http://w3af.com/')
     
-    def test_special_encoding(self):
+    def test_str_special_encoding_filename(self):
         self.assertEqual(str(URL(u'http://w3af.com/indéx.html', 'latin1')),
                          u'http://w3af.com/indéx.html'.encode('latin1'))
+
+    def test_str_special_encoding_query_string(self):
+        url = URL('http://w3af.com/a/b/é.php?x=á')
+        self.assertEqual(str(url), 'http://w3af.com/a/b/é.php?x=á')
+
+    def test_str_special_encoding_query_string_urlencoded(self):
+        msg = ('Please note that this test does NOT make any sense.'
+               'Leaving this here just as a reminder to myself.'
+               ''
+               'When the document parser extracts a URL from the HTML page'
+               ' it will call BaseParser._decode_url() to URL-decode and'
+               ' utf-8 (or whatever encoding is specified in the headers)'
+               ' decode the string and then send unicode to URL.__init__.'
+               ''
+               'Thus, sending URL-encoded data to URL.__init__ like we do'
+               ' in this test does NOT make any sense and will yield unexpected'
+               ' results.')
+
+        raise SkipTest(msg)
+
+        url = URL('http://w3af.com/a/b/%E1%BA%BC.php?x=%E1%BA%BC')
+        self.assertEqual(str(url), '#fail')
 
     #
     #    __unicode__
@@ -506,7 +528,11 @@ class TestURLParser(unittest.TestCase):
         
         self.assertEqual(unicode(URL(u'http://w3af.com/indéx.html', 'latin1')),
                          u'http://w3af.com/indéx.html')
-        
+
+    def test_unicode_special_encoding_query_string(self):
+        url = URL('http://w3af.com/a/b/é.php?x=á')
+        self.assertEqual(unicode(url), u'http://w3af.com/a/b/é.php?x=á')
+
     #
     #    all_but_scheme
     #
