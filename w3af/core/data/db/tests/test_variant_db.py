@@ -381,7 +381,7 @@ class TestVariantDB(unittest.TestCase):
             path_count = _id * 5
             paths = [rand_alnum(9) for _ in xrange(path_count)]
             url = 'http://example.com/%s' % '/'.join(paths)
-            
+
             form_params = FormParameters()
             form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
             form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
