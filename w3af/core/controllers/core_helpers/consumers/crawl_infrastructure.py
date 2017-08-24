@@ -222,7 +222,6 @@ class crawl_infrastructure(BaseConsumer):
                     self.handle_exception(plugin.get_type(), plugin.get_name(),
                                           fuzzable_request, ve)
 
-
                 # The plugin has queued some results and now we need to analyze
                 # which of the returned fuzzable requests are new and should be
                 # put in the input_queue again.
