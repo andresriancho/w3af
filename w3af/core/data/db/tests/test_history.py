@@ -58,6 +58,7 @@ class TestHistoryItem(unittest.TestCase):
         find_id = random.randint(1, 499)
         url = URL('http://w3af.org/a/b/foobar.php?foo=123')
         tag_value = rand_alnum(10)
+
         for i in xrange(0, 500):
             request = HTTPRequest(url, data='a=1')
             code = 200
@@ -70,20 +71,19 @@ class TestHistoryItem(unittest.TestCase):
             h1.request = request
             res.set_id(i)
             h1.response = res
+
             if i == find_id:
                 h1.toggle_mark()
                 h1.update_tag(tag_value)
             h1.save()
+
         h2 = HistoryItem()
-        self.assertEqual(
-            len(h2.find([('tag', "%" + tag_value + "%", 'like')])), 1)
+        self.assertEqual(len(h2.find([('tag', "%" + tag_value + "%", 'like')])), 1)
         self.assertEqual(len(h2.find([('code', 302, '=')])), 1)
         self.assertEqual(len(h2.find([('mark', 1, '=')])), 1)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')])), 500)
-        self.assertEqual(
-            len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
-        results = h2.find(
-            [('has_qs', 1, '=')], result_limit=1, orderData=[('id', 'desc')])
+        self.assertEqual(len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
+        results = h2.find([('has_qs', 1, '=')], result_limit=1, orderData=[('id', 'desc')])
         self.assertEqual(results[0].id, 499)
         search_data = [('id', find_id + 1, "<"),
                        ('id', find_id - 1, ">")]
@@ -117,15 +117,19 @@ class TestHistoryItem(unittest.TestCase):
         i = random.randint(1, 499)
         url = URL('http://w3af.com/a/b/c.php')
         request = HTTPRequest(url, data='a=1')
+
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
+
         h1 = HistoryItem()
         h1.request = request
         res.set_id(i)
         h1.response = res
         h1.save()
+
         h2 = HistoryItem()
         h2.load(i)
+
         self.assertEqual(h1.request, h2.request)
         self.assertEqual(h1.response.body, h2.response.body)
 
@@ -152,7 +156,6 @@ class TestHistoryItem(unittest.TestCase):
         self.assertFalse(os.path.exists(fname))
 
     def test_clear(self):
-        
         url = URL('http://w3af.com/a/b/c.php')
         request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
@@ -180,7 +183,6 @@ class TestHistoryItem(unittest.TestCase):
         self.assertTrue(db.table_exists(table_name))        
 
     def test_clear_clear(self):
-        
         url = URL('http://w3af.com/a/b/c.php')
         request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
