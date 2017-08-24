@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
+from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -46,6 +47,7 @@ def fr(url):
 class TestVariantDB(unittest.TestCase):
 
     def setUp(self):
+        MiscSettings().set_default_values()
         create_temp_dir()
         self.vdb = VariantDB()
 
