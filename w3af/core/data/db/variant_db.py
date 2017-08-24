@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import threading
 
+import w3af.core.data.kb.config as cf
+
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
                                         clean_fuzzable_request_form)
@@ -98,18 +100,14 @@ class VariantDB(object):
     HASH_IGNORE_HEADERS = ('referer',)
     TAG = '[variant_db]'
 
-    def __init__(self,
-                 params_max_variants=PARAMS_MAX_VARIANTS,
-                 path_max_variants=PATH_MAX_VARIANTS,
-                 max_equal_form_variants=MAX_EQUAL_FORM_VARIANTS):
-
+    def __init__(self):
         self._variants = DiskDict(table_prefix='variant_db')
         self._variants_eq = DiskDict(table_prefix='variant_db_eq')
         self._variants_form = DiskDict(table_prefix='variant_db_form')
 
-        self.params_max_variants = params_max_variants
-        self.path_max_variants = path_max_variants
-        self.max_equal_form_variants = max_equal_form_variants
+        self.params_max_variants = cf.cf.get('params_max_variants')
+        self.path_max_variants = cf.cf.get('path_max_variants')
+        self.max_equal_form_variants = cf.cf.get('max_equal_form_variants')
 
         self._db_lock = threading.RLock()
 

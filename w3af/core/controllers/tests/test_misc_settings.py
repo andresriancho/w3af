@@ -25,10 +25,11 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
-    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST)
+    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST,
+    FORM_ID_LIST)
 
 OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
-                INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST)
+                INPUT_FILE, OUTPUT_FILE, PORT, URL_LIST, FORM_ID_LIST)
 
 
 @attr('smoke')

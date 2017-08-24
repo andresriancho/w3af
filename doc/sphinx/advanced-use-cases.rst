@@ -191,9 +191,9 @@ made:
 If we believe those to be true, then we can simply request a few samples instead of all.
 The number of samples to collect can be configured with these ``misc`` settings are for:
 
- * ``path_max_variants``: Limits how many product pages will be crawled
- * ``params_max_variants``: Limits how many variants to sample for URLs with the same path and parameter names
- * ``max_equal_form_variants``: Limits how many forms with the same parameters but different URLs to sample
+ * ``path_max_variants``: Limit how many product pages will be crawled
+ * ``params_max_variants``: Limit how many variants to sample for URLs with the same path and parameter names
+ * ``max_equal_form_variants``: Limit how many forms with the same parameters but different URLs to sample
 
 The default should suit most of the sites, but advanced users might want to modify
 these settings when the scan is taking too much time or, multiple areas of the
