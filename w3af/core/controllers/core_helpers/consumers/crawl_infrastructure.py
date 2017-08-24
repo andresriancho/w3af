@@ -347,6 +347,9 @@ class crawl_infrastructure(BaseConsumer):
 
     def _is_new_fuzzable_request(self, plugin, fuzzable_request):
         """
+        Read the note on why it is a good idea to have two instances of VariantDB
+        in the framework instead of one in the web_spider._should_verify_extracted_url()
+
         :param plugin: The plugin that found these fuzzable requests
         :param fuzzable_request: A potentially new fuzzable request
 
@@ -379,7 +382,7 @@ class crawl_infrastructure(BaseConsumer):
         #
         # w3af has a cache, but its still a waste of time to send those requests.
         #
-        #   Now lets analyze this with more than one parameter. Spidered URIs:
+        #   Now lets analyze this with more than one parameter. Crawled URIs:
         #       - http://host.tld/?id=3739286&action=create
         #       - http://host.tld/?id=3739285&action=create
         #       - http://host.tld/?id=3739282&action=remove
