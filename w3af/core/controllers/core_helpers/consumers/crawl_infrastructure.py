@@ -405,9 +405,19 @@ class crawl_infrastructure(BaseConsumer):
         #       - http://host.tld/?id=payload1&action=remove
         #
         if not self._variant_db.append(fuzzable_request):
-            msg = 'Ignoring reference "%s" (it is simply a variant).'
-            msg %= fuzzable_request.get_uri()
-            om.out.debug(msg)
+
+            if not fuzzable_request.get_raw_data():
+                msg = ('Ignoring reference "%s" since it is simply a variant'
+                       ' of another URL seen before.')
+                msg %= fuzzable_request.get_uri()
+                om.out.debug(msg)
+            else:
+                msg = ('Ignoring form "%s" with parameters [%s] since it is'
+                       ' simply a variant of another form seen before.')
+                args = (fuzzable_request.get_uri(),
+                        ', '.join(fuzzable_request.get_raw_data().get_param_names()))
+                om.out.debug(msg % args)
+
             return False
 
         msg = 'New fuzzable request identified: "%s"'
