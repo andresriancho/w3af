@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import os
-import gzip
 import time
 import threading
 import msgpack
@@ -199,7 +198,7 @@ class HistoryItem(object):
                 continue
 
             # Ok... the file exists, but it might still be being written
-            req_res = gzip.open(fname, 'rb', compresslevel=4)
+            req_res = open(fname, 'rb')
 
             try:
                 data = msgpack.load(req_res, use_list=True)
@@ -341,7 +340,7 @@ class HistoryItem(object):
         path_fname = self._get_fname_for_id(self.id)
 
         try:
-            req_res = gzip.open(path_fname, 'wb', compresslevel=4)
+            req_res = open(path_fname, 'wb')
         except IOError:
             # We get here when the path_fname does not exist (for some reason)
             # and want to analyze exactly why to be able to fix the issue in
