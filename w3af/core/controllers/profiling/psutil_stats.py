@@ -108,6 +108,11 @@ def dump_psutil():
 
     ps_mem_data = ps_mem_to_json(*get_memory_usage(pids_to_show, True))
 
+    du_data = psutil.disk_usage(os.path.expanduser('~/.w3af'))
+    disk_usage = {'total': get_human_readable_size(du_data.total),
+                  'free': get_human_readable_size(du_data.free),
+                  '% used': du_data.percent}
+
     # Merge all the data here
     psutil_data = {'CPU': psutil.cpu_times()._asdict(),
                    'Load average': os.getloadavg(),
@@ -116,6 +121,8 @@ def dump_psutil():
                    'Network': netinfo,
                    'Processes': process_info,
                    'ps_mem': ps_mem_data,
+                   'Disk IO counters': psutil.disk_io_counters(),
+                   'Disk usage': disk_usage,
                    'Thread CPU usage': get_threads_cpu_percent()}
     
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
@@ -165,3 +172,12 @@ def stop_psutil_dump():
     """
     cancel_thread(SAVE_PSUTIL_PTR)
     dump_psutil()
+
+
+def get_human_readable_size(num):
+    exp_str = [(0, 'B'), (10, 'KB'), (20, 'MB'), (30, 'GB'), (40, 'TB'), (50, 'PB')]
+    i = 0
+    while i+1 < len(exp_str) and num >= (2 ** exp_str[i+1][0]):
+        i += 1
+        rounded_val = round(float(num) / 2 ** exp_str[i][0], 2)
+    return '%s %s' % (int(rounded_val), exp_str[i][1])
