@@ -95,7 +95,7 @@ class strange_parameters(GrepPlugin):
                     ' "%s", which is very uncommon. and requires manual'
                     ' verification.')
             args = (response.get_uri(), token_name, token_value)
-            args = [smart_str_ignore(i) for i in args]
+            args = tuple(smart_str_ignore(i) for i in args)
             desc %= args
 
             i = Info('Uncommon query string parameter', desc, response.id,
