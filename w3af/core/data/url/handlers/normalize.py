@@ -42,4 +42,3 @@ class NormalizeHandler(urllib2.BaseHandler):
         return request
     
     https_request = http_request
-
