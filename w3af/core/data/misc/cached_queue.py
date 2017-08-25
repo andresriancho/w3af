@@ -99,8 +99,8 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
             #
             msg = ('CachedQueue.put() will write an item to the %s DiskDict.'
                    ' This uses more CPU and disk IO than storing in memory'
-                   ' but will avoid storing thousands of items in memory. The'
-                   ' current %s DiskDict size is %s.')
+                   ' but will avoid high memory usage issues. The current'
+                   ' %s DiskDict size is %s.')
             args = (self.get_name(), self.get_name(), len(self.disk))
             om.out.debug(msg % args)
 
