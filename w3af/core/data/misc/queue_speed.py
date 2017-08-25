@@ -22,17 +22,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import Queue
 import time
 
+import w3af.core.controllers.output_manager as om
+
 
 class QueueSpeed(object):
     
     MAX_SIZE = 100
     
-    def __init__(self, maxsize=0):
+    def __init__(self, maxsize=0, name='Unknown'):
         self.q = Queue.Queue(maxsize=maxsize)
-        
+
+        self._name = name
         self._output_data = [] 
         self._input_data = []
-    
+
+    def get_name(self):
+        return self._name
+
     def clear(self):
         self._output_data = [] 
         self._input_data = []
@@ -96,11 +102,32 @@ class QueueSpeed(object):
             return item
     
     def put(self, item, block=True, timeout=None):
+        #
+        #   This is very useful information for finding bottlenecks in the
+        #   framework / strategy
+        #
+        #   The call to .full() is not 100% accurate since another thread might
+        #   read from the queue and the put() might not lock, but it is good
+        #   enough for debugging.
+        #
+        block_start_time = None
+
+        if self.q.full() and block:
+            block_start_time = time.time()
+
         try:
             put_res = self.q.put(item, block=block, timeout=timeout)
         except:
             raise
         else:
+            if block_start_time is not None:
+                msg = ('Thread blocked %s seconds waiting for Queue.put() to'
+                       ' have space in the %s queue. The queue\'s maxsize is'
+                       ' %s.')
+                block_time = time.time() - block_start_time
+                args = (block_time, self.get_name(), self.q.maxsize)
+                om.out.debug(msg % args)
+
             self._item_added_to_queue()
             return put_res
     
