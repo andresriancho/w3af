@@ -25,7 +25,7 @@ import time
 import w3af.core.controllers.output_manager as om
 
 
-class QueueSpeed(object):
+class SmartQueue(object):
     
     MAX_SIZE = 100
     
