@@ -128,7 +128,8 @@ class grep(BaseConsumer):
 
         # We run this again here to prevent a request / response from being
         # processed twice
-        if not self.should_grep(request, response):
+        should_grep = self._already_analyzed.add(response.get_uri())
+        if not should_grep:
             return
 
         self._run_observers(request, response)
@@ -171,9 +172,9 @@ class grep(BaseConsumer):
         if response.get_url().get_domain() not in self.TARGET_DOMAINS:
             return False
 
-        return self._already_analyzed.add(response.get_uri())
+        return True
 
-    def in_queue_put(self, request, response):
+    def grep(self, request, response):
         """
         Make sure that we only add items to the queue that will be later grep'd
         and then decide how we're going to serialize the request and response
