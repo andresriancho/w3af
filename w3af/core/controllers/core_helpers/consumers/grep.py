@@ -96,18 +96,17 @@ class grep(BaseConsumer):
             plugin.end()
 
     def _get_request_response_from_work_unit(self, work_unit):
-        if not isinstance(work_unit, int):
+        if isinstance(work_unit, int):
+            # Before we sent requests and responses as work units,
+            # but since we changed from Queue to CachedQueue for BaseConsumer
+            # the database was growing really big (1GB) for storing that traffic
+            # and I decided to migrate to using just the response.id and querying
+            # the SQLite one extra time.
+            history = HistoryItem()
+            history.load(work_unit)
+            request, response = history.request, history.response
+        else:
             request, response = work_unit
-            return request, response
-
-        # Before we sent requests and responses as work units,
-        # but since we changed from Queue to CachedQueue for BaseConsumer
-        # the database was growing really big (1GB) for storing that traffic
-        # and I decided to migrate to using just the response.id and querying
-        # the SQLite one extra time.
-        history = HistoryItem()
-        history.load(work_unit)
-        request, response = history.request, history.response
 
         # Create a fuzzable request based on the urllib2 request object
         headers_inst = Headers(request.header_items())
