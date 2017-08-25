@@ -199,7 +199,7 @@ class HistoryItem(object):
                 continue
 
             # Ok... the file exists, but it might still be being written
-            req_res = gzip.open(fname, 'rb', compresslevel=4)
+            req_res = gzip.open(fname, 'rb', compresslevel=2)
 
             try:
                 data = msgpack.load(req_res, use_list=True)
@@ -341,7 +341,7 @@ class HistoryItem(object):
         path_fname = self._get_fname_for_id(self.id)
 
         try:
-            req_res = gzip.open(path_fname, 'wb', compresslevel=4)
+            req_res = gzip.open(path_fname, 'wb', compresslevel=2)
         except IOError:
             # We get here when the path_fname does not exist (for some reason)
             # and want to analyze exactly why to be able to fix the issue in
