@@ -113,6 +113,14 @@ class QueueSpeed(object):
         block_start_time = None
 
         if self.q.full() and block:
+            #
+            #   If you see maxsize messages like this at the end of your scan
+            #   log and the scan has freezed, then you need to report a bug!
+            #
+            msg = ('Thread will block waiting for Queue.put() to have space in'
+                   ' the %s queue. (maxsize=%s, timeout=%s)')
+            args = (self.get_name(), self.q.maxsize, timeout)
+            om.out.debug(msg % args)
             block_start_time = time.time()
 
         try:
