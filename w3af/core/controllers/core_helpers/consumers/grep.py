@@ -24,6 +24,9 @@ import w3af.core.data.kb.config as cf
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from w3af.core.data.db.history import HistoryItem
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class grep(BaseConsumer):
@@ -92,14 +95,39 @@ class grep(BaseConsumer):
         for plugin in self._consumer_plugins:
             plugin.end()
 
+    def _get_request_response_from_work_unit(self, work_unit):
+        if not isinstance(work_unit, int):
+            request, response = work_unit
+            return request, response
+
+        # Before we sent requests and responses as work units,
+        # but since we changed from Queue to CachedQueue for BaseConsumer
+        # the database was growing really big (1GB) for storing that traffic
+        # and I decided to migrate to using just the response.id and querying
+        # the SQLite one extra time.
+        history = HistoryItem()
+        history.load(work_unit)
+        request, response = history.request, history.response
+
+        # Create a fuzzable request based on the urllib2 request object
+        headers_inst = Headers(request.header_items())
+        request = FuzzableRequest.from_parts(request.url_object,
+                                             request.get_method(),
+                                             request.get_data() or '',
+                                             headers_inst)
+
+        return request, response
+
     def _consume(self, work_unit):
         """
         Handle a request/response that needs to be analyzed
         :param work_unit: Request and response in a tuple
         :return: None
         """
-        request, response = work_unit
+        request, response = self._get_request_response_from_work_unit(work_unit)
 
+        # We run this again here to prevent a request / response from being
+        # processed twice
         if not self.should_grep(request, response):
             return
 
@@ -140,7 +168,38 @@ class grep(BaseConsumer):
         if self.TARGET_DOMAINS is None:
             self.TARGET_DOMAINS = cf.cf.get('target_domains')
 
-        if not response.get_url().get_domain() in self.TARGET_DOMAINS:
+        if response.get_url().get_domain() not in self.TARGET_DOMAINS:
             return False
 
         return self._already_analyzed.add(response.get_uri())
+
+    def in_queue_put(self, request, response):
+        """
+        Make sure that we only add items to the queue that will be later grep'd
+        and then decide how we're going to serialize the request and response
+        to be more performant.
+
+        :see: _get_request_response_from_work_unit()
+        :param request: HTTP request to grep
+        :param response: HTTP response to grep
+        :return: None
+        """
+        if not self.should_grep(request, response):
+            return
+
+        if self.in_queue.next_item_saved_to_memory():
+            #
+            # Just send the request / response, most likely they are going
+            # to live in the CachedQueue for only a couple of seconds
+            #
+            work = (request, response)
+        else:
+            #
+            # Well, this will be a little bit more complicated. We don't
+            # want to fill the disk with the data we save in the queue
+            # so we just send the ID
+            #
+            work = response.id
+
+        # Send to the parent class so the data gets saved
+        return super(grep, self).in_queue_put(work)

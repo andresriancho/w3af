@@ -47,7 +47,6 @@ from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
 from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
@@ -1172,21 +1171,10 @@ class ExtendedUrllib(object):
         return request
 
     def _grep(self, request, response):
+        if self._grep_queue_put is None:
+            return
 
-        url_instance = request.url_object
-        domain = url_instance.get_domain()
-
-        if self._grep_queue_put is not None and\
-        domain in cf.cf.get('target_domains'):
-
-            # Create a fuzzable request based on the urllib2 request object
-            headers_inst = Headers(request.header_items())
-            fr = FuzzableRequest.from_parts(url_instance,
-                                            request.get_method(),
-                                            request.get_data() or '',
-                                            headers_inst)
-
-            self._grep_queue_put((fr, response))
+        self._grep_queue_put(request, response)
 
 
 @contextmanager
