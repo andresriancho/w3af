@@ -40,7 +40,8 @@ class audit(BaseConsumer):
         """
         max_qsize = self.THREAD_POOL_SIZE * 2
 
-        super(audit, self).__init__(audit_plugins, w3af_core,
+        super(audit, self).__init__(audit_plugins,
+                                    w3af_core,
                                     thread_name='Auditor',
                                     max_pool_queued_tasks=max_qsize,
                                     max_in_queue_size=max_qsize)
