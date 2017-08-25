@@ -101,7 +101,7 @@ class Miscellaneous:
             query = "SELECT %s" % query
 
         kb.bannerFp["dbmsVersion"] = unArrayizeValue(inject.getValue(query))
-        kb.bannerFp["dbmsVersion"] = (kb.bannerFp["dbmsVersion"] or "").replace(",", "").replace("-", "").replace(" ", "")
+        kb.bannerFp["dbmsVersion"] = (kb.bannerFp["dbmsVersion"] or "").replace(',', "").replace('-', "").replace(' ', "")
 
     def delRemoteFile(self, filename):
         if not filename:
@@ -169,9 +169,8 @@ class Miscellaneous:
 
             for udf, inpRet in udfDict.items():
                 message = "do you want to remove UDF '%s'? [Y/n] " % udf
-                output = readInput(message, default="Y")
 
-                if not output or output in ("y", "Y"):
+                if readInput(message, default='Y', boolean=True):
                     dropStr = "DROP FUNCTION %s" % udf
 
                     if Backend.isDbms(DBMS.PGSQL):

@@ -64,8 +64,10 @@ def debug_notify(meth):
             title = 'Error'
             message = 'Error found while running %s%s: %s'
             message = message % (name, args, inf)
+            # pylint: disable=E1101
             notification = Notify.Notification.new(title, message,
                                                    'dialog-error')
+            # pylint: enable=E1101
             notification.show()
             raise inf
         else:

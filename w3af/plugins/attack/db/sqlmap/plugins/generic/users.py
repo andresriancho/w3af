@@ -161,7 +161,7 @@ class Users:
             conf.user = conf.user.upper()
 
         if conf.user:
-            users = conf.user.split(",")
+            users = conf.user.split(',')
 
             if Backend.isDbms(DBMS.MYSQL):
                 for user in users:
@@ -319,11 +319,11 @@ class Users:
 
             message = "do you want to perform a dictionary-based attack "
             message += "against retrieved password hashes? [Y/n/q]"
-            test = readInput(message, default="Y")
+            choice = readInput(message, default='Y').upper()
 
-            if test[0] in ("n", "N"):
+            if choice == 'N':
                 pass
-            elif test[0] in ("q", "Q"):
+            elif choice == 'Q':
                 raise SqlmapUserQuitException
             else:
                 attackCachedUsersPasswords()
@@ -345,7 +345,7 @@ class Users:
             conf.user = conf.user.upper()
 
         if conf.user:
-            users = conf.user.split(",")
+            users = conf.user.split(',')
 
             if Backend.isDbms(DBMS.MYSQL):
                 for user in users:
@@ -424,12 +424,13 @@ class Users:
 
                             # In Firebird we get one letter for each privilege
                             elif Backend.isDbms(DBMS.FIREBIRD):
-                                privileges.add(FIREBIRD_PRIVS[privilege.strip()])
+                                if privilege.strip() in FIREBIRD_PRIVS:
+                                    privileges.add(FIREBIRD_PRIVS[privilege.strip()])
 
                             # In DB2 we get Y or G if the privilege is
                             # True, N otherwise
                             elif Backend.isDbms(DBMS.DB2):
-                                privs = privilege.split(",")
+                                privs = privilege.split(',')
                                 privilege = privs[0]
                                 if len(privs) > 1:
                                     privs = privs[1]
@@ -537,8 +538,8 @@ class Users:
                     # In PostgreSQL we get 1 if the privilege is True,
                     # 0 otherwise
                     if Backend.isDbms(DBMS.PGSQL) and ", " in privilege:
-                        privilege = privilege.replace(", ", ",")
-                        privs = privilege.split(",")
+                        privilege = privilege.replace(", ", ',')
+                        privs = privilege.split(',')
                         i = 1
 
                         for priv in privs:
@@ -557,12 +558,12 @@ class Users:
                     # In MySQL < 5.0 we get Y if the privilege is
                     # True, N otherwise
                     elif Backend.isDbms(DBMS.MYSQL) and not kb.data.has_information_schema:
-                        privilege = privilege.replace(", ", ",")
-                        privs = privilege.split(",")
+                        privilege = privilege.replace(", ", ',')
+                        privs = privilege.split(',')
                         i = 1
 
                         for priv in privs:
-                            if priv.upper() == "Y":
+                            if priv.upper() == 'Y':
                                 for position, mysqlPriv in MYSQL_PRIVS.items():
                                     if position == i:
                                         privileges.add(mysqlPriv)
@@ -580,14 +581,14 @@ class Users:
                     # In DB2 we get Y or G if the privilege is
                     # True, N otherwise
                     elif Backend.isDbms(DBMS.DB2):
-                        privs = privilege.split(",")
+                        privs = privilege.split(',')
                         privilege = privs[0]
                         privs = privs[1]
                         privs = list(privs.strip())
                         i = 1
 
                         for priv in privs:
-                            if priv.upper() in ("Y", "G"):
+                            if priv.upper() in ('Y', 'G'):
                                 for position, db2Priv in DB2_PRIVS.items():
                                     if position == i:
                                         privilege += ", " + db2Priv

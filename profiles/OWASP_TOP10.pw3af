@@ -53,6 +53,8 @@ stop_on_first_exception = False
 interface = ppp0
 local_ip_address = 10.5.6.18
 msf_location = /opt/metasploit3/bin/
+form_id_list = []
+form_id_action = exclude
 
 [infrastructure.fingerprint_os]
 

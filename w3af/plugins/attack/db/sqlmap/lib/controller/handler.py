@@ -8,7 +8,6 @@ See the file 'doc/COPYING' for copying permission
 from lib.core.common import Backend
 from lib.core.data import conf
 from lib.core.data import kb
-from lib.core.data import logger
 from lib.core.dicts import DBMS_DICT
 from lib.core.enums import DBMS
 from lib.core.settings import MSSQL_ALIASES
@@ -71,17 +70,12 @@ def setHandler():
                   (DBMS.INFORMIX, INFORMIX_ALIASES, InformixMap, InformixConn),
             ]
 
-    _ = max(_ if (Backend.getIdentifiedDbms() or "").lower() in _[1] else None for _ in items)
+    _ = max(_ if (Backend.getIdentifiedDbms() or kb.heuristicExtendedDbms or "").lower() in _[1] else None for _ in items)
     if _:
         items.remove(_)
         items.insert(0, _)
 
     for dbms, aliases, Handler, Connector in items:
-        if conf.dbms and conf.dbms.lower() != dbms and conf.dbms.lower() not in aliases:
-            debugMsg = "skipping test for %s" % dbms
-            logger.debug(debugMsg)
-            continue
-
         handler = Handler()
         conf.dbmsConnector = Connector()
 
@@ -107,6 +101,8 @@ def setHandler():
                 conf.dbmsHandler = max(_ for _ in items if _[0] == kb.resolutionDbms)[2]()
             else:
                 conf.dbmsHandler = handler
+
+            conf.dbmsHandler._dbms = dbms
             break
         else:
             conf.dbmsConnector = None

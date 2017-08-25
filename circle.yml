@@ -66,6 +66,20 @@ dependencies:
     # Run the test servers/dependencies
     - cd w3af/tests/ && docker-compose up -d
     - w3af/tests/add-test-routes.sh
+
+    # While we wait for the test dependencies, list the test we're going to run.
+    #
+    # This line is useful to debug builds that fail because of excessive memory
+    # usage, such as https://circleci.com/gh/andresriancho/w3af/2819#tests/containers/0
+    #
+    # Those builds are hard to debug since the build VM is killed and the only
+    # collected artifact is memory-usage.txt. In that file you should find the
+    # test ID which was running when circleci killed the build. Using that ID
+    # and the output of this tool, you'll be able to pinpoint which test was
+    # using a lot of memory.
+    - python w3af/core/controllers/ci/nosetests_wrapper/show-test-ids.py
+
+    # Might need more waiting for the docker-compose up command to finish
     - w3af/tests/waitfor-test-dependencies.py
 
   post:

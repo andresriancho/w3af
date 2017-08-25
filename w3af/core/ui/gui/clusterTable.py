@@ -257,6 +257,7 @@ class clusterCellData(gtk.TreeView):
         label = gtk.Label()
         popup_win.add(label)
 
+        # pylint: disable=E1101
         if "path-cross-event" not in gobject.signal_list_names(gtk.TreeView):
             gobject.signal_new("path-cross-event", gtk.TreeView,
                                gobject.SIGNAL_RUN_LAST,
@@ -269,6 +270,7 @@ class clusterCellData(gtk.TreeView):
             gobject.signal_new("cell-cross-event", gtk.TreeView,
                                gobject.SIGNAL_RUN_LAST,
                                gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+        # pylint: enable=E1101
 
         self.connect(
             "leave-notify-event", self.on_treeview_leave_notify, popup_win)

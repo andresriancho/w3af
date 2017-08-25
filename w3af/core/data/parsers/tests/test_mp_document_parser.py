@@ -25,7 +25,7 @@ import random
 import unittest
 import multiprocessing
 
-from mock import patch, call, PropertyMock
+from mock import patch, PropertyMock
 from nose.plugins.skip import SkipTest
 
 from w3af import ROOT_PATH
@@ -97,8 +97,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
             try:
                 self.mpdoc.get_document_parser_for(http_resp)
-            except BaseFrameworkException:
-                self._is_timeout_exception_message(om_mock, http_resp)
+            except BaseFrameworkException, bfe:
+                self._is_timeout_exception_message(bfe, om_mock, http_resp)
             else:
                 self.assertTrue(False)
 
@@ -150,8 +150,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
 
@@ -164,8 +164,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
 
@@ -189,7 +189,12 @@ class TestMPDocumentParser(unittest.TestCase):
 
         Try to kill the process while it is sending data to the queue
         """
-        raise SkipTest('https://github.com/andresriancho/w3af/issues/9713')
+        raise SkipTest('This test breaks the build because it uses A LOT'
+                       ' of memory, for more information take a look at'
+                       ' https://circleci.com/gh/andresriancho/w3af/2819 .'
+                       ' Note that there is no memory leak here, just a'
+                       ' test which is designed to use a lot of memory'
+                       ' to force a specific state.')
 
         mmpdp = 'w3af.core.data.parsers.mp_document_parser.%s'
         kmpdp = mmpdp % 'MultiProcessingDocumentParser.%s'
@@ -209,7 +214,7 @@ class TestMPDocumentParser(unittest.TestCase):
             max_workers_mock.return_value = 5
             parsers_mock.return_value = [HugeClassAttrValueParser, HTMLParser]
 
-            ITERATIONS = 25
+            ITERATIONS = 10
 
             #
             # Lets timeout many sequentially
@@ -219,8 +224,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
 
@@ -233,8 +238,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException:
-                    self._is_timeout_exception_message(om_mock, http_resp)
+                except BaseFrameworkException, bfe:
+                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
 
@@ -246,14 +251,14 @@ class TestMPDocumentParser(unittest.TestCase):
                 parser = self.mpdoc.get_document_parser_for(http_resp)
                 self.assertIsInstance(parser._parser, HTMLParser)
 
-    def _is_timeout_exception_message(self, om_mock, http_resp):
-        msg = '[timeout] The parser took more than %s seconds' \
-              ' to complete parsing of "%s", killed it!'
+    def _is_timeout_exception_message(self, bfe, om_mock, http_resp):
+        msg = ('[timeout] The parser took more than %s seconds to '
+               'complete parsing of "%s", killed it!')
 
         error = msg % (MultiProcessingDocumentParser.PARSER_TIMEOUT,
                        http_resp.get_url())
 
-        self.assertIn(call.debug(error), om_mock.mock_calls)
+        self.assertEquals(str(bfe), error)
 
     def test_daemon_child(self):
         """

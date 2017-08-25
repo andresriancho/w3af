@@ -382,8 +382,8 @@ def storeHashesToFile(attack_dict):
     if kb.storeHashesChoice is None:
         message = "do you want to store hashes to a temporary file "
         message += "for eventual further processing with other tools [y/N] "
-        test = readInput(message, default="N")
-        kb.storeHashesChoice = test[0] in ("y", "Y")
+
+        kb.storeHashesChoice = readInput(message, default='N', boolean=True)
 
     if not kb.storeHashesChoice:
         return
@@ -482,11 +482,11 @@ def attackDumpedTable():
             storeHashesToFile(attack_dict)
 
             message = "do you want to crack them via a dictionary-based attack? %s" % ("[y/N/q]" if conf.multipleTargets else "[Y/n/q]")
-            test = readInput(message, default="N" if conf.multipleTargets else "Y")
+            choice = readInput(message, default='N' if conf.multipleTargets else 'Y').upper()
 
-            if test[0] in ("n", "N"):
+            if choice == 'N':
                 return
-            elif test[0] in ("q", "Q"):
+            elif choice == 'Q':
                 raise SqlmapUserQuitException
 
             results = dictionaryAttack(attack_dict)
@@ -529,7 +529,7 @@ def hashRecognition(value):
 
     return retVal
 
-def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc_count, wordlists, custom_wordlist):
+def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc_count, wordlists, custom_wordlist, api):
     if IS_WIN:
         coloramainit()
 
@@ -583,7 +583,7 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
 
                     status = 'current status: %s... %s' % (word.ljust(5)[:5], ROTATING_CHARS[rotator])
 
-                    if not hasattr(conf, "api"):
+                    if not api:
                         dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status))
 
             except KeyboardInterrupt:
@@ -605,7 +605,7 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
             with proc_count.get_lock():
                 proc_count.value -= 1
 
-def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found, proc_id, proc_count, wordlists, custom_wordlist):
+def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found, proc_id, proc_count, wordlists, custom_wordlist, api):
     if IS_WIN:
         coloramainit()
 
@@ -657,7 +657,7 @@ def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found
                     if user and not user.startswith(DUMMY_USER_PREFIX):
                         status += ' (user: %s)' % user
 
-                    if not hasattr(conf, "api"):
+                    if not api:
                         dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status))
 
             except KeyboardInterrupt:
@@ -766,20 +766,20 @@ def dictionaryAttack(attack_dict):
                 message += "[1] default dictionary file '%s' (press Enter)\n" % dictPaths[0]
                 message += "[2] custom dictionary file\n"
                 message += "[3] file with list of dictionary files"
-                choice = readInput(message, default="1")
+                choice = readInput(message, default='1')
 
                 try:
-                    if choice == "2":
+                    if choice == '2':
                         message = "what's the custom dictionary's location?\n"
-                        dictPaths = [readInput(message)]
-
-                        logger.info("using custom dictionary")
-                    elif choice == "3":
+                        _ = readInput(message)
+                        if _:
+                            dictPaths = [readInput(message)]
+                            logger.info("using custom dictionary")
+                    elif choice == '3':
                         message = "what's the list file location?\n"
                         listPath = readInput(message)
                         checkFile(listPath)
                         dictPaths = getFileItems(listPath)
-
                         logger.info("using custom list of dictionaries")
                     else:
                         logger.info("using default dictionary")
@@ -805,9 +805,8 @@ def dictionaryAttack(attack_dict):
                     logger.critical(warnMsg)
 
             message = "do you want to use common password suffixes? (slow!) [y/N] "
-            test = readInput(message, default="N")
 
-            if test[0] in ("y", "Y"):
+            if readInput(message, default='N', boolean=True):
                 suffix_list += COMMON_PASSWORD_SUFFIXES
 
         infoMsg = "starting dictionary-based cracking (%s)" % __functions__[hash_regex].func_name
@@ -843,12 +842,12 @@ def dictionaryAttack(attack_dict):
                         count = _multiprocessing.Value('i', _multiprocessing.cpu_count())
 
                         for i in xrange(_multiprocessing.cpu_count()):
-                            p = _multiprocessing.Process(target=_bruteProcessVariantA, args=(attack_info, hash_regex, suffix, retVal, i, count, kb.wordlists, custom_wordlist))
-                            processes.append(p)
+                            process = _multiprocessing.Process(target=_bruteProcessVariantA, args=(attack_info, hash_regex, suffix, retVal, i, count, kb.wordlists, custom_wordlist, conf.api))
+                            processes.append(process)
 
-                        for p in processes:
-                            p.daemon = True
-                            p.start()
+                        for process in processes:
+                            process.daemon = True
+                            process.start()
 
                         while count.value > 0:
                             time.sleep(0.5)
@@ -859,7 +858,7 @@ def dictionaryAttack(attack_dict):
                         singleTimeWarnMessage(warnMsg)
 
                         retVal = Queue()
-                        _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, 0, 1, kb.wordlists, custom_wordlist)
+                        _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, 0, 1, kb.wordlists, custom_wordlist, conf.api)
 
                 except KeyboardInterrupt:
                     print
@@ -927,12 +926,12 @@ def dictionaryAttack(attack_dict):
                             count = _multiprocessing.Value('i', _multiprocessing.cpu_count())
 
                             for i in xrange(_multiprocessing.cpu_count()):
-                                p = _multiprocessing.Process(target=_bruteProcessVariantB, args=(user, hash_, kwargs, hash_regex, suffix, retVal, found_, i, count, kb.wordlists, custom_wordlist))
-                                processes.append(p)
+                                process = _multiprocessing.Process(target=_bruteProcessVariantB, args=(user, hash_, kwargs, hash_regex, suffix, retVal, found_, i, count, kb.wordlists, custom_wordlist, conf.api))
+                                processes.append(process)
 
-                            for p in processes:
-                                p.daemon = True
-                                p.start()
+                            for process in processes:
+                                process.daemon = True
+                                process.start()
 
                             while count.value > 0:
                                 time.sleep(0.5)
@@ -951,7 +950,7 @@ def dictionaryAttack(attack_dict):
                             found_ = Value()
                             found_.value = False
 
-                            _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found_, 0, 1, kb.wordlists, custom_wordlist)
+                            _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found_, 0, 1, kb.wordlists, custom_wordlist, conf.api)
 
                             found = found_.value
 

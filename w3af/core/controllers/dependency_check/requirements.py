@@ -32,7 +32,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('esmre', 'esmre', '0.3.1'),
                      PIPDependency('phply', 'phply', '0.9.1'),
                      PIPDependency('nltk', 'nltk', '3.0.1'),
-                     PIPDependency('chardet', 'chardet', '2.1.1'),
+                     PIPDependency('chardet', 'chardet', '3.0.4'),
                      PIPDependency('tblib', 'tblib', '0.2.0'),
                      PIPDependency('pdfminer', 'pdfminer', '20140328'),
                      PIPDependency('concurrent.futures', 'futures', '2.1.5'),
@@ -40,7 +40,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
                      # We need 0.1.8 because of mitmproxy
-                     PIPDependency('pyasn1', 'pyasn1', '0.1.9'),
+                     PIPDependency('pyasn1', 'pyasn1', '0.2.3'),
 
                      PIPDependency('lxml', 'lxml', '3.4.4'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
@@ -76,6 +76,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
 
                      # tldextract extracts the tld from any domain name
                      PIPDependency('tldextract', 'tldextract', '1.7.2'),
+
+                     # pebble multiprocessing
+                     PIPDependency('pebble', 'pebble', '4.3.2'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
