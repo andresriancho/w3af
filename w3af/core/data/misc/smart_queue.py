@@ -1,5 +1,5 @@
 """
-queue_speed.py
+smart_queue.py
 
 Copyright 2013 Andres Riancho
 
@@ -19,36 +19,30 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import Queue
 import time
+import Queue
 
 import w3af.core.controllers.output_manager as om
 
 
-class SmartQueue(object):
-    
+class QueueSpeedMeasurement(object):
+
     MAX_SIZE = 100
-    
-    def __init__(self, maxsize=0, name='Unknown'):
-        self.q = Queue.Queue(maxsize=maxsize)
 
-        self._name = name
-        self._output_data = [] 
+    def __init__(self):
+        self._output_data = []
         self._input_data = []
-
-    def get_name(self):
-        return self._name
 
     def clear(self):
-        self._output_data = [] 
+        self._output_data = []
         self._input_data = []
-    
+
     def _add(self, true_false, data):
         data.append((true_false, time.time()))
 
         while len(data) >= self.MAX_SIZE:
             data.pop(0)
-    
+
     def _item_left_queue(self):
         self._add(True, self._output_data)
 
@@ -59,20 +53,20 @@ class SmartQueue(object):
         # Verify that I have everything I need to make the calculations
         if len([True for (added, _) in data if added]) < 1:
             return None
-        
+
         if len(data) < 2:
             return None
-        
+
         # Get the first logged item time, only a real item not a check made
         # by get_input_rpm / get_output_rpm
         first_item_time = [data_time for (added, data_time) in data if added][0]
-        
+
         # Get the last logged item time
         last_item_time = data[-1][1]
-        
+
         # Count all items that were logged
         all_items = len([True for (added, _) in data if added])
-        
+
         time_delta = last_item_time - first_item_time
 
         if time_delta == 0:
@@ -86,12 +80,26 @@ class SmartQueue(object):
         self._add(False, self._input_data)
 
         return self._calculate_rpm(self._input_data)
-    
+
     def get_output_rpm(self):
         self._add(False, self._output_data)
 
         return self._calculate_rpm(self._output_data)
-        
+
+
+class SmartQueue(QueueSpeedMeasurement):
+    
+    def __init__(self, maxsize=0, name='Unknown'):
+        super(SmartQueue, self).__init__()
+        self.q = Queue.Queue(maxsize=maxsize)
+
+        self._name = name
+        self._output_data = [] 
+        self._input_data = []
+
+    def get_name(self):
+        return self._name
+
     def get(self, block=True, timeout=None):
         try:
             item = self.q.get(block=block, timeout=timeout)

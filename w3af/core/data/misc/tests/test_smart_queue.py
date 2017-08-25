@@ -1,5 +1,5 @@
 """
-test_queue_speed.py
+test_smart_queue.py
 
 Copyright 2013 Andres Riancho
 
