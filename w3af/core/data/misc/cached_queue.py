@@ -125,6 +125,16 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
         except KeyError:
             item = self.disk.pop(self.get_pointer)
 
+            if len(self.disk):
+                #
+                #   If you see many messages like this in the scan log, then you
+                #   might want to experiment with a larger maxsize for this queue
+                #
+                msg = ('CachedQueue.get() from %s DiskDict was used to read an'
+                       ' item from disk. The current %s DiskDict size is %s.')
+                args = (self.get_name(), self.get_name(), len(self.disk))
+                om.out.debug(msg % args)
+
         self._item_left_queue()
         self.get_pointer += 1
         return item
