@@ -26,6 +26,27 @@ from w3af.core.data.misc.cached_queue import CachedQueue
 
 
 class TestCachedQueue(unittest.TestCase):
+
+    def test_prefer_memory_over_disk(self):
+        q = CachedQueue(maxsize=2)
+
+        # These two go to the in memory queue
+        q.put(1)
+        q.put(2)
+
+        # This one goes to the disk queue
+        q.put(3)
+
+        # Read one from memory
+        q.get()
+        self.assertEqual(len(q.memory), 1)
+        self.assertEqual(len(q.disk), 1)
+
+        # Write one to memory
+        q.put(4)
+        self.assertEqual(len(q.memory), 2)
+        self.assertEqual(len(q.disk), 1)
+
     def test_add_exceed_memory(self):
         q = CachedQueue(maxsize=2)
 
@@ -36,7 +57,7 @@ class TestCachedQueue(unittest.TestCase):
         self.assertEqual(q.qsize(), 2)
         self.assertEqual(len(q.memory), 2)
 
-        # These two go to the disk queue
+        # This one goes to the disk queue
         q.put(3)
 
         self.assertEqual(q.qsize(), 3)
@@ -71,7 +92,7 @@ class TestCachedQueue(unittest.TestCase):
         q.put(1)
         self.assertEquals(q.get(), 1)
 
-    def test_simple(self):
+    def test_simple_rpm_speed(self):
         q = CachedQueue()
 
         self.assertEqual(None, q.get_input_rpm())
