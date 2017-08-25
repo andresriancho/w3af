@@ -905,15 +905,16 @@ class ExtendedUrllib(object):
                       res.code))
 
         from_cache = hasattr(res, 'from_cache') and res.from_cache
-        flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache,
-                                                    grep)
-        msg += flags
-        om.out.debug(msg)
 
-        http_resp = HTTPResponse.from_httplib_resp(res,
-                                                   original_url=original_url_inst)
+        http_resp = HTTPResponse.from_httplib_resp(res, original_url=original_url_inst)
         http_resp.set_id(res.id)
         http_resp.set_from_cache(from_cache)
+
+        args = (res.id, from_cache, grep, http_resp.get_wait_time())
+        flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f)' % args
+
+        msg += flags
+        om.out.debug(msg)
 
         # Clear the log of failed requests; this request is DONE!
         self._log_successful_response(http_resp)
