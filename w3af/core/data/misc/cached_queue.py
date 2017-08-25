@@ -97,11 +97,12 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
             #   If you see many messages like this in the scan log, then you
             #   might want to experiment with a larger maxsize for this queue
             #
-            msg = ('CachedQueue.put() will write an item to the DiskDict. This is'
-                   ' uses more CPU and disk IO than storing in memory but will'
-                   ' avoid storing thousands of items in memory. The current'
-                   ' DiskDict size is %s.')
-            om.out.debug(msg % len(self.disk))
+            msg = ('CachedQueue.put() will write an item to the %s DiskDict.'
+                   ' This uses more CPU and disk IO than storing in memory'
+                   ' but will avoid storing thousands of items in memory. The'
+                   ' current %s DiskDict size is %s.')
+            args = (self.get_name(), self.get_name(), len(self.disk))
+            om.out.debug(msg % args)
 
         #
         #   And now we just save the item to memory (if there is space) or
