@@ -19,7 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.data.kb.config as cf
+
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
@@ -109,10 +113,19 @@ class grep(BaseConsumer):
         # threads. This is because it makes no sense (these are all CPU
         # bound).
         for plugin in self._consumer_plugins:
+            args = (plugin.get_name(), request.get_uri())
+            om.out.debug('%s.grep(%s)' % args)
+
+            start_time = time.time()
+
             try:
                 plugin.grep_wrapper(request, response)
             except Exception, e:
                 self.handle_exception('grep', plugin.get_name(), request, e)
+
+            spent_time = time.time() - start_time
+            args = (plugin.get_name(), request.get_uri(), spent_time)
+            om.out.debug('%s.grep(%s) took %.2f seconds to run' % args)
 
     def _run_observers(self, request, response):
         """
