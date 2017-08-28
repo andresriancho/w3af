@@ -67,7 +67,7 @@ class HistoryItem(object):
     _EXTENSION = '.trace'
     _MSGPACK_CANARY = 'cute-and-yellow'
 
-    COMPRESSION_LEVEL = 0
+    COMPRESSION_LEVEL = 2
 
     id = None
     _request = None
