@@ -20,6 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
+import time
+
+import w3af.core.controllers.output_manager as om
 
 from .base_consumer import BaseConsumer, task_decorator
 from .constants import POISON_PILL, FORCE_LOGIN
@@ -89,12 +92,21 @@ class auth(BaseConsumer):
         to the web application.
         """
         for plugin in self._consumer_plugins:
+
+            args = (plugin.get_name(), plugin.get_name())
+            om.out.debug('%s.is_logged() and %s.login()' % args)
+            start_time = time.time()
+
             try:
                 if not plugin.is_logged():
                     plugin.login()
             except Exception, e:
                 self.handle_exception('auth', plugin.get_name(), None, e)
-    
+
+            spent_time = time.time() - start_time
+            args = (plugin.get_name(), plugin.get_name(), spent_time)
+            om.out.debug('%s.is_logged() and %s.login() took %.2f seconds to run' % args)
+
     def async_force_login(self):
         self.in_queue_put(FORCE_LOGIN)
 

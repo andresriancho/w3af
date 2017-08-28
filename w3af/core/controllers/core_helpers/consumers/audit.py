@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -87,9 +89,6 @@ class audit(BaseConsumer):
         self._run_observers(fuzzable_request)
 
         for plugin in self._consumer_plugins:
-            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(),
-                                                         fuzzable_request))
-
             # Please note that this is not perfect, it is showing which
             # plugin result was JUST taken from the Queue. The good thing is
             # that the "client" reads the status once every 500ms so the user
@@ -106,7 +105,7 @@ class audit(BaseConsumer):
             #
             # This is controlled by max_pool_queued_tasks
             self._threadpool.apply_async(self._audit,
-                                        (plugin, fuzzable_request, orig_resp))
+                                         (plugin, fuzzable_request, orig_resp))
 
     def _run_observers(self, fuzzable_request):
         """
@@ -133,8 +132,17 @@ class audit(BaseConsumer):
         Python 3 has an error_callback in the apply_async method, which we could
         use in the future.
         """
+        args = (plugin.get_name(), fuzzable_request.get_uri())
+        om.out.debug('%s.audit(%s)' % args)
+
+        start_time = time.time()
+
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp)
         except Exception, e:
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
+
+        spent_time = time.time() - start_time
+        args = (plugin.get_name(), fuzzable_request.get_uri(), spent_time)
+        om.out.debug('%s.audit(%s) took %.2f seconds to run' % args)

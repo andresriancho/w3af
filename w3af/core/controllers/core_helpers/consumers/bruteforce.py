@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
@@ -67,11 +69,8 @@ class bruteforce(BaseConsumer):
         self._run_observers(work_unit)
 
         for plugin in self._consumer_plugins:
-            stats = '%s plugin is testing: "%s"'
-            om.out.debug(stats % (plugin.get_name(), work_unit))
-
             self._threadpool.apply_async(return_args(self._bruteforce),
-                                        (plugin, work_unit,),
+                                         (plugin, work_unit,),
                                          callback=self._plugin_finished_cb)
 
     def _plugin_finished_cb(self, ((plugin, input_fuzzable_request), plugin_result)):
@@ -98,9 +97,12 @@ class bruteforce(BaseConsumer):
         """
         res = set()
 
+        # Logging
+        args = (plugin.get_name(), fuzzable_request.get_uri())
+        om.out.debug('%s.bruteforce(%s)' % args)
+        start_time = time.time()
+
         # Status
-        om.out.debug('Called _bruteforce(%s,%s)' % (plugin.get_name(),
-                                                    fuzzable_request))
         self._w3af_core.status.set_running_plugin('bruteforce', plugin.get_name())
         self._w3af_core.status.set_current_fuzzable_request('bruteforce',
                                                             fuzzable_request)
@@ -113,5 +115,9 @@ class bruteforce(BaseConsumer):
                                   fuzzable_request, e)
         else:
             res.update(new_frs)
-            
+
+        spent_time = time.time() - start_time
+        args = (plugin.get_name(), fuzzable_request.get_uri(), spent_time)
+        om.out.debug('%s.bruteforce(%s) took %.2f seconds to run' % args)
+
         return res

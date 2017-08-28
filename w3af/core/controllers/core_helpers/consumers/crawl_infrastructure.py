@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
+import time
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -149,16 +150,13 @@ class crawl_infrastructure(BaseConsumer):
             if plugin in self._disabled_plugins:
                 continue
 
-            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(),
-                                                         work_unit))
-
             self._run_observers(work_unit)
 
             # TODO: unittest what happens if an exception (which is not handled
             #       by the exception handler) is raised. Who's doing a .get()
             #       on those ApplyResults generated here?
             self._threadpool.apply_async(return_args(self._discover_worker),
-                                        (plugin, work_unit,),
+                                         (plugin, work_unit,),
                                          callback=self._plugin_finished_cb)
             # pylint: disable=E1120
             self._route_all_plugin_results()
@@ -442,7 +440,9 @@ class crawl_infrastructure(BaseConsumer):
         :return: A list with the newly found fuzzable requests.
         """
         args = (plugin.get_name(), fuzzable_request.get_uri())
-        om.out.debug('Called _discover_worker(%s,%s)' % args)
+        om.out.debug('%s.discover(%s)' % args)
+
+        start_time = time.time()
 
         # Status reporting
         status = self._w3af_core.status
@@ -474,3 +474,7 @@ class crawl_infrastructure(BaseConsumer):
                 ve = ValueError(msg)
                 self.handle_exception(plugin.get_type(), plugin.get_name(),
                                       fuzzable_request, ve)
+
+        spent_time = time.time() - start_time
+        args = (plugin.get_name(), fuzzable_request.get_uri(), spent_time)
+        om.out.debug('%s.discover(%s) took %.2f seconds to run' % args)
