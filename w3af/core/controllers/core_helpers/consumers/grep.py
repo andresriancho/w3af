@@ -96,7 +96,7 @@ class grep(BaseConsumer):
             plugin.end()
 
     def _get_request_response_from_work_unit(self, work_unit):
-        
+
         if not isinstance(work_unit, int):
             request, response = work_unit
         else:
