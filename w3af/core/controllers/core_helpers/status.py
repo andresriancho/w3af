@@ -112,9 +112,6 @@ class w3af_core_status(object):
         :param plugin_name: The plugin_type which the w3afCore is running
         :param plugin_name: The plugin_name which the w3afCore is running
         """
-        if log:
-            om.out.debug('Starting plugin: %s.%s' % (plugin_type, plugin_name))
-            
         self._running_plugin[plugin_type] = plugin_name
         self._latest_ptype, self._latest_pname = plugin_type, plugin_name
 
