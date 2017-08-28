@@ -37,11 +37,17 @@ class HTMLParser(SGMLParser):
     """
 
     # http://www.freeformatter.com/mime-types-list.html
-    IGNORE_CONTENT_TYPES = ('application', 'video', 'audio', 'image',
-                            'chemical', 'model')
+    IGNORE_CONTENT_TYPES = ('application',
+                            'video',
+                            'audio',
+                            'image',
+                            'chemical',
+                            'model')
     WILD_ACCEPT_CONTENT_TYPES = ('text', 'message')
-    SPECIFIC_ACCEPT_CONTENT_TYPES = ('text/html', 'application/hta',
-                                     'application/xhtml+xml', 'application/xml')
+    SPECIFIC_ACCEPT_CONTENT_TYPES = ('text/html',
+                                     'application/hta',
+                                     'application/xhtml+xml',
+                                     'application/xml')
 
     PARSE_TAGS = SGMLParser.PARSE_TAGS.union({'form', 'input', 'textarea',
                                               'select', 'option'})
