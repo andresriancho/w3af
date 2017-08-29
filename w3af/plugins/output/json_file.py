@@ -95,7 +95,12 @@ class json_file(OutputPlugin):
         target_urls = [t.url_string for t in cf.cf.get('targets')]
         target_domain = cf.cf.get('target_domains')[0]
         enabled_plugins = self._enabled_plugins
-        findings = [ x._desc for x in kb.kb.get_all_findings() ]
+        def _get_desc(x):
+            try:
+                return x._desc
+            except AttributeError:
+                return None
+        findings = filter(None, [ _get_desc(x) for x in kb.kb.get_all_findings() ])
         known_urls = [ str(x) for x in kb.kb.get_all_known_urls() ]
                         
         items = []
