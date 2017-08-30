@@ -1,3 +1,4 @@
+# coding: utf8
 """
 test_variant_db.py
 
@@ -319,3 +320,27 @@ class TestVariantDB(unittest.TestCase):
 
         self.assertTrue(self.vdb.append(fr(url)))
         self.assertFalse(self.vdb.append(fr(url)))
+
+    def test_encoding_issues_se(self):
+        u = u'http://w3af.org/vård.png'
+        s = clean_fuzzable_request(fr(URL(u)))
+        e = u'(GET)-http://w3af.org/file-5692fef3f5dcd97.png'
+        self.assertEqual(s, e)
+
+    def test_encoding_issues_se_with_qs(self):
+        u = u'http://w3af.org/vård.png?id=1'
+        s = clean_fuzzable_request(fr(URL(u)))
+        e = '(GET)-http://w3af.org/vård.png?id=number'
+        self.assertEqual(s, e)
+
+    def test_encoding_issues_se_filename(self):
+        u = u'http://w3af.org/x.vård'
+        s = clean_fuzzable_request(fr(URL(u)))
+        e = '(GET)-http://w3af.org/file-5692fef3f5dcd97.vård'
+        self.assertEqual(s, e)
+
+    def test_encoding_issues_se_path(self):
+        u = u'http://w3af.org/vård/xyz.html'
+        s = clean_fuzzable_request(fr(URL(u)))
+        e = '(GET)-http://w3af.org/vård/file-5692fef3f5dcd97.html'
+        self.assertEqual(s, e)

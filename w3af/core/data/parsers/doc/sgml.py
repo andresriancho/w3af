@@ -332,18 +332,21 @@ class SGMLParser(BaseParser):
         :param attrs: The attributes for that tag
         :return: Store the emails in self._emails
         """
-        filter_ref = self._filter_ref
+        for key, mailto_address in attrs.iteritems():
+            if key not in self.URL_ATTRS:
+                continue
 
-        for _, mailto_address in filter(filter_ref, attrs.iteritems()):
-            if '@' in mailto_address:
-                if mailto_address.lower().startswith('mailto:'):
-                    try:
-                        email = self._parse_mailto(mailto_address)
-                    except ValueError:
-                        # It was an invalid email
-                        pass
-                    else:
-                        self._emails.add(email)
+            if '@' not in mailto_address:
+                continue
+
+            if mailto_address.lower().startswith('mailto:'):
+                try:
+                    email = self._parse_mailto(mailto_address)
+                except ValueError:
+                    # It was an invalid email
+                    pass
+                else:
+                    self._emails.add(email)
 
     def _parse_mailto(self, mailto):
         mailto = urllib.unquote_plus(mailto)
@@ -368,6 +371,7 @@ class SGMLParser(BaseParser):
                 and not value.startswith('#')
                 and not value.startswith('tel:')
                 and not value.startswith('callto:')
+                and not value.startswith('mailto:')
                 and not value in self.APACHE_INDEXING)
 
     def _find_references(self, tag, tag_name, attrs):

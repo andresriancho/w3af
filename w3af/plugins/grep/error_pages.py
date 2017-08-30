@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.esmre.multi_in import multi_in
 from w3af.core.data.esmre.multi_re import multi_re
 from w3af.core.data.kb.info import Info
@@ -36,9 +37,11 @@ class error_pages(GrepPlugin):
 
     ERROR_PAGES = (
         '<H1>Error page exception</H1>',
+
         # This signature fires up also in default 404 pages of aspx which
         # generates a lot of noise, so ... disabling it
-        #mesg.append('<span><H1>Server Error in ',
+        # '<span><H1>Server Error in ',
+
         '<h2> <i>Runtime Error</i> </h2></span>',
         '<h2> <i>Access is denied</i> </h2></span>',
         '<H3>Original Exception: </H3>',
@@ -111,7 +114,6 @@ class error_pages(GrepPlugin):
         # ruby
         '<h1 class="error_title">Ruby on Rails application could not be started</h1>',
 
-
         # Coldfusion
         '<title>Error Occurred While Processing Request</title></head><body><p></p>',
         '<HTML><HEAD><TITLE>Error Occurred While Processing Request</TITLE></HEAD><BODY><HR><H3>',
@@ -140,9 +142,15 @@ class error_pages(GrepPlugin):
     )
     _multi_re = multi_re(VERSION_REGEX)
 
+    MAX_REPORTED_PER_MSG = 10
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
+        #   Internal variables
+        self._potential_vulns = DiskList(table_prefix='error_pages')
+
+        self._already_reported_max_msg_exceeded = []
         self._already_reported_versions = []
         self._compiled_regex = []
 
@@ -161,21 +169,92 @@ class error_pages(GrepPlugin):
         self.find_version_numbers(request, response)
     
     def find_error_page(self, request, response):
+        # There is no need to report more than one info for the
+        # same result, the user will read the info object and
+        # analyze it even if we report it only once. If we report
+        # it twice, he'll get mad ;)
+        for _, _, _, url, _ in self._potential_vulns:
+            if url == response.get_url():
+                return
+
         for msg in self._multi_in.query(response.body):
-            
+            if self._avoid_report(request, response, msg):
+                continue
+
+            # We found a new error in a response!
             desc = 'The URL: "%s" contains the descriptive error: "%s".'
             desc %= (response.get_url(), msg)
-            i = Info('Descriptive error page', desc, response.id,
-                     self.get_name())
-            i.set_url(response.get_url())
-            i.add_to_highlight(msg)
-            
-            self.kb_append_uniq(self, 'error_page', i, 'URL')
 
-            # There is no need to report more than one info for the same result,
-            # the user will read the info object and analyze it even if we 
-            # report it only once. If we report it twice, he'll get mad ;)
+            title = 'Descriptive error page'
+
+            data = (title, desc, response.id, response.get_url(), msg)
+            self._potential_vulns.append(data)
+
+            # Just report one instance for each HTTP response, no
+            # matter if multiple strings match
             break
+
+    def _avoid_report(self, request, response, msg):
+        # We should avoid multiple reports for the same error message
+        # the idea here is that the root cause for the same error
+        # message might be the same, and fixing one will fix all.
+        #
+        # So the user receives the first report with MAX_REPORTED_PER_MSG
+        # vulnerabilities, fixes the root cause, scans again and then
+        # all those instances go away.
+        #
+        # Without this code, the scanner will potentially report
+        # thousands of issues for the same error message. Which will
+        # overwhelm the user.
+        count = 0
+
+        for title, desc, _id, url, highlight in self._potential_vulns:
+            if highlight == msg:
+                count += 1
+
+        if count < self.MAX_REPORTED_PER_MSG:
+            return False
+
+        if msg not in self._already_reported_max_msg_exceeded:
+            self._already_reported_max_msg_exceeded.append(msg)
+
+            desc = ('The application returned multiple HTTP responses'
+                    ' containing detailed error pages containing exceptions'
+                    ' and internal information. The maximum number of'
+                    ' vulnerabilities for this issue type was reached'
+                    ' and no more issues will be reported.')
+
+            i = Info('Multiple descriptive error pages', desc, [], self.get_name())
+            self.kb_append_uniq(self, 'error_page', i)
+
+        return True
+
+    def end(self):
+        """
+        This method is called when the plugin wont be used anymore.
+        """
+        all_findings = kb.kb.get_all_findings()
+
+        for title, desc, _id, url, highlight in self._potential_vulns:
+            for info in all_findings:
+                # This makes sure that if the sqli plugin found a vulnerability
+                # in the same URL as we found a detailed error, we won't report
+                # the detailed error.
+                #
+                # If the user fixes the sqli vulnerability and runs the scan again
+                # most likely the detailed error will disappear too. If the sqli
+                # vulnerability disappears and this one remains, it will appear
+                # as a new vulnerability in the second scan.
+                if info.get_url() == url:
+                    break
+            else:
+                i = Info(title, desc, _id, self.get_name())
+                i.set_url(url)
+                i.add_to_highlight(highlight)
+
+                self.kb_append_uniq(self, 'error_page', i)
+
+        self._potential_vulns.cleanup()
 
     def find_version_numbers(self, request, response):
         """

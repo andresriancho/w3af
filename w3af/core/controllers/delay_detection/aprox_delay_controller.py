@@ -55,10 +55,10 @@ class AproxDelayController(DelayMixIn):
     was delayed at least multiplier * original_time to continue with the
     next step
     """
-    DELTA = 0.5
+    DELAY_DIFF_MULT = 4.0
 
     DELAY_SETTINGS = {LINEARLY: [1, 10, 100, 500],
-                      EXPONENTIALLY: [1, 2, 3, 4],}
+                      EXPONENTIALLY: [1, 2, 3, 4, 5, 6, 7, 8]}
 
     def __init__(self, mutant, delay_obj, uri_opener, delay_setting=LINEARLY):
         """
@@ -86,37 +86,42 @@ class AproxDelayController(DelayMixIn):
     def delay_is_controlled(self):
         """
         All the logic/magic is in this method. The logic is very simple:
-            * First send the payload as-is, and record the original time
-            * Send the payload multiplied by 10, and record the time
-            * If there's a big increase in the delay, start testing with the
-              multipliers using this request as a base.
-              
-              If there's NO noticeable increase then multiply the payload by
-              10 and try again. Try this 2 more times.
-            * If the multipliers do their work, we have found a vulnerability!
 
-        We go up and down and change the multiplier in order to make sure
-        that WE are controlling the delay and there is no other external factor
-        in place.
+            * First send the payload as-is, and record the original time
+
+            * Send the payload multiplied by DELAY_SETTINGS, and record
+              the time. If there's a big increase in the delay then we've
+              found a vulnerability!
+
+            * Increase the multiplier if no delay is found.
+
+        Note that we don't start directly with the highest multiplier because
+        these aprox delays are usually related with CPU bound functions (not
+        sleep). If we start with the highest maybe we could break something.
         """
         responses = []
-        
-        multipliers_that_delay = []
-        
+        original_wait_time = self.get_original_time()
+
+        # Find a multiplier that delays
+        multiplier = self.find_delay_multiplier(original_wait_time, responses)
+        if multiplier is None:
+            return False, responses
+
+        # We want to make sure that the multiplier actually works and
+        # that the delay is stable
         for _ in xrange(3):
-            
             original_wait_time = self.get_original_time()
-            
-            multiplier = self.find_delay_multiplier(original_wait_time,
-                                                    responses)
-            if multiplier is None:
-                return False, responses
-            else:
-                multipliers_that_delay.append(multiplier)
-                if len(set(multipliers_that_delay)) != 1:
-                    return False, responses
-        
-        return True, responses
+            delays, resp = self.multiplier_delays_response(multiplier,
+                                                           original_wait_time)
+            responses.append(resp)
+
+            if not delays:
+                break
+        else:
+            # All the delays were confirmed, vuln!
+            return True, responses
+
+        return False, responses
     
     def find_delay_multiplier(self, original_wait_time, responses):
         for multiplier in self.DELAY_SETTINGS[self.delay_setting]:
@@ -143,7 +148,7 @@ class AproxDelayController(DelayMixIn):
         response = self.uri_opener.send_mutant(mutant, cache=False)
 
         # Test
-        if response.get_wait_time() > (original_wait_time * 2.5):
+        if response.get_wait_time() > (original_wait_time * self.DELAY_DIFF_MULT):
                 return True, response
 
         return False, response

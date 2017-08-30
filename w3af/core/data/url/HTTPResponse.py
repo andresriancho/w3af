@@ -545,19 +545,22 @@ class HTTPResponse(object):
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
-                _body = smart_unicode(rawbody, charset,
+                _body = smart_unicode(rawbody,
+                                      charset,
                                       errors=ESCAPED_CHAR,
                                       on_error_guess=False)
             except LookupError:
                 # Warn about a buggy charset
                 msg = ('Charset LookupError: unknown charset: %s; '
                        'ignored and set to default: %s' %
-                      (charset, self._charset))
+                       (charset, DEFAULT_CHARSET))
                 om.out.debug(msg)
 
                 # Forcing it to use the default
                 charset = DEFAULT_CHARSET
-                _body = smart_unicode(rawbody, charset, errors=ESCAPED_CHAR,
+                _body = smart_unicode(rawbody,
+                                      charset,
+                                      errors=ESCAPED_CHAR,
                                       on_error_guess=False)
 
         return _body, charset

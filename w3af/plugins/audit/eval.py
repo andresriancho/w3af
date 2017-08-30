@@ -50,7 +50,7 @@ class eval(AuditPlugin):
         "print '%%s'x%s" % PRINT_REPEATS,
         # Python
         # http://docs.python.org/reference/simple_stmts.html#the-exec-statement
-        "print '%%s'*%s" % PRINT_REPEATS,
+        "print('%%s'*%s)" % PRINT_REPEATS,
         # ASP
         "Response.Write(new String(\"%%s\",%s))" % PRINT_REPEATS,
     )

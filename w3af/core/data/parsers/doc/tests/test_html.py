@@ -21,10 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import os
 
 import w3af.core.data.kb.config as cf
 
 from nose.plugins.attrib import attr
+
+from w3af import ROOT_PATH
 
 from w3af.core.controllers.misc_settings import EXCLUDE, INCLUDE
 
@@ -484,3 +487,15 @@ class TestHTMLParser(unittest.TestCase):
         p.parse()
 
         self.assertEqual(len(p.forms), 2)
+
+    def test_unicodedecoreerror_ascii_url(self):
+        HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                                 'tests', 'data', 'se.html')
+        body = file(HTML_FILE).read()
+
+        headers = Headers()
+        headers['content-type'] = 'text/html; charset=utf-8'
+
+        r = build_http_response(self.url, body, headers=headers)
+        p = RaiseHTMLParser(r)
+        p.parse()

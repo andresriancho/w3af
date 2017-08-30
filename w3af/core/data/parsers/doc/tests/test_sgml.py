@@ -94,6 +94,15 @@ class TestSGMLParser(unittest.TestCase):
         expected_res = {u'abc@w3af.com', u'abc_def@w3af.com'}
         self.assertEqual(p.get_emails(), expected_res)
 
+    def test_mailto_ignored_in_links(self):
+        body = u'<a href="mailto:abc@w3af.com">a</a>'
+        resp = build_http_response(self.url, body)
+        p = SGMLParser(resp)
+        p.parse()
+
+        parsed, _ = p.references
+        self.assertEqual(parsed, [])
+
     def test_mailto_subject_body(self):
         body = u'<a href="mailto:abc@w3af.com?subject=testing out mailto'\
                u'&body=Just testing">test</a>'

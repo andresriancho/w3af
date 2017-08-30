@@ -21,9 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import uuid
 import textwrap
+import pprint
 
 from jinja2 import StrictUndefined, Environment
 
+import w3af.core.controllers.output_manager as om
+
+from w3af.core.data.misc.encoding import smart_str, smart_unicode
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
 from w3af.core.data.kb.info import Info
 from w3af.core.controllers.misc.human_number import human_number
@@ -129,17 +133,29 @@ class InfoSet(object):
             return self.first_info.get_desc(with_id=with_id)
 
         # We render the template using the information set data
-        context = {'urls': [str(u) for u in self.get_urls()],
-                   'uris': [str(u) for u in self.get_uris()],
+        context = {'urls': [smart_unicode(u) for u in self.get_urls()],
+                   'uris': [smart_unicode(u) for u in self.get_uris()],
                    'severity': self.get_severity(),
                    'name': self.get_name(),
                    'id': self.get_id(),
-                   'method': self.get_method(),
+                   'method': smart_unicode(self.get_method()),
                    'plugin': self.get_plugin_name()}
         context.update(self.first_info.items())
 
-        template = self.JINJA2_ENV.from_string(textwrap.dedent(self.TEMPLATE))
-        return template.render(context)
+        template_str = textwrap.dedent(self.TEMPLATE)
+        template = self.JINJA2_ENV.from_string(template_str)
+
+        try:
+            rendered_desc = template.render(context)
+        except UnicodeDecodeError:
+            context_pp = pprint.pformat(context, indent=4)
+            msg = ('UnicodeDecodeError found while rendering:\n\n%s\n\n'
+                   'Using the following context:\n\n%r\n\n')
+            om.out.debug(msg % (smart_str(template_str),
+                                smart_str(context_pp)))
+            raise
+
+        return rendered_desc
 
     def get_id(self):
         """
