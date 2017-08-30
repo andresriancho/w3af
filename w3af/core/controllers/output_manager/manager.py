@@ -179,7 +179,44 @@ class OutputManager(Process):
         self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
-            o_plugin.flush()
+            #
+            #   Plugins might crash when calling .flush(), a good example was
+            #   the unicodedecodeerror found in xml_file which was triggered
+            #   when the findings were written to file.
+            #
+            try:
+                o_plugin.flush()
+            except Exception, exception:
+                self._handle_output_plugin_exception(o_plugin, exception)
+
+    def _handle_output_plugin_exception(self, o_plugin, exception):
+        if self._w3af_core is None:
+            return
+
+        # Smart error handling, much better than just crashing.
+        # Doing this here and not with something similar to:
+        # sys.excepthook = handle_crash because we want to handle
+        # plugin exceptions in this way, and not framework
+        # exceptions
+        #
+        # FIXME: I need to import this here because of the awful
+        #        singletons I use all over the framework. If imported
+        #        at the top, they will generate circular import errors
+        from w3af.core.controllers.core_helpers.status import w3af_core_status
+
+        class fake_status(w3af_core_status):
+            pass
+
+        status = fake_status(self._w3af_core)
+        status.set_current_fuzzable_request('output', 'n/a')
+        status.set_running_plugin('output', o_plugin.get_name(),
+                                  log=False)
+
+        exec_info = sys.exc_info()
+        enabled_plugins = 'n/a'
+        self._w3af_core.exception_handler.handle(status, exception,
+                                                 exec_info,
+                                                 enabled_plugins)
 
     def should_flush(self):
         """
@@ -295,34 +332,8 @@ class OutputManager(Process):
             try:
                 opl_func_ptr = getattr(o_plugin, action_name)
                 apply(opl_func_ptr, args, kwds)
-            except Exception, e:
-                if self._w3af_core is None:
-                    return
-                
-                # Smart error handling, much better than just crashing.
-                # Doing this here and not with something similar to:
-                # sys.excepthook = handle_crash because we want to handle
-                # plugin exceptions in this way, and not framework
-                # exceptions
-                #
-                # FIXME: I need to import this here because of the awful
-                #        singletons I use all over the framework. If imported
-                #        at the top, they will generate circular import errors
-                from w3af.core.controllers.core_helpers.status import w3af_core_status
-
-                class fake_status(w3af_core_status):
-                    pass
-
-                status = fake_status(self._w3af_core)
-                status.set_current_fuzzable_request('output', 'n/a')
-                status.set_running_plugin('output', o_plugin.get_name(),
-                                          log=False)
-
-                exec_info = sys.exc_info()
-                enabled_plugins = 'n/a'
-                self._w3af_core.exception_handler.handle(status, e,
-                                                         exec_info,
-                                                         enabled_plugins)
+            except Exception, exception:
+                self._handle_output_plugin_exception(o_plugin, exception)
 
     def set_output_plugin_inst(self, output_plugin_inst):
         self._output_plugin_instances.append(output_plugin_inst)

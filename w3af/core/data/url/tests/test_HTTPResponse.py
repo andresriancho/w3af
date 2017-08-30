@@ -21,15 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import cPickle
+import os
 from random import choice
 
 import msgpack
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
 from w3af.core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
+from w3af import ROOT_PATH
 
 
 TEST_RESPONSES = {
@@ -244,4 +247,26 @@ class TestHTTPResponse(unittest.TestCase):
         expected_dump = u'HTTP/1.1 200 Déplacé Temporairement\r\n'.encode('utf8')
 
         self.assertEqual(resp.dump_response_head(), expected_dump)
+
+    def test_http_response_with_binary_no_escape(self):
+
+        raise SkipTest('See: https://github.com/andresriancho/w3af/issues/15741')
+
+        # This test reproduces issue
+        # https://github.com/andresriancho/w3af/issues/15741
+        CONTENT_TYPES = ['application/binary', 'image/jpeg', 'binary', 'text/html']
+        TEST_FILE = os.path.join(ROOT_PATH, 'core', 'controllers', 'misc', 'tests',
+                                 'data', 'code-detect-false-positive.jpg')
+
+        body = file(TEST_FILE).read()
+
+        # Note: This is failing when the body contains binary, the content-type
+        # is text/html, and the HTTPResponse object trusts the content-type
+        # received from the wire.
+        for content_type in CONTENT_TYPES:
+            headers = Headers([('Content-Type', content_type)])
+            resp = self.create_resp(headers, body)
+
+            msg = 'Incorrect escape with %s!' % content_type
+            self.assertNotIn('\\xff\\xd8', resp.body, msg)
 

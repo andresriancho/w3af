@@ -60,19 +60,22 @@ class redos(AuditPlugin):
                                            delay_setting=EXPONENTIALLY)
                 success, responses = adc.delay_is_controlled()
     
-                if success:
-                    # Now I can be sure that I found a vuln, we control the
-                    # response time with the delay
-                    desc = 'ReDoS was found at: %s' % mutant.found_at()
-                    
-                    response_ids = [r.id for r in responses]
-                    
-                    v = Vuln.from_mutant('ReDoS vulnerability', desc,
-                                         severity.MEDIUM, response_ids,
-                                         self.get_name(), mutant)
-                    
-                    self.kb_append_uniq(self, 'redos', v)
-                    break
+                if not success:
+                    continue
+
+                # Now I can be sure that I found a vuln, we control the
+                # response time with the delay
+                desc = 'ReDoS was found at: %s' % mutant.found_at()
+                response_ids = [r.id for r in responses]
+
+                v = Vuln.from_mutant('ReDoS vulnerability', desc,
+                                     severity.MEDIUM, response_ids,
+                                     self.get_name(), mutant)
+
+                self.kb_append_uniq(self, 'redos', v)
+
+                # Only test regular expressions until we find a delay
+                break
 
     def get_delays(self):
         """

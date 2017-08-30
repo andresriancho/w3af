@@ -46,7 +46,7 @@ def clean_data_container(data_container):
         else:
             _type = 'string'
 
-        result.append('%s=%s' % (key, _type))
+        result.append('%s=%s' % (key.encode(DEFAULT_ENCODING), _type))
 
     return '&'.join(result)
 
@@ -102,7 +102,7 @@ def clean_path_filename(url):
     :param url: The URL instance
     :return: A clean URL string
     """
-    filename = url.get_file_name()
+    filename = url.get_file_name().encode(DEFAULT_ENCODING)
     path = url.get_path_without_file().encode(DEFAULT_ENCODING)
 
     if filename:

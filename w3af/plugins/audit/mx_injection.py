@@ -39,10 +39,15 @@ class mx_injection(AuditPlugin):
         'Unexpected extra arguments to Select',
         'Bad or malformed request',
         'Could not access the following folders',
-        'A000',
-        'A001',
+        # Removing! Too many false positives...
+        # 'A000',
+        # 'A001',
         'Invalid mailbox name',
-        'To check for outside changes to the folder list go to the folders page'
+        'To check for outside changes to the folder list go to the folders page',
+        'go to the folders page',
+        'Query: SELECT',
+        'Query: FETCH',
+        'IMAP command'
     )
     _multi_in = multi_in(MX_ERRORS)
 
@@ -96,10 +101,7 @@ class mx_injection(AuditPlugin):
 
         :return: A list with all mx_injection strings to test. Example: [ '\"','f00000']
         """
-        mx_injection_strings = []
-        mx_injection_strings.append('"')
-        mx_injection_strings.append('iDontExist')
-        mx_injection_strings.append('')
+        mx_injection_strings = ['"', 'iDontExist', '']
         return mx_injection_strings
 
     def get_long_desc(self):

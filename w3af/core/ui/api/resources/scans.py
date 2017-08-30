@@ -85,7 +85,7 @@ def start_scan():
     #
     # Now that we know that the profile is valid I verify the scan target info
     #
-    if not len(target_urls):
+    if target_urls is None or not len(target_urls):
         abort(400, 'No target URLs specified')
 
     for target_url in target_urls:

@@ -258,3 +258,4 @@ class DiskList(object):
         return u'<DiskList [%s]>' % ', '.join([unicode(i) for i in self])
     
     __str__ = __unicode__
+

@@ -25,8 +25,8 @@ class DelayMixIn(object):
         original_wait_times = []
 
         for _ in xrange(rep):
-            time = self.uri_opener.send_mutant(self.mutant,
-                                               cache=False).get_wait_time()
+            resp = self.uri_opener.send_mutant(self.mutant, cache=False)
+            time = resp.get_wait_time()
             original_wait_times.append(time)
             
         return float(sum(original_wait_times)) / len(original_wait_times)
