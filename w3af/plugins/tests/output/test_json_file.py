@@ -20,24 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 import os
-import StringIO
-import unittest
 
 from nose.plugins.attrib import attr
 
-import w3af.core.data.constants.severity as severity
-
-from w3af import ROOT_PATH
-from w3af.core.data.kb.vuln import Vuln
+from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.tests.test_vuln import MockVuln
-from w3af.core.controllers.ci.moth import get_moth_http
-from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_types import OUTPUT_FILE
+from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
-from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
-from w3af.plugins.output.json_file import json_file
 
 @attr('smoke')
 class TestJsonOutput(PluginTest):
@@ -45,7 +35,6 @@ class TestJsonOutput(PluginTest):
     target_url = get_moth_http('/audit/sql_injection/where_integer_qs.py')
 
     FILENAME = 'output-unittest.json'
-    XSD = os.path.join(ROOT_PATH, 'plugins', 'output', 'json_file', 'report.xsd')
 
     _run_configs = {
         'cfg': {
@@ -72,24 +61,33 @@ class TestJsonOutput(PluginTest):
 
         self.assertEquals(
             set(sorted([v.get_url() for v in kb_vulns])),
-            set(sorted([v.get_url() for v in file_vulns]))
+            set(sorted([v.get_url() for v in file_vulns])),
+            set(sorted([v.get_url() for v in kb_vulns])),
         )
 
         self.assertEquals(
             set(sorted([v.get_name() for v in kb_vulns])),
-            set(sorted([v.get_name() for v in file_vulns]))
+            set(sorted([v.get_name() for v in file_vulns])),
+            set(sorted([v.get_name() for v in kb_vulns]))
         )
 
         self.assertEquals(
             set(sorted([v.get_plugin_name() for v in kb_vulns])),
-            set(sorted([v.get_plugin_name() for v in file_vulns]))
+            set(sorted([v.get_plugin_name() for v in file_vulns])),
+            set(sorted([v.get_plugin_name() for v in kb_vulns]))
         )
 
-        self.assertEqual(validate_json(file(self.FILENAME).read(), self.XSD),
-                         '')
-
     def _from_json_get_vulns(self, filename):
-        return json.load(open(filename, 'r'))
+        json_data = json.load(open(filename, 'r'))
+        vulns = []
+
+        for finding in json_data['items']:
+
+            v = MockVuln(finding['Name'], None, 'High', 1, 'sqli')
+            v.set_url(URL(finding['URL']))
+            vulns.append(v)
+
+        return vulns
 
     def tearDown(self):
         super(TestJsonOutput, self).tearDown()
