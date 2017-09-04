@@ -33,7 +33,8 @@ from bravado_core.schema import get_format
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.doc.baseparser import BaseParser
-from w3af.core.data.fuzzer.form_filler import smart_fill
+from w3af.core.data.fuzzer.form_filler import (smart_fill,
+                                               smart_fill_file)
 
 # Silence please.
 SILENCE = ('bravado_core.resource',
@@ -70,6 +71,14 @@ class OpenAPI(BaseParser):
                 'produces',
                 'swagger',
                 'paths')
+
+    DEFAULT_VALUES_BY_TYPE = {'int64': 42,
+                              'int32': 42,
+                              'float': 4.2,
+                              'double': 4.2,
+                              'date': '2017-06-30T23:59:60Z',
+                              'date-time': '2017-06-30T23:59:60Z',
+                              'boolean': True}
 
     def __init__(self, http_response):
         super(OpenAPI, self).__init__(http_response)
@@ -159,7 +168,18 @@ class OpenAPI(BaseParser):
         for api_resource_name, resource in spec.resources.items():
             for operation_name, operation in resource.operations.items():
 
-                optional, required = self._get_params(spec, operation)
+                try:
+                    optional, required = self._get_params(spec, operation)
+                except RuntimeError as rte:
+                    msg = ('A RuntimeError was raised by the OpenAPI._get_params()'
+                           ' method. This is most likely by a reference loop in'
+                           ' the OpenAPI models. The exception was: "%s"')
+                    om.out.debug(msg % rte)
+                    continue
+                except OpenAPIParamResolutionException as oae:
+                    msg = ()
+                    om.out.debug(msg % oae)
+                    continue
 
                 #
                 # First we create a REST API call only with required parameters
@@ -277,61 +297,160 @@ class OpenAPI(BaseParser):
         if parameter.default is not None:
             return parameter.default
 
+        value = self._get_param_value_for_primitive(spec, parameter)
+        if value is not None:
+            return value
+
+        return self._get_param_value_for_model(spec, parameter)
+
+    def _get_param_value_for_type_and_name(self, parameter_type, parameter_name):
+        """
+        :param parameter_type: The type of parameter (string, int32, array, etc.)
+        :param parameter_name: The name of the parameter to fill
+        :return: The parameter value
+        """
+        default_value = self.DEFAULT_VALUES_BY_TYPE.get(parameter_type, None)
+        if default_value is not None:
+            return default_value
+
+        if parameter_type == 'string':
+            return smart_fill(parameter_name)
+
+        if parameter_type == 'file':
+            return smart_fill_file(parameter_name, 'cat.png')
+
+    def _get_param_value_for_primitive(self, spec, parameter):
+        """
+        Helper method for _get_param_value().
+
+        :param spec: The open api specification
+        :param parameter: The parameter which (might or might not) be of a primitive type
+        :return: The value to assign to this parameter in HTTP requests
+        """
         #
         #   The parameter has a strong type
         #   https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
         #
         try:
-            parameter_format = parameter.param_spec['format']
+            parameter_type = parameter.param_spec['format']
         except KeyError:
-            pass
+            try:
+                parameter_type = parameter.param_spec['type']
+            except KeyError:
+                # This is not a primitive type, most likely a model
+                return None
+
+        value = self._get_param_value_for_type_and_name(parameter_type,
+                                                        parameter.name)
+        if value is not None:
+            return value
+
+        #
+        #   Arrays are difficult to handle since they can contain complex data
+        #
+        value = self._get_param_value_for_array(spec, parameter)
+
+        if value is not None:
+            return value
+
+        # We should never reach this!
+        msg = 'Failed to get a value for parameter with type: %s'
+        raise OpenAPIParamResolutionException(msg % parameter_type)
+
+    def _get_param_value_for_array(self, spec, parameter):
+        """
+        :param spec: The parsed open api specification
+        :param parameter: The parameter name
+        :return: A python list (json array) containing values
+        """
+        if parameter.param_spec.get('type', None) != 'array':
+            return None
+
+        if parameter.param_spec.get('items', None) is None:
+            # Potentially invalid array specification, we just return
+            # an empty array
+            return []
+
+        # Do we have a default value which can be used?
+        if 'default' in parameter.param_spec['items']:
+            return [parameter.param_spec['items']['default']]
+
+        #
+        # The array definition is a little bit more complex
+        # than just returning a string. For example it might
+        # look like this:
+        #
+        #     u'photoUrls': {u'items': {u'type': u'string'},
+        #                    u'type': u'array',
+        #
+        # Where this is completely valid: ['http://abc/']
+        #
+        # Or like this:
+        #
+        #     u'ids': {u'items': {u'type': u'int32'},
+        #              u'type': u'array',
+        #
+        # Where we need to fill with integers: [1, 3, 4]
+        #
+        # Or even worse... there is a model in the array:
+        #
+        #     u'tags': {u'items': {u'$ref': u'#/definitions/Tag',
+        #                           'x-scope': [u'http://moth/swagger.json',
+        #                                      u'http://moth/swagger.json#/definitions/Pet']},
+        #               u'type': u'array',
+        #
+        # And we need to fill the array with one or more tags
+        #
+
+        value = None
+
+        # Handle arrays which hold primitive types
+        array_item_type = parameter.param_spec['items'].get('type', None)
+        if array_item_type is not None:
+            value = self._get_param_value_for_type_and_name(array_item_type,
+                                                            parameter.name)
+
+        # Handle arrays which hold models
+        array_model_ref = parameter.param_spec['items'].get('$ref', None)
+        if array_model_ref is not None:
+            value = self._get_param_value_for_model(array_model_ref,
+                                                    parameter.name)
+
+        if value is not None:
+            return [value]
         else:
-            if parameter_format in ('int64', 'int32'):
-                return 42
+            return []
 
-            if parameter_format in ('float', 'double'):
-                return 4.2
-
-            if parameter_format in ('date', 'date-time'):
-                return '2017-06-30T23:59:60Z'
-
-        try:
-            parameter_type = parameter.param_spec['type']
-        except KeyError:
-            pass
-        else:
-            if parameter_type in ('string',):
-                return smart_fill(parameter.name)
-
-            if parameter_type in ('boolean',):
-                return True
-
-            if parameter_type == 'array':
-                try:
-                    return [parameter.param_spec['items']['default']]
-                except KeyError:
-                    return [smart_fill(parameter.name)]
-
+    def _get_param_value_for_model(self, spec, parameter):
         #
         #   The parameter is a Model, this is the hardest case of all,
         #   we need to fetch the model, process it and then return a value
         #
-        if 'schema' in parameter.param_spec and \
-           'x-scope' in parameter.param_spec['schema'] and \
-           '$ref' in parameter.param_spec['schema']:
+        try:
+            parameter.param_spec['schema']['$ref']
+            parameter.param_spec['schema']['x-scope']
+        except KeyError:
+            pass
+        else:
             return self._handle_model(spec, parameter)
 
         # We did our best with the previous steps, now we just guess
         return smart_fill(parameter.name)
 
+
     def _handle_model(self, spec, parameter):
         """
+        Each model attribute can be of a primitive type or another model. To
+        resolve this we call _get_param_value() in a recursive way.
+
         :param spec: The parsed specification
         :param parameter: The parameter object
-        :return: A model instance with the parameters set and ready to send to
-                 the wire.
+        :return: A dict instance representing the model. The keys are the model
+                 attributes and the values are the default / guessed values
+                 defined by _get_param_value().
         """
         print get_format(spec, parameter.param_spec)
+        return {'name': 'y', 'photoUrls': ['x']}
 
     def get_forms(self):
         """
@@ -343,3 +462,7 @@ class OpenAPI(BaseParser):
     get_comments = BaseParser._return_empty_list
     get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
     get_clear_text_body = BaseParser._return_empty_list
+
+
+class OpenAPIParamResolutionException(Exception):
+    pass
