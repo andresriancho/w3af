@@ -63,7 +63,7 @@ class TestMetaGenerator(PluginTest):
         self.assertEquals(set([severity.INFORMATION] * 2),
                           set([v.get_severity() for v in vulns]))
 
-        self.assertEquals(set(['Interesting META tag'] * 2),
+        self.assertEquals(set(['Generator information'] * 2),
                           set([v.get_name() for v in vulns]))
 
         joined_desc = ''.join([v.get_desc() for v in vulns])
