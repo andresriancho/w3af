@@ -24,7 +24,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.csp.utils import site_protected_against_xss_by_csp
+from w3af.core.controllers.csp.utils import CSP
 
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.disk_list import DiskList
@@ -114,7 +114,10 @@ class xss(AuditPlugin):
         
         :return: None
         """
-        csp_protects = site_protected_against_xss_by_csp(response)
+
+        csp = CSP()
+        csp.init_from_response(response)
+        csp_protects = csp.protects_against_xss()
         vuln_severity = severity.LOW if csp_protects else severity.MEDIUM
         
         desc = 'A Cross Site Scripting vulnerability was found at: %s'
@@ -277,7 +280,9 @@ class xss(AuditPlugin):
         desc %= (mod_value, mutant.get_token_name(), mutant.get_url(),
                  response.get_url())
         
-        csp_protects = site_protected_against_xss_by_csp(response)
+        csp = CSP()
+        csp.init_from_response(response)
+        csp_protects = csp.protects_against_xss()
         vuln_severity = severity.MEDIUM if csp_protects else severity.HIGH
         
         if csp_protects:

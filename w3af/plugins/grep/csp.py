@@ -19,11 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.db.disk_list import DiskList
-from w3af.core.data.db.disk_item import DiskItem
-from w3af.core.data.kb.vuln import Vuln
+import w3af.core.data.constants.severity as severity
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.controllers.csp.utils import find_vulns
+from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.options.option_list import OptionList
+from w3af.core.controllers.csp.utils import CSP
+from w3af.core.data.kb.vuln import Vuln
 
 
 class csp(GrepPlugin):
@@ -31,146 +32,218 @@ class csp(GrepPlugin):
     Identifies incorrect or too permissive Content Security Policy headers.
     """
     VULN_NAME = 'CSP vulnerability'
-
+    _trusted_hosts = []
+    _source_limit = 10
+    _report_eval = True
+    _report_no_report_uri = False
+    _default_src_strictness = 0
+    _report_not_fallback = False
+    
     def __init__(self):
         """
         Class init
         """
         GrepPlugin.__init__(self)
-
-        self._total_count = 0
-        self._vulns = DiskList(table_prefix='csp')
-        self._urls = DiskList(table_prefix='csp')
+        self._responses_without_csp = set()
+        # We don't use disk_* here because 
+        # the list should be too small for such storage
+        # e.g. it is common for web app to have only **one** CSP policy
+        self.csps = set()
+        self.csp_cache = []
                 
-    def get_long_desc(self):
-        return """
-        This plugin identifies incorrect or too permissive CSP (Content Security Policy)
-        headers returned by the web application under analysis.
-
-        Additional information: 
-         * https://www.owasp.org/index.php/Content_Security_Policy
-         * http://www.w3.org/TR/CSP
-        """        
-
     def grep(self, request, response):
         """
         Perform search on current HTTP request/response exchange.
         Store information about vulns for further global processing.
         
-        @param request: HTTP request
-        @param response: HTTP response  
+        :param request: HTTP request
+        :param response: HTTP response  
         """
-        # Check that current URL has not been already analyzed
-        response_url = response.get_url().uri2url()
-        if response_url in self._urls:
-            return        
+        without_csp_limit = 10
+        csp_cache_limit = 3
+        csp = CSP()
+        csp.source_limit = self._source_limit
+        csp.trusted_hosts = self._trusted_hosts
+        csp.report_eval = self._report_eval
+        csp.report_no_report_uri = self._report_no_report_uri
+        csp.default_src_strictness = self._default_src_strictness
+        csp.report_not_fallback = self._report_not_fallback
 
-        self._urls.append(response_url)
-                
-        # Search issues using dedicated module
-        csp_vulns = find_vulns(response)
-        
-        # Analyze issue list
-        if len(csp_vulns) > 0:
-            vuln_store_item = DiskCSPVulnStoreItem(response_url,
-                                                   response.id,
-                                                   csp_vulns)
-            self._vulns.append(vuln_store_item)
+        if csp.init_from_response(response): 
+            self.csps.add(csp)
+            if len(self.csp_cache) < csp_cache_limit:
+                self.csp_cache.append(csp)
+        elif len(self._responses_without_csp) < without_csp_limit:
+            self._responses_without_csp.add((response.id, 
+                response.get_url().uri2url()))
 
-            # Increment the vulnerabilities counter
-            for csp_directive_name in csp_vulns:
-                self._total_count += len(csp_vulns[csp_directive_name])
-                
     def end(self):
         """
         Perform global analysis for all vulnerabilities found.
         """
-        # Check if vulns have been found
-        if self._total_count == 0:
+        csp_vulns = ""
+        result = ""
+
+        # The whole target has no CSP protection
+        if not self.csps:
+            result = self.vuln_tpl % self.vuln_no_csp_tpl
+            v = Vuln(self.VULN_NAME, result, severity.MEDIUM, 
+                    [r[0] for r in self._responses_without_csp],
+                    self.get_name())
+            self.kb_append(self, 'csp', v)
             return
+
+        # Vulns in csps
+        for csp in self.csps:
+            tmp = ""
+            for policy in csp.policies:
+                if policy.find_vulns():
+                    vulns = " * " + "\n * ".join([v.desc for v in policy.find_vulns()])
+                    tmp += self.policy_tpl % (policy.pretty(), vulns)
+            if tmp:
+                csp_vulns += "URL: %s" % csp.response_url + tmp
         
-        # Parse vulns collection
-        vuln_already_reported = []
+        if csp_vulns:
+            result += self.vuln_csp_tpl + csp_vulns
 
-        for vuln_store_item in self._vulns:
-            for csp_directive_name, csp_vulns_list in vuln_store_item.csp_vulns.iteritems():
-                for csp_vuln in csp_vulns_list:
-                    # Check if the current vuln is common (shared) to several
-                    # url processed and has been already reported
-                    if csp_vuln.desc in vuln_already_reported:
-                        continue
-
-                    # Search for current vuln occurrences in order to know if
-                    # the vuln is common (shared) to several url processed
-                    occurrences = self._find_occurrences(csp_vuln.desc)
-
-                    if len(occurrences) > 1:
-                        # Shared vuln case
-                        v = Vuln(self.VULN_NAME, csp_vuln.desc,
-                                 csp_vuln.severity, occurrences,
-                                 self.get_name())
-                        v.set_url(vuln_store_item.url.base_url())
-
-                        vuln_already_reported.append(csp_vuln.desc)
-                    else:
-                        # Isolated vuln case
-                        v = Vuln(self.VULN_NAME, csp_vuln.desc,
-                                 csp_vuln.severity, vuln_store_item.resp_id,
-                                 self.get_name())
-                        v.set_url(vuln_store_item.url)
-
-                    # Report vuln
-                    self.kb_append(self, 'csp', v)
-                
-        # Cleanup
-        self._urls.cleanup()
-        self._vulns.cleanup()
-
-    def _find_occurrences(self, vuln_desc):
-        """
-        Internal utility function to find all occurrences of a vuln
-        into the global collection of vulns found by the plugin.
+        # If there were found URLs without CSP
+        if self._responses_without_csp:
+            csp_vulns_detected = True
+            result += self.vuln_without_tpl % "\n".join(
+                    [str(r[1]) for r in self._responses_without_csp])
         
-        @param vuln_desc: Vulnerability description.
-        @return: List of response ID for which the vuln is found.
+        # Try to find weak nonces
+        if len(self.csp_cache) > 1:
+            csp = self.csp_cache[0]
+            nonce_vulns = csp.find_nonce_vulns(self.csp_cache[1:])
+            if nonce_vulns:
+                vulns = " * " + "\n * ".join([v.desc for v in nonce_vulns])
+                result += self.common_tpl % vulns
+
+        if result:
+            v = Vuln(self.VULN_NAME, self.vuln_tpl % result, severity.MEDIUM, 
+                    [csp.response_id for csp in self.csps],
+                    self.get_name())
+            self.kb_append(self, 'csp', v)
+
+    def get_options(self):
         """
-        list_resp_id = []
-
-        # Check input for quick exit
-        if vuln_desc is None or vuln_desc.strip() == "":
-            return list_resp_id
-       
-        # Parse vulns collection
-        ref = vuln_desc.lower().strip()        
-        for vuln_store_item in self._vulns:
-            for csp_directive_name, csp_vulns_list in vuln_store_item.csp_vulns.iteritems():
-                for csp_vuln in csp_vulns_list:        
-                    if csp_vuln.desc.strip().lower() == ref:
-                        if vuln_store_item.resp_id not in list_resp_id:
-                            list_resp_id.append(vuln_store_item.resp_id)
-
-        return list_resp_id
-
-
-class DiskCSPVulnStoreItem(DiskItem):
-    """
-    This is a class to store CSP vulnerabilities found for a URL (URL+ID) in a
-    DiskList or DiskSet.
-    """
-
-    def __init__(self, r_url, r_id, r_vulns):
+        :return: A list of option objects for this plugin.
         """
-        Constructor.
-        @param r_url: HTTP response url
-        @param r_id: HTTP response ID
-        @param r_vulns: CSP vulnerabilities found
-        """
-        self.url = r_url
-        self.resp_id = r_id
-        self.csp_vulns = r_vulns
+        ol = OptionList()
 
-    def get_eq_attrs(self):
+        d = 'Maximum number limit of sources in source list of directive'
+        h = ('The plugin will report a vulnerability when detects '
+        'that number of sources in source list of any directive '
+        'is bigger then this limit.')
+        o = opt_factory('source_limit', self._source_limit, d, 'integer', help=h)
+        ol.add(o)
+
+        d = 'List of trusted hosts for finding untrusted ones in source list of directive'
+        h = ('The plugin will report a vulnerability when detects '
+        'that source list of any directive contains untrusted host')
+        o = opt_factory('trusted_hosts', self._trusted_hosts, d, 'list', help=h)
+        ol.add(o)
+
+        d = "Report when detects usage of 'unsafe-eval' in source list of directive"
+        h = ("Unfortunately it is very hard to switch off 'unsafe-eval' "
+        'in e.g. script-src directive because a lot of JS staff use eval().')
+        o = opt_factory('report_eval', self._report_eval, d, 'boolean', help=h)
+        ol.add(o)
+
+        d = 'Report when detects that report-uri directive is not set'
+        h = ('Monitoring a policy is useful for testing whether '
+                'enforcing the policy will cause the web application to malfunction. '
+                'The plugin will report when detects that report-uri directive is not set')
+        o = opt_factory('report_no_report_uri', self._report_no_report_uri, d, 'boolean', help=h)
+        ol.add(o)
+
+        d = 'Default-src level of strictness'
+        h = ('The plugin will report a vulnerability when detects '
+        'that default-src value conflicts with level of strictness for this directive '
+        "0 is for level without restrictions, 1 permits only 'self' value and 2 is for only 'none' value")
+        o = opt_factory('default_src_strictness', self._default_src_strictness, d, 'integer', help=h)
+        ol.add(o)
+
+        d = 'Report about absent directives which do not fall back to the default sources'
+        h = ("The plugin will report a vulnerability when don't find directive from the list: "
+        "base-uri, form-action, frame-ancestors. These directives do not fall back to the default sources")
+        o = opt_factory('report_not_fallback', self._report_not_fallback, d, 'boolean', help=h)
+        ol.add(o)
+
+        return ol
+
+    def set_options(self, option_list):
         """
-        Implements method from base class.
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
+        
+        :param options_list: A dictionary with the options for the plugin.
+        :return: No value is returned.
         """
-        return ['url','resp_id']
+
+        self._source_limit = option_list['source_limit'].get_value()
+        self._trusted_hosts = option_list['trusted_hosts'].get_value()
+        self._report_eval = option_list['report_eval'].get_value()
+        self._report_no_report_uri = option_list['report_no_report_uri'].get_value()
+        self._default_src_strictness = option_list['default_src_strictness'].get_value()
+        self._report_not_fallback = option_list['report_not_fallback'].get_value()
+
+    def get_long_desc(self):
+        """
+        :return: A DETAILED description of the plugin functions and features.
+        """
+        return """
+        This plugin identifies incorrect or too permissive Content Security Policy version 2 
+        (CSP) policy returned by the web application under analysis.
+
+        Additional information:
+
+         * https://www.owasp.org/index.php/Content_Security_Policy
+         * http://www.w3.org/TR/CSP
+
+        There are some configurable parameters:
+            - source_limit
+            - trusted_hosts
+        """        
+
+    vuln_csp_tpl = """
+There were identified incorrect or too permissive CSP2
+policies returned by the web application under analysis.
+
+"""
+
+    vuln_tpl = """
+Content Security Policy related information
+
+%s
+
+Additional information: 
+
+ * https://www.owasp.org/index.php/Content_Security_Policy
+ * http://www.w3.org/TR/CSP
+
+"""
+
+    policy_tpl = """
+%s
+
+Issues
+
+%s
+"""
+
+    vuln_without_tpl = """
+There were found URL without CSP. Please, review it:
+
+%s
+"""
+
+    vuln_no_csp_tpl = """
+The whole target has no CSP protection.
+"""
+    common_tpl = """
+Common CSP related issues:
+
+%s
+"""

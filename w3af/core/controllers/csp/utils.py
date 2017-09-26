@@ -8,7 +8,7 @@ This file is part of w3af, http://w3af.org/ .
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation version 2 of the License.
-    
+   
 w3af is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,595 +18,918 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 """
+import re
+from urlparse import urlparse
 from mimetypes import MimeTypes
 from collections import namedtuple
 import w3af.core.data.constants.severity as severity
+from w3af.core.controllers.exceptions import BaseFrameworkException
+import w3af.core.data.parsers.parser_cache as parser_cache
 
-
-#Keys representing CSP headers for manipulations 
-#(values from W3C Specs).
-CSP_HEADER_W3C = "Content-Security-Policy"
-CSP_HEADER_FIREFOX = "X-Content-Security-Policy"
-CSP_HEADER_CHROME = "X-WebKit-CSP"
-CSP_HEADER_IE = "X-Content-Security-Policy"
-CSP_HEADER_W3C_REPORT_ONLY = "Content-Security-Policy-Report-Only"
-
-#Keys representing CSP directives names for manipulations 
-#(values from W3C Specs).
-CSP_DIRECTIVE_DEFAULT = "default-src"
-CSP_DIRECTIVE_SCRIPT = "script-src"
-CSP_DIRECTIVE_OBJECT = "object-src"
-CSP_DIRECTIVE_STYLE = "style-src"
-CSP_DIRECTIVE_IMAGE = "img-src"
-CSP_DIRECTIVE_MEDIA = "media-src"
-CSP_DIRECTIVE_FRAME = "frame-src"
-CSP_DIRECTIVE_FONT = "font-src"
-CSP_DIRECTIVE_CONNECTION = "connect-src"
-CSP_DIRECTIVE_REPORT_URI = "report-uri"
-CSP_DIRECTIVE_FORM = "form-action"
-CSP_DIRECTIVE_SANDBOX = "sandbox"
-CSP_DIRECTIVE_SCRIPT_NONCE = "script-nonce"
-CSP_DIRECTIVE_PLUGIN_TYPES = "plugin-types"
-CSP_DIRECTIVE_XSS = "reflected-xss"
-
-#Keys representing key used to store misspelled directives name 
-#in extraction dictionary
-CSP_MISSPELLED_DIRECTIVES = "misspelled-directives-name"
-
-#Keys representing CSP directives values for manipulations 
-#(values from W3C Specs).
-CSP_DIRECTIVE_VALUE_UNSAFE_INLINE = "unsafe-inline"
-CSP_DIRECTIVE_VALUE_UNSAFE_EVAL = "unsafe-eval"
-CSP_DIRECTIVE_VALUE_ALLOW_FORMS = "allow-forms"
-CSP_DIRECTIVE_VALUE_ALLOW_SAME_ORIGIN = "allow-same-origin"
-CSP_DIRECTIVE_VALUE_ALLOW_SCRIPTS = "allow-scripts"
-CSP_DIRECTIVE_VALUE_ALLOW_TOP_NAV = "allow-top-navigation"
-CSP_DIRECTIVE_VALUE_XSS_BLOCK = "block"
-CSP_DIRECTIVE_VALUE_XSS_ALLOW = "allow"
-CSP_DIRECTIVE_VALUE_XSS_FILTER = "filter"
-
-#Note:
-#Special directive refer to directive for which empty value specify a
-#behavior, on W3C CSP Specs v1.1 theses directives are: 
-# -> sandbox
-# -> script-nonce
-
-#Valid Mime Types list
+# Valid Mime Types list
 MIME_TYPES = MimeTypes().types_map[1].values()
 
-#Define NamedTuple tuple subclass to represents a CSP vulnerability.
-#Declare type here in order to expose it with project visibility
-#and permit cPickle processing to see it. See link below:
-#http://stackoverflow.com/questions/4677012/python-cant-pickle-type-x-attribute-lookup-failed
-CSPVulnerability = namedtuple('CSPVulnerability', ['desc', 'severity'])            
+# Define NamedTuple tuple subclass to represents a CSP vulnerability.
+# Declare type here in order to expose it with project visibility
+# and permit cPickle processing to see it. See link below:
+# http://stackoverflow.com/questions/4677012/python-cant-pickle-type-x-attribute-lookup-failed
+CSPVulnerability = namedtuple('CSPVulnerability',
+                              ['desc', 'severity', 'type', 'directive'])
 
 
-def site_protected_against_xss_by_csp(response, allow_unsafe_inline=False,
-                                      allow_unsafe_eval=False):
+class CSPDirective(object):
     """
-    Method to analyze if a site is protected against XSS vulns type using
-    CSP policies.
-    
-    :param response: A HTTPResponse object.
-    :param allow_unsafe_eval: Allow inline javascript code block.
-    :param allow_unsafe_eval: Allow use of the java "eval()" function in
-                              javascript code block.  
-    :return: True only if the site is protected, False otherwise.  
+    Represents CSP directive.
     """
-    protected = True
-    
-    if not provides_csp_features(response):
-        protected = False
-    else:
-        #Try to find vulns on CSP policies related to Script 
-        vulns = find_vulns(response)
-        if CSP_DIRECTIVE_SCRIPT in vulns:            
-            protected = False
-        else:
-            #Check Script dedicated directive value for
-            #- inline javascript code block
-            #- "eval()" javascript function
-            if not allow_unsafe_inline and unsafe_inline_enabled(response):
-                protected = False
-            if not allow_unsafe_eval and unsafe_eval_enabled(response):
-                protected = False
-    
-    return protected
+    name = "CSPDirective"
+    value = ""
+    source_list = []
+    _source_limit = None
+    trusted_hosts = []
+    syntax_errors = []
 
+    vuln_wildcard_tpl = "Directive '%s' allows all sources."
+    vuln_inline_tpl = "Directive '%s' allows 'unsafe-inline'. Use nonces or hashes."
+    vuln_eval_tpl = """Directive '%s' contains risky 'unsafe-eval' keyword source 
+or equivalent like blob: or filesystem:. Found: %s."""
+    vuln_untrust_tpl = "Directive '%s' contains untrusted sources: %s."
+    vuln_source_limit_tpl = "Directive '%s' contains too many sources in source list."
+    vuln_data_source_tpl = """Directive '%s' contains 'data:' in source list. 
+Allowing 'data:' URLs is equivalent to 'unsafe-inline'."""
+    vuln_parse_source_tpl = """CSP policy parsing error. 
+The source list for directive '%s' contains an invalid source: %s."""
 
-def find_vulns(response):
-    """
-    Method to find vulnerabilities into CSP policies from an HTTP response,
-    analyze directives for permissive/invalid configuration and misspelled
-    directive names.
-    
-    :param response: A HTTPResponse object.
-    :return: A dictionary in which KEY is a CSP directive and VALUE is the 
-             list of vulnerabilities found for the associated directive.
-             A vulnerability is represented as NamedTuple exposing properties
-             "desc" and "severity", both as String data type.
-             Access example: vulns[CSP_DIRECTIVE_DEFAULT][0].desc
-    """
-    vulns = {}
-    
-    ##Extract and merge all policies
-    non_report_only_policies = retrieve_csp_policies(response, False, True)
-    report_only_policies = retrieve_csp_policies(response, True, True)
-    policies_all = merge_policies_dict(non_report_only_policies, report_only_policies)
-    
-    #Quick exit to enhance performance
-    if len(policies_all) == 0:
-        return vulns
-        
-    #Analyze each policy in details. 
-    ##Code analyse each directive independently in order to prepare algorithm to
-    ##be enhanced with CSP specs evolution !
-    ####Directive "default-src"
-    if CSP_DIRECTIVE_DEFAULT in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_DEFAULT]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'default-src' allows all sources.",
-                                        severity.HIGH)
-            vulns_lst = [csp_vuln]
-            vulns[CSP_DIRECTIVE_DEFAULT] = vulns_lst
-    ####Directive "script-src"
-    if CSP_DIRECTIVE_SCRIPT in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_SCRIPT]
-        vulns_lst = []
-        warn_msg = ""        
-        #We do not check for 'unsafe-inline' and 'unsafe-eval' values because:
-        #=>Many site use inline javascript code block
-        #=>Some popular javascript API (ex: JQueryUI/ExtJS) use eval() function 
-        if "*" in directive_values:
-            warn_msg = "Directive 'script-src' allows all javascript sources."
-            csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)   
-        if CSP_DIRECTIVE_SCRIPT_NONCE not in policies_all:
-            warn_msg = ("Directive 'script-src' is defined but no directive"
-                        " 'script-nonce' is defined to protect javascript"
-                        " resources.")
-            csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)                
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_SCRIPT] = vulns_lst            
-    ####Directive "object-src"
-    if CSP_DIRECTIVE_OBJECT in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_OBJECT]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'object-src' allows all plugin sources.",
-                                        severity.HIGH)            
-            vulns_lst = [csp_vuln]
-            vulns[CSP_DIRECTIVE_OBJECT] = vulns_lst
-    ####Directive "style-src"
-    if CSP_DIRECTIVE_STYLE in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_STYLE]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'style-src' allows all CSS sources.",
-                                        severity.LOW)            
-            vulns_lst = [csp_vuln]
-            vulns[CSP_DIRECTIVE_STYLE] = vulns_lst
-    ####Directive "img-src"
-    if CSP_DIRECTIVE_IMAGE in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_IMAGE]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'img-src' allows all image sources.",
-                                        severity.LOW)               
-            vulns_lst = [csp_vuln]
-            vulns[CSP_DIRECTIVE_IMAGE] = vulns_lst
-    ####Directive "media-src"
-    if CSP_DIRECTIVE_MEDIA in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_MEDIA]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'media-src' allows all audio/video sources.",
-                                        severity.HIGH)            
-            vulns_lst = [csp_vuln]
-            vulns[CSP_DIRECTIVE_MEDIA] = vulns_lst
-    ####Directive "frame-src"
-    if CSP_DIRECTIVE_FRAME in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_FRAME]
-        vulns_lst = []
-        warn_msg = ""
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'frame-src' allows all sources.",
-                                        severity.HIGH)            
-            vulns_lst.append(csp_vuln)
-        if CSP_DIRECTIVE_SANDBOX not in policies_all:
-            warn_msg = "Directive 'frame-src' is defined but no directive " \
-            "'sandbox' is defined to protect resources. Perhaps sandboxing " \
-            "is defined at html attribute level ?"
-            csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)                
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_FRAME] = vulns_lst
-    ####Directive "font-src"
-    if CSP_DIRECTIVE_FONT in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_FONT]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'font-src' allows all font sources.",
-                                        severity.MEDIUM)               
-            vulns_lst = [csp_vuln]            
-            vulns[CSP_DIRECTIVE_FONT] = vulns_lst
-    ####Directive "connect-src"
-    if CSP_DIRECTIVE_CONNECTION in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_CONNECTION]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'connect-src' allows all connection sources.",
-                                        severity.HIGH)               
-            vulns_lst = [csp_vuln]                        
-            vulns[CSP_DIRECTIVE_CONNECTION] = vulns_lst
-    ####Directive "form-action"
-    if CSP_DIRECTIVE_FORM in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_FORM]
-        if "*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'form-action' allows all action target.",
-                                        severity.HIGH)               
-            vulns_lst = [csp_vuln]                                    
-            vulns[CSP_DIRECTIVE_FORM] = vulns_lst  
-    ####Directive "sandbox"
-    if CSP_DIRECTIVE_SANDBOX in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_SANDBOX]
-        warn_msg = ""
-        vulns_lst = []
-        if "allow-*" in directive_values:
-            csp_vuln = CSPVulnerability("Directive 'sandbox' apply no restrictions.",
-                                        severity.HIGH)            
-            vulns_lst.append(csp_vuln)
-        if (CSP_DIRECTIVE_VALUE_ALLOW_FORMS in directive_values and
-            CSP_DIRECTIVE_VALUE_ALLOW_SAME_ORIGIN in directive_values and
-            CSP_DIRECTIVE_VALUE_ALLOW_SCRIPTS in directive_values and
-            CSP_DIRECTIVE_VALUE_ALLOW_TOP_NAV in directive_values):
-            csp_vuln = CSPVulnerability("Directive 'sandbox' apply no restrictions.",
-                                        severity.HIGH)            
-            vulns_lst.append(csp_vuln) 
-        #Search invalid directive values
-        valid_values = []
-        valid_values.append("")
-        valid_values.append("allow-*")
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_FORMS)
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_SAME_ORIGIN)
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_SCRIPTS)
-        valid_values.append(CSP_DIRECTIVE_VALUE_ALLOW_TOP_NAV)
-        for value in directive_values:
-            if value not in valid_values:
-                warn_msg = "Directive 'sandbox' specify invalid value: "\
-                "'" + value + "'."
-                csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)                
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_SANDBOX] = vulns_lst                     
-    ####Directive "script-nonce"
-    if CSP_DIRECTIVE_SCRIPT_NONCE in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_SCRIPT_NONCE]
-        warn_msg = ""
-        vulns_lst = []        
-        #Search invalid directive values
-        for nonce in directive_values:            
-            if len(nonce.strip()) == 0:
-                warn_msg = "Directive 'script-nonce' is defined "\
-                           "but nonce is empty."
-                csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)
-            elif nonce.count(",") > 0 or nonce.count(";") > 0:
-                warn_msg = "Directive 'script-nonce' is defined "\
-                           "but nonce contains invalid character (','|';')."
-                csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)                                             
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_SCRIPT_NONCE] = vulns_lst                 
-    ####Directive "plugin-types"
-    if CSP_DIRECTIVE_PLUGIN_TYPES in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_PLUGIN_TYPES]
-        warn_msg = ""
-        vulns_lst = []        
-        if "*" in directive_values:
-            warn_msg = "Directive 'plugin-types' allows all plugins types."
-            csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln)            
-        #Search invalid directive values
-        for mtype in directive_values:
-            if mtype != "*" and mtype.lower() not in MIME_TYPES:
-                warn_msg = "Directive 'plugin-types' specify invalid mime " \
-                           "type: '" + mtype + "'."
-                csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)              
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_PLUGIN_TYPES] = vulns_lst                
-    ####Directive "reflected-xss"
-    if CSP_DIRECTIVE_XSS in policies_all:        
-        directive_values = policies_all[CSP_DIRECTIVE_XSS]
-        warn_msg = ""
-        vulns_lst = []
-        if CSP_DIRECTIVE_VALUE_XSS_ALLOW in directive_values:
-            warn_msg = "Directive 'reflected-xss' instruct user agent to "\
-                       "disable its active protections against reflected XSS."
-            csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-            vulns_lst.append(csp_vuln) 
-        #Search invalid directive values
-        valid_values = []
-        valid_values.append(CSP_DIRECTIVE_VALUE_XSS_ALLOW)
-        valid_values.append(CSP_DIRECTIVE_VALUE_XSS_BLOCK)
-        valid_values.append(CSP_DIRECTIVE_VALUE_XSS_FILTER)
-        for value in directive_values:
-            if value not in valid_values:
-                warn_msg = "Directive 'reflected-xss' specify invalid value: "\
-                "'" + value + "'."
-                csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-                vulns_lst.append(csp_vuln)
-        if len(vulns_lst) > 0:
-            vulns[CSP_DIRECTIVE_XSS] = vulns_lst  
-    
-    #Check if misspelled directives name exists
-    if CSP_MISSPELLED_DIRECTIVES in policies_all:        
-        directive_values = policies_all[CSP_MISSPELLED_DIRECTIVES]                                                                                      
-        warn_msg = "Some directives are misspelled: " + ', '.join(directive_values)
-        csp_vuln = CSPVulnerability(warn_msg, severity.HIGH)            
-        vulns[CSP_MISSPELLED_DIRECTIVES] = [csp_vuln]
-                                 
-    return vulns
-    
+    def __init__(self, name=None):
+        if name:
+            self.name = name
+   
+    @property
+    def source_limit(self):
+        return self._source_limit
 
+    @source_limit.setter
+    def source_limit(self, value):
+        self._source_limit = value
 
-def unsafe_inline_enabled(response):
-    """
-    Method to detect if CSP Policies are specified for Script/Style, 
-    to allow unsafe inline content to be loaded.
-    
-    :param response: A HTTPResponse object.
-    :return: True if CSP Policies are specified for Script/Style to allow 
-             unsafe inline content to be loaded, False otherwise. 
-    """
-    ##Extract and merge all policies
-    non_report_only_policies = retrieve_csp_policies(response)
-    report_only_policies = retrieve_csp_policies(response, True)
-    policies_all = merge_policies_dict(non_report_only_policies, report_only_policies)
-    #Parse policies dictionary : Iterate on Values
-    if(len(policies_all) > 0):
-        for directive_name in policies_all:
-            #Apply check only on Script and Style directives in order to be 
-            #coherent with the W3C Specs, because only theses 2 directives 
-            #supports the "unsafe-inline" directive value...
-            if (directive_name.lower() != CSP_DIRECTIVE_SCRIPT 
-                and directive_name.lower() != CSP_DIRECTIVE_STYLE):
-                continue
-            #Iterate on Directive values (normally values here are all URI)
-            for directive_value in policies_all[directive_name]:               
-                if directive_value.strip().lower() == CSP_DIRECTIVE_VALUE_UNSAFE_INLINE:
-                    #Return directly to enhance performance...
-                    return True
-    return False
+    def init_value(self, directive_value):
+        """
+        Init value of directive.
 
+        :param directive_value: string value of directive
+        :return: True if initialization was success, otherwise False
+        """
+        directive_value = directive_value.strip()
+        if not self._parse_source_list(directive_value):
+            return False
+        self.value = directive_value
+        return True
 
-def unsafe_eval_enabled(response):
-    """
-    Method to detect if CSP Policies are specified for Script, 
-    to allow use of the javascript "eval()" function.
-    
-    :param response: A HTTPResponse object.
-    :return: True if CSP Policies are specified for Script to allow 
-             use of the javascript "eval()" function, False otherwise. 
-    """
-    ##Extract and merge all policies
-    non_report_only_policies = retrieve_csp_policies(response)
-    report_only_policies = retrieve_csp_policies(response, True)
-    policies_all = merge_policies_dict(non_report_only_policies, report_only_policies)
-    #Parse policies dictionary : Iterate on Values
-    if(len(policies_all) > 0):
-        for directive_name in policies_all:
-            #Apply check only on Script directive in order to be 
-            #coherent with the W3C Specs, because only this directive 
-            #supports the "unsafe-eval" directive value...
-            if directive_name.lower() != CSP_DIRECTIVE_SCRIPT:
-                continue
-            #Iterate on Directive values (normally values here are all URI)
-            for directive_value in policies_all[directive_name]:               
-                if directive_value.strip().lower() == CSP_DIRECTIVE_VALUE_UNSAFE_EVAL:
-                    #Return directly to enhance performance...
-                    return True
-    return False
-    
+    def _normalize_host_source(self, token):
+        """
+        Normalize host source for furher processing.
 
-def provides_csp_features(response):
-    """
-    Method to detect if url provides CSP features.
-    
-    :param response: A HTTPResponse object.
-    :return: True if the URL provides CSP features, False otherwise. 
-    """
-    return ((len(retrieve_csp_policies(response)) 
-             + len(retrieve_csp_policies(response, True))) > 0)
+        :param token: string token of source
+        :return: normalized host source value
+        """
+        result = token
+        o = urlparse(result)
+        # scheme-part
+        if not o.scheme:
+            result = '//' + result
+        # port-part
+        result = result.replace(":*", ":0")
+        # host-part
+        result = result.replace("*.", "Q.")
+        result = result.replace("*", "A")
+        return result
 
-def retrieve_csp_report_uri(response):
-    """
-    Method to retrieve all report uri from CSP Policies specified into a HTTP 
-    response through CSP headers.
-       
-    :param response: A HTTPResponse object.      
-    :return: A set of URIs
-    """ 
-    uri_set = set()
-    ##Extract and all merge policies
-    non_report_only_policies = retrieve_csp_policies(response)
-    report_only_policies = retrieve_csp_policies(response, True)
-    policies_all = merge_policies_dict(non_report_only_policies, report_only_policies)
-    #Iterate on Directives
-    if(len(policies_all) > 0):
-        for directive_name in policies_all:
-            if directive_name.lower() != CSP_DIRECTIVE_REPORT_URI:
-                continue
-            #Iterate on Directive values (normally values here are all URI)
-            for directive_value in policies_all[directive_name]:               
-                uri = directive_value.strip().lower()
-                uri_set.add(uri)                       
-    return uri_set
+    def _is_host_source(self, token):
+        """
+        Check if token is host-source.
 
-def retrieve_csp_policies(response, select_only_reportonly_policies=False,
-                          select_also_misspelled_directives=False):
-    """
-    Method to retrieve all CSP Policies specified into a HTTP response 
-    through CSP headers.
-       
-    :param response: A HTTPResponse object.
-    :param select_only_reportonly_policies: Optional parameter to indicate to 
-                                            method to retrieve only REPORT-ONLY 
-                                            CSP policies (default is False).
-    :param select_also_misspelled_directives: Optional parameter to indicate to 
-                                            method to retrieve also list of 
-                                            misspelled directives name
-                                            (default is False). List is saved 
-                                            in a dedicated KEY, see global var 
-                                            named "CSP_MISSPELLED_DIRECTIVES".       
-    :return: A dictionary in which KEY is a CSP directive and VALUE is the 
-             list of associated policies.
-    """   
-    headers = response.get_headers()
-    policies = {}
-    
-    #List of allowed CSP directive names
-    directive_allowed_names = [CSP_DIRECTIVE_DEFAULT, CSP_DIRECTIVE_SCRIPT,
-                               CSP_DIRECTIVE_OBJECT, CSP_DIRECTIVE_STYLE,
-                               CSP_DIRECTIVE_IMAGE, CSP_DIRECTIVE_MEDIA,
-                               CSP_DIRECTIVE_FRAME, CSP_DIRECTIVE_FONT,
-                               CSP_DIRECTIVE_CONNECTION,
-                               CSP_DIRECTIVE_REPORT_URI, CSP_DIRECTIVE_FORM,
-                               CSP_DIRECTIVE_SANDBOX,
-                               CSP_DIRECTIVE_SCRIPT_NONCE,
-                               CSP_DIRECTIVE_PLUGIN_TYPES, CSP_DIRECTIVE_XSS]
-
-    #Misspelled directives name list
-    misspelled_directives_name = []
-         
-    for header_name in headers:
-        header_name_upperstrip = header_name.upper().strip()
-        #Define header processing condition according to 
-        #"select_only_reportonly_policies" parameter value 
-        if not select_only_reportonly_policies:
-            if (header_name_upperstrip != CSP_HEADER_W3C.upper() 
-                and header_name_upperstrip != CSP_HEADER_FIREFOX.upper() 
-                and header_name_upperstrip != CSP_HEADER_CHROME.upper() 
-                and header_name_upperstrip != CSP_HEADER_IE.upper()):
-                continue
-        else:
-            if header_name_upperstrip != CSP_HEADER_W3C_REPORT_ONLY.upper():
-                continue                              
-        #Process header value	                   	
-        #Retrieve the CSP directive list : A Policy is defined by a directive 
-        #name and one or several associated values
-        directive_list = headers[header_name].strip()
-        #Parse CSP directives list using W3C Specs algorithm : 
-        #A CSP header value can specify several directives using ";" separator
-        directives = directive_list.split(";")
-        #For each directive we extract the directive name and is values 
-        #(several can be specified)
-        for directive in directives:
-            directive_strip = directive.strip()
-            #Manage empty case
-            if len(directive_strip) <= 0:
-                continue            
-            #Directive name and value are separated by a single space 
-            #Value can itself contains several sub values separated by a space
-            parts = directive_strip.split(" ")            
-            #Manage special directives cases
-            if (_contains_special_directive(directive_strip) 
-                and len(parts) == 1):
-                directive_name = parts[0].lower() 
-                policies[directive_name] = [""]
-                continue                        
-            #There must exists at least 2 parts otherwise we ignore the value...
-            if len(parts) < 2:
-                continue
-            #Retrieve directive name
-            directive_name = parts[0].lower()
-            #Check directive name is in allowed list of directives
-            if directive_name not in directive_allowed_names:
-                if (select_also_misspelled_directives and
-                    directive_name not in misspelled_directives_name):
-                    misspelled_directives_name.append(directive_name)
-                #Next directive...
-                continue
-            #Retrieve directive valueS
-            parts.pop(0)
-            directive_values = parts
-            #Add policy to dictionary
-            if directive_name not in policies:
-                policies[directive_name] = []
-            for directive_value in directive_values:
-                #Remove quote and double quote from value to unify result 
-                #string content
-                tmp_value = directive_value.replace("'", "")
-                tmp_value = tmp_value.replace('"', '')
-                #Avoid empty value
-                if len(tmp_value.strip()) > 0:             			
-                    policies[directive_name].append(tmp_value)
-    
-    #Do cleanup: Remove directive name without any policies
-    policies = dict((k, v) for k, v in policies.iteritems() if len(v) > 0)
-    
-    #Add misspelled directives names list if dedicated flag is set
-    if (select_also_misspelled_directives 
-        and len(misspelled_directives_name) > 0):
-        policies[CSP_MISSPELLED_DIRECTIVES] = misspelled_directives_name
-                    
-    return policies
-
-def merge_policies_dict(non_report_only_policies_dict, report_only_policies_dict):
-    """
-    Method to merge 2 Policies dictionaries to a single.
-               
-    :param non_report_only_policies_dict: A dictionary with all non 
-                                          REPORT-ONLY Policies 
-                                          (return of method "retrieve_csp_policies").
-    :param report_only_policies_dict: A dictionary with all REPORT-ONLY 
-                                      Policies 
-                                      (return of method "retrieve_csp_policies")
-    :return: A merged dictionary in which KEY is a CSP directive 
-             and VALUE is the list of associated policies.
-    """
-    #Short circuit precheck...
-    if(non_report_only_policies_dict is None 
-       or len(non_report_only_policies_dict) == 0):
-        return report_only_policies_dict
-    if(report_only_policies_dict is None 
-       or len(report_only_policies_dict) == 0):
-        return non_report_only_policies_dict
-    
-    merged_policies = {}
-    #Create a list from union of directives names (remove duplicate items)
-    directives_names = list(set(non_report_only_policies_dict.keys() 
-                                + report_only_policies_dict.keys()))
-    #Parse it to merge list of values for each key (remove duplicate items)
-    for k in directives_names:
-        values = []
-        if k in non_report_only_policies_dict:
-            values.extend(non_report_only_policies_dict[k])
-        if k in report_only_policies_dict:
-            values.extend(report_only_policies_dict[k])
-        merged_policies[k] = list(set(values))        
-    return merged_policies
-
-
-def _contains_special_directive(directive_definition):
-    """
-    Internal method to detect in a directive specification if
-    a "special" directive is used.
-    
-    :param directive_definition: Content of the directive (name + values).
-    
-    :return: TRUE only if a special directive is detected. 
-    """
-    #Manage empty cases
-    if directive_definition is None:
-        return False
-
-    if len(directive_definition.strip()) == 0:
-        return False
-    
-    #List of directives for which empty value is a behavior specification
-    special_directive_names = [CSP_DIRECTIVE_SANDBOX,
-                               CSP_DIRECTIVE_SCRIPT_NONCE]
-
-    tmp = directive_definition.lower()
-    for special_directive in special_directive_names:
-        if special_directive in tmp:
+        :param token: string token of source
+        :return: boolean result
+        """
+        if token.startswith("'"):
+            return False
+        tmp = self._normalize_host_source(token)
+        o = urlparse(tmp)
+        if re.search("[^a-zA-Z:*0-9.-]", o.netloc):
+            return False
+        if not o.hostname:
+            return False
+        if o.geturl() == tmp:
             return True
-    
-    return False
+
+    def _is_valid_source(self, token):
+        """
+        Check if token is valid source.
+        See also https://www.w3.org/TR/CSP/#source-list-syntax
+
+        :param token: string token of source
+        :return: boolean result
+        """
+        if token == "*":
+            return True
+        # keyword-source
+        if token in ["'self'", "'unsafe-inline'", "'unsafe-eval'"]:
+            return True
+        # nonce-source
+        p = re.compile("'nonce-[a-zA-Z0-9+/]+[=]{0,2}'")
+        if p.match(token):
+            return True
+        # hash-source
+        p = re.compile("'(sha256|sha384|sha512)-[a-zA-Z0-9+/]+[=]{0,2}'")
+        if p.match(token):
+            return True
+        # scheme-source
+        tmp = self._normalize_host_source(token)
+        o = urlparse(tmp)
+        if o.scheme + ':' == tmp:
+            return True
+        # host-source
+        if self._is_host_source(token):
+            return True
+        return False
+
+    def _parse_source_list(self, directive_value):
+        """
+        Parse directive value and set up directive sourse list.
+        See also https://www.w3.org/TR/CSP/#source-list-parsing
+
+        :param directive_value: string directive value
+        :return: True if source list was successfully parsed
+        """
+        self.syntax_errors = []
+        source_list = directive_value.strip()
+        if source_list.lower() == "'none'":
+            self.source_list = []
+            return True
+        result = []
+        for token in source_list.split(" "):
+            if self._is_valid_source(token):
+                result.append(token)
+            else:
+                self.syntax_errors.append(
+                    CSPVulnerability(self.vuln_parse_source_tpl % (self.name, token),
+                    severity.HIGH, 'syntax', ''))
+        self.source_list = result
+        return True
+
+    def get_nonces_hashes(self, nonces=True, hashes=True):
+        """
+        Find nonces and hashes in source list.
+
+        :return: list of hashes and nonces
+        """
+        result = []
+        targets = []
+
+        if nonces:
+            targets.append("'nonce-")
+
+        if hashes:
+            targets.extend(["'sha256-", "'sha384-", "'sha512-"])
+
+        for source_expression in self.source_list:
+            for s in targets:
+                if source_expression.startswith(s):
+                    result.append(source_expression)
+        return result
+
+    def _find_wildcard_vulns(self, severity):
+        """
+        Find wildcard vulnerabilities.
+
+        :param severity: Severity for results
+        :return: list of vulnerabilities
+        """
+        vulns = []
+        if "*" in self.source_list:
+            vuln = CSPVulnerability(self.vuln_wildcard_tpl % self.name,
+                                    severity, 'wildcard', self.name)
+            vulns = [vuln]
+        return vulns
+
+    def _check_data_source(self):
+        """
+        Check if data: is included in source list of risky directives
+
+        :return: list of vulnerabilities
+        """
+        vulns = []
+        if 'data:' in self.source_list \
+                and self.name in ['default-src', 'script-src', 'object-src']:
+            vuln = CSPVulnerability(self.vuln_data_source_tpl % self.name,
+                severity.HIGH, 'data_source', self.name)
+            vulns = [vuln]
+        return vulns
+
+    def _find_eval_vulns(self):
+        """
+        Check if 'unsafe-eval' or equivalent is included in source list of directive.
+
+        :return: list of vulnerabilities
+        """
+        if not self.report_eval:
+            return []
+
+        vulns = []
+        result = filter(lambda x: x == "'unsafe-eval'", self.source_list)
+        # See "Security Considerations for GUID URL schemes"
+        # https://www.w3.org/TR/CSP/#source-list-guid-matching
+        risky_schemes = filter(lambda x: x in ['blob:', 'filesystem:'],
+            self.source_list)
+
+        if self.name in ['default-src', 'script-src'] and risky_schemes:
+            result.extend(risky_schemes)
+       
+        if result:
+            vulns.append(CSPVulnerability(
+                self.vuln_eval_tpl % (self.name, ', '.join(result)),
+                severity.MEDIUM, 'eval', self.name))
+        return vulns
+
+    def _check_source_limit(self):
+        """
+        Find source limit exceed vulnerabilities
+        (when too many sources in directive source list).
+
+        :return: list of vulnerabilities
+        """
+        vulns = []
+        if not self.source_limit:
+            return []
+        if len(self.source_list) > self.source_limit:
+            vuln = CSPVulnerability(self.vuln_source_limit_tpl % self.name,
+                severity.LOW, 'source_limit', self.name)
+            vulns = [vuln]
+        return vulns
+
+    def _check_untrusted_sources(self):
+        """
+        Find untrusted hosts in source list.
+
+        :return: list of vulnerabilities
+        """
+        untrusted = []
+        vulns = []
+        if not self.trusted_hosts:
+            return []
+
+        for source in self.source_list:
+            if self._is_host_source(source):
+                tmp = self._normalize_host_source(source)
+                o = urlparse(tmp)
+                for t_host in self.trusted_hosts:
+                    if o.hostname.endswith(t_host):
+                        break
+                else:
+                    untrusted.append(source)
+      
+        if untrusted:
+            vuln = CSPVulnerability(self.vuln_untrust_tpl % (self.name, ", ".join(untrusted)),
+                severity.LOW, 'untrust', self.name)
+            vulns = [vuln]
+        return vulns
+
+    def _find_vulns(self):
+        """
+        Find all vulnerabilities in child directive.
+
+        :return: list of vulnerabilities
+        """
+        return []
+
+    def find_vulns(self):
+        """
+        Find all vulnerabilities in directive.
+
+        :return: list of vulnerabilities
+        """
+        # TODO
+        # 1. Check for random value in nonce
+        # https://www.w3.org/TR/CSP/#source-list-guid-matching
+        #
+        vulns = []
+        vulns.extend(self._find_wildcard_vulns(severity.MEDIUM))
+        vulns.extend(self._check_source_limit())
+        vulns.extend(self._check_untrusted_sources())
+        vulns.extend(self._check_data_source())
+        vulns.extend(self._find_eval_vulns())
+        vulns.extend(self._find_vulns())
+
+        if self.unsafe_inline_enabled() and not self.get_nonces_hashes():
+            vuln = CSPVulnerability(self.vuln_inline_tpl % self.name, 
+                severity.HIGH, 'inline', self.name)
+            vulns.append(vuln)
+        return vulns + self.syntax_errors
+
+    def __str__(self):
+        return self.name + " " + self.value
+
+    def __eq__(self, other):
+        return self.name.upper() == other.name.upper()
+
+    def unsafe_inline_enabled(self):
+        """
+        Check if there is 'unsafe-inline' keyword in source list.
+
+        :return: True if there is 'unsafe-inline' in source list
+        """
+        return "'unsafe-inline'" in self.source_list
+
+
+class DefaultSrcDirective(CSPDirective):
+    """
+    Represents CSP 'default-src' directive.
+    """
+    name = "default-src"
+    strictness = 0
+    vuln_strictness_tpl = "Level of strictness for directive 'default-src' permits only value %s."
+
+    @CSPDirective.source_limit.setter
+    def source_limit(self, value):
+        """
+        Set smaller value because of risky nature of the directive.
+
+        :param value: new value for directive
+        """
+        value = value if not value else int(value/2)
+        self._source_limit = value
+
+    def _find_vulns(self):
+        """
+        Find all issues because of strictness level for default-src.
+
+        :return: list of vulnerabilities
+        """
+        if not self.strictness:
+            return []
+
+        vulns = []
+        strictness_levels = [(1, "'self'"), (2, "'none'")]
+
+        for strictness, value in strictness_levels:
+            if self.strictness == strictness \
+                    and (len(self.source_list) > 1 or (self.source_list and self.source_list[0] != value)):
+                vuln = CSPVulnerability(self.vuln_strictness_tpl % value, severity.MEDIUM,
+                    'default_src_strictness', self.name)
+                vulns.append(vuln)
+
+        return vulns
+
+
+class ScriptSrcDirective(CSPDirective):
+    """
+    Represents CSP 'script-src' directive.
+    """
+    name = "script-src"
+
+    @CSPDirective.source_limit.setter
+    def source_limit(self, value):
+        """
+        Set smaller value because of risky nature of the directive.
+
+        :param value: new value for directive
+        """
+        value = value if not value else int(value/2)
+        self._source_limit = value
+
+
+class SandboxDirective(CSPDirective):
+    """
+    Represents CSP 'sandbox' directive.
+    """
+    name = "sandbox"
+    flags = []
+
+    def init_value(self, directive_value):
+        """
+        Init value of directive.
+
+        :param directive_value: string value of directive
+        :return: True if initialization was success, otherwise False
+        """
+        self.value = directive_value
+        self.flags = self._parse_flag_list(directive_value)
+        return True
+
+    def _valid_flag(self, flag):
+        """
+        Check if flag is valid
+
+        :return: True if flag is valid
+        """
+        valid_flags = ['allow-forms', 'allow-pointer-lock',
+            'allow-popups', 'allow-same-origin',
+            'allow-scripts', 'allow-top-navigation']
+
+        if flag in valid_flags:
+            return True
+        else:
+            return False
+
+    def _parse_flag_list(self, directive_value):
+        """
+        Parse flag list for sandbox directive.
+
+        :param directive_value: value of directive
+        :return: list of flags
+        """
+        flag_list = directive_value.strip()
+        result = []
+        for flag in flag_list.split(" "):
+            if self._valid_flag(flag):
+                result.append(flag)
+        return result
+
+
+class PluginTypesDirective(CSPDirective):
+    """
+    Represents CSP 'plugin-types' directive.
+    """
+    # https://www.w3.org/TR/CSP/#media-type-list-syntax
+    name = "plugin-types"
+    media_type_list = []
+
+    def init_value(self, directive_value):
+        """
+        Init value of directive.
+
+        :param directive_value: string value of directive
+        :return: True if initialization was success, otherwise False
+        """
+        directive_value = directive_value.strip()
+        if not directive_value:
+            return False
+        self.value = directive_value
+        self.media_type_list = self._parse_media_type_list(directive_value)
+        return True
+
+    def _valid_media_type(self, media_type):
+        """
+        Check if media type is valid.
+
+        :param media_type: media type
+        :return: True if is valid
+        """
+        if media_type.lower() not in MIME_TYPES:
+            return False
+        return True
+
+    def _parse_media_type_list(self, directive_value):
+        """
+        Parse media type list.
+        See also https://www.w3.org/TR/CSP/#media-type-list-parsing
+       
+        :param directive_value: directive value
+        :return: list of media types
+        """
+        media_type_list = directive_value.strip()
+        result = []
+        for media_type in media_type_list.split(" "):
+            if self._valid_media_type(media_type):
+                result.append(media_type)
+        return result
+
+
+class CSPPolicy(object):
+    """
+    Represents policy from Content Security Policy Level 2
+    https://www.w3.org/TR/CSP/
+    """
+    version = 2
+    report_only = False
+    directives = []
+    syntax_errors = []
+    value = ""
+    trusted_hosts = []
+    report_no_report_uri = False
+    report_eval = True
+    source_limit = None
+    default_src_strictness = 0
+    report_not_fallback = False
+    vuln_parse_directive_tpl = "CSP policy parsing error. Unrecognized directive '%s'."
+    vuln_no_report_uri_tpl = "The CSP policy doesn't contain 'report-uri' directive."
+    vuln_required_tpl = """Directive '%s' is not defined. NB! It does not fall back 
+to the default sources when the directive is not defined."""
+    vuln_default_tpl = """Directive 'default-src' is not defined. If a 'default-src' directive 
+is not explicitly specified, wildcard ('*') becomes default sources."""
+
+    def get_header_name(self, report_only=False):
+        """
+        :param report_only: flag for result
+        :return: CSP header name
+        """
+        header_name = "Content-Security-Policy"
+        if self.report_only or report_only:
+            header_name += "-Report-Only"
+        return header_name
+
+    def pretty(self):
+        """
+        :return: pretty string representation of CSP policy
+        """
+        return (self.get_header_name() + ":\n    "
+                + ";\n    ".join([str(d) for d in self.directives]))
+
+    def __str__(self):
+        return self.get_header_name() + ": " + self.value
+
+    def init_value(self, csp_value, banned_directives=[]):
+        """
+        Init value of the policy.
+
+        :param csp_value: string value of policy
+        :param banned_directives: list of banned directives (see meta tag)
+        :return: True if initialization was success, otherwise False 
+        """
+        string_policy = csp_value.strip()
+        if not string_policy:
+            return False
+        if self._parse_policy(string_policy, banned_directives):
+            self.value = csp_value
+            return True
+        else:
+            return False
+
+    def init_from_header(self, header_name, header_value):
+        """
+        Init policy from CSP header.
+
+        :param header_name: CSP header name
+        :param header_value: CSP header value
+        :return: True if initialization was success
+        """
+        string_policy = ""
+
+        if header_name.upper().strip() == self.get_header_name().upper():
+            string_policy = header_value.strip()
+        elif header_name.upper().strip() == self.get_header_name(True).upper():
+            self.report_only = True
+            string_policy = header_value.strip()
+        return self.init_value(string_policy)
+
+    def make_directive(self, directive_name):
+        """
+        Make directive instance (factory method).
+
+        :param directive_name: directive name for new directive
+        :return: directive instance
+        """
+        simple_directives = [
+            "object-src", "img-src", "media-src",
+            "frame-src", "font-src", "connect-src", 
+            "report-uri", "base-uri", "child-src", 
+            "style-src", "form-action", "frame-ancestors",
+            ]
+        directive = None
+        dname = directive_name.lower()
+        if dname in simple_directives:
+            directive = CSPDirective(dname)
+        elif "default-src" == dname:
+            directive = DefaultSrcDirective()
+            directive.strictness = self.default_src_strictness
+        elif "script-src" == dname:
+            directive = ScriptSrcDirective()
+        elif "sandbox" == dname:
+            directive = SandboxDirective()
+        elif "plugin-types" == dname:
+            directive = PluginTypesDirective()
+       
+        if directive:
+            directive.source_limit = self.source_limit
+            directive.trusted_hosts = self.trusted_hosts
+            directive.report_eval = self.report_eval
+            return directive
+        else:
+            return None
+
+    def _parse_policy(self, string_policy, banned_directives=[]):
+        """
+        Parse CSP policy and set list of directives.
+        See also https://www.w3.org/TR/CSP/#policy-parsing
+
+        :param string_policy: string value of policy
+        :param banned_directives: list of banned directives (see meta tag)
+        :return: True on success parsing
+        """
+        self.syntax_errors = []
+        result = []
+        tokens = [d.strip() for d in string_policy.strip().split(";")]
+        tokens = filter(lambda x: x.strip(), tokens)
+
+        for t in tokens:
+            directive_name = t
+            directive_value = ""
+            i = t.find(" ")
+
+            if i != -1:
+                directive_name = t[:i]
+                directive_value = t[i+1:]
+
+            if directive_name in banned_directives:
+                continue
+           
+            directive = self.make_directive(directive_name)
+            # CSP syntax error
+            if not directive:
+                self.syntax_errors.append(
+                        CSPVulnerability(self.vuln_parse_directive_tpl % directive_name,
+                                         severity.HIGH, 'syntax', ''))
+                continue
+            if directive not in result:
+                if directive.init_value(directive_value):
+                    result.append(directive)
+        if result:
+            self.directives = result
+            return True
+        else:
+            return False
+
+    def get_directive_by_name(self, directive_name):
+        """
+        Get directive by name.
+
+        :param directive_name: name of directive
+        :return: directive if it exists in the policy, otherwise None
+        """
+        for d in self.directives:
+            if d.name.lower() == directive_name.lower():
+                return d
+        return None
+
+    def find_vulns(self):
+        """
+        Find all vulnerabilities in all directives.
+
+        :return: result list of vulnerabilities
+        """
+        vulns = []
+        for d in self.directives:
+            d_vulns = d.find_vulns()
+            if d_vulns:
+                vulns.extend(d_vulns)
+        # Check if report-uri exists
+        if self.report_no_report_uri and not self.get_report_uri():
+            vulns.append(CSPVulnerability(self.vuln_no_report_uri_tpl,
+                         severity.LOW, 'reporting', ''))
+        # Check directives which does not fall back to the default sources
+        if self.report_not_fallback:
+            for d in ['frame-ancestors', 'form-action', 'base-uri']:
+                if not self.get_directive_by_name(d):
+                    vuln = CSPVulnerability(self.vuln_required_tpl % d, severity.MEDIUM,
+                                            'required', d)
+                    vulns.append(vuln)
+        # Check default-src
+        if not self.get_directive_by_name('default-src'):
+            vuln = CSPVulnerability(self.vuln_default_tpl, severity.MEDIUM,
+                                    'default_required', 'default-src')
+            vulns.append(vuln)
+        return vulns + self.syntax_errors
+   
+    def find_vulns_by_directive(self, directive_name):
+        """
+        Find all vulnerabilities filtered by directive.
+
+        :param directive_name: directive name
+        :return: list of vulnerabilities
+        """
+        result = []
+        for v in self.find_vulns():
+            if v.directive == directive_name:
+                result.append(v)
+        return result
+
+    def get_report_uri(self):
+        """
+        Get report uri if it exists.
+
+        :return: report uri, otherwise None
+        """
+        report_uri = self.get_directive_by_name('report-uri')
+       
+        if report_uri:
+            return report_uri.value
+        else:
+            return None
+
+    def protects_against_xss(self):
+        """
+        Check if policy protects against XSS.
+        See also https://www.w3.org/TR/CSP/#directives
+       
+        :return: True if protects, otherwise False
+        """
+        if not self.directives or self.report_only:
+            return False
+
+        risky_directives = []
+        for dn in ['script-src', 'object-src', 'script-src']:
+            risky_directives.append(self.get_directive_by_name(dn))
+        default_src = self.get_directive_by_name('default-src')
+
+        # must be enabled default_src or **all** risky directives
+        if not (default_src or
+                reduce(lambda x, y: x and y, risky_directives)):
+            return False
+
+        for rd in risky_directives:
+            d = rd if rd else default_src
+            for vuln in d.find_vulns():
+                if vuln.severity == severity.HIGH:
+                    return False
+        return True
+
+    def unsafe_inline_enabled(self):
+        """
+        Check if there is 'unsafe-inline' keyword in source list of
+        script-src and style-src directives.
+
+        :return: True if there is 'unsafe-inline' in source list of risky directives
+        """
+        for directive_name in ['script-src', 'style-src']:
+            directive = self.get_directive_by_name(directive_name)
+            if directive and directive.unsafe_inline_enabled():
+                return True
+        return False
+
+    def get_nonces(self):
+        """
+        Find nonces in source list of directives.
+
+        :return: list of nonces
+        """
+        result = []
+        for d in self.directives:
+            result.extend(d.get_nonces_hashes(nonces=True, hashes=False))
+        return result
+ 
+
+class CSP(object):
+    """Content Security Policy Level 2
+    https://www.w3.org/TR/CSP/"""
+    policies = []
+    response_id = None
+    response_url = None
+    trusted_hosts = []
+    source_limit = None
+    report_eval = True
+    report_no_report_uri = False
+    default_src_strictness = 0
+    report_not_fallback = False
+
+    def header_provides_csp(self, header_name):
+        """
+        Indicate if header is CSP header.
+
+        :param header_name: name of the header
+        :return: True if so, otherwise False
+        """
+        csp = CSPPolicy()
+        header = header_name.upper().strip()
+        if header == csp.get_header_name().upper() \
+                or header == csp.get_header_name(True).upper():
+            return True
+        return False
+
+    def _get_policies_from_meta(self, response):
+        """
+        Retrieve policy from meta tag.
+        See also https://www.w3.org/TR/CSP/#delivery-html-meta-element
+       
+        :param response: HTTP response
+        :return: list of policies
+        """
+        result = []
+
+        if not response.is_text_or_html():
+            return result
+
+        try:
+            dp = parser_cache.dpc.get_document_parser_for(response)
+        except BaseFrameworkException:
+            return result
+
+        meta_tag_list = dp.get_meta_tags()
+        meta_values = []
+        for tag in meta_tag_list:
+            if tag.get('http-equiv', '') == "Content-Security-Policy":
+                content = tag.get('content', '')
+                if content:
+                    meta_values.append(content)
+        banned = ['report-uri', 'frame-ancestors', 'sandbox']
+        for csp_value in meta_values:
+            csp = CSPPolicy()
+            csp.source_limit = self.source_limit
+            csp.trusted_hosts = self.trusted_hosts
+            csp.report_eval = self.report_eval
+            csp.report_no_report_uri = self.report_no_report_uri
+            csp.default_src_strictness = self.default_src_strictness
+            csp.report_not_fallback = self.report_not_fallback
+            if csp.init_value(csp_value, banned_directives=banned):
+                result.append(csp)
+        
+        return result
+
+    def init_from_response(self, response):
+        """
+        Init CSP policies from HTTP response.
+
+        :param response: HTTP response
+        :return: list of policies
+        """
+        # TODO
+        # Merge multiple policies
+        # https://www.w3.org/TR/CSP/#enforcing-multiple-policies
+        self.policies = []
+        # From headers
+        headers = response.get_headers()
+        for header_name in headers:
+            if self.header_provides_csp(header_name):
+                csp = CSPPolicy()
+                csp.source_limit = self.source_limit
+                csp.trusted_hosts = self.trusted_hosts
+                csp.report_eval = self.report_eval
+                csp.report_no_report_uri = self.report_no_report_uri
+                csp.default_src_strictness = self.default_src_strictness
+                csp.report_not_fallback = self.report_not_fallback
+                if csp.init_from_header(header_name, headers[header_name]):
+                    self.policies.append(csp)
+        # From meta tag
+        self.policies.extend(self._get_policies_from_meta(response))
+        if self.policies:
+            self.response_id = response.id
+            self.response_url = response.get_url().uri2url()
+            return len(self.policies)
+        else:
+            return False
+
+    def protects_against_xss(self):
+        """
+        Check if policies protect against XSS.
+        See also https://www.w3.org/TR/CSP/#directives
+       
+        :return: True if at least one of policies protects, otherwise False
+        """
+        for policy in self.policies:
+            if policy.protects_against_xss():
+                return True
+        return False
+
+    def __str__(self):
+        return '|'.join([p.value for p in self.policies])
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
+    def get_nonces(self):
+        """
+        Find nonces in source list of all directives in all policies.
+
+        :return: set of nonces
+        """
+        result = set()
+        for policy in self.policies:
+            for nonce in policy.get_nonces():
+                result.add(nonce)
+        return result
+
+    def find_nonce_vulns(self, csps):
+        """
+        Find cases when nonces in source list of CSP
+        policy directives are not random in responses.
+
+        :return: list of vulns
+        """
+        vulns = []
+        filtered_csps = filter(lambda x: x.get_nonces(), csps)
+
+        if self.get_nonces():
+            filtered_csps.insert(0, self)
+
+        if len(filtered_csps) < 2:
+            return []
+
+        prev = filtered_csps[0]
+        for csp in filtered_csps[1:]:
+            for policy in csp.policies:
+                tmp = policy.get_nonces()
+                if not tmp:
+                    continue
+                nonces = set(prev.get_nonces()).intersection(set(tmp))
+                # Get intersection between nonces of policies!
+                if nonces:
+                    vulns.append(CSPVulnerability(
+                        self.vuln_nonce_intersection_tpl % ", ".join(nonces),
+                        severity.HIGH, 'nonce_intersection', ''))
+                    return vulns
+            prev = policy
+        return vulns
+
+    vuln_nonce_intersection_tpl = """There is intersection between nonces of at least two policies from different responses.
+It means that nonce value is not random for every responose. Not random nonces: %s"""
