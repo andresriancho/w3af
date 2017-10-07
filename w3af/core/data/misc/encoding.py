@@ -132,7 +132,7 @@ def smart_str(s, encoding=DEFAULT_ENCODING, errors='strict'):
 
 
 def smart_str_ignore(s, encoding=DEFAULT_ENCODING):
-    return smart_str(s, encoding=DEFAULT_ENCODING, errors='ignore')
+    return smart_str(s, encoding=encoding, errors='ignore')
 
 
 def is_known_encoding(encoding):

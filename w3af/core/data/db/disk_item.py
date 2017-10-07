@@ -24,11 +24,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class DiskItem(object):
     """
     This is a very simple class that's intended to be a base class for objects
-    that want to be stored in a DiskList of DiskSet. It basically exposes the
-    "get_eq_attrs" method which returns a list with the names of the attributes
-    that make this object "unique".
+    that want to be stored in a DiskList of DiskSet.
     """
     __slots__ = ()
 
     def get_eq_attrs(self):
+        """
+        The DiskList class will use the values associated with the attributes
+        listed in the response ofget_eq_attrs() to calculate an md5, which
+        is saved to the DB, indexed, and then used to have a fast(er)
+        __contains__ implementation
+
+        :return: A list with the attributes of the subclass that make it
+                 "unique". In most cases all attributes which have data
+                 that can't be calculated based on other attributes.
+        """
         raise NotImplementedError

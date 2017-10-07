@@ -22,15 +22,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
+from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.utils.form_params import FormParameters
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.db.variant_db import (VariantDB, PARAMS_MAX_VARIANTS,
-                                          PATH_MAX_VARIANTS)
+from w3af.core.data.db.variant_db import (VariantDB,
+                                          PARAMS_MAX_VARIANTS,
+                                          PATH_MAX_VARIANTS,
+                                          MAX_EQUAL_FORM_VARIANTS)
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
                                         FILENAME_TOKEN, PATH_TOKEN)
 
@@ -43,6 +47,7 @@ def fr(url):
 class TestVariantDB(unittest.TestCase):
 
     def setUp(self):
+        MiscSettings().set_default_values()
         create_temp_dir()
         self.vdb = VariantDB()
 
@@ -344,3 +349,110 @@ class TestVariantDB(unittest.TestCase):
         s = clean_fuzzable_request(fr(URL(u)))
         e = '(GET)-http://w3af.org/vård/file-5692fef3f5dcd97.html'
         self.assertEqual(s, e)
+
+    def test_same_form_different_url(self):
+
+        def create_fuzzable_request(_id):
+            url_fmt = 'http://example.com/product/%s'
+
+            form_params = FormParameters()
+            form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.set_action(URL(url_fmt % _id))
+            form_params.set_method('post')
+
+            form = dc_from_form_params(form_params)
+
+            return FuzzableRequest.from_form(form)
+
+        # These two make sure we're returning false in the last call to
+        # append because of MAX_EQUAL_FORM_VARIANTS and not any other limits
+        self.assertGreater(PARAMS_MAX_VARIANTS, MAX_EQUAL_FORM_VARIANTS)
+        self.assertGreater(PATH_MAX_VARIANTS, MAX_EQUAL_FORM_VARIANTS)
+
+        for i in xrange(MAX_EQUAL_FORM_VARIANTS):
+            fri = create_fuzzable_request(i)
+            self.assertTrue(self.vdb.append(fri))
+
+        fri = create_fuzzable_request(i + 1)
+        self.assertFalse(self.vdb.append(fri))
+
+    def test_same_form_completely_different_url(self):
+
+        def create_fuzzable_request(_id):
+            path_count = _id * 5
+            paths = [rand_alnum(9) for _ in xrange(path_count)]
+            url = 'http://example.com/%s' % '/'.join(paths)
+
+            form_params = FormParameters()
+            form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.set_action(URL(url))
+            form_params.set_method('post')
+
+            form = dc_from_form_params(form_params)
+
+            return FuzzableRequest.from_form(form)
+
+        for i in xrange(MAX_EQUAL_FORM_VARIANTS):
+            fri = create_fuzzable_request(i)
+            self.assertTrue(self.vdb.append(fri))
+
+        fri = create_fuzzable_request(i + 1)
+        self.assertFalse(self.vdb.append(fri))
+
+    def test_different_form_different_url(self):
+
+        def create_fuzzable_request(_id):
+            url_fmt = 'http://example.com/product/%s'
+
+            form_params = FormParameters()
+            form_params.add_field_by_attr_items([("name", "username%s" % _id), ("value", "abc")])
+            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.set_action(URL(url_fmt % _id))
+            form_params.set_method('post')
+
+            form = dc_from_form_params(form_params)
+
+            return FuzzableRequest.from_form(form)
+
+        for i in xrange(MAX_EQUAL_FORM_VARIANTS * 2):
+            fri = create_fuzzable_request(i)
+            self.assertTrue(self.vdb.append(fri))
+
+    def test_different_form_same_url(self):
+
+        def create_fuzzable_request(_id):
+            url = 'http://example.com/product/1'
+
+            form_params = FormParameters()
+            form_params.add_field_by_attr_items([("name", "username%s" % _id), ("value", "abc")])
+            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.set_action(URL(url))
+            form_params.set_method('post')
+
+            form = dc_from_form_params(form_params)
+
+            return FuzzableRequest.from_form(form)
+
+        for i in xrange(MAX_EQUAL_FORM_VARIANTS * 2):
+            fri = create_fuzzable_request(i)
+            self.assertTrue(self.vdb.append(fri))
+
+    def test_forms_with_one_parameter_always_more_variants(self):
+
+        def create_fuzzable_request(_id):
+            url_fmt = 'http://example.com/product/%s'
+
+            form_params = FormParameters()
+            form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+            form_params.set_action(URL(url_fmt % _id))
+            form_params.set_method('post')
+
+            form = dc_from_form_params(form_params)
+
+            return FuzzableRequest.from_form(form)
+
+        for i in xrange(MAX_EQUAL_FORM_VARIANTS * 2):
+            fri = create_fuzzable_request(i)
+            self.assertTrue(self.vdb.append(fri))
