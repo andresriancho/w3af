@@ -21,9 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement
 
-import cgi
 import thread
-import urllib
 import string
 
 from collections import namedtuple

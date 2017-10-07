@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 FILENAME_TOKEN = 'file-5692fef3f5dcd97'
 PATH_TOKEN = 'path-0fb923a04c358a37c'
@@ -68,6 +69,40 @@ def clean_fuzzable_request(fuzzable_request, dc_handler=clean_data_container):
         res += '!' + dc_handler(raw_data)
 
     return res
+
+
+def clean_fuzzable_request_form(fuzzable_request, dc_handler=clean_data_container):
+    """
+    This function will extract data from the fuzzable request and serialize it.
+
+    The main goal of this function is to return a "unique representation"
+    of how the HTTP request looks like WITHOUT including the URL.
+
+    Related with https://github.com/andresriancho/w3af/issues/15970
+
+    :param fuzzable_request: The fuzzable request instance to clean
+    """
+    # Method
+    res = [fuzzable_request.get_method().upper()]
+
+    # Type
+    raw_data = fuzzable_request.get_raw_data()
+    res.append(raw_data.get_type())
+
+    # Query string parameters
+    uri = fuzzable_request.get_uri()
+    if uri.has_query_string():
+        res.append(dc_handler(uri.querystring))
+    else:
+        res.append('')
+
+    # Post-data parameters
+    if raw_data:
+        res.append(dc_handler(raw_data))
+    else:
+        res.append('')
+
+    return '|'.join([smart_str_ignore(s) for s in res])
 
 
 def clean_url(url, dc_handler=clean_data_container):

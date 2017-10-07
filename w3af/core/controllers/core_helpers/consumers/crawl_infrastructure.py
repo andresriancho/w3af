@@ -220,7 +220,6 @@ class crawl_infrastructure(BaseConsumer):
                     self.handle_exception(plugin.get_type(), plugin.get_name(),
                                           fuzzable_request, ve)
 
-
                 # The plugin has queued some results and now we need to analyze
                 # which of the returned fuzzable requests are new and should be
                 # put in the input_queue again.
@@ -346,6 +345,9 @@ class crawl_infrastructure(BaseConsumer):
 
     def _is_new_fuzzable_request(self, plugin, fuzzable_request):
         """
+        Read the note on why it is a good idea to have two instances of VariantDB
+        in the framework instead of one in the web_spider._should_verify_extracted_url()
+
         :param plugin: The plugin that found these fuzzable requests
         :param fuzzable_request: A potentially new fuzzable request
 
@@ -378,7 +380,7 @@ class crawl_infrastructure(BaseConsumer):
         #
         # w3af has a cache, but its still a waste of time to send those requests.
         #
-        #   Now lets analyze this with more than one parameter. Spidered URIs:
+        #   Now lets analyze this with more than one parameter. Crawled URIs:
         #       - http://host.tld/?id=3739286&action=create
         #       - http://host.tld/?id=3739285&action=create
         #       - http://host.tld/?id=3739282&action=remove
@@ -401,9 +403,19 @@ class crawl_infrastructure(BaseConsumer):
         #       - http://host.tld/?id=payload1&action=remove
         #
         if not self._variant_db.append(fuzzable_request):
-            msg = 'Ignoring reference "%s" (it is simply a variant).'
-            msg %= fuzzable_request.get_uri()
-            om.out.debug(msg)
+
+            if not fuzzable_request.get_raw_data():
+                msg = ('Ignoring reference "%s" since it is simply a variant'
+                       ' of another URL seen before.')
+                msg %= fuzzable_request.get_uri()
+                om.out.debug(msg)
+            else:
+                msg = ('Ignoring form "%s" with parameters [%s] since it is'
+                       ' simply a variant of another form seen before.')
+                args = (fuzzable_request.get_uri(),
+                        ', '.join(fuzzable_request.get_raw_data().get_param_names()))
+                om.out.debug(msg % args)
+
             return False
 
         msg = 'New fuzzable request identified: "%s"'

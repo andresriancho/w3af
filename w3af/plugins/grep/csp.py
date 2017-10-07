@@ -173,4 +173,4 @@ class DiskCSPVulnStoreItem(DiskItem):
         """
         Implements method from base class.
         """
-        return ['url','resp_id']
+        return ['url', 'resp_id']

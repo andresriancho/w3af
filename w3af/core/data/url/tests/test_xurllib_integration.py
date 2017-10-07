@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
+import httpretty
 
 from nose.plugins.attrib import attr
 
@@ -97,3 +98,22 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 1)
         cookie = [c for c in self.uri_opener.get_cookies()][0]
         self.assertEqual('127.0.0.1', cookie.domain)
+
+
+class TestUpperCaseHeaders(unittest.TestCase):
+
+    @httpretty.activate
+    def test_headers_upper_case(self):
+        url = "http://w3af.org/"
+
+        httpretty.register_uri(httpretty.GET, url,
+                               body='hello world',
+                               content_type="application/html")
+
+        uri_opener = ExtendedUrllib()
+        res = uri_opener.GET(URL(url), cache=False)
+        headers = res.get_headers()
+        content_encoding, _ = headers.get('Content-Type', '')
+
+        self.assertIn('gzip', content_encoding)
+        self.assertIn('View HTTP response headers.', res.get_body())
