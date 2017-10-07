@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import urllib
 import StringIO
 import unittest
 import xml.etree.ElementTree as ElementTree
@@ -251,6 +252,10 @@ class TestXMLStr(unittest.TestCase):
         contents = file(self.TEST_FILE_0x0B).read()
         match_object = INVALID_XML.search(contents)
         self.assertIsNotNone(match_object)
+
+    def test_3c_unicode_utf8(self):
+        string_to_clean = urllib.unquote('X%C3%84Y')
+        self.assertEquals('X??Y', xml_str(string_to_clean))
 
 
 class TestXMLOutputBinary(PluginTest):
