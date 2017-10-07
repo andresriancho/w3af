@@ -97,6 +97,8 @@ class BaseConsumer(Process):
 
         self._threadpool = None
 
+        self._stopped = False
+
         if create_pool:
             self._threadpool = Pool(self.THREAD_POOL_SIZE,
                                     worker_names='%sWorker' % thread_name,
@@ -254,17 +256,27 @@ class BaseConsumer(Process):
 
         self.in_queue.join()
 
+    def _dummy_consume(self):
+        while not self._stopped:
+            try:
+                self.in_queue.get(timeout=0.1)
+            except Queue.Empty:
+                continue
+            else:
+                self.in_queue.task_done()
+
     def terminate(self):
         """
         Remove all queued work from in_queue and poison the loop so the consumer
         exits. Should be very fast and called only if we don't care about the
         queued work anymore (ie. user clicked stop in the UI).
         """
-        while not self.in_queue.empty():
-            self.in_queue.get()
-            self.in_queue.task_done()
-        
+        dummy_consume_thread = Process(target=self._dummy_consume)
+        dummy_consume_thread.setDaemon(True)
+        dummy_consume_thread.start()
+
         self.join()
+        self._stopped = True        
 
     def get_result(self, timeout=0.5):
         """
