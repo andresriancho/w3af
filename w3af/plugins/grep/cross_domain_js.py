@@ -31,6 +31,7 @@ from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 
 class cross_domain_js(GrepPlugin):
@@ -106,7 +107,8 @@ class cross_domain_js(GrepPlugin):
                     ' to a third party site ("%s"). This practice is not'
                     ' recommended, the security of the current site is being'
                     ' delegated to the external entity.')
-            desc %= (url, script_domain)
+            desc %= (smart_str_ignore(url),
+                     smart_str_ignore(script_domain))
 
             i = Info('Cross-domain javascript source', desc,
                      response.id, self.get_name())
