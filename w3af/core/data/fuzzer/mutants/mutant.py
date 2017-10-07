@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 
 from w3af.core.data.constants.ignored_params import is_in_ignored_parameters
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.db.disk_item import DiskItem
 
 
@@ -159,10 +160,12 @@ class Mutant(DiskItem):
         token = dc.get_token()
 
         msg = '"%s", using HTTP method %s. The sent data was: "%s"'
-        msg = msg % (self.get_url(), self.get_method(), dc_short)
+        msg %= (smart_str_ignore(self.get_url()),
+                smart_str_ignore(self.get_method()),
+                smart_str_ignore(dc_short))
 
         if token is not None:
-            msg += ' The modified parameter was "%s".' % token.get_name()
+            msg += ' The modified parameter was "%s".' % smart_str_ignore(token.get_name())
 
         return msg
 

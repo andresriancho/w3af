@@ -24,6 +24,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.utils import rand_number
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
 from w3af.core.controllers.misc.diff import diff
 from w3af.core.controllers.exceptions import HTTPRequestException
@@ -247,9 +248,9 @@ class BlindSqliResponseDiff(object):
             
             desc = 'Blind SQL injection was found at: "%s", using'\
                    ' HTTP method %s. The injectable parameter is: "%s"'
-            desc %= (mutant.get_url(),
-                     mutant.get_method(),
-                     mutant.get_token_name())
+            desc %= (smart_str_ignore(mutant.get_url()),
+                     smart_str_ignore(mutant.get_method()),
+                     smart_str_ignore(mutant.get_token_name()))
             
             v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
                                  severity.HIGH, response_ids, 'blind_sqli',
