@@ -215,17 +215,34 @@ class xml_file(OutputPlugin):
         Write the XML to the output file
         :return: None
         """
+        # In some rare cases the XML output plugin takes considerable
+        # time to run flush(), and the output plugin will call flush()
+        # a second time, while the previous flush is still running.
+        #
+        # This will end up in an exception like:
+        #
+        #       "'NoneType' object has no attribute 'createElement'"
+        #
+        # In order to avoid this issue I'm going to allow only one flush
+        # to run at the same time. If the self._xml attribute is not None
+        # it means that the first call to flush() in the other thread never
+        # reached the last call to _empty_xml_root() in this method.
+        if self._xml is not None:
+            # We need to wait for the first call to flush() to finish
+            return
+
         # Start from a clean state, just in case.
         self._empty_xml_root()
 
-        self._create_root_xml_elems()
-        self._log_enabled_plugins_to_xml()
-        self._write_findings_to_xml()
-        self._write_errors_to_xml()
-        self._write_xml_to_file()
-
-        # Free some memory
-        self._empty_xml_root()
+        try:
+            self._create_root_xml_elems()
+            self._log_enabled_plugins_to_xml()
+            self._write_findings_to_xml()
+            self._write_errors_to_xml()
+            self._write_xml_to_file()
+        finally:
+            # Free some memory
+            self._empty_xml_root()
 
     def _empty_xml_root(self):
         self._xml = None
