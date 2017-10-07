@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 test_csrf.py
 
@@ -18,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import unittest
+
 from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -182,42 +185,95 @@ class TestCSRF(PluginTest):
         
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response)
         self.assertFalse(origin_checked)
-    
+
+    @attr('ci_fails')
+    def test_is_token_checked_true(self):
+        generator = URL('http://moth/w3af/audit/csrf/secure-replay-allowed/')
+        http_response = self.uri_opener.GET(generator)
+
+        # Please note that this freq holds a fresh/valid CSRF token
+        cookie = Cookie.from_http_response(http_response)
+        freq = FuzzableRequest(generator, cookie=cookie)
+
+        # FIXME:
+        # And I use this token here to get the original response, and if the
+        # application is properly developed, that token will be invalidated
+        # and that's where this algorithm fails.
+        original_response = self.uri_opener.send_mutant(freq)
+
+        token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
+        checked = self.csrf_plugin._is_token_checked(freq, token,
+                                                     original_response)
+        self.assertTrue(checked)
+
+    @attr('ci_fails')
+    def test_is_token_checked_false(self):
+        """
+        This covers the case where there is a token but for some reason it
+        is NOT verified by the web application.
+        """
+        generator = URL('http://moth/w3af/audit/csrf/vulnerable-token-ignored/')
+        http_response = self.uri_opener.GET(generator)
+
+        # Please note that this freq holds a fresh/valid CSRF token
+        cookie = Cookie.from_http_response(http_response)
+        freq = FuzzableRequest(generator, cookie=cookie)
+
+        # FIXME:
+        # And I use this token here to get the original response, and if the
+        # application is properly developed, that token will be invalidated
+        # and that's where this algorithm fails.
+        original_response = self.uri_opener.send_mutant(freq)
+
+        token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
+        checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
+        self.assertFalse(checked)
+
+
+class TestLowLevelCSRF(unittest.TestCase):
+    def setUp(self):
+        super(TestLowLevelCSRF, self).setUp()
+        self.csrf_plugin = csrf()
+
     def test_is_csrf_token_true_case01(self):
-        self.csrf_plugin.is_csrf_token('token', 'f842eb01b87a8ee18868d3bf80a558f3')
+        self.assertTrue(self.csrf_plugin.is_csrf_token('token', 'f842eb01b87a8ee18868d3bf80a558f3'))
 
     def test_is_csrf_token_true_case02(self):
-        self.csrf_plugin.is_csrf_token('secret', 'f842eb01b87a8ee18868d3bf80a558f3')
+        self.assertTrue(self.csrf_plugin.is_csrf_token('secret', 'f842eb01b87a8ee18868d3bf80a558f3'))
 
     def test_is_csrf_token_true_case03(self):
-        self.csrf_plugin.is_csrf_token('csrf', 'f842eb01b87a8ee18868d3bf80a558f3')
+        self.assertTrue(self.csrf_plugin.is_csrf_token('csrf', 'f842eb01b87a8ee18868d3bf80a558f3'))
 
     def test_is_csrf_token_false_case01(self):
-        self.csrf_plugin.is_csrf_token('token', '')
+        self.assertFalse(self.csrf_plugin.is_csrf_token('token', ''))
     
     def test_is_csrf_token_false_case02(self):
-        self.csrf_plugin.is_csrf_token('secret', 'helloworld')
+        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'helloworld'))
 
     def test_is_csrf_token_false_case03(self):
-        self.csrf_plugin.is_csrf_token('secret', 'helloworld123')
+        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'helloworld123'))
 
     def test_is_csrf_token_false_case04(self):
-        self.csrf_plugin.is_csrf_token('secret', 'hello world 123')
+        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'hello world 123'))
+
+    def test_is_csrf_token_false_long(self):
+        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'A' * 513))
+
+    def test_is_csrf_token_false_string_special_chars(self):
+        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'áÄé'))
+
+    def test_is_csrf_token_false_unicode(self):
+        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', u'áÄé'))
 
     def test_is_csrf_token_false_case05(self):
         lorem = ('Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
                  ' Curabitur at eros elit, rhoncus feugiat libero. Praesent'
                  ' lobortis ultricies est gravida tempor. Sed tortor mi,'
-                 ' euismod at interdum quis, hendrerit vitae risus. Sed'
-                 ' iaculis, ante sagittis ullamcorper molestie, metus nibh'
-                 ' posuere purus, non tempor massa leo at odio. Duis quis'
-                 ' elit enim. Morbi lobortis est sed metus adipiscing in'
-                 ' lacinia est porttitor. Suspendisse potenti. Morbi pretium'
-                 ' lacinia magna, sit amet tincidunt enim vestibulum sed.')
-        self.csrf_plugin.is_csrf_token('secret', lorem)
+                 ' euismod at interdum quis, hendrerit vitae risus. Sed')
+        self.assertTrue(self.csrf_plugin.is_csrf_token('secret', lorem))
 
     def test_is_csrf_token_false_case06(self):
-        self.csrf_plugin.is_csrf_token('token', 'f842e')
+        self.assertFalse(self.csrf_plugin.is_csrf_token('token', 'f842e'))
 
     def test_find_csrf_token_true_simple(self):
         url = URL('http://moth/w3af/audit/csrf/')
@@ -246,46 +302,3 @@ class TestCSRF(PluginTest):
         
         token = self.csrf_plugin._find_csrf_token(freq)
         self.assertIn('secret', token)
-    
-    @attr('ci_fails')
-    def test_is_token_checked_true(self):
-        generator = URL('http://moth/w3af/audit/csrf/secure-replay-allowed/')
-        http_response = self.uri_opener.GET(generator)
-        
-        # Please note that this freq holds a fresh/valid CSRF token
-        cookie = Cookie.from_http_response(http_response)
-        freq = FuzzableRequest(generator, cookie=cookie)
-
-        # FIXME:
-        # And I use this token here to get the original response, and if the
-        # application is properly developed, that token will be invalidated
-        # and that's where this algorithm fails.
-        original_response = self.uri_opener.send_mutant(freq)
-        
-        token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
-        checked = self.csrf_plugin._is_token_checked(freq, token,
-                                                     original_response)
-        self.assertTrue(checked)
-    
-    @attr('ci_fails')
-    def test_is_token_checked_false(self):
-        """
-        This covers the case where there is a token but for some reason it
-        is NOT verified by the web application.
-        """
-        generator = URL('http://moth/w3af/audit/csrf/vulnerable-token-ignored/')
-        http_response = self.uri_opener.GET(generator)
-        
-        # Please note that this freq holds a fresh/valid CSRF token
-        cookie = Cookie.from_http_response(http_response)
-        freq = FuzzableRequest(generator, cookie=cookie)
-
-        # FIXME:
-        # And I use this token here to get the original response, and if the
-        # application is properly developed, that token will be invalidated
-        # and that's where this algorithm fails.
-        original_response = self.uri_opener.send_mutant(freq)
-        
-        token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
-        checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
-        self.assertFalse(checked)
