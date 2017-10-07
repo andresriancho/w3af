@@ -91,6 +91,11 @@ class w3afCore(object):
         manager = fresh_output_manager_inst()
         log_sink_factory(manager.get_in_queue())
 
+        # FIXME: In the future, when the output_manager is not an awful
+        # singleton anymore, this line should be removed and the output_manager
+        # object should take a w3afCore object as a parameter in its __init__
+        om.manager.set_w3af_core(self)
+
         # This is more than just a debug message, it's a way to force the
         # output manager thread to start it's work. I would start that thread
         # on output manager instantiation but there are issues with starting
@@ -118,12 +123,7 @@ class w3afCore(object):
         self.status = w3af_core_status(self)
         self.target = CoreTarget()
         self.strategy = CoreStrategy(self)
-        
-        # FIXME: In the future, when the output_manager is not an awful
-        # singleton anymore, this line should be removed and the output_manager
-        # object should take a w3afCore object as a parameter in its __init__
-        om.manager.set_w3af_core(self)
-        
+
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
         
