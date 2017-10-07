@@ -31,6 +31,7 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -235,10 +236,18 @@ class csrf(AuditPlugin):
         http://en.wikipedia.org/wiki/Password_strength
         """
         min_length = 5
+        max_length = 512
         min_entropy = 2.4
 
         # Check length
         if len(value) <= min_length:
+            return False
+
+        if len(value) > max_length:
+            # I have never seen a CSRF token longer than 256 bytes,
+            # doubling that and checking to make sure we don't check
+            # parameters which are files in multipart uploads or stuff
+            # like that
             return False
         
         # Check for common CSRF token names
@@ -247,7 +256,7 @@ class csrf(AuditPlugin):
                 return True
     
         # Calculate entropy
-        entropy = self.shannon_entropy(value.encode('utf8', errors='ignore'))
+        entropy = self.shannon_entropy(smart_str_ignore(value))
         if entropy >= min_entropy:
             return True
 
