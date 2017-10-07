@@ -29,6 +29,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.kb.vuln import Vuln
 
@@ -100,6 +101,7 @@ class frontpage(AuditPlugin):
 
         data = POST_BODY % (version, file_path)
         data += rand_file[::-1]
+        data = smart_str_ignore(data)
 
         # TODO: The _vti_bin and _vti_aut directories should be PARSED from
         # the _vti_inf file inside the infrastructure.frontpage_version plugin,
