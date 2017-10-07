@@ -74,7 +74,7 @@ class text_file(OutputPlugin):
         self._http_file_name = os.path.expanduser(self._http_file_name)
         
         try:
-            self._file = open(self._output_file_name, "w")
+            self._file = open(self._output_file_name,  'w')
         except IOError, io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._output_file_name), io.strerror)
@@ -87,7 +87,7 @@ class text_file(OutputPlugin):
         try:
             # Images aren't ascii, so this file that logs every request/response,
             # will be binary.
-            self._http = open(self._http_file_name, "wb")
+            self._http = open(self._http_file_name, 'wb')
         except IOError, io:
             msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._http_file_name), io.strerror)
@@ -135,7 +135,7 @@ class text_file(OutputPlugin):
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s". Disabling output to this file.'
             om.out.error(msg % (self._http_file_name, e),
-                         ignore_plugins=set([self.get_name()]))
+                         ignore_plugins={self.get_name()})
             
     def write(self, message, log_type, new_line=True, flush=False):
         """

@@ -64,7 +64,20 @@ class CoreStrategy(object):
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
         
-        self.set_consumers_to_none()
+        # Consumer threads
+        self._grep_consumer = None
+        self._audit_consumer = None
+        self._auth_consumer = None
+
+        # Producer/consumer threads
+        self._discovery_consumer = None
+        self._bruteforce_consumer = None
+
+        # Producer threads
+        self._seed_producer = seed(self._w3af_core)
+
+        # Also use this method to clear observers
+        self._observers = []
         
     def set_consumers_to_none(self):
         # Consumer threads
