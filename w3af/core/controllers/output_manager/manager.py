@@ -235,7 +235,23 @@ class OutputManager(Process):
         self._last_output_flush = time.time()
 
     def end_output_plugins(self):
+        #
+        # Adding a POISON_PILL here guarantees that no more messages are going
+        # to be processed by this output manager instance. The poison pill
+        # will kill the thread processing messages, thus messages might be
+        # received but won't be processed
+        #
+        # This fixes an issue with "I/O operation on closed file" which was
+        # reported multiple times over the years. The race condition happen
+        # when a message was processed after the plugins were ended.
+        #
+        # By doing this we might lose some messages, BUT I reviewed the code
+        # to make sure end_output_plugins() is called at the end of the scan
+        # and that no "important messages" would be lost.
+        self.in_queue.put(POISON_PILL)
         self.process_all_messages()
+
+        # Now call end() on all plugins
         self.__end_output_plugins_impl()
 
     @start_thread_on_demand
