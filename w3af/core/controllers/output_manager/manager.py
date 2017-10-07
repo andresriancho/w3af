@@ -103,6 +103,7 @@ class OutputManager(Process):
         self.in_queue = SilentJoinableQueue()
         self._w3af_core = None
         self._last_output_flush = None
+        self._is_shutting_down = False
 
     def set_w3af_core(self, w3af_core):
         self._w3af_core = w3af_core
@@ -143,6 +144,12 @@ class OutputManager(Process):
             if work_unit == POISON_PILL:
                 # This is added at fresh_output_manager_inst
                 break
+
+            elif self._is_shutting_down:
+                # Just ignore the log message if we're in the process of shutting
+                # down the output manager. This prevents some race conditions where
+                # messages are processed after plugins are ended
+                self.in_queue.task_done()
 
             else:
                 args, kwargs = work_unit
@@ -235,20 +242,6 @@ class OutputManager(Process):
         self._last_output_flush = time.time()
 
     def end_output_plugins(self):
-        #
-        # Adding a POISON_PILL here guarantees that no more messages are going
-        # to be processed by this output manager instance. The poison pill
-        # will kill the thread processing messages, thus messages might be
-        # received but won't be processed
-        #
-        # This fixes an issue with "I/O operation on closed file" which was
-        # reported multiple times over the years. The race condition happen
-        # when a message was processed after the plugins were ended.
-        #
-        # By doing this we might lose some messages, BUT I reviewed the code
-        # to make sure end_output_plugins() is called at the end of the scan
-        # and that no "important messages" would be lost.
-        self.in_queue.put(POISON_PILL)
         self.process_all_messages()
 
         # Now call end() on all plugins
@@ -262,6 +255,21 @@ class OutputManager(Process):
         self.in_queue.join()
 
     def __end_output_plugins_impl(self):
+        #
+        # Setting self._is_shutting_down here guarantees that no more
+        # messages are going to be processed by this output manager instance
+        # until we set the attribute to False again.
+        #
+        # This fixes an issue with "I/O operation on closed file" which was
+        # reported multiple times over the years. The race condition happen
+        # when a message was processed after the plugins were ended.
+        #
+        # By doing this we might lose some messages, BUT I reviewed the code
+        # to make sure end_output_plugins() is called at the end of the scan
+        # and that no "important messages" would be lost.
+        #
+        self._is_shutting_down = True
+
         for o_plugin in self._output_plugin_instances:
             o_plugin.end()
 
@@ -279,6 +287,9 @@ class OutputManager(Process):
         keep_enabled = [pname for pname in currently_enabled_plugins
                         if pname in ('console',)]
         self.set_output_plugins(keep_enabled)
+
+        # Process messages again, we removed the plugins which were ended
+        self._is_shutting_down = False
 
     @start_thread_on_demand
     def log_enabled_plugins(self, enabled_plugins, plugins_options):
