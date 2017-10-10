@@ -194,6 +194,13 @@ class BaseConsumer(Process):
         self._tasks_in_progress[function_id] = 1
 
     def in_queue_put(self, work):
+        # Force the queue not to accept anything after POISON_PILL is sent.
+        # If anything is put to the queue after POISON_PILL, a race condition might happens
+        #    and the consumer might never stop
+        # https://github.com/andresriancho/w3af/pull/16063
+        if self._poison_pill_sent:
+            return
+        
         if work is not None:
             return self.in_queue.put(work)
 
