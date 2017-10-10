@@ -1,23 +1,17 @@
 """
 base_consumer.py
-
 Copyright 2012 Andres Riancho
-
 This file is part of w3af, http://w3af.org/ .
-
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation version 2 of the License.
-
 w3af is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
 """
 import Queue
 import sys
@@ -97,8 +91,6 @@ class BaseConsumer(Process):
 
         self._threadpool = None
 
-        self._stopped = False
-
         if create_pool:
             self._threadpool = Pool(self.THREAD_POOL_SIZE,
                                     worker_names='%sWorker' % thread_name,
@@ -160,20 +152,15 @@ class BaseConsumer(Process):
         The task_in_progress_counter is needed because we want to know if the
         consumer is processing something and let it finish. It is mainly used
         in the has_pending_work().
-
         For example:
-
             * You can have pending work if there are items in the input_queue
-
             * You can have pending work if there are still items to be read from
             the output_queue by one of the consumers that reads our output.
-
             * You can have pending work when there are no items in input_queue
             and no items in output_queue but the threadpool inside the consumer
             is processing something. This situation is handled by the
             self._tasks_in_progress attribute and the _add_task and
             _task_done methods.
-
         So, for each _add_task() there has to be a _task_done() even if the
         task ends in an error or exception.
         
@@ -190,12 +177,18 @@ class BaseConsumer(Process):
     def _add_task(self, function_id):
         """
         :param function_id: Just for debugging
-
         @see: _task_done()'s documentation.
         """
         self._tasks_in_progress[function_id] = 1
 
     def in_queue_put(self, work):
+        # Force the queue not to accept anything after POISON_PILL is sent.
+        # If anything is put to the queue after POISON_PILL, a race condition might happens
+        #    and the consumer might never stop
+        # https://github.com/andresriancho/w3af/pull/16063
+        if self._poison_pill_sent:
+            return
+        
         if work is not None:
             return self.in_queue.put(work)
 
@@ -207,7 +200,6 @@ class BaseConsumer(Process):
     def has_pending_work(self):
         """
         @see: _task_done() documentation
-
         :return: True if the in_queue_size is != 0 OR if one of the pool workers
                  is still doing something that might impact on out_queue.
         """
@@ -256,27 +248,17 @@ class BaseConsumer(Process):
 
         self.in_queue.join()
 
-    def _dummy_consume(self):
-        while not self._stopped:
-            try:
-                self.in_queue.get(timeout=0.1)
-            except Queue.Empty:
-                continue
-            else:
-                self.in_queue.task_done()
-
     def terminate(self):
         """
         Remove all queued work from in_queue and poison the loop so the consumer
         exits. Should be very fast and called only if we don't care about the
         queued work anymore (ie. user clicked stop in the UI).
         """
-        dummy_consume_thread = Process(target=self._dummy_consume)
-        dummy_consume_thread.setDaemon(True)
-        dummy_consume_thread.start()
-
+        while not self.in_queue.empty():
+            self.in_queue.get()
+            self.in_queue.task_done()
+        
         self.join()
-        self._stopped = True        
 
     def get_result(self, timeout=0.5):
         """
@@ -290,7 +272,6 @@ class BaseConsumer(Process):
         Get the exception information, and put it into the output queue
         then, the strategy will get the items from the output queue and
         handle the exceptions.
-
         :param plugin_name: The plugin that generated the exception
         :param fuzzable_request: The fuzzable request that was sent as input to
                                  the plugin when the exception was raised
@@ -308,4 +289,4 @@ class BaseConsumer(Process):
         self._out_queue.put(exception_data)
 
     def add_observer(self, observer):
-        self._observers.append(observer)
+self._observers.append(observer)
