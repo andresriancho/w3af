@@ -1,17 +1,23 @@
 """
 base_consumer.py
+
 Copyright 2012 Andres Riancho
+
 This file is part of w3af, http://w3af.org/ .
+
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation version 2 of the License.
+
 w3af is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
+
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
 """
 import Queue
 import sys
@@ -73,13 +79,12 @@ class BaseConsumer(Process):
         """
         :param consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
-        :param thread_name: How to name the current thread, eg. Auditor
+        :param thread_name: How to name the current thread
         :param create_pool: True to create a worker pool for this consumer
         """
         super(BaseConsumer, self).__init__(name='%sController' % thread_name)
 
-        self.in_queue = QueueSpeed(maxsize=max_in_queue_size,
-                                   name=thread_name)
+        self.in_queue = QueueSpeed(maxsize=max_in_queue_size)
         self._out_queue = Queue.Queue()
         
         self._consumer_plugins = consumer_plugins
@@ -152,15 +157,20 @@ class BaseConsumer(Process):
         The task_in_progress_counter is needed because we want to know if the
         consumer is processing something and let it finish. It is mainly used
         in the has_pending_work().
+
         For example:
+
             * You can have pending work if there are items in the input_queue
+
             * You can have pending work if there are still items to be read from
             the output_queue by one of the consumers that reads our output.
+
             * You can have pending work when there are no items in input_queue
             and no items in output_queue but the threadpool inside the consumer
             is processing something. This situation is handled by the
             self._tasks_in_progress attribute and the _add_task and
             _task_done methods.
+
         So, for each _add_task() there has to be a _task_done() even if the
         task ends in an error or exception.
         
@@ -177,6 +187,7 @@ class BaseConsumer(Process):
     def _add_task(self, function_id):
         """
         :param function_id: Just for debugging
+
         @see: _task_done()'s documentation.
         """
         self._tasks_in_progress[function_id] = 1
@@ -200,6 +211,7 @@ class BaseConsumer(Process):
     def has_pending_work(self):
         """
         @see: _task_done() documentation
+
         :return: True if the in_queue_size is != 0 OR if one of the pool workers
                  is still doing something that might impact on out_queue.
         """
@@ -272,6 +284,7 @@ class BaseConsumer(Process):
         Get the exception information, and put it into the output queue
         then, the strategy will get the items from the output queue and
         handle the exceptions.
+
         :param plugin_name: The plugin that generated the exception
         :param fuzzable_request: The fuzzable request that was sent as input to
                                  the plugin when the exception was raised
@@ -289,4 +302,4 @@ class BaseConsumer(Process):
         self._out_queue.put(exception_data)
 
     def add_observer(self, observer):
-self._observers.append(observer)
+        self._observers.append(observer)
