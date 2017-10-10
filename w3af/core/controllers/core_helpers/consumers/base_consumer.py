@@ -79,12 +79,13 @@ class BaseConsumer(Process):
         """
         :param consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
-        :param thread_name: How to name the current thread
+        :param thread_name: How to name the current thread, eg. Auditor
         :param create_pool: True to create a worker pool for this consumer
         """
         super(BaseConsumer, self).__init__(name='%sController' % thread_name)
 
-        self.in_queue = QueueSpeed(maxsize=max_in_queue_size)
+        self.in_queue = QueueSpeed(maxsize=max_in_queue_size,
+                                   name=thread_name)
         self._out_queue = Queue.Queue()
         
         self._consumer_plugins = consumer_plugins
