@@ -758,7 +758,7 @@ class ExtendedUrllib(object):
                               new_connection=new_connection,
                               use_basic_auth=use_basic_auth,
                               follow_redirects=follow_redirects,
-                              use_proxy=True)
+                              use_proxy=use_proxy)
             req = uri_opener.add_headers(req, headers or {})
             return uri_opener.send(req, grep=grep)
 
