@@ -1,0 +1,64 @@
+# Testing delay and timeout handling for w3af using tc and DVWA in a docker
+# container. First we add the fake delay:
+#
+# sudo tc qdisc add dev lo root netem delay 320ms
+#
+# Then we download and start the container:
+#
+# docker pull infoslack/dvwa
+# docker run -d -p 80:80 infoslack/dvwa
+#
+# Test the delay using curl, this should show the delay:
+#
+# time curl localhost
+#
+# Now run w3af against the target using this script.
+#
+# ./w3af_console -s scripts/dvwa.w3af
+#
+# Remove the fake delay:
+#
+# sudo tc qdisc del dev lo root netem
+#
+
+plugins
+output console,text_file
+output config text_file
+set output_file output-w3af.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit xss
+
+crawl web_spider
+crawl config web_spider
+set only_forward True
+set ignore_regex .*logout.*
+back
+
+auth detailed
+auth config detailed
+set username admin
+set password password
+set username_field username
+set password_field password
+set data_format %u=%U&%p=%P&Login=Login&user_token=48aac3e7a11d3e14ed3d1297a24f3745
+set auth_url http://localhost/login.php
+set method POST
+set check_url http://localhost/vulnerabilities/fi/?page=include.php
+set check_string '<h1>Vulnerability: File Inclusion</h1>'
+back
+
+# from plugin config
+back
+
+target
+set target http://localhost/login.php
+back
+
+start
+
+exit
