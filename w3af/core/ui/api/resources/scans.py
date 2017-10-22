@@ -26,7 +26,8 @@ from flask import jsonify, request
 from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
 from w3af.core.ui.api.utils.auth import requires_auth
-from w3af.core.ui.api.db.master import SCANS
+from w3af.core.ui.api.db.master import SCANS, ScanInfo
+from w3af.core.ui.api.utils.log_handler import RESTAPIOutput
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           start_scan_helper,
                                           get_new_scan_id,
@@ -34,6 +35,7 @@ from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
+import w3af.core.controllers.output_manager as om
 
 
 @app.route('/scans/', methods=['POST'])
@@ -102,20 +104,27 @@ def start_scan():
     except BaseFrameworkException, bfe:
         abort(400, str(bfe))
 
+    scan_id = get_new_scan_id()
+    scan_info = ScanInfo()
+    scan_info.w3af_core = w3af_core
+    scan_info.target_urls = target_urls
+    scan_info.temp_profile_path = scan_profile_file_name
+    scan_info.output = RESTAPIOutput()
+    SCANS[scan_id] = scan_info
+
+    # Clear all current output plugins
+    om.manager.set_output_plugins([])
+    # Add the REST API output plugin
+    om.manager.set_output_plugin_inst(scan_info.output)
+
     #
     # Finally, start the scan in a different thread
     #
-    scan_id = get_new_scan_id()
-    scan_info_setup = Event()
-
-    args = (target_urls, scan_profile, scan_info_setup)
+    args = (scan_info,)
     t = Process(target=start_scan_helper, name='ScanThread', args=args)
     t.daemon = True
 
     t.start()
-
-    # Wait until the thread starts
-    scan_info_setup.wait()
 
     return jsonify({'message': 'Success',
                     'id': scan_id,
