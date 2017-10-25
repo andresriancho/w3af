@@ -50,11 +50,9 @@ def create_temp_profile(scan_profile):
 
 def start_scan_helper(scan_info):
     """
-    Create a new instance of w3afCore, save it to SCANS and run core.start()
+    Start scan from scan_info
 
-    :param scan_profile: The contents of a profile configuration
-    :param scan_info_setup: Event to set when the scan started
-    :return: The instance of w3afCore.
+    :param scan_info: ScanInfo object contains initialized w3afCore
     """
     w3af_core = scan_info.w3af_core
     try:
@@ -76,7 +74,7 @@ def start_scan_helper(scan_info):
         scan_info.finished = True
 
         try:
-            os.unlink(scan_info.temp_profile_path)
+            os.unlink(scan_info.profile_path)
         except (AttributeError, IOError) as _:
             # Reduce some exceptions found during interpreter shutdown
             pass

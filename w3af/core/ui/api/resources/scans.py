@@ -108,7 +108,7 @@ def start_scan():
     scan_info = ScanInfo()
     scan_info.w3af_core = w3af_core
     scan_info.target_urls = target_urls
-    scan_info.temp_profile_path = scan_profile_file_name
+    scan_info.profile_path = scan_profile_file_name
     scan_info.output = RESTAPIOutput()
     SCANS[scan_id] = scan_info
 
