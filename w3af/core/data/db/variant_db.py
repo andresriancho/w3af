@@ -34,16 +34,16 @@ from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
 #       http://foo.com/abc/def.htm
 #       http://foo.com/abc/spam.htm
 #
-# In this case we'll collect at most PATH_TOKEN URLs with the same htm extension
-# inside the "abc" path.
+# In this case we'll collect at most PATH_MAX_VARIANTS URLs with the same htm
+# extension inside the "abc" path.
 #
 # These two are also path variants, but in this case without a filename:
 #
 #       http://foo.com/abc/spam/
 #       http://foo.com/abc/eggs/
 #
-# In this case we'll collect at most PATH_TOKEN URLs with different paths inside
-# the "abc" path.
+# In this case we'll collect at most PATH_MAX_VARIANTS URLs with different
+# paths inside the "abc" path.
 #
 PATH_MAX_VARIANTS = 50
 
