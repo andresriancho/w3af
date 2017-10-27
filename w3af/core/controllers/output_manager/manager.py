@@ -143,6 +143,7 @@ class OutputManager(Process):
 
             if work_unit == POISON_PILL:
                 # This is added at fresh_output_manager_inst
+                self.in_queue.task_done()
                 break
 
             elif self._is_shutting_down:
