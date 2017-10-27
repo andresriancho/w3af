@@ -273,7 +273,7 @@ class web_spider(CrawlPlugin):
         #
         # I tried to have only one VariantDB in the framework instead of two,
         # but after some tests and architecture considerations it was better
-        # to duplicated the data.
+        # to duplicate the data.
         #
         # In the future I'll run plugins in different processes than the core,
         # so it makes sense to have independent plugins.
