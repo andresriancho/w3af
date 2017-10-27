@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement, print_function
 
-import sys
 import os
+import sys
 import sqlite3
 
 from functools import wraps
@@ -88,7 +88,30 @@ class SQLiteDBMS(object):
                  cache_size=2000):
 
         super(SQLiteDBMS, self).__init__()
-        
+
+        #
+        #   All DB queries from w3af are sent to this queue, and this is a lot
+        #   since the DiskList, DiskQueue, DiskDict classes which are used
+        #   extensively through the framework use the same SQLite db as a
+        #   backend (of course different tables, but the same SQLite file and
+        #   on-memory instance).
+        #
+        #   Limiting the size of this Queue is serious business. I can't think
+        #   about a scenario where this limit would create a thread-lock, but
+        #   it doesn't feel right...
+        #
+        #   I've added debugging to the SQLiteExecutor.run() method to
+        #   analyze when the queue is full. After just a couple of minutes of
+        #   running the following message is shown:
+        #
+        #   The SQLiteExecutor.in_queue length is 0. Processed 14500 queries.
+        #
+        #   The queue size is 0, and other messages keep showing that same
+        #   number, or other <10, and the processed queries is really high but
+        #   acceptable: SQLite is C, fast, etc.
+        #
+        #   Any dead-lock you might be looking for doesn't seem to be here.
+        #
         in_queue = Queue(100)
         self.sql_executor = SQLiteExecutor(in_queue)
         self.sql_executor.start()
@@ -215,6 +238,7 @@ class SQLiteExecutor(Process):
     different thread.
     """
     DEBUG = False
+    REPORT_QSIZE_EVERY_N_CALLS = 250
     
     def __init__(self, in_queue):
         super(SQLiteExecutor, self).__init__(name='SQLiteExecutor')
@@ -225,6 +249,23 @@ class SQLiteExecutor(Process):
         self.name = 'SQLiteExecutor'
         
         self._in_queue = in_queue
+        self._last_reported_qsize = None
+        self._current_query_num = 0
+
+    def _report_qsize(self):
+        """
+        Reports the in queue size every N seconds according to REPORT_QSIZE_EVERY_N_CALLS
+        """
+        if self._last_reported_qsize is None:
+            self._last_reported_qsize = 0
+            return
+
+        diff = self._current_query_num - self._last_reported_qsize
+        if diff % self.REPORT_QSIZE_EVERY_N_CALLS == 0:
+            self._last_reported_qsize = self._current_query_num
+
+            msg = 'The SQLiteExecutor.in_queue length is %s. Processed %s queries.'
+            print(msg % (self._in_queue.qsize(), self._current_query_num))
 
     def query(self, query, parameters):
         future = Future()
@@ -342,12 +383,15 @@ class SQLiteExecutor(Process):
         
         while True:
             op_code, args, kwds, future = self._in_queue.get()
-            
+
+            self._current_query_num += 1
+
             args = args or ()
             kwds = kwds or {}
             
             if self.DEBUG:
-                print('%s %s %s' % (op_code, args, kwds))
+                self._report_qsize()
+                #print('%s %s %s' % (op_code, args, kwds))
             
             handler = OP_CODES.get(op_code, None)
             
