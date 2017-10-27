@@ -184,10 +184,18 @@ class OutputManager(Process):
             #   the unicodedecodeerror found in xml_file which was triggered
             #   when the findings were written to file.
             #
+            start_time = time.time()
+
             try:
                 o_plugin.flush()
             except Exception, exception:
                 self._handle_output_plugin_exception(o_plugin, exception)
+            finally:
+                spent_time = time.time() - start_time
+                args = (o_plugin.get_name(), spent_time)
+
+                import w3af.core.controllers.output_manager as om
+                om.out.debug('%s.flush() took %.2f seconds to run' % args)
 
     def _handle_output_plugin_exception(self, o_plugin, exception):
         if self._w3af_core is None:
