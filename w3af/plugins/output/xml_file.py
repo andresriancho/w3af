@@ -335,7 +335,7 @@ class xml_file(OutputPlugin):
         if info.get_references():
             references_node = self._xml.createElement('references')
 
-            for ref in i.get_references():
+            for ref in info.get_references():
                 ref_node = self._xml.createElement('reference')
                 ref_node.setAttribute('title', xml_str(ref.title))
                 ref_node.setAttribute('url', xml_str(ref.url))
@@ -389,28 +389,28 @@ class xml_file(OutputPlugin):
         Write all the findings to the XML file
         :return: None, we write the data to the XML
         """
-        for i in kb.kb.get_all_findings():
-            message_node = self._xml.createElement('vulnerability')
+        for info in kb.kb.get_all_findings():
+            xml_node = self._xml.createElement('vulnerability')
 
-            message_node.setAttribute('severity', xml_str(i.get_severity()))
-            message_node.setAttribute('method', xml_str(i.get_method()))
-            message_node.setAttribute('url', xml_str(i.get_url()))
-            message_node.setAttribute('var', xml_str(i.get_token_name()))
-            message_node.setAttribute('name', xml_str(i.get_name()))
-            message_node.setAttribute('plugin', xml_str(i.get_plugin_name()))
+            xml_node.setAttribute('severity', xml_str(info.get_severity()))
+            xml_node.setAttribute('method', xml_str(info.get_method()))
+            xml_node.setAttribute('url', xml_str(info.get_url()))
+            xml_node.setAttribute('var', xml_str(info.get_token_name()))
+            xml_node.setAttribute('name', xml_str(info.get_name()))
+            xml_node.setAttribute('plugin', xml_str(info.get_plugin_name()))
 
             # Wrap description in a <description> element and put it above the
             # request/response elements
-            desc_str = xml_str(i.get_desc(with_id=False))
+            desc_str = xml_str(info.get_desc(with_id=False))
             description_node = self._xml.createElement('description')
             description = self._xml.createTextNode(desc_str)
             description_node.appendChild(description)
-            message_node.appendChild(description_node)
+            xml_node.appendChild(description_node)
 
-            self._write_vulndb_details_to_xml(message_node, i)
-            self._write_http_details_to_xml(message_node, i)
+            self._write_vulndb_details_to_xml(xml_node, info)
+            self._write_http_details_to_xml(xml_node, info)
 
-            self._top_elem.appendChild(message_node)
+            self._top_elem.appendChild(xml_node)
 
     def _log_enabled_plugins_to_xml(self):
         """
