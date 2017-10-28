@@ -35,6 +35,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
 from w3af.core.data.misc.encoding import smart_str
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.db.disk_list import DiskList
+from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
@@ -121,6 +122,10 @@ class xml_file(OutputPlugin):
 
         # List with additional xml elements
         self._errors = DiskList()
+
+        # Dict which acts as a cache to improve flush() performance
+        # https://github.com/andresriancho/w3af/issues/16119
+        self._http_cache = DiskDict(table_prefix='xml_file_cache')
 
         # xml document that helps with the creation of new elements
         # this is an empty document until we want to write to the
@@ -209,6 +214,7 @@ class xml_file(OutputPlugin):
         self._plugins_dict = {}
         self._options_dict = {}
         self._errors.cleanup()
+        self._http_cache.cleanup()
 
     def flush(self):
         """
@@ -296,14 +302,93 @@ class xml_file(OutputPlugin):
             message_node.appendChild(description)
             self._top_elem.appendChild(message_node)
 
+    def _write_vulndb_details_to_xml(self, message_node, info):
+        """
+        If there is information from the vulndb, then we should write it
+        to the XML
+
+        :param message_node: The xml node
+        :param info: The Info() instance with the vuln information
+        :return: None
+        """
+        if not info.has_db_details():
+            return
+
+        desc_str = xml_str(info.get_long_description())
+        description_node = self._xml.createElement('long-description')
+        description = self._xml.createTextNode(desc_str)
+        description_node.appendChild(description)
+        message_node.appendChild(description_node)
+
+        fix_str = xml_str(info.get_fix_guidance())
+        fix_node = self._xml.createElement('fix-guidance')
+        fix = self._xml.createTextNode(fix_str)
+        fix_node.appendChild(fix)
+        message_node.appendChild(fix_node)
+
+        fix_effort_str = xml_str(info.get_fix_effort())
+        fix_node = self._xml.createElement('fix-effort')
+        fix = self._xml.createTextNode(fix_effort_str)
+        fix_node.appendChild(fix)
+        message_node.appendChild(fix_node)
+
+        if info.get_references():
+            references_node = self._xml.createElement('references')
+
+            for ref in i.get_references():
+                ref_node = self._xml.createElement('reference')
+                ref_node.setAttribute('title', xml_str(ref.title))
+                ref_node.setAttribute('url', xml_str(ref.url))
+                references_node.appendChild(ref_node)
+
+            message_node.appendChild(references_node)
+
+    def _write_http_details_to_xml(self, message_node, info):
+        """
+        If there are HTTP requests and responses, then we should write
+        them to the XML
+
+        :param message_node: The xml node
+        :param info: The Info() instance with the vuln information
+        :return: None
+        """
+        if not info.get_id():
+            return
+
+        # HistoryItem to get requests/responses
+        req_history = HistoryItem()
+
+        message_node.setAttribute('id', str(info.get_id()))
+        # Wrap all transactions in a http-transactions node
+        transaction_set = self._xml.createElement('http-transactions')
+        message_node.appendChild(transaction_set)
+
+        for request_id in info.get_id():
+            try:
+                details = req_history.read(request_id)
+            except DBException:
+                msg = 'Failed to retrieve request with id %s from DB.'
+                print(msg % request_id)
+                continue
+
+            # Wrap the entire http transaction in a single block
+            action_set = self._xml.createElement('http-transaction')
+            action_set.setAttribute('id', str(request_id))
+            transaction_set.appendChild(action_set)
+
+            request_node = self._xml.createElement('http-request')
+            self.report_http_action(request_node, details.request)
+            action_set.appendChild(request_node)
+
+            response_node = self._xml.createElement('http-response')
+            self.report_http_action(response_node, details.response)
+            action_set.appendChild(response_node)
+
     def _write_findings_to_xml(self):
         """
         Write all the findings to the XML file
         :return: None, we write the data to the XML
         """
-        # HistoryItem to get requests/responses
-        req_history = HistoryItem()
-
         for i in kb.kb.get_all_findings():
             message_node = self._xml.createElement('vulnerability')
 
@@ -322,63 +407,8 @@ class xml_file(OutputPlugin):
             description_node.appendChild(description)
             message_node.appendChild(description_node)
 
-            # If there is information from the vulndb, then we should write it
-            if i.has_db_details():
-                desc_str = xml_str(i.get_long_description())
-                description_node = self._xml.createElement('long-description')
-                description = self._xml.createTextNode(desc_str)
-                description_node.appendChild(description)
-                message_node.appendChild(description_node)
-
-                fix_str = xml_str(i.get_fix_guidance())
-                fix_node = self._xml.createElement('fix-guidance')
-                fix = self._xml.createTextNode(fix_str)
-                fix_node.appendChild(fix)
-                message_node.appendChild(fix_node)
-
-                fix_effort_str = xml_str(i.get_fix_effort())
-                fix_node = self._xml.createElement('fix-effort')
-                fix = self._xml.createTextNode(fix_effort_str)
-                fix_node.appendChild(fix)
-                message_node.appendChild(fix_node)
-
-                if i.get_references():
-                    references_node = self._xml.createElement('references')
-
-                    for ref in i.get_references():
-                        ref_node = self._xml.createElement('reference')
-                        ref_node.setAttribute('title', xml_str(ref.title))
-                        ref_node.setAttribute('url', xml_str(ref.url))
-                        references_node.appendChild(ref_node)
-
-                    message_node.appendChild(references_node)
-
-            if i.get_id():
-                message_node.setAttribute('id', str(i.get_id()))
-                # Wrap all transactions in a http-transactions node
-                transaction_set = self._xml.createElement('http-transactions')
-                message_node.appendChild(transaction_set)
-
-                for request_id in i.get_id():
-                    try:
-                        details = req_history.read(request_id)
-                    except DBException:
-                        msg = 'Failed to retrieve request with id %s from DB.'
-                        print(msg % request_id)
-                        continue
-
-                    # Wrap the entire http transaction in a single block
-                    action_set = self._xml.createElement('http-transaction')
-                    action_set.setAttribute('id', str(request_id))
-                    transaction_set.appendChild(action_set)
-
-                    request_node = self._xml.createElement('http-request')
-                    self.report_http_action(request_node, details.request)
-                    action_set.appendChild(request_node)
-
-                    response_node = self._xml.createElement('http-response')
-                    self.report_http_action(response_node, details.response)
-                    action_set.appendChild(response_node)
+            self._write_vulndb_details_to_xml(message_node, i)
+            self._write_http_details_to_xml(message_node, i)
 
             self._top_elem.appendChild(message_node)
 
