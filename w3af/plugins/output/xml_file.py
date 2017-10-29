@@ -24,6 +24,7 @@ import re
 import sys
 import time
 import base64
+import hashlib
 import xml.dom.minidom
 
 import w3af.core.data.kb.config as cf
@@ -40,6 +41,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.url.HTTPRequest import HTTPRequest
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
 NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
@@ -125,7 +127,8 @@ class xml_file(OutputPlugin):
 
         # Dict which acts as a cache to improve flush() performance
         # https://github.com/andresriancho/w3af/issues/16119
-        self._http_cache = DiskDict(table_prefix='xml_file_cache')
+        self._xml_node_cache = DiskDict(table_prefix='xml_node_cache')
+        self._used_cache_keys = []
 
         # xml document that helps with the creation of new elements
         # this is an empty document until we want to write to the
@@ -214,7 +217,7 @@ class xml_file(OutputPlugin):
         self._plugins_dict = {}
         self._options_dict = {}
         self._errors.cleanup()
-        self._http_cache.cleanup()
+        self._xml_node_cache.cleanup()
 
     def flush(self):
         """
@@ -250,6 +253,9 @@ class xml_file(OutputPlugin):
             # Free some memory
             self._empty_xml_root()
 
+            # Free the cache
+            self._clear_cache_entries()
+
     def _empty_xml_root(self):
         self._xml = None
         self._top_elem = None
@@ -284,7 +290,7 @@ class xml_file(OutputPlugin):
             self._xml.writexml(self._file,
                                addindent=' ' * 4,
                                newl='\n',
-                               encoding='UTF-8')
+                               encoding=DEFAULT_ENCODING)
             self._file.flush()
         finally:
             self._file.close()
@@ -365,6 +371,12 @@ class xml_file(OutputPlugin):
 
         for request_id in info.get_id():
             try:
+                # This DB query should be really fast, since the request ID is
+                # the PK for the request/response database.
+                #
+                # Note that for each call to flush we will read() the same request
+                # id over and over. The solution to this would be to cache this call
+                # and only perform the query once.
                 details = req_history.read(request_id)
             except DBException:
                 msg = 'Failed to retrieve request with id %s from DB.'
@@ -384,32 +396,123 @@ class xml_file(OutputPlugin):
             self.report_http_action(response_node, details.response)
             action_set.appendChild(response_node)
 
+    def _create_cache_key_from_info(self, info):
+        """
+        Creates the key to query the cache, the key is a hash of the
+        vulnerability name, method, url, request ids, etc.
+
+        :param info: The finding
+        :return: A string to use as key in the cache
+        """
+        data = [info.get_id(),
+                info.get_severity(),
+                info.get_method(),
+                info.get_url(),
+                info.get_token_name(),
+                info.get_name(),
+                info.get_plugin_name(),
+                info.get_desc()]
+
+        data = '-'.join([repr(i) for i in data])
+
+        m = hashlib.md5()
+        m.update(data)
+        return m.hexdigest()
+
+    def _get_xml_node_from_cache(self, info):
+        """
+        Get the xml node from the cache. None is returned if the info
+        is not in the cache.
+
+        :param info: The finding
+        :return: A tuple containing:
+                    * The cache key
+                    * The DOM Element (from xml.dom.minidom)
+        """
+        key = self._create_cache_key_from_info(info)
+        cached_node_str = self._xml_node_cache.get(key, None)
+
+        if cached_node_str is None:
+            return key, None
+
+        self._used_cache_keys.append(key)
+
+        xml_node = xml.dom.minidom.parseString(cached_node_str).childNodes[0]
+        return key, xml_node
+
+    def _save_xml_node_to_cache(self, cache_key, info, xml_node):
+        """
+        Save a node to the cache
+
+        :param cache_key: The key where to save the info
+        :param info: The finding
+        :param xml_node: The xml_node representing the finding
+        :return: None
+        """
+        key = self._create_cache_key_from_info(info)
+        node_str = xml_node.toxml(encoding=DEFAULT_ENCODING)
+        self._xml_node_cache[key] = node_str
+
+    def _clear_cache_entries(self):
+        """
+        This method clears the cache entries which were not used to
+        create the last XML document. Cache entries become unused when,
+        for example, a new vulnerable URL is associated with the finding
+        in the KB, this makes the cache key not match.
+
+        :return:
+        """
+        for cache_key in self._xml_node_cache:
+            if cache_key not in self._used_cache_keys:
+                del self._xml_node_cache[cache_key]
+
+    def _get_finding_xml_node(self, info):
+        """
+        Get the xml node representing the info
+
+        :param info: The finding
+        :return: The xml node
+        """
+        #
+        # Get the node from the cache
+        #
+        cache_key, xml_node = self._get_xml_node_from_cache(info)
+        if xml_node is not None:
+            return xml_node
+
+        #
+        # That failed, create the node from scratch
+        #
+        xml_node = self._xml.createElement('vulnerability')
+
+        xml_node.setAttribute('severity', xml_str(info.get_severity()))
+        xml_node.setAttribute('method', xml_str(info.get_method()))
+        xml_node.setAttribute('url', xml_str(info.get_url()))
+        xml_node.setAttribute('var', xml_str(info.get_token_name()))
+        xml_node.setAttribute('name', xml_str(info.get_name()))
+        xml_node.setAttribute('plugin', xml_str(info.get_plugin_name()))
+
+        # Wrap description in a <description> element and put it above the
+        # request/response elements
+        desc_str = xml_str(info.get_desc(with_id=False))
+        description_node = self._xml.createElement('description')
+        description = self._xml.createTextNode(desc_str)
+        description_node.appendChild(description)
+        xml_node.appendChild(description_node)
+
+        self._write_vulndb_details_to_xml(xml_node, info)
+        self._write_http_details_to_xml(xml_node, info)
+
+        self._save_xml_node_to_cache(cache_key, info, xml_node)
+        return xml_node
+
     def _write_findings_to_xml(self):
         """
         Write all the findings to the XML file
         :return: None, we write the data to the XML
         """
         for info in kb.kb.get_all_findings():
-            xml_node = self._xml.createElement('vulnerability')
-
-            xml_node.setAttribute('severity', xml_str(info.get_severity()))
-            xml_node.setAttribute('method', xml_str(info.get_method()))
-            xml_node.setAttribute('url', xml_str(info.get_url()))
-            xml_node.setAttribute('var', xml_str(info.get_token_name()))
-            xml_node.setAttribute('name', xml_str(info.get_name()))
-            xml_node.setAttribute('plugin', xml_str(info.get_plugin_name()))
-
-            # Wrap description in a <description> element and put it above the
-            # request/response elements
-            desc_str = xml_str(info.get_desc(with_id=False))
-            description_node = self._xml.createElement('description')
-            description = self._xml.createTextNode(desc_str)
-            description_node.appendChild(description)
-            xml_node.appendChild(description_node)
-
-            self._write_vulndb_details_to_xml(xml_node, info)
-            self._write_http_details_to_xml(xml_node, info)
-
+            xml_node = self._get_finding_xml_node(info)
             self._top_elem.appendChild(xml_node)
 
     def _log_enabled_plugins_to_xml(self):
