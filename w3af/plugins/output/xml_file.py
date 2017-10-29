@@ -462,7 +462,7 @@ class xml_file(OutputPlugin):
 
         :return:
         """
-        for cache_key in self._xml_node_cache:
+        for cache_key in self._xml_node_cache.iterkeys():
             if cache_key not in self._used_cache_keys:
                 del self._xml_node_cache[cache_key]
 
