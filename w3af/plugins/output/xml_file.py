@@ -430,7 +430,7 @@ class xml_file(OutputPlugin):
         :param xml_node: The xml_node representing the http traffic
         :return: None
         """
-        node_str = xml_node.toxml(encoding=DEFAULT_ENCODING)
+        node_str = xml_node.toxml()
         self._xml_node_cache[request_id] = node_str
 
     def _get_finding_xml_node(self, info):
