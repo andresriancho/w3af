@@ -9,7 +9,7 @@
         {{ finding | safe }}
     {% endfor %}
 
-    {% for message, called in errors %}
+    {% for message, caller in errors %}
     <error caller="{{ caller }}">{{ message }}</error>
     {% endfor %}
 </w3af-run>
