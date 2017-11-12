@@ -20,8 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
-import re
-import sys
 import time
 import base64
 
@@ -33,52 +31,18 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.misc import get_w3af_version
-from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
+from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
-from w3af.core.data.misc.encoding import smart_str
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.db.disk_list import DiskList
-from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.constants.encodings import DEFAULT_ENCODING
-
-
-NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
-           'javascript', 'rss+xml', 'soap+xml', 'font-woff',
-           'xhtml+xml', 'xml-dtd', 'xop+xml')
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
 TEMPLATE_ROOT = os.path.join(ROOT_PATH, 'plugins/output/xml_file/')
-
-# https://stackoverflow.com/questions/1707890/fast-way-to-filter-illegal-xml-unicode-chars-in-python
-#
-# I added (0xc3, 0xc3) to the list of banned characters after a couple of bug reports, I'm not
-# really sure why but it breaks Firefox's XML parser and the character was not in the original
-# list.
-_illegal_unichrs = [(0x00, 0x08),
-                    (0x0B, 0x0C),
-                    (0x0E, 0x1F),
-                    (0x7F, 0x84),
-                    (0x86, 0x9F),
-                    (0xc3, 0xc3),
-                    (0xFDD0, 0xFDDF),
-                    (0xFFFE, 0xFFFF)]
-
-if sys.maxunicode >= 0x10000:  # not narrow build
-    _illegal_unichrs.extend([(0x1FFFE, 0x1FFFF), (0x2FFFE, 0x2FFFF),
-                             (0x3FFFE, 0x3FFFF), (0x4FFFE, 0x4FFFF),
-                             (0x5FFFE, 0x5FFFF), (0x6FFFE, 0x6FFFF),
-                             (0x7FFFE, 0x7FFFF), (0x8FFFE, 0x8FFFF),
-                             (0x9FFFE, 0x9FFFF), (0xAFFFE, 0xAFFFF),
-                             (0xBFFFE, 0xBFFFF), (0xCFFFE, 0xCFFFF),
-                             (0xDFFFE, 0xDFFFF), (0xEFFFE, 0xEFFFF),
-                             (0xFFFFE, 0xFFFFF), (0x10FFFE, 0x10FFFF)])
-
-_illegal_ranges = [u'%s-%s' % (unichr(low), unichr(high)) for (low, high) in _illegal_unichrs]
-INVALID_XML = re.compile(u'[%s]' % u''.join(_illegal_ranges))
 
 
 class xml_file(OutputPlugin):
@@ -111,7 +75,7 @@ class xml_file(OutputPlugin):
     def _open_file(self):
         self._file_name = os.path.expanduser(self._file_name)
         try:
-            self._file = open(self._file_name, 'w')
+            self._file = open(self._file_name, 'wb')
         except IOError, io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._file_name), io.strerror)
@@ -202,7 +166,7 @@ class xml_file(OutputPlugin):
         self._add_findings_to_context(context)
         self._add_errors_to_context(context)
 
-        self._render_context(context)
+        self._write_context_to_file(context)
 
     def _add_root_info_to_context(self, context):
         context.start_timestamp = self._timestamp
@@ -222,7 +186,7 @@ class xml_file(OutputPlugin):
     def _add_findings_to_context(self, context):
         context.findings = (Finding(i).to_string() for i in kb.kb.get_all_findings())
 
-    def _render_context(self, context):
+    def _write_context_to_file(self, context):
         """
         Write xml report to the file by rendering the context
         :return: None
@@ -238,8 +202,9 @@ class xml_file(OutputPlugin):
         template = jinja2_env.get_template('root.tpl')
         report = template.render(context)
 
-        file_handler = self._open_file()
-        file(file_handler, 'wb').write(report)
+        self._open_file()
+        self._file.write(report)
+        self._file.close()
 
     def get_long_desc(self):
         """
@@ -353,8 +318,11 @@ class HTTPTransaction(CachedXMLNode):
         request = details.request
         response = details.response
 
-        b64_encoded_request_body = base64.encodestring(request.get_data() or '')
-        b64_encoded_response_body = base64.encodestring(response.get_body() or '')
+        data = request.get_data() or ''
+        b64_encoded_request_body = base64.encodestring(smart_str_ignore(data))
+
+        body = response.get_body() or ''
+        b64_encoded_response_body = base64.encodestring(smart_str_ignore(body))
 
         context = {'id': self._id,
                    'request': {'status': request.get_request_line().strip(),
