@@ -4,10 +4,7 @@
         <status>{{ request.status }}</status>
         <headers>
             {% for field, content in request.headers.iteritems() %}
-            <header>
-                <field>{{ field }}</field>
-                <content>{{ content }}</content>
-            </header>
+            <header field="{{ field }}" content="{{ content }}" />
             {% endfor %}
         </headers>
         <body content-encoding="base64">{{ request.body }}</body>
@@ -16,14 +13,9 @@
     <http-response>
         <status>{{ response.status }}</status>
         <headers>
-            <header>
             {% for field, content in response.headers.iteritems() %}
-            <header>
-                <field>{{ field }}</field>
-                <content>{{ content }}</content>
-            </header>
+            <header field="{{ field }}" content="{{ content }}" />
             {% endfor %}
-            </header>
         </headers>
         <body content-encoding="base64">{{ response.body }}</body>
     </http-response>

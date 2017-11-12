@@ -1,6 +1,5 @@
 <scan-info target="{{ scan_target }}">
     {% for plugin_type in enabled_plugins %}
-    {% if enabled_plugins[plugin_type] %}
     <{{ plugin_type }}>
         {% for plugin_name in enabled_plugins[plugin_type] %}
             <plugin name="{{ plugin_name }}">
@@ -11,7 +10,5 @@
                 {% endif %}
             </plugin>
         {% endfor %}
-    </{{ plugin_type }}>
-    {% endif %}
     {% endfor %}
 </scan-info>

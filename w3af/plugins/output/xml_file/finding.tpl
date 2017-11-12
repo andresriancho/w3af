@@ -6,8 +6,8 @@
     <fix-guidance>{{ fix_guidance }}</fix-guidance>
     <fix-effort>{{ fix_effort }}</fix-effort>
     <references>
-        {% for title, url in references %}
-            <reference title="{{ title }}" url="{{ url }}" />
+        {% for reference in references %}
+            <reference title="{{ reference.title }}" url="{{ reference.url }}" />
         {% endfor %}
     </references>
     {% endif %}
