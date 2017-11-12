@@ -65,6 +65,7 @@ def _percent_encode(encodingexc):
         en
     )
 
+
 codecs.register_error(ESCAPED_CHAR, _return_escaped_char)
 codecs.register_error(PERCENT_ENCODE, _percent_encode)
 codecs.register_error(HTML_ENCODE, _return_html_encoded)
