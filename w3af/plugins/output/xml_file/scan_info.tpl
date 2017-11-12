@@ -10,5 +10,6 @@
                 {% endif %}
             </plugin>
         {% endfor %}
+    </{{ plugin_type }}>
     {% endfor %}
 </scan-info>
