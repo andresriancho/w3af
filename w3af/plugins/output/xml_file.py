@@ -243,8 +243,12 @@ class xml_file(OutputPlugin):
 class XMLNode(object):
 
     TEMPLATE = None
+    TEMPLATE_INST = None
 
     def get_template(self, template_name):
+        if self.TEMPLATE_INST:
+            return self.TEMPLATE_INST
+
         env_config = {'undefined': StrictUndefined,
                       'trim_blocks': True,
                       'autoescape': select_autoescape(['xml']),
@@ -253,7 +257,8 @@ class XMLNode(object):
         jinja2_env = Environment(**env_config)
         jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
 
-        return jinja2_env.get_template(template_name)
+        self.TEMPLATE_INST = jinja2_env.get_template(template_name)
+        return self.TEMPLATE_INST
 
 
 class CachedXMLNode(XMLNode):
