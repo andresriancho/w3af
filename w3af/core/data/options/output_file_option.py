@@ -46,7 +46,7 @@ class OutputFileOption(BaseOption):
         directory = os.path.abspath(os.path.dirname(expanded_path))
 
         if os.path.isdir(expanded_path):
-            msg = 'Invalid output file "%s", it must not be a the directory.'
+            msg = 'Invalid output file "%s", it must not be a directory.'
             raise BaseFrameworkException(msg % value)
 
         if not os.path.isdir(directory):
