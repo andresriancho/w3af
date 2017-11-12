@@ -25,38 +25,28 @@ import unittest
 import xml.etree.ElementTree as ElementTree
 from lxml import etree
 
-import random
-import unittest
 import os.path
 
 from nose.plugins.attrib import attr
 
-from w3af.core.data.kb.tests.test_vuln import MockVuln
-from w3af.core.controllers.w3afCore import w3afCore
+import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.knowledge_base as kb
-from w3af.core.controllers.exceptions import DBException
+
+from w3af import ROOT_PATH
+
+from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
-from w3af.core.data.db.dbms import get_default_temp_db_instance
+from w3af.core.controllers.ci.moth import get_moth_http
+from w3af.core.data.kb.tests.test_vuln import MockVuln
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
-from lxml import etree
-from nose.plugins.attrib import attr
-
-import w3af.core.data.constants.severity as severity
-
-from w3af import ROOT_PATH
-from w3af.core.data.kb.vuln import Vuln
-from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.kb.tests.test_vuln import MockVuln
-from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
-
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.plugins.output.xml_file import xml_file
 from w3af.plugins.output.xml_file import HTTPTransaction, ScanInfo, Finding
