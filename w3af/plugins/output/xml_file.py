@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
+import gzip
 import time
 import base64
 
@@ -257,16 +258,18 @@ class XMLNode(object):
 
 class CachedXMLNode(XMLNode):
 
+    COMPRESSION_LEVEL = 2
+
     def get_cache_key(self):
         raise NotImplementedError
 
     def get_node_from_cache(self):
         filename = os.path.join(get_temp_dir(), self.get_cache_key())
-        return file(filename).read()
+        return gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
 
     def save_node_to_cache(self, transaction):
         filename = os.path.join(get_temp_dir(), self.get_cache_key())
-        return file(filename, 'wb').write(transaction)
+        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(transaction)
 
     def is_in_cache(self):
         filename = os.path.join(get_temp_dir(), self.get_cache_key())
