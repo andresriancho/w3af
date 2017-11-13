@@ -23,6 +23,7 @@ import os
 import gzip
 import time
 import base64
+import jinja2
 
 from jinja2 import Environment, select_autoescape, FileSystemLoader, StrictUndefined
 
@@ -213,6 +214,7 @@ class xml_file(OutputPlugin):
 
         jinja2_env = Environment(**env_config)
         jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
+        jinja2_env.filters['escapequote'] = jinja2_escape_quote_filter
 
         template = jinja2_env.get_template('root.tpl')
         report = template.render(context)
@@ -256,6 +258,7 @@ class XMLNode(object):
 
         jinja2_env = Environment(**env_config)
         jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
+        jinja2_env.filters['escapequote'] = jinja2_escape_quote_filter
 
         self.TEMPLATE_INST = jinja2_env.get_template(template_name)
         return self.TEMPLATE_INST
@@ -449,3 +452,23 @@ class dotdict(dict):
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
+
+
+QUOT_ESCAPES = {
+        '"': '&quot;',
+}
+
+
+def jinja2_escape_quote_filter(value):
+    if not isinstance(value, basestring):
+        return value
+
+    retval = []
+
+    for letter in value:
+        if letter in QUOT_ESCAPES:
+            retval.append(QUOT_ESCAPES[letter])
+        else:
+            retval.append(letter)
+
+    return jinja2.Markup(''.join(retval))

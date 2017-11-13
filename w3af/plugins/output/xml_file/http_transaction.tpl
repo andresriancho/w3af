@@ -4,7 +4,7 @@
         <status>{{ request.status }}</status>
         <headers>
             {% for field, content in request.headers.iteritems() %}
-            <header field="{{ field }}" content="{{ content }}" />
+            <header field="{{ field | escapequote }}" content="{{ content | escapequote }}" />
             {% endfor %}
         </headers>
         <body content-encoding="base64">{{ request.body }}</body>
@@ -14,7 +14,7 @@
         <status>{{ response.status }}</status>
         <headers>
             {% for field, content in response.headers.iteritems() %}
-            <header field="{{ field }}" content="{{ content }}" />
+            <header field="{{ field | escapequote }}" content="{{ content | escapequote }}" />
             {% endfor %}
         </headers>
         <body content-encoding="base64">{{ response.body }}</body>

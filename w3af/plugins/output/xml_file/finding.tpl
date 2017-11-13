@@ -1,4 +1,4 @@
-<vulnerability id="{{ id_list }}" method="{{ http_method }}" name="{{ name }}" plugin="{{ plugin_name }}" severity="{{ severity }}" url="{{ url }}" var="{{ var }}">
+<vulnerability id="{{ id_list }}" method="{{ http_method | escapequote }}" name="{{ name | escapequote }}" plugin="{{ plugin_name }}" severity="{{ severity }}" url="{{ url | escapequote }}" var="{{ var | escapequote }}">
     <description>{{ description }}</description>
 
     {% if long_description %}
