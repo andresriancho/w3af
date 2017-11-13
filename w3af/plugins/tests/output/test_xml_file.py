@@ -19,14 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
-import urllib
+import base64
+import os.path
 import StringIO
 import unittest
 import xml.etree.ElementTree as ElementTree
+
 from lxml import etree
-
-import os.path
-
 from nose.plugins.attrib import attr
 
 import w3af.core.data.constants.severity as severity
@@ -179,20 +178,21 @@ class XMLParser(object):
             
             self.vulns.append(v)
         
-        # <body content-encoding="text">
+        # <body content-encoding="base64">
         elif tag == 'body':
             content_encoding = attrib['content-encoding']
             
-            assert content_encoding == 'text'
+            assert content_encoding == 'base64'
             self._inside_body = True
     
     def end(self, tag):
         if tag == 'body':
             
             data = ''.join(self._data_parts)
-            
-            assert 'syntax error' in data
-            assert 'near' in data
+
+            data_decoded = base64.b64decode(data)
+            assert 'syntax error' in data_decoded, data_decoded
+            assert 'near' in data_decoded, data_decoded
             
             self._inside_body = False
             self._data_parts = []
@@ -223,49 +223,6 @@ def validate_xml(content, schema_content):
         return xml_schema.error_log
 
     return ''
-
-
-class TestXMLStr(unittest.TestCase):
-    TEST_FILE = os.path.join(ROOT_PATH, 'plugins', 'tests', 'output',
-                             'data', 'nsepa32.rpm')
-
-    TEST_FILE_0x0B = os.path.join(ROOT_PATH, 'plugins', 'tests', 'output',
-                                 'data', '0x0b.html')
-
-    def test_simple_xml_str(self):
-        self.assertEquals('a', xml_str('a'))
-
-    def test_replace_xml_str(self):
-        self.assertEquals('?', xml_str('\0'))
-
-    def test_mixed_xml_str(self):
-        self.assertEquals('a?b', xml_str('a\0b'))
-
-    def test_re_match(self):
-        self.assertIsNotNone(INVALID_XML.search('a\0b'))
-
-    def test_re_match_false_1(self):
-        self.assertIsNone(INVALID_XML.search('ab'))
-
-    def test_re_match_false_2(self):
-        self.assertIsNone(INVALID_XML.search('ab\n'))
-
-    def test_re_match_match_ffff(self):
-        self.assertIsNotNone(INVALID_XML.search(u'ab\uffffdef'))
-
-    def test_binary(self):
-        contents = file(self.TEST_FILE).read()
-        match_object = INVALID_XML.search(contents)
-        self.assertIsNotNone(match_object)
-
-    def test_0x0b(self):
-        contents = file(self.TEST_FILE_0x0B).read()
-        match_object = INVALID_XML.search(contents)
-        self.assertIsNotNone(match_object)
-
-    def test_3c_unicode_utf8(self):
-        string_to_clean = urllib.unquote('X%C3%84Y')
-        self.assertEquals('X??Y', xml_str(string_to_clean))
 
 
 class TestXMLOutputBinary(PluginTest):
