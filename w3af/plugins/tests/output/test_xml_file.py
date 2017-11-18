@@ -332,7 +332,7 @@ class TestXML0x0B(PluginTest):
 class XMLNodeGeneratorTest(unittest.TestCase):
     def assertValidXML(self, xml):
         etree.fromstring(xml)
-        assert 'escapequote' not in xml
+        assert 'escape_attr_val' not in xml
 
 
 class TestHTTPTransaction(XMLNodeGeneratorTest):

@@ -214,7 +214,7 @@ class xml_file(OutputPlugin):
 
         jinja2_env = Environment(**env_config)
         jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
-        jinja2_env.filters['escapequote'] = jinja2_escape_quote_filter
+        jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
 
         template = jinja2_env.get_template('root.tpl')
         report = template.render(context)
@@ -258,7 +258,7 @@ class XMLNode(object):
 
         jinja2_env = Environment(**env_config)
         jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
-        jinja2_env.filters['escapequote'] = jinja2_escape_quote_filter
+        jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
 
         self.TEMPLATE_INST = jinja2_env.get_template(template_name)
         return self.TEMPLATE_INST
@@ -454,20 +454,23 @@ class dotdict(dict):
     __delattr__ = dict.__delitem__
 
 
-QUOT_ESCAPES = {
-        '"': '&quot;',
+ATTR_VALUE_ESCAPES = {
+    '"': '&quot;',
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
 }
 
 
-def jinja2_escape_quote_filter(value):
+def jinja2_attr_value_escape_filter(value):
     if not isinstance(value, basestring):
         return value
 
     retval = []
 
     for letter in value:
-        if letter in QUOT_ESCAPES:
-            retval.append(QUOT_ESCAPES[letter])
+        if letter in ATTR_VALUE_ESCAPES:
+            retval.append(ATTR_VALUE_ESCAPES[letter])
         else:
             retval.append(letter)
 
