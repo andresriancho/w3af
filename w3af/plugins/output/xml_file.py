@@ -33,7 +33,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.misc import get_w3af_version
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.db.disk_list import DiskList
@@ -338,6 +338,11 @@ class HTTPTransaction(CachedXMLNode):
 
         # HistoryItem to get requests/responses
         req_history = HistoryItem()
+
+        # This might raise a DBException in some cases (which I still
+        # need to identify and fix). When an exception is raised here
+        # the caller needs to handle it by ignoring this part of the
+        # HTTP transaction
         details = req_history.read(self._id)
 
         request = details.request
@@ -438,8 +443,14 @@ class Finding(XMLNode):
         #
         context.http_transactions = []
         for transaction in info.get_id():
-            xml = HTTPTransaction(transaction).to_string()
-            context.http_transactions.append(xml)
+            try:
+                xml = HTTPTransaction(transaction).to_string()
+            except DBException:
+                msg = 'Failed to retrieve request with id %s from DB.'
+                print(msg % transaction)
+                continue
+            else:
+                context.http_transactions.append(xml)
 
         template = self.get_template(self.TEMPLATE)
         transaction = template.render(context)
