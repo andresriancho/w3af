@@ -218,10 +218,21 @@ class xml_file(OutputPlugin):
         jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
 
         template = jinja2_env.get_template('root.tpl')
-        report = template.render(context)
+
+        # We use streaming as explained here:
+        #
+        # http://flask.pocoo.org/docs/0.12/patterns/streaming/
+        #
+        # To prevent having the whole XML in memory
+        report_stream = template.stream(context)
+        report_stream.enable_buffering(5)
 
         self._open_file()
-        self._file.write(report.encode(DEFAULT_ENCODING))
+
+        # Write each report section to the output file
+        for report_section in report_stream:
+            self._file.write(report_section.encode(DEFAULT_ENCODING))
+
         self._file.close()
 
     def get_long_desc(self):
