@@ -714,6 +714,33 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIsInstance(info_set, InfoSet)
         self.assertEqual(len(info_set.infos), 2)
 
+    def test_multiple_append_uniq_group(self):
+        def multi_append():
+            for i in xrange(InfoSet.MAX_INFO_INSTANCES * 2):
+                vuln = MockVuln()
+                kb.append_uniq_group('a', 'b', vuln, group_klass=MockInfoSetTrue)
+
+            info_set_list = kb.get('a', 'b')
+
+            self.assertEqual(len(info_set_list), 1)
+
+            info_set = info_set_list[0]
+            self.assertEqual(len(info_set.infos), InfoSet.MAX_INFO_INSTANCES)
+            return True
+
+        pool = Pool(2)
+
+        r1 = pool.apply_async(multi_append)
+        r2 = pool.apply_async(multi_append)
+        r3 = pool.apply_async(multi_append)
+
+        self.assertTrue(r1.get())
+        self.assertTrue(r2.get())
+        self.assertTrue(r3.get())
+
+        pool.terminate()
+        pool.join()
+
     def test_append_uniq_group_no_match_filter_func(self):
         vuln1 = MockVuln(name='Foos')
         vuln2 = MockVuln(name='Bars')
