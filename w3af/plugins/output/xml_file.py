@@ -41,6 +41,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.misc.encoding import smart_str_ignore
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
@@ -51,7 +52,7 @@ class xml_file(OutputPlugin):
     """
     Print all messages to a xml file.
 
-    :author: Kevin Denver ( muffysw@hotmail.com )
+    :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
     XML_OUTPUT_VERSION = '2.1'
@@ -220,7 +221,7 @@ class xml_file(OutputPlugin):
         report = template.render(context)
 
         self._open_file()
-        self._file.write(report)
+        self._file.write(report.encode(DEFAULT_ENCODING))
         self._file.close()
 
     def get_long_desc(self):

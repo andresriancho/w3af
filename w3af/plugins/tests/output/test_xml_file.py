@@ -78,7 +78,7 @@ class TestXMLOutput(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         kb_vulns = self.kb.get('sqli', 'sqli')
-        file_vulns = self._from_xml_get_vulns(self.FILENAME)
+        file_vulns = get_vulns_from_xml(self.FILENAME)
 
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
 
@@ -100,12 +100,6 @@ class TestXMLOutput(PluginTest):
         self.assertEqual(validate_xml(file(self.FILENAME).read(), self.XSD),
                          '')
 
-    def _from_xml_get_vulns(self, filename):
-        xp = XMLParser()
-        parser = etree.XMLParser(target=xp)
-        vulns = etree.fromstring(file(filename).read(), parser)
-        return vulns
-
     def tearDown(self):
         super(TestXMLOutput, self).tearDown()
         try:
@@ -121,17 +115,49 @@ class TestXMLOutput(PluginTest):
         plugin_instance.error('\0')
         plugin_instance.flush()
 
+
+class TestNoDuplicate(unittest.TestCase):
+    
+    FILENAME = 'output-unittest.xml'
+    
+    def setUp(self):
+        kb.kb.cleanup()
+        create_temp_dir()
+        HistoryItem().init()
+
+    def tearDown(self):
+        remove_temp_dir()
+        HistoryItem().clear()
+        kb.kb.cleanup()
+
     def test_no_duplicate_vuln_reports(self):
         # The xml_file plugin had a bug where vulnerabilities were written to
         # disk multiple times, this test makes sure I fixed that vulnerability
 
-        # First we create one vulnerability in the KB
-        self.kb.cleanup()
-        desc = 'Just a test for the XML file output plugin.'
-        v = Vuln('SQL injection', desc, severity.HIGH, 1, 'sqli')
-        self.kb.append('sqli', 'sqli', v)
+        # Write the HTTP request / response to the DB
+        url = URL('http://w3af.com/a/b/c.php')
+        hdr = Headers([('User-Agent', 'w3af')])
+        request = HTTPRequest(url, data='a=1')
+        request.set_headers(hdr)
 
-        self.assertEqual(len(self.kb.get_all_vulns()), 1)
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>syntax error near', hdr, url, url)
+
+        _id = 1
+
+        h1 = HistoryItem()
+        h1.request = request
+        res.set_id(_id)
+        h1.response = res
+        h1.save()
+
+        # Create one vulnerability in the KB pointing to the request-
+        # response we just created
+        desc = 'Just a test for the XML file output plugin.'
+        v = Vuln('SQL injection', desc, severity.HIGH, _id, 'sqli')
+        kb.kb.append('sqli', 'sqli', v)
+
+        self.assertEqual(len(kb.kb.get_all_vulns()), 1)
 
         # Setup the plugin
         plugin_instance = xml_file()
@@ -150,7 +176,7 @@ class TestXMLOutput(PluginTest):
 
         # Now we parse the vulnerabilities from disk and confirm only one
         # is there
-        file_vulns = self._from_xml_get_vulns(self.FILENAME)
+        file_vulns = get_vulns_from_xml(self.FILENAME)
         self.assertEqual(len(file_vulns), 1, file_vulns)
 
 
@@ -159,6 +185,7 @@ class XMLParser(object):
     def __init__(self):
         self.vulns = []
         self._inside_body = False
+        self._inside_response = False
         self._data_parts = []
     
     def start(self, tag, attrib):
@@ -184,9 +211,12 @@ class XMLParser(object):
             
             assert content_encoding == 'base64'
             self._inside_body = True
+
+        elif tag == 'http-response':
+            self._inside_response = True
     
     def end(self, tag):
-        if tag == 'body':
+        if tag == 'body' and self._inside_response:
             
             data = ''.join(self._data_parts)
 
@@ -196,13 +226,23 @@ class XMLParser(object):
             
             self._inside_body = False
             self._data_parts = []
-    
+
+        if tag == 'http-response':
+            self._inside_response = False
+
     def data(self, data):
-        if self._inside_body:
+        if self._inside_body and self._inside_response:
             self._data_parts.append(data)
 
     def close(self):
         return self.vulns
+
+
+def get_vulns_from_xml(filename):
+    xp = XMLParser()
+    parser = etree.XMLParser(target=xp)
+    vulns = etree.fromstring(file(filename).read(), parser)
+    return vulns
 
 
 def validate_xml(content, schema_content):
