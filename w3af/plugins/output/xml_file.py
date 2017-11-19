@@ -165,25 +165,14 @@ class xml_file(OutputPlugin):
         Write the XML to the output file
         :return: None
         """
-        # If for some reason the xml_file plugin takes a lot of time to run
-        # and the output manager calls flush() for a second time while we're
-        # still running the first call, just ignore.
-        if self._is_working:
-            return
-
-        self._is_working = True
-
         context = dotdict({})
 
-        try:
-            self._add_root_info_to_context(context)
-            self._add_scan_info_to_context(context)
-            self._add_findings_to_context(context)
-            self._add_errors_to_context(context)
+        self._add_root_info_to_context(context)
+        self._add_scan_info_to_context(context)
+        self._add_findings_to_context(context)
+        self._add_errors_to_context(context)
 
-            self._write_context_to_file(context)
-        finally:
-            self._is_working = False
+        self._write_context_to_file(context)
 
     def _add_root_info_to_context(self, context):
         context.start_timestamp = self._timestamp

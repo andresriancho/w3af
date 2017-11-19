@@ -187,18 +187,33 @@ class OutputManager(Process):
         self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
+
+            # If for some reason the output plugin takes a lot of time to run
+            # and the output manager calls flush() for a second time while
+            # we're still running the first call, just ignore.
+            if o_plugin.is_running_flush:
+                import w3af.core.controllers.output_manager as om
+
+                msg = ('The %s plugin is still running flush(), the output'
+                       ' manager will not call flush() to give the plugin'
+                       ' time to finish.')
+                args = (o_plugin.get_name(),)
+                om.out.debug(msg % args)
             #
             #   Plugins might crash when calling .flush(), a good example was
             #   the unicodedecodeerror found in xml_file which was triggered
             #   when the findings were written to file.
             #
             start_time = time.time()
+            o_plugin.is_running_flush = True
 
             try:
                 o_plugin.flush()
             except Exception, exception:
                 self._handle_output_plugin_exception(o_plugin, exception)
             finally:
+                o_plugin.is_running_flush = False
+
                 spent_time = time.time() - start_time
                 args = (o_plugin.get_name(), spent_time)
 
