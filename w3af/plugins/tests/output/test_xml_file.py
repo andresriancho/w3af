@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 """
 test_xml_file.py
 
@@ -361,6 +362,55 @@ class TestXML0x0B(PluginTest):
 
     def tearDown(self):
         super(TestXML0x0B, self).tearDown()
+        try:
+            os.remove(self.FILENAME)
+        except:
+            pass
+        finally:
+            self.kb.cleanup()
+
+
+class TestSpecialCharacterInURL(PluginTest):
+
+    target_url = u'http://hello.se/%C3%93%C3%B6'
+
+    MOCK_RESPONSES = [
+              MockResponse(url=target_url,
+                           body=u'hi there á! /var/www/site/x.php path',
+                           content_type='text/plain',
+                           method='GET', status=200),
+    ]
+
+    FILENAME = 'output-unittest.xml'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('path_disclosure'),),
+                'output': (
+                    PluginConfig(
+                        'xml_file',
+                        ('output_file', FILENAME, PluginConfig.STR)),
+                )
+            },
+        }
+    }
+
+    def test_special_character_in_url_handling(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        self.assertEquals(len(self.kb.get_all_findings()), 1)
+
+        try:
+            tree = ElementTree.parse(self.FILENAME)
+            tree.getroot()
+        except Exception, e:
+            self.assertTrue(False, 'Generated invalid XML: "%s"' % e)
+
+    def tearDown(self):
+        super(TestSpecialCharacterInURL, self).tearDown()
         try:
             os.remove(self.FILENAME)
         except:

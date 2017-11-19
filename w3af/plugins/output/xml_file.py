@@ -274,11 +274,13 @@ class CachedXMLNode(XMLNode):
 
     def get_node_from_cache(self):
         filename = os.path.join(get_temp_dir(), self.get_cache_key())
-        return gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+        node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+        return node.decode('utf-8')
 
-    def save_node_to_cache(self, transaction):
+    def save_node_to_cache(self, node):
         filename = os.path.join(get_temp_dir(), self.get_cache_key())
-        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(transaction)
+        node = node.encode('utf-8')
+        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(node)
 
     def is_in_cache(self):
         filename = os.path.join(get_temp_dir(), self.get_cache_key())
