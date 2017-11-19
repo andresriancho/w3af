@@ -100,8 +100,8 @@ class json_file(OutputPlugin):
                 return x._desc
             except AttributeError:
                 return None
-        findings = filter(None, [ _get_desc(x) for x in kb.kb.get_all_findings() ])
-        known_urls = [ str(x) for x in kb.kb.get_all_known_urls() ]
+        findings = filter(None, [_get_desc(x) for x in kb.kb.get_all_findings()])
+        known_urls = [str(x) for x in kb.kb.get_all_known_urls()]
                         
         items = []
         for info in kb.kb.get_all_findings():
@@ -117,7 +117,6 @@ class json_file(OutputPlugin):
                         "WASC IDs": getattr(info, "wasc_ids", []),
                         "Tags": getattr(info, "tags", []),
                         "VulnDB ID": info.get_vulndb_id(),
-                        "Severity": info.get_severity(),
                         "Description": info.get_desc()}
                 items.append(item)
             except Exception, e:
