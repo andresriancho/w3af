@@ -25,7 +25,7 @@ import time
 import base64
 import jinja2
 
-from jinja2 import Environment, select_autoescape, FileSystemLoader, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
@@ -199,7 +199,7 @@ class xml_file(OutputPlugin):
         """
         env_config = {'undefined': StrictUndefined,
                       'trim_blocks': True,
-                      'autoescape': select_autoescape(['xml']),
+                      'autoescape': True,
                       'lstrip_blocks': True}
 
         jinja2_env = Environment(**env_config)
@@ -254,7 +254,7 @@ class XMLNode(object):
 
         env_config = {'undefined': StrictUndefined,
                       'trim_blocks': True,
-                      'autoescape': select_autoescape(['xml']),
+                      'autoescape': True,
                       'lstrip_blocks': True}
 
         jinja2_env = Environment(**env_config)

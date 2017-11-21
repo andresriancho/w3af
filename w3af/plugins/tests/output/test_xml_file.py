@@ -636,3 +636,63 @@ class TestFinding(XMLNodeGeneratorTest):
 
         self.assertEqual(xml, expected)
         self.assertValidXML(xml)
+
+    def test_render_with_special_chars(self):
+        _id = 2
+
+        desc = ('This is a long description that contains some special'
+                ' characters such as <, & and > which MUST be encoded'
+                ' by jinja2.')
+
+        vuln = MockVuln(_id=_id)
+        vuln.set_desc(desc)
+
+        url = URL('http://w3af.com/a/b/c.php')
+        hdr = Headers([('User-Agent', 'w3af')])
+        request = HTTPRequest(url, data='a=1')
+        request.set_headers(hdr)
+
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>', hdr, url, url)
+
+        h1 = HistoryItem()
+        h1.request = request
+        res.set_id(_id)
+        h1.response = res
+        h1.save()
+
+        finding = Finding(vuln)
+        xml = finding.to_string()
+
+        self.assertNotIn('such as <, & and > which MUST', xml)
+        self.assertIn('such as &lt;, &amp; and &gt; which MUST', xml)
+        self.assertValidXML(xml)
+
+    def test_render_attr_with_special_chars(self):
+        _id = 2
+
+        name = 'A long description with special characters: <&">'
+
+        vuln = MockVuln(_id=_id)
+        vuln.set_name(name)
+
+        url = URL('http://w3af.com/a/b/c.php')
+        hdr = Headers([('User-Agent', 'w3af')])
+        request = HTTPRequest(url, data='a=1')
+        request.set_headers(hdr)
+
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>', hdr, url, url)
+
+        h1 = HistoryItem()
+        h1.request = request
+        res.set_id(_id)
+        h1.response = res
+        h1.save()
+
+        finding = Finding(vuln)
+        xml = finding.to_string()
+
+        self.assertNotIn(name, xml)
+        self.assertIn('A long description with special characters: &lt;&amp;&quot;&gt;', xml)
+        self.assertValidXML(xml)
