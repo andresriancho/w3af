@@ -1,7 +1,7 @@
 <http-transaction id="{{ id }}">
 
     <http-request>
-        <status>{{ request.status }}</status>
+        <status>{{ request.status | escape_attr_val }}</status>
         <headers>
             {% for field, content in request.headers.iteritems() %}
             <header field="{{ field | escape_attr_val }}" content="{{ content | escape_attr_val }}" />
@@ -11,7 +11,7 @@
     </http-request>
 
     <http-response>
-        <status>{{ response.status }}</status>
+        <status>{{ response.status | escape_attr_val }}</status>
         <headers>
             {% for field, content in response.headers.iteritems() %}
             <header field="{{ field | escape_attr_val }}" content="{{ content | escape_attr_val }}" />
