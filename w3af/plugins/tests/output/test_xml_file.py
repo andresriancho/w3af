@@ -453,7 +453,8 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
         h1.response = res
         h1.save()
 
-        http_transaction = HTTPTransaction(_id)
+        x = xml_file()
+        http_transaction = HTTPTransaction(x._get_jinja2_env(), _id)
         xml = http_transaction.to_string()
 
         expected = (u'<http-transaction id="1">\n\n'
@@ -492,7 +493,8 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
         h1.response = res
         h1.save()
 
-        http_transaction = HTTPTransaction(_id)
+        x = xml_file()
+        http_transaction = HTTPTransaction(x._get_jinja2_env(), _id)
 
         self.assertFalse(http_transaction.is_in_cache())
         self.assertRaises(Exception, http_transaction.get_node_from_cache)
@@ -544,7 +546,9 @@ class TestScanInfo(XMLNodeGeneratorTest):
         options_dict = w3af_core.plugins.get_all_plugin_options()
         scan_target = 'https://w3af.org'
 
-        scan_info = ScanInfo(scan_target, plugins_dict, options_dict)
+        x = xml_file()
+
+        scan_info = ScanInfo(x._get_jinja2_env(), scan_target, plugins_dict, options_dict)
         xml = scan_info.to_string()
 
         expected = (u'<scan-info target="https://w3af.org">\n'
@@ -609,7 +613,9 @@ class TestFinding(XMLNodeGeneratorTest):
         h1.response = res
         h1.save()
 
-        finding = Finding(vuln)
+        x = xml_file()
+
+        finding = Finding(x._get_jinja2_env(), vuln)
         xml = finding.to_string()
 
         expected = (u'<vulnerability id="[2]" method="GET" name="TestCase" plugin="plugin_name" severity="High" url="None" var="None">\n'
@@ -661,7 +667,9 @@ class TestFinding(XMLNodeGeneratorTest):
         h1.response = res
         h1.save()
 
-        finding = Finding(vuln)
+        x = xml_file()
+
+        finding = Finding(x._get_jinja2_env(), vuln)
         xml = finding.to_string()
 
         self.assertNotIn('such as <, & and > which MUST', xml)
@@ -690,7 +698,9 @@ class TestFinding(XMLNodeGeneratorTest):
         h1.response = res
         h1.save()
 
-        finding = Finding(vuln)
+        x = xml_file()
+
+        finding = Finding(x._get_jinja2_env(), vuln)
         xml = finding.to_string()
 
         self.assertNotIn(name, xml)

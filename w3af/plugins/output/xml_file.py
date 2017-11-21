@@ -74,6 +74,7 @@ class xml_file(OutputPlugin):
 
         # Keep internal state
         self._is_working = False
+        self._jinja2_env = self._get_jinja2_env()
 
         # List with additional xml elements
         self._errors = DiskList()
@@ -183,19 +184,23 @@ class xml_file(OutputPlugin):
     def _add_scan_info_to_context(self, context):
         scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
 
-        scan_info = ScanInfo(scan_targets, self._plugins_dict, self._options_dict)
+        scan_info = ScanInfo(self._jinja2_env, scan_targets, self._plugins_dict, self._options_dict)
         context.scan_info = scan_info.to_string()
 
     def _add_errors_to_context(self, context):
         context.errors = self._errors
 
     def _add_findings_to_context(self, context):
-        context.findings = (Finding(i).to_string() for i in kb.kb.get_all_findings())
+        context.findings = (Finding(self._jinja2_env, i).to_string() for i in kb.kb.get_all_findings())
 
-    def _write_context_to_file(self, context):
+    def _get_jinja2_env(self):
         """
-        Write xml report to the file by rendering the context
-        :return: None
+        Creates the jinja2 environment which will be used to render all templates
+
+        The same environment is used in order to take advantage of jinja's template
+        cache.
+
+        :return: A jinja2 environment
         """
         env_config = {'undefined': StrictUndefined,
                       'trim_blocks': True,
@@ -205,8 +210,14 @@ class xml_file(OutputPlugin):
         jinja2_env = Environment(**env_config)
         jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
         jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
+        return jinja2_env
 
-        template = jinja2_env.get_template('root.tpl')
+    def _write_context_to_file(self, context):
+        """
+        Write xml report to the file by rendering the context
+        :return: None
+        """
+        template = self._jinja2_env.get_template('root.tpl')
 
         # We use streaming as explained here:
         #
@@ -214,7 +225,7 @@ class xml_file(OutputPlugin):
         #
         # To prevent having the whole XML in memory
         report_stream = template.stream(context)
-        report_stream.enable_buffering(5)
+        report_stream.enable_buffering(3)
 
         self._open_file()
 
@@ -248,21 +259,14 @@ class XMLNode(object):
     TEMPLATE = None
     TEMPLATE_INST = None
 
+    def __init__(self, jinja2_env):
+        """
+        :param jinja2_env: The jinja2 environment to use for rendering
+        """
+        self._jinja2_env = jinja2_env
+
     def get_template(self, template_name):
-        if self.TEMPLATE_INST:
-            return self.TEMPLATE_INST
-
-        env_config = {'undefined': StrictUndefined,
-                      'trim_blocks': True,
-                      'autoescape': True,
-                      'lstrip_blocks': True}
-
-        jinja2_env = Environment(**env_config)
-        jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
-        jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
-
-        self.TEMPLATE_INST = jinja2_env.get_template(template_name)
-        return self.TEMPLATE_INST
+        return self._jinja2_env.get_template(template_name)
 
 
 class CachedXMLNode(XMLNode):
@@ -291,13 +295,14 @@ class HTTPTransaction(CachedXMLNode):
 
     TEMPLATE = 'http_transaction.tpl'
 
-    def __init__(self, _id):
+    def __init__(self, jinja2_env, _id):
         """
         :param _id: The HTTP request / response ID from w3af. This is is used to query
                     the history and get the information. In most cases we'll get the
                     information from the cache and return the XML node.
 
         """
+        super(HTTPTransaction, self).__init__(jinja2_env)
         self._id = _id
 
     def get_cache_key(self):
@@ -374,13 +379,14 @@ class HTTPTransaction(CachedXMLNode):
 class ScanInfo(CachedXMLNode):
     TEMPLATE = 'scan_info.tpl'
 
-    def __init__(self, scan_target, plugins_dict, options_dict):
+    def __init__(self, jinja2_env, scan_target, plugins_dict, options_dict):
         """
         Represents the w3af scan information
 
         :param plugins_dict: The plugins which were enabled
         :param options_dict: The options for each plugin
         """
+        super(ScanInfo, self).__init__(jinja2_env)
         self._scan_target = scan_target
         self._plugins_dict = plugins_dict
         self._options_dict = options_dict
@@ -407,11 +413,12 @@ class ScanInfo(CachedXMLNode):
 class Finding(XMLNode):
     TEMPLATE = 'finding.tpl'
 
-    def __init__(self, info):
+    def __init__(self, jinja2_env, info):
         """
         Represents a finding in the w3af framework, which will be serialized
         as an XML node
         """
+        super(Finding, self).__init__(jinja2_env)
         self._info = info
 
     def to_string(self):
@@ -444,7 +451,7 @@ class Finding(XMLNode):
         context.http_transactions = []
         for transaction in info.get_id():
             try:
-                xml = HTTPTransaction(transaction).to_string()
+                xml = HTTPTransaction(self._jinja2_env, transaction).to_string()
             except DBException:
                 msg = 'Failed to retrieve request with id %s from DB.'
                 print(msg % transaction)
@@ -480,8 +487,9 @@ def jinja2_attr_value_escape_filter(value):
     retval = []
 
     for letter in value:
-        if letter in ATTR_VALUE_ESCAPES:
-            retval.append(ATTR_VALUE_ESCAPES[letter])
+        escape = ATTR_VALUE_ESCAPES.get(letter, None)
+        if escape is not None:
+            retval.append(escape)
         else:
             retval.append(letter)
 
