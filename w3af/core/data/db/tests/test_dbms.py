@@ -20,10 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import string
+import time
 import os
 
 from itertools import repeat, starmap
 from random import choice
+from nose.plugins.skip import SkipTest
 
 from w3af.core.data.db.dbms import SQLiteDBMS, get_default_temp_db_instance
 from w3af.core.controllers.exceptions import DBException, NoSuchTableException
@@ -80,6 +82,37 @@ class TestDBMS(unittest.TestCase):
         result2 = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('nope', 3)).result()
         self.assertEqual(result1.rowcount, 1)
         self.assertEqual(result2.rowcount, 0)
+
+    def test_performance_with_multiple_cursors(self):
+        raise SkipTest('This test is very specific to my workstation and was written just'
+                       ' to make sure that my changes did not break the performance of a'
+                       ' critical part of the framework.'
+                       ''
+                       'It is specific to my workstation because of the hard-coded'
+                       ' ONE_CURSOR_TIME value, which should be updated in each environment'
+                       ' by making the dbms._query_handler implementation look like:'
+                       ''
+                       'return self.cursor.execute(query, parameters)')
+
+        # I measured the performance of doing 10000 UPDATE calls with the same
+        # cursor in dbms._query_handler(). It took:
+        ONE_CURSOR_TIME = 0.710026979446
+
+        # Now I'm testing the same thing with multiple cursors (which is the way
+        # it should always have been).
+        db = SQLiteDBMS(get_temp_filename())
+        db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')]).result()
+
+        db.execute('INSERT INTO TEST VALUES (1, "a")').result()
+
+        start_time = time.time()
+
+        for i in xrange(10000):
+            result = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('%s' % i, 1)).result()
+            self.assertEqual(result.rowcount, 1)
+
+        spent_time = time.time() - start_time
+        self.assertLessEqual(spent_time, ONE_CURSOR_TIME * 1.1)
 
     def test_select_non_exist_table(self):
         db = SQLiteDBMS(get_temp_filename())

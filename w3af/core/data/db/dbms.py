@@ -236,7 +236,8 @@ class SQLiteExecutor(Process):
         return future
     
     def _query_handler(self, query, parameters):
-        return self.cursor.execute(query, parameters)
+        cursor = self.conn.cursor()
+        return cursor.execute(query, parameters)
 
     def select(self, query, parameters):
         future = Future()
