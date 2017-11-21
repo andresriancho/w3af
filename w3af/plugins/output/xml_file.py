@@ -346,10 +346,7 @@ class HTTPTransaction(CachedXMLNode):
         # need to identify and fix). When an exception is raised here
         # the caller needs to handle it by ignoring this part of the
         # HTTP transaction
-        details = req_history.read(self._id)
-
-        request = details.request
-        response = details.response
+        request, response = req_history.load_from_file(self._id)
 
         data = request.get_data() or ''
         b64_encoded_request_body = base64.encodestring(smart_str_ignore(data))
