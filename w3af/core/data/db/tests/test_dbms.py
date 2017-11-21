@@ -69,6 +69,18 @@ class TestDBMS(unittest.TestCase):
         result = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('b', 1)).result()
         self.assertEqual(result.rowcount, 1)
 
+        # There was a bug here where the same cursor instance was used as a result
+        # for two (or more) UPDATE calls, which will override the rowcount value
+        #
+        # This lead to race conditions like:
+        #
+        #   https://github.com/andresriancho/w3af/issues/16171
+        #
+        result1 = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('c', 1)).result()
+        result2 = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('nope', 3)).result()
+        self.assertEqual(result1.rowcount, 1)
+        self.assertEqual(result2.rowcount, 0)
+
     def test_select_non_exist_table(self):
         db = SQLiteDBMS(get_temp_filename())
 
