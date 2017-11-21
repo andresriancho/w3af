@@ -7,7 +7,7 @@
     <fix-effort>{{ fix_effort }}</fix-effort>
     <references>
         {% for reference in references %}
-            <reference title="{{ reference.title }}" url="{{ reference.url }}" />
+            <reference title="{{ reference.title | escape_attr_val }}" url="{{ reference.url | escape_attr_val }}" />
         {% endfor %}
     </references>
     {% endif %}

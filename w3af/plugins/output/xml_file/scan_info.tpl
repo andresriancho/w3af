@@ -1,4 +1,4 @@
-<scan-info target="{{ scan_target }}">
+<scan-info target="{{ scan_target }} | escape_attr_val">
     {% for plugin_type in enabled_plugins %}
     <{{ plugin_type }}>
         {% for plugin_name in enabled_plugins[plugin_type] %}
