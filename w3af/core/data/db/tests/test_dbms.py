@@ -53,12 +53,21 @@ class TestDBMS(unittest.TestCase):
     
     def test_simple_db(self):
         db = SQLiteDBMS(get_temp_filename())
-        db.create_table('TEST', set([('id', 'INT'), ('data', 'TEXT')])).result()
+        db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')]).result()
         
         db.execute('INSERT INTO TEST VALUES (1,"a")').result()
         
-        self.assertIn(('1', 'a'), db.select('SELECT * from TEST'))
-        self.assertEqual(('1', 'a'), db.select_one('SELECT * from TEST'))
+        self.assertIn((1, 'a'), db.select('SELECT * from TEST'))
+        self.assertEqual((1, 'a'), db.select_one('SELECT * from TEST'))
+
+    def test_update_update_rowcount(self):
+        db = SQLiteDBMS(get_temp_filename())
+        db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')]).result()
+
+        db.execute('INSERT INTO TEST VALUES (1, "a")').result()
+
+        result = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('b', 1)).result()
+        self.assertEqual(result.rowcount, 1)
 
     def test_select_non_exist_table(self):
         db = SQLiteDBMS(get_temp_filename())
@@ -67,23 +76,23 @@ class TestDBMS(unittest.TestCase):
 
     def test_default_db(self):
         db = get_default_temp_db_instance()
-        db.create_table('TEST', set([('id', 'INT'), ('data', 'TEXT')])).result()
+        db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')]).result()
         
         db.execute('INSERT INTO TEST VALUES (1,"a")').result()
         
-        self.assertIn(('1', 'a'), db.select('SELECT * from TEST'))
-        self.assertEqual(('1', 'a'), db.select_one('SELECT * from TEST'))
+        self.assertIn((1, 'a'), db.select('SELECT * from TEST'))
+        self.assertEqual((1, 'a'), db.select_one('SELECT * from TEST'))
 
     def test_simple_db_with_pk(self):
         db = SQLiteDBMS(get_temp_filename())
-        fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')],['id'])
+        fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
         fr.result()
         
         self.assertEqual([], db.select('SELECT * from TEST'))
     
     def test_drop_table(self):
         db = SQLiteDBMS(get_temp_filename())
-        fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')],['id'])
+        fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
         fr.result()
         
         db.drop_table('TEST').result()
@@ -91,7 +100,7 @@ class TestDBMS(unittest.TestCase):
     
     def test_simple_db_with_index(self):
         db = SQLiteDBMS(get_temp_filename())
-        fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')],['id'])
+        fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
         fr.result()
         
         db.create_index('TEST', ['data']).result()
@@ -103,7 +112,7 @@ class TestDBMS(unittest.TestCase):
         self.assertFalse(db.table_exists('TEST'))
         
         db = SQLiteDBMS(get_temp_filename())
-        db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')],['id'])
+        db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
         
         self.assertTrue(db.table_exists('TEST'))
     

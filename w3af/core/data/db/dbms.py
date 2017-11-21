@@ -171,7 +171,10 @@ class SQLiteDBMS(object):
         
         if not columns:
             raise ValueError('create_table requires column names and types')
-        
+
+        if not isinstance(columns, list):
+            raise ValueError('create_table requires column names and types in a list')
+
         # Create the table
         query = 'CREATE TABLE %s (' % name
         
