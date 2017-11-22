@@ -187,26 +187,32 @@ class BasicKnowledgeBase(object):
         """
         raise NotImplementedError
 
-    def get_all_entries_of_class_iter(self, klass):
+    def get_all_entries_of_class_iter(self, klass, exclude_ids=()):
         """
         :yield: All objects where class in klass that are saved in the kb.
+        :param exclude_ids: The vulnerability IDs to exclude from the result
         """
         raise NotImplementedError
 
-    def get_all_findings(self):
+    def get_all_findings(self, exclude_ids=()):
         """
         :return: A list of all findings, including Info, Vuln and InfoSet.
+        :param exclude_ids: The vulnerability IDs to exclude from the result
         """
-        return self.get_all_entries_of_class((Info, InfoSet, Vuln))
+        return self.get_all_entries_of_class((Info, InfoSet, Vuln),
+                                             exclude_ids=exclude_ids)
 
-    def get_all_findings_iter(self):
+    def get_all_findings_iter(self, exclude_ids=()):
         """
         An iterated version of get_all_findings. All new code should use
         get_all_findings_iter instead of get_all_findings().
 
         :yield: All findings stored in the KB.
+        :param exclude_ids: The vulnerability IDs to exclude from the result
         """
-        for finding in self.get_all_entries_of_class_iter((Info, InfoSet, Vuln)):
+        klass = (Info, InfoSet, Vuln)
+
+        for finding in self.get_all_entries_of_class_iter(klass, exclude_ids):
             yield finding
 
     def get_all_shells(self, w3af_core=None):
@@ -255,10 +261,11 @@ class BasicKnowledgeBase(object):
         """
         raise NotImplementedError
 
-    def get_all_entries_of_class(self, klass):
+    def get_all_entries_of_class(self, klass, exclude_ids=()):
         """
         :return: A list of all objects of class == klass that are saved in the
                  kb.
+        :param exclude_ids: The vulnerability IDs to exclude from the result
         """
         raise NotImplementedError
 
@@ -561,27 +568,31 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             functor(*args, **kwargs)
 
     @requires_setup
-    def get_all_entries_of_class(self, klass):
+    def get_all_entries_of_class(self, klass, exclude_ids=()):
         """
         :return: A list of all objects where class in klass that are saved in the
                  kb.
         """
         result_lst = []
 
-        for entry in self.get_all_entries_of_class_iter(klass):
+        for entry in self.get_all_entries_of_class_iter(klass, exclude_ids=exclude_ids):
             result_lst.append(entry)
 
         return result_lst
 
     @requires_setup
-    def get_all_entries_of_class_iter(self, klass):
+    def get_all_entries_of_class_iter(self, klass, exclude_ids=()):
         """
         :yield: All objects where class in klass that are saved in the kb.
         """
-        query = 'SELECT pickle FROM %s'
-        results = self.db.select(query % self.table_name)
+        bindings = ['?'] * len(exclude_ids)
+        bindings = ','.join(bindings)
+        query = 'SELECT uniq_id, pickle FROM %s WHERE uniq_id NOT IN (%s)'
+        query %= (self.table_name, bindings)
 
-        for serialized_obj, in results:
+        results = self.db.select(query, parameters=exclude_ids)
+
+        for uniq_id, serialized_obj, in results:
             obj = cPickle.loads(serialized_obj)
             if isinstance(obj, klass):
                 yield obj
