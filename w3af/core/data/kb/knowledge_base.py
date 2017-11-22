@@ -215,6 +215,12 @@ class BasicKnowledgeBase(object):
         for finding in self.get_all_entries_of_class_iter(klass, exclude_ids):
             yield finding
 
+    def get_all_uniq_ids_iter(self):
+        """
+        :yield: All uniq IDs from the KB
+        """
+        raise NotImplementedError
+
     def get_all_shells(self, w3af_core=None):
         """
         :param w3af_core: The w3af_core used in the current scan
@@ -507,6 +513,16 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             result = cPickle.loads(result[0])
 
         return result
+
+    def get_all_uniq_ids_iter(self):
+        """
+        :yield: All uniq IDs from the KB
+        """
+        query = 'SELECT uniq_id FROM %s'
+        result = self.db.select(query % self.table_name)
+
+        for uniq_id, in result:
+            yield uniq_id
 
     @requires_setup
     def update(self, old_info, update_info):
