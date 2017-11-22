@@ -156,8 +156,16 @@ class BasicKnowledgeBase(object):
 
                 if info_set.match(info_inst):
                     old_info_set = copy.deepcopy(info_set)
+
+                    # Add the new information to the InfoSet instance and then
+                    # generate a new ID. This is done because now it is not the
+                    # same InfoSet (the attributes changed)
                     info_set.add(info_inst)
+                    info_set.generate_new_id()
+
+                    # Save to the DB
                     self.update(old_info_set, info_set)
+
                     return info_set, False
             else:
                 # No pre-existing InfoSet instance matched, let's create one
@@ -410,12 +418,12 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     def _get_uniq_id(self, obj):
         if isinstance(obj, (Info, InfoSet)):
             return obj.get_uniq_id()
-        else:
-            if isinstance(obj, collections.Iterable):
-                concat_all = ''.join([str(hash(i)) for i in obj])
-                return str(hash(concat_all))
-            else:
-                return str(hash(obj))
+
+        if isinstance(obj, collections.Iterable):
+            concat_all = ''.join([str(hash(i)) for i in obj])
+            return str(hash(concat_all))
+
+        return str(hash(obj))
 
     @requires_setup
     def append(self, location_a, location_b, value, ignore_type=False):
@@ -435,7 +443,10 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         query = "INSERT INTO %s VALUES (?, ?, ?, ?)" % self.table_name
         self.db.execute(query, t)
-        self._notify_observers(self.APPEND, location_a, location_b, value,
+        self._notify_observers(self.APPEND,
+                               location_a,
+                               location_b,
+                               value,
                                ignore_type=ignore_type)
 
     @requires_setup
@@ -570,8 +581,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         query = 'SELECT pickle FROM %s'
         results = self.db.select(query % self.table_name)
 
-        for r in results:
-            obj = cPickle.loads(r[0])
+        for serialized_obj, in results:
+            obj = cPickle.loads(serialized_obj)
             if isinstance(obj, klass):
                 yield obj
 
@@ -698,8 +709,5 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         return self.fuzzable_requests.add(fuzzable_request)
 
 
-
-
 KnowledgeBase = DBKnowledgeBase
-
 kb = KnowledgeBase()
