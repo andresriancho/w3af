@@ -179,6 +179,12 @@ class BasicKnowledgeBase(object):
         """
         raise NotImplementedError
 
+    def get_all_entries_of_class_iter(self, klass):
+        """
+        :yield: All objects where class in klass that are saved in the kb.
+        """
+        raise NotImplementedError
+
     def get_all_findings(self):
         """
         :return: A list of all findings, including Info, Vuln and InfoSet.
@@ -546,7 +552,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     @requires_setup
     def get_all_entries_of_class(self, klass):
         """
-        :return: A list of all objects of class == klass that are saved in the
+        :return: A list of all objects where class in klass that are saved in the
                  kb.
         """
         result_lst = []
@@ -559,7 +565,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
     @requires_setup
     def get_all_entries_of_class_iter(self, klass):
         """
-        :yield: All objects of class == klass that are saved in the kb.
+        :yield: All objects where class in klass that are saved in the kb.
         """
         query = 'SELECT pickle FROM %s'
         results = self.db.select(query % self.table_name)
