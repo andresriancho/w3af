@@ -160,7 +160,9 @@ class xml_file(OutputPlugin):
         self._plugins_dict = {}
         self._options_dict = {}
         self._errors.cleanup()
+        self._jinja2_env = None
 
+    #@profile
     def flush(self):
         """
         Write the XML to the output file
@@ -175,23 +177,27 @@ class xml_file(OutputPlugin):
 
         self._write_context_to_file(context)
 
+    #@profile
     def _add_root_info_to_context(self, context):
         context.start_timestamp = self._timestamp
         context.start_time_long = self._long_timestamp
         context.xml_version = self.XML_OUTPUT_VERSION
         context.w3af_version = get_w3af_version.get_w3af_version()
 
+    #@profile
     def _add_scan_info_to_context(self, context):
         scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
 
         scan_info = ScanInfo(self._jinja2_env, scan_targets, self._plugins_dict, self._options_dict)
         context.scan_info = scan_info.to_string()
 
+    #@profile
     def _add_errors_to_context(self, context):
         context.errors = self._errors
 
+    #@profile
     def _add_findings_to_context(self, context):
-        context.findings = (Finding(self._jinja2_env, i).to_string() for i in kb.kb.get_all_findings())
+        context.findings = (Finding(self._jinja2_env, i).to_string() for i in kb.kb.get_all_findings_iter())
 
     def _get_jinja2_env(self):
         """
@@ -212,6 +218,7 @@ class xml_file(OutputPlugin):
         jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
         return jinja2_env
 
+    #@profile
     def _write_context_to_file(self, context):
         """
         Write xml report to the file by rendering the context
@@ -308,6 +315,7 @@ class HTTPTransaction(CachedXMLNode):
     def get_cache_key(self):
         return 'http-transaction-%s.data' % self._id
 
+    #@profile
     def to_string(self):
         """
         :return: An xml node (as a string) representing the HTTP request / response.
@@ -394,6 +402,7 @@ class ScanInfo(CachedXMLNode):
     def get_cache_key(self):
         return 'scan-info.data'
 
+    #@profile
     def to_string(self):
         # Get the data from the cache
         if self.is_in_cache():
@@ -421,6 +430,7 @@ class Finding(XMLNode):
         super(Finding, self).__init__(jinja2_env)
         self._info = info
 
+    #@profile
     def to_string(self):
         info = self._info
         context = dotdict({})

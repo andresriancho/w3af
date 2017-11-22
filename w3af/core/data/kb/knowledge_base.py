@@ -185,6 +185,16 @@ class BasicKnowledgeBase(object):
         """
         return self.get_all_entries_of_class((Info, InfoSet, Vuln))
 
+    def get_all_findings_iter(self):
+        """
+        An iterated version of get_all_findings. All new code should use
+        get_all_findings_iter instead of get_all_findings().
+
+        :yield: All findings stored in the KB.
+        """
+        for finding in self.get_all_entries_of_class_iter((Info, InfoSet, Vuln)):
+            yield finding
+
     def get_all_shells(self, w3af_core=None):
         """
         :param w3af_core: The w3af_core used in the current scan
@@ -539,17 +549,25 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         :return: A list of all objects of class == klass that are saved in the
                  kb.
         """
+        result_lst = []
+
+        for entry in self.get_all_entries_of_class_iter(klass):
+            result_lst.append(entry)
+
+        return result_lst
+
+    @requires_setup
+    def get_all_entries_of_class_iter(self, klass):
+        """
+        :yield: All objects of class == klass that are saved in the kb.
+        """
         query = 'SELECT pickle FROM %s'
         results = self.db.select(query % self.table_name)
-
-        result_lst = []
 
         for r in results:
             obj = cPickle.loads(r[0])
             if isinstance(obj, klass):
-                result_lst.append(obj)
-
-        return result_lst
+                yield obj
 
     @requires_setup
     def get_all_vulns(self):
