@@ -168,6 +168,11 @@ class xml_file(OutputPlugin):
         Write the XML to the output file
         :return: None
         """
+        # Create the cache path
+        CachedXMLNode.create_cache_path()
+        FindingsCache.create_cache_path()
+
+        # Create the context
         context = dotdict({})
 
         self._add_root_info_to_context(context)
@@ -175,6 +180,7 @@ class xml_file(OutputPlugin):
         self._add_findings_to_context(context)
         self._add_errors_to_context(context)
 
+        # Write to file
         self._write_context_to_file(context)
 
     #@profile
@@ -195,9 +201,62 @@ class xml_file(OutputPlugin):
     def _add_errors_to_context(self, context):
         context.errors = self._errors
 
+    def findings(self):
+        """
+        A small generator that queries the findings cache and yields all the findings
+        so they get written to the XML.
+
+        :yield: Strings representing the findings as XML
+        """
+        cache = FindingsCache()
+        cached_nodes = cache.list()
+
+        processed_uniq_ids = []
+
+        #
+        # This for loop is a performance improvement which should yield
+        # really good results, taking into account that get_all_uniq_ids_iter
+        # will only query the DB and yield IDs, without doing any of the
+        # CPU-intensive cPickle.loads() done in get_all_findings_iter()
+        # which we do below.
+        #
+        # Ideally, we're only doing a cPickle.loads() once for each finding
+        # the rest of the calls to flush() will load the finding from the
+        # cache in this loop, and use the exclude_ids to prevent cached
+        # entries from being queried
+        #
+        # What this for loop also guarantees is that we're not simply
+        # reading all the items from the cache and putting them into the XML,
+        # which would be incorrect because some items are modified in the
+        # KB (which changes their uniq id)
+        #
+        for uniq_id in kb.kb.get_all_uniq_ids_iter():
+            if uniq_id in cached_nodes:
+                yield cache.get_node_from_cache(uniq_id)
+                processed_uniq_ids.append(uniq_id)
+
+        #
+        # This for loop is getting all the new findings that w3af has found
+        # In this context "new" means that the findings are not in the cache
+        #
+        for finding in kb.kb.get_all_findings_iter(exclude_ids=cached_nodes):
+            uniq_id = finding.get_uniq_id()
+            processed_uniq_ids.append(uniq_id)
+            node = Finding(self._jinja2_env, finding).to_string()
+            cache.save_finding_to_cache(uniq_id, node)
+            yield node
+
+        #
+        # Now that we've finished processing all the new findings we can
+        # evict the findings that were removed from the KB from the cache
+        #
+        for cached_finding in cached_nodes:
+            if cached_finding not in processed_uniq_ids:
+                cache.evict_from_cache(cached_finding)
+
     #@profile
     def _add_findings_to_context(self, context):
-        context.findings = (Finding(self._jinja2_env, i).to_string() for i in kb.kb.get_all_findings_iter())
+        context.findings = (f for f in self.findings())
 
     def _get_jinja2_env(self):
         """
@@ -261,6 +320,49 @@ class xml_file(OutputPlugin):
         """
 
 
+class FindingsCache(object):
+
+    COMPRESSION_LEVEL = 2
+
+    @staticmethod
+    def create_cache_path():
+        cache_path = FindingsCache.get_cache_path()
+
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
+
+    @staticmethod
+    def get_cache_path():
+        return os.path.join(get_temp_dir(), 'xml_file', 'findings')
+
+    def get_filename_from_uniq_id(self, uniq_id):
+        return os.path.join(FindingsCache.get_cache_path(), uniq_id)
+
+    def get_node_from_cache(self, uniq_id):
+        filename = self.get_filename_from_uniq_id(uniq_id)
+
+        try:
+            node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+        except IOError:
+            return None
+
+        return node.decode('utf-8')
+
+    def save_finding_to_cache(self, uniq_id, node):
+        filename = self.get_filename_from_uniq_id(uniq_id)
+        node = node.encode('utf-8')
+        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(node)
+
+    def evict_from_cache(self, uniq_id):
+        filename = self.get_filename_from_uniq_id(uniq_id)
+
+        if os.path.exists(filename):
+            os.remove(filename)
+
+    def list(self):
+        return os.listdir(FindingsCache.get_cache_path())
+
+
 class XMLNode(object):
 
     TEMPLATE = None
@@ -280,22 +382,37 @@ class CachedXMLNode(XMLNode):
 
     COMPRESSION_LEVEL = 2
 
+    @staticmethod
+    def create_cache_path():
+        cache_path = CachedXMLNode.get_cache_path()
+
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
+
+    @staticmethod
+    def get_cache_path():
+        return os.path.join(get_temp_dir(), 'xml_file')
+
     def get_cache_key(self):
         raise NotImplementedError
 
+    def get_filename(self):
+        return os.path.join(CachedXMLNode.get_cache_path(), self.get_cache_key())
+
     def get_node_from_cache(self):
-        filename = os.path.join(get_temp_dir(), self.get_cache_key())
-        node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+        filename = self.get_filename()
+
+        try:
+            node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+        except IOError:
+            return None
+
         return node.decode('utf-8')
 
     def save_node_to_cache(self, node):
-        filename = os.path.join(get_temp_dir(), self.get_cache_key())
+        filename = self.get_filename()
         node = node.encode('utf-8')
         gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(node)
-
-    def is_in_cache(self):
-        filename = os.path.join(get_temp_dir(), self.get_cache_key())
-        return os.path.exists(filename)
 
 
 class HTTPTransaction(CachedXMLNode):
@@ -349,8 +466,9 @@ class HTTPTransaction(CachedXMLNode):
         prevent encoding issues.
         """
         # Get the data from the cache
-        if self.is_in_cache():
-            return self.get_node_from_cache()
+        node = self.get_node_from_cache()
+        if node is not None:
+            return node
 
         # HistoryItem to get requests/responses
         req_history = HistoryItem()
@@ -405,8 +523,9 @@ class ScanInfo(CachedXMLNode):
     #@profile
     def to_string(self):
         # Get the data from the cache
-        if self.is_in_cache():
-            return self.get_node_from_cache()
+        node = self.get_node_from_cache()
+        if node is not None:
+            return node
 
         context = {'enabled_plugins': self._plugins_dict,
                    'plugin_options': self._options_dict,

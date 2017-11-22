@@ -48,7 +48,7 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
-from w3af.plugins.output.xml_file import xml_file
+from w3af.plugins.output.xml_file import xml_file, CachedXMLNode, FindingsCache
 from w3af.plugins.output.xml_file import HTTPTransaction, ScanInfo, Finding
 
 
@@ -124,6 +124,8 @@ class TestNoDuplicate(unittest.TestCase):
     def setUp(self):
         kb.kb.cleanup()
         create_temp_dir()
+        CachedXMLNode.create_cache_path()
+        FindingsCache.create_cache_path()
         HistoryItem().init()
 
     def tearDown(self):
@@ -429,6 +431,8 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
     def setUp(self):
         kb.kb.cleanup()
         create_temp_dir()
+        CachedXMLNode.create_cache_path()
+        FindingsCache.create_cache_path()
         HistoryItem().init()
 
     def tearDown(self):
@@ -496,8 +500,7 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
         x = xml_file()
         http_transaction = HTTPTransaction(x._get_jinja2_env(), _id)
 
-        self.assertFalse(http_transaction.is_in_cache())
-        self.assertRaises(Exception, http_transaction.get_node_from_cache)
+        self.assertIsNone(http_transaction.get_node_from_cache())
 
         # Writes to cache
         xml = http_transaction.to_string()
@@ -520,7 +523,7 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
         self.assertEqual(expected, xml)
 
         # Yup, we're cached
-        self.assertTrue(http_transaction.is_in_cache())
+        self.assertIsNotNone(http_transaction.get_node_from_cache())
 
         # Make sure they are all the same
         cached_xml = http_transaction.get_node_from_cache()
@@ -531,6 +534,18 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
 
 
 class TestScanInfo(XMLNodeGeneratorTest):
+    def setUp(self):
+        kb.kb.cleanup()
+        create_temp_dir()
+        CachedXMLNode.create_cache_path()
+        FindingsCache.create_cache_path()
+        HistoryItem().init()
+
+    def tearDown(self):
+        remove_temp_dir()
+        HistoryItem().clear()
+        kb.kb.cleanup()
+
     def test_render_simple(self):
         w3af_core = w3afCore()
 
@@ -587,6 +602,8 @@ class TestFinding(XMLNodeGeneratorTest):
     def setUp(self):
         kb.kb.cleanup()
         create_temp_dir()
+        CachedXMLNode.create_cache_path()
+        FindingsCache.create_cache_path()
         HistoryItem().init()
 
     def tearDown(self):
@@ -706,3 +723,99 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertNotIn(name, xml)
         self.assertIn('A long description with special characters: &lt;&amp;&quot;&gt;', xml)
         self.assertValidXML(xml)
+
+
+class TestFindingsCache(XMLNodeGeneratorTest):
+    def setUp(self):
+        kb.kb.cleanup()
+        create_temp_dir()
+        CachedXMLNode.create_cache_path()
+        FindingsCache.create_cache_path()
+        HistoryItem().init()
+
+    def tearDown(self):
+        remove_temp_dir()
+        HistoryItem().clear()
+        kb.kb.cleanup()
+
+    def test_cache_works_as_expected(self):
+        #
+        # Cache starts empty
+        #
+        cache = FindingsCache()
+        self.assertEquals(cache.list(), [])
+
+        #
+        # Create two vulnerabilities with their HTTP requests and responses
+        #
+        _id = 1
+
+        name = 'I have a name'
+
+        vuln1 = MockVuln(_id=_id)
+        vuln1.set_name(name)
+
+        url = URL('http://w3af.com/a/b/c.php')
+        hdr = Headers([('User-Agent', 'w3af')])
+        request = HTTPRequest(url, data='a=1')
+        request.set_headers(hdr)
+
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>', hdr, url, url)
+
+        h1 = HistoryItem()
+        h1.request = request
+        res.set_id(_id)
+        h1.response = res
+        h1.save()
+
+        _id = 2
+
+        name = 'Just a name'
+
+        vuln2 = MockVuln(_id=_id)
+        vuln2.set_name(name)
+
+        url = URL('http://w3af.com/a/b/c.php')
+        hdr = Headers([('User-Agent', 'w3af')])
+        request = HTTPRequest(url, data='a=1')
+        request.set_headers(hdr)
+
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>', hdr, url, url)
+
+        h2 = HistoryItem()
+        h2.request = request
+        res.set_id(_id)
+        h2.response = res
+        h2.save()
+
+        #
+        # Save one vulnerability to the KB and call the cache-user
+        #
+        kb.kb.append('a', 'b', vuln1)
+
+        x = xml_file()
+        list(x.findings())
+
+        self.assertEquals(cache.list(), [vuln1.get_uniq_id()])
+
+        #
+        # Save another vulnerability to the KB and call the cache-user
+        #
+        kb.kb.append('a', 'c', vuln2)
+
+        list(x.findings())
+
+        expected = {vuln1.get_uniq_id(), vuln2.get_uniq_id()}
+        self.assertEquals(set(cache.list()), expected)
+
+        #
+        # Remove one vulnerability and see how it is removed from the cache
+        #
+        kb.kb.raw_write('a', 'c', 'noop')
+
+        list(x.findings())
+
+        expected = {vuln1.get_uniq_id()}
+        self.assertEquals(set(cache.list()), expected)
