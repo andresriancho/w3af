@@ -29,13 +29,10 @@ from w3af.core.controllers.csp.utils import site_protected_against_xss_by_csp
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.context.context import get_context_iter
-
-
-RANDOMIZE = 'RANDOMIZE'
+from w3af.core.data.context.utils import place_boundary, get_boundary
 
 
 class xss(AuditPlugin):
@@ -45,10 +42,15 @@ class xss(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     :author: Taras (oxdef@oxdef.info)
     """
+
     # TODO: Reduce the number of payloads by concatenating similar/related ones
+    # TODO: maybe write a good "universal XSS vector" for persistent XSS instead of this?
     PAYLOADS = [
         # Start a new tag
-        '<',
+        '<tag',
+
+        # Close tag
+        '</tag',
 
         # Escape HTML comments
         '-->',
@@ -57,7 +59,7 @@ class xss(AuditPlugin):
         '*/',
 
         # Escapes for CSS
-        '*/:("\'',
+        '"\'*/:(',
 
         # The ":" is useful in cases where we want to add the javascript
         # protocol like <a href="PAYLOAD">   -->   <a href="javascript:alert()">
@@ -74,8 +76,7 @@ class xss(AuditPlugin):
         # Escape HTML attribute values without string delimiters
         " =",
     ]
-    PAYLOADS = ['%s%s%s' % (RANDOMIZE, p, RANDOMIZE) for p in PAYLOADS]
-        
+
     def __init__(self):
         AuditPlugin.__init__(self)
         
@@ -105,8 +106,19 @@ class xss(AuditPlugin):
         """
         Tries to identify (persistent) XSS in one parameter.
         """
-        if not self._identify_trivial_xss(mutant):
-            self._search_xss(mutant)
+
+        payloads = self._get_context_payloads(mutant)
+        parameter_reflected = len(payloads) > 0
+        if not self._check_persistent_xss and not parameter_reflected:
+            # Probably parameter doesn't reflected in output
+            return
+
+        trivial_payloads = payloads.copy()
+        trivial_payloads.update(self.PAYLOADS)
+
+        has_bug = self._identify_trivial_xss(mutant, trivial_payloads)
+        if not has_bug and parameter_reflected:
+            self._search_xss(mutant, payloads)
 
     def _report_vuln(self, mutant, response, mod_value):
         """
@@ -134,18 +146,38 @@ class xss(AuditPlugin):
         
         self.kb_append_uniq(self, 'xss', v)
 
-    def _identify_trivial_xss(self, mutant):
+    def _get_context_payloads(self, mutant):
+        """
+        Returns payload for each of the context where mutant was reflected
+
+        :return: A set of payloads
+        """
+        payload = place_boundary('')
+
+        context_mutant = mutant.copy()
+        context_mutant.set_token_value(payload)
+
+        response = self._uri_opener.send_mutant(context_mutant)
+        body = response.get_body()
+
+        payloads = set()
+        for context in get_context_iter(body, get_boundary(payload)):
+            payloads.update(context.get_payloads())
+
+        return payloads
+
+    def _identify_trivial_xss(self, mutant, payloads):
         """
         Identify trivial cases of XSS where all chars are echoed back and no
         filter and/or encoding is in place.
         
         :return: True in the case where a trivial XSS was identified.
         """
-        payload = replace_randomize(''.join(self.PAYLOADS))
+        payload = place_boundary(''.join(payloads))
 
         trivial_mutant = mutant.copy()
         trivial_mutant.set_token_value(payload)
-        
+
         response = self._uri_opener.send_mutant(trivial_mutant)
 
         # Add data for the persistent xss checking
@@ -163,19 +195,20 @@ class xss(AuditPlugin):
             return False
 
         if payload in response.get_body().lower():
-            self._report_vuln(mutant, response, payload)
+            self._report_vuln(trivial_mutant, response, payload)
             return True
         
         return False
 
-    def _search_xss(self, mutant):
+    def _search_xss(self, mutant, payloads):
         """
         Analyze the mutant for reflected XSS.
         
         @parameter mutant: A mutant that was used to test if the parameter
                            was echoed back or not
         """
-        xss_strings = [replace_randomize(i) for i in self.PAYLOADS]
+        xss_strings = [place_boundary(p) for p in payloads]
+
         fuzzable_params = [mutant.get_token_name()]
 
         mutant_list = create_mutants(mutant.get_fuzzable_request(),
@@ -192,22 +225,16 @@ class xss(AuditPlugin):
         
         :return: None, record all the results in the kb.
         """
-        # Add data for the persistent xss checking
-        if self._check_persistent_xss:
-            self._xss_mutants.append((mutant, response.id))
-
         with self._plugin_lock:
-            
             if self._has_bug(mutant):
                 return
-            
-            sent_payload = mutant.get_token_payload()
 
             # TODO: https://github.com/andresriancho/w3af/issues/12305
-            body_lower = response.get_body().lower()
-            sent_payload_lower = sent_payload.lower()
+            body = response.get_body()
+            sent_payload = mutant.get_token_payload()
+            sent_boundary = get_boundary(sent_payload)
 
-            for context in get_context_iter(body_lower, sent_payload_lower):
+            for context in get_context_iter(body, sent_boundary):
                 if context.is_executable() or context.can_break():
                     self._report_vuln(mutant, response, sent_payload)
                     return
@@ -252,8 +279,9 @@ class xss(AuditPlugin):
         for mutant, mutant_response_id in self._xss_mutants:
 
             sent_payload = mutant.get_token_payload()
+            sent_boundary = get_boundary(sent_payload)
 
-            for context in get_context_iter(body, sent_payload):
+            for context in get_context_iter(body, sent_boundary):
                 if context.is_executable() or context.can_break():
                     self._report_persistent_vuln(mutant, response,
                                                  mutant_response_id,
@@ -270,27 +298,27 @@ class xss(AuditPlugin):
         """
         response_ids = [response.id, mutant_response_id]
         name = 'Persistent Cross-Site Scripting vulnerability'
-        
+
         desc = ('A persistent Cross Site Scripting vulnerability'
                 ' was found by sending "%s" to the "%s" parameter'
                 ' at %s, which is echoed when browsing to %s.')
         desc %= (mod_value, mutant.get_token_name(), mutant.get_url(),
                  response.get_url())
-        
+
         csp_protects = site_protected_against_xss_by_csp(response)
         vuln_severity = severity.MEDIUM if csp_protects else severity.HIGH
-        
+
         if csp_protects:
             desc += ('The risk associated with this vulnerability was lowered'
                      ' because the site correctly implements CSP. The'
                      ' vulnerability is still a risk for the application since'
                      ' only the latest versions of some browsers implement CSP'
                      ' checking.')
-                    
+
         v = Vuln.from_mutant(name, desc, vuln_severity,
                              response_ids, self.get_name(),
                              mutant)
-        
+
         v['persistent'] = True
         v['write_payload'] = mutant
         v['read_payload'] = fuzzable_request
@@ -304,7 +332,7 @@ class xss(AuditPlugin):
         :return: A list of option objects for this plugin.
         """
         ol = OptionList()
-        
+
         d1 = 'Identify persistent cross site scripting vulnerabilities'
         h1 = ('If set to True, w3af will navigate all pages of the target one'
               ' more time, searching for persistent cross site scripting'
@@ -342,8 +370,3 @@ class xss(AuditPlugin):
         sent to the web application and at the end, request all URLs again
         searching for those specially crafted strings.
         """
-
-
-def replace_randomize(data):
-    rand_str = rand_alnum(5).lower()
-    return data.replace(RANDOMIZE, rand_str)

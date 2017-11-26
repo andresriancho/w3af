@@ -41,11 +41,19 @@ class HtmlTagClose(BaseContext):
     CAN_BREAK = {' ', '>'}
 
 
+class HtmlRawText(BaseContext):
+    """
+    Handle data w/o html-tag processing (RCDATA, RAWTEXT, etc)
+    Matches <textarea>PAYLOAD</textarea>, <title>PAYLOAD</title>, etc
+    """
+    CAN_BREAK = {'</'}
+
+
 class HtmlText(BaseContext):
     """
     Matches <tag attr="value">PAYLOAD</tag>
     """
-    CAN_BREAK = {'<'}
+    CAN_BREAK = {'<tag'}
 
 
 class HtmlComment(BaseContext):
@@ -62,18 +70,20 @@ class HtmlAttr(BaseContext):
     CAN_BREAK = {' ', '='}
 
 
-class ScriptText(HtmlText):
+class ScriptText(HtmlRawText):
     """
     Matches <script>PAYLOAD</script>
     """
+
     def can_break(self):
         # If we can break out of the context then we're done
-        if super(ScriptText, self).can_break():
-            return True
+        for payload in self.payload:
+            if self.any_in(self.CAN_BREAK, payload):
+                return True
 
         script_text = self.get_context_content()
 
-        for js_context in get_js_context_iter(script_text, self.payload):
+        for js_context in get_js_context_iter(script_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # script text needs to be escaped from
             if js_context.can_break():
@@ -84,7 +94,7 @@ class ScriptText(HtmlText):
     def is_executable(self):
         script_text = self.get_context_content()
 
-        for js_context in get_js_context_iter(script_text, self.payload):
+        for js_context in get_js_context_iter(script_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # script text needs to be executable
             if js_context.is_executable():
@@ -92,19 +102,32 @@ class ScriptText(HtmlText):
 
         return False
 
+    def get_payloads(self):
+        script_text = self.get_context_content()
 
-class CSSText(HtmlText):
+        payloads = super(ScriptText, self).get_payloads().copy()
+        for js_context in get_js_context_iter(script_text, self.boundary):
+            # At least one of the contexts where the payload is echoed in the
+            # script text needs to be escaped from
+            payloads.update(js_context.get_payloads())
+
+        return payloads
+
+
+class CSSText(HtmlRawText):
     """
     Matches <style>PAYLOAD</style>
     """
+
     def can_break(self):
         # If we can break out of the context then we're done
-        if super(CSSText, self).can_break():
-            return True
+        for payload in self.payload:
+            if self.any_in(self.CAN_BREAK, payload):
+                return True
 
         css_text = self.get_context_content()
 
-        for css_context in get_css_context_iter(css_text, self.payload):
+        for css_context in get_css_context_iter(css_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # CSS text needs to be escaped from
             if css_context.can_break():
@@ -133,12 +156,18 @@ class HTMLAttrQuoteGeneric(BaseContext):
     JS_PATTERN = re.compile('^ *javascript:', re.IGNORECASE)
     VB_PATTERN = re.compile('^ *vbscript:', re.IGNORECASE)
 
-    def __init__(self, payload, attr_name, attr_value):
+    # What about &NewLine;, &Tab;, etc?
+    JS_PROTOCOLS = {'javascript:', 'javascript&colon;',
+                    'javascript&#00058', 'javascript&#x03a'}
+
+    def __init__(self, payload, attr_name, attr_value, boundary):
         """
         :param attr_name: The attribute name (<tag name=value">)
         :param attr_value: The attribute value (<tag name=value">)
         """
-        super(HTMLAttrQuoteGeneric, self).__init__(payload, attr_value)
+        super(HTMLAttrQuoteGeneric, self).__init__(payload,
+                                                   attr_value,
+                                                   boundary)
         self.name = attr_name
         self.value = attr_value
 
@@ -188,7 +217,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
         if self.name not in JS_EVENTS and self.name not in EXECUTABLE_ATTRS:
             return False
 
-        if ':' not in self.payload:
+        if not self.any_in(self.JS_PROTOCOLS, self.payload):
             return False
 
         if not self.value.startswith(self.payload):
@@ -207,7 +236,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
         # Delegate the can_break to the CSS parser
         css_text = self.get_context_content()
 
-        for css_context in get_css_context_iter(css_text, self.payload):
+        for css_context in get_css_context_iter(css_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # CSS text needs to be escaped from
             if css_context.can_break():
@@ -228,7 +257,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
         script_text = self.extract_code()
 
         # Delegate the can_break to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
+        for js_context in get_js_context_iter(script_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # script text needs to be escaped from
             if js_context.can_break():
@@ -251,7 +280,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
             return False
 
         # Delegate the can_break to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
+        for js_context in get_js_context_iter(script_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # script text needs to be escaped from
             if js_context.can_break():
@@ -270,7 +299,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
         # Delegate the is_executable to the CSS parser
         css_text = self.get_context_content()
 
-        for css_context in get_css_context_iter(css_text, self.payload):
+        for css_context in get_css_context_iter(css_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # CSS text needs to be escaped from
             if css_context.is_executable():
@@ -290,8 +319,8 @@ class HTMLAttrQuoteGeneric(BaseContext):
         # be there (not required by browsers) but supported in some
         script_text = self.extract_code()
 
-        # Delegate the can_break to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
+        # Delegate the is_executable to the JavaScript parser
+        for js_context in get_js_context_iter(script_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # script text needs to be escaped from
             if js_context.is_executable():
@@ -314,7 +343,7 @@ class HTMLAttrQuoteGeneric(BaseContext):
             return False
 
         # Delegate the is_executable to the JavaScript parser
-        for js_context in get_js_context_iter(script_text, self.payload):
+        for js_context in get_js_context_iter(script_text, self.boundary):
             # At least one of the contexts where the payload is echoed in the
             # script text needs to be escaped from
             if js_context.is_executable():
@@ -336,6 +365,100 @@ class HTMLAttrQuoteGeneric(BaseContext):
                 return True
 
         return False
+
+    def get_payload_adding_js_protocol(self):
+        """
+        Handle cases like this:
+          <a href="PAYLOAD">
+
+        Where the user is able to enter javascript:alert() and run arbitrary
+        JS code.
+        """
+        if self.name not in JS_EVENTS and self.name not in EXECUTABLE_ATTRS:
+            return None
+
+        if not self.value.startswith(self.payload):
+            return None
+
+        return self.JS_PROTOCOLS
+
+    def get_payload_style(self):
+        """
+        Handle cases like this:
+          <h1 style="color:blue;text-align:PAYLOAD">This is a header</h1>
+        """
+        if self.name != 'style':
+            return None
+
+        # Delegate the is_executable to the CSS parser
+        css_text = self.get_context_content()
+
+        payloads = set()
+        # Delegate the get_payload to the CSS parser
+        for css_context in get_css_context_iter(css_text, self.boundary):
+            # At least one of the contexts where the payload is echoed in the
+            # script text needs to be escaped from
+            payloads.update(css_context.get_payloads())
+
+        return payloads
+
+    def get_payload_js_event(self):
+        """
+        Handle cases like this:
+          <h1 onmouseover="do_something(PAYLOAD)">This is a header</h1>
+        """
+        if self.name not in JS_EVENTS:
+            return None
+
+        # Here I replace the javascript: at the beginning, which might not
+        # be there (not required by browsers) but supported in some
+        script_text = self.extract_code()
+
+        payloads = set()
+        # Delegate the get_payload to the JavaScript parser
+        for js_context in get_js_context_iter(script_text, self.boundary):
+            # At least one of the contexts where the payload is echoed in the
+            # script text needs to be escaped from
+            payloads.update(js_context.get_payloads())
+
+        return payloads
+
+    def get_payload_html_attr_with_js_protocol(self):
+        """
+        Handle cases like this:
+          <a href="javascript:do_something(PAYLOAD)">This is a header</a>
+        """
+        if self.name not in EXECUTABLE_ATTRS:
+            return None
+
+        script_text = self.extract_code()
+        # TODO: what about <a href="javascript:call%28%22PAYLOAD%22%29">some</a>
+        if self.value == script_text:
+            # We get here when the attribute value DOES NOT start with
+            # javascript:
+            return None
+
+        payloads = set()
+        # Delegate the get_payload to the JavaScript parser
+        for js_context in get_js_context_iter(script_text, self.boundary):
+            # At least one of the contexts where the payload is echoed in the
+            # script text needs to be escaped from
+            payloads.update(js_context.get_payloads())
+
+        return payloads
+
+    def get_payloads(self):
+        payload_handlers = [self.get_payload_adding_js_protocol,
+                            self.get_payload_style,
+                            self.get_payload_js_event,
+                            self.get_payload_html_attr_with_js_protocol]
+
+        payloads = super(HTMLAttrQuoteGeneric, self).get_payloads().copy()
+        for payload_handler in payload_handlers:
+            payload = payload_handler()
+            payloads.update(payload if payload else {})
+
+        return payloads
 
 
 class HtmlAttrSingleQuote(HTMLAttrQuoteGeneric):
@@ -367,10 +490,10 @@ class HtmlAttrNoQuote(HTMLAttrQuoteGeneric):
     Matches <tag attr=PAYLOAD />
     """
     ATTR_DELIMITER = ''
-    CAN_BREAK = {' '}
+    CAN_BREAK = {' ', '>'}
 
 
 ALL_CONTEXTS = [HtmlAttrNoQuote, HtmlAttrBackticks, HtmlAttrDoubleQuote,
                 HtmlAttrSingleQuote, HtmlProcessingInstruction,
                 HtmlDeclaration, CSSText, ScriptText, HtmlAttr, HtmlComment,
-                HtmlText, HtmlTag, HtmlTagClose]
+                HtmlRawText, HtmlText, HtmlTag, HtmlTagClose]

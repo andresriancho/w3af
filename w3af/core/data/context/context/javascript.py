@@ -23,12 +23,16 @@ from StringIO import StringIO
 
 from w3af.core.data.context.context.base import BaseContext
 from w3af.core.data.context.constants import CONTEXT_DETECTOR
+from w3af.core.data.context.utils import encode_payloads, decode_payloads
 
 STRING_DELIMITERS = {'"', "'"}
+# According to http://www.ecma-international.org/ecma-262/6.0/index.html
+#                                                   #sec-line-terminators
+LINE_TERMINATORS = {'\n', '\r', u'\u2028', u'\u2029'}
 
 
 class ScriptSingleLineComment(BaseContext):
-    CAN_BREAK = {'\n', '\r'}
+    CAN_BREAK = LINE_TERMINATORS
 
 
 class ScriptMultiLineComment(BaseContext):
@@ -36,7 +40,25 @@ class ScriptMultiLineComment(BaseContext):
 
 
 class ScriptStringGeneric(BaseContext):
-    pass
+    ATTR_DELIMITER = None
+
+    def can_break(self):
+        """
+        :return: True if we can break out
+        """
+        escaped = False
+        for c in self.payload:
+            if c == '\\':
+                escaped = not escaped
+            elif c == self.ATTR_DELIMITER and not escaped:
+                return True
+            else:
+                escaped = False
+
+        return False
+
+    def get_payloads(self):
+        return {self.ATTR_DELIMITER, '\\%s' % self.ATTR_DELIMITER}
 
 
 class ScriptSingleQuoteString(ScriptStringGeneric):
@@ -72,25 +94,31 @@ ALL_CONTEXTS = [ScriptExecutableContext, ScriptDoubleQuoteString,
                 ScriptSingleLineComment]
 
 
-def get_js_context(data, payload):
+def get_js_context(data, boundary):
     """
+    :param data: The JavaScript code where the payload might be in
+    :param boundary: The payload border as sent to the web application
+
     :return: A list which contains lists of all contexts where the payload lives
     """
-    return [c for c in get_js_context_iter(data, payload)]
+    return [c for c in get_js_context_iter(data, boundary)]
 
 
-def get_js_context_iter(data, payload):
+def get_js_context_iter(data, boundary):
     """
     We parse the JavaScript code and find the payload context name.
 
+    :param data: The JavaScript code where the payload might be in
+    :param boundary: The payload border as sent to the web application
+
     :return: A context iterator
     """
-    if payload not in data:
-        return
+    for bound in boundary:
+        if bound not in data:
+            return
 
     # We replace the "context breaking payload" with an innocent string
-    data = data.replace(payload, CONTEXT_DETECTOR)
-    untidy = lambda text: text.replace(CONTEXT_DETECTOR, payload)
+    data = encode_payloads(boundary, data)
 
     inside_string = False
     escape_next = False
@@ -125,12 +153,16 @@ def get_js_context_iter(data, payload):
             if c == string_delim:
 
                 if CONTEXT_DETECTOR in context_content:
-                    if string_delim == "'":
-                        yield ScriptSingleQuoteString(payload,
-                                                      untidy(context_content))
-                    else:
-                        yield ScriptDoubleQuoteString(payload,
-                                                      untidy(context_content))
+                    payloads, content = decode_payloads(context_content)
+                    for payload in payloads:
+                        if string_delim == "'":
+                            yield ScriptSingleQuoteString(payload,
+                                                          content,
+                                                          boundary)
+                        else:
+                            yield ScriptDoubleQuoteString(payload,
+                                                          content,
+                                                          boundary)
 
                 context_content = ''
                 inside_string = False
@@ -142,10 +174,13 @@ def get_js_context_iter(data, payload):
         if inside_single_line_comment:
 
             # Handle the end of a comment
-            if c in {'\n', '\r'}:
+            if c in LINE_TERMINATORS:
                 if CONTEXT_DETECTOR in context_content:
-                    yield ScriptSingleLineComment(payload,
-                                                  untidy(context_content))
+                    payloads, content = decode_payloads(context_content)
+                    for payload in payloads:
+                        yield ScriptSingleLineComment(payload,
+                                                      content,
+                                                      boundary)
                 inside_single_line_comment = False
                 context_content = ''
             continue
@@ -158,8 +193,10 @@ def get_js_context_iter(data, payload):
 
                 if c == '/':
                     if CONTEXT_DETECTOR in context_content:
-                        yield ScriptMultiLineComment(payload,
-                                                     untidy(context_content))
+                        payloads, content = decode_payloads(context_content)
+                        for payload in payloads:
+                            yield ScriptMultiLineComment(payload,
+                                                         content, boundary)
                     inside_multi_line_comment = False
                     context_content = ''
             continue
@@ -169,8 +206,10 @@ def get_js_context_iter(data, payload):
 
             # This analyzes the context content before the string start
             if CONTEXT_DETECTOR in context_content:
-                yield ScriptExecutableContext(payload,
-                                              untidy(context_content))
+                payloads, content = decode_payloads(context_content)
+                for payload in payloads:
+                    yield ScriptExecutableContext(payload,
+                                                  content, boundary)
 
             inside_string = True
             string_delim = c
@@ -188,16 +227,32 @@ def get_js_context_iter(data, payload):
             if c == '*':
                 inside_multi_line_comment = True
 
-            if inside_multi_line_comment or inside_single_line_comment:
-                # This analyzes the context content before the comment start
-                if CONTEXT_DETECTOR in context_content:
-                    yield ScriptExecutableContext(payload,
-                                                  untidy(context_content))
+        # Handle the HTML-like comment starts
+        # See http://www.ecma-international.org/ecma-262/6.0/index.html
+        #                                       #sec-html-like-comments
+        if c == '<':
+            for cc in '!--':
+                c = data_io.read(1)
+                context_content += c
+                if c != cc:
+                    break
+            else:
+                inside_single_line_comment = True
 
-                context_content = ''
-                continue
+        if inside_multi_line_comment or inside_single_line_comment:
+            # This analyzes the context content before the comment start
+            if CONTEXT_DETECTOR in context_content:
+                payloads, content = decode_payloads(context_content)
+                for payload in payloads:
+                    yield ScriptExecutableContext(payload,
+                                                  content, boundary)
+
+            context_content = ''
+            continue
 
     # Handle the remaining bytes from the JS code:
     if CONTEXT_DETECTOR in context_content:
-        yield ScriptExecutableContext(payload,
-                                      untidy(context_content))
+        payloads, content = decode_payloads(context_content)
+        for payload in payloads:
+            yield ScriptExecutableContext(payload,
+                                          content, boundary)

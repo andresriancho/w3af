@@ -24,12 +24,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class BaseContext(object):
     CAN_BREAK = None
 
-    def __init__(self, payload, context_content):
+    def __init__(self, payload, context_content, boundary):
         """
         :param context_content: See get_context_content docs
         """
         self.payload = payload
         self.context_content = context_content
+        self.boundary = boundary
 
     def is_executable(self):
         """
@@ -94,3 +95,9 @@ class BaseContext(object):
                 return False
 
         return True
+
+    def get_payloads(self):
+        klass = self.__class__.__name__
+        assert self.CAN_BREAK is not None, 'CAN_BREAK is None at %s' % klass
+
+        return self.CAN_BREAK

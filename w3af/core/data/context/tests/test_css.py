@@ -25,11 +25,13 @@ from w3af.core.data.context.context.css import (GenericStyleContext,
                                                 StyleDoubleQuoteString,
                                                 StyleComment)
 
+BOUNDARY = ('boundl', 'boundr')
+
 
 class TestCSSStyle(ContextTest):
     def test_payload_is_all_content(self):
-        css_code = 'PAYLOAD:('
-        contexts = get_css_context(css_code, css_code)
+        css_code = 'boundlPAYLOAD:(boundr'
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -38,8 +40,8 @@ class TestCSSStyle(ContextTest):
         self.assertTrue(context.can_break())
 
     def test_payload_is_all_content_no_break(self):
-        css_code = 'PAYLOAD'
-        contexts = get_css_context(css_code, css_code)
+        css_code = 'boundlPAYLOADboundr'
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -48,9 +50,9 @@ class TestCSSStyle(ContextTest):
         self.assertFalse(context.can_break())
 
     def test_payload_in_selector(self):
-        payload = 'PAYLOAD:('
+        payload = 'boundl:(boundr'
         css_code = '%s {background-color:lightgray}' % payload
-        contexts = get_css_context(css_code, payload)
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -59,9 +61,9 @@ class TestCSSStyle(ContextTest):
         self.assertTrue(context.can_break())
 
     def test_payload_in_property(self):
-        payload = 'PAYLOAD:('
+        payload = 'boundl:(boundr'
         css_code = 'body {%s:lightgray}' % payload
-        contexts = get_css_context(css_code, payload)
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -70,9 +72,9 @@ class TestCSSStyle(ContextTest):
         self.assertTrue(context.can_break())
 
     def test_payload_in_value(self):
-        payload = 'PAYLOAD:('
+        payload = 'boundl:(boundr'
         css_code = 'body {background-color:%s}' % payload
-        contexts = get_css_context(css_code, payload)
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -82,9 +84,9 @@ class TestCSSStyle(ContextTest):
 
     def test_payload_value_double_quote_no_break(self):
         # Double quote missing
-        payload = 'PAYLOAD:('
+        payload = 'boundl:(boundr'
         css_code = 'font-family: Georgia, "Times New Roman %s";' % payload
-        contexts = get_css_context(css_code, payload)
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -93,9 +95,9 @@ class TestCSSStyle(ContextTest):
         self.assertFalse(context.can_break())
 
     def test_payload_value_double_quote_break(self):
-        payload = 'PAYLOAD:("'
+        payload = 'boundl":(boundr'
         css_code = 'font-family: Georgia, "Times New Roman %s";' % payload
-        contexts = get_css_context(css_code, payload)
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -104,9 +106,9 @@ class TestCSSStyle(ContextTest):
         self.assertTrue(context.can_break())
 
     def test_payload_value_single_quote(self):
-        payload = "PAYLOAD:('"
+        payload = "boundl':(boundr"
         css_code = "background: url('%s')" % payload
-        contexts = get_css_context(css_code, payload)
+        contexts = get_css_context(css_code, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -115,7 +117,7 @@ class TestCSSStyle(ContextTest):
         self.assertTrue(context.can_break())
 
     def test_payload_in_comment_no_break(self):
-        payload = 'PAYLOAD'
+        payload = 'boundlPAYLOADboundr'
         css_code = '''
         p {
             color: red;
@@ -123,7 +125,7 @@ class TestCSSStyle(ContextTest):
             text-align: center;
         }
         '''
-        contexts = get_css_context(css_code % payload, payload)
+        contexts = get_css_context(css_code % payload, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -132,7 +134,7 @@ class TestCSSStyle(ContextTest):
         self.assertFalse(context.can_break())
 
     def test_payload_in_comment_break(self):
-        payload = 'PAYLOAD*/:('
+        payload = 'boundl*/:(boundr'
         css_code = '''
         p {
             color: red;
@@ -140,7 +142,7 @@ class TestCSSStyle(ContextTest):
             text-align: center;
         }
         '''
-        contexts = get_css_context(css_code % payload, payload)
+        contexts = get_css_context(css_code % payload, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
@@ -149,7 +151,7 @@ class TestCSSStyle(ContextTest):
         self.assertTrue(context.can_break())
 
     def test_comment_false_positive(self):
-        payload = 'PAYLOAD'
+        payload = 'boundlPAYLOADboundr'
         css_code = '''
         p {
             color: red;
@@ -157,7 +159,7 @@ class TestCSSStyle(ContextTest):
             text-align: center;
         }
         '''
-        contexts = get_css_context(css_code % payload, payload)
+        contexts = get_css_context(css_code % payload, BOUNDARY)
 
         self.assertEqual(len(contexts), 1, contexts)
         context = contexts[0]
