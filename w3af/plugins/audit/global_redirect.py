@@ -36,8 +36,8 @@ class global_redirect(AuditPlugin):
     Find scripts that redirect the browser to any site.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    TEST_URLS = ('http://www.w3af.org/',
-                 '//w3af.org')
+    TEST_URLS = ['http://www.w3af.org/',
+                 '//w3af.org']
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -54,6 +54,17 @@ class global_redirect(AuditPlugin):
 
         :param freq: A FuzzableRequest object
         """
+
+        netloc = freq._uri.netloc
+        netloc = netloc.split(':')[0]
+
+        self.TEST_URLS.extend([netloc + '.w3af.org',
+                               '//' + netloc + '.w3af.org',
+                               'http://' + netloc + 'w3af.org/',
+                               netloc + '@w3af.org',
+                               '//' + netloc + '@w3af.org',
+                               'http://' + netloc + '@w3af.org/'])
+
         mutants = create_mutants(freq, self.TEST_URLS)
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
