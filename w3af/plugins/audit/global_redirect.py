@@ -36,8 +36,9 @@ class global_redirect(AuditPlugin):
     Find scripts that redirect the browser to any site.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    TEST_URLS = ['http://www.w3af.org/',
-                 '//w3af.org']
+    TEST_DOMAIN = 'w3af.org'
+    TEST_URLS = ['http://www.' + TEST_DOMAIN + '/',
+                 '//' + TEST_DOMAIN]
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -58,12 +59,12 @@ class global_redirect(AuditPlugin):
         netloc = freq._uri.netloc
         netloc = netloc.split(':')[0]
 
-        self.TEST_URLS.extend([netloc + '.w3af.org',
-                               '//' + netloc + '.w3af.org',
-                               'http://' + netloc + 'w3af.org/',
-                               netloc + '@w3af.org',
-                               '//' + netloc + '@w3af.org',
-                               'http://' + netloc + '@w3af.org/'])
+        self.TEST_URLS.extend([netloc + '.' + self.TEST_DOMAIN,
+                               '//' + netloc + '.' + self.TEST_DOMAIN,
+                               'http://' + netloc + '.' + self.TEST_DOMAIN + '/',
+                               netloc + '@'+ self.TEST_DOMAIN,
+                               '//' + netloc + '@' + self.TEST_DOMAIN,
+                               'http://' + netloc + '@'+ self.TEST_DOMAIN + '/'])
 
         mutants = create_mutants(freq, self.TEST_URLS)
         
@@ -123,8 +124,7 @@ class global_redirect(AuditPlugin):
         """
         try:
             redir_domain = urlparse.urlparse(redir_url).netloc
-            test_domain = urlparse.urlparse(test_url).netloc
-            return redir_domain == test_domain
+            return redir_domain.endswith(self.TEST_DOMAIN)
         except:
             return False
 
