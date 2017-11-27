@@ -514,6 +514,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         return result
 
+    @requires_setup
     def get_all_uniq_ids_iter(self):
         """
         :yield: All uniq IDs from the KB
