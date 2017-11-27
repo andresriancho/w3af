@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import threading
 import time
 
 from w3af.core.data.misc.cached_queue import CachedQueue
@@ -116,3 +117,56 @@ class TestCachedQueue(unittest.TestCase):
         self.assertGreater(q.get_output_rpm(), 59)
         self.assertLess(q.get_output_rpm(), 60)
         self.assertEqual(q.qsize(), 0)
+
+    def test_join_memory(self):
+        q = CachedQueue(maxsize=2)
+        q.put(1)
+
+        def queue_get_after_delay(queue):
+            time.sleep(1)
+            queue.get()
+            queue.task_done()
+
+        t = threading.Thread(target=queue_get_after_delay,
+                             args=(q,))
+        t.start()
+
+        start = time.time()
+
+        # This should take 1 second
+        q.join()
+
+        spent = time.time() - start
+
+        self.assertGreater(spent, 1)
+
+    def test_join_memory_and_disk(self):
+        q = CachedQueue(maxsize=2)
+        for x in range(10):
+            q.put(x)
+
+        def queue_get_after_delay(queue):
+            time.sleep(1)
+
+            for x in range(2):
+                queue.get()
+                queue.task_done()
+
+            time.sleep(1)
+
+            for x in range(8):
+                queue.get()
+                queue.task_done()
+
+        t = threading.Thread(target=queue_get_after_delay,
+                             args=(q,))
+        t.start()
+
+        start = time.time()
+
+        # This should take 3 seconds
+        q.join()
+
+        spent = time.time() - start
+
+        self.assertGreater(spent, 2)
