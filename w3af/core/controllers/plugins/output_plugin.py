@@ -39,6 +39,11 @@ class OutputPlugin(Plugin):
     def __init__(self):
         Plugin.__init__(self)
 
+        # If for some reason the output plugin takes a lot of time to run
+        # and the output manager calls flush() for a second time while we're
+        # still running the first call, just ignore.
+        self.is_running_flush = False
+
     def get_type(self):
         return 'output'
 

@@ -89,35 +89,36 @@ class cross_domain_js(GrepPlugin):
         url = response.get_url()
         script_domain = script_full_url.get_domain()
 
-        if script_domain != response.get_url().get_domain():
+        if script_domain == response.get_url().get_domain():
+            return
 
-            for secure_domain in self._secure_js_domains:
-                # We do a "in" because the secure js domains list contains
-                # entries such as ".google." which should be match. This is to
-                # take into account things like ".google.com.br" without having
-                # to list all of them.
-                #
-                # Not the best, could raise some false negatives, but... bleh!
-                if secure_domain in script_domain:
-                    # It's a third party that we trust
-                    return
+        for secure_domain in self._secure_js_domains:
+            # We do a "in" because the secure js domains list contains
+            # entries such as ".google." which should be match. This is to
+            # take into account things like ".google.com.br" without having
+            # to list all of them.
+            #
+            # Not the best, could raise some false negatives, but... bleh!
+            if secure_domain in script_domain:
+                # It's a third party that we trust
+                return
 
-            to_highlight = script_tag.attrib.get('src')
-            desc = ('The URL: "%s" has a script tag with a source that points'
-                    ' to a third party site ("%s"). This practice is not'
-                    ' recommended, the security of the current site is being'
-                    ' delegated to the external entity.')
-            desc %= (smart_str_ignore(url),
-                     smart_str_ignore(script_domain))
+        to_highlight = script_tag.attrib.get('src')
+        desc = ('The URL: "%s" has a script tag with a source that points'
+                ' to a third party site ("%s"). This practice is not'
+                ' recommended, the security of the current site is being'
+                ' delegated to the external entity.')
+        desc %= (smart_str_ignore(url),
+                 smart_str_ignore(script_domain))
 
-            i = Info('Cross-domain javascript source', desc,
-                     response.id, self.get_name())
-            i.set_url(url)
-            i.add_to_highlight(to_highlight)
-            i[CrossDomainInfoSet.ITAG] = script_domain
+        i = Info('Cross-domain javascript source', desc,
+                 response.id, self.get_name())
+        i.set_url(url)
+        i.add_to_highlight(to_highlight)
+        i[CrossDomainInfoSet.ITAG] = script_domain
 
-            self.kb_append_uniq_group(self, 'cross_domain_js', i,
-                                      group_klass=CrossDomainInfoSet)
+        self.kb_append_uniq_group(self, 'cross_domain_js', i,
+                                  group_klass=CrossDomainInfoSet)
 
     def set_options(self, options_list):
         """
@@ -169,7 +170,9 @@ class cross_domain_js(GrepPlugin):
 
 
 class CrossDomainInfoSet(InfoSet):
+
     ITAG = 'domain'
+
     TEMPLATE = (
         'The application contains {{ uris|length }} different URLs with a'
         ' script tag which includes JavaScript source from the potentially'

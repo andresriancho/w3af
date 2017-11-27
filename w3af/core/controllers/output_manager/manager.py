@@ -84,7 +84,12 @@ class OutputManager(Process):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    FLUSH_TIMEOUT = 60
+    # If the FLUSH_TIMEOUT is larger (60 seconds for example) the time it takes
+    # for the plugin to process all the messages / vulnerabilities in a call to
+    # flush() will be larger, because w3af will (most likely) have found more
+    # vulnerabilities. So we're calling the flush() method more often and having
+    # shorter calls to flush() than before.
+    FLUSH_TIMEOUT = 30
 
     # Thread locking to avoid starting the om many times from different threads
     start_lock = threading.RLock()
@@ -139,7 +144,10 @@ class OutputManager(Process):
                 # The queue which we're consuming ended abruptly, this is
                 # usually a side effect of the process ending and
                 # multiprocessing not handling things cleanly
-                break
+                try:
+                    self.in_queue.task_done()
+                finally:
+                    break
 
             if work_unit == POISON_PILL:
                 # This is added at fresh_output_manager_inst
@@ -186,16 +194,58 @@ class OutputManager(Process):
 
         self.update_last_output_flush()
 
+        pool = self._w3af_core.worker_pool
+
         for o_plugin in self._output_plugin_instances:
-            #
-            #   Plugins might crash when calling .flush(), a good example was
-            #   the unicodedecodeerror found in xml_file which was triggered
-            #   when the findings were written to file.
-            #
-            try:
-                o_plugin.flush()
-            except Exception, exception:
-                self._handle_output_plugin_exception(o_plugin, exception)
+            pool.apply_async(func=self.__inner_flush_plugin_output,
+                             args=(o_plugin,))
+
+    def __inner_flush_plugin_output(self, o_plugin):
+        """
+        This method is meant to be run in a thread. We run flush() in a thread
+        to avoid some issues where a long time to process the xml flush was
+        impacting the messages from being written to the text file.
+
+        When we run the flush() call make sure that we're not calling flush again
+        on the same plugin. This will prevent multiple simultaneous calls to flush
+        running in an endless way during the scan.
+
+        :param o_plugin: The output plugin to run
+        :return: None, we don't care about the output of this method.
+        """
+        # If for some reason the output plugin takes a lot of time to run
+        # and the output manager calls flush() for a second time while
+        # we're still running the first call, just ignore.
+        if o_plugin.is_running_flush:
+            import w3af.core.controllers.output_manager as om
+
+            msg = ('The %s plugin is still running flush(), the output'
+                   ' manager will not call flush() again to give the'
+                   ' plugin time to finish.')
+            args = (o_plugin.get_name(),)
+            om.out.debug(msg % args)
+            return
+
+        #
+        #   Plugins might crash when calling .flush(), a good example was
+        #   the unicodedecodeerror found in xml_file which was triggered
+        #   when the findings were written to file.
+        #
+        start_time = time.time()
+        o_plugin.is_running_flush = True
+
+        try:
+            o_plugin.flush()
+        except Exception, exception:
+            self._handle_output_plugin_exception(o_plugin, exception)
+        finally:
+            o_plugin.is_running_flush = False
+
+            spent_time = time.time() - start_time
+            args = (o_plugin.get_name(), spent_time)
+
+            import w3af.core.controllers.output_manager as om
+            om.out.debug('%s.flush() took %.2f seconds to run' % args)
 
     def _handle_output_plugin_exception(self, o_plugin, exception):
         if self._w3af_core is None:

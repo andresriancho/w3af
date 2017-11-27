@@ -66,7 +66,6 @@ class Info(dict):
         self._plugin_name = None
         self._vulndb_id = None
         self._vulndb = None
-        self._uniq_id = str(uuid.uuid4())
 
         # Set the values provided by the user
         self.set_vulndb_id(vulndb_id)
@@ -74,7 +73,13 @@ class Info(dict):
         self.set_desc(desc)
         self.set_id(response_ids)
         self.set_plugin_name(plugin_name)
-    
+
+        self._uniq_id = None
+        self.generate_new_id()
+
+    def generate_new_id(self):
+        self._uniq_id = str(uuid.uuid4())
+
     @classmethod
     def from_mutant(cls, name, desc, response_ids, plugin_name, mutant):
         """

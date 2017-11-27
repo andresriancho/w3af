@@ -24,6 +24,7 @@ import os
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import OUTPUT_FILE
+from w3af.core.data.fuzzer.utils import rand_alpha
 
 
 class OutputFileOption(BaseOption):
@@ -43,10 +44,19 @@ class OutputFileOption(BaseOption):
     def validate(self, value):
         
         expanded_path = os.path.expanduser(value)
+
+        # This is useful for testing, the user specifies a script with $rnd$ in the
+        # output file name, w3af will replace that string with 5 random chars.
+        #
+        # The user can then run the same script over and over without caring about
+        # overwriting his output files.
+        rnd = rand_alpha(5)
+        value = expanded_path = expanded_path.replace('$rnd$', rnd)
+
         directory = os.path.abspath(os.path.dirname(expanded_path))
 
         if os.path.isdir(expanded_path):
-            msg = 'Invalid output file "%s", it must not be a the directory.'
+            msg = 'Invalid output file "%s", it must not be a directory.'
             raise BaseFrameworkException(msg % value)
 
         if not os.path.isdir(directory):

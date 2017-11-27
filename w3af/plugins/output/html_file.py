@@ -232,19 +232,11 @@ class html_file(OutputPlugin):
 
         template = jinja2_env.from_string(template_fh.read())
 
-        try:
-            rendered_output = template.render(context)
-        except Exception, e:
-            msg = u'Failed to render html report template. Exception: "%s"'
-            om.out.error(msg % e)
-            return False
+        report_stream = template.stream(context)
+        report_stream.enable_buffering(5)
 
-        try:
-            output_fh.write(rendered_output.encode('utf-8'))
-        except Exception, e:
-            msg = u'Failed to write html report to output file. Exception: "%s"'
-            om.out.error(msg % e)
-            return False
+        for report_section in report_stream:
+            output_fh.write(report_section.encode('utf-8'))
 
         return True
 

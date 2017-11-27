@@ -104,6 +104,11 @@ class InfoSet(object):
 
         self.infos = info_instances
         self._mutant = EmptyMutant()
+
+        self._uniq_id = None
+        self.generate_new_id()
+
+    def generate_new_id(self):
         self._uniq_id = str(uuid.uuid4())
 
     def add(self, info):

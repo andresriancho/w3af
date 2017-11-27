@@ -113,7 +113,7 @@ class text_file(OutputPlugin):
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s". Disabling output to this file.'
             om.out.error(msg % (self._output_file_name, e),
-                         ignore_plugins=set([self.get_name()]))
+                         ignore_plugins={self.get_name()})
 
         if flush and self._file is not None:
             self._file.flush()
