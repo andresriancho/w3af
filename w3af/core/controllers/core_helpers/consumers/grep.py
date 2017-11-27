@@ -100,7 +100,15 @@ class grep(BaseConsumer):
             plugin.end()
 
     def _get_request_response_from_work_unit(self, work_unit):
+        """
+        In some cases the work unit is a tuple with request / response instances.
 
+        In other cases it is an ID, which needs to be queried from the History DB
+        to get the request / response.
+
+        :param work_unit: One of the options explained above
+        :return: A request / response tuple
+        """
         if not isinstance(work_unit, int):
             request, response = work_unit
         else:
@@ -110,8 +118,7 @@ class grep(BaseConsumer):
             # and I decided to migrate to using just the response.id and querying
             # the SQLite one extra time.
             history = HistoryItem()
-            history.load(work_unit)
-            request, response = history.request, history.response
+            request, response = history.load_from_file(work_unit)
 
         # Create a fuzzable request based on the urllib2 request object
         headers_inst = Headers(request.header_items())
@@ -176,6 +183,9 @@ class grep(BaseConsumer):
                  but because of the requirement of a central location to store
                  a bloom filter was moved here.
         """
+        if not self._consumer_plugins:
+            return False
+
         # This cache is here to avoid a query to the cf each time a request
         # goes to a grep plugin. Given that in the future the cf will be a
         # sqlite database, this is an important improvement.
