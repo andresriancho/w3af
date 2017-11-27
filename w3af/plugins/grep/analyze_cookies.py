@@ -71,22 +71,27 @@ class analyze_cookies(GrepPlugin):
         headers = response.get_headers()
 
         for header_name in headers:
-            if header_name.lower() in COOKIE_HEADERS:
+            if header_name.lower() not in COOKIE_HEADERS:
+                continue
 
-                cookie_header_value = headers[header_name].strip()
-                cookie_object = self._parse_cookie(request, response,
-                                                   cookie_header_value)
+            cookie_header_value = headers[header_name].strip()
+            cookie_object = self._parse_cookie(request, response,
+                                               cookie_header_value)
 
-                if cookie_object is not None:
-                    self._collect_cookies(request, response,
+            if cookie_object is None:
+                continue
+
+            self._collect_cookies(request,
+                                  response,
+                                  cookie_object,
+                                  cookie_header_value)
+
+            # Find if the cookie introduces any vulnerability,
+            # or discloses information
+            self._analyze_cookie_security(request,
+                                          response,
                                           cookie_object,
                                           cookie_header_value)
-
-                    # Find if the cookie introduces any vulnerability,
-                    # or discloses information
-                    self._analyze_cookie_security(request, response,
-                                                  cookie_object,
-                                                  cookie_header_value)
 
     def _collect_cookies(self, request, response, cookie_object,
                          cookie_header_value):
