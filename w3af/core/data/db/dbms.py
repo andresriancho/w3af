@@ -112,7 +112,7 @@ class SQLiteDBMS(object):
         #
         #   Any dead-lock you might be looking for doesn't seem to be here.
         #
-        in_queue = Queue(100)
+        in_queue = Queue(250)
         self.sql_executor = SQLiteExecutor(in_queue)
         self.sql_executor.start()
         
