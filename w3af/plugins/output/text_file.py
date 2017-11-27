@@ -110,8 +110,8 @@ class text_file(OutputPlugin):
             self._file.write(self._clean_string(msg))
         except Exception, e:
             self._file = None
-            msg = 'An exception was raised while trying to write to the output'\
-                  ' file "%s", error: "%s". Disabling output to this file.'
+            msg = ('An exception was raised while trying to write to the output'
+                   ' file "%s", error: "%s". Disabling output to this file.')
             om.out.error(msg % (self._output_file_name, e),
                          ignore_plugins={self.get_name()})
 
@@ -132,11 +132,22 @@ class text_file(OutputPlugin):
             self._http.write(msg)
         except Exception, e:
             self._http = None
-            msg = 'An exception was raised while trying to write to the output'\
-                  ' file "%s", error: "%s". Disabling output to this file.'
+            msg = ('An exception was raised while trying to write to the output'
+                   ' file "%s", error: "%s". Disabling output to this file.')
             om.out.error(msg % (self._http_file_name, e),
                          ignore_plugins={self.get_name()})
-            
+
+    def flush(self):
+        """
+        flush() the cache disk
+        :return: None
+        """
+        if self._file is not None:
+            self._file.flush()
+
+        if self._http is not None:
+            self._http.flush()
+
     def write(self, message, log_type, new_line=True, flush=False):
         """
         Method that writes stuff to the text_file.
