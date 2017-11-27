@@ -31,7 +31,7 @@ from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
 from w3af.core.controllers.core_helpers.status import w3af_core_status
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
-from w3af.core.data.misc.queue_speed import QueueSpeed
+from w3af.core.data.misc.cached_queue import CachedQueue
 
 # For some reason getting a randint with a large MAX like this is faster than
 # with a small one like 10**10
@@ -84,8 +84,8 @@ class BaseConsumer(Process):
         """
         super(BaseConsumer, self).__init__(name='%sController' % thread_name)
 
-        self.in_queue = QueueSpeed(maxsize=max_in_queue_size,
-                                   name=thread_name)
+        self.in_queue = CachedQueue(maxsize=max_in_queue_size,
+                                    name=thread_name)
         self._out_queue = Queue.Queue()
         
         self._consumer_plugins = consumer_plugins

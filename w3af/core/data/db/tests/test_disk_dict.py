@@ -50,9 +50,9 @@ class TestDiskDict(unittest.TestCase):
 
     def test_not_in(self):
         disk_dict = DiskDict()
-        
+
         self.assertRaises(KeyError, disk_dict.__getitem__, 'abc')
-        
+
     def test_get(self):
         disk_dict = DiskDict()
 
@@ -81,6 +81,23 @@ class TestDiskDict(unittest.TestCase):
 
         del disk_dict['a']
         self.assertNotIn('a', disk_dict)
+
+    def test_len(self):
+        disk_dict = DiskDict()
+        disk_dict['a'] = 'abc'
+
+        self.assertEqual(len(disk_dict), 1)
+
+    def test_len_very_large_dict(self):
+        disk_dict = DiskDict()
+
+        items_to_add = 1000
+        very_large_string = 'random_very_large_string' * 321
+
+        for i in xrange(items_to_add):
+            disk_dict[i] = very_large_string
+
+        self.assertEqual(len(disk_dict), items_to_add)
 
     def test_iterkeys(self):
         disk_dict = DiskDict()
