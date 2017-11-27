@@ -56,15 +56,17 @@ class global_redirect(AuditPlugin):
         :param freq: A FuzzableRequest object
         """
 
-        netloc = freq._uri.netloc
+        netloc = freq.get_uri().get_net_location()
         netloc = netloc.split(':')[0]
 
         self.TEST_URLS.extend([netloc + '.' + self.TEST_DOMAIN,
                                '//' + netloc + '.' + self.TEST_DOMAIN,
                                'http://' + netloc + '.' + self.TEST_DOMAIN + '/',
+                               'https://' + netloc + '.' + self.TEST_DOMAIN + '/',
                                netloc + '@'+ self.TEST_DOMAIN,
                                '//' + netloc + '@' + self.TEST_DOMAIN,
-                               'http://' + netloc + '@'+ self.TEST_DOMAIN + '/'])
+                               'http://' + netloc + '@'+ self.TEST_DOMAIN + '/',
+                               'https://' + netloc + '@'+ self.TEST_DOMAIN + '/'])
 
         mutants = create_mutants(freq, self.TEST_URLS)
         
