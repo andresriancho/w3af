@@ -30,9 +30,10 @@ from functools import wraps
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.misc.factory import factory
+from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
-from w3af.core.data.constants.encodings import UTF8
 from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
+from w3af.core.data.constants.encodings import UTF8
 
 
 def start_thread_on_demand(func):
@@ -91,6 +92,10 @@ class OutputManager(Process):
     # shorter calls to flush() than before.
     FLUSH_TIMEOUT = 30
 
+    # To prevent locks this always needs to be larger than the output plugins
+    # available in the w3af framework
+    WORKER_THREADS = 10
+
     # Thread locking to avoid starting the om many times from different threads
     start_lock = threading.RLock()
 
@@ -109,9 +114,15 @@ class OutputManager(Process):
         self._w3af_core = None
         self._last_output_flush = None
         self._is_shutting_down = False
+        self._worker_pool = self.get_worker_pool()
 
     def set_w3af_core(self, w3af_core):
         self._w3af_core = w3af_core
+
+    def get_worker_pool(self):
+        return Pool(self.WORKER_THREADS,
+                    worker_names='WorkerThread',
+                    max_queued_tasks=self.WORKER_THREADS * 10)
 
     def get_in_queue(self):
         """
@@ -194,7 +205,7 @@ class OutputManager(Process):
 
         self.update_last_output_flush()
 
-        pool = self._w3af_core.worker_pool
+        pool = self._worker_pool
 
         for o_plugin in self._output_plugin_instances:
             pool.apply_async(func=self.__inner_flush_plugin_output,
