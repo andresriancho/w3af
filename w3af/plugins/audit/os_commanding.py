@@ -28,7 +28,7 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.kb.vuln import Vuln
 
@@ -40,7 +40,7 @@ class os_commanding(AuditPlugin):
     """
 
     FILE_PATTERNS = FILE_PATTERNS 
-    _multi_in = multi_in(FILE_PATTERNS)
+    _multi_in = MultiIn(FILE_PATTERNS)
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -110,22 +110,24 @@ class os_commanding(AuditPlugin):
 
         for file_pattern_match in self._multi_in.query(response.get_body()):
 
-            if file_pattern_match not in mutant.get_original_response_body():
-                # Search for the correct command and separator
-                sent_os, sent_separator = self._get_os_separator(mutant)
+            if file_pattern_match in mutant.get_original_response_body():
+                continue
 
-                desc = 'OS Commanding was found at: %s' % mutant.found_at()
-                # Create the vuln obj
-                v = Vuln.from_mutant('OS commanding vulnerability', desc,
-                                     severity.HIGH, response.id,
-                                     self.get_name(), mutant)
+            # Search for the correct command and separator
+            sent_os, sent_separator = self._get_os_separator(mutant)
 
-                v['os'] = sent_os
-                v['separator'] = sent_separator
-                v.add_to_highlight(file_pattern_match)
+            desc = 'OS Commanding was found at: %s' % mutant.found_at()
+            # Create the vuln obj
+            v = Vuln.from_mutant('OS commanding vulnerability', desc,
+                                 severity.HIGH, response.id,
+                                 self.get_name(), mutant)
 
-                self.kb_append_uniq(self, 'os_commanding', v)
-                break
+            v['os'] = sent_os
+            v['separator'] = sent_separator
+            v.add_to_highlight(file_pattern_match)
+
+            self.kb_append_uniq(self, 'os_commanding', v)
+            break
 
     def _get_os_separator(self, mutant):
         """

@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.info import Info
 
 
@@ -34,7 +34,7 @@ class wsdl_greper(GrepPlugin):
                     '/s:sequence', 'wsdl:', 'soapAction=',
                     # This isn't WSDL... but well...
                     'xmlns="urn:uddi"', '<p>Hi there, this is an AXIS service!</p>')
-    _multi_in = multi_in(WSDL_STRINGS)
+    _multi_in = MultiIn(WSDL_STRINGS)
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -54,19 +54,19 @@ class wsdl_greper(GrepPlugin):
             self.analyze_disco(request, response)
     
     def analyze_wsdl(self, request, response):
-        match_list = self._multi_in.query(response.body)
-        if len(match_list):
-            desc = 'The URL: "%s" is a Web Services Description Language'\
-                   ' page. This requires manual analysis to determine the'\
-                   ' security of the web service.'
+        for match in self._multi_in.query(response.body):
+            desc = ('The URL: "%s" is a Web Services Description Language'
+                    ' page. This requires manual analysis to determine the'
+                    ' security of the web service.')
             desc = desc % response.get_url()
             
             i = Info('WSDL resource', desc, response.id,
                      self.get_name())
             i.set_url(response.get_url())
-            i.add_to_highlight(*match_list)
+            i.add_to_highlight(match)
             
             self.kb_append_uniq(self, 'wsdl', i, 'URL')
+            break
 
     def analyze_disco(self, request, response):
         for disco_string in self._disco_strings:

@@ -26,7 +26,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -40,7 +40,7 @@ class preg_replace(AuditPlugin):
                    '<b>Warning</b>:  preg_replace() [<a',
                    'Warning: preg_replace(): ')
 
-    _multi_in = multi_in(PREG_ERRORS)
+    _multi_in = MultiIn(PREG_ERRORS)
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -91,10 +91,10 @@ class preg_replace(AuditPlugin):
         """
         res = []
         for error_match in self._multi_in.query(response.body):
-            msg = 'An unsafe usage of preg_replace() function was found,'\
-                  ' the error that was sent by the web application is (only'\
-                  ' a fragment is shown): "%s", and was found in the'\
-                  ' response with id %s.'
+            msg = ('An unsafe usage of preg_replace() function was found,'
+                   ' the error that was sent by the web application is (only'
+                   ' a fragment is shown): "%s", and was found in the'
+                   ' response with id %s.')
 
             om.out.information(msg % (error_match, response.id))
             res.append(error_match)

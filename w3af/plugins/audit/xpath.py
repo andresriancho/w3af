@@ -27,7 +27,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -72,7 +72,7 @@ class xpath(AuditPlugin):
         # search ( nsf files ).
         '4005 Notes error: Query is not understandable',
     )
-    _multi_in = multi_in(XPATH_PATTERNS)
+    _multi_in = MultiIn(XPATH_PATTERNS)
 
     XPATH_TEST_PAYLOADS = [
         "d'z\"0",

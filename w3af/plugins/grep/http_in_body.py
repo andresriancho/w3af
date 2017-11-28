@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.esmre.multi_re import multi_re
+from w3af.core.data.quick_match.multi_re import MultiRE
 from w3af.core.data.kb.info import Info
 
 
@@ -39,7 +39,7 @@ class http_in_body(GrepPlugin):
         # HTTP/1.1 200 OK
         ('HTTP/1.[01] [0-9][0-9][0-9] [a-zA-Z]*', 'RESPONSE')
     )
-    _multi_re = multi_re(HTTP)
+    _multi_re = MultiRE(HTTP)
 
     def __init__(self):
         GrepPlugin.__init__(self)

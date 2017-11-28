@@ -30,7 +30,7 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopException)
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.utils import rand_alpha
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 
@@ -52,7 +52,7 @@ class buffer_overflow(AuditPlugin):
         'Internal Server Error</h1>'
     )
 
-    _multi_in = multi_in(OVERFLOW_ERRORS)
+    _multi_in = MultiIn(OVERFLOW_ERRORS)
 
     # TODO: if lengths = [ 65 , 257 , 513 , 1025, 2049, 4097, 8000 ]
     # then i get a BadStatusLine exception from urllib2, is seems to be an
@@ -141,18 +141,22 @@ class buffer_overflow(AuditPlugin):
         Analyze results of the _send_mutant method.
         """
         for error_str in self._multi_in.query(response.body):
-            # And not in the original response
-            if error_str not in mutant.get_original_response_body() and \
-            self._has_no_bug(mutant):
-                desc = 'A potential buffer overflow (accurate detection is' \
-                       ' hard...) was found at: %s' % mutant.found_at()
-                      
-                v = Vuln.from_mutant('Buffer overflow vulnerability', desc,
-                                     severity.MEDIUM, response.id,
-                                     self.get_name(), mutant)
-                v.add_to_highlight(error_str)
-                
-                self.kb_append_uniq(self, 'buffer_overflow', v)
+
+            if error_str in mutant.get_original_response_body():
+                continue
+
+            if self._has_bug(mutant):
+                continue
+
+            desc = 'A potential buffer overflow (accurate detection is' \
+                   ' hard...) was found at: %s' % mutant.found_at()
+
+            v = Vuln.from_mutant('Buffer overflow vulnerability', desc,
+                                 severity.MEDIUM, response.id,
+                                 self.get_name(), mutant)
+            v.add_to_highlight(error_str)
+
+            self.kb_append_uniq(self, 'buffer_overflow', v)
 
     def get_plugin_deps(self):
         """
