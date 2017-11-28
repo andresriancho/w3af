@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 from lib.core.enums import DBMS
@@ -272,6 +272,7 @@ DEPRECATED_OPTIONS = {
     "--no-unescape": "use '--no-escape' instead",
     "--binary": "use '--binary-fields' instead",
     "--auth-private": "use '--auth-file' instead",
+    "--ignore-401": "use '--ignore-code' instead",
     "--check-payload": None,
     "--check-waf": None,
     "--pickled-options": "use '--api -c ...' instead",

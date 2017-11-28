@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import time
@@ -278,7 +278,7 @@ def columnExists(columnFile, regex=None):
 
         kb.data.cachedColumns[conf.db] = {conf.tbl: columns}
 
-        for _ in map(lambda x: (conf.db, conf.tbl, x[0], x[1]), columns.items()):
+        for _ in ((conf.db, conf.tbl, item[0], item[1]) for item in columns.items()):
             if _ not in kb.brute.columns:
                 kb.brute.columns.append(_)
 

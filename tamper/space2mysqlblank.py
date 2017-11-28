@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import os
@@ -33,7 +33,7 @@ def tamper(payload, **kwargs):
 
     >>> random.seed(0)
     >>> tamper('SELECT id FROM users')
-    'SELECT%0Bid%0DFROM%0Cusers'
+    'SELECT%A0id%0BFROM%0Cusers'
     """
 
     # ASCII table:
