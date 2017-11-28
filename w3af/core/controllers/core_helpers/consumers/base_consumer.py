@@ -258,9 +258,12 @@ class BaseConsumer(Process):
             return
 
         if not self._poison_pill_sent:
-            # https://github.com/andresriancho/w3af/issues/9587
-            self._poison_pill_sent = True
+            # send the poison pill
             self.in_queue_put(POISON_PILL)
+
+            # https://github.com/andresriancho/w3af/issues/9587
+            # let put() know that all new tasks should be ignored
+            self._poison_pill_sent = True
 
         self.in_queue.join()
 
