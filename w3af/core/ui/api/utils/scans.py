@@ -25,6 +25,7 @@ from uuid import uuid4
 from tempfile import tempdir
 
 from w3af.core.ui.api.db.master import SCANS
+import w3af.core.controllers.output_manager as om
 
 
 def get_scan_info_from_id(scan_id):
@@ -58,6 +59,11 @@ def start_scan_helper(scan_info):
     try:
         # Init plugins!
         w3af_core.plugins.init_plugins()
+
+        # Clear all current output plugins
+        # Add the REST API output plugin
+        om.manager.set_output_plugins([])
+        om.manager.set_output_plugin_inst(scan_info.output)
 
         # Start the scan!
         w3af_core.verify_environment()
