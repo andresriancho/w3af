@@ -387,17 +387,24 @@ class ExtendedUrllib(object):
         """
         max_requests_per_second = self.settings.get_max_requests_per_second()
 
-        if max_requests_per_second > 0:
+        if max_requests_per_second <= 0:
+            return
 
-            min_interval = 1.0 / float(max_requests_per_second)
-            elapsed = time.clock() - self._rate_limit_last_time_called
-            left_to_wait = min_interval - elapsed
+        min_interval = 1.0 / float(max_requests_per_second)
+        elapsed = time.clock() - self._rate_limit_last_time_called
+        left_to_wait = min_interval - elapsed
 
-            with self._rate_limit_lock:
-                if left_to_wait > 0:
-                    time.sleep(left_to_wait)
+        with self._rate_limit_lock:
+            if left_to_wait > 0:
+                #
+                # This is useful for debugging, but will fill the output log in most
+                # scenarios, you have been warned
+                #
+                #om.out.debug('ExtendedUrllib rate limit in place. Blocking all HTTP'
+                #             ' requests for %s seconds.' % left_to_wait)
+                time.sleep(left_to_wait)
 
-            self._rate_limit_last_time_called = time.clock()
+        self._rate_limit_last_time_called = time.clock()
 
     def _pause_and_stop(self):
         """
