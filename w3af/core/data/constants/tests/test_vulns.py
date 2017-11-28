@@ -112,6 +112,7 @@ class TestVulnsConstants(unittest.TestCase):
         vuln_names = VULNS.keys()
         all_plugin_sources = self.get_all_plugins_source()
         missing_ignore = {'TestCase',
+                          'Target redirect',
                           'Blind SQL injection vulnerability'}
 
         for vuln_name in vuln_names:
