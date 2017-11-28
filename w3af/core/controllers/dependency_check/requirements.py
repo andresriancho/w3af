@@ -39,7 +39,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
                      # We need 0.1.8 because of mitmproxy
-                     PIPDependency('pyasn1', 'pyasn1', '0.2.3'),
+                     PIPDependency('pyasn1', 'pyasn1', '0.4.2'),
 
                      PIPDependency('lxml', 'lxml', '3.4.4'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
