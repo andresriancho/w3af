@@ -89,8 +89,7 @@ class TestStrategy(unittest.TestCase):
         thread_names = [t.name for t in threads]
 
         thread_names_set = set(thread_names)
-        expected_names = {'AuditorWorker',
-                          'PoolTaskHandler',
+        expected_names = {'PoolTaskHandler',
                           'PoolResultHandler',
                           'WorkerThread',
                           'AuditorController',
