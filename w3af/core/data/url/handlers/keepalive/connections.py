@@ -172,6 +172,7 @@ class ProxyHTTPConnection(_HTTPConnection):
             if line == '\r\n':
                 break
 
+
 # https://bugs.kali.org/view.php?id=2160
 proto_names = ('PROTOCOL_SSLv3',
                'PROTOCOL_TLSv1',
