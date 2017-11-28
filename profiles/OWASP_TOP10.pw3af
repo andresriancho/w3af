@@ -55,6 +55,9 @@ local_ip_address = 10.5.6.18
 msf_location = /opt/metasploit3/bin/
 form_id_list = []
 form_id_action = exclude
+path_max_variants = 50
+params_max_variants = 10
+max_equal_form_variants = 5
 
 [infrastructure.fingerprint_os]
 
