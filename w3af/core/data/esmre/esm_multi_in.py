@@ -57,8 +57,7 @@ class esm_multi_in(object):
                 item = item.encode(DEFAULT_ENCODING)
                 self._index.enter(item, (item,))
             else:
-                raise ValueError(
-                    'Can NOT build esm_multi_in with provided values.')
+                raise ValueError('Can NOT build esm_multi_in with provided values.')
 
         self._index.fix()
 

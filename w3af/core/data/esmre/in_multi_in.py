@@ -53,8 +53,7 @@ class in_multi_in(object):
                 item = item.encode(DEFAULT_ENCODING)
                 self._in.append(item)
             else:
-                raise ValueError(
-                    'Can NOT build in_multi_in with provided values.')
+                raise ValueError('Can NOT build in_multi_in with provided values.')
 
     def query(self, target_str):
         """
