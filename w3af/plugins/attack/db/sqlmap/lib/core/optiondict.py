@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 optDict = {
@@ -38,7 +38,7 @@ optDict = {
                                "authType":          "string",
                                "authCred":          "string",
                                "authFile":          "string",
-                               "ignore401":         "boolean",
+                               "ignoreCode":        "integer",
                                "ignoreProxy":       "boolean",
                                "ignoreRedirects":   "boolean",
                                "ignoreTimeouts":    "boolean",
@@ -201,10 +201,12 @@ optDict = {
                                "crawlExclude":      "string",
                                "csvDel":            "string",
                                "dumpFormat":        "string",
+                               "encoding":          "string",
                                "eta":               "boolean",
                                "flushSession":      "boolean",
                                "forms":             "boolean",
                                "freshQueries":      "boolean",
+                               "harFile":           "string",
                                "hexConvert":        "boolean",
                                "outputDir":         "string",
                                "parseErrors":       "boolean",

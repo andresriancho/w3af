@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import binascii
@@ -110,7 +110,7 @@ from lib.core.settings import DEFAULT_PAGE_ENCODING
 from lib.core.settings import DEFAULT_TOR_HTTP_PORTS
 from lib.core.settings import DEFAULT_TOR_SOCKS_PORTS
 from lib.core.settings import DUMMY_URL
-from lib.core.settings import INJECT_HERE_MARK
+from lib.core.settings import INJECT_HERE_REGEX
 from lib.core.settings import IS_WIN
 from lib.core.settings import KB_CHARS_BOUNDARY_CHAR
 from lib.core.settings import KB_CHARS_LOW_FREQUENCY_ALPHABET
@@ -149,6 +149,7 @@ from lib.request.pkihandler import HTTPSPKIAuthHandler
 from lib.request.rangehandler import HTTPRangeHandler
 from lib.request.redirecthandler import SmartRedirectHandler
 from lib.request.templates import getPageTemplate
+from lib.utils.har import HTTPCollectorFactory
 from lib.utils.crawler import crawl
 from lib.utils.deps import checkDependencies
 from lib.utils.search import search
@@ -279,7 +280,7 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
                     method = match.group(1)
                     url = match.group(2)
 
-                    if any(_ in line for _ in ('?', '=', CUSTOM_INJECTION_MARK_CHAR)):
+                    if any(_ in line for _ in ('?', '=', kb.customInjectionMark)):
                         params = True
 
                     getPostReq = True
@@ -319,7 +320,7 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
                     elif key not in (HTTP_HEADER.PROXY_CONNECTION, HTTP_HEADER.CONNECTION):
                         headers.append((getUnicode(key), getUnicode(value)))
 
-                    if CUSTOM_INJECTION_MARK_CHAR in re.sub(PROBLEMATIC_CUSTOM_INJECTION_PATTERNS, "", value or ""):
+                    if kb.customInjectionMark in re.sub(PROBLEMATIC_CUSTOM_INJECTION_PATTERNS, "", value or ""):
                         params = True
 
             data = data.rstrip("\r\n") if data else data
@@ -433,7 +434,7 @@ def _setMultipleTargets():
         files.sort()
 
         for reqFile in files:
-            if not re.search("([\d]+)\-request", reqFile):
+            if not re.search(r"([\d]+)\-request", reqFile):
                 continue
 
             _feedTargetsDict(os.path.join(conf.logFile, reqFile), addedTargetUrls)
@@ -592,7 +593,7 @@ def _setBulkMultipleTargets():
 
     found = False
     for line in getFileItems(conf.bulkFile):
-        if re.match(r"[^ ]+\?(.+)", line, re.I) or CUSTOM_INJECTION_MARK_CHAR in line:
+        if re.match(r"[^ ]+\?(.+)", line, re.I) or kb.customInjectionMark in line:
             found = True
             kb.targets.add((line.strip(), conf.method, conf.data, conf.cookie, None))
 
@@ -665,7 +666,7 @@ def _setDBMSAuthentication():
     debugMsg = "setting the DBMS authentication credentials"
     logger.debug(debugMsg)
 
-    match = re.search("^(.+?):(.*?)$", conf.dbmsCred)
+    match = re.search(r"^(.+?):(.*?)$", conf.dbmsCred)
 
     if not match:
         errMsg = "DBMS authentication credentials value must be in format "
@@ -860,7 +861,7 @@ def _setDBMS():
     logger.debug(debugMsg)
 
     conf.dbms = conf.dbms.lower()
-    regex = re.search("%s ([\d\.]+)" % ("(%s)" % "|".join([alias for alias in SUPPORTED_DBMS])), conf.dbms, re.I)
+    regex = re.search(r"%s ([\d\.]+)" % ("(%s)" % "|".join([alias for alias in SUPPORTED_DBMS])), conf.dbms, re.I)
 
     if regex:
         conf.dbms = regex.group(1)
@@ -1147,7 +1148,7 @@ def _setHTTPHandlers():
             raise SqlmapSyntaxException(errMsg)
 
         if conf.proxyCred:
-            _ = re.search("^(.*?):(.*?)$", conf.proxyCred)
+            _ = re.search(r"\A(.*?):(.*?)\Z", conf.proxyCred)
             if not _:
                 errMsg = "proxy authentication credentials "
                 errMsg += "value must be in format username:password"
@@ -1255,7 +1256,7 @@ def _setSafeVisit():
             errMsg = "invalid format of a safe request file"
             raise SqlmapSyntaxException, errMsg
     else:
-        if not re.search("^http[s]*://", conf.safeUrl):
+        if not re.search(r"\Ahttp[s]*://", conf.safeUrl):
             if ":443/" in conf.safeUrl:
                 conf.safeUrl = "https://" + conf.safeUrl
             else:
@@ -1408,8 +1409,8 @@ def _setHTTPExtraHeaders():
                 raise SqlmapSyntaxException(errMsg)
 
     elif not conf.requestFile and len(conf.httpHeaders or []) < 2:
-        if conf.charset:
-            conf.httpHeaders.append((HTTP_HEADER.ACCEPT_CHARSET, "%s;q=0.7,*;q=0.1" % conf.charset))
+        if conf.encoding:
+            conf.httpHeaders.append((HTTP_HEADER.ACCEPT_CHARSET, "%s;q=0.7,*;q=0.1" % conf.encoding))
 
         # Invalidating any caching mechanism in between
         # Reference: http://stackoverflow.com/a/1383359
@@ -1684,17 +1685,28 @@ def _cleanupOptions():
     if conf.optimize:
         setOptimize()
 
-    if conf.data:
-        conf.data = re.sub("(?i)%s" % INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.data)
+    match = re.search(INJECT_HERE_REGEX, conf.data or "")
+    if match:
+        kb.customInjectionMark = match.group(0)
 
-    if conf.url:
-        conf.url = re.sub("(?i)%s" % INJECT_HERE_MARK.replace(" ", r"[^A-Za-z]*"), CUSTOM_INJECTION_MARK_CHAR, conf.url)
+    match = re.search(INJECT_HERE_REGEX, conf.url or "")
+    if match:
+        kb.customInjectionMark = match.group(0)
 
     if conf.os:
         conf.os = conf.os.capitalize()
 
+    if conf.forceDbms:
+        conf.dbms = conf.forceDbms
+
     if conf.dbms:
-        conf.dbms = conf.dbms.capitalize()
+        kb.dbmsFilter = []
+        for _ in conf.dbms.split(','):
+            for dbms, aliases in DBMS_ALIASES:
+                if _.strip().lower() in aliases:
+                    kb.dbmsFilter.append(dbms)
+                    conf.dbms = dbms if conf.dbms and ',' not in conf.dbms else None
+                    break
 
     if conf.testFilter:
         conf.testFilter = conf.testFilter.strip('*+')
@@ -1754,7 +1766,7 @@ def _cleanupOptions():
                 conf.string = conf.string.replace(_.encode("string_escape"), _)
 
     if conf.getAll:
-        map(lambda x: conf.__setitem__(x, True), WIZARD.ALL)
+        map(lambda _: conf.__setitem__(_, True), WIZARD.ALL)
 
     if conf.noCast:
         for _ in DUMP_REPLACEMENTS.keys():
@@ -1829,6 +1841,7 @@ def _setConfAttributes():
     conf.dumpPath = None
     conf.hashDB = None
     conf.hashDBFile = None
+    conf.httpCollector = None
     conf.httpHeaders = []
     conf.hostname = None
     conf.ipv6 = False
@@ -1844,6 +1857,7 @@ def _setConfAttributes():
     conf.scheme = None
     conf.tests = []
     conf.trafficFP = None
+    conf.HARCollectorFactory = None
     conf.wFileType = None
 
 def _setKnowledgeBaseAttributes(flushAll=True):
@@ -1891,11 +1905,13 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.connErrorCounter = 0
     kb.cookieEncodeChoice = None
     kb.counters = {}
+    kb.customInjectionMark = CUSTOM_INJECTION_MARK_CHAR
     kb.data = AttribDict()
     kb.dataOutputFlag = False
 
     # Active back-end DBMS fingerprint
     kb.dbms = None
+    kb.dbmsFilter = []
     kb.dbmsVersion = [UNKNOWN_DBMS_VERSION]
 
     kb.delayCandidates = TIME_DELAY_CANDIDATES * [0]
@@ -2013,6 +2029,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.tableExistsChoice = None
     kb.uChar = NULL
     kb.unionDuplicates = False
+    kb.wafSpecificResponse = None
     kb.xpCmdshellAvailable = False
 
     if flushAll:
@@ -2080,11 +2097,11 @@ def _useWizardInterface():
             choice = readInput(message, default='1')
 
             if choice == '2':
-                map(lambda x: conf.__setitem__(x, True), WIZARD.INTERMEDIATE)
+                map(lambda _: conf.__setitem__(_, True), WIZARD.INTERMEDIATE)
             elif choice == '3':
-                map(lambda x: conf.__setitem__(x, True), WIZARD.ALL)
+                map(lambda _: conf.__setitem__(_, True), WIZARD.ALL)
             else:
-                map(lambda x: conf.__setitem__(x, True), WIZARD.BASIC)
+                map(lambda _: conf.__setitem__(_, True), WIZARD.BASIC)
 
     logger.debug("muting sqlmap.. it will do the magic for you")
     conf.verbose = 0
@@ -2228,6 +2245,12 @@ def _setTrafficOutputFP():
 
         conf.trafficFP = openFile(conf.trafficFile, "w+")
 
+def _setupHTTPCollector():
+    if not conf.harFile:
+        return
+
+    conf.httpCollector = HTTPCollectorFactory(conf.harFile).create()
+
 def _setDNSServer():
     if not conf.dnsDomain:
         return
@@ -2357,8 +2380,8 @@ def _basicOptionValidation():
 
     if isinstance(conf.limitStart, int) and conf.limitStart > 0 and \
        isinstance(conf.limitStop, int) and conf.limitStop < conf.limitStart:
-        errMsg = "value for option '--start' (limitStart) must be smaller or equal than value for --stop (limitStop) option"
-        raise SqlmapSyntaxException(errMsg)
+        warnMsg = "usage of option '--start' (limitStart) which is bigger than value for --stop (limitStop) option is considered unstable"
+        logger.warn(warnMsg)
 
     if isinstance(conf.firstChar, int) and conf.firstChar > 0 and \
        isinstance(conf.lastChar, int) and conf.lastChar < conf.firstChar:
@@ -2403,6 +2426,10 @@ def _basicOptionValidation():
 
     if conf.notString and conf.nullConnection:
         errMsg = "option '--not-string' is incompatible with switch '--null-connection'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.notString and conf.nullConnection:
+        errMsg = "option '--tor' is incompatible with switch '--os-pwn'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.noCast and conf.hexConvert:
@@ -2550,15 +2577,15 @@ def _basicOptionValidation():
         errMsg += "format <username>:<password> (e.g. \"root:pass\")"
         raise SqlmapSyntaxException(errMsg)
 
-    if conf.charset:
-        _ = checkCharEncoding(conf.charset, False)
+    if conf.encoding:
+        _ = checkCharEncoding(conf.encoding, False)
         if _ is None:
-            errMsg = "unknown charset '%s'. Please visit " % conf.charset
+            errMsg = "unknown charset '%s'. Please visit " % conf.encoding
             errMsg += "'%s' to get the full list of " % CODECS_LIST_PAGE
             errMsg += "supported charsets"
             raise SqlmapSyntaxException(errMsg)
         else:
-            conf.charset = _
+            conf.encoding = _
 
     if conf.loadCookies:
         if not os.path.exists(conf.loadCookies):
@@ -2604,6 +2631,7 @@ def init():
     _setTamperingFunctions()
     _setWafFunctions()
     _setTrafficOutputFP()
+    _setupHTTPCollector()
     _resolveCrossReferences()
     _checkWebSocket()
 

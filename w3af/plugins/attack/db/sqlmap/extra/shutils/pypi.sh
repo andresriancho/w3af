@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -f ~/.pypirc ]; then
+    echo "File ~/.pypirc is missing"
+    exit 1
+fi
+
 declare -x SCRIPTPATH="${0}"
 SETTINGS="${SCRIPTPATH%/*}/../../lib/core/settings.py"
 VERSION=$(cat $SETTINGS | grep -E "^VERSION =" | cut -d '"' -f 2 | cut -d '.' -f 1-3)
@@ -12,7 +17,7 @@ cat > $TMP_DIR/setup.py << EOF
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 from setuptools import setup, find_packages
@@ -56,7 +61,7 @@ cat > sqlmap/__init__.py << EOF
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import os
@@ -156,7 +161,7 @@ Links
 .. |Python 2.6|2.7| image:: https://img.shields.io/badge/python-2.6|2.7-yellow.svg
    :target: https://www.python.org/
 .. |License| image:: https://img.shields.io/badge/license-GPLv2-red.svg
-   :target: https://raw.githubusercontent.com/sqlmapproject/sqlmap/master/doc/COPYING
+   :target: https://raw.githubusercontent.com/sqlmapproject/sqlmap/master/LICENSE
 .. |Twitter| image:: https://img.shields.io/badge/twitter-@sqlmap-blue.svg
    :target: https://twitter.com/sqlmap
 
