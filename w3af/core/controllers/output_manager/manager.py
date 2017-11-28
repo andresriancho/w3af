@@ -307,6 +307,7 @@ class OutputManager(Process):
         self.process_all_messages()
 
         # Wait for any calls to flush() which might be running
+        self._worker_pool.close()
         self._worker_pool.join()
 
         # Now call end() on all plugins
