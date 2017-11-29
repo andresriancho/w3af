@@ -521,6 +521,9 @@ class Pool(object):
         for p in self._pool:
             p.join()
 
+    def is_closed(self):
+        return self._state in (CLOSE, TERMINATE)
+
     @staticmethod
     def _help_stuff_finish(inqueue, task_handler, size):
         # task_handler may be blocked trying to put items on inqueue

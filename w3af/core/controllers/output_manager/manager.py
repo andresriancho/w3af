@@ -203,9 +203,11 @@ class OutputManager(Process):
         if not self.should_flush():
             return
 
-        self.update_last_output_flush()
-
         pool = self._worker_pool
+        if pool.is_closed():
+            return
+
+        self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
             pool.apply_async(func=self.__inner_flush_plugin_output,
