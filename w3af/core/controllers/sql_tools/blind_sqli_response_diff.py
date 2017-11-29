@@ -205,7 +205,7 @@ class BlindSqliResponseDiff(object):
             compare_diff = True
 
         mutant.set_token_value(self.SYNTAX_ERROR)
-        syntax_error_response, body_syntax_error_response = send_clean(mutant,debugging_id=debugging_id)
+        syntax_error_response, body_syntax_error_response = send_clean(mutant, debugging_id=debugging_id)
 
         self.debug('[%s] Comparing body_true_response and'
                    ' body_syntax_error_response.' % statement_type, mutant)

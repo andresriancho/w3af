@@ -67,7 +67,7 @@ class TestUtils(unittest.TestCase):
 
         cors = provides_cors_features(fr, url_opener_mock, None)
 
-        url_opener_mock.GET.assert_called_with(url)
+        url_opener_mock.GET.assert_called_with(url, debugging_id=None)
 
         self.assertTrue(cors)
 
