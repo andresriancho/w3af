@@ -50,8 +50,8 @@ class rfd(AuditPlugin):
         """
         orig_headers = orig_response.headers
 
-        ct = orig_headers.iget('content-type', None)
-        cd = orig_headers.iget('content-disposition', None)
+        ct, _ = orig_headers.iget('content-type', None)
+        cd, _ = orig_headers.iget('content-disposition', None)
 
         if ct is not None:
             ct = ct.split(';')[0]
