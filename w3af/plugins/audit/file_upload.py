@@ -24,7 +24,9 @@ import os
 from itertools import repeat, izip
 
 from w3af import ROOT_PATH
+
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
@@ -35,6 +37,7 @@ from w3af.core.data.constants.file_templates.file_templates import get_file_from
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.fuzzer.fuzzer import create_mutants
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -99,20 +102,29 @@ class file_upload(AuditPlugin):
         domain_path_list = set(u.get_domain_path() for u in
                                kb.kb.get_all_known_urls())
 
+        debugging_id = rand_alnum(8)
+        om.out.debug('audit.file_upload will search for the uploaded file'
+                     ' in all known application paths (did=%s).' % debugging_id)
+
         # FIXME: Note that in all cases where I'm using kb's url_object info
         # I'll be making a mistake if the audit plugin is run before all
         # crawl plugins haven't run yet, since I'm not letting them
         # find all directories; which will make the current plugin run with
         # less information.
+        mutant_repeater = repeat(mutant)
+        debugging_id_repeater = repeat(debugging_id)
+        http_response_repeater = repeat(mutant_response)
         url_generator = self._generate_urls(domain_path_list,
                                             mutant.uploaded_file_name)
-        mutant_repeater = repeat(mutant)
-        http_response_repeater = repeat(mutant_response)
-        args = izip(url_generator, mutant_repeater, http_response_repeater)
+
+        args = izip(url_generator,
+                    mutant_repeater,
+                    http_response_repeater,
+                    debugging_id_repeater)
 
         self.worker_pool.map_multi_args(self._confirm_file_upload, args)
 
-    def _confirm_file_upload(self, path, mutant, http_response):
+    def _confirm_file_upload(self, path, mutant, http_response, debugging_id):
         """
         Confirms if the file was uploaded to path
 
@@ -120,20 +132,28 @@ class file_upload(AuditPlugin):
         :param mutant: The mutant that originated the file on the remote end
         :param http_response: The HTTP response asociated with sending mutant
         """
-        get_response = self._uri_opener.GET(path, cache=False)
+        get_response = self._uri_opener.GET(path,
+                                            cache=False,
+                                            grep=False,
+                                            debugging_id=debugging_id)
 
-        if not is_404(get_response) and self._has_no_bug(mutant):
-            desc = 'A file upload to a directory inside the webroot' \
-                   ' was found at: %s' % mutant.found_at()
-            
-            v = Vuln.from_mutant('Insecure file upload', desc, severity.HIGH,
-                                 [http_response.id, get_response.id],
-                                 self.get_name(), mutant)
-            
-            v['file_dest'] = get_response.get_url()
-            v['file_vars'] = mutant.get_file_vars()
+        if is_404(get_response):
+            return
 
-            self.kb_append_uniq(self, 'file_upload', v)
+        if self._has_bug(mutant):
+            return
+
+        desc = 'A file upload to a directory inside the webroot was found at: %s'
+        desc %= mutant.found_at()
+
+        v = Vuln.from_mutant('Insecure file upload', desc, severity.HIGH,
+                             [http_response.id, get_response.id],
+                             self.get_name(), mutant)
+
+        v['file_dest'] = get_response.get_url()
+        v['file_vars'] = mutant.get_file_vars()
+
+        self.kb_append_uniq(self, 'file_upload', v)
 
     def _generate_urls(self, domain_path_list, uploaded_file_name):
         """
@@ -146,8 +166,7 @@ class file_upload(AuditPlugin):
             for default_path in self.UPLOAD_PATHS:
                 for sub_url in url.get_directories():
                     possible_location = sub_url.url_join(default_path + '/')
-                    possible_location = possible_location.url_join(
-                        uploaded_file_name)
+                    possible_location = possible_location.url_join(uploaded_file_name)
                     yield possible_location
 
     def get_options(self):
