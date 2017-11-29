@@ -53,11 +53,13 @@ class generic(AuditPlugin):
         self._diff_ratio = 0.30
         self._extensive = False
 
-    def audit(self, freq, original_response):
+    def audit(self, freq, original_response, debugging_id):
         """
         Find all kind of "generic" bugs without using a fixed error database
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # Prevent some false positives for cases where the original response
         # is already triggering an error

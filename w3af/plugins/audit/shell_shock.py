@@ -60,11 +60,13 @@ class shell_shock(AuditPlugin):
         super(shell_shock, self).__init__()
         self.already_tested_urls = ScalableBloomFilter()
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for shell shock vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         url = freq.get_url()
 

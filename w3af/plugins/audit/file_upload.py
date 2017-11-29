@@ -56,11 +56,13 @@ class file_upload(AuditPlugin):
         # User configured
         self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Searches for file upload vulns.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         if freq.get_method().upper() != 'POST' or not freq.get_file_vars():
             return
@@ -80,7 +82,8 @@ class file_upload(AuditPlugin):
 
                 self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                               mutants,
-                                              self._analyze_result)
+                                              self._analyze_result,
+                                              debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, mutant_response):
         """

@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import copy
 
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
@@ -43,7 +42,7 @@ class un_ssl(AuditPlugin):
         # Internal variables
         self._should_run = True
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Check if the protocol specified in freq is https and fetch the same URL
         using http. ie:
@@ -51,6 +50,8 @@ class un_ssl(AuditPlugin):
             - check: http://w3af.org/
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         if not self._should_run:
             return

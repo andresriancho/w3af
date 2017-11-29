@@ -50,7 +50,7 @@ class rosetta_flash(AuditPlugin):
              'nnnnnnnnnnnnnnnnnUU5nnnnnn3SUUnUUUwGNqdIbe133333333333333333sU'
              'Uef03gfzA8880HUAH')
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests a URL for rosetta flash vulnerabilities
 
@@ -59,6 +59,8 @@ class rosetta_flash(AuditPlugin):
         https://molnarg.github.io/ascii-flash/#/24
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         content_type, _ = orig_response.get_headers().iget('Content-Type')
 
@@ -77,7 +79,8 @@ class rosetta_flash(AuditPlugin):
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """

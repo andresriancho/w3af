@@ -88,18 +88,21 @@ class eval(AuditPlugin):
         self._use_time_delay = True
         self._use_echo = True
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for eval() user input injection vulnerabilities.
+
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         if self._use_echo:
-            self._fuzz_with_echo(freq, orig_response)
+            self._fuzz_with_echo(freq, orig_response, debugging_id)
 
         if self._use_time_delay:
-            self._fuzz_with_time_delay(freq)
+            self._fuzz_with_time_delay(freq, debugging_id)
 
-    def _fuzz_with_echo(self, freq, orig_response):
+    def _fuzz_with_echo(self, freq, orig_response, debugging_id):
         """
         Tests an URL for eval() usage vulnerabilities using echo strings.
         :param freq: A FuzzableRequest
@@ -110,9 +113,10 @@ class eval(AuditPlugin):
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_echo)
+                                      self._analyze_echo,
+                                      debugging_id=debugging_id)
 
-    def _fuzz_with_time_delay(self, freq):
+    def _fuzz_with_time_delay(self, freq, debugging_id):
         """
         Tests an URL for eval() usage vulnerabilities using time delays.
         :param freq: A FuzzableRequest
