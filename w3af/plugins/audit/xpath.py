@@ -80,18 +80,21 @@ class xpath(AuditPlugin):
         "<!--"
     ]
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for xpath injection vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mutants = create_mutants(freq, self.XPATH_TEST_PAYLOADS,
                                  orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """

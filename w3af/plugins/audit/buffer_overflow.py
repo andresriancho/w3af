@@ -99,15 +99,16 @@ class buffer_overflow(AuditPlugin):
         """
         AuditPlugin.__init__(self)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for buffer overflow vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
-        mutants = create_mutants(freq, self.BUFFER_TESTS,
-                                 orig_resp=orig_response)
-        args = zip(repeat(self._send_request), mutants)
+        mutants = create_mutants(freq, self.BUFFER_TESTS, orig_resp=orig_response)
+        args = zip(repeat(self._send_request), mutants, repeat(debugging_id))
 
         for result in self.worker_pool.imap_unordered(apply_with_return_error, args):
             # re-raise the thread exception in the main thread with this method
@@ -116,18 +117,18 @@ class buffer_overflow(AuditPlugin):
             if isinstance(result, Error):
                 result.reraise()
 
-    def _send_request(self, mutant):
+    def _send_request(self, mutant, debugging_id):
         """
         Sends a mutant to the remote web server. I wrap urllib's _send_mutant
         just to handle errors in a different way.
         """
         try:
-            response = self._uri_opener.send_mutant(mutant)
+            response = self._uri_opener.send_mutant(mutant, debugging_id=debugging_id)
         except (BaseFrameworkException, ScanMustStopException):
-            desc = 'A potential (most probably a false positive than a bug)' \
-                   ' buffer-overflow was found when requesting: "%s", using' \
-                   ' HTTP method %s. The data sent was: "%s".'
-            desc = desc % (mutant.get_url(), mutant.get_method(), mutant.get_dc())
+            desc = ('A potential (most probably a false positive than a bug)'
+                    ' buffer-overflow was found when requesting: "%s", using'
+                    ' HTTP method %s. The data sent was: "%s".')
+            desc %= (mutant.get_url(), mutant.get_method(), mutant.get_dc())
 
             i = Info.from_mutant('Potential buffer overflow vulnerability',
                                  desc, [], self.get_name(), mutant)
@@ -148,8 +149,9 @@ class buffer_overflow(AuditPlugin):
             if self._has_bug(mutant):
                 continue
 
-            desc = 'A potential buffer overflow (accurate detection is' \
-                   ' hard...) was found at: %s' % mutant.found_at()
+            desc = ('A potential buffer overflow (accurate detection is'
+                    ' hard) was found at: %s')
+            desc %= mutant.found_at()
 
             v = Vuln.from_mutant('Buffer overflow vulnerability', desc,
                                  severity.MEDIUM, response.id,

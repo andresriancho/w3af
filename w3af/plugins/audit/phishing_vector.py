@@ -51,17 +51,20 @@ class phishing_vector(AuditPlugin):
                            'fTp://w3af.org/',
                            '//w3af.org')
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Find those phishing vectors!
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mutants = create_mutants(freq, self._test_urls)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """

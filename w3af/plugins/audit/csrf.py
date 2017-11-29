@@ -65,11 +65,13 @@ class csrf(AuditPlugin):
         self._strict_mode = False
         self._equal_limit = 0.90
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Test URLs for CSRF vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         if not self._is_suitable(freq):
             return
@@ -84,7 +86,7 @@ class csrf(AuditPlugin):
         # domain.
         #
         # TODO: This algorithm has lots of room for improvement
-        if self._is_origin_checked(freq, orig_response):
+        if self._is_origin_checked(freq, orig_response, debugging_id):
             om.out.debug('Origin for %s is checked' % freq.get_url())
             return
 
@@ -149,7 +151,7 @@ class csrf(AuditPlugin):
         om.out.debug('%s is suitable for CSRF attack' % freq.get_url())
         return True
 
-    def _is_origin_checked(self, freq, orig_response):
+    def _is_origin_checked(self, freq, orig_response, debugging_id):
         """
         :return: True if the remote web application verifies the Referer before
                  processing the HTTP request.
@@ -161,7 +163,7 @@ class csrf(AuditPlugin):
         headers['Referer'] = fake_ref
         mutant.set_token(('Referer',))
 
-        mutant_response = self._uri_opener.send_mutant(mutant)
+        mutant_response = self._uri_opener.send_mutant(mutant, debugging_id=debugging_id)
         
         if not self._is_resp_equal(orig_response, mutant_response):
             return True

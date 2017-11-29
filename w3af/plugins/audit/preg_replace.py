@@ -42,14 +42,13 @@ class preg_replace(AuditPlugin):
 
     _multi_in = MultiIn(PREG_ERRORS)
 
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for unsafe usage of PHP's preg_replace.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # First I check If I get the error message from php
         mutants = create_mutants(freq, self.PREG_PAYLOAD,
@@ -57,7 +56,8 @@ class preg_replace(AuditPlugin):
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """
@@ -66,21 +66,23 @@ class preg_replace(AuditPlugin):
         #
         #   I will only report the vulnerability once.
         #
-        if self._has_no_bug(mutant):
+        if self._has_bug(mutant):
+            return
 
-            for preg_error_string in self._find_preg_error(response):
-                if preg_error_string not in mutant.get_original_response_body():
-                    
-                    desc = 'Unsafe usage of preg_replace was found at: %s'
-                    desc = desc % mutant.found_at()
-                    
-                    v = Vuln.from_mutant('Unsafe preg_replace usage', desc,
-                                         severity.HIGH, response.id,
-                                         self.get_name(), mutant)
+        for preg_error_string in self._find_preg_error(response):
+            if preg_error_string in mutant.get_original_response_body():
+                continue
 
-                    v.add_to_highlight(preg_error_string)
-                    self.kb_append_uniq(self, 'preg_replace', v)
-                    break
+            desc = 'Unsafe usage of preg_replace was found at: %s'
+            desc %= mutant.found_at()
+
+            v = Vuln.from_mutant('Unsafe preg_replace usage', desc,
+                                 severity.HIGH, response.id,
+                                 self.get_name(), mutant)
+
+            v.add_to_highlight(preg_error_string)
+            self.kb_append_uniq(self, 'preg_replace', v)
+            break
 
     def _find_preg_error(self, response):
         """

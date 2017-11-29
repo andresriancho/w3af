@@ -484,7 +484,7 @@ class ExtendedUrllib(object):
         """
         return self.settings.get_cookies()
 
-    def send_clean(self, mutant):
+    def send_clean(self, mutant, debugging_id=None):
         """
         Sends a mutant to the network (without using the cache) and then returns
         the HTTP response object and a sanitized response body (which doesn't
@@ -494,10 +494,10 @@ class ExtendedUrllib(object):
         responses that were generated with different mutants.
 
         :param mutant: The mutant to send to the network.
-        :return: (HTTP response,
-                  Sanitized HTTP response body)
+        :param debugging_id: A unique identifier for this call to audit()
+        :return: (HTTP response, Sanitized HTTP response body)
         """
-        http_response = self.send_mutant(mutant, cache=False)
+        http_response = self.send_mutant(mutant, cache=False, debugging_id=debugging_id)
         clean_body = get_clean_body(mutant, http_response)
 
         return http_response, clean_body
@@ -539,13 +539,16 @@ class ExtendedUrllib(object):
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
                     cookies=True, error_handling=True, timeout=None,
-                    follow_redirects=False, use_basic_auth=True):
+                    follow_redirects=False, use_basic_auth=True,
+                    debugging_id=None):
         """
         Sends a mutant to the remote web server.
 
         :param callback: If None, return the HTTP response object, else call
                          the callback with the mutant and the http response as
                          parameters.
+
+        :param debugging_id: A unique identifier for this call to audit()
 
         :return: The HTTPResponse object associated with the request
                  that was just sent.
@@ -575,6 +578,7 @@ class ExtendedUrllib(object):
             'timeout': timeout,
             'follow_redirects': follow_redirects,
             'use_basic_auth': use_basic_auth,
+            'debugging_id': debugging_id
         }
         method = mutant.get_method()
 
@@ -592,7 +596,7 @@ class ExtendedUrllib(object):
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
             error_handling=True, timeout=None, follow_redirects=False,
-            use_basic_auth=True, use_proxy=True):
+            use_basic_auth=True, use_proxy=True, debugging_id=None):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -610,6 +614,7 @@ class ExtendedUrllib(object):
                         request. The timeout is specified in seconds
         :param cookies: Send stored cookies in request (or not)
         :param follow_redirects: Follow 30x redirects (or not)
+        :param debugging_id: A unique identifier for this call to audit()
 
         :return: An HTTPResponse object.
         """
@@ -633,7 +638,8 @@ class ExtendedUrllib(object):
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
                           follow_redirects=follow_redirects,
-                          use_basic_auth=use_basic_auth, use_proxy=use_proxy)
+                          use_basic_auth=use_basic_auth, use_proxy=use_proxy,
+                          debugging_id=debugging_id)
         req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
@@ -641,13 +647,16 @@ class ExtendedUrllib(object):
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
              cookies=True, error_handling=True, timeout=None,
-             follow_redirects=None, use_basic_auth=True, use_proxy=True):
+             follow_redirects=None, use_basic_auth=True, use_proxy=True,
+             debugging_id=None):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
 
         :param uri: This is the url where to post.
         :param data: A string with the data for the POST.
+        :param debugging_id: A unique identifier for this call to audit()
+
         :see: The GET() for documentation on the other parameters
         :return: An HTTPResponse object.
         """
@@ -681,7 +690,8 @@ class ExtendedUrllib(object):
                           error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
-                          use_basic_auth=use_basic_auth, use_proxy=use_proxy)
+                          use_basic_auth=use_basic_auth, use_proxy=use_proxy,
+                          debugging_id=debugging_id)
         req = self.add_headers(req, headers)
 
         return self.send(req, grep=grep)
@@ -736,7 +746,7 @@ class ExtendedUrllib(object):
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
                        cache=False, grep=True, cookies=True,
                        error_handling=True, timeout=None, use_basic_auth=True,
-                       use_proxy=True, follow_redirects=False):
+                       use_proxy=True, follow_redirects=False, debugging_id=None):
             """
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
@@ -764,7 +774,8 @@ class ExtendedUrllib(object):
                               new_connection=new_connection,
                               use_basic_auth=use_basic_auth,
                               follow_redirects=follow_redirects,
-                              use_proxy=use_proxy)
+                              use_proxy=use_proxy,
+                              debugging_id=debugging_id)
             req = uri_opener.add_headers(req, headers or {})
             return uri_opener.send(req, grep=grep)
 
@@ -916,8 +927,8 @@ class ExtendedUrllib(object):
         http_resp.set_id(res.id)
         http_resp.set_from_cache(from_cache)
 
-        args = (res.id, from_cache, grep, http_resp.get_wait_time())
-        flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f)' % args
+        args = (res.id, from_cache, grep, http_resp.get_wait_time(), req.debugging_id)
+        flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f,did=%s)' % args
 
         msg += flags
         om.out.debug(msg)

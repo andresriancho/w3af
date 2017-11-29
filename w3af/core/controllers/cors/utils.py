@@ -29,16 +29,18 @@ ACCESS_CONTROL_ALLOW_MAX_AGE = "ACCESS-CONTROL-ALLOW-MAX-AGE"
 ACCESS_CONTROL_ALLOW_CREDENTIALS = "ACCESS-CONTROL-ALLOW-CREDENTIALS"
 
 
-def provides_cors_features(freq, url_opener):
+def provides_cors_features(freq, url_opener, debugging_id):
     """
     Method to detect if url provides CORS features.
 
     :param freq: A fuzzableRequest object.
     :param url_opener: "w3af.core.data.url.ExtendedUrllib" class instance to use for
                        HTTP request/response processing.
+    :param debugging_id: A unique identifier for this call to audit()
+
     :return: True if the URL provides CORS features, False otherwise.
     """
-    response = url_opener.GET(freq.get_url())
+    response = url_opener.GET(freq.get_url(), debugging_id=debugging_id)
 
     ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
     if ac_value is not None:

@@ -92,7 +92,6 @@ class TestStrategy(unittest.TestCase):
         expected_names = {'PoolTaskHandler',
                           'PoolResultHandler',
                           'WorkerThread',
-                          'AuditorController',
                           'PoolWorkerHandler',
                           'MainThread',
                           'SQLiteExecutor',

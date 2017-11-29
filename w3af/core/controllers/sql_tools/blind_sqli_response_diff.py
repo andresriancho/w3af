@@ -52,6 +52,7 @@ class BlindSqliResponseDiff(object):
         # User configured variables
         self._eq_limit = 0.8
         self._uri_opener = uri_opener
+        self._debugging_id = None
 
     def set_eq_limit(self, eq_limit):
         """
@@ -61,6 +62,12 @@ class BlindSqliResponseDiff(object):
         :param eq_limit: The equal limit to use.
         """
         self._eq_limit = eq_limit
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+    
+    def get_debugging_id(self):
+        return self._debugging_id
 
     def is_injectable(self, mutant):
         """
@@ -166,12 +173,13 @@ class BlindSqliResponseDiff(object):
         true_statement = statement_tuple[0]
         false_statement = statement_tuple[1]
         send_clean = self._uri_opener.send_clean
+        debugging_id = self.get_debugging_id()
 
         mutant.set_token_value(true_statement)
-        _, body_true_response = send_clean(mutant)
+        _, body_true_response = send_clean(mutant, debugging_id=debugging_id)
 
         mutant.set_token_value(false_statement)
-        _, body_false_response = send_clean(mutant)
+        _, body_false_response = send_clean(mutant, debugging_id=debugging_id)
 
         if body_true_response == body_false_response:
             msg = ('There is NO CHANGE between the true and false responses.'
@@ -197,7 +205,7 @@ class BlindSqliResponseDiff(object):
             compare_diff = True
 
         mutant.set_token_value(self.SYNTAX_ERROR)
-        syntax_error_response, body_syntax_error_response = send_clean(mutant)
+        syntax_error_response, body_syntax_error_response = send_clean(mutant, debugging_id=debugging_id)
 
         self.debug('[%s] Comparing body_true_response and'
                    ' body_syntax_error_response.' % statement_type, mutant)
@@ -209,7 +217,7 @@ class BlindSqliResponseDiff(object):
         # Check if its a search engine before we dig any deeper...
         search_disambiguator = self._remove_all_special_chars(true_statement)
         mutant.set_token_value(search_disambiguator)
-        _, body_search_response = send_clean(mutant)
+        _, body_search_response = send_clean(mutant, debugging_id=debugging_id)
 
         # If they are equal then we have a search engine
         self.debug('[%s] Comparing body_true_response and'
@@ -225,10 +233,10 @@ class BlindSqliResponseDiff(object):
         second_false_stm = statements[statement_type][1]
 
         mutant.set_token_value(second_true_stm)
-        second_true_response, body_second_true_response = send_clean(mutant)
+        second_true_response, body_second_true_response = send_clean(mutant, debugging_id=debugging_id)
 
         mutant.set_token_value(second_false_stm)
-        second_false_response, body_second_false_response = send_clean(mutant)
+        second_false_response, body_second_false_response = send_clean(mutant, debugging_id=debugging_id)
 
         self.debug('[%s] Comparing body_second_true_response and'
                    ' body_true_response.' % statement_type, mutant)

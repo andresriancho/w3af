@@ -51,11 +51,13 @@ class os_commanding(AuditPlugin):
         self._special_chars = ['', '&&', '|', ';', '\n', '\r\n']
         self._file_compiled_regex = []
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for OS Commanding vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # We are implementing two different ways of detecting OS Commanding
         # vulnerabilities:
@@ -72,10 +74,10 @@ class os_commanding(AuditPlugin):
         # This also speeds-up the detection process a little bit in the cases
         # where there IS a vulnerability present and can be found with both
         # methods.
-        self._with_echo(freq, orig_response)
-        self._with_time_delay(freq)
+        self._with_echo(freq, orig_response, debugging_id)
+        self._with_time_delay(freq, debugging_id)
 
-    def _with_echo(self, freq, orig_response):
+    def _with_echo(self, freq, orig_response, debugging_id):
         """
         Tests an URL for OS Commanding vulnerabilities using cat/type to write
         the content of a known file (i.e. /etc/passwd) to the HTML.
@@ -95,7 +97,8 @@ class os_commanding(AuditPlugin):
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_echo)
+                                      self._analyze_echo,
+                                      debugging_id=debugging_id)
 
     def _analyze_echo(self, mutant, response):
         """
@@ -148,7 +151,7 @@ class os_commanding(AuditPlugin):
 
         return os, separator
 
-    def _with_time_delay(self, freq):
+    def _with_time_delay(self, freq, debugging_id):
         """
         Tests an URL for OS Commanding vulnerabilities using time delays.
 
@@ -165,6 +168,7 @@ class os_commanding(AuditPlugin):
             for delay_obj in self._get_wait_commands():
 
                 ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+                ed.set_debugging_id(debugging_id)
                 success, responses = ed.delay_is_controlled()
 
                 if success:

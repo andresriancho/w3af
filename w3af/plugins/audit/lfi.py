@@ -60,11 +60,13 @@ class lfi(AuditPlugin):
     file_pattern_multi_in = MultiIn(FILE_PATTERNS)
     file_read_error_multi_re = MultiRE(FILE_OPEN_ERRORS)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for local file inclusion vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mutants = create_mutants(freq,
                                  self.get_lfi_tests(freq),
@@ -73,7 +75,8 @@ class lfi(AuditPlugin):
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result,
-                                      grep=False)
+                                      grep=False,
+                                      debugging_id=debugging_id)
 
     def get_lfi_tests(self, freq):
         """

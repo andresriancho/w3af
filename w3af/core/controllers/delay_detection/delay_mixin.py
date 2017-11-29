@@ -21,11 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 class DelayMixIn(object):    
-    def get_original_time(self, rep=3):
+    def get_original_time(self, rep=3, debugging_id=None):
         original_wait_times = []
 
         for _ in xrange(rep):
-            resp = self.uri_opener.send_mutant(self.mutant, cache=False)
+            resp = self.uri_opener.send_mutant(self.mutant,
+                                               cache=False,
+                                               debugging_id=debugging_id)
             time = resp.get_wait_time()
             original_wait_times.append(time)
             

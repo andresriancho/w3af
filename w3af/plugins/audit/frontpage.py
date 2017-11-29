@@ -50,11 +50,13 @@ class frontpage(AuditPlugin):
         # Internal variables
         self._already_tested = ScalableBloomFilter()
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Searches for file upload vulns using a POST to author.dll.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         domain_path = freq.get_url().get_domain_path()
 

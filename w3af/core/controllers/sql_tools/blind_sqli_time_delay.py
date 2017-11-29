@@ -38,6 +38,13 @@ class BlindSQLTimeDelay(object):
 
     def __init__(self, uri_opener):
         self._uri_opener = uri_opener
+        self._debugging_id = None
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
+    def get_debugging_id(self):
+        return self._debugging_id
 
     def is_injectable(self, mutant):
         """
@@ -49,6 +56,7 @@ class BlindSQLTimeDelay(object):
         for delay_obj in self._get_delays():
 
             ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+            ed.set_debugging_id(self.get_debugging_id())
             success, responses = ed.delay_is_controlled()
 
             if success:

@@ -66,6 +66,13 @@ class ExactDelayController(DelayMixIn):
 
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
+        self._debugging_id = None
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
+    def get_debugging_id(self):
+        return self._debugging_id
 
     def delay_is_controlled(self):
         """
@@ -84,7 +91,7 @@ class ExactDelayController(DelayMixIn):
         
         for delay in self.DELAY_SECONDS:
             # Update the wait time before each test
-            original_wait_time = self.get_original_time()
+            original_wait_time = self.get_original_time(debugging_id=self.get_debugging_id())
 
             success, response = self.delay_for(delay, original_wait_time)
             if success:
@@ -140,7 +147,8 @@ class ExactDelayController(DelayMixIn):
         # to avoid any interference
         try:
             response = self.uri_opener.send_mutant(mutant, cache=False,
-                                                   timeout=upper_bound * 10)
+                                                   timeout=upper_bound * 10,
+                                                   debugging_id=self.get_debugging_id())
         except HTTPRequestException, hre:
             # NOTE: In some cases where the remote web server timeouts we reach
             #       this code section. The handling of that situation is done
