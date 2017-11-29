@@ -48,10 +48,26 @@ class file_upload(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    TEMPLATE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'constants',
-                                'file_templates')
-    UPLOAD_PATHS = ['uploads', 'upload', 'file', 'user', 'files', 'downloads',
-                    'download', 'up', 'down']
+    TEMPLATE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'constants', 'file_templates')
+
+    MAX_BRUTEFORCE_FINDS = 250
+
+    UPLOAD_PATHS = ['uploads',
+                    'upload',
+                    'up',
+                    'files',
+                    'file',
+                    'user',
+                    'content',
+                    'images',
+                    'documents',
+                    'docs',
+                    'downloads',
+                    'download',
+                    'down',
+                    'public',
+                    'pub',
+                    'private']
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -98,6 +114,30 @@ class file_upload(AuditPlugin):
         if self._has_bug(mutant):
             return
 
+        self._find_files_by_parsing(mutant, mutant_response)
+        self._find_files_by_bruteforce(mutant, mutant_response)
+
+    def _find_files_by_parsing(self, mutant, mutant_response):
+        """
+        Parse the HTTP response and find our file.
+
+        Take into account that the file name might have been changed (we do not care)
+        if the extension remains the same then we're happy.
+
+        :param mutant: The request used to upload the file
+        :param mutant_response: The HTTP response associated with the file upload
+        :return: None
+        """
+        pass
+
+    def _find_files_by_bruteforce(self, mutant, mutant_response):
+        """
+        Use the framework's knowledge to find the file in all possible locations
+
+        :param mutant: The request used to upload the file
+        :param mutant_response: The HTTP response associated with the file upload
+        :return: None
+        """
         # Gen expr for directories where I can search for the uploaded file
         domain_path_set = set(u.get_domain_path() for u in
                               kb.kb.get_all_known_urls())
@@ -162,17 +202,49 @@ class file_upload(AuditPlugin):
                                    the server
         :return: A list of paths where the file could be.
         """
-        seen = []
+        seen = StopIterationLimitList(self.MAX_BRUTEFORCE_FINDS)
 
+        #
+        # First we go through all the known paths and check if any contains
+        # one of the common path names where files are uploaded. If it does
+        # then try to find the file there.
+        #
         for url in domain_path_set:
-            for default_path in self.UPLOAD_PATHS:
-                for sub_url in url.get_directories():
-                    possible_location = sub_url.url_join(default_path + '/')
-                    possible_location = possible_location.url_join(uploaded_file_name)
+            for common_path in self.UPLOAD_PATHS:
+                if common_path not in url.url_string:
+                    continue
 
-                    if possible_location not in seen:
-                        yield possible_location
-                        seen.append(possible_location)
+                possible_location = url.url_join(uploaded_file_name)
+
+                if not seen.contains(possible_location):
+                    yield possible_location
+                    seen.append(possible_location)
+
+        #
+        # No luck with the previous strategy? No problem! Be more aggressive
+        # and try to find the file in the "shortest" paths. This means that
+        # we'll first try:
+        #
+        #   http://target/uploads/{filename}
+        #
+        # And then if still nothing has been found we'll go for:
+        #
+        #   http://target/some/path/with/depth/uploads/{filename}
+        #
+        def sort_by_len(a, b):
+            return cmp(len(b.url_string), len(a.url_string))
+
+        domain_path_list = list(domain_path_set)
+        domain_path_list.sort(sort_by_len)
+
+        for url in domain_path_list:
+            for common_path in self.UPLOAD_PATHS:
+                possible_location = url.url_join(common_path + '/')
+                possible_location = possible_location.url_join(uploaded_file_name)
+
+                if not seen.contains(possible_location):
+                    yield possible_location
+                    seen.append(possible_location)
 
     def get_options(self):
         """
@@ -181,8 +253,8 @@ class file_upload(AuditPlugin):
         ol = OptionList()
 
         d = 'Extensions that w3af will try to upload through the form.'
-        h = 'When finding a form with a file upload, this plugin will try to'\
-            ' upload a set of files with the extensions specified here.'
+        h = ('When finding a form with a file upload, this plugin will try to'
+             ' upload a set of files with the extensions specified here.')
         o = opt_factory('extensions', self._extensions, d, 'list', help=h)
 
         ol.add(o)
@@ -194,7 +266,7 @@ class file_upload(AuditPlugin):
         This method sets all the options that are configured using the user
         interface generated by the framework using the result of get_options().
 
-        :param OptionList: A dictionary with the options for the plugin.
+        :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
         self._extensions = options_list['extensions'].get_value()
@@ -204,7 +276,7 @@ class file_upload(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin will try to expoit insecure file upload forms.
+        This plugin will try to exploit insecure file upload forms.
 
         One configurable parameter exists:
             - extensions
@@ -225,3 +297,24 @@ class file_upload(AuditPlugin):
         directories like "upload" and "files" on every know directory. If the
         file is found, a vulnerability exists.
         """
+
+
+class StopIterationLimitList(object):
+    def __init__(self, max_items):
+        """
+        A rather strange list which will raise StopIteration when storing
+        more than max_items.
+
+        :param max_items: How many items to store before raising StopIteration
+        """
+        self.max_items = max_items
+        self.store = list()
+
+    def append(self, item):
+        if len(self.store) > self.max_items:
+            raise StopIteration
+
+        self.store.append(item)
+
+    def contains(self, item):
+        return item in self.store
