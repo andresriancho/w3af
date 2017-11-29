@@ -104,20 +104,25 @@ class ExactDelayController(DelayMixIn):
         return True, responses
 
     def _log_success(self, delay, response):
-        msg = (u'(Test id: %s) Successfully controlled HTTP response delay for'
+        msg = (u'[did: %s] [id: %s] Successfully controlled HTTP response delay for'
                u' URL %s - parameter "%s" for %s seconds using %r, response'
                u' wait time was: %s seconds and response ID: %s.')
         self._log_generic(msg, delay, response)
 
     def _log_failure(self, delay, response):
-        msg = (u'(Test id: %s) Failed to control HTTP response delay for'
+        msg = (u'[did: %s] [id: %s] Failed to control HTTP response delay for'
                u' URL %s - parameter "%s" for %s seconds using %r, response'
                u' wait time was: %s seconds and response ID: %s.')
         self._log_generic(msg, delay, response)
 
     def _log_generic(self, msg, delay, response):
-        args = (id(self), self.mutant.get_url(), self.mutant.get_token_name(),
-                delay, self.delay_obj, response.get_wait_time(),
+        args = (self._debugging_id,
+                id(self),
+                self.mutant.get_url(),
+                self.mutant.get_token_name(),
+                delay,
+                self.delay_obj,
+                response.get_wait_time(),
                 response.id)
         out.debug(msg % args)
 
@@ -158,7 +163,7 @@ class ExactDelayController(DelayMixIn):
         # Test if the delay worked
         current_response_wait_time = response.get_wait_time()
         args = (id(self), current_response_wait_time, lower_bound)
-        out.debug(u'(Test id: %s) %s > %s' % args)
+        out.debug(u'[id: %s] %s > %s' % args)
 
         if current_response_wait_time > lower_bound:
             return True, response

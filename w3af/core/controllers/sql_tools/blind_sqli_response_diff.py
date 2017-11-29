@@ -275,11 +275,13 @@ class BlindSqliResponseDiff(object):
         return None
 
     def debug(self, msg, mutant=None):
+        did = self._debugging_id
+
         if mutant is None:
-            log_line = '[blind_sqli_debug] %s' % msg
+            log_line = '[blind_sqli_debug] [did: %s] %s' % (did, msg)
         else:
-            args = (id(mutant), mutant.get_token_name(), msg)
-            log_line = '[blind_sqli_debug] [id: %s] [param: %s] %s' % args
+            args = (did, id(mutant), mutant.get_token_name(), msg)
+            log_line = '[blind_sqli_debug] [did: %s] [id: %s] [param: %s] %s' % args
 
         om.out.debug(log_line)
 
