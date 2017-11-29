@@ -724,6 +724,18 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertIn('A long description with special characters: &lt;&amp;&quot;&gt;', xml)
         self.assertValidXML(xml)
 
+    def test_render_unicode_bytestring(self):
+        vuln = MockVuln(name='á')
+        vuln.set_id([])
+
+        x = xml_file()
+
+        finding = Finding(x._get_jinja2_env(), vuln)
+        xml = finding.to_string()
+
+        self.assertIn(u'á', xml)
+        self.assertValidXML(xml)
+
 
 class TestFindingsCache(XMLNodeGeneratorTest):
     def setUp(self):

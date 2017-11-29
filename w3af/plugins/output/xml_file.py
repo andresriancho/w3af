@@ -40,7 +40,7 @@ from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.misc.encoding import smart_str_ignore
+from w3af.core.data.misc.encoding import smart_str_ignore, smart_unicode
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
@@ -290,8 +290,10 @@ class xml_file(OutputPlugin):
         # http://flask.pocoo.org/docs/0.12/patterns/streaming/
         #
         # To prevent having the whole XML in memory
+        # pylint: disable=E1101
         report_stream = template.stream(context)
         report_stream.enable_buffering(3)
+        # pylint: enable=E1101
 
         self._open_file()
 
@@ -596,8 +598,22 @@ class Finding(XMLNode):
 
 class dotdict(dict):
     """dot.notation access to dictionary attributes"""
+
+    def __setattr__(self, key, value):
+        """
+        Overriding in order to translate every value to an unicode object
+
+        :param key: The attribute name to set
+        :param value: The value (string, unicode or anything else)
+        :return: None
+        """
+        if isinstance(value, basestring):
+            value = smart_unicode(value)
+
+        self[key] = value
+
+    #__setattr__ = dict.__setitem__
     __getattr__ = dict.get
-    __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
 
@@ -613,6 +629,9 @@ def jinja2_attr_value_escape_filter(value):
     if not isinstance(value, basestring):
         return value
 
+    # Fix some encoding errors which are triggered when the value is not an
+    # unicode string
+    value = smart_unicode(value)
     retval = []
 
     for letter in value:
@@ -622,4 +641,4 @@ def jinja2_attr_value_escape_filter(value):
         else:
             retval.append(letter)
 
-    return jinja2.Markup(''.join(retval))
+    return jinja2.Markup(u''.join(retval))

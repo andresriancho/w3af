@@ -35,7 +35,6 @@ from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
-import w3af.core.controllers.output_manager as om
 
 
 @app.route('/scans/', methods=['POST'])
@@ -111,11 +110,6 @@ def start_scan():
     scan_info.profile_path = scan_profile_file_name
     scan_info.output = RESTAPIOutput()
     SCANS[scan_id] = scan_info
-
-    # Clear all current output plugins
-    om.manager.set_output_plugins([])
-    # Add the REST API output plugin
-    om.manager.set_output_plugin_inst(scan_info.output)
 
     #
     # Finally, start the scan in a different thread

@@ -89,8 +89,15 @@ class TestStrategy(unittest.TestCase):
         thread_names = [t.name for t in threads]
 
         thread_names_set = set(thread_names)
-        expected_names = {'MainThread', 'SQLiteExecutor',
-                          'OutputManager', 'QueueFeederThread'}
+        expected_names = {'PoolTaskHandler',
+                          'PoolResultHandler',
+                          'WorkerThread',
+                          'AuditorController',
+                          'PoolWorkerHandler',
+                          'MainThread',
+                          'SQLiteExecutor',
+                          'OutputManager',
+                          'QueueFeederThread'}
 
         self.assertEqual(thread_names_set, expected_names)
 

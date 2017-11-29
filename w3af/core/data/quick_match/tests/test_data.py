@@ -1,7 +1,7 @@
 """
 test_data.py
 
-Copyright 2012 Andres Riancho
+Copyright 2017 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 

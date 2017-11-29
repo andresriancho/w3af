@@ -2,7 +2,6 @@
 
 import re
 import sys
-import time
 import datetime
 import dateutil.parser
 
@@ -157,7 +156,9 @@ def get_line_epoch(scan_line):
 
 if __name__ == '__main__':
     try:
+        # pylint: disable=E0632
         _, scan = sys.argv
+        # pylint: enable=E0632
     except:
         print(HELP)
         sys.exit(1)

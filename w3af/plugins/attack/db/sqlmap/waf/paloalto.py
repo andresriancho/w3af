@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import re
@@ -16,7 +16,7 @@ def detect(get_page):
 
     for vector in WAF_ATTACK_VECTORS:
         page, _, _ = get_page(get=vector)
-        retval = re.search(r"Access[^<]+has been blocked in accordance with company policy", page or "", re.I) is not None
+        retval = re.search(r"has been blocked in accordance with company policy", page or "", re.I) is not None
         if retval:
             break
 

@@ -29,18 +29,17 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('github', 'PyGithub', '1.21.0'),
                      PIPDependency('git.util', 'GitPython', '2.1.3'),
                      PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.14'),
-                     PIPDependency('esmre', 'esmre', '0.3.1'),
                      PIPDependency('phply', 'phply', '0.9.1'),
                      PIPDependency('nltk', 'nltk', '3.0.1'),
                      PIPDependency('chardet', 'chardet', '3.0.4'),
                      PIPDependency('tblib', 'tblib', '0.2.0'),
                      PIPDependency('pdfminer', 'pdfminer', '20140328'),
                      PIPDependency('concurrent.futures', 'futures', '2.1.5'),
-                     PIPDependency('OpenSSL', 'pyOpenSSL', '0.15.1'),
+                     PIPDependency('OpenSSL', 'pyOpenSSL', '17.4.0'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
                      # We need 0.1.8 because of mitmproxy
-                     PIPDependency('pyasn1', 'pyasn1', '0.2.3'),
+                     PIPDependency('pyasn1', 'pyasn1', '0.4.2'),
 
                      PIPDependency('lxml', 'lxml', '3.4.4'),
                      PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
@@ -79,6 +78,12 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
 
                      # pebble multiprocessing
                      PIPDependency('pebble', 'pebble', '4.3.3'),
+
+                     # acora speeds up string search, for regular expressions
+                     # we use esmre to extract the string literals from the re
+                     # and acora to match those against the target string
+                     PIPDependency('acora', 'acora', '2.0'),
+                     PIPDependency('esmre', 'esmre', '0.3.1'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

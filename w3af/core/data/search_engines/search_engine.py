@@ -36,8 +36,7 @@ class SearchEngine(object):
         # Based on some tests performed by Nahuel Sanchez, Google will allow
         # us to automate searches if we use this user agent:
         #
-        hdrs = [('User-Agent',
-                 'Googlebot/3.1 (+http://www.googlebot.com/bot.html)')]
+        hdrs = [('User-Agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36')]
         self._headers = Headers(hdrs)
 
     def get_n_results(self, query, limit=0):

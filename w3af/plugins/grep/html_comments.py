@@ -28,7 +28,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.kb.knowledge_base as kb
 
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
@@ -61,7 +61,7 @@ class html_comments(GrepPlugin):
         u'depósito', u'cartão', u'crédito', 'dados pessoais'
     )
 
-    _multi_in = multi_in([' %s ' % w for w in INTERESTING_WORDS])
+    _multi_in = MultiIn([' %s ' % w for w in INTERESTING_WORDS])
 
     def __init__(self):
         GrepPlugin.__init__(self)

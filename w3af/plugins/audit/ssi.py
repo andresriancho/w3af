@@ -25,7 +25,7 @@ import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.utils import rand_number
 from w3af.core.data.db.disk_dict import DiskDict
@@ -174,7 +174,7 @@ class ssi(AuditPlugin):
         :param response: The HTTP response
         :return: None, vulns are stored in KB
         """
-        multi_in_inst = multi_in(self._expected_mutant_dict.keys())
+        multi_in_inst = MultiIn(self._expected_mutant_dict.keys())
 
         for matched_expected_result in multi_in_inst.query(response.get_body()):
             # We found one of the expected results, now we search the

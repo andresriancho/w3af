@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 from lib.core.common import randomStr
@@ -226,11 +226,9 @@ class Enumeration(GenericEnumeration):
 
         return {}
 
-    def searchDb(self):
-        warnMsg = "on SAP MaxDB it is not possible to search databases"
+    def search(self):
+        warnMsg = "on SAP MaxDB search option is not available"
         logger.warn(warnMsg)
-
-        return []
 
     def getHostname(self):
         warnMsg = "on SAP MaxDB it is not possible to enumerate the hostname"

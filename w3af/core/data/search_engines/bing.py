@@ -33,9 +33,11 @@ class bing(SearchEngine):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com',
-                               'onlinehelp.microsoft.com', 'go.microsoft.com',
-                               'msn.com',])
+    BLACKLISTED_DOMAINS = {'cc.bingj.com',
+                           'www.microsofttranslator.com',
+                           'onlinehelp.microsoft.com',
+                           'go.microsoft.com',
+                           'msn.com'}
 
     def __init__(self, urlOpener):
         SearchEngine.__init__(self)
