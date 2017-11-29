@@ -99,8 +99,8 @@ class file_upload(AuditPlugin):
             return
 
         # Gen expr for directories where I can search for the uploaded file
-        domain_path_list = set(u.get_domain_path() for u in
-                               kb.kb.get_all_known_urls())
+        domain_path_set = set(u.get_domain_path() for u in
+                              kb.kb.get_all_known_urls())
 
         debugging_id = rand_alnum(8)
         om.out.debug('audit.file_upload will search for the uploaded file'
@@ -114,7 +114,7 @@ class file_upload(AuditPlugin):
         mutant_repeater = repeat(mutant)
         debugging_id_repeater = repeat(debugging_id)
         http_response_repeater = repeat(mutant_response)
-        url_generator = self._generate_urls(domain_path_list,
+        url_generator = self._generate_urls(domain_path_set,
                                             mutant.uploaded_file_name)
 
         args = izip(url_generator,
@@ -155,19 +155,24 @@ class file_upload(AuditPlugin):
 
         self.kb_append_uniq(self, 'file_upload', v)
 
-    def _generate_urls(self, domain_path_list, uploaded_file_name):
+    def _generate_urls(self, domain_path_set, uploaded_file_name):
         """
-        :param url: A URL where the uploaded_file_name could be
+        :param domain_path_set: A set of domain paths where the file could be
         :param uploaded_file_name: The name of the file that was uploaded to
                                    the server
         :return: A list of paths where the file could be.
         """
-        for url in domain_path_list:
+        seen = []
+
+        for url in domain_path_set:
             for default_path in self.UPLOAD_PATHS:
                 for sub_url in url.get_directories():
                     possible_location = sub_url.url_join(default_path + '/')
                     possible_location = possible_location.url_join(uploaded_file_name)
-                    yield possible_location
+
+                    if possible_location not in seen:
+                        yield possible_location
+                        seen.append(possible_location)
 
     def get_options(self):
         """
