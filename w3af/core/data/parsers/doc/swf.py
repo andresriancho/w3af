@@ -44,7 +44,7 @@ class SWFParser(BaseParser):
         """
         :return: True if the http_resp contains a SWF file.
         """
-        if http_resp.content_type == 'application/x-shockwave-flash':
+        if 'application/x-shockwave-flash' in http_resp.content_type:
 
             body = http_resp.get_body()
 
