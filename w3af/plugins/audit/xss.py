@@ -90,6 +90,11 @@ class xss(AuditPlugin):
         
         :param freq: A FuzzableRequest
         """
+
+        # in most case, all detection is json response
+        if self._is_json_response(orig_response):
+            return
+
         fake_mutants = create_mutants(freq, [''])
 
         # Before we run each fake mutant check in a different thread using the
@@ -105,7 +110,7 @@ class xss(AuditPlugin):
         """
         Tries to identify (persistent) XSS in one parameter.
         """
-        if not self._identify_trivial_xss(mutant):
+        if self._identify_trivial_xss(mutant) == False:
             self._search_xss(mutant)
 
     def _report_vuln(self, mutant, response, mod_value):
@@ -148,19 +153,15 @@ class xss(AuditPlugin):
         
         response = self._uri_opener.send_mutant(trivial_mutant)
 
+        # special character caused a json response,
+        # return None to close the later search
+        if self._is_json_response(response):
+            return None
+
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
             self._xss_mutants.append((trivial_mutant, response.id))
 
-        # This is something I've seen in as a false positive during my
-        # assessments and is better explained in this stackoverflow question
-        # https://goo.gl/BgXVJY
-        ct_options, _ = response.get_headers().iget('X-Content-Type-Options')
-        content_type, _ = response.get_headers().iget('Content-Type')
-
-        if 'application/json' in content_type and ct_options == 'nosniff':
-            # No luck exploiting this JSON XSS
-            return False
 
         if payload in response.get_body().lower():
             self._report_vuln(mutant, response, payload)
@@ -298,6 +299,20 @@ class xss(AuditPlugin):
 
         om.out.vulnerability(v.get_desc())
         self.kb_append_uniq(self, 'xss', v)
+
+    def _is_json_response(self, response):
+        """
+        This is something I've seen in as a false positive during my
+        assessments and is better explained in this stackoverflow question
+        https://goo.gl/BgXVJY
+        """
+        ct_options, _ = response.get_headers().iget('X-Content-Type-Options')
+        content_type, _ = response.get_headers().iget('Content-Type')
+
+        if 'application/json' in content_type and ct_options == 'nosniff':
+            # No luck exploiting this JSON XSS
+            return True
+        return False
 
     def get_options(self):
         """
