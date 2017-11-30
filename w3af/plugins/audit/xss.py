@@ -253,7 +253,7 @@ class xss(AuditPlugin):
 
         if self._is_json_response(response):
             return
-        
+
         for mutant, mutant_response_id in self._xss_mutants:
 
             sent_payload = mutant.get_token_payload()
