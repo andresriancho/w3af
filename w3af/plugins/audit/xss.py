@@ -90,11 +90,6 @@ class xss(AuditPlugin):
         
         :param freq: A FuzzableRequest
         """
-
-        # in most case, all detection is json response
-        if self._is_json_response(orig_response):
-            return
-
         fake_mutants = create_mutants(freq, [''])
 
         # Before we run each fake mutant check in a different thread using the
@@ -110,7 +105,7 @@ class xss(AuditPlugin):
         """
         Tries to identify (persistent) XSS in one parameter.
         """
-        if self._identify_trivial_xss(mutant) == False:
+        if not self._identify_trivial_xss(mutant):
             self._search_xss(mutant)
 
     def _report_vuln(self, mutant, response, mod_value):
@@ -153,11 +148,6 @@ class xss(AuditPlugin):
         
         response = self._uri_opener.send_mutant(trivial_mutant)
 
-        # special character caused a json response,
-        # return None to close the later search
-        if self._is_json_response(response):
-            return None
-
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
             self._xss_mutants.append((trivial_mutant, response.id))
@@ -196,6 +186,9 @@ class xss(AuditPlugin):
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
             self._xss_mutants.append((mutant, response.id))
+
+        if self._is_json_response(response):
+            return
 
         with self._plugin_lock:
             
@@ -250,6 +243,9 @@ class xss(AuditPlugin):
         """
         body = response.get_body()
 
+        if self._is_json_response(response):
+            return
+        
         for mutant, mutant_response_id in self._xss_mutants:
 
             sent_payload = mutant.get_token_payload()
