@@ -22,18 +22,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 from itertools import repeat, izip
+from collections import deque
 
 from w3af import ROOT_PATH
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
+import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.io import NamedStringIO
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
-from w3af.core.data.constants.file_templates.file_templates import get_file_from_template
+from w3af.core.data.constants.file_templates.file_templates import get_template_with_payload
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.fuzzer.fuzzer import create_mutants
@@ -72,6 +74,9 @@ class file_upload(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
 
+        # Internal attributes
+        self._urls_recently_tested = deque(maxlen=30)
+
         # User configured
         self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
 
@@ -86,10 +91,13 @@ class file_upload(AuditPlugin):
         if freq.get_method().upper() != 'POST' or not freq.get_file_vars():
             return
 
+        # Unique payload for the files we upload
+        payload = rand_alnum(239)
+
         for file_parameter in freq.get_file_vars():
             for extension in self._extensions:
 
-                _, file_content, file_name = get_file_from_template(extension)
+                _, file_content, file_name = get_template_with_payload(extension, payload)
 
                 # Only file handlers are passed to the create_mutants functions
                 named_stringio = NamedStringIO(file_content, file_name)
@@ -98,6 +106,9 @@ class file_upload(AuditPlugin):
 
                 for mutant in mutants:
                     mutant.uploaded_file_name = file_name
+                    mutant.extension = extension
+                    mutant.file_content = file_content
+                    mutant.file_payload = payload
 
                 self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                               mutants,
@@ -128,7 +139,64 @@ class file_upload(AuditPlugin):
         :param mutant_response: The HTTP response associated with the file upload
         :return: None
         """
-        pass
+        try:
+            doc_parser = parser_cache.dpc.get_document_parser_for(mutant_response)
+        except BaseFrameworkException:
+            # Failed to find a suitable parser for the document
+            return
+
+        parsed_refs, re_refs = doc_parser.get_references()
+
+        all_references = parsed_refs
+        all_references.extend(re_refs)
+
+        to_verify = set()
+
+        #
+        #   Find the uploaded file in the references!
+        #
+        for ref in all_references:
+            if mutant.uploaded_file_name in ref.url_string:
+                # This one looks really promising!
+                to_verify.add(ref)
+
+            # These are just in case...
+            if ref.get_extension() == mutant.extension:
+                to_verify.add(ref)
+
+        to_verify_filtered = list()
+
+        for url in to_verify:
+            if url in self._urls_recently_tested:
+                continue
+
+            to_verify_filtered.append(url)
+            self._urls_recently_tested.append(url)
+
+        #
+        #   Got nothing interesting, return.
+        #
+        if not to_verify_filtered:
+            return
+
+        #
+        #   Now we verify what we got, this process makes sure that the links
+        #   seen in the HTTP response body do contain the file we uploaded
+        #
+        debugging_id = rand_alnum(8)
+        om.out.debug('audit.file_upload will search for the uploaded file'
+                     ' in URLs extracted from the HTTP response body (did=%s).' % debugging_id)
+
+        mutant_repeater = repeat(mutant)
+        debugging_id_repeater = repeat(debugging_id)
+        http_response_repeater = repeat(mutant_response)
+
+        args = izip(to_verify_filtered,
+                    mutant_repeater,
+                    http_response_repeater,
+                    debugging_id_repeater)
+
+        self.worker_pool.map_multi_args(self._confirm_file_upload, args)
 
     def _find_files_by_bruteforce(self, mutant, mutant_response):
         """
@@ -170,14 +238,14 @@ class file_upload(AuditPlugin):
 
         :param path: The URL where we suspect that a file was uploaded to.
         :param mutant: The mutant that originated the file on the remote end
-        :param http_response: The HTTP response asociated with sending mutant
+        :param http_response: The HTTP response associated with sending mutant
         """
-        get_response = self._uri_opener.GET(path,
-                                            cache=False,
-                                            grep=False,
-                                            debugging_id=debugging_id)
+        response = self._uri_opener.GET(path,
+                                        cache=False,
+                                        grep=False,
+                                        debugging_id=debugging_id)
 
-        if is_404(get_response):
+        if mutant.file_payload not in response.body:
             return
 
         if self._has_bug(mutant):
@@ -187,10 +255,10 @@ class file_upload(AuditPlugin):
         desc %= mutant.found_at()
 
         v = Vuln.from_mutant('Insecure file upload', desc, severity.HIGH,
-                             [http_response.id, get_response.id],
+                             [http_response.id, response.id],
                              self.get_name(), mutant)
 
-        v['file_dest'] = get_response.get_url()
+        v['file_dest'] = response.get_url()
         v['file_vars'] = mutant.get_file_vars()
 
         self.kb_append_uniq(self, 'file_upload', v)
