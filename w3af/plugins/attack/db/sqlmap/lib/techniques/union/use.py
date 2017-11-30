@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import binascii
@@ -226,7 +226,7 @@ def unionUse(expression, unpack=True, dump=False):
 
     if expressionFieldsList and len(expressionFieldsList) > 1 and "ORDER BY" in expression.upper():
         # Removed ORDER BY clause because UNION does not play well with it
-        expression = re.sub("(?i)\s*ORDER BY\s+[\w,]+", "", expression)
+        expression = re.sub(r"(?i)\s*ORDER BY\s+[\w,]+", "", expression)
         debugMsg = "stripping ORDER BY clause from statement because "
         debugMsg += "it does not play well with UNION query SQL injection"
         singleTimeDebugMessage(debugMsg)

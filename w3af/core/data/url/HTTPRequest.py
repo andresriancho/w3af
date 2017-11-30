@@ -38,7 +38,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                  error_handling=True, retries=MAX_HTTP_RETRIES,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
                  new_connection=False, follow_redirects=False,
-                 use_basic_auth=True, use_proxy=True):
+                 use_basic_auth=True, use_proxy=True,
+                 debugging_id=None):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -59,6 +60,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.follow_redirects = follow_redirects
         self.use_basic_auth = use_basic_auth
         self.use_proxy = use_proxy
+        self.debugging_id = debugging_id
 
         self.method = method
         if self.method is None:
@@ -129,6 +131,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         sdict['follow_redirects'] = self.follow_redirects
         sdict['use_basic_auth'] = self.use_basic_auth
         sdict['use_proxy'] = self.use_proxy
+        sdict['debugging_id'] = self.debugging_id
             
         return serializable_dict
 
@@ -168,6 +171,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         follow_redirects = udict['follow_redirects']
         use_basic_auth = udict['use_basic_auth']
         use_proxy = udict['use_proxy']
+        debugging_id = udict['debugging_id']
 
         headers_inst = Headers(headers.items())
         url = URL(uri)
@@ -176,12 +180,15 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                    cookies=cookies, cache=cache, method=method,
                    timeout=timeout, new_connection=new_connection,
                    follow_redirects=follow_redirects,
-                   use_basic_auth=use_basic_auth, use_proxy=use_proxy)
+                   use_basic_auth=use_basic_auth, use_proxy=use_proxy,
+                   debugging_id=debugging_id)
 
     def copy(self):
         return copy.deepcopy(self)
 
     def __repr__(self):
-        fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s)>'
-        return fmt % (self.url_object.url_string, self.cookies,
-                      self.get_from_cache)
+        fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s, did:%s)>'
+        return fmt % (self.url_object.url_string,
+                      self.cookies,
+                      self.get_from_cache,
+                      self.debugging_id)

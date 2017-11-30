@@ -42,11 +42,13 @@ class htaccess_methods(AuditPlugin):
         AuditPlugin.__init__(self)
         self._already_tested = ScalableBloomFilter()
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for htaccess misconfigurations.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         url = freq.get_url()
 

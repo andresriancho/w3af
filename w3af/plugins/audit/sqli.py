@@ -25,8 +25,8 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.esmre.multi_re import multi_re
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_re import MultiRE
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -138,7 +138,7 @@ class sqli(AuditPlugin):
         (r'syntax error', dbms.UNKNOWN),
         (r'Microsoft OLE DB Provider', dbms.UNKNOWN),
     )
-    _multi_in = multi_in(x[0] for x in SQL_ERRORS_STR)
+    _multi_in = MultiIn(x[0] for x in SQL_ERRORS_STR)
 
     SQL_ERRORS_RE = (
         # ASP / MSSQL
@@ -153,7 +153,7 @@ class sqli(AuditPlugin):
         (r'UPDATE .*? SET .*?', dbms.UNKNOWN),
         (r'INSERT INTO .*?', dbms.UNKNOWN),
     )
-    _multi_re = multi_re(SQL_ERRORS_RE)
+    _multi_re = MultiRE(SQL_ERRORS_RE)
 
     # Note that these payloads are similar but they do generate different errors
     # depending on the SQL query context they are used. Removing one or the
@@ -169,17 +169,20 @@ class sqli(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for SQL injection vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mutants = create_mutants(freq, self.SQLI_STRINGS, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """

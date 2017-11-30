@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 class PRIORITY:
@@ -118,14 +118,30 @@ class HASH:
     MSSQL_OLD = r'(?i)\A0x0100[0-9a-f]{8}[0-9a-f]{80}\Z'
     MSSQL_NEW = r'(?i)\A0x0200[0-9a-f]{8}[0-9a-f]{128}\Z'
     ORACLE = r'(?i)\As:[0-9a-f]{60}\Z'
-    ORACLE_OLD = r'(?i)\A[01-9a-f]{16}\Z'
+    ORACLE_OLD = r'(?i)\A[0-9a-f]{16}\Z'
     MD5_GENERIC = r'(?i)\A[0-9a-f]{32}\Z'
     SHA1_GENERIC = r'(?i)\A[0-9a-f]{40}\Z'
-    SHA224_GENERIC = r'(?i)\A[0-9a-f]{28}\Z'
-    SHA384_GENERIC = r'(?i)\A[0-9a-f]{48}\Z'
-    SHA512_GENERIC = r'(?i)\A[0-9a-f]{64}\Z'
-    CRYPT_GENERIC = r'(?i)\A(?!\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z)(?![0-9]+\Z)[./0-9A-Za-z]{13}\Z'
-    WORDPRESS = r'(?i)\A\$P\$[./0-9A-Za-z]{31}\Z'
+    SHA224_GENERIC = r'(?i)\A[0-9a-f]{56}\Z'
+    SHA256_GENERIC = r'(?i)\A[0-9a-f]{64}\Z'
+    SHA384_GENERIC = r'(?i)\A[0-9a-f]{96}\Z'
+    SHA512_GENERIC = r'(?i)\A[0-9a-f]{128}\Z'
+    CRYPT_GENERIC = r'\A(?!\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\Z)(?![0-9]+\Z)[./0-9A-Za-z]{13}\Z'
+    JOOMLA = r'\A[0-9a-f]{32}:\w{32}\Z'
+    WORDPRESS = r'\A\$P\$[./0-9a-zA-Z]{31}\Z'
+    APACHE_MD5_CRYPT = r'\A\$apr1\$.{1,8}\$[./a-zA-Z0-9]+\Z'
+    UNIX_MD5_CRYPT = r'\A\$1\$.{1,8}\$[./a-zA-Z0-9]+\Z'
+    APACHE_SHA1 = r'\A\{SHA\}[a-zA-Z0-9+/]+={0,2}\Z'
+    VBULLETIN = r'\A[0-9a-fA-F]{32}:.{30}\Z'
+    VBULLETIN_OLD = r'\A[0-9a-fA-F]{32}:.{3}\Z'
+    SSHA = r'\A\{SSHA\}[a-zA-Z0-9+/]+={0,2}\Z'
+    SSHA256 = r'\A\{SSHA256\}[a-zA-Z0-9+/]+={0,2}\Z'
+    SSHA512 = r'\A\{SSHA512\}[a-zA-Z0-9+/]+={0,2}\Z'
+    DJANGO_MD5 = r'\Amd5\$[^$]+\$[0-9a-f]{32}\Z'
+    DJANGO_SHA1 = r'\Asha1\$[^$]+\$[0-9a-f]{40}\Z'
+    MD5_BASE64 = r'\A[a-zA-Z0-9+/]{22}==\Z'
+    SHA1_BASE64 = r'\A[a-zA-Z0-9+/]{27}=\Z'
+    SHA256_BASE64 = r'\A[a-zA-Z0-9+/]{43}=\Z'
+    SHA512_BASE64 = r'\A[a-zA-Z0-9+/]{86}==\Z'
 
 # Reference: http://www.zytrax.com/tech/web/mobile_ids.html
 class MOBILES:
@@ -184,6 +200,7 @@ class HTTP_HEADER:
     USER_AGENT = "User-Agent"
     VIA = "Via"
     X_POWERED_BY = "X-Powered-By"
+    X_DATA_ORIGIN = "X-Data-Origin"
 
 class EXPECTED:
     BOOL = "bool"
@@ -369,6 +386,7 @@ class MKSTEMP_PREFIX:
     RESULTS = "sqlmapresults-"
     COOKIE_JAR = "sqlmapcookiejar-"
     BIG_ARRAY = "sqlmapbigarray-"
+    SPECIFIC_RESPONSE = "sqlmapresponse-"
 
 class TIMEOUT_STATE:
     NORMAL = 0

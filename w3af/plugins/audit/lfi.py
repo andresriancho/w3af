@@ -29,8 +29,8 @@ import w3af.core.data.kb.config as cf
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.contains_source_code import contains_source_code
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.esmre.multi_in import multi_in
-from w3af.core.data.esmre.multi_re import multi_re
+from w3af.core.data.quick_match.multi_in import MultiIn
+from w3af.core.data.quick_match.multi_re import MultiRE
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
@@ -57,14 +57,16 @@ class lfi(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    file_pattern_multi_in = multi_in(FILE_PATTERNS)
-    file_read_error_multi_re = multi_re(FILE_OPEN_ERRORS)
+    file_pattern_multi_in = MultiIn(FILE_PATTERNS)
+    file_read_error_multi_re = MultiRE(FILE_OPEN_ERRORS)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for local file inclusion vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mutants = create_mutants(freq,
                                  self.get_lfi_tests(freq),
@@ -73,7 +75,8 @@ class lfi(AuditPlugin):
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result,
-                                      grep=False)
+                                      grep=False,
+                                      debugging_id=debugging_id)
 
     def get_lfi_tests(self, freq):
         """
@@ -236,9 +239,9 @@ class lfi(AuditPlugin):
         :return: A list of errors found on the page
         """
         res = set()
-        matches = self.file_pattern_multi_in.query(response.get_body())
+        body = response.get_body()
 
-        for file_pattern_match in matches:
+        for file_pattern_match in self.file_pattern_multi_in.query(body):
             res.add(file_pattern_match)
 
         if len(res) == 1:

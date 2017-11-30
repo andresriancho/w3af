@@ -40,24 +40,27 @@ class rfd(AuditPlugin):
     Identify reflected file download vulnerabilities.
     :author: Dmitry (nixwzard@gmail.com)
     """
-
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for RFD vulnerabilities.
  
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
-        ct = ''
         orig_headers = orig_response.headers
 
-        if 'content-type' in orig_headers:
-            ct = orig_headers['content-type'].split(';')[0]
+        ct, _ = orig_headers.iget('content-type', None)
+        cd, _ = orig_headers.iget('content-disposition', None)
 
-        if 'content-disposition' in orig_headers:
+        if ct is not None:
+            ct = ct.split(';')[0]
+
+        if cd is not None:
             cd = orig_headers['content-disposition']
             # we have the header, but is it was set correctly?
 
-            if 'filename' in cd:
+            if 'filename' in cd.lower():
                 # yes filename exists
                 om.out.debug(u'URL "%s" is not vulnerable to RFD because of'
                              u' explicit filename in content-disposition header'
@@ -105,15 +108,15 @@ class rfd(AuditPlugin):
             response = self._uri_opener.send_mutant(mutant)
             body = response.body.decode('unicode-escape')
             if not response.get_code() == 200:
-                #no need to seek reflection if it is not OK
+                # no need to seek reflection if it is not OK
                 continue
 
             rpos = body.find(payloads[0])
             if rpos == -1:
-                #the input is not reflected
+                # the input is not reflected
                 continue
 
-            #is it JSONP?
+            # is it JSONP?
             if body[rpos+len(EXEC_TOKEN)] == '(' and not '\"' in body[:rpos]:
                 # we've reflected as JSONP callback
                 self._report_vuln(u'%s is vulnerable, to RFD because even if'
@@ -122,14 +125,13 @@ class rfd(AuditPlugin):
                                   freq, response.id)
                 break
 
-            #now we need to figure out what escape chars were filtered
+            # now we need to figure out what escape chars were filtered
             if body[rpos:rpos+len(payloads[1])] == payloads[1]:
-                #nothing was filtered or escaped
+                # nothing was filtered or escaped
                 self._report_vuln(u'%s is vulnerable to RFD because nothing is'
                                   u' filtered or escaped, response id %s',
                                   freq, response.id)
                 return
-
 
             filtered, escaped = self._find_escaped_or_filtered(body,
                                                                rpos+len(EXEC_TOKEN),

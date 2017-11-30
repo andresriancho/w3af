@@ -44,9 +44,13 @@ class memcachei(AuditPlugin):
         AuditPlugin.__init__(self)
         self._eq_limit = 0.97
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for memcache injection vulnerabilities.
+
+        :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         try:
             self.batch_injection_test(freq, orig_response)

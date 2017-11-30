@@ -161,7 +161,7 @@ class TestCSRF(PluginTest):
         
         orig_response = self.uri_opener.send_mutant(freq)
         
-        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response)
+        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertTrue(origin_checked)
 
     @attr('ci_fails')
@@ -172,7 +172,7 @@ class TestCSRF(PluginTest):
         
         orig_response = self.uri_opener.send_mutant(freq)
         
-        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response)
+        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertTrue(origin_checked)
 
     @attr('ci_fails')
@@ -183,7 +183,7 @@ class TestCSRF(PluginTest):
         
         orig_response = self.uri_opener.send_mutant(freq)
         
-        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response)
+        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertFalse(origin_checked)
 
     @attr('ci_fails')

@@ -25,7 +25,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -49,7 +49,7 @@ class mx_injection(AuditPlugin):
         'Query: FETCH',
         'IMAP command'
     )
-    _multi_in = multi_in(MX_ERRORS)
+    _multi_in = MultiIn(MX_ERRORS)
 
     def __init__(self):
         """
@@ -60,11 +60,13 @@ class mx_injection(AuditPlugin):
         """
         AuditPlugin.__init__(self)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for mx injection vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mx_injection_strings = self._get_MX_injection_strings()
         mutants = create_mutants(freq, mx_injection_strings,
@@ -72,28 +74,30 @@ class mx_injection(AuditPlugin):
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """
         Analyze results of the _send_mutant method.
         """
         # I will only report the vulnerability once.
-        if self._has_no_bug(mutant):
+        if self._has_bug(mutant):
+            return
 
-            mx_error_list = self._multi_in.query(response.body)
-            for mx_error in mx_error_list:
-                if mx_error not in mutant.get_original_response_body():
-                    
-                    desc = 'MX injection was found at: %s' % mutant.found_at()
-                    
-                    v = Vuln.from_mutant('MX injection vulnerability', desc,
-                                         severity.MEDIUM, response.id,
-                                         self.get_name(), mutant)
-                    
-                    v.add_to_highlight(mx_error)
-                    self.kb_append_uniq(self, 'mx_injection', v)
-                    break
+        for mx_error in self._multi_in.query(response.body):
+            if mx_error in mutant.get_original_response_body():
+                continue
+
+            desc = 'MX injection was found at: %s' % mutant.found_at()
+
+            v = Vuln.from_mutant('MX injection vulnerability', desc,
+                                 severity.MEDIUM, response.id,
+                                 self.get_name(), mutant)
+
+            v.add_to_highlight(mx_error)
+            self.kb_append_uniq(self, 'mx_injection', v)
+            break
 
     def _get_MX_injection_strings(self):
         """

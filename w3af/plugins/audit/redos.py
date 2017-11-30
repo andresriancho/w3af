@@ -39,14 +39,13 @@ class redos(AuditPlugin):
     :author: Sebastien Duquette ( sebastien.duquette@gmail.com )
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for ReDoS vulnerabilities using time delays.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         if self.ignore_this_request(freq):
             return

@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 from lib.core.data import logger
@@ -46,7 +46,7 @@ def checkDependencies():
                 __import__("jpype")
             elif dbmsName == DBMS.INFORMIX:
                 __import__("ibm_db_dbi")
-        except ImportError:
+        except:
             warnMsg = "sqlmap requires '%s' third-party library " % data[1]
             warnMsg += "in order to directly connect to the DBMS "
             warnMsg += "'%s'. Download from %s" % (dbmsName, data[2])

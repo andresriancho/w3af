@@ -29,10 +29,10 @@ import subprocess
 import lxml.etree as etree
 
 
-URL = 'http://data.phishtank.com/data/online-valid/'
+URL = 'https://data.phishtank.com/data/online-valid/'
 XML_DB_FILE = 'w3af/plugins/crawl/phishtank/index.xml'
 CSV_DB_FILE = 'w3af/plugins/crawl/phishtank/index.csv'
-DOWNLOAD_CMD = 'wget -q -O- --header="Accept-Encoding: gzip" %s | gunzip > %s'
+DOWNLOAD_CMD = 'wget -q %s -O %s'
 
 
 class PhishTankHandler(object):

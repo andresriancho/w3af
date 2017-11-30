@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import httplib
@@ -26,9 +26,9 @@ from lib.core.enums import REDIRECTION
 from lib.core.exception import SqlmapBaseException
 from lib.core.exception import SqlmapConnectionException
 from lib.core.exception import SqlmapUserQuitException
+from lib.core.settings import BING_REGEX
 from lib.core.settings import DUMMY_SEARCH_USER_AGENT
 from lib.core.settings import DUCKDUCKGO_REGEX
-from lib.core.settings import DISCONNECT_SEARCH_REGEX
 from lib.core.settings import GOOGLE_REGEX
 from lib.core.settings import HTTP_ACCEPT_ENCODING_HEADER_VALUE
 from lib.core.settings import UNICODE_ENCODING
@@ -104,25 +104,24 @@ def _search(dork):
     if not retVal and "detected unusual traffic" in page:
         warnMsg = "Google has detected 'unusual' traffic from "
         warnMsg += "used IP address disabling further searches"
-        logger.warn(warnMsg)
+
+        if conf.proxyList:
+            raise SqlmapBaseException(warnMsg)
+        else:
+            logger.critical(warnMsg)
 
     if not retVal:
         message = "no usable links found. What do you want to do?"
         message += "\n[1] (re)try with DuckDuckGo (default)"
-        message += "\n[2] (re)try with Disconnect Search"
+        message += "\n[2] (re)try with Bing"
         message += "\n[3] quit"
         choice = readInput(message, default='1')
 
         if choice == '3':
             raise SqlmapUserQuitException
         elif choice == '2':
-            url = "https://search.disconnect.me/searchTerms/search?"
-            url += "start=nav&option=Web"
-            url += "&query=%s" % urlencode(dork, convall=True)
-            url += "&ses=Google&location_option=US"
-            url += "&nextDDG=%s" % urlencode("/search?q=%s&setmkt=en-US&setplang=en-us&setlang=en-us&first=%d&FORM=PORE" % (urlencode(dork, convall=True), (gpage - 1) * 10), convall=True)
-            url += "&sa=N&showIcons=false&filterIcons=none&js_enabled=1"
-            regex = DISCONNECT_SEARCH_REGEX
+            url = "https://www.bing.com/search?q=%s&first=%d" % (urlencode(dork, convall=True), (gpage - 1) * 10 + 1)
+            regex = BING_REGEX
         else:
             url = "https://duckduckgo.com/d.js?"
             url += "q=%s&p=%d&s=100" % (urlencode(dork, convall=True), gpage)

@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import re
@@ -10,7 +10,7 @@ import re
 from lib.core.enums import HTTP_HEADER
 from lib.core.settings import WAF_ATTACK_VECTORS
 
-__product__ = "Varnish FireWall (OWASP) "
+__product__ = "Varnish FireWall (OWASP)"
 
 def detect(get_page):
     retval = False

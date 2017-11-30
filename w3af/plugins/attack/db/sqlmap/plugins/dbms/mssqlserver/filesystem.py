@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import ntpath
@@ -46,7 +46,7 @@ class Filesystem(GenericFilesystem):
             scrString = ""
 
             for lineChar in fileContent[fileLine:fileLine + lineLen]:
-                strLineChar = hexencode(lineChar)
+                strLineChar = hexencode(lineChar, conf.encoding)
 
                 if not scrString:
                     scrString = "e %x %s" % (lineAddr, strLineChar)
