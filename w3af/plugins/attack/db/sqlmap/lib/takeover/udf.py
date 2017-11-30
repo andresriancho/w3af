@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import os
@@ -195,7 +195,7 @@ class UDF:
 
         if not self.isDba():
             warnMsg = "functionality requested probably does not work because "
-            warnMsg += "the curent session user is not a database administrator"
+            warnMsg += "the current session user is not a database administrator"
             logger.warn(warnMsg)
 
         if not conf.shLib:

@@ -53,17 +53,20 @@ class response_splitting(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for response splitting vulnerabilities.
 
-        :param freq: A fuzzable_request
+        :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mutants = create_mutants(freq, self.HEADER_INJECTION_TESTS)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """

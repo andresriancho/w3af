@@ -2,15 +2,18 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import copy
 import httplib
+import logging
+import os
 import random
 import re
 import socket
 import subprocess
+import tempfile
 import time
 
 from extra.beep.beep import beep
@@ -30,6 +33,7 @@ from lib.core.common import hashDBRetrieve
 from lib.core.common import hashDBWrite
 from lib.core.common import intersect
 from lib.core.common import listToStrValue
+from lib.core.common import openFile
 from lib.core.common import parseFilePaths
 from lib.core.common import popValue
 from lib.core.common import pushValue
@@ -55,6 +59,7 @@ from lib.core.enums import HASHDB_KEYS
 from lib.core.enums import HEURISTIC_TEST
 from lib.core.enums import HTTP_HEADER
 from lib.core.enums import HTTPMETHOD
+from lib.core.enums import MKSTEMP_PREFIX
 from lib.core.enums import NOTE
 from lib.core.enums import NULLCONNECTION
 from lib.core.enums import PAYLOAD
@@ -63,11 +68,13 @@ from lib.core.enums import REDIRECTION
 from lib.core.exception import SqlmapConnectionException
 from lib.core.exception import SqlmapNoneDataException
 from lib.core.exception import SqlmapSilentQuitException
+from lib.core.exception import SqlmapSkipTargetException
 from lib.core.exception import SqlmapUserQuitException
 from lib.core.settings import CANDIDATE_SENTENCE_MIN_LENGTH
 from lib.core.settings import CHECK_INTERNET_ADDRESS
 from lib.core.settings import CHECK_INTERNET_VALUE
 from lib.core.settings import DEFAULT_GET_POST_DELIMITER
+from lib.core.settings import DEV_EMAIL_ADDRESS
 from lib.core.settings import DUMMY_NON_SQLI_CHECK_APPENDIX
 from lib.core.settings import FI_ERROR_REGEX
 from lib.core.settings import FORMAT_EXCEPTION_STRINGS
@@ -162,6 +169,13 @@ def checkSqlInjection(place, parameter, value):
             unionExtended = False
             trueCode, falseCode = None, None
 
+            if conf.httpCollector is not None:
+                conf.httpCollector.setExtendedArguments({
+                    "_title": title,
+                    "_place": place,
+                    "_parameter": parameter,
+                })
+
             if stype == PAYLOAD.TECHNIQUE.UNION:
                 configUnion(test.request.char)
 
@@ -245,17 +259,23 @@ def checkSqlInjection(place, parameter, value):
             if payloadDbms is not None:
                 # Skip DBMS-specific test if it does not match the user's
                 # provided DBMS
-                if conf.dbms is not None and not intersect(payloadDbms, conf.dbms, True):
+                if conf.dbms and not intersect(payloadDbms, conf.dbms, True):
                     debugMsg = "skipping test '%s' because " % title
-                    debugMsg += "the provided DBMS is %s" % conf.dbms
+                    debugMsg += "its declared DBMS is different than provided"
+                    logger.debug(debugMsg)
+                    continue
+
+                if kb.dbmsFilter and not intersect(payloadDbms, kb.dbmsFilter, True):
+                    debugMsg = "skipping test '%s' because " % title
+                    debugMsg += "its declared DBMS is different than provided"
                     logger.debug(debugMsg)
                     continue
 
                 # Skip DBMS-specific test if it does not match the
                 # previously identified DBMS (via DBMS-specific payload)
-                if injection.dbms is not None and not intersect(payloadDbms, injection.dbms, True):
-                    debugMsg = "skipping test '%s' because the identified " % title
-                    debugMsg += "back-end DBMS is %s" % injection.dbms
+                if injection.dbms and not intersect(payloadDbms, injection.dbms, True):
+                    debugMsg = "skipping test '%s' because " % title
+                    debugMsg += "its declared DBMS is different than identified"
                     logger.debug(debugMsg)
                     continue
 
@@ -555,7 +575,7 @@ def checkSqlInjection(place, parameter, value):
                                 page, headers, _ = Request.queryPage(reqPayload, place, content=True, raise404=False)
                                 output = extractRegexResult(check, page, re.DOTALL | re.IGNORECASE) \
                                         or extractRegexResult(check, threadData.lastHTTPError[2] if wasLastResponseHTTPError() else None, re.DOTALL | re.IGNORECASE) \
-                                        or extractRegexResult(check, listToStrValue([headers[key] for key in headers.keys() if key.lower() != URI_HTTP_HEADER.lower()] if headers else None), re.DOTALL | re.IGNORECASE) \
+                                        or extractRegexResult(check, listToStrValue((headers[key] for key in headers.keys() if key.lower() != URI_HTTP_HEADER.lower()) if headers else None), re.DOTALL | re.IGNORECASE) \
                                         or extractRegexResult(check, threadData.lastRedirectMsg[1] if threadData.lastRedirectMsg and threadData.lastRedirectMsg[0] == threadData.lastRequestUID else None, re.DOTALL | re.IGNORECASE)
 
                                 if output:
@@ -606,13 +626,16 @@ def checkSqlInjection(place, parameter, value):
 
                             configUnion(test.request.char, test.request.columns)
 
-                            if not Backend.getIdentifiedDbms():
+                            if len(kb.dbmsFilter or []) == 1:
+                                Backend.forceDbms(kb.dbmsFilter[0])
+                            elif not Backend.getIdentifiedDbms():
                                 if kb.heuristicDbms is None:
-                                    warnMsg = "using unescaped version of the test "
-                                    warnMsg += "because of zero knowledge of the "
-                                    warnMsg += "back-end DBMS. You can try to "
-                                    warnMsg += "explicitly set it with option '--dbms'"
-                                    singleTimeWarnMessage(warnMsg)
+                                    if kb.heuristicTest == HEURISTIC_TEST.POSITIVE or injection.data:
+                                        warnMsg = "using unescaped version of the test "
+                                        warnMsg += "because of zero knowledge of the "
+                                        warnMsg += "back-end DBMS. You can try to "
+                                        warnMsg += "explicitly set it with option '--dbms'"
+                                        singleTimeWarnMessage(warnMsg)
                                 else:
                                     Backend.forceDbms(kb.heuristicDbms)
 
@@ -737,10 +760,17 @@ def checkSqlInjection(place, parameter, value):
             warnMsg = "user aborted during detection phase"
             logger.warn(warnMsg)
 
-            msg = "how do you want to proceed? [(S)kip current test/(e)nd detection phase/(n)ext parameter/(c)hange verbosity/(q)uit]"
-            choice = readInput(msg, default='S', checkBatch=False).upper()
+            if conf.multipleTargets:
+                msg = "how do you want to proceed? [ne(X)t target/(s)kip current test/(e)nd detection phase/(n)ext parameter/(c)hange verbosity/(q)uit]"
+                choice = readInput(msg, default='T', checkBatch=False).upper()
+            else:
+                msg = "how do you want to proceed? [(S)kip current test/(e)nd detection phase/(n)ext parameter/(c)hange verbosity/(q)uit]"
+                choice = readInput(msg, default='S', checkBatch=False).upper()
 
-            if choice == 'C':
+            if choice == 'X':
+                if conf.multipleTargets:
+                    raise SqlmapSkipTargetException
+            elif choice == 'C':
                 choice = None
                 while not ((choice or "").isdigit() and 0 <= int(choice) <= 6):
                     if choice:
@@ -1115,16 +1145,16 @@ def checkDynamicContent(firstPage, secondPage):
             count += 1
 
             if count > conf.retries:
-                warnMsg = "target URL is too dynamic. "
+                warnMsg = "target URL content appears to be too dynamic. "
                 warnMsg += "Switching to '--text-only' "
                 logger.warn(warnMsg)
 
                 conf.textOnly = True
                 return
 
-            warnMsg = "target URL is heavily dynamic"
-            warnMsg += ". sqlmap is going to retry the request"
-            logger.critical(warnMsg)
+            warnMsg = "target URL content appears to be heavily dynamic. "
+            warnMsg += "sqlmap is going to retry the request(s)"
+            singleTimeLogMessage(warnMsg, logging.CRITICAL)
 
             secondPage, _, _ = Request.queryPage(content=True)
             findDynamicContent(firstPage, secondPage)
@@ -1140,7 +1170,7 @@ def checkStability():
     like for instance string matching (--string).
     """
 
-    infoMsg = "testing if the target URL is stable"
+    infoMsg = "testing if the target URL content is stable"
     logger.info(infoMsg)
 
     firstPage = kb.originalPage  # set inside checkConnection()
@@ -1158,7 +1188,7 @@ def checkStability():
 
     if kb.pageStable:
         if firstPage:
-            infoMsg = "target URL is stable"
+            infoMsg = "target URL content is stable"
             logger.info(infoMsg)
         else:
             errMsg = "there was an error checking the stability of page "
@@ -1168,12 +1198,11 @@ def checkStability():
             logger.error(errMsg)
 
     else:
-        warnMsg = "target URL is not stable. sqlmap will base the page "
+        warnMsg = "target URL content is not stable. sqlmap will base the page "
         warnMsg += "comparison on a sequence matcher. If no dynamic nor "
         warnMsg += "injectable parameters are detected, or in case of "
         warnMsg += "junk results, refer to user's manual paragraph "
-        warnMsg += "'Page comparison' and provide a string or regular "
-        warnMsg += "expression to match on"
+        warnMsg += "'Page comparison'"
         logger.warn(warnMsg)
 
         message = "how do you want to proceed? [(C)ontinue/(s)tring/(r)egex/(q)uit] "
@@ -1278,6 +1307,9 @@ def checkWaf():
             logger.critical(warnMsg)
         return _
 
+    if not kb.originalPage:
+        return None
+
     infoMsg = "checking if the target is protected by "
     infoMsg += "some kind of WAF/IPS/IDS"
     logger.info(infoMsg)
@@ -1352,6 +1384,9 @@ def identifyWaf():
     retVal = []
 
     for function, product in kb.wafFunctions:
+        if retVal and "unknown" in product.lower():
+            continue
+
         try:
             logger.debug("checking for WAF/IPS/IDS product '%s'" % product)
             found = function(_)
@@ -1369,6 +1404,18 @@ def identifyWaf():
             retVal.append(product)
 
     if retVal:
+        if kb.wafSpecificResponse and len(retVal) == 1 and "unknown" in retVal[0].lower():
+            handle, filename = tempfile.mkstemp(prefix=MKSTEMP_PREFIX.SPECIFIC_RESPONSE)
+            os.close(handle)
+            with openFile(filename, "w+b") as f:
+                f.write(kb.wafSpecificResponse)
+
+            message = "WAF/IPS/IDS specific response can be found in '%s'. " % filename
+            message += "If you know the details on used protection please "
+            message += "report it along with specific response "
+            message += "to '%s'" % DEV_EMAIL_ADDRESS
+            logger.warn(message)
+
         message = "are you sure that you want to "
         message += "continue with further target testing? [y/N] "
         choice = readInput(message, default='N', boolean=True)
@@ -1408,7 +1455,7 @@ def checkNullConnection():
         if not page and HTTP_HEADER.CONTENT_LENGTH in (headers or {}):
             kb.nullConnection = NULLCONNECTION.HEAD
 
-            infoMsg = "NULL connection is supported with HEAD method (Content-Length)"
+            infoMsg = "NULL connection is supported with HEAD method ('Content-Length')"
             logger.info(infoMsg)
         else:
             page, headers, _ = Request.getPage(auxHeaders={HTTP_HEADER.RANGE: "bytes=-1"})
@@ -1416,11 +1463,10 @@ def checkNullConnection():
             if page and len(page) == 1 and HTTP_HEADER.CONTENT_RANGE in (headers or {}):
                 kb.nullConnection = NULLCONNECTION.RANGE
 
-                infoMsg = "NULL connection is supported with GET method (Range)"
-                infoMsg += "'%s'" % kb.nullConnection
+                infoMsg = "NULL connection is supported with GET method ('Range')"
                 logger.info(infoMsg)
             else:
-                _, headers, _ = Request.getPage(skipRead = True)
+                _, headers, _ = Request.getPage(skipRead=True)
 
                 if HTTP_HEADER.CONTENT_LENGTH in (headers or {}):
                     kb.nullConnection = NULLCONNECTION.SKIP_READ
@@ -1470,9 +1516,10 @@ def checkConnection(suppressOutput=False):
             warnMsg += "which could interfere with the results of the tests"
             logger.warn(warnMsg)
         elif wasLastResponseHTTPError():
-            warnMsg = "the web server responded with an HTTP error code (%d) " % getLastRequestHTTPError()
-            warnMsg += "which could interfere with the results of the tests"
-            logger.warn(warnMsg)
+            if getLastRequestHTTPError() != conf.ignoreCode:
+                warnMsg = "the web server responded with an HTTP error code (%d) " % getLastRequestHTTPError()
+                warnMsg += "which could interfere with the results of the tests"
+                logger.warn(warnMsg)
         else:
             kb.errorIsNone = True
 

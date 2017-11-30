@@ -49,11 +49,13 @@ class global_redirect(AuditPlugin):
         self._meta_url_re = re.compile('.*?;URL=(.*)',
                                        re.IGNORECASE | re.DOTALL)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for global redirect vulnerabilities.
 
         :param freq: A FuzzableRequest object
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
 
         netloc = freq.get_uri().get_net_location()
@@ -72,7 +74,8 @@ class global_redirect(AuditPlugin):
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """

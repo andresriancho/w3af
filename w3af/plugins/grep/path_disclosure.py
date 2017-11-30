@@ -23,7 +23,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.esmre.multi_re import multi_re
+from w3af.core.data.quick_match.multi_re import MultiRE
 from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.constants.common_directories import get_common_directories
 from w3af.core.data.kb.vuln import Vuln
@@ -58,7 +58,7 @@ class path_disclosure(GrepPlugin):
             regex_string = regex_string % path_disclosure_string
             all_signatures.append(regex_string)
             
-        self._signature_re = multi_re(all_signatures, hint_len=1)
+        self._signature_re = MultiRE(all_signatures, hint_len=1)
 
     def grep(self, request, response):
         """

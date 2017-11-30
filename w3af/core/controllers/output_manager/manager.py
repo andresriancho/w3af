@@ -203,9 +203,11 @@ class OutputManager(Process):
         if not self.should_flush():
             return
 
-        self.update_last_output_flush()
-
         pool = self._worker_pool
+        if pool.is_closed():
+            return
+
+        self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
             pool.apply_async(func=self.__inner_flush_plugin_output,
@@ -305,6 +307,10 @@ class OutputManager(Process):
 
     def end_output_plugins(self):
         self.process_all_messages()
+
+        # Wait for any calls to flush() which might be running
+        self._worker_pool.close()
+        self._worker_pool.join()
 
         # Now call end() on all plugins
         self.__end_output_plugins_impl()
@@ -412,7 +418,7 @@ class OutputManager(Process):
         #    om.out.error(msg, ignore_plugins=set([self.get_name()])
         #
         ignored_plugins = kwds.pop('ignore_plugins', set())
-        
+
         for o_plugin in self._output_plugin_instances:
             
             if o_plugin.get_name() in ignored_plugins:
@@ -433,7 +439,7 @@ class OutputManager(Process):
     def set_output_plugins(self, output_plugins):
         """
         :param output_plugins: A list with the names of Output Plugins that
-                                  will be used.
+                               will be used.
         :return: No value is returned.
         """
         self._output_plugin_instances = []

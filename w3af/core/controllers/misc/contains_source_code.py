@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import string
 
-from w3af.core.data.esmre.multi_re import multi_re
+from w3af.core.data.quick_match.multi_re import MultiRE
 
 PHP = 'PHP'
 ASP = 'ASP'
@@ -88,7 +88,7 @@ SOURCE_CODE = (
 
 BLACKLIST = {'xml', 'xpacket'}
 
-_multi_re = multi_re(SOURCE_CODE, re.IGNORECASE | re.DOTALL, hint_len=2)
+_multi_re = MultiRE(SOURCE_CODE, re.IGNORECASE | re.DOTALL, hint_len=2)
 
 
 def contains_source_code(http_response):

@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 from lib.core.common import Backend
@@ -82,7 +82,7 @@ class Fingerprint(GenericFingerprint):
         if conf.direct:
             result = True
         else:
-            result = inject.checkBooleanExpression("SQUARE([RANDNUM])=SQUARE([RANDNUM])")
+            result = inject.checkBooleanExpression("UNICODE(SQUARE(NULL)) IS NULL")
 
         if result:
             infoMsg = "confirming %s" % DBMS.MSSQL

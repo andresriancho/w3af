@@ -43,20 +43,23 @@ class blind_sqli(AuditPlugin):
         # User configured variables
         self._eq_limit = 0.9
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for blind SQL injection vulnerabilities.
 
         :param freq: A FuzzableRequest
         :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         #
         #    Setup blind SQL injection detector objects
         #
         bsqli_resp_diff = BlindSqliResponseDiff(self._uri_opener)
         bsqli_resp_diff.set_eq_limit(self._eq_limit)
+        bsqli_resp_diff.set_debugging_id(debugging_id)
 
         bsqli_time_delay = BlindSQLTimeDelay(self._uri_opener)
+        bsqli_time_delay.set_debugging_id(debugging_id)
 
         method_list = [bsqli_resp_diff, bsqli_time_delay]
 
@@ -90,9 +93,13 @@ class blind_sqli(AuditPlugin):
         sql_injection_list = kb.kb.get('sqli', 'sqli')
 
         for sql_injection in sql_injection_list:
-            if sql_injection.get_url() == mutant.get_url() and \
-            sql_injection.get_token_name() == mutant.get_token_name():
-                return True
+            if sql_injection.get_url() != mutant.get_url():
+                continue
+
+            if sql_injection.get_token_name() != mutant.get_token_name():
+                continue
+
+            return True
 
         return False
 

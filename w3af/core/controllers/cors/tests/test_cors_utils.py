@@ -36,7 +36,7 @@ from w3af.core.controllers.cors.utils import (build_cors_request,
 class TestUtils(unittest.TestCase):
 
     def test_provides_cors_features_fails(self):
-        self.assertRaises(AttributeError, provides_cors_features, None, None)
+        self.assertRaises(AttributeError, provides_cors_features, None, None, None)
 
     def test_provides_cors_features_false(self):
         url = URL('http://moth/')
@@ -47,7 +47,7 @@ class TestUtils(unittest.TestCase):
         url_opener_mock = Mock()
         url_opener_mock.GET = MagicMock(return_value=http_response)
 
-        cors = provides_cors_features(fr, url_opener_mock)
+        cors = provides_cors_features(fr, url_opener_mock, None)
 
         call_header = Headers({'Origin': 'www.w3af.org'}.items())
         url_opener_mock.GET.assert_called_with(url, headers=call_header)
@@ -65,9 +65,9 @@ class TestUtils(unittest.TestCase):
         url_opener_mock = Mock()
         url_opener_mock.GET = MagicMock(return_value=http_response)
 
-        cors = provides_cors_features(fr, url_opener_mock)
+        cors = provides_cors_features(fr, url_opener_mock, None)
 
-        url_opener_mock.GET.assert_called_with(url)
+        url_opener_mock.GET.assert_called_with(url, debugging_id=None)
 
         self.assertTrue(cors)
 

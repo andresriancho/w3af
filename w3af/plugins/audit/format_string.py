@@ -39,21 +39,21 @@ class format_string(AuditPlugin):
         '<title>500 Internal Server Error</title>\n',
     )
 
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for format string vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         string_list = self._get_string_list()
         mutants = create_mutants(freq, string_list, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """

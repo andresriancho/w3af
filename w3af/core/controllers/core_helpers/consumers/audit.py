@@ -23,6 +23,7 @@ import time
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
                                                                         task_decorator)
@@ -135,14 +136,19 @@ class audit(BaseConsumer):
         args = (plugin.get_name(), fuzzable_request.get_uri())
         om.out.debug('%s.audit(%s)' % args)
 
+        debugging_id = rand_alnum(8)
+
         start_time = time.time()
 
         try:
-            plugin.audit_with_copy(fuzzable_request, orig_resp)
+            plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
         except Exception, e:
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
 
         spent_time = time.time() - start_time
-        args = (plugin.get_name(), fuzzable_request.get_uri(), spent_time)
-        om.out.debug('%s.audit(%s) took %.2f seconds to run' % args)
+        args = (plugin.get_name(),
+                fuzzable_request.get_uri(),
+                debugging_id,
+                spent_time)
+        om.out.debug('%s.audit(url="%s", did=%s) took %.2f seconds to run' % args)

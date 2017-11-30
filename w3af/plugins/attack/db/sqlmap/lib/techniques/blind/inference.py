@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import re
@@ -40,6 +40,7 @@ from lib.core.settings import INFERENCE_BLANK_BREAK
 from lib.core.settings import INFERENCE_UNKNOWN_CHAR
 from lib.core.settings import INFERENCE_GREATER_CHAR
 from lib.core.settings import INFERENCE_EQUALS_CHAR
+from lib.core.settings import INFERENCE_MARKER
 from lib.core.settings import INFERENCE_NOT_EQUALS_CHAR
 from lib.core.settings import MAX_BISECTION_LENGTH
 from lib.core.settings import MAX_REVALIDATION_STEPS
@@ -67,7 +68,12 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
     partialValue = u""
     finalValue = None
     retrievedLength = 0
-    asciiTbl = getCharset(charsetType)
+
+    if charsetType is None and conf.charset:
+        asciiTbl = sorted(set(ord(_) for _ in conf.charset))
+    else:
+        asciiTbl = getCharset(charsetType)
+
     threadData = getCurrentThreadData()
     timeBasedCompare = (kb.technique in (PAYLOAD.TECHNIQUE.TIME, PAYLOAD.TECHNIQUE.STACKED))
     retVal = hashDBRetrieve(expression, checkConf=True)
@@ -104,18 +110,18 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
 
         if partialValue:
             firstChar = len(partialValue)
-        elif "LENGTH(" in expression.upper() or "LEN(" in expression.upper():
+        elif re.search(r"(?i)\b(LENGTH|LEN)\(", expression):
             firstChar = 0
         elif (kb.fileReadMode or dump) and conf.firstChar is not None and (isinstance(conf.firstChar, int) or (isinstance(conf.firstChar, basestring) and conf.firstChar.isdigit())):
             firstChar = int(conf.firstChar) - 1
             if kb.fileReadMode:
-                firstChar *= 2
+                firstChar <<= 1
         elif isinstance(firstChar, basestring) and firstChar.isdigit() or isinstance(firstChar, int):
             firstChar = int(firstChar) - 1
         else:
             firstChar = 0
 
-        if "LENGTH(" in expression.upper() or "LEN(" in expression.upper():
+        if re.search(r"(?i)\b(LENGTH|LEN)\(", expression):
             lastChar = 0
         elif dump and conf.lastChar is not None and (isinstance(conf.lastChar, int) or (isinstance(conf.lastChar, basestring) and conf.lastChar.isdigit())):
             lastChar = int(conf.lastChar)
@@ -271,86 +277,86 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
             lastCheck = False
             unexpectedCode = False
 
-            while len(charTbl) != 1:
-                position = None
+            if continuousOrder:
+                while len(charTbl) > 1:
+                    position = None
 
-                if charsetType is None:
-                    if not firstCheck:
-                        try:
+                    if charsetType is None:
+                        if not firstCheck:
                             try:
-                                lastChar = [_ for _ in threadData.shared.value if _ is not None][-1]
-                            except IndexError:
-                                lastChar = None
-                            if 'a' <= lastChar <= 'z':
-                                position = charTbl.index(ord('a') - 1)  # 96
-                            elif 'A' <= lastChar <= 'Z':
-                                position = charTbl.index(ord('A') - 1)  # 64
-                            elif '0' <= lastChar <= '9':
-                                position = charTbl.index(ord('0') - 1)  # 47
-                        except ValueError:
-                            pass
-                        finally:
-                            firstCheck = True
-
-                    elif not lastCheck and numThreads == 1:  # not usable in multi-threading environment
-                        if charTbl[(len(charTbl) >> 1)] < ord(' '):
-                            try:
-                                # favorize last char check if current value inclines toward 0
-                                position = charTbl.index(1)
+                                try:
+                                    lastChar = [_ for _ in threadData.shared.value if _ is not None][-1]
+                                except IndexError:
+                                    lastChar = None
+                                if 'a' <= lastChar <= 'z':
+                                    position = charTbl.index(ord('a') - 1)  # 96
+                                elif 'A' <= lastChar <= 'Z':
+                                    position = charTbl.index(ord('A') - 1)  # 64
+                                elif '0' <= lastChar <= '9':
+                                    position = charTbl.index(ord('0') - 1)  # 47
                             except ValueError:
                                 pass
                             finally:
-                                lastCheck = True
+                                firstCheck = True
 
-                if position is None:
-                    position = (len(charTbl) >> 1)
+                        elif not lastCheck and numThreads == 1:  # not usable in multi-threading environment
+                            if charTbl[(len(charTbl) >> 1)] < ord(' '):
+                                try:
+                                    # favorize last char check if current value inclines toward 0
+                                    position = charTbl.index(1)
+                                except ValueError:
+                                    pass
+                                finally:
+                                    lastCheck = True
 
-                posValue = charTbl[position]
-                falsePayload = None
+                    if position is None:
+                        position = (len(charTbl) >> 1)
 
-                if "'%s'" % CHAR_INFERENCE_MARK not in payload:
-                    forgedPayload = safeStringFormat(payload, (expressionUnescaped, idx, posValue))
-                    falsePayload = safeStringFormat(payload, (expressionUnescaped, idx, RANDOM_INTEGER_MARKER))
-                else:
-                    # e.g.: ... > '%c' -> ... > ORD(..)
-                    markingValue = "'%s'" % CHAR_INFERENCE_MARK
-                    unescapedCharValue = unescaper.escape("'%s'" % decodeIntToUnicode(posValue))
-                    forgedPayload = safeStringFormat(payload, (expressionUnescaped, idx)).replace(markingValue, unescapedCharValue)
-                    falsePayload = safeStringFormat(payload, (expressionUnescaped, idx)).replace(markingValue, NULL)
+                    posValue = charTbl[position]
+                    falsePayload = None
 
-                if timeBasedCompare:
-                    if kb.responseTimeMode:
-                        kb.responseTimePayload = falsePayload
+                    if "'%s'" % CHAR_INFERENCE_MARK not in payload:
+                        forgedPayload = safeStringFormat(payload, (expressionUnescaped, idx, posValue))
+                        falsePayload = safeStringFormat(payload, (expressionUnescaped, idx, RANDOM_INTEGER_MARKER))
                     else:
-                        kb.responseTimePayload = None
+                        # e.g.: ... > '%c' -> ... > ORD(..)
+                        markingValue = "'%s'" % CHAR_INFERENCE_MARK
+                        unescapedCharValue = unescaper.escape("'%s'" % decodeIntToUnicode(posValue))
+                        forgedPayload = safeStringFormat(payload, (expressionUnescaped, idx)).replace(markingValue, unescapedCharValue)
+                        falsePayload = safeStringFormat(payload, (expressionUnescaped, idx)).replace(markingValue, NULL)
 
-                result = Request.queryPage(forgedPayload, timeBasedCompare=timeBasedCompare, raise404=False)
-                incrementCounter(kb.technique)
+                    if timeBasedCompare:
+                        if kb.responseTimeMode:
+                            kb.responseTimePayload = falsePayload
+                        else:
+                            kb.responseTimePayload = None
 
-                if not timeBasedCompare:
-                    unexpectedCode |= threadData.lastCode not in (kb.injection.data[kb.technique].falseCode, kb.injection.data[kb.technique].trueCode)
-                    if unexpectedCode:
-                        warnMsg = "unexpected HTTP code '%s' detected. Will use (extra) validation step in similar cases" % threadData.lastCode
-                        singleTimeWarnMessage(warnMsg)
+                    result = Request.queryPage(forgedPayload, timeBasedCompare=timeBasedCompare, raise404=False)
+                    incrementCounter(kb.technique)
 
-                if result:
-                    minValue = posValue
+                    if not timeBasedCompare:
+                        unexpectedCode |= threadData.lastCode not in (kb.injection.data[kb.technique].falseCode, kb.injection.data[kb.technique].trueCode)
+                        if unexpectedCode:
+                            warnMsg = "unexpected HTTP code '%s' detected. Will use (extra) validation step in similar cases" % threadData.lastCode
+                            singleTimeWarnMessage(warnMsg)
 
-                    if type(charTbl) != xrange:
-                        charTbl = charTbl[position:]
+                    if result:
+                        minValue = posValue
+
+                        if not isinstance(charTbl, xrange):
+                            charTbl = charTbl[position:]
+                        else:
+                            # xrange() - extended virtual charset used for memory/space optimization
+                            charTbl = xrange(charTbl[position], charTbl[-1] + 1)
                     else:
-                        # xrange() - extended virtual charset used for memory/space optimization
-                        charTbl = xrange(charTbl[position], charTbl[-1] + 1)
-                else:
-                    maxValue = posValue
+                        maxValue = posValue
 
-                    if type(charTbl) != xrange:
-                        charTbl = charTbl[:position]
-                    else:
-                        charTbl = xrange(charTbl[0], charTbl[position])
+                        if not isinstance(charTbl, xrange):
+                            charTbl = charTbl[:position]
+                        else:
+                            charTbl = xrange(charTbl[0], charTbl[position])
 
-                if len(charTbl) == 1:
-                    if continuousOrder:
+                    if len(charTbl) == 1:
                         if maxValue == 1:
                             return None
 
@@ -384,7 +390,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                                         if timeBasedCompare:
                                             if kb.adjustTimeDelay is not ADJUST_TIME_DELAY.DISABLE:
                                                 conf.timeSec += 1
-                                                warnMsg = "increasing time delay to %d second%s " % (conf.timeSec, 's' if conf.timeSec > 1 else '')
+                                                warnMsg = "increasing time delay to %d second%s" % (conf.timeSec, 's' if conf.timeSec > 1 else '')
                                                 logger.warn(warnMsg)
 
                                             if kb.adjustTimeDelay is ADJUST_TIME_DELAY.YES:
@@ -409,25 +415,40 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                                     return decodeIntToUnicode(retVal)
                             else:
                                 return None
+            else:
+                candidates = list(originalTbl)
+                bit = 0
+                while len(candidates) > 1:
+                    bits = {}
+                    for candidate in candidates:
+                        bit = 0
+                        while candidate:
+                            bits.setdefault(bit, 0)
+                            bits[bit] += 1 if candidate & 1 else -1
+                            candidate >>= 1
+                            bit += 1
+
+                    choice = sorted(bits.items(), key=lambda _: abs(_[1]))[0][0]
+                    mask = 1 << choice
+
+                    forgedPayload = safeStringFormat(payload.replace(INFERENCE_GREATER_CHAR, "&%d%s" % (mask, INFERENCE_GREATER_CHAR)), (expressionUnescaped, idx, 0))
+                    result = Request.queryPage(forgedPayload, timeBasedCompare=timeBasedCompare, raise404=False)
+                    incrementCounter(kb.technique)
+
+                    if result:
+                        candidates = [_ for _ in candidates if _ & mask > 0]
                     else:
-                        if minValue == maxChar or maxValue == minChar:
-                            return None
+                        candidates = [_ for _ in candidates if _ & mask == 0]
 
-                        for index in xrange(len(originalTbl)):
-                            if originalTbl[index] == minValue:
-                                break
+                    bit += 1
 
-                        # If we are working with non-continuous elements, both minValue and character after
-                        # are possible candidates
-                        for retVal in (originalTbl[index], originalTbl[index + 1]):
-                            forgedPayload = safeStringFormat(payload.replace(INFERENCE_GREATER_CHAR, INFERENCE_EQUALS_CHAR), (expressionUnescaped, idx, retVal))
-                            result = Request.queryPage(forgedPayload, timeBasedCompare=timeBasedCompare, raise404=False)
-                            incrementCounter(kb.technique)
+                if candidates:
+                    forgedPayload = safeStringFormat(payload.replace(INFERENCE_GREATER_CHAR, INFERENCE_EQUALS_CHAR), (expressionUnescaped, idx, candidates[0]))
+                    result = Request.queryPage(forgedPayload, timeBasedCompare=timeBasedCompare, raise404=False)
+                    incrementCounter(kb.technique)
 
-                            if result:
-                                return decodeIntToUnicode(retVal)
-
-                        return None
+                    if result:
+                        return decodeIntToUnicode(candidates[0])
 
         # Go multi-threading (--threads > 1)
         if conf.threads > 1 and isinstance(length, int) and length > 1:
@@ -440,32 +461,28 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                     threadData = getCurrentThreadData()
 
                     while kb.threadContinue:
-                        kb.locks.index.acquire()
+                        with kb.locks.index:
+                            if threadData.shared.index[0] - firstChar >= length:
+                                return
 
-                        if threadData.shared.index[0] - firstChar >= length:
-                            kb.locks.index.release()
-
-                            return
-
-                        threadData.shared.index[0] += 1
-                        curidx = threadData.shared.index[0]
-                        kb.locks.index.release()
+                            threadData.shared.index[0] += 1
+                            currentCharIndex = threadData.shared.index[0]
 
                         if kb.threadContinue:
-                            charStart = time.time()
-                            val = getChar(curidx)
+                            start = time.time()
+                            val = getChar(currentCharIndex, asciiTbl, not(charsetType is None and conf.charset))
                             if val is None:
                                 val = INFERENCE_UNKNOWN_CHAR
                         else:
                             break
 
                         with kb.locks.value:
-                            threadData.shared.value[curidx - 1 - firstChar] = val
+                            threadData.shared.value[currentCharIndex - 1 - firstChar] = val
                             currentValue = list(threadData.shared.value)
 
                         if kb.threadContinue:
                             if showEta:
-                                progress.progress(time.time() - charStart, threadData.shared.index[0])
+                                progress.progress(calculateDeltaSeconds(start), threadData.shared.index[0])
                             elif conf.verbose >= 1:
                                 startCharIndex = 0
                                 endCharIndex = 0
@@ -488,15 +505,15 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                                     count += 1 if currentValue[i] is not None else 0
 
                                 if startCharIndex > 0:
-                                    output = '..' + output[2:]
+                                    output = ".." + output[2:]
 
                                 if (endCharIndex - startCharIndex == conf.progressWidth) and (endCharIndex < length - 1):
-                                    output = output[:-2] + '..'
+                                    output = output[:-2] + ".."
 
                                 if conf.verbose in (1, 2) and not showEta and not conf.api:
                                     _ = count - firstChar
                                     output += '_' * (min(length, conf.progressWidth) - len(output))
-                                    status = ' %d/%d (%d%%)' % (_, length, round(100.0 * _ / length))
+                                    status = ' %d/%d (%d%%)' % (_, length, int(100.0 * _ / length))
                                     output += status if _ != length else " " * len(status)
 
                                     dataToStdout("\r[%s] [INFO] retrieved: %s" % (time.strftime("%X"), filterControlChars(output)))
@@ -533,7 +550,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
 
             while True:
                 index += 1
-                charStart = time.time()
+                start = time.time()
 
                 # Common prediction feature (a.k.a. "good samaritan")
                 # NOTE: to be used only when multi-threading is not set for
@@ -549,7 +566,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                         testValue = unescaper.escape("'%s'" % commonValue) if "'" not in commonValue else unescaper.escape("%s" % commonValue, quote=False)
 
                         query = kb.injection.data[kb.technique].vector
-                        query = agent.prefixQuery(query.replace("[INFERENCE]", "(%s)=%s" % (expressionUnescaped, testValue)))
+                        query = agent.prefixQuery(query.replace(INFERENCE_MARKER, "(%s)%s%s" % (expressionUnescaped, INFERENCE_EQUALS_CHAR, testValue)))
                         query = agent.suffixQuery(query)
 
                         result = Request.queryPage(agent.payload(newValue=query), timeBasedCompare=timeBasedCompare, raise404=False)
@@ -558,7 +575,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                         # Did we have luck?
                         if result:
                             if showEta:
-                                progress.progress(time.time() - charStart, len(commonValue))
+                                progress.progress(calculateDeltaSeconds(start), len(commonValue))
                             elif conf.verbose in (1, 2) or conf.api:
                                 dataToStdout(filterControlChars(commonValue[index - 1:]))
 
@@ -573,7 +590,7 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                         testValue = unescaper.escape("'%s'" % commonPattern) if "'" not in commonPattern else unescaper.escape("%s" % commonPattern, quote=False)
 
                         query = kb.injection.data[kb.technique].vector
-                        query = agent.prefixQuery(query.replace("[INFERENCE]", "(%s)=%s" % (subquery, testValue)))
+                        query = agent.prefixQuery(query.replace(INFERENCE_MARKER, "(%s)=%s" % (subquery, testValue)))
                         query = agent.suffixQuery(query)
 
                         result = Request.queryPage(agent.payload(newValue=query), timeBasedCompare=timeBasedCompare, raise404=False)
@@ -594,9 +611,9 @@ def bisection(payload, expression, length=None, charsetType=None, firstChar=None
                     # If we had no luck with commonValue and common charset,
                     # use the returned other charset
                     if not val:
-                        val = getChar(index, otherCharset, otherCharset == asciiTbl)
+                        val = getChar(index, otherCharset, otherCharset==asciiTbl)
                 else:
-                    val = getChar(index, asciiTbl)
+                    val = getChar(index, asciiTbl, not(charsetType is None and conf.charset))
 
                 if val is None:
                     finalValue = partialValue

@@ -90,6 +90,7 @@ class crawl_infrastructure(BaseConsumer):
                 try:
                     self._route_all_plugin_results()
                 except KeyboardInterrupt:
+                    self.in_queue.task_done()
                     continue
                 # pylint: enable=E1120
             else:
@@ -98,7 +99,8 @@ class crawl_infrastructure(BaseConsumer):
                     # Close the pool and wait for everyone to finish
                     self._threadpool.close()
                     self._threadpool.join()
-                    del self._threadpool
+                    self._threadpool = None
+
                     self._running = False
                     self._teardown()
 
@@ -118,6 +120,7 @@ class crawl_infrastructure(BaseConsumer):
                     else:
                         self.in_queue.task_done()
 
+                    # Free memory
                     work_unit = None
 
     def _teardown(self, plugin=None):

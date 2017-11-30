@@ -42,7 +42,7 @@ class websocket_hijacking(AuditPlugin):
         super(websocket_hijacking, self).__init__()
         self.already_tested_websockets = ScalableBloomFilter()
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Detect websockets for Cross-Site WebSocket hijacking vulnerabilities.
 
@@ -57,6 +57,8 @@ class websocket_hijacking(AuditPlugin):
               will most likely fail in "complex" web applications
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # We can only work if there are known web sockets
         ws_links = kb.kb.get('websockets_links', 'websockets_links')

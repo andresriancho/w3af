@@ -56,11 +56,13 @@ class ssl_certificate(AuditPlugin):
         self._ca_file = os.path.join(ROOT_PATH, 'plugins', 'audit',
                                      'ssl_certificate', 'ca.pem')
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Get the cert and do some checks against it.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         url = freq.get_url()
         domain = url.get_domain()

@@ -56,7 +56,7 @@ class SQLMapWrapper(object):
     SQLMAP_LOCATION = os.path.join(ROOT_PATH,
                                    'plugins', 'attack', 'db', 'sqlmap')
     VULN_STR = '[INFO] the back-end DBMS is'
-    NOT_VULN_STR = 'all tested parameters appear to be not injectable'
+    NOT_VULN_STR = 'all tested parameters do not appear to be injectable'
 
     SQLMAP_ERRORS = ('connection timed out to the target',
                      'infinite redirect loop detected',
