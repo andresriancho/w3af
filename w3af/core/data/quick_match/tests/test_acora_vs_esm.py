@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import esm
 
-from acora import AcoraBuilder
+from acora import AcoraBuilder, PyAcora
 from nose.plugins.skip import SkipTest
 
 from .test_data import HTTP_RESPONSE, SQL_ERRORS
@@ -31,6 +31,9 @@ from .test_data import HTTP_RESPONSE, SQL_ERRORS
 
 @SkipTest
 class TestAcoraPerformanceVsESM(unittest.TestCase):
+    """
+    nosetests --with-timer -s -v -x w3af/core/data/quick_match/tests/test_acora_vs_esm.py
+    """
 
     ITERATIONS = 100000
 
@@ -43,6 +46,22 @@ class TestAcoraPerformanceVsESM(unittest.TestCase):
 
         #
         # This takes around 0.6 seconds in my workstation.
+        #
+        for j in xrange(self.ITERATIONS):
+            for _ in ac.finditer(HTTP_RESPONSE):
+                i += 1
+
+        self.assertEqual(i, self.ITERATIONS * 2)
+
+    def test_acora_python(self):
+        builder = AcoraBuilder()
+        builder.update([s for (s,) in SQL_ERRORS])
+        ac = builder.build(acora=PyAcora)
+
+        i = 0
+
+        #
+        # This takes around 9 seconds in my workstation.
         #
         for j in xrange(self.ITERATIONS):
             for _ in ac.finditer(HTTP_RESPONSE):
