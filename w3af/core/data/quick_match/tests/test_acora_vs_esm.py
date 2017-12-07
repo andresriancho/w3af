@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import esm
+import ahocorasick
 
 from acora import AcoraBuilder, PyAcora
 from nose.plugins.skip import SkipTest
@@ -32,10 +33,28 @@ from .test_data import HTTP_RESPONSE, SQL_ERRORS
 @SkipTest
 class TestAcoraPerformanceVsESM(unittest.TestCase):
     """
+    Comment the @SkipTest and then run:
+
     nosetests --with-timer -s -v -x w3af/core/data/quick_match/tests/test_acora_vs_esm.py
     """
 
     ITERATIONS = 100000
+
+    def test_pyahocorasick(self):
+        autom = ahocorasick.Automaton()
+
+        for idx, (key,) in enumerate(SQL_ERRORS):
+            autom.add_word(key, (idx, key))
+
+        autom.make_automaton()
+
+        i = 0
+
+        for j in xrange(self.ITERATIONS):
+            for end_index, (insert_order, original_value) in autom.iter(HTTP_RESPONSE):
+                i += 1
+
+        self.assertEqual(i, self.ITERATIONS * 2)
 
     def test_acora(self):
         builder = AcoraBuilder()
