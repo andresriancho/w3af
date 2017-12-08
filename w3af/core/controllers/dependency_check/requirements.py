@@ -82,7 +82,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      # acora speeds up string search, for regular expressions
                      # we use esmre to extract the string literals from the re
                      # and acora to match those against the target string
-                     PIPDependency('acora', 'acora', '2.0'),
+                     PIPDependency('ahocorasick', 'pyahocorasick', '1.1.6'),
                      PIPDependency('esmre', 'esmre', '0.3.1'),
                      ]
 
