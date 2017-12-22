@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 import os
-import urllib
-import zipfile
 
 from itertools import repeat, izip
 
@@ -64,7 +62,6 @@ class wpscan(CrawlPlugin):
         self._exec = True
         self._already_tested = DiskSet(table_prefix='wpscan')
 
-    @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
         Get the file and parse it.
@@ -72,21 +69,6 @@ class wpscan(CrawlPlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                (among other things) the URL to test.
         """
-        if self._update_plugins or not os.path.exists(os.path.join(self.BASE_PATH, 'plugins.json')):
-            om.out.debug("Downloading the archive from wpscan and extracting plugins.json ...", )
-            try:
-                os.stat(BASE_PATH)
-            except OSError:
-                om.out.debug("%s doesn't exist, making ..." % BASE_PATH)
-                os.mkdir(BASE_PATH)
-                om.out.debug("done")
-            with open('/tmp/data.zip', 'wb') as f:
-                f.write(urllib.urlopen('https://github.com/wpscanteam/wpscan/raw/master/data.zip').read())
-            _wpscan_data_zip = zipfile.ZipFile(open('/tmp/data.zip', 'rb'))
-            _wpscan_data_zip.extract('data/plugins.json', os.path.join(self.BASE_PATH))
-            os.rename(os.path.join(self.BASE_PATH, 'data', 'plugins.json'), 
-                      os.path.join(self.BASE_PATH, 'plugins.json'))
-            om.out.debug('done')
         self._plugin_list = json.load(open(os.path.join(self.BASE_PATH, 'plugins.json'), 'r'))
         if not self._exec:
             raise RunOnce()
