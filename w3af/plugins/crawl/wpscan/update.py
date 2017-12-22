@@ -26,9 +26,6 @@ import sys
 import subprocess
 import zipfile
 
-import lxml.etree as etree
-
-
 URL = 'https://github.com/wpscanteam/wpscan/raw/master/data.zip'
 ZIP_FILE = 'w3af/plugins/crawl/wpscan/data.zip'
 DATA_DIR = 'w3af/plugins/crawl/wpscan/data'
