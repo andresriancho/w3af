@@ -108,9 +108,11 @@ Once the docker installation is running these steps will yield a running
     $ git clone https://github.com/andresriancho/w3af.git
     $ cd w3af/extras/docker/scripts/
     $ sudo ./w3af_console_docker
+    root@172.17.0.2's password:
+    ...
     w3af>>>
 
-For advanced usage of ``w3af``'s docker container please read the documentation
+The credentials are `root:w3af`. For advanced usage of ``w3af``'s docker container please read the documentation
 at the `docker registry hub <https://registry.hub.docker.com/u/andresriancho/w3af/>`_
 
 Installation in Mac OSX
