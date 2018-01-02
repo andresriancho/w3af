@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import difflib
-import pprint
 
 
 def relative_distance_boolean(a_str, b_str, threshold=0.6):
