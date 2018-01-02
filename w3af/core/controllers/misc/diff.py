@@ -33,18 +33,6 @@ def diff(a, b):
 
              Or if you want to see it in another way, the results are the
              parts of the string that make it unique between each other.
-
-    >>> diff('123456', '123a56')
-    ('4', 'a')
-
-    >>> diff('yes 123abc', 'no 123abc')
-    ('yes', 'no')
-
-    >>> diff('123abc yes', '123abc no')
-    ('yes', 'no')
-
-    >>> diff('123abc yes', 'no 123abc no')
-    ('yes', 'no no')
     """
     matching_blocks = difflib.SequenceMatcher(None, a, b).get_matching_blocks()
     removed_a = 0
