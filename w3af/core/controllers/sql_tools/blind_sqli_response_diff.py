@@ -26,8 +26,8 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.utils import rand_number
 from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
-from w3af.core.controllers.misc.diff import diff
 from w3af.core.controllers.exceptions import HTTPRequestException
+from w3af.core.controllers.misc.diff import chunked_diff
 
 
 class BlindSqliResponseDiff(object):
@@ -290,7 +290,7 @@ class BlindSqliResponseDiff(object):
         Determines if two pages are equal using a ratio.
         """
         if compare_diff:
-            body1, body2 = diff(body1, body2)
+            body1, body2 = chunked_diff(body1, body2)
 
         cmp_res = relative_distance_boolean(body1, body2, self._eq_limit)
 
