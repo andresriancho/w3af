@@ -26,7 +26,7 @@ import unittest
 from nose.plugins.skip import SkipTest
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.misc.diff import diff, chunked_diff, CHUNK_SIZE
+from w3af.core.controllers.misc.diff import diff, chunked_diff
 
 
 class TestDiff(unittest.TestCase):
@@ -55,7 +55,7 @@ class TestDiff(unittest.TestCase):
         a = file(os.path.join(self.DATA, 'source.xml')).read()
         b = file(os.path.join(self.DATA, 'target.xml')).read()
 
-        # This takes ~2 seconds on my workstation
+        # This takes ~2.5 seconds on my workstation
         diff(a, b)
 
 
@@ -73,26 +73,33 @@ class TestDiffInChunks(unittest.TestCase):
         a = file(os.path.join(self.DATA, 'source.xml')).read()
         b = file(os.path.join(self.DATA, 'target.xml')).read()
 
-        # This takes ~0.15 seconds on my workstation
+        # This takes ~0.07 seconds on my workstation
         chunked_diff(a, b)
 
     def test_middle(self):
-        a = 'A' * CHUNK_SIZE + 'B' * CHUNK_SIZE + 'C' * CHUNK_SIZE
-        b = 'A' * CHUNK_SIZE + 'X' * CHUNK_SIZE + 'C' * CHUNK_SIZE
-        self.assertEqual(chunked_diff(a, b), ('B' * CHUNK_SIZE, 'X' * CHUNK_SIZE))
+        a = 'A\nB\nC'
+        b = 'A\nX\nC'
+        self.assertEqual(chunked_diff(a, b), ('B', 'X'))
+
+    def test_all_no_sep(self):
+        a = 'ABC'
+        b = 'AXC'
+        self.assertEqual(chunked_diff(a, b), ('ABC', 'AXC'))
 
     def test_middle_not_aligned(self):
-        a = 'A' * CHUNK_SIZE + 'B' * CHUNK_SIZE + 'C' * 12
-        b = 'A' * CHUNK_SIZE + 'X' * CHUNK_SIZE + 'C' * 10
-        self.assertEqual(chunked_diff(a, b), ('B' * CHUNK_SIZE + 'C' * 12, 'X' * CHUNK_SIZE + 'C' * 10))
+        a = 'A\nB\nC'
+        b = 'A\nXY\nC'
+        self.assertEqual(chunked_diff(a, b), ('B', 'XY'))
 
     def test_empty(self):
         self.assertEqual(chunked_diff('', ''), ('', ''))
 
     def test_start(self):
-        a = 'A1' * (CHUNK_SIZE / 2) + 'B' * CHUNK_SIZE + 'C' * CHUNK_SIZE
-        b = 'A2' * (CHUNK_SIZE / 2) + 'B' * CHUNK_SIZE + 'C' * CHUNK_SIZE
-        self.assertEqual(chunked_diff(a, b), ('A1' * (CHUNK_SIZE / 2), 'A2' * (CHUNK_SIZE / 2)))
+        a = 'X\nB\nC'
+        b = 'A\nB\nC'
+        self.assertEqual(chunked_diff(a, b), ('X', 'A'))
 
-    def test_middle_short(self):
-        self.assertEqual(chunked_diff('123456', '123a56'), ('123456', '123a56'))
+    def test_different_separator(self):
+        a = 'X\tB\nC'
+        b = 'A<B\nC'
+        self.assertEqual(chunked_diff(a, b), ('X', 'A'))
