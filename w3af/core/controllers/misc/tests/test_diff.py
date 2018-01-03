@@ -84,7 +84,7 @@ class TestDiffInChunks(unittest.TestCase):
     def test_middle_not_aligned(self):
         a = 'A' * CHUNK_SIZE + 'B' * CHUNK_SIZE + 'C' * 12
         b = 'A' * CHUNK_SIZE + 'X' * CHUNK_SIZE + 'C' * 10
-        self.assertEqual(chunked_diff(a, b), ('B' * CHUNK_SIZE + 'C' * 12, 'X' * 32 + 'C' * 10))
+        self.assertEqual(chunked_diff(a, b), ('B' * CHUNK_SIZE + 'C' * 12, 'X' * CHUNK_SIZE + 'C' * 10))
 
     def test_empty(self):
         self.assertEqual(chunked_diff('', ''), ('', ''))
