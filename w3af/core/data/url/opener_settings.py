@@ -45,9 +45,8 @@ from w3af.core.data.url.handlers.cache import CacheHandler
 from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
-from w3af.core.data.url.handlers.errors import ErrorHandler
-from w3af.core.data.options.option_types import (POSITIVE_INT, INT, STRING,
-                                                 LIST, BOOL)
+from w3af.core.data.url.handlers.errors import ErrorHandler, NoOpErrorHandler
+from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, LIST, BOOL
 
 USER_AGENT_HEADER = 'User-Agent'
 
@@ -377,13 +376,22 @@ class OpenerSettings(Configurable):
 
         # Prepare the list of handlers
         handlers = []
-        for handler in [self._proxy_handler, self._basic_auth_handler,
-                        self._ntlm_auth_handler, self._cookie_handler,
-                        NormalizeHandler, self._ka_http, self._ka_https,
-                        OutputManagerHandler, HTTP30XHandler, BlacklistHandler,
+        for handler in [self._proxy_handler,
+                        self._basic_auth_handler,
+                        self._ntlm_auth_handler,
+                        self._cookie_handler,
+                        NormalizeHandler,
+                        self._ka_http,
+                        self._ka_https,
+                        OutputManagerHandler,
+                        HTTP30XHandler,
+                        BlacklistHandler,
                         MangleHandler(self._mangle_plugins),
-                        HTTPGzipProcessor, self._url_parameter_handler,
-                        self._cache_handler, ErrorHandler]:
+                        HTTPGzipProcessor,
+                        self._url_parameter_handler,
+                        self._cache_handler,
+                        ErrorHandler,
+                        NoOpErrorHandler]:
             if handler:
                 handlers.append(handler)
 
