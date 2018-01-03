@@ -163,7 +163,7 @@ class ExactDelayController(DelayMixIn):
         # Test if the delay worked
         current_response_wait_time = response.get_wait_time()
         args = (id(self), current_response_wait_time, lower_bound)
-        out.debug(u'[id: %s] %s > %s' % args)
+        out.debug(u'[id: %s] HTTP response delay was %s. Expected delay was %s.' % args)
 
         if current_response_wait_time > lower_bound:
             return True, response
