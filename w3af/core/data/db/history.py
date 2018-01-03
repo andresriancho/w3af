@@ -237,7 +237,7 @@ class HistoryItem(object):
 
         else:
             msg = 'Timeout expecting trace file to be ready "%s"' % fname
-            raise IOError(msg)
+            raise DBException(msg)
 
     @verify_has_db
     def delete(self, _id=None):
