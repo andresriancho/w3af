@@ -21,11 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.output_manager import out
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
-from w3af.core.controllers.delay_detection.delay_mixin import DelayMixIn
 from w3af.core.data.url.helpers import new_no_content_resp
 
 
-class ExactDelayController(DelayMixIn):
+class ExactDelayController(object):
     """
     Given that more than one vulnerability can be detected using time delays,
     just to name a couple blind SQL injections and OS commandings, I decided to
@@ -88,12 +87,15 @@ class ExactDelayController(DelayMixIn):
         in place.
         """
         responses = []
-        
-        for delay in self.DELAY_SECONDS:
-            # Update the wait time before each test
-            original_wait_time = self.get_original_time(debugging_id=self.get_debugging_id())
 
-            success, response = self.delay_for(delay, original_wait_time)
+        for delay in self.DELAY_SECONDS:
+
+            # Please note that this call is cached, it will only generate HTTP
+            # requests every N calls for the same HTTP request.
+            original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
+                                                                      debugging_id=self.get_debugging_id())
+
+            success, response = self.delay_for(delay, original_rtt)
             if success:
                 self._log_success(delay, response)
                 responses.append(response)
@@ -163,11 +165,9 @@ class ExactDelayController(DelayMixIn):
         # Test if the delay worked
         current_response_wait_time = response.get_wait_time()
         args = (id(self), current_response_wait_time, lower_bound)
-        out.debug(u'[id: %s] HTTP response delay was %s. Expected delay was %s.' % args)
+        out.debug(u'[id: %s] HTTP response delay was %.2f. Expected delay was %.2f.' % args)
 
         if current_response_wait_time > lower_bound:
             return True, response
 
         return False, response
-
-
