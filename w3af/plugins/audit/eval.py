@@ -121,33 +121,41 @@ class eval(AuditPlugin):
         Tests an URL for eval() usage vulnerabilities using time delays.
         :param freq: A FuzzableRequest
         """
-        fake_mutants = create_mutants(freq, ['', ])
-        self.worker_pool.map(self._test_delay, fake_mutants)
+        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
+                                      iterable=self._generate_delay_tests(freq, debugging_id),
+                                      callback=lambda x, y: None)
 
-    def _test_delay(self, mutant):
+    def _generate_delay_tests(self, freq, debugging_id):
+        for mutant in create_mutants(freq, ['', ]):
+            for delay_obj in self.WAIT_OBJ:
+                yield mutant, delay_obj, debugging_id
+
+    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
         """
         Try to delay the response and save a vulnerability if successful
+
+        :param mutant: The mutant to modify and test
+        :param delay_obj: The delay to use
+        :param debugging_id: The debugging ID for logging
         """
         if self._has_bug(mutant):
             return
 
-        for delay_obj in self.WAIT_OBJ:
+        ed_inst = ExactDelayController(mutant, delay_obj, self._uri_opener)
+        ed_inst.set_debugging_id(debugging_id)
+        success, responses = ed_inst.delay_is_controlled()
 
-            ed_inst = ExactDelayController(mutant, delay_obj, self._uri_opener)
-            success, responses = ed_inst.delay_is_controlled()
+        if success:
+            desc = 'eval() input injection was found at: %s'
+            desc %= mutant.found_at()
 
-            if success:
-                desc = 'eval() input injection was found at: %s'
-                desc = desc % mutant.found_at()
-                
-                response_ids = [r.id for r in responses]
-                
-                v = Vuln.from_mutant('eval() input injection vulnerability',
-                                     desc, severity.HIGH, response_ids,
-                                     self.get_name(), mutant)
+            response_ids = [r.id for r in responses]
 
-                self.kb_append_uniq(self, 'eval', v)
-                break
+            v = Vuln.from_mutant('eval() input injection vulnerability',
+                                 desc, severity.HIGH, response_ids,
+                                 self.get_name(), mutant)
+
+            self.kb_append_uniq(self, 'eval', v)
 
     def _analyze_echo(self, mutant, response):
         """
@@ -178,9 +186,9 @@ class eval(AuditPlugin):
         res = []
 
         if self._expected_result in response.body.lower():
-            msg = 'Verified eval() input injection, found the concatenated'\
-                  ' random string: "%s" in the response body. The'\
-                  ' vulnerability was found on response with id %s.'
+            msg = ('Verified eval() input injection, found the concatenated'
+                   ' random string: "%s" in the response body. The'
+                   ' vulnerability was found on response with id %s.')
             om.out.debug(msg % (self._expected_result, response.id))
             res.append(self._expected_result)
 
@@ -193,15 +201,15 @@ class eval(AuditPlugin):
         opt_list = OptionList()
 
         desc = 'Use time delay (sleep() technique)'
-        _help = 'If set to True, w3af will checks insecure eval() usage by' \
-                ' analyzing of time delay result of script execution.'
+        _help = ('If set to True, w3af will checks insecure eval() usage by'
+                 ' analyzing of time delay result of script execution.')
         opt = opt_factory('use_time_delay', self._use_time_delay,
                           desc, 'boolean', help=_help)
         opt_list.add(opt)
 
         desc = 'Use echo technique'
-        _help = 'If set to True, w3af will checks insecure eval() usage by' \
-                ' grepping result of script execution for test strings.'
+        _help = ('If set to True, w3af will checks insecure eval() usage by'
+                 ' grepping result of script execution for test strings.')
         opt = opt_factory('use_echo', self._use_echo, desc,
                           'boolean', help=_help)
         opt_list.add(opt)
