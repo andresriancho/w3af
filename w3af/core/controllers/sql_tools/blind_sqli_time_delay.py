@@ -46,38 +46,34 @@ class BlindSQLTimeDelay(object):
     def get_debugging_id(self):
         return self._debugging_id
 
-    def is_injectable(self, mutant):
+    def is_injectable(self, mutant, delay_obj):
         """
         Check if this mutant is delay injectable or not.
 
         @mutant: The mutant object that I have to inject to
         :return: A vulnerability object or None if nothing is found
         """
-        for delay_obj in self._get_delays():
+        ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+        ed.set_debugging_id(self.get_debugging_id())
+        success, responses = ed.delay_is_controlled()
 
-            ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
-            ed.set_debugging_id(self.get_debugging_id())
-            success, responses = ed.delay_is_controlled()
+        if success:
+            # Now I can be sure that I found a vuln, we control the response
+            # time with the delay
+            desc = 'Blind SQL injection using time delays was found at: %s'
+            desc = desc % mutant.found_at()
 
-            if success:
-                # Now I can be sure that I found a vuln, we control the response
-                # time with the delay
-                desc = 'Blind SQL injection using time delays was found at: %s'
-                desc = desc % mutant.found_at()
-                
-                response_ids = [r.id for r in responses]
-                
-                v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
-                                     severity.HIGH, response_ids, 'blind_sqli',
-                                     mutant)
+            response_ids = [r.id for r in responses]
 
-                om.out.debug(v.get_desc())
+            v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
+                                 severity.HIGH, response_ids, 'blind_sqli',
+                                 mutant)
 
-                return v
+            om.out.debug(v.get_desc())
 
-        return None
+            return v
 
-    def _get_delays(self):
+    def get_delays(self):
         """
         :return: A list of statements that are going to be used to test for
                  blind SQL injections. The statements are objects.

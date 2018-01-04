@@ -63,58 +63,57 @@ class BlindSqliResponseDiff(object):
         """
         self._eq_limit = eq_limit
 
+    def get_statement_types(self):
+        return self.STATEMENT_TYPES
+
     def set_debugging_id(self, debugging_id):
         self._debugging_id = debugging_id
     
     def get_debugging_id(self):
         return self._debugging_id
 
-    def is_injectable(self, mutant):
+    def is_injectable(self, mutant, statement_type):
         """
         Check if "parameter" of the fuzzable request object is injectable or not
 
-        @mutant: The mutant object that I have to inject to
-        @param: A string with the parameter name to test
+        :param mutant: The mutant object that I have to inject to
+        :param statement_type: The type of statement (string single, string double, int)
 
         :return: A vulnerability object or None if nothing is found
         """
-        for statement_type in self.STATEMENT_TYPES:
+        #
+        # These confirmation rounds are just to reduce false positives
+        # Note that this has a really low impact on the number of HTTP
+        # requests sent during a scan because it is only run if there
+        # seems to be a blind SQL injection
+        #
+        confirmations = 0
+        for _ in xrange(self.CONFIRMATION_ROUNDS):
 
-            #
-            # These confirmation rounds are just to reduce false positives
-            # Note that this has a really low impact on the number of HTTP
-            # requests sent during a scan because it is only run if there
-            # seems to be a blind SQL injection
-            #
-            confirmations = 0
-            for _ in xrange(self.CONFIRMATION_ROUNDS):
+            # Get fresh statements with new random numbers for each
+            # confirmation round.
+            statements = self._get_statements(mutant)
 
-                # Get fresh statements with new random numbers for each
-                # confirmation round.
-                statements = self._get_statements(mutant)
+            try:
+                vuln = self._find_bsql(mutant,
+                                       statements[statement_type],
+                                       statement_type)
+            except HTTPRequestException:
+                continue
 
-                try:
-                    vuln = self._find_bsql(mutant,
-                                           statements[statement_type],
-                                           statement_type)
-                except HTTPRequestException:
-                    continue
-
-                # One of the confirmation rounds yields "no vuln found"
-                if vuln is None:
-                    msg = 'Confirmation round %s for %s failed.' % (confirmations, statement_type)
-                    self.debug(msg, mutant)
-                    break
-
-                # One confirmation round succeeded
-                msg = 'Confirmation round %s for %s succeeded.' % (confirmations, statement_type)
+            # One of the confirmation rounds yields "no vuln found"
+            if vuln is None:
+                msg = 'Confirmation round %s for %s failed.' % (confirmations, statement_type)
                 self.debug(msg, mutant)
-                confirmations += 1
+                break
 
-                if confirmations == self.CONFIRMATION_ROUNDS:
-                    return vuln
+            # One confirmation round succeeded
+            msg = 'Confirmation round %s for %s succeeded.' % (confirmations, statement_type)
+            self.debug(msg, mutant)
+            confirmations += 1
 
-        return None
+            if confirmations == self.CONFIRMATION_ROUNDS:
+                return vuln
 
     def _get_statements(self, mutant, exclude_numbers=[]):
         """
