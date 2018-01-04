@@ -83,6 +83,9 @@ class blind_sqli(AuditPlugin):
         :param statement_type: The type of statement (string single, string double, int)
         :return: A vulnerability or None
         """
+        if self._has_bug(mutant):
+            return
+
         vuln = bsqli_resp_diff.is_injectable(mutant, statement_type)
 
         if vuln is None:
@@ -100,6 +103,14 @@ class blind_sqli(AuditPlugin):
                 # and report a duplicate to the user
                 #
                 continue
+
+            if self._has_bug(mutant):
+                #
+                # If we already identified a blind SQL injection in this
+                # mutant, maybe using response diff, then do not try to
+                # identify the issue again using time delays
+                #
+                return
 
             for statement_type in bsqli_resp_diff.get_statement_types():
                 yield bsqli_resp_diff, mutant, statement_type
@@ -125,6 +136,9 @@ class blind_sqli(AuditPlugin):
         :param delay_obj: The exact delay object
         :return: A vulnerability or None
         """
+        if self._has_bug(mutant):
+            return
+
         vuln = bsqli_time_delay.is_injectable(mutant, delay_obj)
 
         if vuln is None:
