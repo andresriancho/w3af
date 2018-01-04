@@ -693,6 +693,38 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertIn('such as &lt;, &amp; and &gt; which MUST', xml)
         self.assertValidXML(xml)
 
+    def test_render_with_unicode_control_chars(self):
+        _id = 2
+
+        desc = ('This is a long description that contains some special'
+                ' unicode control characters such as \f and \x09')
+
+        vuln = MockVuln(_id=_id)
+        vuln.set_desc(desc)
+
+        url = URL('http://w3af.com/a/b/c.php')
+        hdr = Headers([('User-Agent', 'w3af')])
+        request = HTTPRequest(url, data='a=1')
+        request.set_headers(hdr)
+
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>', hdr, url, url)
+
+        h1 = HistoryItem()
+        h1.request = request
+        res.set_id(_id)
+        h1.response = res
+        h1.save()
+
+        x = xml_file()
+
+        finding = Finding(x._get_jinja2_env(), vuln)
+        xml = finding.to_string()
+
+        self.assertNotIn('unicode control characters such as \f and \x09', xml)
+        self.assertIn('unicode control characters such as <character code="000c"/> and <character code="0009"/>', xml)
+        self.assertValidXML(xml)
+
     def test_render_attr_with_special_chars(self):
         _id = 2
 
