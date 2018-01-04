@@ -90,10 +90,13 @@ class os_commanding(AuditPlugin):
 
         # Create the mutants, notice that we use append=False (default) and
         # True to have better coverage.
-        mutants = create_mutants(freq, only_command_strings,
+        mutants = create_mutants(freq,
+                                 only_command_strings,
                                  orig_resp=orig_response)
-        mutants.extend(create_mutants(freq, only_command_strings,
-                                      append=True, orig_resp=orig_response))
+        mutants.extend(create_mutants(freq,
+                                      only_command_strings,
+                                      orig_resp=orig_response,
+                                      append=True))
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -143,7 +146,7 @@ class os_commanding(AuditPlugin):
         # Retrieve the data I need to create the vuln and the info objects
         command_list = self._get_echo_commands()
 
-        ### BUGBUG: Are you sure that this works as expected?!?!?!
+        # TODO: Are you sure that this works as expected ?!
         for comm in command_list:
             if comm.get_command() in mutant.get_token_value():
                 os = comm.get_OS()
@@ -166,6 +169,13 @@ class os_commanding(AuditPlugin):
         fake_mutants.extend(create_mutants(freq, ['', ], append=True))
 
         for mutant in fake_mutants:
+            #
+            # Don't try to find an OS commanding using a time delay method
+            # if we already found it via echo
+            #
+            if self._has_bug(mutant):
+                return
+
             for delay_obj in self._get_wait_commands():
                 yield mutant, delay_obj, debugging_id
 

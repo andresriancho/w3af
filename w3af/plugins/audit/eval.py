@@ -127,6 +127,13 @@ class eval(AuditPlugin):
 
     def _generate_delay_tests(self, freq, debugging_id):
         for mutant in create_mutants(freq, ['', ]):
+            #
+            # Don't try to find an eval() using a time delay method if we already found
+            # it via echo
+            #
+            if self._has_bug(mutant):
+                return
+
             for delay_obj in self.WAIT_OBJ:
                 yield mutant, delay_obj, debugging_id
 
