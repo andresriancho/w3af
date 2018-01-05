@@ -831,10 +831,14 @@ class ExtendedUrllib(object):
                                              original_url_inst)
         
         except (socket.error, URLTimeoutError,
-                ConnectionPoolException, OpenSSL.SSL.SysCallError,
-                OpenSSL.SSL.ZeroReturnError), e:
+                ConnectionPoolException, OpenSSL.SSL.ZeroReturnError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
+        except OpenSSL.SSL.SysCallError, e:
+            if req.method not in {'OPTIONS', 'GET', 'HEAD', 'POST', 'TRACE', 'PUT'}:
+                req.error_handling = True
+            return self._handle_send_socket_error(req, e, grep, original_url)
+
         except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:
             return self._handle_send_urllib_error(req, e, grep, original_url)
         
