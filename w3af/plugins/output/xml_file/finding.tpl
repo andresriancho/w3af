@@ -1,9 +1,9 @@
 <vulnerability id="{{ id_list }}" method="{{ http_method | escape_attr_val }}" name="{{ name | escape_attr_val }}" plugin="{{ plugin_name }}" severity="{{ severity }}" url="{{ url | escape_attr_val }}" var="{{ var | escape_attr_val }}">
-    <description>{{ description }}</description>
+    <description>{{ description | escape_attr_val }}</description>
 
     {% if long_description %}
-    <long-description>{{ long_description }}</long-description>
-    <fix-guidance>{{ fix_guidance }}</fix-guidance>
+    <long-description>{{ long_description | escape_attr_val }}</long-description>
+    <fix-guidance>{{ fix_guidance | escape_attr_val }}</fix-guidance>
     <fix-effort>{{ fix_effort }}</fix-effort>
     <references>
         {% for reference in references %}
