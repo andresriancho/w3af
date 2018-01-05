@@ -19,12 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import time
-
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.profiling.took_helper import (get_start_timestamp,
+                                                         get_end_timestamp,
+                                                         write_took_debug)
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
                                                                         task_decorator)
 
@@ -138,7 +139,7 @@ class audit(BaseConsumer):
 
         debugging_id = rand_alnum(8)
 
-        start_time = time.time()
+        timestamp_a = get_start_timestamp()
 
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
@@ -146,9 +147,10 @@ class audit(BaseConsumer):
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
 
-        spent_time = time.time() - start_time
-        args = (plugin.get_name(),
-                fuzzable_request.get_uri(),
-                debugging_id,
-                spent_time)
-        om.out.debug('%s.audit(url="%s", did=%s) took %.2f seconds to run' % args)
+        timestamp_b = get_end_timestamp()
+        write_took_debug(plugin.get_name(),
+                         'audit',
+                         timestamp_a,
+                         timestamp_b,
+                         method_params={'uri': fuzzable_request.get_uri(),
+                                        'did': debugging_id})
