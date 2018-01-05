@@ -87,5 +87,4 @@ else:
             if clock_gettime(CLOCK_THREAD_CPUTIME_ID, ctypes.pointer(ts)):
                 errno = ctypes.get_errno()
                 raise OSError(errno, os.strerror(errno))
-            print('xyz %s' % (ts.tv_sec + ts.tv_nsec / 1.0e9,))
             return ts.tv_sec + ts.tv_nsec / 1.0e9
