@@ -204,7 +204,9 @@ class ConnectionManager(object):
                    ' for a free connection, giving up. This usually occurs'
                    ' when w3af is scanning using a slow connection, the remote'
                    ' server is slow (or applying QoS to IP addresses flagged'
-                   ' as attackers).')
+                   ' as attackers) or the configured number of threads in w3af'
+                   ' is too high compared with the connection manager'
+                   ' MAX_CONNECTIONS.')
             seconds = (self.GET_AVAILABLE_CONNECTION_RETRY_NUM *
                        self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
             raise ConnectionPoolException(msg % seconds)
