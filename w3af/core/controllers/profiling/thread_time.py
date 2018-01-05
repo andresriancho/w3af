@@ -49,7 +49,11 @@ systems I just return the result of calling time.time().
 [1] https://github.com/atdt/monotonic/blob/master/monotonic.py
 """
 
-__all__ = ('thread_active_time',)
+__all__ = ('thread_active_time',
+           'CPU_TIME_IS_ACTIVE')
+
+
+CPU_TIME_IS_ACTIVE = False
 
 
 if not sys.platform.startswith('linux'):
@@ -84,6 +88,7 @@ else:
             The structure where the result is written to, as described in:
 
             https://github.com/torvalds/linux/blob/master/include/uapi/linux/resource.h#L24
+            http://man7.org/linux/man-pages/man2/getrusage.2.html
             """
             _fields_ = (('ru_utime', timeval),
                         ('ru_stime', timeval),
@@ -105,6 +110,7 @@ else:
 
         # https://github.com/torvalds/linux/blob/master/include/uapi/linux/resource.h#L22
         RUSAGE_THREAD = 1
+        CPU_TIME_IS_ACTIVE = True
 
         def thread_active_time():
             """
