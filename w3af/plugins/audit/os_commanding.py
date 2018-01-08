@@ -90,10 +90,13 @@ class os_commanding(AuditPlugin):
 
         # Create the mutants, notice that we use append=False (default) and
         # True to have better coverage.
-        mutants = create_mutants(freq, only_command_strings,
+        mutants = create_mutants(freq,
+                                 only_command_strings,
                                  orig_resp=orig_response)
-        mutants.extend(create_mutants(freq, only_command_strings,
-                                      append=True, orig_resp=orig_response))
+        mutants.extend(create_mutants(freq,
+                                      only_command_strings,
+                                      orig_resp=orig_response,
+                                      append=True))
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -143,7 +146,7 @@ class os_commanding(AuditPlugin):
         # Retrieve the data I need to create the vuln and the info objects
         command_list = self._get_echo_commands()
 
-        ### BUGBUG: Are you sure that this works as expected?!?!?!
+        # TODO: Are you sure that this works as expected ?!
         for comm in command_list:
             if comm.get_command() in mutant.get_token_value():
                 os = comm.get_OS()
@@ -157,32 +160,53 @@ class os_commanding(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
+        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
+                                      iterable=self._generate_delay_tests(freq, debugging_id),
+                                      callback=lambda x, y: None)
+
+    def _generate_delay_tests(self, freq, debugging_id):
         fake_mutants = create_mutants(freq, ['', ])
         fake_mutants.extend(create_mutants(freq, ['', ], append=True))
 
         for mutant in fake_mutants:
-
+            #
+            # Don't try to find an OS commanding using a time delay method
+            # if we already found it via echo
+            #
             if self._has_bug(mutant):
-                continue
+                return
 
             for delay_obj in self._get_wait_commands():
+                yield mutant, delay_obj, debugging_id
 
-                ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
-                ed.set_debugging_id(debugging_id)
-                success, responses = ed.delay_is_controlled()
+    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+        """
+        Try to delay the response and save a vulnerability if successful
 
-                if success:
-                    desc = 'OS Commanding was found at: %s' % mutant.found_at()
-                                        
-                    v = Vuln.from_mutant('OS commanding vulnerability', desc,
-                                         severity.HIGH, [r.id for r in responses],
-                                         self.get_name(), mutant)
+        :param mutant: The mutant to modify and test
+        :param delay_obj: The delay to use
+        :param debugging_id: The debugging ID for logging
+        """
+        if self._has_bug(mutant):
+            return
 
-                    v['os'] = delay_obj.get_OS()
-                    v['separator'] = delay_obj.get_separator()
+        ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+        ed.set_debugging_id(debugging_id)
+        success, responses = ed.delay_is_controlled()
 
-                    self.kb_append_uniq(self, 'os_commanding', v)
-                    break
+        if not success:
+            return
+
+        desc = 'OS Commanding was found at: %s' % mutant.found_at()
+
+        v = Vuln.from_mutant('OS commanding vulnerability', desc,
+                             severity.HIGH, [r.id for r in responses],
+                             self.get_name(), mutant)
+
+        v['os'] = delay_obj.get_OS()
+        v['separator'] = delay_obj.get_separator()
+
+        self.kb_append_uniq(self, 'os_commanding', v)
 
     def _get_echo_commands(self):
         """

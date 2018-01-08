@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 
-#Keys representing CORS headers for manipulations.
+# Keys representing CORS headers for manipulations.
 ACCESS_CONTROL_ALLOW_ORIGIN = "ACCESS-CONTROL-ALLOW-ORIGIN"
 ACCESS_CONTROL_ALLOW_METHODS = "ACCESS-CONTROL-ALLOW-METHODS"
 ACCESS_CONTROL_ALLOW_HEADERS = "ACCESS-CONTROL-ALLOW-HEADERS"
@@ -47,7 +47,7 @@ def provides_cors_features(freq, url_opener, debugging_id):
         return True
 
     headers = Headers({'Origin': 'www.w3af.org'}.items())
-    response = url_opener.GET(freq.get_url(), headers=headers)
+    response = url_opener.GET(freq.get_url(), headers=headers, debugging_id=debugging_id)
     ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
     if ac_value is not None:
         return True

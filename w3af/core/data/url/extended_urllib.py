@@ -24,13 +24,14 @@ import urllib
 import socket
 import urllib2
 import httplib
+import hashlib
 import threading
 import traceback
 import functools
+import OpenSSL
+
 from contextlib import contextmanager
 from collections import deque
-
-import OpenSSL
 
 # pylint: disable=E0401
 from darts.lib.utils.lru import SynchronizedLRUDict
@@ -39,12 +40,14 @@ from darts.lib.utils.lru import SynchronizedLRUDict
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import opener_settings
+
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException,
                                               HTTPRequestException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByKnownReasonExc,
                                               ScanMustStopByUserRequest)
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
@@ -89,6 +92,10 @@ class ExtendedUrllib(object):
 
         # Keep track of sum(rtt) for each debugging_id
         self._rtt_sum_debugging_id = SynchronizedLRUDict(capacity=128)
+
+        # Cache to measure RTT
+        self._rtt_mutant_cache = SynchronizedLRUDict(capacity=128)
+        self._rtt_mutant_lock = threading.RLock()
 
         # For timeout auto adjust and general stats
         self._total_requests = 0
@@ -278,6 +285,72 @@ class ExtendedUrllib(object):
         else:
             average_rtt = float(rtt_sum) / add_count
             return average_rtt, add_count
+
+    def get_average_rtt_for_mutant(self, mutant, count=3, debugging_id=None):
+        """
+        Get the average time for the HTTP request represented as a mutant.
+
+        This method caches responses. The cache entries are valid for 5 seconds,
+        after that period of time the entry is removed from the cache, the average RTT
+        is re-calculated and stored again.
+
+        :param mutant: The mutant to send and measure RTT from
+        :param count: Number of checks to perform
+        :param debugging_id: Unique ID used for logging
+        :return: A float representing the seconds it took to get the response
+        """
+        #
+        # Get the cache key for this mutant
+        #
+        method = mutant.get_method()
+        uri = mutant.get_uri()
+        data = mutant.get_data()
+        headers = mutant.get_all_headers()
+
+        cache_key_parts = [method, uri, data, headers]
+        cache_key_str = ''.join([smart_str_ignore(i) for i in cache_key_parts])
+
+        m = hashlib.md5()
+        m.update(cache_key_str)
+        cache_key = m.hexdigest()
+
+        #
+        # Only perform one of these checks at the time, this is useful to prevent
+        # different threads which need the same result from duplicating efforts
+        #
+        with self._rtt_mutant_lock:
+
+            cached_value = self._rtt_mutant_cache.get(cache_key, default=None)
+
+            #
+            # The cache entry is still valid, return the cached value
+            #
+            if cached_value is not None:
+                timestamp, value = cached_value
+                if time.time() - timestamp <= 5:
+                    msg = 'Returning cached average RTT of %.2f seconds for mutant %s'
+                    om.out.debug(msg % (value, cache_key))
+                    return value
+
+            #
+            # Need to send the HTTP requests and do the average
+            #
+            rtts = []
+
+            for _ in xrange(count):
+                resp = self.send_mutant(mutant,
+                                        cache=False,
+                                        debugging_id=debugging_id)
+                rtt = resp.get_wait_time()
+                rtts.append(rtt)
+
+            average_rtt = float(sum(rtts)) / len(rtts)
+            self._rtt_mutant_cache[cache_key] = (time.time(), average_rtt)
+
+        msg = 'Returning fresh average RTT of %.2f seconds for mutant %s'
+        om.out.debug(msg % (average_rtt, cache_key))
+
+        return average_rtt
 
     def _should_auto_adjust_now(self):
         """

@@ -23,7 +23,7 @@ import threading
 import Queue
 import time
 
-from functools import partial, wraps
+from functools import partial
 
 from multiprocessing.dummy import Process
 from multiprocessing.util import Finalize
@@ -63,7 +63,7 @@ class return_args(object):
 
 
 class DaemonProcess(Process):
-    
+
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         super(DaemonProcess, self).__init__(group, target, name, args, kwargs)
         self.daemon = True
@@ -135,13 +135,13 @@ class Pool(ThreadPool):
                   self._worker_handler, self._task_handler,
                   self._result_handler, self._cache),
             exitpriority=15)
-    
+
     def _setup_queues(self, max_queued_tasks):
         self._inqueue = Queue.Queue(maxsize=max_queued_tasks)
         self._outqueue = Queue.Queue()
         self._quick_put = self._inqueue.put
         self._quick_get = self._outqueue.get
-        
+
     def map_multi_args(self, func, iterable, chunksize=None):
         """
         Blocks until all results are done (please note the .get())
