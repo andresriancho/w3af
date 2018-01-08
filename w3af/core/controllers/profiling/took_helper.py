@@ -97,6 +97,12 @@ class TookLine(object):
         rtt = self._w3af_core.uri_opener.get_rtt_for_debugging_id(self._debugging_id)
 
         if rtt is not None:
+            #
+            # Note to self: When you see something like "583% sending HTTP requests" it is not
+            #               a bug, it simply indicates that many threads were used to send
+            #               your HTTP requests and thus the sum(RTT) is higher than the wall
+            #               time
+            #
             msg = '%.2f seconds / %i%% sending HTTP requests'
             msg %= (rtt, rtt / spent_wall_time * 100)
             parentheses_data.append(msg)
