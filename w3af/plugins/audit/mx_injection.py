@@ -34,6 +34,7 @@ class mx_injection(AuditPlugin):
     Find MX injection vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    MX_PAYLOADS = ['"', 'iDontExist', '']
 
     MX_ERRORS = (
         'Unexpected extra arguments to Select',
@@ -51,25 +52,21 @@ class mx_injection(AuditPlugin):
     )
     _multi_in = MultiIn(MX_ERRORS)
 
-    def __init__(self):
-        """
-        Plugin added just for completeness... I dont really expect to find one
-        of this bugs in my life... but well.... if someone , somewhere in the
-        planet ever finds a bug of using this plugin... THEN my job has been
-        done :P
-        """
-        AuditPlugin.__init__(self)
-
     def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for mx injection vulnerabilities.
+
+        Plugin added just for completeness... I don't really expect to find one
+        of this bugs in my life... but well.... if someone , somewhere in the
+        planet ever finds a bug of using this plugin... THEN my job has been
+        done :P
 
         :param freq: A FuzzableRequest
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
-        mx_injection_strings = self._get_MX_injection_strings()
-        mutants = create_mutants(freq, mx_injection_strings,
+        mutants = create_mutants(freq,
+                                 self.MX_PAYLOADS,
                                  orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -98,15 +95,6 @@ class mx_injection(AuditPlugin):
             v.add_to_highlight(mx_error)
             self.kb_append_uniq(self, 'mx_injection', v)
             break
-
-    def _get_MX_injection_strings(self):
-        """
-        Gets a list of strings to test against the web app.
-
-        :return: A list with all mx_injection strings to test. Example: [ '\"','f00000']
-        """
-        mx_injection_strings = ['"', 'iDontExist', '']
-        return mx_injection_strings
 
     def get_long_desc(self):
         """
