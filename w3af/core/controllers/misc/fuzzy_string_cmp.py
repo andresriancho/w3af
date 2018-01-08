@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import difflib
 
+from w3af.core.controllers.misc.diff import split_by_sep
+
 
 def relative_distance_boolean(a_str, b_str, threshold=0.6):
     """
@@ -56,7 +58,9 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
         return False
     else:
         # Bad, we can't optimize anything here
-        return threshold <= difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+        return threshold <= difflib.SequenceMatcher(None,
+                                                    split_by_sep(a_str),
+                                                    split_by_sep(b_str)).quick_ratio()
 
 
 def upper_bound_similarity(a, b):
@@ -98,7 +102,9 @@ def relative_distance(a_str, b_str):
         #   This is a rare case, where the http response body is one long
         #   non-space separated string.
         #
-        return difflib.SequenceMatcher(None, a_str, b_str).quick_ratio()
+        return difflib.SequenceMatcher(None,
+                                       split_by_sep(a_str),
+                                       split_by_sep(b_str)).quick_ratio()
 
     return 1.0 * len(set_a.intersection(set_b)) / max(len(set_a), len(set_b))
 
