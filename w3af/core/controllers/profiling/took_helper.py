@@ -124,7 +124,7 @@ class TookLine(object):
             #
             spent_cpu_time = self._end.thread_cpu_time - self._start.thread_cpu_time
 
-            if spent_cpu_time >= 0.2:
+            if (spent_cpu_time / spent_wall_time) >= 0.2:
                 msg = '%.2fs %i%% consuming CPU cycles'
                 msg %= (spent_cpu_time, spent_cpu_time / spent_wall_time * 100)
 
