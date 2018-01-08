@@ -20,9 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from collections import namedtuple
+from functools import partial
 
 import w3af.core.data.constants.severity as severity
+import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.misc.diff import chunked_diff
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.exceptions import HTTPRequestException
@@ -53,77 +56,112 @@ class memcachei(AuditPlugin):
         :param debugging_id: A unique identifier for this call to audit()
         """
         try:
-            self.batch_injection_test(freq, orig_response)
+            self.batch_injection_test(freq, orig_response, debugging_id)
         except HTTPRequestException:
             # No need to log, it gets logged at the xurllib level
             pass
 
-    def batch_injection_test(self, freq, orig_response):
+    def batch_injection_test(self, freq, orig_response, debugging_id):
         """
         Uses the batch injection technique to find memcache injections
         """
-        # shortcuts
-        send_clean = self._uri_opener.send_clean
-        orig_body = orig_response.get_body()
+        mutants = create_mutants(freq, [''])
 
-        for mutant in create_mutants(freq, ['']):
+        self._send_mutants_in_threads(self._analyze_echo,
+                                      mutants,
+                                      callback=lambda x, y: None,
+                                      debugging_id=debugging_id,
+                                      original_response=orig_response)
 
-            # trying to break normal execution flow with ERROR_1 payload
-            mutant.set_token_value(self.ERROR_1)
-            error_1_response, body_error_1_response = send_clean(mutant)
+    def _analyze_echo(self, mutant, debugging_id=None, original_response=None):
+        """
+        :param mutant: The mutant where we should inject the payloads
+        :param debugging_id: The debugging ID for this audit() session
+        :param original_response: The original response for the fuzzable request
+        :return: None
+        """
+        send_clean = partial(self._uri_opener.send_clean, debugging_id=debugging_id)
+        orig_body = original_response.get_body()
 
-            if fuzzy_equal(orig_body, body_error_1_response, self._eq_limit):
-                #
-                # if we manage to break execution flow with the invalid memcache
-                # syntax, there is a potential injection otherwise - no injection!
-                #
-                continue
+        # trying to break normal execution flow with ERROR_1 payload
+        mutant.set_token_value(self.ERROR_1)
+        error_1_response, body_error_1_response = send_clean(mutant)
 
-            # trying the correct injection request, to confirm that we've found
-            # it!
-            mutant.set_token_value(self.OK)
-            ok_response, body_ok_response = send_clean(mutant)
+        if orig_body == error_1_response.get_body():
+            #
+            # Nothing to do here, the responses are equal, we don't control any
+            # of it using HTTP request parameters
+            #
+            return
 
-            if fuzzy_equal(body_error_1_response, body_ok_response,
-                           self._eq_limit):
-                #
-                # The "OK" and "ERROR_1" responses are equal, this means that
-                # we're not in a memcached injection
-                #
-                continue
+        compare_diff = False
 
-            # ERROR_2 request to just make sure that we're in a memcached case
-            mutant.set_token_value(self.ERROR_2)
-            error_2_response, body_error_2_response = send_clean(mutant)
+        if self.equal_with_limit(orig_body, body_error_1_response):
+            #
+            # if we manage to break execution flow with the invalid memcache
+            # syntax, there is a potential injection otherwise - no injection!
+            #
+            compare_diff = True
 
-            if fuzzy_equal(orig_body, body_error_2_response, self._eq_limit):
-                #
-                # now requests should be different again, otherwise injection
-                # is not confirmed
-                #
-                continue
+        # trying the correct injection request, to confirm that we've found
+        # it!
+        mutant.set_token_value(self.OK)
+        ok_response, body_ok_response = send_clean(mutant)
 
-            # The two errors should look very similar for a memcache inj to exist
-            if not fuzzy_equal(body_error_1_response,
-                               body_error_2_response,
-                               self._eq_limit):
-                continue
+        if self.equal_with_limit(body_error_1_response,
+                                 body_ok_response,
+                                 compare_diff=compare_diff):
+            #
+            # The "OK" and "ERROR_1" responses are equal, this means that
+            # we're not in a memcached injection
+            #
+            return
 
-            response_ids = [error_1_response.id,
-                            ok_response.id,
-                            error_2_response.id]
+        # ERROR_2 request to just make sure that we're in a memcached case
+        mutant.set_token_value(self.ERROR_2)
+        error_2_response, body_error_2_response = send_clean(mutant)
 
-            desc = ('Memcache injection was found at: "%s", using'
-                    ' HTTP method %s. The injectable parameter is: "%s"')
-            desc %= (mutant.get_url(),
-                     mutant.get_method(),
-                     mutant.get_token_name())
+        if self.equal_with_limit(orig_body,
+                                 body_error_2_response,
+                                 compare_diff=compare_diff):
+            #
+            # now requests should be different again, otherwise injection
+            # is not confirmed
+            #
+            return
 
-            v = Vuln.from_mutant('Memcache injection vulnerability', desc,
-                                 severity.HIGH, response_ids, 'memcachei',
-                                 mutant)
+        # The two errors should look very similar for a memcache inj to exist
+        if not self.equal_with_limit(body_error_1_response,
+                                     body_error_2_response,
+                                     compare_diff=compare_diff):
+            return
 
-            self.kb_append_uniq(self, 'memcachei', v)
+        response_ids = [error_1_response.id,
+                        ok_response.id,
+                        error_2_response.id]
+
+        desc = ('Memcache injection was found at: "%s", using'
+                ' HTTP method %s. The injectable parameter is: "%s"')
+        desc %= (mutant.get_url(),
+                 mutant.get_method(),
+                 mutant.get_token_name())
+
+        v = Vuln.from_mutant('Memcache injection vulnerability', desc,
+                             severity.HIGH, response_ids, 'memcachei',
+                             mutant)
+
+        self.kb_append_uniq(self, 'memcachei', v)
+
+    def equal_with_limit(self, body1, body2, compare_diff=False):
+        """
+        Determines if two pages are equal using a ratio, if compare_diff is set
+        then we just compare the parts of the response bodies which are different.
+        """
+        if compare_diff:
+            body1, body2 = chunked_diff(body1, body2)
+
+        cmp_res = fuzzy_equal(body1, body2, self._eq_limit)
+        return cmp_res
 
     def get_long_desc(self):
         """
