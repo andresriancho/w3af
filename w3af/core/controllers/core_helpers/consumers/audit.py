@@ -23,9 +23,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.profiling.took_helper import (get_start_timestamp,
-                                                         get_end_timestamp,
-                                                         write_took_debug)
+from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
                                                                         task_decorator)
 
@@ -139,7 +137,11 @@ class audit(BaseConsumer):
 
         debugging_id = rand_alnum(8)
 
-        timestamp_a = get_start_timestamp()
+        took_line = TookLine(self._w3af_core,
+                             plugin.get_name(),
+                             'audit',
+                             debugging_id=debugging_id,
+                             method_params={'uri': fuzzable_request.get_uri()})
 
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
@@ -147,10 +149,4 @@ class audit(BaseConsumer):
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
 
-        timestamp_b = get_end_timestamp()
-        write_took_debug(plugin.get_name(),
-                         'audit',
-                         timestamp_a,
-                         timestamp_b,
-                         method_params={'uri': fuzzable_request.get_uri(),
-                                        'did': debugging_id})
+        took_line.send()

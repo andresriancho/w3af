@@ -35,59 +35,40 @@ class TimeStamp(object):
             self.wall_time = time.time()
 
 
-def get_start_timestamp():
-    return TimeStamp()
+class TookLine(object):
+    def __init__(self, w3af_core, plugin_name, method_name, debugging_id=None, method_params=None):
+        """
+        Write the "took X seconds" line to the debug log
 
+        :param w3af_core: The w3af core instance
+        :param plugin_name: The plugin name
+        :param method_name: The method name of plugin which was invoked
+        :param debugging_id: The unique ID used for tracking requests
+        :param method_params: Optional parameters sent to the plugin.method().
+                              This should be a dict with parameter names as keys
+                              and strings as values.
+        """
+        self._w3af_core = w3af_core
+        self._plugin_name = plugin_name
+        self._method_name = method_name
+        self._method_params = method_params
+        self._debugging_id = debugging_id
+        self._start = None
+        self._end = None
 
-def get_end_timestamp():
-    return TimeStamp()
-
-
-def write_took_debug(plugin_name, method_name, timestamp_a, timestamp_b, method_params=None):
-    """
-    Write the "took X seconds" line to the debug log
-
-    :param plugin_name: The plugin name
-    :param method_name: The method name of plugin which was invoked
-    :param timestamp_a: Start timestamp
-    :param timestamp_b: End timestamp
-    :param method_params: Optional parameters sent to the plugin.method().
-                          This should be a dict with parameter names as keys
-                          and strings as values.
-    :return: None, debug line written to log.
-    """
-    method_params = dict() if method_params is None else method_params
-    params_str = ','.join('%s="%s"' % (key, value) for key, value in method_params.iteritems())
-
-    if CPU_TIME_IS_ACTIVE:
-        spent_wall_time = timestamp_b.wall_time - timestamp_a.wall_time
-        spent_cpu_time = timestamp_b.thread_cpu_time - timestamp_a.thread_cpu_time
-
-        args = (plugin_name,
-                method_name,
-                params_str,
-                spent_wall_time,
-                spent_cpu_time,
-                spent_cpu_time / spent_wall_time * 100)
-
-        #
-        # Note to self: if the % of CPU time is high then the plugin is CPU-bound
-        #               and can be improved by changing the algorithms used,
-        #               this was the case for difflib.SequenceMatcher in blind SQL
-        #               injection plugin
-        #
-        msg = '%s.%s(%s) took %.2f seconds to run (%.2f seconds / %i%% consuming CPU cycles)'
-        om.out.debug(msg % args)
-
-    else:
-        spent_wall_time = timestamp_b.wall_time - timestamp_a.wall_time
-
-        args = (plugin_name,
-                method_name,
-                url,
-                did,
-                spent_wall_time)
-
+        self.start()
+    
+    def start(self):
+        self._start = TimeStamp()
+    
+    def end(self):
+        self._end = TimeStamp()
+        
+    def send(self):
+        """
+        Write the "took X seconds" line to the debug log
+        :return: None, debug line written to log.
+        """
         #
         # Note to self: wall time is not a good performance indicator for plugins
         #               since they are run in threads and at any point the kernel
@@ -95,6 +76,59 @@ def write_took_debug(plugin_name, method_name, timestamp_a, timestamp_b, method_
         #               the wall time will keep running and the thread is not doing
         #               anything.
         #
-        msg = '%s.%s(url="%s", did=%s) took %.2f seconds to run'
-        om.out.debug(msg % args)
+        self.end()
+        parentheses_data = []
+        spent_wall_time = self._end.wall_time - self._start.wall_time
 
+        #
+        #   Prepare the user provided data
+        #
+        method_params = dict() if self._method_params is None else self._method_params
+
+        # If debugging_id was defined then we add it to the parameters
+        if self._debugging_id:
+            method_params['did'] = self._debugging_id
+
+        params_str = ','.join('%s="%s"' % (key, value) for key, value in method_params.iteritems())
+
+        #
+        #   Query the extended urllib to check if it has RTT data regarding this debugging_id
+        #
+        rtt = self._w3af_core.uri_opener.get_rtt_for_debugging_id(self._debugging_id)
+
+        if rtt is not None:
+            msg = '%.2f seconds / %i%% sending HTTP requests'
+            msg %= (rtt, rtt / spent_wall_time * 100)
+            parentheses_data.append(msg)
+    
+        if CPU_TIME_IS_ACTIVE:
+            #
+            # Note to self: if the % of CPU time is high then the plugin is CPU-bound
+            #               and can be improved by changing the algorithms used,
+            #               this was the case for difflib.SequenceMatcher in blind SQL
+            #               injection plugin
+            #
+            spent_cpu_time = self._end.thread_cpu_time - self._start.thread_cpu_time
+            msg = '%.2f seconds / %i%% consuming CPU cycles'
+            msg %= (spent_cpu_time, spent_cpu_time / spent_wall_time * 100)
+
+            parentheses_data.append(msg)
+
+        #
+        # Now we write the line to the log
+        #
+        args = (self._plugin_name,
+                self._method_name,
+                params_str,
+                spent_wall_time)
+
+        msg = '%s.%s(%s) took %.2f seconds to run'
+        msg %= args
+
+        #
+        # Adding any extras we might have
+        #
+        if parentheses_data:
+            msg += ' (%s)' % ', '.join(parentheses_data)
+
+        om.out.debug(msg)

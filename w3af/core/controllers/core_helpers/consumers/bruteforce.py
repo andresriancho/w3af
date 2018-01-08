@@ -19,14 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import time
-
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
-                                                                        task_decorator)
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args
+from w3af.core.controllers.profiling.took_helper import TookLine
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
+                                                                        task_decorator)
 
 
 class bruteforce(BaseConsumer):
@@ -100,7 +99,10 @@ class bruteforce(BaseConsumer):
         # Logging
         args = (plugin.get_name(), fuzzable_request.get_uri())
         om.out.debug('%s.bruteforce(%s)' % args)
-        start_time = time.time()
+        took_line = TookLine(self._w3af_core,
+                             plugin.get_name(),
+                             'bruteforce',
+                             method_params={'uri': fuzzable_request.get_uri()})
 
         # Status
         self._w3af_core.status.set_running_plugin('bruteforce', plugin.get_name())
@@ -116,8 +118,5 @@ class bruteforce(BaseConsumer):
         else:
             res.update(new_frs)
 
-        spent_time = time.time() - start_time
-        args = (plugin.get_name(), fuzzable_request.get_uri(), spent_time)
-        om.out.debug('%s.bruteforce(%s) took %.2f seconds to run' % args)
-
+        took_line.send()
         return res
