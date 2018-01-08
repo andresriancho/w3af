@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
-import time
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -30,6 +29,7 @@ from w3af.core.data.db.variant_db import VariantDB
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
+from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.threads.threadpool import return_args
@@ -457,7 +457,11 @@ class crawl_infrastructure(BaseConsumer):
         args = (plugin.get_name(), fuzzable_request.get_uri())
         om.out.debug('%s.discover(%s)' % args)
 
-        start_time = time.time()
+        took_line = TookLine(self._w3af_core,
+                             plugin.get_name(),
+                             'discover',
+                             debugging_id=None,
+                             method_params={'uri': fuzzable_request.get_uri()})
 
         # Status reporting
         status = self._w3af_core.status
@@ -490,6 +494,4 @@ class crawl_infrastructure(BaseConsumer):
                 self.handle_exception(plugin.get_type(), plugin.get_name(),
                                       fuzzable_request, ve)
 
-        spent_time = time.time() - start_time
-        args = (plugin.get_name(), fuzzable_request.get_uri(), spent_time)
-        om.out.debug('%s.discover(%s) took %.2f seconds to run' % args)
+        took_line.send()

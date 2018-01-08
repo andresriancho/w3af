@@ -139,7 +139,7 @@ class Mutant(DiskItem):
     def __getattr__(self, name):
         if name.startswith('__'):
             raise AttributeError("%s instance has no attribute '%s'" %
-                                (self.__class__.__name__, name))
+                                 (self.__class__.__name__, name))
         return getattr(self._freq, name)
 
     def get_eq_attrs(self):

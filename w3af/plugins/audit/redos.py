@@ -50,31 +50,41 @@ class redos(AuditPlugin):
         if self.ignore_this_request(freq):
             return
 
-        fake_mutants = create_mutants(freq, ['', ])
+        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
+                                      iterable=self._generate_delay_tests(freq, debugging_id),
+                                      callback=lambda x, y: None)
 
-        for mutant in fake_mutants:
+    def _generate_delay_tests(self, freq, debugging_id):
+        for mutant in create_mutants(freq, ['', ]):
             for delay_obj in self.get_delays():
-                
-                adc = AproxDelayController(mutant, delay_obj, self._uri_opener,
-                                           delay_setting=EXPONENTIALLY)
-                success, responses = adc.delay_is_controlled()
-    
-                if not success:
-                    continue
+                yield mutant, delay_obj, debugging_id
 
-                # Now I can be sure that I found a vuln, we control the
-                # response time with the delay
-                desc = 'ReDoS was found at: %s' % mutant.found_at()
-                response_ids = [r.id for r in responses]
+    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+        """
+        Try to delay the response and save a vulnerability if successful
 
-                v = Vuln.from_mutant('ReDoS vulnerability', desc,
-                                     severity.MEDIUM, response_ids,
-                                     self.get_name(), mutant)
+        :param mutant: The mutant to modify and test
+        :param delay_obj: The delay to use
+        :param debugging_id: The debugging ID for logging
+        """
+        adc = AproxDelayController(mutant, delay_obj, self._uri_opener,
+                                   delay_setting=EXPONENTIALLY)
+        adc.set_debugging_id(debugging_id)
+        success, responses = adc.delay_is_controlled()
 
-                self.kb_append_uniq(self, 'redos', v)
+        if not success:
+            return
 
-                # Only test regular expressions until we find a delay
-                break
+        # Now I can be sure that I found a vuln, we control the
+        # response time with the delay
+        desc = 'ReDoS was found at: %s' % mutant.found_at()
+        response_ids = [r.id for r in responses]
+
+        v = Vuln.from_mutant('ReDoS vulnerability', desc,
+                             severity.MEDIUM, response_ids,
+                             self.get_name(), mutant)
+
+        self.kb_append_uniq(self, 'redos', v)
 
     def get_delays(self):
         """

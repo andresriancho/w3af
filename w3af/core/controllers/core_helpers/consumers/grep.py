@@ -25,6 +25,7 @@ import w3af.core.data.kb.config as cf
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -152,16 +153,18 @@ class grep(BaseConsumer):
             args = (plugin.get_name(), request.get_uri())
             om.out.debug('%s.grep(%s)' % args)
 
-            start_time = time.time()
+            took_line = TookLine(self._w3af_core,
+                                 plugin.get_name(),
+                                 'grep',
+                                 debugging_id=None,
+                                 method_params={'uri': request.get_uri()})
 
             try:
                 plugin.grep_wrapper(request, response)
             except Exception, e:
                 self.handle_exception('grep', plugin.get_name(), request, e)
 
-            spent_time = time.time() - start_time
-            args = (plugin.get_name(), request.get_uri(), spent_time)
-            om.out.debug('%s.grep(%s) took %.2f seconds to run' % args)
+            took_line.send()
 
     def _run_observers(self, request, response):
         """
