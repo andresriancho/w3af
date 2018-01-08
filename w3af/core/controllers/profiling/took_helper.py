@@ -96,14 +96,14 @@ class TookLine(object):
         #
         rtt = self._w3af_core.uri_opener.get_rtt_for_debugging_id(self._debugging_id)
 
-        if rtt is not None:
+        if rtt is not None and rtt >= 0.01:
             #
             # Note to self: When you see something like "583% sending HTTP requests" it is not
             #               a bug, it simply indicates that many threads were used to send
             #               your HTTP requests and thus the sum(RTT) is higher than the wall
             #               time
             #
-            msg = '%.2f seconds / %i%% sending HTTP requests'
+            msg = '%.2fs %i%% sending HTTP requests'
             msg %= (rtt, rtt / spent_wall_time * 100)
             parentheses_data.append(msg)
 
@@ -112,7 +112,7 @@ class TookLine(object):
         #   is available in this system AND if it is worth it: short execution times will
         #   never be investigated
         #
-        if CPU_TIME_IS_ACTIVE and spent_wall_time >= 0.1:
+        if CPU_TIME_IS_ACTIVE and spent_wall_time >= 0.2:
             #
             # Note to self: if the % of CPU time is high then the plugin is CPU-bound
             #               and can be improved by changing the algorithms used,
@@ -120,10 +120,12 @@ class TookLine(object):
             #               injection plugin
             #
             spent_cpu_time = self._end.thread_cpu_time - self._start.thread_cpu_time
-            msg = '%.2f seconds / %i%% consuming CPU cycles'
-            msg %= (spent_cpu_time, spent_cpu_time / spent_wall_time * 100)
 
-            parentheses_data.append(msg)
+            if spent_cpu_time >= 0.2:
+                msg = '%.2fs %i%% consuming CPU cycles'
+                msg %= (spent_cpu_time, spent_cpu_time / spent_wall_time * 100)
+
+                parentheses_data.append(msg)
 
         #
         # Now we write the line to the log
@@ -133,7 +135,7 @@ class TookLine(object):
                 params_str,
                 spent_wall_time)
 
-        msg = '%s.%s(%s) took %.2f seconds to run'
+        msg = '%s.%s(%s) took %.2fs to run'
         msg %= args
 
         #
