@@ -81,6 +81,7 @@ class ParserCache(CacheStats):
         Get a document parser for http_response using the cache if required
 
         :param http_response: The http response instance
+        :param cache: If the DocumentParser is in the cache, return that one.
         :return: An instance of DocumentParser
         """
         hash_string = get_request_unique_id(http_response)

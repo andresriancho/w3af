@@ -44,10 +44,9 @@ class JavaScriptParser(BaseParser):
         """
         response_content_type = http_resp.content_type.lower()
 
-        if 'javascript' in response_content_type or \
-        'ecmascript' in response_content_type or \
-        'jscript' in response_content_type:
-            return True
+        for ct in ('javascript', 'ecmascript', 'jscript'):
+            if ct in response_content_type:
+                return True
 
         return False
 
