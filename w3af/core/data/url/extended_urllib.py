@@ -32,6 +32,10 @@ from collections import deque
 
 import OpenSSL
 
+# pylint: disable=E0401
+from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
+
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import opener_settings
@@ -82,6 +86,9 @@ class ExtendedUrllib(object):
         # For rate limiting
         self._rate_limit_last_time_called = 0.0
         self._rate_limit_lock = threading.RLock()
+
+        # Keep track of sum(rtt) for each debugging_id
+        self._rtt_sum_debugging_id = SynchronizedLRUDict(capacity=128)
 
         # For timeout auto adjust and general stats
         self._total_requests = 0
@@ -783,6 +790,40 @@ class ExtendedUrllib(object):
         method_partial.__doc__ = 'Send %s HTTP request' % method_name
         return method_partial
 
+    def _track_rtt(self, http_response, debugging_id):
+        """
+        Add the RTT associated with this response to the sum of all RTTs sent
+        during this debugging_id.
+
+        :param http_response: The HTTP response that is going out to the caller
+        :param debugging_id: The debugging_id (if any) associated with the request
+        :return: None
+        """
+        if not debugging_id:
+            return
+
+        if not http_response:
+            return
+
+        if not hasattr(http_response, 'get_wait_time'):
+            return
+
+        rtt = http_response.get_wait_time()
+        if not rtt:
+            return
+
+        rtt_sum = self._rtt_sum_debugging_id.get(debugging_id, default=None)
+        if rtt_sum is None:
+            self._rtt_sum_debugging_id[debugging_id] = rtt
+        else:
+            self._rtt_sum_debugging_id[debugging_id] = rtt_sum + rtt
+
+    def get_rtt_for_debugging_id(self, debugging_id):
+        if debugging_id is None:
+            return
+
+        return self._rtt_sum_debugging_id.get(debugging_id, default=None)
+
     def add_headers(self, req, headers=Headers()):
         """
         Add all custom Headers() if they exist
@@ -935,6 +976,7 @@ class ExtendedUrllib(object):
 
         # Clear the log of failed requests; this request is DONE!
         self._log_successful_response(http_resp)
+        self._track_rtt(res, req.debugging_id)
 
         if grep:
             self._grep(req, http_resp)
