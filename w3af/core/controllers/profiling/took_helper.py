@@ -100,8 +100,13 @@ class TookLine(object):
             msg = '%.2f seconds / %i%% sending HTTP requests'
             msg %= (rtt, rtt / spent_wall_time * 100)
             parentheses_data.append(msg)
-    
-        if CPU_TIME_IS_ACTIVE:
+
+        #
+        #   Only show the CPU time for this thread if the method to extract that data
+        #   is available in this system AND if it is worth it: short execution times will
+        #   never be investigated
+        #
+        if CPU_TIME_IS_ACTIVE and spent_wall_time >= 0.1:
             #
             # Note to self: if the % of CPU time is high then the plugin is CPU-bound
             #               and can be improved by changing the algorithms used,
