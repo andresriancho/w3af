@@ -60,7 +60,6 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByUserRequest)
 
-from w3af.core.data.url.handlers.keepalive.connection_manager import MAX_CONNECTIONS
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.kb.knowledge_base import kb
 
@@ -89,7 +88,7 @@ class w3afCore(object):
     # This only makes sense as long as the worker threads are
     # mostly used for sending HTTP requests (which is the case
     # for the current w3af version).
-    WORKER_THREADS = MAX_CONNECTIONS / 3
+    WORKER_THREADS = 20
     WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 20
     WORKER_MAX_TASKS = 20
 
