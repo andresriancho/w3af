@@ -1028,7 +1028,8 @@ class ExtendedUrllib(object):
         worker_pool = w3af_core.worker_pool
         min_workers = 10
 
-        new_worker_count = worker_pool.get_worker_count() - 1
+        # Note that we decrease by two here, and increase by one below
+        new_worker_count = worker_pool.get_worker_count() - 2
         new_worker_count = max(new_worker_count, min_workers)
 
         if new_worker_count >= min_workers:
@@ -1061,6 +1062,7 @@ class ExtendedUrllib(object):
         worker_pool = w3af_core.worker_pool
         max_workers = 100
 
+        # Note that we increase by one here, and decrease by two above
         new_worker_count = worker_pool.get_worker_count() + 1
         new_worker_count = min(new_worker_count, max_workers)
 
