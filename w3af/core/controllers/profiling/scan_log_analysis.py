@@ -19,7 +19,7 @@ The tool takes a scan log as input, and outputs:
 The scan log needs to have debug enabled in order for this tool to work as expected.
 '''
 
-SCAN_TOOK_RE = re.compile('took (.*?) seconds to run')
+SCAN_TOOK_RE = re.compile('took (.*?)s to run')
 
 
 def epoch_to_string(spent_time):
