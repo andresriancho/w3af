@@ -25,8 +25,8 @@ import time
 
 from functools import partial
 
-from multiprocessing.dummy import Process
-from multiprocessing.util import Finalize
+from multiprocessing.dummy import Process, current_process
+from multiprocessing.util import Finalize, debug
 from multiprocessing import cpu_count
 
 from .pool276 import ThreadPool, RUN
@@ -69,6 +69,29 @@ class DaemonProcess(Process):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         super(DaemonProcess, self).__init__(group, target, name, args, kwargs)
         self.daemon = True
+
+    def start(self):
+        """
+        This is a race condition in DaemonProcess.start() which was found
+        during some of the test scans I run. The race condition exists
+        because we're using Threads for a Pool that was designed to be
+        used with real processes: thus there is no worker.exitcode,
+        thus it has to be simulated in a race condition-prone way.
+
+        I'm overriding this method in order to move this line:
+
+            self._start_called = True
+
+        Closer to the call to .start(), which should reduce the chances
+        of triggering the race conditions by 1% ;-)
+        """
+        assert self._parent is current_process()
+
+        if hasattr(self._parent, '_children'):
+            self._parent._children[self] = None
+
+        self._start_called = True
+        threading.Thread.start(self)
 
 
 class Pool(ThreadPool):
@@ -191,6 +214,34 @@ class Pool(ThreadPool):
     def terminate_join(self):
         self.terminate()
         self.join()
+
+    def _join_exited_workers(self):
+        """Cleanup after any worker processes which have exited due to reaching
+        their specified lifetime.  Returns True if any workers were cleaned up.
+        """
+        cleaned = False
+        for i in reversed(range(len(self._pool))):
+            worker = self._pool[i]
+            if worker.exitcode is not None:
+                # worker exited
+                try:
+                    worker.join()
+                except RuntimeError:
+                    #
+                    # RuntimeError: cannot join thread before it is started
+                    #
+                    # This is a race condition in DaemonProcess.start() which was found
+                    # during some of the test scans I run. The race condition exists
+                    # because we're using Threads for a Pool that was designed to be
+                    # used with real processes: thus there is no worker.exitcode,
+                    # thus it has to be simulated in a race condition-prone way.
+                    #
+                    continue
+                else:
+                    debug('cleaning up worker %d' % i)
+                cleaned = True
+                del self._pool[i]
+        return cleaned
 
     def finish(self, timeout=120):
         """
