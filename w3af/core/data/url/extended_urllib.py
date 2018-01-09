@@ -1084,7 +1084,7 @@ class ExtendedUrllib(object):
                 self._last_call_to_adjust_workers = time.time()
                 return True
 
-            elif (time.time() - self._last_call_to_adjust_workers) >= 60:
+            elif (time.time() - self._last_call_to_adjust_workers) >= 45:
                 self._last_call_to_adjust_workers = time.time()
                 return True
 
