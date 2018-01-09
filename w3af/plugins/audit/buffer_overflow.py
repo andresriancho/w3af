@@ -29,7 +29,6 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopException)
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
@@ -122,8 +121,13 @@ class buffer_overflow(AuditPlugin):
         Sends a mutant to the remote web server. I wrap urllib's _send_mutant
         just to handle errors in a different way.
         """
+        # Only grep the request which sends the larger payload
+        grep = mutant.get_token_value() == self.BUFFER_TESTS[-1]
+
         try:
-            response = self._uri_opener.send_mutant(mutant, debugging_id=debugging_id)
+            response = self._uri_opener.send_mutant(mutant,
+                                                    debugging_id=debugging_id,
+                                                    grep=grep)
         except (BaseFrameworkException, ScanMustStopException):
             desc = ('A potential (most probably a false positive than a bug)'
                     ' buffer-overflow was found when requesting: "%s", using'
