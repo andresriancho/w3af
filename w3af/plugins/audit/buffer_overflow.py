@@ -57,7 +57,7 @@ class buffer_overflow(AuditPlugin):
     # TODO: if lengths = [ 65 , 257 , 513 , 1025, 2049, 4097, 8000 ]
     # then i get a BadStatusLine exception from urllib2, is seems to be an
     # internal error. Tested against tomcat 5.5.7
-    BUFFER_TESTS = [rand_alpha(l) for l in [65, 257, 513, 1025, 2049]]
+    BUFFER_TESTS = ['A' * payload_len for payload_len in [65, 257, 513, 1025, 2049]]
 
     def __init__(self):
         """
