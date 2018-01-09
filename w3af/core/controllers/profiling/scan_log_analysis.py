@@ -19,7 +19,8 @@ The tool takes a scan log as input, and outputs:
 The scan log needs to have debug enabled in order for this tool to work as expected.
 '''
 
-SCAN_TOOK_RE = re.compile('took (.*?)s to run')
+SCAN_TOOK_RE = re.compile('took (\d*\.\d\d)s to run')
+HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
 
 
 def epoch_to_string(spent_time):
@@ -42,11 +43,9 @@ def epoch_to_string(spent_time):
         if hours:
             msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
         if minutes:
-            msg += str(
-                minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
+            msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
         if seconds:
-            msg += str(
-                seconds) + ' second%s' % ('s' if seconds > 1 else '')
+            msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
         msg += '.'
 
     return msg
@@ -57,7 +56,13 @@ def show_scan_stats(scan):
     show_audit_time(scan)
     show_grep_time(scan)
     show_output_time(scan)
+
+    print('')
+
     show_total_http_requests(scan)
+
+    print('')
+
     show_freeze_locations(scan)
 
 
@@ -94,13 +99,24 @@ def show_output_time(scan):
 
 def show_total_http_requests(scan):
     scan.seek(0)
-    count = 0
+    count = dict()
 
     for line in scan:
-        if 'returned HTTP code' in line:
-            count += 1
 
-    print('The scan sent %s HTTP requests' % count)
+        match = HTTP_CODE_RE.search(line)
+        if match:
+            code = match.group(1)
+
+            if code in count:
+                count[code] += 1
+            else:
+                count[code] = 1
+
+    total = sum(count.itervalues())
+    print('The scan sent %s HTTP requests' % total)
+
+    for code, num in count.iteritems():
+        print('    Sent %s HTTP requests which returned code %s' % (code, num))
 
 
 def show_freeze_locations(scan):
