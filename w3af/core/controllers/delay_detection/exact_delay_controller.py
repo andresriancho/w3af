@@ -88,14 +88,19 @@ class ExactDelayController(object):
         """
         responses = []
 
-        for delay in self.DELAY_SECONDS:
+        for i, delay in enumerate(self.DELAY_SECONDS):
+
+            # Only grep on the first test, to give the grep plugins the chance
+            # to find something interesting. The other requests are not sent
+            # to grep plugins for performance
+            grep = i == 0
 
             # Please note that this call is cached, it will only generate HTTP
             # requests every N calls for the same HTTP request.
             original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
                                                                       debugging_id=self.get_debugging_id())
 
-            success, response = self.delay_for(delay, original_rtt)
+            success, response = self.delay_for(delay, original_rtt, grep)
             if success:
                 self._log_success(delay, response)
                 responses.append(response)
@@ -128,13 +133,15 @@ class ExactDelayController(object):
                 response.id)
         out.debug(msg % args)
 
-    def delay_for(self, delay, original_wait_time):
+    def delay_for(self, delay, original_wait_time, grep):
         """
         Sends a request to the remote end that "should" delay the response in
         `delay` seconds.
 
+        :param delay: The delay object
         :param original_wait_time: The time that it takes to perform the
                                    request without adding any delays.
+        :param grep: Should the framework grep the HTTP response sent for testing?
 
         :return: (True, response) if there was a delay. In order to make
                  things right we first send some requests to measure the
@@ -153,7 +160,9 @@ class ExactDelayController(object):
         # Send, it is important to notice that we don't use the cache
         # to avoid any interference
         try:
-            response = self.uri_opener.send_mutant(mutant, cache=False,
+            response = self.uri_opener.send_mutant(mutant,
+                                                   cache=False,
+                                                   grep=grep,
                                                    timeout=upper_bound * 10,
                                                    debugging_id=self.get_debugging_id())
         except HTTPRequestException, hre:
