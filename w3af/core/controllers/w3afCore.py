@@ -60,6 +60,7 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByUserRequest)
 
+from w3af.core.data.url.handlers.keepalive.connection_manager import MAX_CONNECTIONS
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.kb.knowledge_base import kb
 
@@ -80,8 +81,8 @@ class w3afCore(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     
-    WORKER_THREADS = 20
-    WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 10
+    WORKER_THREADS = MAX_CONNECTIONS / 2
+    WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 20
     
     def __init__(self):
         """

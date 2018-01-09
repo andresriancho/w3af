@@ -31,6 +31,8 @@ from multiprocessing import cpu_count
 
 from .pool276 import ThreadPool, RUN
 
+from w3af.core.data.misc.smart_queue import SmartQueue
+
 __all__ = ['Pool']
 
 
@@ -81,6 +83,7 @@ class Pool(ThreadPool):
         """
         self.Process = partial(DaemonProcess, name=worker_names)
 
+        self.worker_names = worker_names
         self._setup_queues(max_queued_tasks)
         self._taskqueue = Queue.Queue()
         self._cache = {}
@@ -137,7 +140,7 @@ class Pool(ThreadPool):
             exitpriority=15)
 
     def _setup_queues(self, max_queued_tasks):
-        self._inqueue = Queue.Queue(maxsize=max_queued_tasks)
+        self._inqueue = SmartQueue(maxsize=max_queued_tasks, name=self.worker_names)
         self._outqueue = Queue.Queue()
         self._quick_put = self._inqueue.put
         self._quick_get = self._outqueue.get
