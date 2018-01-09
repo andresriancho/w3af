@@ -58,7 +58,7 @@ class generic(AuditPlugin):
         Find all kind of "generic" bugs without using a fixed error database
 
         :param freq: A FuzzableRequest
-        :param orig_response: The HTTP response associated with the fuzzable request
+        :param original_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
         # Prevent some false positives for cases where the original response

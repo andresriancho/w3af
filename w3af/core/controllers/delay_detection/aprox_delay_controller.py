@@ -133,8 +133,12 @@ class AproxDelayController(object):
         return False, responses
     
     def find_delay_multiplier(self, original_rtt, responses):
-        for multiplier in self.DELAY_SETTINGS[self.delay_setting]:
-            delays, resp = self.multiplier_delays_response(multiplier, original_rtt)
+        for i, multiplier in enumerate(self.DELAY_SETTINGS[self.delay_setting]):
+            # Only grep the first response, this way we let the grep plugins find stuff
+            # but afterwards we get a performance improvement
+            grep = i == 0
+
+            delays, resp = self.multiplier_delays_response(multiplier, original_rtt, grep)
             responses.append(resp)
             if delays:
                 return multiplier
@@ -142,7 +146,7 @@ class AproxDelayController(object):
         # No multiplier was able to make an impact in the delay
         return None
     
-    def multiplier_delays_response(self, multiplier, original_rtt):
+    def multiplier_delays_response(self, multiplier, original_rtt, grep):
         """
         :return: (True if the multiplier delays the response,
                   The HTTP response)
@@ -153,7 +157,9 @@ class AproxDelayController(object):
         mutant.set_token_value(delay_str)
 
         # Send
-        response = self.uri_opener.send_mutant(mutant, cache=False)
+        response = self.uri_opener.send_mutant(mutant,
+                                               cache=False,
+                                               grep=grep)
 
         # Test
         if response.get_wait_time() > (original_rtt * self.DELAY_DIFF_MULT):

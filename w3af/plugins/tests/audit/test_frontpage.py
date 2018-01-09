@@ -18,40 +18,50 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
-from nose.plugins.skip import SkipTest
+from mock import patch
 
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 class TestFrontpage(PluginTest):
 
-    target_vuln_all = 'http://moth/'
+    target_url = 'http://httpretty'
+
+    FRONTPAGE_BODY = ('FPVersion="1.2.3"\n'
+                      'FPAdminScriptUrl="/admin"\n'
+                      'FPAuthorScriptUrl="/author"\n')
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/_vti_inf.html',
+                                   body=FRONTPAGE_BODY,
+                                   method='GET', status=200),
+                      MockResponse('http://httpretty/author',
+                                   body='',
+                                   method='POST', status=200),
+                      MockResponse('http://httpretty/AAAAAA.html',
+                                   body='AAAAAA.html'[::-1],
+                                   method='GET', status=200),
+                      ]
 
     _run_configs = {
         'cfg': {
-            'target': None,
-            'plugins': {
-                'audit': (PluginConfig('frontpage',),),
-            }
-        },
+            'target': target_url,
+            'plugins': {'infrastructure': (PluginConfig('frontpage_version'),),
+                        'audit': (PluginConfig('frontpage'),)}
+        }
     }
 
-    @attr('ci_fails')
-    def test_no_frontpage(self):
+    def test_upload(self):
         cfg = self._run_configs['cfg']
-        self._scan(self.target_vuln_all, cfg['plugins'])
+
+        with patch('w3af.plugins.audit.frontpage.rand_alpha') as rand_alpha_mock:
+            rand_alpha_mock.side_effect = ['AAAAAA']
+            self._scan(cfg['target'], cfg['plugins'])
 
         vulns = self.kb.get('frontpage', 'frontpage')
 
-        EXPECTED = set()
+        self.assertEqual(len(vulns), 1, vulns)
 
-        self.assertEquals(EXPECTED,
-                          set([v.get_name() for v in vulns])
-                          )
+        vuln = vulns[0]
 
-    @attr('ci_fails')
-    def test_frontpage_upload(self):
-        msg = 'FIXME: Need to setup a working frontpage environment and have'\
-              ' a positive test also!'
-        raise SkipTest(msg)
+        self.assertEqual(vuln.get_url().url_string, 'http://httpretty/AAAAAA.html')
+        self.assertEqual(vuln.get_name(), 'Insecure Frontpage extensions configuration')
