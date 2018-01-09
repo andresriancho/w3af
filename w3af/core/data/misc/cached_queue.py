@@ -51,7 +51,7 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
     are stored in memory, when more items are put() we just write them to
     disk.
 
-    The CacheQueue object implements these methods from SmartQueue:
+    The CacheQueue object implements these methods from QueueSpeedMeasurement:
         * get_input_rpm
         * get_output_rpm
 
