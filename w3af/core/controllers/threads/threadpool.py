@@ -139,8 +139,38 @@ class Pool(ThreadPool):
                   self._result_handler, self._cache),
             exitpriority=15)
 
+    def get_worker_count(self):
+        return len(self._pool)
+
+    def set_worker_count(self, count):
+        """
+        Set the number of workers.
+
+        Keep in mind that this is not an immediate when decreasing
+        the pool process count!
+
+            * When increasing the size, the threadpool will call
+              repopulate_pool() and the new threads will be created
+
+            * When decreasing the size, a thread will finish because
+              of maxtasksperchild, then repopulate_pool() will be
+              called async and the thread will *not* be created,
+              thus decreasing the pool size
+
+        The change is made effective depending on the work load and
+        the time required to finish each task.
+
+        :param count: The new process count
+        :return: None
+        """
+        assert self._maxtasksperchild, 'Can only adjust size if maxtasksperchild is set'
+        assert count >= 1, 'Number of processes must be at least 1'
+        self._processes = count
+        self._repopulate_pool()
+
     def _setup_queues(self, max_queued_tasks):
-        self._inqueue = SmartQueue(maxsize=max_queued_tasks, name=self.worker_names)
+        #self._inqueue = SmartQueue(maxsize=max_queued_tasks, name=self.worker_names)
+        self._inqueue = Queue.Queue(maxsize=max_queued_tasks)
         self._outqueue = Queue.Queue()
         self._quick_put = self._inqueue.put
         self._quick_get = self._outqueue.get
