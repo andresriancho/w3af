@@ -340,6 +340,7 @@ class ExtendedUrllib(object):
             for _ in xrange(count):
                 resp = self.send_mutant(mutant,
                                         cache=False,
+                                        grep=False,
                                         debugging_id=debugging_id)
                 rtt = resp.get_wait_time()
                 rtts.append(rtt)
