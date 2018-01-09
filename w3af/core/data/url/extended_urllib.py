@@ -565,7 +565,7 @@ class ExtendedUrllib(object):
         """
         return self.settings.get_cookies()
 
-    def send_clean(self, mutant, debugging_id=None):
+    def send_clean(self, mutant, debugging_id=None, grep=True):
         """
         Sends a mutant to the network (without using the cache) and then returns
         the HTTP response object and a sanitized response body (which doesn't
@@ -578,7 +578,10 @@ class ExtendedUrllib(object):
         :param debugging_id: A unique identifier for this call to audit()
         :return: (HTTP response, Sanitized HTTP response body)
         """
-        http_response = self.send_mutant(mutant, cache=False, debugging_id=debugging_id)
+        http_response = self.send_mutant(mutant,
+                                         cache=False,
+                                         debugging_id=debugging_id,
+                                         grep=grep)
         clean_body = get_clean_body(mutant, http_response)
 
         return http_response, clean_body
