@@ -80,10 +80,19 @@ class w3afCore(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    
-    WORKER_THREADS = MAX_CONNECTIONS / 2
+
+    # Note that the number of worker threads might be modified
+    # by the extended url library. When errors appear the worker
+    # thread number is reduced, when no errors are found the
+    # worker thread count is increased to provide more speed.
+    #
+    # This only makes sense as long as the worker threads are
+    # mostly used for sending HTTP requests (which is the case
+    # for the current w3af version).
+    WORKER_THREADS = MAX_CONNECTIONS / 3
     WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 20
-    
+    WORKER_MAX_TASKS = 20
+
     def __init__(self):
         """
         Init some variables and files.
@@ -128,7 +137,8 @@ class w3afCore(object):
 
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
-        
+        self.uri_opener.set_w3af_core(self)
+
         # Keep track of first scan to call cleanup or not
         self._first_scan = True
 
@@ -286,18 +296,20 @@ class w3afCore(object):
         """
         if not hasattr(self, '_worker_pool'):
             # Should get here only on the first call to "worker_pool".
-            self._worker_pool = Pool(self.WORKER_THREADS,
+            self._worker_pool = Pool(processes=self.WORKER_THREADS,
                                      worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE)
+                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                                     maxtasksperchild=self.WORKER_MAX_TASKS)
 
         if not self._worker_pool.is_running():
             # Clean-up the old worker pool
             self._worker_pool.terminate_join()
 
             # Create a new one
-            self._worker_pool = Pool(self.WORKER_THREADS,
+            self._worker_pool = Pool(processes=self.WORKER_THREADS,
                                      worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE)
+                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                                     maxtasksperchild=self.WORKER_MAX_TASKS)
 
         return self._worker_pool
 
