@@ -23,7 +23,6 @@ from collections import namedtuple
 from functools import partial
 
 import w3af.core.data.constants.severity as severity
-import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.diff import chunked_diff
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
@@ -106,7 +105,7 @@ class memcachei(AuditPlugin):
         # trying the correct injection request, to confirm that we've found
         # it!
         mutant.set_token_value(self.OK)
-        ok_response, body_ok_response = send_clean(mutant)
+        ok_response, body_ok_response = send_clean(mutant, grep=False)
 
         if self.equal_with_limit(body_error_1_response,
                                  body_ok_response,
@@ -119,7 +118,7 @@ class memcachei(AuditPlugin):
 
         # ERROR_2 request to just make sure that we're in a memcached case
         mutant.set_token_value(self.ERROR_2)
-        error_2_response, body_error_2_response = send_clean(mutant)
+        error_2_response, body_error_2_response = send_clean(mutant, grep=False)
 
         if self.equal_with_limit(orig_body,
                                  body_error_2_response,

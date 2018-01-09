@@ -148,7 +148,7 @@ class xss(AuditPlugin):
         trivial_mutant = mutant.copy()
         trivial_mutant.set_token_value(payload)
         
-        response = self._uri_opener.send_mutant(trivial_mutant)
+        response = self._uri_opener.send_mutant(trivial_mutant, grep=True)
 
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
@@ -187,7 +187,8 @@ class xss(AuditPlugin):
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutant_list,
                                       self._analyze_echo_result,
-                                      debugging_id=debugging_id)
+                                      debugging_id=debugging_id,
+                                      grep=False)
 
     def _analyze_echo_result(self, mutant, response):
         """
