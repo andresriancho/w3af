@@ -33,9 +33,9 @@ FROM_CACHE = 'from_cache=1'
 
 SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) seconds')
 
-GREP_DISK_DICT = re.compile('from disk. The current Grep DiskDict size is (\d*).')
-AUDITOR_DISK_DICT = re.compile('from disk. The current Auditor DiskDict size is (\d*).')
-CRAWLINFRA_DISK_DICT = re.compile('from disk. The current CrawlInfra DiskDict size is (\d*).')
+GREP_DISK_DICT = re.compile('The current Grep DiskDict size is (\d*).')
+AUDITOR_DISK_DICT = re.compile('The current Auditor DiskDict size is (\d*).')
+CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfra DiskDict size is (\d*).')
 
 RTT_RE = re.compile('\(.*?rtt=(.*?),.*\)')
 
@@ -111,12 +111,17 @@ def show_scan_stats(scan):
 
 def show_worker_pool_size(scan):
     scan.seek(0)
+
     worker_pool_sizes = []
+    worker_pool_timestamps = []
 
     for line in scan:
         match = WORKER_POOL_SIZE.search(line)
         if match:
             worker_pool_sizes.append(int(match.group(1)))
+            worker_pool_timestamps.append(get_line_epoch(line))
+
+    last_timestamp = get_line_epoch(line)
 
     print('Worker pool size over time')
     print('')
@@ -127,10 +132,10 @@ def show_worker_pool_size(scan):
     fig.y_label = 'Worker pool size'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=0, max_=None)
+    fig.set_x_limits(min_=worker_pool_timestamps[0], max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
-    fig.plot(xrange(len(worker_pool_sizes)),
+    fig.plot(worker_pool_timestamps,
              worker_pool_sizes,
              label='Workers')
 
@@ -198,11 +203,15 @@ def show_http_requests_over_time(scan):
 def show_timeout(scan):
     scan.seek(0)
     timeouts = []
+    timeout_timestamps = []
 
     for line in scan:
         match = SOCKET_TIMEOUT.search(line)
         if match:
             timeouts.append(float(match.group(1)))
+            timeout_timestamps.append(get_line_epoch(line))
+
+    last_timestamp = get_line_epoch(line)
 
     print('Socket timeout over time')
     print('')
@@ -213,10 +222,10 @@ def show_timeout(scan):
     fig.y_label = 'Socket timeout'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=0, max_=None)
+    fig.set_x_limits(min_=timeout_timestamps[0], max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
-    fig.plot(xrange(len(timeouts)),
+    fig.plot(timeout_timestamps,
              timeouts,
              label='Timeout')
 
@@ -254,21 +263,32 @@ def show_queue_size(scan):
     scan.seek(0)
 
     grep_queue_sizes = []
+    grep_queue_timestamps = []
+
     auditor_queue_sizes = []
+    auditor_queue_timestamps = []
+
     crawl_queue_sizes = []
+    crawl_queue_timestamps = []
 
     for line in scan:
         match = GREP_DISK_DICT.search(line)
         if match:
             grep_queue_sizes.append(int(match.group(1)))
+            grep_queue_timestamps.append(get_line_epoch(line))
 
         match = AUDITOR_DISK_DICT.search(line)
         if match:
             auditor_queue_sizes.append(int(match.group(1)))
+            auditor_queue_timestamps.append(get_line_epoch(line))
 
         match = CRAWLINFRA_DISK_DICT.search(line)
         if match:
             crawl_queue_sizes.append(int(match.group(1)))
+            crawl_queue_timestamps.append(get_line_epoch(line))
+
+    # Get the last timestamp to use as max in the graphs
+    last_timestamp = get_line_epoch(line)
 
     print('Consumer queue sizes')
     print('')
@@ -279,10 +299,10 @@ def show_queue_size(scan):
     fig.y_label = 'Items in Audit queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=0, max_=None)
+    fig.set_x_limits(min_=auditor_queue_timestamps[0], max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
-    fig.plot(xrange(len(auditor_queue_sizes)),
+    fig.plot(auditor_queue_timestamps,
              auditor_queue_sizes,
              label='Audit')
 
@@ -296,10 +316,10 @@ def show_queue_size(scan):
     fig.y_label = 'Items in CrawlInfra queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=0, max_=None)
+    fig.set_x_limits(min_=crawl_queue_timestamps[0], max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
-    fig.plot(xrange(len(crawl_queue_sizes)),
+    fig.plot(crawl_queue_timestamps,
              crawl_queue_sizes,
              label='Crawl')
 
@@ -313,10 +333,10 @@ def show_queue_size(scan):
     fig.y_label = 'Items in Grep queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=0, max_=None)
+    fig.set_x_limits(min_=grep_queue_timestamps[0], max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
-    fig.plot(xrange(len(grep_queue_sizes)),
+    fig.plot(grep_queue_timestamps,
              grep_queue_sizes,
              label='Grep')
 
@@ -472,6 +492,18 @@ def get_line_epoch(scan_line):
         raise InvalidTimeStamp
     else:
         return int(parsed_time.strftime('%s'))
+
+
+def make_relative_timestamps(timestamps, first_timestamp):
+    """
+    Take a list of timestamps (which are in epoch format) and make them
+    relative to the scan start time.
+
+    :param timestamps: List of timestamps
+    :param first_timestamp: The scan started here
+    :return: A list of timestamps relative to the first_timestamp
+    """
+    return [t - first_timestamp for t in timestamps]
 
 
 if __name__ == '__main__':
