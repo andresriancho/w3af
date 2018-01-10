@@ -962,11 +962,9 @@ class ExtendedUrllib(object):
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
 
-        except ConnectionPoolException, e:
-            return self._handle_connection_pool_exception(req, e, grep, original_url)
-
         except (socket.error,
                 URLTimeoutError,
+                ConnectionPoolException,
                 OpenSSL.SSL.SysCallError,
                 OpenSSL.SSL.ZeroReturnError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
@@ -978,54 +976,10 @@ class ExtendedUrllib(object):
             return self._handle_send_success(req, res, grep, original_url,
                                              original_url_inst)
 
-    def _handle_connection_pool_exception(self, req, exception, grep, original_url):
-        """
-        This error handler takes care of cases in which the connection pool
-        was unable to find a free TCP/IP connection to send an HTTP request
-        to the target host.
-
-        This happens in various cases
-
-            * w3af is scanning using a slow connection
-
-            * The remote server is slow (or applying QoS to IP addresses
-              flagged as attackers)
-
-            * The configured number of threads in w3af is too high compared
-              with the connection manager MAX_CONNECTIONS.
-
-        In most (all?) of these cases we can reduce the number of times this
-        happens by decreasing the number of worker threads from the core.
-
-        This method decreases the number of worker threads in the core's
-        threadpool and then calls _handle_send_socket_error() to continue
-        with the error handling.
-
-        :param req: The original HTTP connection that triggered the error
-        :param exception: The exception instance
-        :param grep: Should we grep this request / response
-        :param original_url: The original URL being requested
-        :return: After decreasing the number of threads
-        """
-        if not self._should_adjust_workers():
-            return self._handle_send_socket_error(req,
-                                                  exception,
-                                                  grep,
-                                                  original_url)
-
-        self._decrease_worker_pool_size()
-
-        return self._handle_send_socket_error(req,
-                                              exception,
-                                              grep,
-                                              original_url)
-
     def _decrease_worker_pool_size(self):
-        if not self.has_w3af_core():
-            return
-
         w3af_core = self.get_w3af_core()
         worker_pool = w3af_core.worker_pool
+        error_rate = self.get_error_rate()
         min_workers = 10
 
         # Note that we decrease by two here, and increase by one below
@@ -1034,32 +988,18 @@ class ExtendedUrllib(object):
 
         if new_worker_count >= min_workers:
             worker_pool.set_worker_count(new_worker_count)
-            msg = ('Decreased the worker pool size to %s after'
-                   ' ConnectionPoolException')
+            msg = 'Decreased the worker pool size to %s (error rate: %i%%)'
         else:
             msg = ('Not decreasing the worker pool size since it is lower'
-                   ' than the min value required by w3af: %s')
+                   ' than the min value required by w3af: %s (error rate:'
+                   ' %i%%)')
 
-        om.out.debug(msg % new_worker_count)
+        om.out.debug(msg % (new_worker_count, error_rate))
 
     def _increase_worker_pool_size(self):
-        if not self.has_w3af_core():
-            return
-
-        if not self._should_adjust_workers():
-            return
-
-        # We want to be very strict here, do not increase the worker pool
-        # size when there are "some errors". Just increase when there are
-        # "almost no errors"
-        error_rate = self.get_error_rate()
-        if error_rate >= (ACCEPTABLE_ERROR_RATE / 2.0):
-            msg = 'Not increasing the worker pool size since error rate is %i%%'
-            om.out.debug(msg % error_rate)
-            return
-
         w3af_core = self.get_w3af_core()
         worker_pool = w3af_core.worker_pool
+        error_rate = self.get_error_rate()
         max_workers = 100
 
         # Note that we increase by one here, and decrease by two above
@@ -1073,6 +1013,42 @@ class ExtendedUrllib(object):
         else:
             msg = 'Not increasing the worker pool size since it exceeds the max: %s'
             om.out.debug(msg % max_workers)
+
+    def _should_increase_worker_pool(self):
+        """
+        We want to be very strict here, do not increase the worker pool
+        size when there are "some errors". Just increase when there are
+        "almost no errors"
+        """
+        error_rate = self.get_error_rate()
+        if error_rate >= (ACCEPTABLE_ERROR_RATE / 2.0):
+            return False
+
+        return True
+
+    def _should_decrease_worker_pool_size(self):
+        error_rate = self.get_error_rate()
+        if error_rate >= ACCEPTABLE_ERROR_RATE:
+            return True
+
+        return False
+
+    def _handle_worker_pool_size(self):
+        """
+        Increase or decrease the worker pool size
+        :return: None
+        """
+        if not self.has_w3af_core():
+            return
+
+        if not self._should_adjust_workers():
+            return
+
+        if self._should_decrease_worker_pool_size():
+            self._decrease_worker_pool_size()
+
+        elif self._should_increase_worker_pool():
+            self._increase_worker_pool_size()
 
     def _should_adjust_workers(self):
         """
@@ -1143,6 +1119,8 @@ class ExtendedUrllib(object):
             if should_stop_scan:
                 self._handle_error_count_exceeded(exception)
 
+        self._handle_worker_pool_size()
+
         # Then retry!
         req._Request__original = original_url
         return self._retry(req, grep, exception)
@@ -1190,7 +1168,7 @@ class ExtendedUrllib(object):
         # Clear the log of failed requests; this request is DONE!
         self._log_successful_response(http_resp)
         self._track_rtt(res, req.debugging_id)
-        self._increase_worker_pool_size()
+        self._handle_worker_pool_size()
 
         if grep:
             self._grep(req, http_resp)
