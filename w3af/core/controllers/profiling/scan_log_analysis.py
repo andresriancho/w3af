@@ -3,7 +3,6 @@
 import re
 import sys
 import datetime
-import dateutil.parser
 
 try:
     import plotille
@@ -98,7 +97,9 @@ def show_scan_stats(scan):
 
     print('')
 
-    show_queue_size(scan)
+    show_queue_size_grep(scan)
+    show_queue_size_audit(scan)
+    show_queue_size_crawl(scan)
 
     print('')
 
@@ -122,6 +123,10 @@ def show_worker_pool_size(scan):
             worker_pool_timestamps.append(get_line_epoch(line))
 
     last_timestamp = get_line_epoch(line)
+
+    if not worker_pool_sizes:
+        print('No worker pool size data found')
+        return
 
     print('Worker pool size over time')
     print('')
@@ -213,6 +218,10 @@ def show_timeout(scan):
 
     last_timestamp = get_line_epoch(line)
 
+    if not timeouts:
+        print('No socket timeout data found')
+        return
+
     print('Socket timeout over time')
     print('')
 
@@ -259,29 +268,13 @@ def show_rtt_histo(scan):
     print(fig.show())
 
 
-def show_queue_size(scan):
+def show_queue_size_crawl(scan):
     scan.seek(0)
-
-    grep_queue_sizes = []
-    grep_queue_timestamps = []
-
-    auditor_queue_sizes = []
-    auditor_queue_timestamps = []
 
     crawl_queue_sizes = []
     crawl_queue_timestamps = []
 
     for line in scan:
-        match = GREP_DISK_DICT.search(line)
-        if match:
-            grep_queue_sizes.append(int(match.group(1)))
-            grep_queue_timestamps.append(get_line_epoch(line))
-
-        match = AUDITOR_DISK_DICT.search(line)
-        if match:
-            auditor_queue_sizes.append(int(match.group(1)))
-            auditor_queue_timestamps.append(get_line_epoch(line))
-
         match = CRAWLINFRA_DISK_DICT.search(line)
         if match:
             crawl_queue_sizes.append(int(match.group(1)))
@@ -290,7 +283,51 @@ def show_queue_size(scan):
     # Get the last timestamp to use as max in the graphs
     last_timestamp = get_line_epoch(line)
 
-    print('Consumer queue sizes')
+    if not crawl_queue_sizes:
+        print('No crawl consumer queue size data found')
+        return
+
+    print('Crawl consumer queue size')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Items in CrawlInfra queue'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=crawl_queue_timestamps[0], max_=last_timestamp)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(crawl_queue_timestamps,
+             crawl_queue_sizes,
+             label='Crawl')
+
+    print(fig.show())
+    print('')
+    print('')
+
+
+def show_queue_size_audit(scan):
+    scan.seek(0)
+
+    auditor_queue_sizes = []
+    auditor_queue_timestamps = []
+
+    for line in scan:
+        match = AUDITOR_DISK_DICT.search(line)
+        if match:
+            auditor_queue_sizes.append(int(match.group(1)))
+            auditor_queue_timestamps.append(get_line_epoch(line))
+
+    # Get the last timestamp to use as max in the graphs
+    last_timestamp = get_line_epoch(line)
+
+    if not auditor_queue_sizes:
+        print('No audit consumer queue size data found')
+        return
+
+    print('Audit consumer queue size')
     print('')
 
     fig = plotille.Figure()
@@ -310,21 +347,27 @@ def show_queue_size(scan):
     print('')
     print('')
 
-    fig = plotille.Figure()
-    fig.width = 90
-    fig.height = 20
-    fig.y_label = 'Items in CrawlInfra queue'
-    fig.x_label = 'Time'
-    fig.color_mode = 'byte'
-    fig.set_x_limits(min_=crawl_queue_timestamps[0], max_=last_timestamp)
-    fig.set_y_limits(min_=0, max_=None)
 
-    fig.plot(crawl_queue_timestamps,
-             crawl_queue_sizes,
-             label='Crawl')
+def show_queue_size_grep(scan):
+    scan.seek(0)
 
-    print(fig.show())
-    print('')
+    grep_queue_sizes = []
+    grep_queue_timestamps = []
+
+    for line in scan:
+        match = GREP_DISK_DICT.search(line)
+        if match:
+            grep_queue_sizes.append(int(match.group(1)))
+            grep_queue_timestamps.append(get_line_epoch(line))
+
+    # Get the last timestamp to use as max in the graphs
+    last_timestamp = get_line_epoch(line)
+
+    if not grep_queue_sizes:
+        print('No audit consumer queue size data found')
+        return
+
+    print('Grep consumer queue sizes')
     print('')
 
     fig = plotille.Figure()
@@ -485,7 +528,7 @@ def get_line_epoch(scan_line):
     """
     timestamp = scan_line[1:scan_line.find('-')].strip()
     try:
-        parsed_time = dateutil.parser.parse(timestamp)
+        parsed_time = datetime.datetime.strptime(timestamp, '%c')
     except KeyboardInterrupt:
         sys.exit(3)
     except:
