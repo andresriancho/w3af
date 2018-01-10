@@ -25,9 +25,9 @@ class ConnectionManager(object):
     def __init__(self):
         self._lock = threading.RLock()
         self._host_pool_size = MAX_CONNECTIONS
-        self._hostmap = {}     # map hosts to a list of connections
-        self._used_cons = []   # connections being used per host
-        self._free_conns = []  # available connections
+        self._hostmap = {}        # map hosts to a list of connections
+        self._used_cons = set()   # connections being used per host
+        self._free_conns = set()  # available connections
 
     def remove_connection(self, conn, host=None, reason=UNKNOWN):
         """
@@ -39,62 +39,46 @@ class ConnectionManager(object):
         """
         # Just make sure we don't leak open connections
         conn.close()
+        removed_from_hostmap = False
 
-        with self._lock:
-            removed_from_hostmap = False
+        if host:
+            host_connections = self._hostmap.get(host, set())
+            if conn in host_connections:
+                host_connections.discard(conn)
+                removed_from_hostmap = True
 
-            if host:
-                if host in self._hostmap:
-                    if conn in self._hostmap[host]:
-                        self._hostmap[host].remove(conn)
-                        removed_from_hostmap = True
+        else:
+            # We don't know the host. Need to find it by looping
+            # TODO: dict.items() will crash if the dict is modified while we iterate
+            for _host, host_connections in self._hostmap.items():
+                if conn in host_connections:
+                    host = _host
+                    host_connections.discard(conn)
+                    removed_from_hostmap = True
+                    break
 
-            else:
-                # We don't know the host. Need to find it by looping
-                for _host, conns in self._hostmap.items():
-                    if conn in conns:
-                        host = _host
-                        conns.remove(conn)
-                        removed_from_hostmap = True
-                        break
+        if not removed_from_hostmap:
+            msg = '%s was NOT removed from hostmap pool.'
+            debug(msg % conn)
 
-            if not removed_from_hostmap:
-                msg = '%s was NOT removed from hostmap pool.'
-                debug(msg % conn)
+        for lst in (self._free_conns, self._used_cons):
+            lst.discard(conn)
 
-            removed_from_free_or_used = False
-            for lst in (self._free_conns, self._used_cons):
-                try:
-                    lst.remove(conn)
-                except ValueError:
-                    # I don't care much about the connection not being in
-                    # the free_conns or used_conns. This might happen because
-                    # of a thread locking issue (basically, someone is not
-                    # locking before moving connections around).
-                    pass
-                else:
-                    removed_from_free_or_used = True
+        # If no more conns for 'host', remove it from mapping
+        conn_total = self.get_connections_total(host)
+        if host and host in self._hostmap and not conn_total:
+            del self._hostmap[host]
 
-            if not removed_from_free_or_used:
-                msg = '%s was NOT in free/used connection lists.'
-                debug(msg % conn)
-
-            # If no more conns for 'host', remove it from mapping
-            conn_total = self.get_connections_total(host)
-            if host and host in self._hostmap and not conn_total:
-                del self._hostmap[host]
-
-            msg = 'Removed %s, reason %s, %s pool size is %s'
-            debug(msg % (conn, reason, host, conn_total))
+        msg = 'Removed %s, reason %s, %s pool size is %s'
+        debug(msg % (conn, reason, host, conn_total))
 
     def free_connection(self, conn):
         """
         Recycle a connection. Mark it as available for being reused.
         """
-        with self._lock:
-            if conn in self._used_cons:
-                self._used_cons.remove(conn)
-                self._free_conns.append(conn)
+        if conn in self._used_cons:
+            self._used_cons.discard(conn)
+            self._free_conns.add(conn)
 
     def replace_connection(self, bad_conn, req, conn_factory):
         """
@@ -106,24 +90,22 @@ class ConnectionManager(object):
         """
         # This connection is dead anyways
         bad_conn.close()
-
         host = req.get_host()
 
-        with self._lock:
-            # Remove
-            self.remove_connection(bad_conn, host, reason='replace connection')
+        # Remove
+        self.remove_connection(bad_conn, host, reason='replace connection')
 
-            # Create the new one
-            new_conn = conn_factory(req)
-            conns = self._hostmap.setdefault(host, [])
-            conns.append(new_conn)
-            self._used_cons.append(new_conn)
+        # Create the new one
+        new_conn = conn_factory(req)
+        conns = self._hostmap.setdefault(host, set())
+        conns.add(new_conn)
+        self._used_cons.add(new_conn)
 
-            # Log
-            args = (bad_conn, new_conn)
-            debug('Replaced broken %s with the new %s' % args)
+        # Log
+        args = (bad_conn, new_conn)
+        debug('Replaced broken %s with the new %s' % args)
 
-            return new_conn
+        return new_conn
 
     def get_available_connection(self, req, conn_factory):
         """
@@ -133,96 +115,95 @@ class ConnectionManager(object):
         :param conn_factory: Factory function for connection creation. Receives
                              req as parameter.
         """
-        with self._lock:
-            retry_count = self.GET_AVAILABLE_CONNECTION_RETRY_NUM
-            host = req.get_host()
+        retry_count = self.GET_AVAILABLE_CONNECTION_RETRY_NUM
+        host = req.get_host()
 
-            while retry_count > 0:
-                if not req.new_connection:
-                    # If the user is not specifying that he needs a new HTTP
-                    # connection for this request then check if we can reuse an
-                    # existing free connection from the connection pool
-                    #
-                    # By default req.new_connection is False, meaning that we'll
-                    # most likely re-use the connections
-                    #
-                    # A user sets req.new_connection to True when he wants to
-                    # do something special with the connection (such as setting
-                    # a specific timeout)
-                    for conn in self._hostmap.setdefault(host, []):
-                        try:
-                            self._free_conns.remove(conn)
-                        except ValueError:
-                            continue
-                        else:
-                            self._used_cons.append(conn)
+        while retry_count > 0:
+            if not req.new_connection:
+                # If the user is not specifying that he needs a new HTTP
+                # connection for this request then check if we can reuse an
+                # existing free connection from the connection pool
+                #
+                # By default req.new_connection is False, meaning that we'll
+                # most likely re-use the connections
+                #
+                # A user sets req.new_connection to True when he wants to
+                # do something special with the connection (such as setting
+                # a specific timeout)
+                for conn in self._hostmap.setdefault(host, set()):
+                    try:
+                        self._free_conns.remove(conn)
+                    except KeyError:
+                        continue
+                    else:
+                        self._used_cons.add(conn)
 
-                            msg = 'Reusing free %s to use in new request'
-                            debug(msg % conn)
+                        msg = 'Reusing free %s to use in new request'
+                        debug(msg % conn)
 
-                            return conn
-                else:
-                    debug('Forcing the use of a new HTTPConnection')
+                        return conn
+            else:
+                debug('Forcing the use of a new HTTPConnection')
 
-                # No? Well, if the connection pool is not full let's try to
-                # create a new one.
-                conn_total = self.get_connections_total(host)
-                if conn_total < self._host_pool_size:
-                    # Create a new connection
-                    conn = conn_factory(req)
+            # No? Well, if the connection pool is not full let's try to
+            # create a new one.
+            conn_total = self.get_connections_total(host)
+            if conn_total < self._host_pool_size:
+                # Create a new connection
+                conn = conn_factory(req)
 
-                    # Store it internally
-                    self._used_cons.append(conn)
-                    hostmap = self._hostmap.setdefault(host, [])
-                    hostmap.append(conn)
+                # Store it internally
+                self._used_cons.add(conn)
+                hostmap = self._hostmap.setdefault(host, set())
+                hostmap.add(conn)
 
-                    # logging
-                    msg = 'Added %s to pool, current %s pool size: %s'
-                    debug(msg % (conn, host, conn_total + 1))
+                # logging
+                msg = 'Added %s to pool, current %s pool size: %s'
+                debug(msg % (conn, host, conn_total + 1))
 
-                    return conn
+                return conn
 
-                else:
-                    args = (conn_total, self._host_pool_size)
-                    msg = 'No free connections in pool with size %s/%s. Wait...'
-                    debug(msg % args)
+            else:
+                args = (conn_total, self._host_pool_size)
+                msg = 'No free connections in pool with size %s/%s. Wait...'
+                debug(msg % args)
 
-                    # Well, the connection pool for this host is full, this
-                    # means that many threads are sending request to the host
-                    # and using the connections. This is not bad, just shows
-                    # that w3af is keeping the connections busy
-                    #
-                    # Another reason for this situation is that the connections
-                    # are *really* slow => taking many seconds to retrieve the
-                    # HTTP response => not freeing often
-                    #
-                    # We should wait a little and try again
-                    retry_count -= 1
-                    time.sleep(self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
+                # Well, the connection pool for this host is full, this
+                # means that many threads are sending request to the host
+                # and using the connections. This is not bad, just shows
+                # that w3af is keeping the connections busy
+                #
+                # Another reason for this situation is that the connections
+                # are *really* slow => taking many seconds to retrieve the
+                # HTTP response => not freeing often
+                #
+                # We should wait a little and try again
+                retry_count -= 1
+                time.sleep(self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
 
-            msg = ('HTTP connection pool (keepalive) waited too long (%s sec)'
-                   ' for a free connection, giving up. This usually occurs'
-                   ' when w3af is scanning using a slow connection, the remote'
-                   ' server is slow (or applying QoS to IP addresses flagged'
-                   ' as attackers) or the configured number of threads in w3af'
-                   ' is too high compared with the connection manager'
-                   ' MAX_CONNECTIONS.')
-            seconds = (self.GET_AVAILABLE_CONNECTION_RETRY_NUM *
-                       self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
-            raise ConnectionPoolException(msg % seconds)
+        msg = ('HTTP connection pool (keepalive) waited too long (%s sec)'
+               ' for a free connection, giving up. This usually occurs'
+               ' when w3af is scanning using a slow connection, the remote'
+               ' server is slow (or applying QoS to IP addresses flagged'
+               ' as attackers) or the configured number of threads in w3af'
+               ' is too high compared with the connection manager'
+               ' MAX_CONNECTIONS.')
+        seconds = (self.GET_AVAILABLE_CONNECTION_RETRY_NUM *
+                   self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
+        raise ConnectionPoolException(msg % seconds)
 
     def get_all(self, host=None):
         """
-        If <host> is passed return a list containing the created connections
+        If <host> is passed return a set containing the created connections
         for that host. Otherwise return a dict with 'host: str' and
         'conns: list' as items.
 
         :param host: Host
         """
         if host:
-            return list(self._hostmap.get(host, []))
+            return self._hostmap.get(host, set()).copy()
         else:
-            return dict(self._hostmap)
+            return self._hostmap.copy()
 
     def get_connections_total(self, host=None):
         """
@@ -232,6 +213,5 @@ class ConnectionManager(object):
         if host not in self._hostmap:
             return 0
 
-        values = self._hostmap.values() if (host is None) \
-            else [self._hostmap[host]]
-        return reduce(operator.add, map(len, values or [[]]))
+        values = self._hostmap.values() if (host is None) else [self._hostmap[host]]
+        return reduce(operator.add, map(len, values or [set()]))
