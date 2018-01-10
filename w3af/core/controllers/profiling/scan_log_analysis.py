@@ -145,7 +145,9 @@ def show_scan_finished_in(scan):
         match = SCAN_FINISHED_IN.search(line)
         if match:
             print(match.group(0))
-            break
+            return
+
+    print('Scan is still running!')
 
 
 def show_http_requests_over_time(scan):
