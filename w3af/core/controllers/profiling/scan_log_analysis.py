@@ -78,6 +78,7 @@ def show_scan_stats(scan):
 
     print('')
 
+    print('Wall time used by threads:')
     show_discovery_time(scan)
     show_audit_time(scan)
     show_grep_time(scan)
@@ -364,7 +365,7 @@ def show_generic_spent_time(scan, name, must_have):
         if match:
             spent_time += float(match.group(1))
 
-    print('%s() took %s' % (name, epoch_to_string(spent_time)))
+    print('    %s() took %s' % (name, epoch_to_string(spent_time)))
 
 
 def show_discovery_time(scan):
