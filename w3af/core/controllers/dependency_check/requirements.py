@@ -34,7 +34,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('chardet', 'chardet', '3.0.4'),
                      PIPDependency('tblib', 'tblib', '0.2.0'),
                      PIPDependency('pdfminer', 'pdfminer', '20140328'),
-                     PIPDependency('concurrent.futures', 'futures', '2.1.5'),
+                     PIPDependency('concurrent.futures', 'futures', '3.2.0'),
                      PIPDependency('OpenSSL', 'pyOpenSSL', '17.4.0'),
                      PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
 
@@ -77,7 +77,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      PIPDependency('tldextract', 'tldextract', '1.7.2'),
 
                      # pebble multiprocessing
-                     PIPDependency('pebble', 'pebble', '4.3.3'),
+                     PIPDependency('pebble', 'pebble', '4.3.6'),
 
                      # acora speeds up string search, for regular expressions
                      # we use esmre to extract the string literals from the re
