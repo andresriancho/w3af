@@ -107,7 +107,7 @@ class text_file(OutputPlugin):
             return
         
         try:
-            self._file.write(self._clean_string(msg))
+            self._file.write(msg)
         except Exception, e:
             self._file = None
             msg = ('An exception was raised while trying to write to the output'
@@ -160,6 +160,8 @@ class text_file(OutputPlugin):
             self._init()
 
         to_print = str(message)
+        to_print = self._clean_string(to_print)
+
         if new_line:
             to_print += '\n'
 

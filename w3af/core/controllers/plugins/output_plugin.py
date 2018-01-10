@@ -36,6 +36,12 @@ class OutputPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
+    STRING_CLEAN = [('\0', '\\0'),
+                    ('\t', '\\t'),
+                    ('\n', '\\n'),
+                    ('\r', '\\r')]
+
     def __init__(self):
         Plugin.__init__(self)
 
@@ -156,8 +162,7 @@ class OutputPlugin(Plugin):
         if string_to_clean is None:
             return ''
 
-        # Not converting these: ('\n','\\n'),('\r','\\r')
-        for char, replace in [('\0', '\\0'), ('\t', '\\t')]:
+        for char, replace in self.STRING_CLEAN:
             string_to_clean = string_to_clean.replace(char, replace)
 
         return string_to_clean
