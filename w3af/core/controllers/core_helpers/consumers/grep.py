@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import time
-
 import w3af.core.data.kb.config as cf
 
 import w3af.core.controllers.output_manager as om
@@ -48,13 +46,12 @@ class grep(BaseConsumer):
         :param w3af_core: The w3af core that we'll use for status reporting
         """
         # We use BaseConsumer.THREAD_POOL_SIZE as an arbitrary "low" number
-        # to calculate the max_in_queue_size, the basic thinking behind this
-        # is that we don't want hundreds of HTTP request + responses queued
-        # in memory waiting for the grep plugins to analyze them.
+        # to calculate the max_in_queue_size, which is the number of items
+        # that will be stored in-memory in the queue
         #
-        # If this limit works it means that: If the grep plugins are slow, then
-        # the whole scanner will be slow but no excessive memory usage will be
-        # found
+        # Any items exceeding max_in_queue_size will be stored on-disk, which
+        # is slow but will prevent any high memory usage imposed by this part
+        # of the framework
         max_in_queue_size = BaseConsumer.THREAD_POOL_SIZE * 2
 
         super(grep, self).__init__(grep_plugins,
