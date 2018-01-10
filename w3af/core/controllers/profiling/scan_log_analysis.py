@@ -237,7 +237,7 @@ def show_queue_size(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.y_label = 'Items in queue'
+    fig.y_label = 'Items in Audit queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
     fig.set_x_limits(min_=0, max_=None)
@@ -247,14 +247,14 @@ def show_queue_size(scan):
              auditor_queue_sizes,
              label='Audit')
 
-    print(fig.show(legend=True))
+    print(fig.show())
     print('')
     print('')
 
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.y_label = 'Items in queue'
+    fig.y_label = 'Items in CrawlInfra queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
     fig.set_x_limits(min_=0, max_=None)
@@ -264,14 +264,14 @@ def show_queue_size(scan):
              crawl_queue_sizes,
              label='Crawl')
 
-    print(fig.show(legend=True))
+    print(fig.show())
     print('')
     print('')
 
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.y_label = 'Items in queue'
+    fig.y_label = 'Items in Grep queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
     fig.set_x_limits(min_=0, max_=None)
@@ -281,7 +281,7 @@ def show_queue_size(scan):
              grep_queue_sizes,
              label='Grep')
 
-    print(fig.show(legend=True))
+    print(fig.show())
     print('')
     print('')
 
