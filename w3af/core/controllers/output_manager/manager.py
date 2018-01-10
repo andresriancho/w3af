@@ -258,7 +258,7 @@ class OutputManager(Process):
             args = (o_plugin.get_name(), spent_time)
 
             import w3af.core.controllers.output_manager as om
-            om.out.debug('%s.flush() took %.2f seconds to run' % args)
+            om.out.debug('%s.flush() took %.2fs to run' % args)
 
     def _handle_output_plugin_exception(self, o_plugin, exception):
         if self._w3af_core is None:

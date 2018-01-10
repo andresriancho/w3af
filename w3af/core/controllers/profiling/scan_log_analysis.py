@@ -5,6 +5,12 @@ import sys
 import datetime
 import dateutil.parser
 
+try:
+    import plotille
+except ImportError:
+    print('Missing dependency, please run:\n    pip install plotille')
+    sys.exit(1)
+
 HELP = '''\
 Usage: ./scan_log_analysis.py <scan.log>
 
@@ -19,7 +25,21 @@ The tool takes a scan log as input, and outputs:
 The scan log needs to have debug enabled in order for this tool to work as expected.
 '''
 
-SCAN_TOOK_RE = re.compile('took (.*?) seconds to run')
+SCAN_TOOK_RE = re.compile('took (\d*\.\d\d)s to run')
+
+HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
+FROM_CACHE = 'from_cache=1'
+
+SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) seconds')
+
+GREP_DISK_DICT = re.compile('from disk. The current Grep DiskDict size is (\d*).')
+AUDITOR_DISK_DICT = re.compile('from disk. The current Auditor DiskDict size is (\d*).')
+CRAWLINFRA_DISK_DICT = re.compile('from disk. The current CrawlInfra DiskDict size is (\d*).')
+
+RTT_RE = re.compile('\(.*?rtt=(.*?),.*\)')
+
+HTTP_ERRORS = ('Failed to HTTP',
+               'Raising HTTP error')
 
 
 def epoch_to_string(spent_time):
@@ -42,11 +62,9 @@ def epoch_to_string(spent_time):
         if hours:
             msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
         if minutes:
-            msg += str(
-                minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
+            msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
         if seconds:
-            msg += str(
-                seconds) + ' second%s' % ('s' if seconds > 1 else '')
+            msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
         msg += '.'
 
     return msg
@@ -57,8 +75,181 @@ def show_scan_stats(scan):
     show_audit_time(scan)
     show_grep_time(scan)
     show_output_time(scan)
+
+    print('')
+
+    show_http_errors(scan)
     show_total_http_requests(scan)
+    show_rtt_histo(scan)
+    show_timeout(scan)
+
+    print('')
+
+    show_findings_stats(scan)
+
+    print('')
+
+    show_queue_size(scan)
+
+    print('')
+
     show_freeze_locations(scan)
+
+
+def show_timeout(scan):
+    scan.seek(0)
+    timeouts = []
+
+    for line in scan:
+        match = SOCKET_TIMEOUT.search(line)
+        if match:
+            timeouts.append(float(match.group(1)))
+
+    print('Socket timeout over time')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Socket timeout'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=None)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(xrange(len(timeouts)),
+             timeouts,
+             label='Timeout')
+
+    print(fig.show())
+    print('')
+    print('')
+
+
+def show_rtt_histo(scan):
+    scan.seek(0)
+    rtts = []
+
+    for line in scan:
+        match = RTT_RE.search(line)
+        if match:
+            rtts.append(float(match.group(1)))
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Count'
+    fig.x_label = 'RTT'
+    fig.color_mode = 'byte'
+
+    fig.histogram(rtts, bins=60)
+
+    print('')
+    print('RTT Histogram')
+    print(fig.show())
+
+
+def show_queue_size(scan):
+    scan.seek(0)
+
+    grep_queue_sizes = []
+    auditor_queue_sizes = []
+    crawl_queue_sizes = []
+
+    for line in scan:
+        match = GREP_DISK_DICT.search(line)
+        if match:
+            grep_queue_sizes.append(int(match.group(1)))
+
+        match = AUDITOR_DISK_DICT.search(line)
+        if match:
+            auditor_queue_sizes.append(int(match.group(1)))
+
+        match = CRAWLINFRA_DISK_DICT.search(line)
+        if match:
+            crawl_queue_sizes.append(int(match.group(1)))
+
+    print('Consumer queue sizes')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Items in queue'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=None)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(xrange(len(auditor_queue_sizes)),
+             auditor_queue_sizes,
+             label='Audit')
+
+    print(fig.show(legend=True))
+    print('')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Items in queue'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=None)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(xrange(len(crawl_queue_sizes)),
+             crawl_queue_sizes,
+             label='Crawl')
+
+    print(fig.show(legend=True))
+    print('')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Items in queue'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=None)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(xrange(len(grep_queue_sizes)),
+             grep_queue_sizes,
+             label='Grep')
+
+    print(fig.show(legend=True))
+    print('')
+    print('')
+
+
+def show_findings_stats(scan):
+    FOUND = 'A new form was found!'
+    IGNORING = 'Ignoring form'
+    FUZZABLE = 'New fuzzable request identified'
+
+    scan.seek(0)
+    found_forms = 0
+    ignored_forms = 0
+    fuzzable = 0
+
+    for line in scan:
+        if FUZZABLE in line:
+            fuzzable += 1
+            continue
+
+        if FOUND in line:
+            found_forms += 1
+            continue
+
+        if IGNORING in line:
+            ignored_forms += 1
+            continue
+
+    print('Found %s fuzzable requests' % fuzzable)
+    print('Found %s forms' % found_forms)
+    print('Ignored %s forms' % ignored_forms)
 
 
 def show_generic_spent_time(scan, name, must_have):
@@ -92,15 +283,43 @@ def show_output_time(scan):
     show_generic_spent_time(scan, 'output', '.flush(')
 
 
-def show_total_http_requests(scan):
+def show_http_errors(scan):
     scan.seek(0)
-    count = 0
+    error_count = 0
 
     for line in scan:
-        if 'returned HTTP code' in line:
-            count += 1
+        for error in HTTP_ERRORS:
+            if error in line:
+                error_count += 1
 
-    print('The scan sent %s HTTP requests' % count)
+    print('The scan generated %s HTTP errors' % error_count)
+
+
+def show_total_http_requests(scan):
+    scan.seek(0)
+    count = dict()
+    cached_responses = 0.0
+
+    for line in scan:
+
+        if FROM_CACHE in line:
+            cached_responses += 1
+
+        match = HTTP_CODE_RE.search(line)
+        if match:
+            code = match.group(1)
+
+            if code in count:
+                count[code] += 1
+            else:
+                count[code] = 1
+
+    total = sum(count.itervalues())
+    print('The scan sent %s HTTP requests' % total)
+    print('%i%% responses came from HTTP cache' % (cached_responses / total * 100,))
+
+    for code, num in count.iteritems():
+        print('    Sent %s HTTP requests which returned code %s' % (code, num))
 
 
 def show_freeze_locations(scan):

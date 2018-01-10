@@ -121,7 +121,8 @@ class AproxDelayController(object):
             original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
                                                                       debugging_id=self.get_debugging_id())
             delays, resp = self.multiplier_delays_response(multiplier,
-                                                           original_rtt)
+                                                           original_rtt,
+                                                           grep=False)
             responses.append(resp)
 
             if not delays:
