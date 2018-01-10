@@ -140,6 +140,8 @@ def show_rtt_histo(scan):
     fig.height = 20
     fig.y_label = 'Count'
     fig.x_label = 'RTT'
+    fig.set_x_limits(min_=0)
+    fig.set_y_limits(min_=0)
     fig.color_mode = 'byte'
 
     fig.histogram(rtts, bins=60)
