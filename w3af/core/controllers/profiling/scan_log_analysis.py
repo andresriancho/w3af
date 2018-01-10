@@ -24,6 +24,7 @@ The tool takes a scan log as input, and outputs:
 
 The scan log needs to have debug enabled in order for this tool to work as expected.
 '''
+SCAN_FINISHED_IN = re.compile('Scan finished in (.*).')
 
 SCAN_TOOK_RE = re.compile('took (\d*\.\d\d)s to run')
 
@@ -71,6 +72,10 @@ def epoch_to_string(spent_time):
 
 
 def show_scan_stats(scan):
+    show_scan_finished_in(scan)
+
+    print('')
+
     show_discovery_time(scan)
     show_audit_time(scan)
     show_grep_time(scan)
@@ -94,6 +99,16 @@ def show_scan_stats(scan):
     print('')
 
     show_freeze_locations(scan)
+
+
+def show_scan_finished_in(scan):
+    scan.seek(0)
+
+    for line in scan:
+        match = SCAN_FINISHED_IN.search(line)
+        if match:
+            print(match.group(0))
+            break
 
 
 def show_timeout(scan):
