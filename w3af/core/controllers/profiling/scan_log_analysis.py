@@ -42,6 +42,8 @@ RTT_RE = re.compile('\(.*?rtt=(.*?),.*\)')
 HTTP_ERRORS = ('Failed to HTTP',
                'Raising HTTP error')
 
+WORKER_POOL_SIZE = re.compile('the worker pool size to (.*?) ')
+
 
 def epoch_to_string(spent_time):
     time_delta = datetime.timedelta(seconds=spent_time)
@@ -98,7 +100,41 @@ def show_scan_stats(scan):
 
     print('')
 
+    show_worker_pool_size(scan)
+
+    print('')
+
     show_freeze_locations(scan)
+
+
+def show_worker_pool_size(scan):
+    scan.seek(0)
+    worker_pool_sizes = []
+
+    for line in scan:
+        match = WORKER_POOL_SIZE.search(line)
+        if match:
+            worker_pool_sizes.append(int(match.group(1)))
+
+    print('Worker pool size over time')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Worker pool size'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=None)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(xrange(len(worker_pool_sizes)),
+             worker_pool_sizes,
+             label='Workers')
+
+    print(fig.show())
+    print('')
+    print('')
 
 
 def show_scan_finished_in(scan):
