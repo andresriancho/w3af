@@ -64,6 +64,17 @@ class DocumentParser(object):
             msg = 'There is no parser for "%s".' % http_resp.get_url()
             raise BaseFrameworkException(msg)
 
+    @staticmethod
+    def can_parse(http_resp):
+        if http_resp.is_image():
+            return False
+
+        for parser in DocumentParser.PARSERS:
+            if parser.can_parse(http_resp):
+                return True
+
+        return False
+
     def get_forms(self):
         """
         :return: A list of forms.

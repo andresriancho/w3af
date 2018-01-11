@@ -34,6 +34,7 @@ from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
 from w3af.core.data.parsers.utils.request_uniq_id import get_request_unique_id
 from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.parsers.utils.cache_stats import CacheStats
+from w3af.core.data.parsers.document_parser import DocumentParser
 
 
 class ParserCache(CacheStats):
@@ -84,6 +85,26 @@ class ParserCache(CacheStats):
         :param cache: If the DocumentParser is in the cache, return that one.
         :return: An instance of DocumentParser
         """
+        #
+        # Before doing anything too complex like caching, sending the HTTP
+        # response to a different process for parsing, checking events, etc.
+        # check if we can parse this HTTP response.
+        #
+        # This is a performance improvement that works *only if* the
+        # DocumentParser.can_parse call is *fast*, which means that the
+        # `can_parse` implementations of each parser needs to be fast
+        #
+        # It doesn't matter if we say "yes" here and then parsing exceptions
+        # appear later, that should be a 1 / 10000 calls and we would still
+        # be gaining a lot of performance
+        #
+        if not DocumentParser.can_parse(http_response):
+            msg = 'There is no parser for "%s".' % http_response.get_url()
+            raise BaseFrameworkException(msg)
+
+        #
+        # We know that we can parse this document, lets work!
+        #
         hash_string = get_request_unique_id(http_response)
 
         parser_finished = self._parser_finished_events.get(hash_string, None)
