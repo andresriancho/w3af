@@ -38,10 +38,20 @@ CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfra DiskDict size is (\d*)
 
 RTT_RE = re.compile('\(.*?rtt=(.*?),.*\)')
 
+ERRORS_RE = [re.compile('Unhandled exception "(.*?)"'),
+             re.compile('traceback', re.IGNORECASE),
+             re.compile('scan was able to continue by ignoring those'),
+             re.compile('The scan will stop')]
+
 HTTP_ERRORS = ('Failed to HTTP',
                'Raising HTTP error')
 
 WORKER_POOL_SIZE = re.compile('the worker pool size to (.*?) ')
+ACTIVE_THREADS = re.compile('The framework has (.*?) active threads.')
+
+JOIN_TIMES = re.compile('(.*?) took (.*?) seconds to join\(\)')
+
+CONNECTION_POOL_WAIT = re.compile('Waited (.*?)s for a connection to be available in the pool.')
 
 
 def epoch_to_string(spent_time):
@@ -77,6 +87,10 @@ def show_scan_stats(scan):
 
     print('')
 
+    show_errors(scan)
+
+    print('')
+
     print('Wall time used by threads:')
     show_discovery_time(scan)
     show_audit_time(scan)
@@ -89,11 +103,12 @@ def show_scan_stats(scan):
     show_total_http_requests(scan)
     show_rtt_histo(scan)
     show_timeout(scan)
+    show_connection_pool_wait(scan)
     show_http_requests_over_time(scan)
 
     print('')
 
-    show_findings_stats(scan)
+    show_crawling_stats(scan)
 
     print('')
 
@@ -104,10 +119,133 @@ def show_scan_stats(scan):
     print('')
 
     show_worker_pool_size(scan)
+    show_active_threads(scan)
+
+    print('')
+
+    show_consumer_join_times(scan)
 
     print('')
 
     show_freeze_locations(scan)
+
+
+def show_active_threads(scan):
+    scan.seek(0)
+
+    active_threads = []
+    active_threads_timestamps = []
+
+    for line in scan:
+        match = ACTIVE_THREADS.search(line)
+        if match:
+            active_threads.append(float(match.group(1)))
+            active_threads_timestamps.append(get_line_epoch(line))
+
+    last_timestamp = get_line_epoch(line)
+
+    if not active_threads:
+        print('No active thread data found')
+        return
+
+    print('Active thread count over time')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Thread count'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=active_threads_timestamps[0], max_=last_timestamp)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(active_threads_timestamps,
+             active_threads)
+
+    print(fig.show())
+    print('')
+    print('')
+
+
+def show_connection_pool_wait(scan):
+    scan.seek(0)
+
+    connection_pool_waits = []
+    connection_pool_timestamps = []
+
+    for line in scan:
+        match = CONNECTION_POOL_WAIT.search(line)
+        if match:
+            connection_pool_waits.append(float(match.group(1)))
+            connection_pool_timestamps.append(get_line_epoch(line))
+
+    last_timestamp = get_line_epoch(line)
+
+    if not connection_pool_waits:
+        print('No connection pool wait data found')
+        return
+
+    print('Time waited for worker threads for an available TCP/IP connection')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Waited time'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=connection_pool_timestamps[0], max_=last_timestamp)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(connection_pool_timestamps,
+             connection_pool_waits)
+
+    print(fig.show())
+    print('')
+    print('')
+
+
+def show_errors(scan):
+    scan.seek(0)
+
+    errors = []
+
+    for line in scan:
+        for error_re in ERRORS_RE:
+            match = error_re.search(line)
+            if match:
+                errors.append(line)
+
+    if not errors:
+        print('The scan finished without errors / exceptions.')
+        return
+
+    print('The following errors / exceptions were identified:')
+    for error in errors:
+        print('    - %s' % error)
+
+
+def show_consumer_join_times(scan):
+    scan.seek(0)
+
+    join_times = []
+
+    for line in scan:
+        if 'seconds to join' not in line:
+            continue
+
+        match = JOIN_TIMES.search(line)
+        if match:
+            join_times.append(match.group(0))
+
+    if not join_times:
+        print('The scan log has no calls to join()')
+        return
+
+    print('These consumers were join()\'ed')
+    for join_time in join_times:
+        print('    - %s' % join_time)
 
 
 def show_worker_pool_size(scan):
@@ -388,7 +526,7 @@ def show_queue_size_grep(scan):
     print('')
 
 
-def show_findings_stats(scan):
+def show_crawling_stats(scan):
     FOUND = 'A new form was found!'
     IGNORING = 'Ignoring form'
     FUZZABLE = 'New fuzzable request identified'
@@ -497,6 +635,7 @@ def show_freeze_locations(scan):
     :return: None, all printed to the output
     """
     scan.seek(0)
+    freezes = []
 
     previous_line_time = get_line_epoch(scan.readline())
 
@@ -510,9 +649,17 @@ def show_freeze_locations(scan):
 
         if time_spent > 5:
             line = line.strip()
-            print('Found %s second freeze at: %s...' % (time_spent, line[:80]))
+            freezes.append('Found %s second freeze at: %s...' % (time_spent, line[:80]))
 
         previous_line_time = current_line_epoch
+
+    if not freezes:
+        print('No delays greater than 3 seconds were found between two scan log lines')
+        return
+
+    print('Found the delays greater than 3 seconds around these scan log lines:')
+    for freeze in freezes:
+        print('    - %s' % freeze)
 
 
 class InvalidTimeStamp(Exception):
