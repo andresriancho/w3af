@@ -19,12 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import Queue
 import sys
+import time
+import Queue
 import random
 
 from multiprocessing.dummy import Process
 from functools import wraps
+
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exception_handling.helpers import pprint_plugins
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
@@ -87,7 +90,8 @@ class BaseConsumer(Process):
         self.in_queue = CachedQueue(maxsize=max_in_queue_size,
                                     name=thread_name)
         self._out_queue = Queue.Queue()
-        
+
+        self._thread_name = thread_name
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
         self._observers = []
@@ -252,6 +256,8 @@ class BaseConsumer(Process):
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         """
+        start_time = time.time()
+
         if not self.is_alive():
             # This return has a long history, follow it here:
             # https://github.com/andresriancho/w3af/issues/1172
@@ -270,6 +276,9 @@ class BaseConsumer(Process):
         if self._threadpool is not None:
             self._threadpool.close()
             self._threadpool.join()
+
+        spent_time = time.time() - start_time
+        om.out.debug('%s took %.2f seconds to join()' % (self._thread_name, spent_time))
 
     def terminate(self):
         """
