@@ -65,7 +65,7 @@ def epoch_to_string(spent_time):
     msg = ''
 
     if weeks == days == hours == minutes == seconds == 0:
-        msg += '0 seconds.'
+        msg += '0 seconds'
     else:
         if weeks:
             msg += str(weeks) + ' week%s ' % ('s' if weeks > 1 else '')
@@ -77,7 +77,6 @@ def epoch_to_string(spent_time):
             msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
         if seconds:
             msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
-        msg += '.'
 
     return msg
 
@@ -187,6 +186,7 @@ def show_connection_pool_wait(scan):
         return
 
     print('Time waited for worker threads for an available TCP/IP connection')
+    print('    Total: %.2f sec' % sum(connection_pool_waits))
     print('')
 
     fig = plotille.Figure()
@@ -200,6 +200,21 @@ def show_connection_pool_wait(scan):
 
     fig.plot(connection_pool_timestamps,
              connection_pool_waits)
+
+    print(fig.show())
+    print('')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Count'
+    fig.x_label = 'Time waiting for available TCP/IP connection'
+    fig.set_x_limits(min_=0)
+    fig.set_y_limits(min_=0)
+    fig.color_mode = 'byte'
+
+    fig.histogram(connection_pool_waits, bins=60)
 
     print(fig.show())
     print('')
@@ -290,13 +305,19 @@ def show_worker_pool_size(scan):
 def show_scan_finished_in(scan):
     scan.seek(0)
 
+    first_line_epoch = get_line_epoch(scan.readline())
+
     for line in scan:
         match = SCAN_FINISHED_IN.search(line)
         if match:
             print(match.group(0))
             return
 
+    last_line_epoch = get_line_epoch(line)
+
+    scan_run_time = last_line_epoch - first_line_epoch
     print('Scan is still running!')
+    print('    Started %s ago' % epoch_to_string(scan_run_time))
 
 
 def show_http_requests_over_time(scan):
