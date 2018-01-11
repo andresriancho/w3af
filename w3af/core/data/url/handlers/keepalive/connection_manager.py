@@ -2,6 +2,8 @@ import operator
 import threading
 import time
 
+import w3af.core.controllers.output_manager as om
+
 from .utils import debug
 from w3af.core.controllers.exceptions import ConnectionPoolException
 
@@ -18,8 +20,8 @@ class ConnectionManager(object):
         * Control the size of the pool.
     """
     # Used in get_available_connection
-    GET_AVAILABLE_CONNECTION_RETRY_SECS = 0.25
-    GET_AVAILABLE_CONNECTION_RETRY_NUM = 25
+    GET_AVAILABLE_CONNECTION_RETRY_SECS = 0.05
+    GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME = 6.25
     UNKNOWN = 'unknown'
 
     def __init__(self):
@@ -115,10 +117,10 @@ class ConnectionManager(object):
         :param conn_factory: Factory function for connection creation. Receives
                              req as parameter.
         """
-        retry_count = self.GET_AVAILABLE_CONNECTION_RETRY_NUM
+        waited_time_for_conn = 0.0
         host = req.get_host()
 
-        while retry_count > 0:
+        while waited_time_for_conn < self.GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME:
             if not req.new_connection:
                 # If the user is not specifying that he needs a new HTTP
                 # connection for this request then check if we can reuse an
@@ -142,11 +144,10 @@ class ConnectionManager(object):
                         debug(msg % conn)
 
                         return conn
-            else:
-                debug('Forcing the use of a new HTTPConnection')
 
-            # No? Well, if the connection pool is not full let's try to
-            # create a new one.
+            debug('Forcing the use of a new HTTPConnection')
+
+            # If the connection pool is not full let's try to create a new conn
             conn_total = self.get_connections_total(host)
             if conn_total < self._host_pool_size:
                 # Create a new connection
@@ -161,25 +162,29 @@ class ConnectionManager(object):
                 msg = 'Added %s to pool, current %s pool size: %s'
                 debug(msg % (conn, host, conn_total + 1))
 
+                if waited_time_for_conn > 0:
+                    msg = 'Waited %.2fs for a connection to be available in the pool.'
+                    om.out.debug(msg % waited_time_for_conn)
+
                 return conn
 
-            else:
-                args = (conn_total, self._host_pool_size)
-                msg = 'No free connections in pool with size %s/%s. Wait...'
-                debug(msg % args)
+            # Well, the connection pool for this host is full, this
+            # means that many threads are sending request to the host
+            # and using the connections. This is not bad, just shows
+            # that w3af is keeping the connections busy
+            #
+            # Another reason for this situation is that the connections
+            # are *really* slow => taking many seconds to retrieve the
+            # HTTP response => not freeing often
+            #
+            # We should wait a little and try again
+            args = (conn_total, host)
+            msg = ('MAX_CONNECTIONS (%s) for host %s reached. Waiting for one'
+                   ' to be released')
+            debug(msg % args)
 
-                # Well, the connection pool for this host is full, this
-                # means that many threads are sending request to the host
-                # and using the connections. This is not bad, just shows
-                # that w3af is keeping the connections busy
-                #
-                # Another reason for this situation is that the connections
-                # are *really* slow => taking many seconds to retrieve the
-                # HTTP response => not freeing often
-                #
-                # We should wait a little and try again
-                retry_count -= 1
-                time.sleep(self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
+            waited_time_for_conn += self.GET_AVAILABLE_CONNECTION_RETRY_SECS
+            time.sleep(self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
 
         msg = ('HTTP connection pool (keepalive) waited too long (%s sec)'
                ' for a free connection, giving up. This usually occurs'
@@ -188,9 +193,7 @@ class ConnectionManager(object):
                ' as attackers) or the configured number of threads in w3af'
                ' is too high compared with the connection manager'
                ' MAX_CONNECTIONS.')
-        seconds = (self.GET_AVAILABLE_CONNECTION_RETRY_NUM *
-                   self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
-        raise ConnectionPoolException(msg % seconds)
+        raise ConnectionPoolException(msg % self.GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME)
 
     def get_all(self, host=None):
         """
