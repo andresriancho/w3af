@@ -1021,14 +1021,14 @@ class ExtendedUrllib(object):
         "almost no errors"
         """
         error_rate = self.get_error_rate()
-        if error_rate >= (ACCEPTABLE_ERROR_RATE / 2.0):
+        if error_rate >= (ACCEPTABLE_ERROR_RATE / 4.0):
             return False
 
         return True
 
     def _should_decrease_worker_pool_size(self):
         error_rate = self.get_error_rate()
-        if error_rate >= ACCEPTABLE_ERROR_RATE:
+        if error_rate >= (ACCEPTABLE_ERROR_RATE / 2.0):
             return True
 
         return False
