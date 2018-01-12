@@ -51,6 +51,7 @@ class ParserCache(CacheStats):
         super(ParserCache, self).__init__()
         
         self._cache = SynchronizedLRUDict(self.CACHE_SIZE)
+        self._can_parse_cache = SynchronizedLRUDict(self.CACHE_SIZE * 10)
         self._parser_finished_events = {}
 
     def clear(self):
@@ -67,6 +68,7 @@ class ParserCache(CacheStats):
 
         # We don't need the parsers anymore
         self._cache.clear()
+        self._can_parse_cache.clear()
 
     def should_cache(self, http_response):
         """
@@ -76,6 +78,32 @@ class ParserCache(CacheStats):
         :return: True if we should cache the parser for this response
         """
         return len(http_response.get_body()) < self.MAX_CACHEABLE_BODY_LEN
+
+    def can_parse(self, http_response):
+        """
+        Check if we can parse an HTTP response
+
+        :param http_response: The HTTP response to verify
+        :return: True if we can parse this HTTP response
+        """
+        cached_can_parse = self._can_parse_cache.get(http_response.get_id(), default=None)
+
+        if cached_can_parse is not None:
+            return cached_can_parse
+
+        #
+        # We need to verify if we can parse this HTTP response
+        #
+        try:
+            can_parse = DocumentParser.can_parse(http_response)
+        except:
+            # We catch all the exceptions here and just return False because
+            # the real parsing procedure will (most likely) fail to parse
+            # this response too.
+            can_parse = False
+
+        self._can_parse_cache[can_parse] = can_parse
+        return can_parse
 
     def get_document_parser_for(self, http_response, cache=True):
         """
@@ -98,7 +126,7 @@ class ParserCache(CacheStats):
         # appear later, that should be a 1 / 10000 calls and we would still
         # be gaining a lot of performance
         #
-        if not DocumentParser.can_parse(http_response):
+        if not self.can_parse(http_response):
             msg = 'There is no parser for "%s".' % http_response.get_url()
             raise BaseFrameworkException(msg)
 
