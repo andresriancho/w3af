@@ -21,11 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.data.kb.config as cf
 
-import w3af.core.controllers.output_manager as om
-
 from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
-from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
+                                                                        task_decorator)
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.dc.headers import Headers
@@ -45,18 +44,26 @@ class grep(BaseConsumer):
         :param grep_plugins: Instances of grep plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         """
-        # We use BaseConsumer.THREAD_POOL_SIZE as an arbitrary "low" number
-        # to calculate the max_in_queue_size, which is the number of items
-        # that will be stored in-memory in the queue
+        # max_in_queue_size, is the number of items that will be stored in-memory
+        # in the consumer queue
         #
         # Any items exceeding max_in_queue_size will be stored on-disk, which
         # is slow but will prevent any high memory usage imposed by this part
         # of the framework
-        max_in_queue_size = BaseConsumer.THREAD_POOL_SIZE * 2
+        max_in_queue_size = 20
+
+        # thread_pool_size defines how many threads we'll use to run grep plugins
+        thread_pool_size = 2
+
+        # max_pool_queued_tasks defines how many tasks we'll keep in memory waiting
+        # for a worker from the pool to be available
+        max_pool_queued_tasks = thread_pool_size * 3
 
         super(grep, self).__init__(grep_plugins,
                                    w3af_core,
                                    create_pool=False,
+                                   #max_pool_queued_tasks=max_pool_queued_tasks,
+                                   #thread_pool_size=thread_pool_size,
                                    thread_name='Grep',
                                    max_in_queue_size=max_in_queue_size)
         self._already_analyzed = ScalableBloomFilter()
@@ -147,20 +154,39 @@ class grep(BaseConsumer):
         # threads. This is because it makes no sense (these are all CPU
         # bound).
         for plugin in self._consumer_plugins:
-            args = (plugin.get_name(), request.get_uri())
-            om.out.debug('%s.grep(%s)' % args)
 
-            took_line = TookLine(self._w3af_core,
-                                 plugin.get_name(),
-                                 'grep',
-                                 debugging_id=None,
-                                 method_params={'uri': request.get_uri()})
+            # Note that if we don't limit the input queue size for the thread
+            # pool we might end up with a lot of queued calls here! The calls
+            # contain an HTTP response body, so they really use a lot of
+            # memory!
+            #
+            # This is controlled by max_pool_queued_tasks
+            self._inner_consume(1, plugin, request, response)
+            #self._threadpool.apply_async(self._inner_consume,
+            #                             (plugin, request, response))
 
-            try:
-                plugin.grep_wrapper(request, response)
-            except Exception, e:
-                self.handle_exception('grep', plugin.get_name(), request, e)
+    #@task_decorator
+    def _inner_consume(self, function_id, plugin, request, response):
+        """
+        Run one plugin against a request/response.
 
+        :param function_id: The function ID added by @task_decorator
+        :param plugin: The grep plugin to run
+        :param request: The HTTP request
+        :param response: The HTTP response
+        :return: None, results are saved to KB
+        """
+        took_line = TookLine(self._w3af_core,
+                             plugin.get_name(),
+                             'grep',
+                             debugging_id=None,
+                             method_params={'uri': request.get_uri()})
+
+        try:
+            plugin.grep_wrapper(request, response)
+        except Exception, e:
+            self.handle_exception('grep', plugin.get_name(), request, e)
+        else:
             took_line.send()
 
     def _run_observers(self, request, response):
