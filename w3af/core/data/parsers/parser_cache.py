@@ -25,7 +25,7 @@ import atexit
 import threading
 
 # pylint: disable=E0401
-from darts.lib.utils.lru import SynchronizedLRUDict
+from darts.lib.utils.lru import SynchronizedLRUDict, LRUDict
 # pylint: enable=E0401
 
 from w3af.core.controllers.threads.is_main_process import is_main_process
@@ -51,7 +51,7 @@ class ParserCache(CacheStats):
         super(ParserCache, self).__init__()
         
         self._cache = SynchronizedLRUDict(self.CACHE_SIZE)
-        self._can_parse_cache = SynchronizedLRUDict(self.CACHE_SIZE * 10)
+        self._can_parse_cache = LRUDict(self.CACHE_SIZE * 10)
         self._parser_finished_events = {}
 
     def clear(self):
