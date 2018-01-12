@@ -22,6 +22,7 @@ class ConnectionManager(object):
     # Used in get_available_connection
     GET_AVAILABLE_CONNECTION_RETRY_SECS = 0.05
     GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME = 60.00
+
     UNKNOWN = 'unknown'
 
     def __init__(self):
