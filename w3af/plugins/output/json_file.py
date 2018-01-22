@@ -117,7 +117,6 @@ class json_file(OutputPlugin):
                         "WASC IDs": getattr(info, "wasc_ids", []),
                         "Tags": getattr(info, "tags", []),
                         "VulnDB ID": info.get_vulndb_id(),
-                        "Severity": info.get_severity(),
                         "Description": info.get_desc()}
                 items.append(item)
             except Exception, e:
