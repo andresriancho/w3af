@@ -261,6 +261,7 @@ class UrlOpenerProxy(object):
                       'get_remote_file_size',
                       'add_headers',
                       'assert_allowed_proto',
+                      'get_average_rtt_for_mutant',
                       '_handle_send_socket_error',
                       '_handle_send_urllib_error',
                       '_handle_send_success',
