@@ -41,6 +41,7 @@ from w3af.core.controllers.core_helpers.strategy import CoreStrategy
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.core_helpers.strategy_observers.disk_space_observer import DiskSpaceObserver
+from w3af.core.controllers.core_helpers.strategy_observers.thread_count_observer import ThreadCountObserver
 from w3af.core.controllers.core_helpers.status import (w3af_core_status,
                                                        STOPPED, RUNNING, PAUSED)
 from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
@@ -79,10 +80,19 @@ class w3afCore(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    
-    WORKER_THREADS = 20
-    WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 10
-    
+
+    # Note that the number of worker threads might be modified
+    # by the extended url library. When errors appear the worker
+    # thread number is reduced, when no errors are found the
+    # worker thread count is increased to provide more speed.
+    #
+    # This only makes sense as long as the worker threads are
+    # mostly used for sending HTTP requests (which is the case
+    # for the current w3af version).
+    WORKER_THREADS = 30
+    WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 20
+    WORKER_MAX_TASKS = 20
+
     def __init__(self):
         """
         Init some variables and files.
@@ -127,7 +137,8 @@ class w3afCore(object):
 
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
-        
+        self.uri_opener.set_w3af_core(self)
+
         # Keep track of first scan to call cleanup or not
         self._first_scan = True
 
@@ -166,6 +177,7 @@ class w3afCore(object):
         # one  
         self.strategy = CoreStrategy(self)
         self.strategy.add_observer(DiskSpaceObserver())
+        self.strategy.add_observer(ThreadCountObserver())
 
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)
@@ -285,18 +297,20 @@ class w3afCore(object):
         """
         if not hasattr(self, '_worker_pool'):
             # Should get here only on the first call to "worker_pool".
-            self._worker_pool = Pool(self.WORKER_THREADS,
+            self._worker_pool = Pool(processes=self.WORKER_THREADS,
                                      worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE)
+                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                                     maxtasksperchild=self.WORKER_MAX_TASKS)
 
         if not self._worker_pool.is_running():
             # Clean-up the old worker pool
             self._worker_pool.terminate_join()
 
             # Create a new one
-            self._worker_pool = Pool(self.WORKER_THREADS,
+            self._worker_pool = Pool(processes=self.WORKER_THREADS,
                                      worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE)
+                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                                     maxtasksperchild=self.WORKER_MAX_TASKS)
 
         return self._worker_pool
 

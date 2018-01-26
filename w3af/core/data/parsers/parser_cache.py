@@ -25,7 +25,7 @@ import atexit
 import threading
 
 # pylint: disable=E0401
-from darts.lib.utils.lru import SynchronizedLRUDict
+from darts.lib.utils.lru import SynchronizedLRUDict, LRUDict
 # pylint: enable=E0401
 
 from w3af.core.controllers.threads.is_main_process import is_main_process
@@ -34,6 +34,7 @@ from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
 from w3af.core.data.parsers.utils.request_uniq_id import get_request_unique_id
 from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.parsers.utils.cache_stats import CacheStats
+from w3af.core.data.parsers.document_parser import DocumentParser
 
 
 class ParserCache(CacheStats):
@@ -50,6 +51,7 @@ class ParserCache(CacheStats):
         super(ParserCache, self).__init__()
         
         self._cache = SynchronizedLRUDict(self.CACHE_SIZE)
+        self._can_parse_cache = LRUDict(self.CACHE_SIZE * 10)
         self._parser_finished_events = {}
 
     def clear(self):
@@ -66,6 +68,7 @@ class ParserCache(CacheStats):
 
         # We don't need the parsers anymore
         self._cache.clear()
+        self._can_parse_cache.clear()
 
     def should_cache(self, http_response):
         """
@@ -76,6 +79,32 @@ class ParserCache(CacheStats):
         """
         return len(http_response.get_body()) < self.MAX_CACHEABLE_BODY_LEN
 
+    def can_parse(self, http_response):
+        """
+        Check if we can parse an HTTP response
+
+        :param http_response: The HTTP response to verify
+        :return: True if we can parse this HTTP response
+        """
+        cached_can_parse = self._can_parse_cache.get(http_response.get_id(), default=None)
+
+        if cached_can_parse is not None:
+            return cached_can_parse
+
+        #
+        # We need to verify if we can parse this HTTP response
+        #
+        try:
+            can_parse = DocumentParser.can_parse(http_response)
+        except:
+            # We catch all the exceptions here and just return False because
+            # the real parsing procedure will (most likely) fail to parse
+            # this response too.
+            can_parse = False
+
+        self._can_parse_cache[can_parse] = can_parse
+        return can_parse
+
     def get_document_parser_for(self, http_response, cache=True):
         """
         Get a document parser for http_response using the cache if required
@@ -84,6 +113,26 @@ class ParserCache(CacheStats):
         :param cache: If the DocumentParser is in the cache, return that one.
         :return: An instance of DocumentParser
         """
+        #
+        # Before doing anything too complex like caching, sending the HTTP
+        # response to a different process for parsing, checking events, etc.
+        # check if we can parse this HTTP response.
+        #
+        # This is a performance improvement that works *only if* the
+        # DocumentParser.can_parse call is *fast*, which means that the
+        # `can_parse` implementations of each parser needs to be fast
+        #
+        # It doesn't matter if we say "yes" here and then parsing exceptions
+        # appear later, that should be a 1 / 10000 calls and we would still
+        # be gaining a lot of performance
+        #
+        if not self.can_parse(http_response):
+            msg = 'There is no parser for "%s".' % http_response.get_url()
+            raise BaseFrameworkException(msg)
+
+        #
+        # We know that we can parse this document, lets work!
+        #
         hash_string = get_request_unique_id(http_response)
 
         parser_finished = self._parser_finished_events.get(hash_string, None)

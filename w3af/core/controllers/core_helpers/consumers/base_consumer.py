@@ -19,12 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import Queue
 import sys
+import time
+import Queue
 import random
 
 from multiprocessing.dummy import Process
 from functools import wraps
+
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exception_handling.helpers import pprint_plugins
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
@@ -75,7 +78,7 @@ class BaseConsumer(Process):
 
     def __init__(self, consumer_plugins, w3af_core, thread_name,
                  create_pool=True, max_pool_queued_tasks=0,
-                 max_in_queue_size=0):
+                 max_in_queue_size=0, thread_pool_size=None):
         """
         :param consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
@@ -87,7 +90,8 @@ class BaseConsumer(Process):
         self.in_queue = CachedQueue(maxsize=max_in_queue_size,
                                     name=thread_name)
         self._out_queue = Queue.Queue()
-        
+
+        self._thread_name = thread_name
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
         self._observers = []
@@ -98,7 +102,7 @@ class BaseConsumer(Process):
         self._threadpool = None
 
         if create_pool:
-            self._threadpool = Pool(self.THREAD_POOL_SIZE,
+            self._threadpool = Pool(thread_pool_size or self.THREAD_POOL_SIZE,
                                     worker_names='%sWorker' % thread_name,
                                     max_queued_tasks=max_pool_queued_tasks)
 
@@ -252,6 +256,8 @@ class BaseConsumer(Process):
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         """
+        start_time = time.time()
+
         if not self.is_alive():
             # This return has a long history, follow it here:
             # https://github.com/andresriancho/w3af/issues/1172
@@ -270,6 +276,9 @@ class BaseConsumer(Process):
         if self._threadpool is not None:
             self._threadpool.close()
             self._threadpool.join()
+
+        spent_time = time.time() - start_time
+        om.out.debug('%s took %.2f seconds to join()' % (self._thread_name, spent_time))
 
     def terminate(self):
         """

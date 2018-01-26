@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 import Queue
 
-import w3af.core.controllers.output_manager as om
-
 
 class QueueSpeedMeasurement(object):
 
@@ -88,7 +86,14 @@ class QueueSpeedMeasurement(object):
 
 
 class SmartQueue(QueueSpeedMeasurement):
-    
+    """
+    This queue is mostly used for debugging producer / consumer implementations,
+    you shouldn't use this queue in production.
+
+    The queue has the following features:
+        * Log how much time a thread waited to put() and item
+        * Log how much time an item waited in the queue to get out
+    """
     def __init__(self, maxsize=0, name='Unknown'):
         super(SmartQueue, self).__init__()
         self.q = Queue.Queue(maxsize=maxsize)
@@ -102,10 +107,21 @@ class SmartQueue(QueueSpeedMeasurement):
 
     def get(self, block=True, timeout=None):
         try:
-            item = self.q.get(block=block, timeout=timeout)
+            data = self.q.get(block=block, timeout=timeout)
         except:
             raise
         else:
+            if data is None:
+                return data
+
+            timestamp, item = data
+            import w3af.core.controllers.output_manager as om
+
+            msg = 'Item waited %.2f seconds to get out of the %s queue. Items in queue: %s / %s'
+            block_time = time.time() - timestamp
+            args = (round(block_time, 2), self.get_name(), self.q.qsize(), self.q.maxsize)
+            om.out.debug(msg % args)
+
             self._item_left_queue()
             return item
     
@@ -120,6 +136,8 @@ class SmartQueue(QueueSpeedMeasurement):
         #
         block_start_time = None
 
+        import w3af.core.controllers.output_manager as om
+
         if self.q.full() and block:
             #
             #   If you see maxsize messages like this at the end of your scan
@@ -131,17 +149,19 @@ class SmartQueue(QueueSpeedMeasurement):
             om.out.debug(msg % args)
             block_start_time = time.time()
 
+        timestamp = time.time()
+
         try:
-            put_res = self.q.put(item, block=block, timeout=timeout)
+            put_res = self.q.put((timestamp, item), block=block, timeout=timeout)
         except:
             raise
         else:
             if block_start_time is not None:
-                msg = ('Thread blocked %s seconds waiting for Queue.put() to'
+                msg = ('Thread blocked %.2f seconds waiting for Queue.put() to'
                        ' have space in the %s queue. The queue\'s maxsize is'
                        ' %s.')
                 block_time = time.time() - block_start_time
-                args = (block_time, self.get_name(), self.q.maxsize)
+                args = (round(block_time, 2), self.get_name(), self.q.maxsize)
                 om.out.debug(msg % args)
 
             self._item_added_to_queue()

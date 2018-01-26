@@ -76,6 +76,7 @@ class ExtendedUrllib(object):
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
+        self._w3af_core = None
 
         # In exploit mode we disable some timeout/delay/error handling stuff
         self.exploit_mode = False
@@ -96,6 +97,10 @@ class ExtendedUrllib(object):
         # Cache to measure RTT
         self._rtt_mutant_cache = SynchronizedLRUDict(capacity=128)
         self._rtt_mutant_lock = threading.RLock()
+
+        # Avoid multiple consecutive calls to reduce the worker pool size
+        self._last_call_to_adjust_workers = None
+        self._should_adjust_workers_lock = threading.RLock()
 
         # For timeout auto adjust and general stats
         self._total_requests = 0
@@ -131,6 +136,15 @@ class ExtendedUrllib(object):
         Called when the user wants to finish a scan.
         """
         self._user_stopped = True
+
+    def set_w3af_core(self, w3af_core):
+        self._w3af_core = w3af_core
+
+    def get_w3af_core(self):
+        return self._w3af_core
+
+    def has_w3af_core(self):
+        return self._w3af_core is not None
 
     def _before_send_hook(self, request):
         """
@@ -947,9 +961,11 @@ class ExtendedUrllib(object):
             # We usually get here when response codes in [404, 403, 401,...]
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
-        
-        except (socket.error, URLTimeoutError,
-                ConnectionPoolException, OpenSSL.SSL.SysCallError,
+
+        except (socket.error,
+                URLTimeoutError,
+                ConnectionPoolException,
+                OpenSSL.SSL.SysCallError,
                 OpenSSL.SSL.ZeroReturnError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
@@ -959,7 +975,102 @@ class ExtendedUrllib(object):
         else:
             return self._handle_send_success(req, res, grep, original_url,
                                              original_url_inst)
-    
+
+    def _decrease_worker_pool_size(self):
+        w3af_core = self.get_w3af_core()
+        worker_pool = w3af_core.worker_pool
+        error_rate = self.get_error_rate()
+        min_workers = 10
+
+        # Note that we decrease by two here, and increase by one below
+        new_worker_count = worker_pool.get_worker_count() - 2
+        new_worker_count = max(new_worker_count, min_workers)
+
+        if new_worker_count >= min_workers:
+            worker_pool.set_worker_count(new_worker_count)
+            msg = 'Decreased the worker pool size to %s (error rate: %i%%)'
+        else:
+            msg = ('Not decreasing the worker pool size since it is lower'
+                   ' than the min value required by w3af: %s (error rate:'
+                   ' %i%%)')
+
+        om.out.debug(msg % (new_worker_count, error_rate))
+
+    def _increase_worker_pool_size(self):
+        w3af_core = self.get_w3af_core()
+        worker_pool = w3af_core.worker_pool
+        error_rate = self.get_error_rate()
+        max_workers = 100
+
+        # Note that we increase by one here, and decrease by two above
+        new_worker_count = worker_pool.get_worker_count() + 1
+        new_worker_count = min(new_worker_count, max_workers)
+
+        if new_worker_count <= max_workers:
+            worker_pool.set_worker_count(new_worker_count)
+            msg = 'Increased the worker pool size to %s (error rate: %i%%)'
+            om.out.debug(msg % (new_worker_count, error_rate))
+        else:
+            msg = 'Not increasing the worker pool size since it exceeds the max: %s'
+            om.out.debug(msg % max_workers)
+
+    def _should_increase_worker_pool(self):
+        """
+        We want to be very strict here, do not increase the worker pool
+        size when there are "some errors". Just increase when there are
+        "almost no errors"
+        """
+        error_rate = self.get_error_rate()
+        if error_rate >= (ACCEPTABLE_ERROR_RATE / 4.0):
+            return False
+
+        return True
+
+    def _should_decrease_worker_pool_size(self):
+        error_rate = self.get_error_rate()
+        if error_rate >= (ACCEPTABLE_ERROR_RATE / 2.0):
+            return True
+
+        return False
+
+    def _handle_worker_pool_size(self):
+        """
+        Increase or decrease the worker pool size
+        :return: None
+        """
+        if not self.has_w3af_core():
+            return
+
+        if not self._should_adjust_workers():
+            return
+
+        if self._should_decrease_worker_pool_size():
+            self._decrease_worker_pool_size()
+
+        elif self._should_increase_worker_pool():
+            self._increase_worker_pool_size()
+
+    def _should_adjust_workers(self):
+        """
+        :return: True if we should decrease the number of workers. The
+                 idea behind this is to give the framework time to adjust
+                 to the new thread pool size.
+
+                 We usually see ~10 ConnectionPoolExceptions being raised
+                 at the same time, thus we only want to react to the first
+                 one and give the framework time to see what happens.
+        """
+        with self._should_adjust_workers_lock:
+            if self._last_call_to_adjust_workers is None:
+                self._last_call_to_adjust_workers = time.time()
+                return True
+
+            elif (time.time() - self._last_call_to_adjust_workers) >= 45:
+                self._last_call_to_adjust_workers = time.time()
+                return True
+
+            return False
+
     def _handle_send_socket_error(self, req, exception, grep, original_url):
         """
         This error handling is separated from the other because we want to have
@@ -996,7 +1107,8 @@ class ExtendedUrllib(object):
 
         # Don't make a lot of noise on URLTimeoutError which is pretty common
         # and properly handled by this library
-        if not isinstance(exception, URLTimeoutError):
+        no_traceback_for = (URLTimeoutError, ConnectionPoolException)
+        if not isinstance(exception, no_traceback_for):
             msg = 'Traceback for this error: %s'
             om.out.debug(msg % traceback.format_exc())
 
@@ -1006,6 +1118,8 @@ class ExtendedUrllib(object):
             should_stop_scan = self._should_stop_scan(req)
             if should_stop_scan:
                 self._handle_error_count_exceeded(exception)
+
+        self._handle_worker_pool_size()
 
         # Then retry!
         req._Request__original = original_url
@@ -1054,6 +1168,7 @@ class ExtendedUrllib(object):
         # Clear the log of failed requests; this request is DONE!
         self._log_successful_response(http_resp)
         self._track_rtt(res, req.debugging_id)
+        self._handle_worker_pool_size()
 
         if grep:
             self._grep(req, http_resp)

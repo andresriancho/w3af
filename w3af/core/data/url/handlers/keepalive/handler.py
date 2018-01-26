@@ -104,7 +104,7 @@ class KeepAliveHandler(object):
         Close all open connections
         """
         for conns in self._cm.get_all().values():
-            for conn in conns:
+            for conn in conns.copy():
                 self._cm.remove_connection(conn, reason='close all connections')
 
     def _request_closed(self, connection):
