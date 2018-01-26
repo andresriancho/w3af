@@ -32,6 +32,7 @@ from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.quick_match.multi_re import MultiRE
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 
@@ -192,7 +193,19 @@ class lfi(AuditPlugin):
         # (note that this is run if no vulns were identified)
         #
         # http://host.tld/show_user.php?id=show_user.php
-        if mutant.get_url().get_file_name() in mutant.get_token_value():
+        #
+        # The calls to smart_str_ignore fix a UnicodeDecoreError which appears when
+        # the token value is a binary string which can't be converted to unicode.
+        # This happens, for example, when trying to upload JPG files to a multipart form
+        #
+        # >>> u'' in '\x80'
+        # ...
+        # UnicodeDecodeError: 'ascii' codec can't decode byte 0x80 in position 0: ordinal not in range(128)
+        #
+        filename = smart_str_ignore(mutant.get_url().get_file_name())
+        token_value = smart_str_ignore(mutant.get_token_value())
+
+        if filename in token_value:
             match, lang = contains_source_code(response)
             if match:
                 # We were able to read the source code of the file that is
