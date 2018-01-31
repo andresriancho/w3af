@@ -51,6 +51,9 @@ Options:
     -v or --version
         Show w3af's version
 
+    -y or --yes
+        Automatically agree to disclaimer prompt
+
 For more info visit http://w3af.org/
 """
 
@@ -111,8 +114,9 @@ def _generate_run_commands(script_file, profile, force_profile):
 def main():
     try:
         long_options = ['script=', 'help', 'version', 'no-update',
-                        'force-update', 'profile=', 'commit=', 'profile-run']
-        opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:", long_options)
+                        'force-update', 'profile=', 'commit=',
+                        'profile-run', 'yes']
+        opts, _ = getopt.getopt(sys.argv[1:], "ehvs:nfp:P:y", long_options)
     except getopt.GetoptError:
         # Print help information and exit
         _usage()
@@ -122,6 +126,7 @@ def main():
     force_profile = None
     profile = None
     do_update = None
+    skip_disclaimer = False
     
     for o, a in opts:
         if o == "-e":
@@ -148,11 +153,13 @@ def main():
             do_update = True
         elif o in ('-n', '--no-update'):
             do_update = False
+        if o in ('-y', '--yes'):
+            skip_disclaimer = True
     
     commands_to_run = _generate_run_commands(script_file, profile, force_profile)
     console = ConsoleUI(commands=commands_to_run, do_upd=do_update)
     
-    if not console.accept_disclaimer():
+    if not skip_disclaimer and not console.accept_disclaimer():
         return -4
 
     return console.sh()
