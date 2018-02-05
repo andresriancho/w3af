@@ -103,6 +103,9 @@ class DaemonProcess(Process):
 
 
 class Worker(object):
+
+    __slots__ = ('func_name', 'args', 'kwargs', 'start_time', 'job', 'id')
+
     def __init__(self):
         self.func_name = None
         self.args = None
