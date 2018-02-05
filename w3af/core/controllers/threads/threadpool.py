@@ -29,9 +29,10 @@ from multiprocessing.dummy import Process, current_process
 from multiprocessing.util import Finalize, debug
 from multiprocessing import cpu_count
 
-from .pool276 import ThreadPool, RUN, create_detailed_pickling_error
+from .pool276 import ThreadPool, RUN, create_detailed_pickling_error, mapstar
 
 from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.controllers.threads.decorators import apply_with_return_error
 
 __all__ = ['Pool']
 
@@ -42,14 +43,14 @@ class one_to_many(object):
     call. Useful for passing to the threadpool map function.
     """
     def __init__(self, func):
-        self.func = func
+        self.func_orig = func
 
         # Similar to functools wraps
         self.__name__ = func.__name__
         self.__doc__ = func.__doc__
 
     def __call__(self, args):
-        return self.func(*args)
+        return self.func_orig(*args)
 
 
 class return_args(object):
@@ -59,7 +60,11 @@ class return_args(object):
     """
     def __init__(self, func, *args, **kwds):
         self.func = partial(func, *args, **kwds)
-        self.__name__ = func
+
+        # Similar to functools wraps
+        self.func_orig = func
+        self.__name__ = func.__name__
+        self.__doc__ = func.__doc__
 
     def __call__(self, *args, **kwds):
         return args, self.func(*args, **kwds)
@@ -104,10 +109,10 @@ class DaemonProcess(Process):
 
 class Worker(object):
 
-    __slots__ = ('func_name', 'args', 'kwargs', 'start_time', 'job', 'id')
+    __slots__ = ('func', 'args', 'kwargs', 'start_time', 'job', 'id')
 
     def __init__(self):
-        self.func_name = None
+        self.func = None
         self.args = None
         self.kwargs = None
         self.start_time = None
@@ -115,10 +120,39 @@ class Worker(object):
         self.id = rand_alnum(8)
 
     def is_idle(self):
-        return self.func_name is None
+        return self.func is None
+
+    def get_real_func_name(self):
+        """
+        Because of various levels of abstraction the function name is not always in
+        self.func.__name__, this method "unwraps" the abstractions and shows us
+        something easier to digest.
+
+        :return: The function name
+        """
+        if self.func is None:
+            return None
+
+        if self.func is mapstar:
+            self.func = self.args[0][0]
+            self.args = self.args[0][1:]
+
+        if self.func is apply_with_return_error:
+            self.func = self.args[0][0]
+            self.args = self.args[0][1:]
+
+        if isinstance(self.func, return_args):
+            return self.func.func_orig.__name__
+
+        if isinstance(self.func, one_to_many):
+            return self.func.func_orig.__name__
+
+        return self.func.__name__
 
     def get_state(self):
-        return {'func_name': self.func_name,
+        func_name = self.get_real_func_name()
+
+        return {'func_name': func_name,
                 'args': self.args,
                 'kwargs': self.kwargs,
                 'start_time': self.start_time,
@@ -152,7 +186,7 @@ class Worker(object):
             job, i, func, args, kwds = task
 
             # Tracking
-            self.func_name = func.__name__
+            self.func = func
             self.args = args
             self.kwargs = kwds
             self.start_time = time.time()
@@ -164,7 +198,7 @@ class Worker(object):
                 result = (False, e)
 
             # Tracking
-            self.func_name = None
+            self.func = None
             self.args = None
             self.kwargs = None
             self.start_time = None

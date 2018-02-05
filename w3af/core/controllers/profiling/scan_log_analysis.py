@@ -275,6 +275,9 @@ def show_consumer_pool_size(scan):
     consumer_pool_perc_crawl = []
     consumer_pool_timestamps_crawl = []
 
+    worker_pool_perc = []
+    worker_pool_timestamps = []
+
     for line in scan:
         match = IDLE_CONSUMER_WORKERS.search(line)
         if not match:
@@ -282,21 +285,25 @@ def show_consumer_pool_size(scan):
 
         percent = int(match.group(1))
         is_audit = 'audit' in match.group(2).lower()
+        is_crawl = 'crawl' in match.group(2).lower()
 
         if is_audit:
             consumer_pool_perc_audit.append(percent)
             consumer_pool_timestamps_audit.append(get_line_epoch(line))
-        else:
+        elif is_crawl:
             consumer_pool_perc_crawl.append(percent)
             consumer_pool_timestamps_crawl.append(get_line_epoch(line))
+        else:
+            worker_pool_perc.append(percent)
+            worker_pool_timestamps.append(get_line_epoch(line))
 
     last_timestamp = get_line_epoch(line)
 
     if not consumer_pool_perc_audit and not consumer_pool_perc_crawl:
-        print('No consumer pool data found')
+        print('No thread pool data found')
         return
 
-    print('Idle consumer pool workers over time')
+    print('Idle thread pool workers over time')
     print('')
 
     fig = plotille.Figure()
@@ -311,12 +318,17 @@ def show_consumer_pool_size(scan):
     fig.plot(consumer_pool_timestamps_audit,
              consumer_pool_perc_audit,
              label='Idle audit workers',
-             lc=100)
+             lc=50)
 
     fig.plot(consumer_pool_timestamps_crawl,
              consumer_pool_perc_crawl,
              label='Idle crawl workers',
-             lc=200)
+             lc=170)
+
+    fig.plot(worker_pool_timestamps,
+             worker_pool_perc,
+             label='Idle core workers',
+             lc=250)
 
     print(fig.show(legend=True))
     print('')

@@ -40,8 +40,11 @@ class ThreadStateObserver(StrategyObserver):
 
     def __init__(self):
         super(ThreadStateObserver, self).__init__()
+
         self.audit_thread = None
         self.crawl_infra_thread = None
+        self.worker_thread = None
+
         self.should_stop = False
         self._lock = threading.RLock()
 
@@ -54,6 +57,9 @@ class ThreadStateObserver(StrategyObserver):
         if self.audit_thread is not None:
             self.audit_thread.join()
 
+        if self.worker_thread is not None:
+            self.worker_thread.join()
+
     def crawl(self, consumer, *args):
         """
         Log the thread state for crawl infra plugins
@@ -63,13 +69,19 @@ class ThreadStateObserver(StrategyObserver):
         :return: None, everything is written to disk
         """
         with self._lock:
-            if self.crawl_infra_thread is not None:
-                return
+            if self.crawl_infra_thread is None:
+                pool = consumer.get_pool()
+                self.crawl_infra_thread = threading.Thread(target=self.thread_worker,
+                                                           args=(pool, 'CrawlInfraWorker'),
+                                                           name='CrawlInfraPoolStateObserver')
+                self.crawl_infra_thread.start()
 
-            self.crawl_infra_thread = threading.Thread(target=self.thread_worker,
-                                                       args=(consumer, 'CrawlInfraWorker'),
-                                                       name='CrawlInfraPoolStateObserver')
-            self.crawl_infra_thread.start()
+            if self.worker_thread is None:
+                pool = consumer._w3af_core.worker_pool
+                self.worker_thread = threading.Thread(target=self.thread_worker,
+                                                      args=(pool, 'Worker'),
+                                                      name='WorkerPoolStateObserver')
+                self.worker_thread.start()
 
     def audit(self, consumer, *args):
         """
@@ -83,12 +95,13 @@ class ThreadStateObserver(StrategyObserver):
             if self.audit_thread is not None:
                 return
 
+            pool = consumer.get_pool()
             self.audit_thread = threading.Thread(target=self.thread_worker,
-                                                 args=(consumer, 'AuditorWorker'),
+                                                 args=(pool, 'AuditorWorker'),
                                                  name='AuditPoolStateObserver')
             self.audit_thread.start()
 
-    def thread_worker(self, consumer, name):
+    def thread_worker(self, pool, name):
         last_call = 0
 
         while not self.should_stop:
@@ -108,8 +121,6 @@ class ThreadStateObserver(StrategyObserver):
             #
             # Now the real deal
             #
-            pool = consumer.get_pool()
-
             if pool is None:
                 self.write_to_log('The %s consumer finished all tasks and closed the pool.' % name)
                 self.write_to_log('100%% of %s workers are idle.' % name)
