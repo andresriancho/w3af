@@ -29,9 +29,9 @@ from multiprocessing.dummy import Process, current_process
 from multiprocessing.util import Finalize, debug
 from multiprocessing import cpu_count
 
-from .pool276 import ThreadPool, RUN
+from .pool276 import ThreadPool, RUN, create_detailed_pickling_error
 
-from w3af.core.data.misc.smart_queue import SmartQueue
+from w3af.core.data.fuzzer.utils import rand_alnum
 
 __all__ = ['Pool']
 
@@ -69,6 +69,10 @@ class DaemonProcess(Process):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         super(DaemonProcess, self).__init__(group, target, name, args, kwargs)
         self.daemon = True
+        self.worker = target
+
+    def get_state(self):
+        return self.worker.get_state()
 
     def start(self):
         """
@@ -92,6 +96,80 @@ class DaemonProcess(Process):
 
         self._start_called = True
         threading.Thread.start(self)
+
+
+class Worker(object):
+    def __init__(self):
+        self.func_name = None
+        self.args = None
+        self.kwargs = None
+        self.start_time = None
+        self.job = None
+        self.id = rand_alnum(8)
+
+    def is_idle(self):
+        return self.func_name is None
+
+    def get_state(self):
+        return {'func_name': self.func_name,
+                'args': self.args,
+                'kwargs': self.kwargs,
+                'start_time': self.start_time,
+                'idle': self.is_idle(),
+                'job': self.job,
+                'worker_id': self.id}
+
+    def __call__(self, inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
+        assert maxtasks is None or (type(maxtasks) == int and maxtasks > 0)
+        put = outqueue.put
+        get = inqueue.get
+        if hasattr(inqueue, '_writer'):
+            inqueue._writer.close()
+            outqueue._reader.close()
+
+        if initializer is not None:
+            initializer(*initargs)
+
+        completed = 0
+        while maxtasks is None or (maxtasks and completed < maxtasks):
+            try:
+                task = get()
+            except (EOFError, IOError):
+                debug('worker got EOFError or IOError -- exiting')
+                break
+
+            if task is None:
+                debug('worker got sentinel -- exiting')
+                break
+
+            job, i, func, args, kwds = task
+
+            # Tracking
+            self.func_name = func.__name__
+            self.args = args
+            self.kwargs = kwds
+            self.start_time = time.time()
+            self.job = job
+
+            try:
+                result = (True, func(*args, **kwds))
+            except Exception, e:
+                result = (False, e)
+
+            # Tracking
+            self.func_name = None
+            self.args = None
+            self.kwargs = None
+            self.start_time = None
+            self.job = None
+
+            try:
+                put((job, i, result))
+            except Exception as e:
+                wrapped = create_detailed_pickling_error(e, result[1])
+                put((job, i, (False, wrapped)))
+            completed += 1
+        debug('worker exiting after %d tasks' % completed)
 
 
 class Pool(ThreadPool):
@@ -161,6 +239,27 @@ class Pool(ThreadPool):
                   self._worker_handler, self._task_handler,
                   self._result_handler, self._cache),
             exitpriority=15)
+
+    def _repopulate_pool(self):
+        """
+        Bring the number of pool processes up to the specified number,
+        for use after reaping workers which have exited.
+
+        I overwrite this in order to change the Process target to a Worker
+        object (instead of a function) in order to keep better stats of
+        what it is doing.
+        """
+        for i in range(self._processes - len(self._pool)):
+            w = self.Process(target=Worker(),
+                             args=(self._inqueue, self._outqueue,
+                                   self._initializer,
+                                   self._initargs, self._maxtasksperchild)
+                            )
+            self._pool.append(w)
+            w.name = w.name.replace('Process', 'PoolWorker')
+            w.daemon = True
+            w.start()
+            debug('added worker')
 
     def get_worker_count(self):
         return len(self._pool)
@@ -269,3 +368,57 @@ class Pool(ThreadPool):
         self.terminate()
         self.join()
 
+    def inspect_threads(self):
+        """
+        This method inspects the attributes exposed by the Worker object defined
+        above and lets us debug the thread pool.
+
+        This is useful for answering the question: "What functions are running in
+        the pool right now?"
+
+        :return: Data as a list of dicts, which is usually sent to inspect_data_to_log()
+        """
+        inspect_data = []
+
+        for process in self._pool[:]:
+            worker_state = process.get_state()
+            inspect_data.append(worker_state)
+
+        return inspect_data
+
+    def inspect_data_to_log(self, inspect_data):
+        """
+        Print the inspect_threads data to the log files
+
+        def get_state(self):
+            return {'func_name': self.func_name,
+                    'args': self.args,
+                    'kwargs': self.kwargs,
+                    'start_time': self.start_time,
+                    'idle': self.is_idle(),
+                    'job': self.job,
+                    'worker_id': self.id}
+
+        :return: None
+        """
+        for worker_state in inspect_data:
+            if worker_state['idle']:
+                message = 'Worker with ID %s is idle.'
+                message %= (worker_state['worker_id'])
+
+            else:
+                spent = time.time() - worker_state['start_time']
+                message = ('Worker with ID %s has been running job %s for %s seconds.'
+                           'The job is: %s(args=%s, kwargs=%s)')
+                message %= (worker_state['worker_id'],
+                            worker_state['job'],
+                            spent,
+                            worker_state['func_name'],
+                            worker_state['args'],
+                            worker_state['kwargs'])
+
+            self.write_to_log(message)
+
+    def write_to_log(self, message):
+        import w3af.core.controllers.output_manager as om
+        om.out.debug(message)
