@@ -28,6 +28,7 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -124,15 +125,21 @@ class find_dvcs(CrawlPlugin):
         """
         resources = set()
 
-        for line in filenames:
-            if line.startswith('/'):
-                line = line[1:]
-            if line.startswith('./'):
-                line = line[2:]
-            if line.endswith('/'):
-                line = line[:-1]
+        for filename in filenames:
 
-            resources.add(line)
+            # Sometimes we get random bytes from the .git/index because of
+            # git versions we don't fully support, so we ignore any encoding
+            # errors
+            filename = smart_unicode(filename, errors='ignore')
+
+            if filename.startswith('/'):
+                filename = filename[1:]
+            if filename.startswith('./'):
+                filename = filename[2:]
+            if filename.endswith('/'):
+                filename = filename[:-1]
+
+            resources.add(filename)
 
         return resources
 
@@ -142,7 +149,7 @@ class find_dvcs(CrawlPlugin):
 
         :return: None, everything is saved to the self.out_queue.
         """
-        http_response = self.http_get_and_parse(repo_url)
+        http_response = self.http_get_and_parse(repo_url, respect_size_limit=False)
 
         if is_404(http_response):
             return

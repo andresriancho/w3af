@@ -638,6 +638,7 @@ class ExtendedUrllib(object):
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
                     cookies=True, error_handling=True, timeout=None,
                     follow_redirects=False, use_basic_auth=True,
+                    respect_size_limit=True,
                     debugging_id=None):
         """
         Sends a mutant to the remote web server.
@@ -676,6 +677,7 @@ class ExtendedUrllib(object):
             'timeout': timeout,
             'follow_redirects': follow_redirects,
             'use_basic_auth': use_basic_auth,
+            'respect_size_limit': respect_size_limit,
             'debugging_id': debugging_id
         }
         method = mutant.get_method()
