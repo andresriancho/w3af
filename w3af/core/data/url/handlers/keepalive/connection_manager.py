@@ -133,7 +133,10 @@ class ConnectionManager(object):
                 # A user sets req.new_connection to True when he wants to
                 # do something special with the connection (such as setting
                 # a specific timeout)
-                for conn in self._hostmap.setdefault(host, set()):
+                hostmap = self._hostmap.setdefault(host, set())
+                hostmap = hostmap.copy()
+
+                for conn in hostmap:
                     try:
                         self._free_conns.remove(conn)
                     except KeyError:
