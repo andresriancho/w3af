@@ -53,6 +53,8 @@ JOIN_TIMES = re.compile('(.*?) took (.*?) seconds to join\(\)')
 
 CONNECTION_POOL_WAIT = re.compile('Waited (.*?)s for a connection to be available in the pool.')
 
+IDLE_CONSUMER_WORKERS = re.compile('\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
+
 
 def epoch_to_string(spent_time):
     time_delta = datetime.timedelta(seconds=spent_time)
@@ -119,6 +121,7 @@ def show_scan_stats(scan):
 
     show_worker_pool_size(scan)
     show_active_threads(scan)
+    show_consumer_pool_size(scan)
 
     print('')
 
@@ -261,6 +264,63 @@ def show_consumer_join_times(scan):
     print('These consumers were join()\'ed')
     for join_time in join_times:
         print('    - %s' % join_time)
+
+
+def show_consumer_pool_size(scan):
+    scan.seek(0)
+
+    consumer_pool_perc_audit = []
+    consumer_pool_timestamps_audit = []
+
+    consumer_pool_perc_crawl = []
+    consumer_pool_timestamps_crawl = []
+
+    for line in scan:
+        match = IDLE_CONSUMER_WORKERS.search(line)
+        if not match:
+            continue
+
+        percent = int(match.group(1))
+        is_audit = 'audit' in match.group(2).lower()
+
+        if is_audit:
+            consumer_pool_perc_audit.append(percent)
+            consumer_pool_timestamps_audit.append(get_line_epoch(line))
+        else:
+            consumer_pool_perc_crawl.append(percent)
+            consumer_pool_timestamps_crawl.append(get_line_epoch(line))
+
+    last_timestamp = get_line_epoch(line)
+
+    if not consumer_pool_perc_audit and not consumer_pool_perc_crawl:
+        print('No consumer pool data found')
+        return
+
+    print('Idle consumer pool workers over time')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Idle worker (%)'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=consumer_pool_timestamps_audit[0], max_=last_timestamp)
+    fig.set_y_limits(min_=0, max_=100)
+
+    fig.plot(consumer_pool_timestamps_audit,
+             consumer_pool_perc_audit,
+             label='Idle audit workers',
+             lc=100)
+
+    fig.plot(consumer_pool_timestamps_crawl,
+             consumer_pool_perc_crawl,
+             label='Idle crawl workers',
+             lc=200)
+
+    print(fig.show(legend=True))
+    print('')
+    print('')
 
 
 def show_worker_pool_size(scan):
