@@ -304,6 +304,9 @@ def show_consumer_pool_size(scan):
         return
 
     print('Idle thread pool workers over time')
+    print('    Latest idle audit workers %s%%' % consumer_pool_perc_audit[-1])
+    print('    Latest idle crawl-infra workers %s%%' % consumer_pool_perc_crawl[-1])
+    print('    Latest idle core workers %s%%' % worker_pool_perc[-1])
     print('')
 
     fig = plotille.Figure()
@@ -519,6 +522,7 @@ def show_queue_size_crawl(scan):
         return
 
     print('Crawl consumer queue size')
+    print('    Latest queue size value: %s' % crawl_queue_sizes[-1])
     print('')
 
     fig = plotille.Figure()
@@ -559,6 +563,7 @@ def show_queue_size_audit(scan):
         return
 
     print('Audit consumer queue size')
+    print('    Latest queue size value: %s' % auditor_queue_sizes[-1])
     print('')
 
     fig = plotille.Figure()
@@ -595,10 +600,11 @@ def show_queue_size_grep(scan):
     last_timestamp = get_line_epoch(line)
 
     if not grep_queue_sizes:
-        print('No audit consumer queue size data found')
+        print('No grep consumer queue size data found')
         return
 
-    print('Grep consumer queue sizes')
+    print('Grep consumer queue size')
+    print('    Latest queue size value: %s' % grep_queue_sizes[-1])
     print('')
 
     fig = plotille.Figure()
