@@ -149,6 +149,9 @@ class CoreStrategy(object):
             # tasks in the core's worker_pool, which need to be processed too
             self._w3af_core.worker_pool.finish()
 
+            # And also teardown all the observers
+            self._teardown_observers()
+
     def stop(self):
         self.terminate()
         
@@ -195,7 +198,7 @@ class CoreStrategy(object):
         self._teardown_bruteforce()
                 
         self._teardown_auth()
-        self._teardown_grep()        
+        self._teardown_grep()
 
     def add_observer(self, observer):
         self._observers.append(observer)
@@ -567,6 +570,10 @@ class CoreStrategy(object):
         if self._discovery_consumer is not None:
             self._discovery_consumer.join()
             self._discovery_consumer = None
+
+    def _teardown_observers(self):
+        for observer in self._observers:
+            observer.end()
 
     def _seed_discovery(self):
         """

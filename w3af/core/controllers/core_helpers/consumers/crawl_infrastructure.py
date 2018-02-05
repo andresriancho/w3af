@@ -172,7 +172,7 @@ class crawl_infrastructure(BaseConsumer):
         """
         try:
             for observer in self._observers:
-                observer.crawl(fuzzable_request)
+                observer.crawl(self, fuzzable_request)
         except Exception, e:
             self.handle_exception('crawl_infrastructure',
                                   'crawl_infrastructure._run_observers()',

@@ -106,6 +106,9 @@ class BaseConsumer(Process):
                                     worker_names='%sWorker' % thread_name,
                                     max_queued_tasks=max_pool_queued_tasks)
 
+    def get_pool(self):
+        return self._threadpool
+
     def run(self):
         """
         Consume the queue items, sending them to the plugins which are then

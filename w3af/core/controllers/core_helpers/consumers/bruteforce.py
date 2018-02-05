@@ -57,7 +57,7 @@ class bruteforce(BaseConsumer):
         """
         try:
             for observer in self._observers:
-                observer.bruteforce(fuzzable_request)
+                observer.bruteforce(self, fuzzable_request)
         except Exception, e:
             self.handle_exception('bruteforce',
                                   'bruteforce._run_observers()',

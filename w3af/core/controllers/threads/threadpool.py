@@ -59,6 +59,7 @@ class return_args(object):
     """
     def __init__(self, func, *args, **kwds):
         self.func = partial(func, *args, **kwds)
+        self.__name__ = func
 
     def __call__(self, *args, **kwds):
         return args, self.func(*args, **kwds)
@@ -70,9 +71,12 @@ class DaemonProcess(Process):
         super(DaemonProcess, self).__init__(group, target, name, args, kwargs)
         self.daemon = True
         self.worker = target
+        self.name = name
 
     def get_state(self):
-        return self.worker.get_state()
+        state = self.worker.get_state()
+        state['name'] = self.name
+        return state
 
     def start(self):
         """
@@ -385,40 +389,3 @@ class Pool(ThreadPool):
             inspect_data.append(worker_state)
 
         return inspect_data
-
-    def inspect_data_to_log(self, inspect_data):
-        """
-        Print the inspect_threads data to the log files
-
-        def get_state(self):
-            return {'func_name': self.func_name,
-                    'args': self.args,
-                    'kwargs': self.kwargs,
-                    'start_time': self.start_time,
-                    'idle': self.is_idle(),
-                    'job': self.job,
-                    'worker_id': self.id}
-
-        :return: None
-        """
-        for worker_state in inspect_data:
-            if worker_state['idle']:
-                message = 'Worker with ID %s is idle.'
-                message %= (worker_state['worker_id'])
-
-            else:
-                spent = time.time() - worker_state['start_time']
-                message = ('Worker with ID %s has been running job %s for %s seconds.'
-                           'The job is: %s(args=%s, kwargs=%s)')
-                message %= (worker_state['worker_id'],
-                            worker_state['job'],
-                            spent,
-                            worker_state['func_name'],
-                            worker_state['args'],
-                            worker_state['kwargs'])
-
-            self.write_to_log(message)
-
-    def write_to_log(self, message):
-        import w3af.core.controllers.output_manager as om
-        om.out.debug(message)

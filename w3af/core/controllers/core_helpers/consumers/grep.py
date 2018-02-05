@@ -196,7 +196,7 @@ class grep(BaseConsumer):
         """
         try:
             for observer in self._observers:
-                observer.grep(request, response)
+                observer.grep(self, request, response)
         except Exception, e:
             self.handle_exception('grep',
                                   'grep._run_observers()',

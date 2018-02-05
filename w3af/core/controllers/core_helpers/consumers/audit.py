@@ -114,7 +114,7 @@ class audit(BaseConsumer):
         """
         try:
             for observer in self._observers:
-                observer.audit(fuzzable_request)
+                observer.audit(self, fuzzable_request)
         except Exception, e:
             self.handle_exception('audit',
                                   'audit._run_observers()',

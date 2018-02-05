@@ -42,6 +42,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_s
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.core_helpers.strategy_observers.disk_space_observer import DiskSpaceObserver
 from w3af.core.controllers.core_helpers.strategy_observers.thread_count_observer import ThreadCountObserver
+from w3af.core.controllers.core_helpers.strategy_observers.thread_state_observer import ThreadStateObserver
 from w3af.core.controllers.core_helpers.status import (w3af_core_status,
                                                        STOPPED, RUNNING, PAUSED)
 from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
@@ -178,6 +179,7 @@ class w3afCore(object):
         self.strategy = CoreStrategy(self)
         self.strategy.add_observer(DiskSpaceObserver())
         self.strategy.add_observer(ThreadCountObserver())
+        self.strategy.add_observer(ThreadStateObserver())
 
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)

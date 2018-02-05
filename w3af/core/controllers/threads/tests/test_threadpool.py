@@ -162,32 +162,3 @@ class TestWorkerPool(unittest.TestCase):
         self.assertEqual(worker_state['args'], args)
         self.assertEqual(worker_state['kwargs'], kwds)
         self.assertEqual(worker_state['idle'], False)
-
-    def test_inspect_data_to_log(self):
-        worker_pool = Pool(processes=1, worker_names='WorkerThread')
-
-        messages = []
-
-        def save_messages(message):
-            messages.append(message)
-
-        worker_pool.write_to_log = save_messages
-
-        def sleep(sleep_time, **kwargs):
-            time.sleep(sleep_time)
-
-        args = (2,)
-        kwds = {'x': 2}
-        worker_pool.apply_async(func=sleep, args=args, kwds=kwds)
-
-        # Let the worker get the task
-        time.sleep(0.3)
-
-        worker_states = worker_pool.inspect_threads()
-        worker_pool.inspect_data_to_log(worker_states)
-
-        self.assertEqual(len(messages), 1)
-
-        message_re = ('Worker with ID .*? has been running job .*? for .*? seconds.'
-                      'The job is: .*?(args=.*?, kwargs=.*?)')
-        self.assertRegexpMatches(messages[0], message_re)

@@ -27,14 +27,23 @@ class StrategyObserver(object):
     inherit from this class and call CoreStrategy.add_observer(). When the scan
     runs the methods in this class are called.
     """
-    def crawl(self, fuzzable_request):
+    def crawl(self, craw_consumer, fuzzable_request):
         pass
 
-    def audit(self, fuzzable_request):
+    def audit(self, audit_consumer, fuzzable_request):
         pass
 
-    def bruteforce(self, fuzzable_request):
+    def bruteforce(self, bruteforce_consumer, fuzzable_request):
         pass
 
-    def grep(self, request, response):
+    def grep(self, grep_consumer, request, response):
+        pass
+
+    def end(self):
+        """
+        Called when the strategy is about to end, useful for clearing
+        memory, removing temp files, stopping threads, etc.
+
+        :return: None
+        """
         pass
