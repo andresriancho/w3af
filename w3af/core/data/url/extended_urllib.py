@@ -748,7 +748,7 @@ class ExtendedUrllib(object):
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
              cookies=True, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
-             debugging_id=None):
+             debugging_id=None, respect_size_limit=None):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -846,7 +846,8 @@ class ExtendedUrllib(object):
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
                        cache=False, grep=True, cookies=True,
                        error_handling=True, timeout=None, use_basic_auth=True,
-                       use_proxy=True, follow_redirects=False, debugging_id=None):
+                       use_proxy=True, follow_redirects=False, debugging_id=None,
+                       respect_size_limit=None):
             """
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
