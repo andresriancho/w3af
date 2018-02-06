@@ -35,7 +35,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.profiling import start_profiling_no_core
 from w3af.core.controllers.threads.is_main_process import is_main_process
 from w3af.core.controllers.output_manager import log_sink_factory
-from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
+from w3af.core.controllers.exceptions import ScanMustStopException
 from w3af.core.controllers.ci.detect import is_running_on_ci
 from w3af.core.controllers.threads.decorators import apply_with_return_error
 from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
@@ -143,7 +143,7 @@ class MultiProcessingDocumentParser(object):
 
             args = (self.PARSER_TIMEOUT, http_response.get_url())
 
-            raise BaseFrameworkException(msg % args)
+            raise TimeoutError(msg % args)
         else:
             if isinstance(parser_output, Error):
                 parser_output.reraise()

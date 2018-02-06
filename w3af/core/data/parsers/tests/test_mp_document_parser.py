@@ -27,6 +27,7 @@ import multiprocessing
 
 from mock import patch, PropertyMock
 from nose.plugins.skip import SkipTest
+from concurrent.futures import TimeoutError
 
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.doc.sgml import Tag
@@ -97,8 +98,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
             try:
                 self.mpdoc.get_document_parser_for(http_resp)
-            except BaseFrameworkException, bfe:
-                self._is_timeout_exception_message(bfe, om_mock, http_resp)
+            except TimeoutError, toe:
+                self._is_timeout_exception_message(toe, om_mock, http_resp)
             else:
                 self.assertTrue(False)
 
@@ -150,8 +151,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException, bfe:
-                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
+                except TimeoutError, toe:
+                    self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
 
@@ -164,8 +165,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException, bfe:
-                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
+                except TimeoutError, toe:
+                    self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
 
@@ -224,8 +225,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException, bfe:
-                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
+                except TimeoutError, toe:
+                    self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
 
@@ -238,8 +239,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except BaseFrameworkException, bfe:
-                    self._is_timeout_exception_message(bfe, om_mock, http_resp)
+                except TimeoutError, toe:
+                    self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
 
@@ -251,14 +252,14 @@ class TestMPDocumentParser(unittest.TestCase):
                 parser = self.mpdoc.get_document_parser_for(http_resp)
                 self.assertIsInstance(parser._parser, HTMLParser)
 
-    def _is_timeout_exception_message(self, bfe, om_mock, http_resp):
+    def _is_timeout_exception_message(self, toe, om_mock, http_resp):
         msg = ('[timeout] The parser took more than %s seconds to '
                'complete parsing of "%s", killed it!')
 
         error = msg % (MultiProcessingDocumentParser.PARSER_TIMEOUT,
                        http_resp.get_url())
 
-        self.assertEquals(str(bfe), error)
+        self.assertEquals(str(toe), error)
 
     def test_daemon_child(self):
         """
