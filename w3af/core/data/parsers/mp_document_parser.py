@@ -35,7 +35,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.profiling import start_profiling_no_core
 from w3af.core.controllers.threads.is_main_process import is_main_process
 from w3af.core.controllers.output_manager import log_sink_factory
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
 from w3af.core.controllers.ci.detect import is_running_on_ci
 from w3af.core.controllers.threads.decorators import apply_with_return_error
 from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
@@ -119,9 +119,20 @@ class MultiProcessingDocumentParser(object):
                       self.DEBUG)
 
         # Push the task to the workers
-        future = self._pool.schedule(apply_with_return_error,
-                                     args=(apply_args,),
-                                     timeout=self.PARSER_TIMEOUT)
+        try:
+            future = self._pool.schedule(apply_with_return_error,
+                                         args=(apply_args,),
+                                         timeout=self.PARSER_TIMEOUT)
+        except RuntimeError, rte:
+            # We get here when the pebble pool management thread dies and
+            # suddenly starts answering all calls with:
+            #
+            # RuntimeError('Unexpected error within the Pool')
+            #
+            # The scan needs to stop because we can't parse any more
+            # HTTP responses, which is a very critical part of the process
+            msg = str(rte)
+            raise ScanMustStopException(msg)
 
         try:
             parser_output = future.result()
@@ -174,10 +185,23 @@ class MultiProcessingDocumentParser(object):
                       yield_text,
                       self.DEBUG)
 
+        #
         # Push the task to the workers
-        future = self._pool.schedule(apply_with_return_error,
-                                     args=(apply_args,),
-                                     timeout=self.PARSER_TIMEOUT)
+        #
+        try:
+            future = self._pool.schedule(apply_with_return_error,
+                                         args=(apply_args,),
+                                         timeout=self.PARSER_TIMEOUT)
+        except RuntimeError, rte:
+            # We get here when the pebble pool management thread dies and
+            # suddenly starts answering all calls with:
+            #
+            # RuntimeError('Unexpected error within the Pool')
+            #
+            # The scan needs to stop because we can't parse any more
+            # HTTP responses, which is a very critical part of the process
+            msg = str(rte)
+            raise ScanMustStopException(msg)
 
         try:
             filtered_tags = future.result()
