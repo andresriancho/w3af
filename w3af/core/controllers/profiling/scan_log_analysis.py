@@ -497,9 +497,11 @@ def show_rtt_histo(scan):
 
     fig.histogram(rtts, bins=60)
 
-    print('')
     print('RTT Histogram')
+    print('')
     print(fig.show())
+    print('')
+    print('')
 
 
 def show_queue_size_crawl(scan):
@@ -721,6 +723,8 @@ def show_total_http_requests(scan):
 
     for code, num in count.iteritems():
         print('    Sent %s HTTP requests which returned code %s' % (code, num))
+
+    print('')
 
 
 def show_freeze_locations(scan):
