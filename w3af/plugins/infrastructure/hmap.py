@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
-import w3af.plugins.infrastructure.oHmap.hmap as originalHmap
+import w3af.plugins.infrastructure.oHmap.hmap as upstream_hmap
 
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
@@ -42,6 +42,7 @@ class hmap(InfrastructurePlugin):
 
         # User configured parameters
         self._gen_fp = False
+        self._threads = 4
 
     @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
@@ -64,7 +65,7 @@ class hmap(InfrastructurePlugin):
             ssl = True
 
         try:
-            results = originalHmap.testServer(ssl, server, port, 1, self._gen_fp)
+            results = upstream_hmap.testServer(ssl, server, port, 1, self._gen_fp, self._threads)
         except BaseFrameworkException, w3:
             msg = 'A BaseFrameworkException occurred while running hmap: "%s"'
             om.out.error(msg % w3)
@@ -115,8 +116,14 @@ class hmap(InfrastructurePlugin):
         h = ('Define if we will generate a fingerprint file based on the'
              ' findings made during this execution.')
         o = opt_factory('gen_fingerprint', self._gen_fp, d, 'boolean', help=h)
-
         ol.add(o)
+
+        d = 'Concurrent HTTP requests'
+        h = ('Define how many threads are used to send HTTP requests to the'
+             ' remote server. IoT devices might crash if this is set too high.')
+        o = opt_factory('threads', self._threads, d, 'integer', help=h)
+        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -128,6 +135,7 @@ class hmap(InfrastructurePlugin):
         :return: No value is returned.
         """
         self._gen_fp = options_list['gen_fingerprint'].get_value()
+        self._threads = options_list['threads'].get_value()
 
     def get_plugin_deps(self):
         """
@@ -145,16 +153,21 @@ class hmap(InfrastructurePlugin):
         return """
         This plugin fingerprints the remote web server and tries to determine
         the server type, version and patch level. It uses fingerprinting, not
-        just the Server header returned by remote server. This plugin is a
+        just the "Server" header returned by remote server. This plugin is a
         wrapper for Dustin Lee's hmap.
 
-        One configurable parameters exist:
+        Two configurable parameters exist:
             - gen_fingerprint
+            - threads
 
         If gen_fingerprint is set to True, a fingerprint file is generated.
         Fingerprint files are used to identify web servers, if you generate new
         files please send them to the w3af-develop mailing list so we can add it
         to the framework.
+        
+        Hmap will use the user-configured number of threads to perform the
+        fingerprinting process. This indicates how many requests are concurrently
+        sent to the server by hmap.        
 
         One important thing to notice is that hmap connects directly to the
         remote web server, without using the framework's HTTP configurations
