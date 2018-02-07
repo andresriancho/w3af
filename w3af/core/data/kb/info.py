@@ -507,17 +507,17 @@ class Info(dict):
             set_id( 3 )
 
         And we save this to the attribute:
-            [ 3, ]
+            [3,]
 
         When the info object is related to more than one request / response,
         we get this call:
             set_id( [3, 4] )
 
         And we save this to the attribute:
-            [ 3, 4]
+            [3, 4]
 
         Also, the list is sorted!
-            set_id( [4, 3] )
+            set_id([4, 3])
 
         Will save:
             [3, 4]
