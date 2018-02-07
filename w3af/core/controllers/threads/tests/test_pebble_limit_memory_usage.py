@@ -81,6 +81,28 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         self.assertEqual(future.result(), usage)
         self.assertEqual(workers_before_test, pool._pool_manager.worker_manager.workers.keys()[:])
 
+    def test_effective_kill_limit(self):
+        #
+        # This is just a tool to let me know when the process is killed. It increases the
+        # memory usage by 10k on each test until it finds the limit.
+        #
+        # It makes sense that the limit set in resource.setrlimit is not exactly equal to
+        # the memory I consume since there is process overhead
+        #
+        pool = self.get_pool_with_memlimit()
+
+        block_size = 10000
+        current_len = 0
+
+        while True:
+            current_len += block_size
+            future = pool.schedule(use_memory_in_string, args=(current_len,))
+            try:
+                future.result()
+            except MemoryError:
+                print('Limit found at %s bytes' % current_len)
+                break
+
     def test_sub_process_with_high_memory_usage_is_killed(self):
         #
         # Run a task that requires a lot of memory. Confirm that the process
@@ -165,10 +187,21 @@ class TestPebbleMemoryUsage(unittest.TestCase):
     def get_pool_with_memlimit(self):
 
         def initializer(memlimit):
-            """Set the soft memory limit for the worker process."""
-            # retrieve current limits, re-use the hard limit
-            soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-            resource.setrlimit(resource.RLIMIT_AS, (memlimit, hard))
+            """
+            Set the soft memory limit for the worker process.
+
+            Retrieve current limits, re-use the hard limit.
+            """
+            if hasattr(resource, 'RLIMIT_AS'):
+                # This works on Linux
+                soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+                resource.setrlimit(resource.RLIMIT_AS, (memlimit, hard))
+            elif hasattr(resource, 'RLIMIT_VMEM'):
+                # This works on other OS (Mac)
+                soft, hard = resource.getrlimit(resource.RLIMIT_VMEM)
+                resource.setrlimit(resource.RLIMIT_VMEM, (memlimit, hard))
+            else:
+                print('w3af was unable to limit the resource usage of parser processes.')
 
         # 64 Mb of limit per each process
         pool = ProcessPool(initializer=initializer,
