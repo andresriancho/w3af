@@ -385,7 +385,7 @@ def show_consumer_pool_size(scan):
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
     fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
-    fig.set_y_limits(min_=0, max_=100)
+    fig.set_y_limits(min_=0, max_=101)
 
     fig.plot(consumer_pool_timestamps_audit,
              consumer_pool_perc_audit,
