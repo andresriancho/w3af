@@ -53,6 +53,7 @@ def get_memory_limit():
     env_memory_limit = os.environ.get('MEMORY_LIMIT', None)
 
     if env_memory_limit.isdigit():
+        print('Using MEMORY_LIMIT of %s as defined in env.' % env_memory_limit)
         return int(env_memory_limit)
 
     return DEFAULT_MEMORY_LIMIT
