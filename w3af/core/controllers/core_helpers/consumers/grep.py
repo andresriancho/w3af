@@ -116,7 +116,7 @@ class grep(BaseConsumer):
             except Exception, e:
                 msg = 'An exception was found while running %s.end(): "%s"'
                 args = (plugin.get_name(), e)
-                om.out.debug(msg % args)
+                om.out.error(msg % args)
                 continue
 
             spent_time = time.time() - start_time
