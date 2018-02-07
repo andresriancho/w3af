@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement, print_function
 
+import os
 import signal
 import atexit
 import resource
@@ -44,6 +45,17 @@ from w3af.core.controllers.profiling.memory_usage import user_wants_memory_profi
 from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemalloc
 from w3af.core.controllers.profiling.cpu_usage import user_wants_cpu_profiling
 from w3af.core.data.parsers.document_parser import DocumentParser
+
+DEFAULT_MEMORY_LIMIT = 67108864
+
+
+def get_memory_limit():
+    env_memory_limit = os.environ.get('MEMORY_LIMIT', None)
+
+    if env_memory_limit.isdigit():
+        return int(env_memory_limit)
+
+    return DEFAULT_MEMORY_LIMIT
 
 
 class MultiProcessingDocumentParser(object):
@@ -76,7 +88,7 @@ class MultiProcessingDocumentParser(object):
     # We limit the memory which can be used by parsing processes to this constant
     #
     # The feature was tested in test_pebble_limit_memory_usage.py
-    MEMORY_LIMIT = 67108864
+    MEMORY_LIMIT = get_memory_limit()
 
     def __init__(self):
         self._pool = None
@@ -152,18 +164,19 @@ class MultiProcessingDocumentParser(object):
             args = (self.PARSER_TIMEOUT, http_response.get_url())
             raise TimeoutError(msg % args)
 
-        except MemoryError:
-            msg = ('The parser exceeded the memory usage limit of %s bytes'
-                   ' while trying to parse "%s". The parser was stopped in'
-                   ' order to prevent OOM issues.')
-            args = (self.MEMORY_LIMIT, http_response.get_url())
-            om.out.debug(msg % args)
-            raise MemoryError(msg % args)
+        # We still need to perform some error handling here...
+        if isinstance(parser_output, Error):
+            if isinstance(parser_output.exc_value, MemoryError):
+                msg = ('The parser exceeded the memory usage limit of %s bytes'
+                       ' while trying to parse "%s". The parser was stopped in'
+                       ' order to prevent OOM issues.')
+                args = (self.MEMORY_LIMIT, http_response.get_url())
+                om.out.debug(msg % args)
+                raise MemoryError(msg % args)
 
-        else:
-            if isinstance(parser_output, Error):
-                parser_output.reraise()
+            parser_output.reraise()
 
+        # Success!
         return parser_output
 
     def get_tags_by_filter(self, http_response, tags, yield_text=False):
@@ -224,18 +237,18 @@ class MultiProcessingDocumentParser(object):
         except TimeoutError:
             # We hit a timeout, return an empty list
             return []
-        except MemoryError:
-            msg = ('The parser exceeded the memory usage limit of %s bytes'
-                   ' while trying to parse "%s". The parser was stopped in'
-                   ' order to prevent OOM issues.')
-            args = (self.MEMORY_LIMIT, http_response.get_url())
-            om.out.debug(msg % args)
+
+        # There was an exception in the parser, maybe the HTML was really
+        # broken, or it wasn't an HTML at all.
+        if isinstance(filtered_tags, Error):
+            if isinstance(filtered_tags.exc_value, MemoryError):
+                msg = ('The parser exceeded the memory usage limit of %s bytes'
+                       ' while trying to parse "%s". The parser was stopped in'
+                       ' order to prevent OOM issues.')
+                args = (self.MEMORY_LIMIT, http_response.get_url())
+                om.out.debug(msg % args)
+
             return []
-        else:
-            # There was an exception in the parser, maybe the HTML was really
-            # broken, or it wasn't an HTML at all.
-            if isinstance(filtered_tags, Error):
-                return []
 
         return filtered_tags
 
