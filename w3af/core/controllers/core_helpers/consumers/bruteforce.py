@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -43,12 +45,24 @@ class bruteforce(BaseConsumer):
                                          thread_name='Bruteforcer')
 
     def _teardown(self):
-        # End plugins
+        msg = 'Starting Bruteforce consumer _teardown() with %s plugins.'
+        om.out.debug(msg % len(self._consumer_plugins))
+
         for plugin in self._consumer_plugins:
+            om.out.debug('Calling %s.end().' % plugin.get_name())
+            start_time = time.time()
+
             try:
                 plugin.end()
             except BaseFrameworkException, e:
                 om.out.error(str(e))
+
+            spent_time = time.time() - start_time
+            msg = 'Spent %.2f seconds running %s.end().'
+            args = (spent_time, plugin.get_name())
+            om.out.debug(msg % args)
+
+        om.out.debug('Finished Bruteforce consumer _teardown().')
 
     def _run_observers(self, fuzzable_request):
         """

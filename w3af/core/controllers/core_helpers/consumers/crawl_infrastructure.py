@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
 import Queue
 
 import w3af.core.controllers.output_manager as om
@@ -130,18 +131,31 @@ class crawl_infrastructure(BaseConsumer):
         if plugin is None:
             to_teardown = self._consumer_plugins
         else:
-            to_teardown = [plugin, ]
+            to_teardown = [plugin]
 
         # When we disable a plugin, we call .end() , so no need to call the
         # same method twice
         to_teardown = set(to_teardown) - self._disabled_plugins
 
+        msg = 'Starting CrawlInfra consumer _teardown() with %s plugins.'
+        om.out.debug(msg % len(to_teardown))
+
         for plugin in to_teardown:
+            om.out.debug('Calling %s.end().' % plugin.get_name())
+            start_time = time.time()
+
             try:
                 plugin.end()
             except BaseFrameworkException, e:
                 om.out.error('The plugin "%s" raised an exception in the '
                              'end() method: %s' % (plugin.get_name(), e))
+
+            spent_time = time.time() - start_time
+            msg = 'Spent %.2f seconds running %s.end().'
+            args = (spent_time, plugin.get_name())
+            om.out.debug(msg % args)
+
+        om.out.debug('Finished CrawlInfra consumer _teardown().')
 
     @task_decorator
     def _consume(self, function_id, work_unit):
