@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import re
 import sys
 import datetime
@@ -142,19 +143,23 @@ def show_scan_stats(scan):
 def show_parser_errors(scan):
     scan.seek(0)
 
+    timeout_count = 0
     timeout_errors = []
     timeout_errors_timestamps = []
 
+    memory_count = 0
     memory_errors = []
     memory_errors_timestamps = []
 
     for line in scan:
         if PARSER_TIMEOUT in line:
-            timeout_errors.append(1)
+            timeout_count += 1
+            timeout_errors.append(timeout_count)
             timeout_errors_timestamps.append(get_line_epoch(line))
 
         if PARSER_MEMORY_LIMIT in line:
-            memory_errors.append(1)
+            memory_count += 1
+            memory_errors.append(memory_count)
             memory_errors_timestamps.append(get_line_epoch(line))
 
     first_timestamp = get_first_timestamp(scan)
@@ -165,6 +170,8 @@ def show_parser_errors(scan):
         return
 
     print('Parser errors')
+    print('    Timeout errors: %s' % timeout_count)
+    print('    Memory errors: %s' % memory_count)
     print('')
 
     fig = plotille.Figure()
@@ -173,15 +180,17 @@ def show_parser_errors(scan):
     fig.y_label = 'Parser errors'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
-    fig.set_y_limits(min_=0, max_=1)
+    #fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
+    fig.set_y_limits(min_=0, max_=max(memory_count, timeout_count))
 
     fig.plot(timeout_errors,
              timeout_errors_timestamps,
+             label='Timeout errors',
              lc=50)
 
     fig.plot(memory_errors,
              memory_errors_timestamps,
+             label='Memory errors',
              lc=200)
 
     print(fig.show(legend=True))
@@ -441,7 +450,7 @@ def show_worker_pool_size(scan):
 def show_scan_finished_in(scan):
     scan.seek(0)
 
-    first_line_epoch = get_line_epoch(scan.readline())
+    first_timestamp = get_first_timestamp(scan)
 
     for line in scan:
         match = SCAN_FINISHED_IN.search(line)
@@ -449,9 +458,9 @@ def show_scan_finished_in(scan):
             print(match.group(0))
             return
 
-    last_line_epoch = get_line_epoch(line)
+    last_timestamp = get_last_timestamp(scan)
 
-    scan_run_time = last_line_epoch - first_line_epoch
+    scan_run_time = last_timestamp - first_timestamp
     print('Scan is still running!')
     print('    Started %s ago' % epoch_to_string(scan_run_time))
 
@@ -626,6 +635,7 @@ def show_queue_size_audit(scan):
 
     if not auditor_queue_sizes:
         print('No audit consumer queue size data found')
+        print('')
         return
 
     print('Audit consumer queue size')
@@ -883,16 +893,54 @@ def get_last_timestamp(scan):
         return LAST_TIMESTAMP
 
     scan.seek(0)
-    for line in scan:
-        pass
 
-    timestamp = get_line_epoch(line)
+    for line in reverse_readline(scan):
+        try:
+            timestamp = get_line_epoch(line)
+        except InvalidTimeStamp:
+            # Read one more line backwards
+            continue
+        else:
+            break
+
     scan.seek(0)
 
     if LAST_TIMESTAMP is None:
         LAST_TIMESTAMP = timestamp
 
     return LAST_TIMESTAMP
+
+
+def reverse_readline(fh, buf_size=8192):
+    """a generator that returns the lines of a file in reverse order"""
+    segment = None
+    offset = 0
+    fh.seek(0, os.SEEK_END)
+    file_size = remaining_size = fh.tell()
+    while remaining_size > 0:
+        offset = min(file_size, offset + buf_size)
+        fh.seek(file_size - offset)
+        buffer = fh.read(min(remaining_size, buf_size))
+        remaining_size -= buf_size
+        lines = buffer.split('\n')
+        # the first line of the buffer is probably not a complete line so
+        # we'll save it and append it to the last line of the next buffer
+        # we read
+        if segment is not None:
+            # if the previous chunk starts right from the beginning of line
+            # do not concact the segment to the last line of new chunk
+            # instead, yield the segment first
+            if buffer[-1] is not '\n':
+                lines[-1] += segment
+            else:
+                yield segment
+        segment = lines[0]
+        for index in range(len(lines) - 1, 0, -1):
+            if len(lines[index]):
+                yield lines[index]
+    # Don't yield None if the file was empty
+    if segment is not None:
+        yield segment
 
 
 def make_relative_timestamps(timestamps, first_timestamp):
