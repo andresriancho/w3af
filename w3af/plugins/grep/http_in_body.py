@@ -41,9 +41,6 @@ class http_in_body(GrepPlugin):
     )
     _multi_re = MultiRE(HTTP)
 
-    def __init__(self):
-        GrepPlugin.__init__(self)
-
     def grep(self, request, response):
         """
         Plugin entry point.
@@ -56,42 +53,41 @@ class http_in_body(GrepPlugin):
         # this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
-        if response.get_code() != 501\
-        and response.is_text_or_html():
+        if response.get_code() == 501:
+            return
+
+        if not response.is_text_or_html():
+            return
             
-            body_without_tags = response.get_clear_text_body()
-            if body_without_tags is None:
-                return
+        body_without_tags = response.get_clear_text_body()
+        if body_without_tags is None:
+            return
 
-            uri = response.get_uri()
-            
-            for match, _, _, reqres in self._multi_re.query(body_without_tags):
+        uri = response.get_uri()
 
-                if reqres == 'REQUEST':
-                    desc = 'An HTTP request was found in the HTTP body of'\
-                           ' a response.'
-                    i = Info('HTTP Request in HTTP body', desc, response.id,
-                             self.get_name())
-                    i.set_uri(uri)
-                    i.add_to_highlight(match.group(0))
-                    kb.kb.append(self, 'request', i)
+        for match, _, _, reqres in self._multi_re.query(body_without_tags):
 
-                if reqres == 'RESPONSE':
-                    desc = 'An HTTP response was found in the HTTP body of'\
-                           ' a response.'
-                    i = Info('HTTP Response in HTTP body', desc, response.id,
-                             self.get_name())
-                    i.set_uri(uri)
-                    i.add_to_highlight(match.group(0))
-                    kb.kb.append(self, 'response', i)
+            if reqres == 'REQUEST':
+                desc = 'An HTTP request was found in the HTTP body of a response.'
+                i = Info('HTTP Request in HTTP body', desc, response.id, self.get_name())
+                i.set_uri(uri)
+                i.add_to_highlight(match.group(0))
+                kb.kb.append(self, 'request', i)
+
+            if reqres == 'RESPONSE':
+                desc = 'An HTTP response was found in the HTTP body of a response.'
+                i = Info('HTTP Response in HTTP body', desc, response.id, self.get_name())
+                i.set_uri(uri)
+                i.add_to_highlight(match.group(0))
+                kb.kb.append(self, 'response', i)
 
     def end(self):
         """
         This method is called when the plugin wont be used anymore.
         """
         item_fmt = '- %s  (id: %s)'
-        msg = 'The following URLs have an HTTP %s in the HTTP'\
-              ' response body:'
+        msg = ('The following URLs have an HTTP %s in the HTTP'
+               ' response body:')
         
         for info_type in ['request', 'response']:
             if kb.kb.get('http_in_body', info_type):

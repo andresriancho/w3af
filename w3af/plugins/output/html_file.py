@@ -30,7 +30,6 @@ from jinja2 import StrictUndefined, Environment, FileSystemLoader
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
-import w3af.core.controllers.output_manager as om
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import DBException
@@ -178,7 +177,7 @@ class html_file(OutputPlugin):
         target_urls = [t.url_string for t in cf.cf.get('targets')]
         target_domain = cf.cf.get('target_domains')[0]
         enabled_plugins = self._enabled_plugins
-        findings = kb.kb.get_all_findings()
+        findings = kb.kb.get_all_findings_iter()
         debug_log = ((t, l, smart_unicode(m)) for (t, l, m) in self._additional_info)
         known_urls = kb.kb.get_all_known_urls()
 
