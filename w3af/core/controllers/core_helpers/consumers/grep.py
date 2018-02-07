@@ -120,7 +120,7 @@ class grep(BaseConsumer):
                 continue
 
             spent_time = time.time() - start_time
-            msg = 'Spent %s seconds running %s.end().'
+            msg = 'Spent %.2f seconds running %s.end().'
             args = (spent_time, plugin.get_name())
             om.out.debug(msg % args)
 
