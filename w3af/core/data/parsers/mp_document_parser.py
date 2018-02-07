@@ -23,6 +23,7 @@ from __future__ import with_statement, print_function
 
 import signal
 import atexit
+import resource
 import threading
 import multiprocessing
 
@@ -68,6 +69,15 @@ class MultiProcessingDocumentParser(object):
     # in seconds
     PARSER_TIMEOUT = 60 * 3 if PROFILING_ENABLED else 10
 
+    # Document parsers can go crazy on memory usage when parsing some very
+    # specific HTML / PDF documents. Sometimes when this happens the operating
+    # system does an out of memory (OOM) kill of a "randomly chosen" process.
+    #
+    # We limit the memory which can be used by parsing processes to this constant
+    #
+    # The feature was tested in test_pebble_limit_memory_usage.py
+    MEMORY_LIMIT = 67108864
+
     def __init__(self):
         self._pool = None
         self._start_lock = threading.RLock()
@@ -85,7 +95,7 @@ class MultiProcessingDocumentParser(object):
                 self._pool = ProcessPool(self.MAX_WORKERS,
                                          max_tasks=20,
                                          initializer=init_worker,
-                                         initargs=(log_queue,))
+                                         initargs=(log_queue, self.MEMORY_LIMIT))
 
         return self._pool
 
@@ -137,13 +147,19 @@ class MultiProcessingDocumentParser(object):
         try:
             parser_output = future.result()
         except TimeoutError:
-            # Act just like when there is no parser
             msg = ('[timeout] The parser took more than %s seconds'
                    ' to complete parsing of "%s", killed it!')
-
             args = (self.PARSER_TIMEOUT, http_response.get_url())
-
             raise TimeoutError(msg % args)
+
+        except MemoryError:
+            msg = ('The parser exceeded the memory usage limit of %s bytes'
+                   ' while trying to parse "%s". The parser was stopped in'
+                   ' order to prevent OOM issues.')
+            args = (self.MEMORY_LIMIT, http_response.get_url())
+            om.out.debug(msg % args)
+            raise MemoryError(msg % args)
+
         else:
             if isinstance(parser_output, Error):
                 parser_output.reraise()
@@ -207,6 +223,13 @@ class MultiProcessingDocumentParser(object):
             filtered_tags = future.result()
         except TimeoutError:
             # We hit a timeout, return an empty list
+            return []
+        except MemoryError:
+            msg = ('The parser exceeded the memory usage limit of %s bytes'
+                   ' while trying to parse "%s". The parser was stopped in'
+                   ' order to prevent OOM issues.')
+            args = (self.MEMORY_LIMIT, http_response.get_url())
+            om.out.debug(msg % args)
             return []
         else:
             # There was an exception in the parser, maybe the HTML was really
@@ -273,7 +296,7 @@ def cleanup_pool():
         mp_doc_parser.stop_workers()
 
 
-def init_worker(log_queue):
+def init_worker(log_queue, mem_limit):
     """
     This function is called right after each Process in the ProcessPool is
     created, and it will initialized some variables/handlers which are required
@@ -284,6 +307,23 @@ def init_worker(log_queue):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     log_sink_factory(log_queue)
     start_profiling_no_core()
+    limit_memory_usage(mem_limit)
+
+
+def limit_memory_usage(mem_limit):
+    """
+    Set the soft memory limit for the worker process.
+
+    Retrieve current limits, re-use the hard limit.
+    """
+    if hasattr(resource, 'RLIMIT_AS'):
+        # This works on Linux
+        soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+        resource.setrlimit(resource.RLIMIT_AS, (mem_limit, hard))
+    else:
+        print('w3af was unable to limit the memory usage of parser processes.'
+              ' This feature is only supported in Linux OS, create an issue'
+              ' in our repository and we might implement it for your OS.')
 
 
 if is_main_process():

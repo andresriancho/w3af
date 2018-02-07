@@ -55,6 +55,9 @@ CONNECTION_POOL_WAIT = re.compile('Waited (.*?)s for a connection to be availabl
 
 IDLE_CONSUMER_WORKERS = re.compile('\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
 
+PARSER_TIMEOUT = '[timeout] The parser took more than'
+PARSER_MEMORY_LIMIT = 'The parser exceeded the memory usage limit of'
+
 
 def epoch_to_string(spent_time):
     time_delta = datetime.timedelta(seconds=spent_time)
@@ -119,6 +122,10 @@ def show_scan_stats(scan):
 
     print('')
 
+    show_parser_errors(scan)
+
+    print('')
+
     show_worker_pool_size(scan)
     show_active_threads(scan)
     show_consumer_pool_size(scan)
@@ -130,6 +137,56 @@ def show_scan_stats(scan):
     print('')
 
     show_freeze_locations(scan)
+
+
+def show_parser_errors(scan):
+    scan.seek(0)
+
+    timeout_errors = []
+    timeout_errors_timestamps = []
+
+    memory_errors = []
+    memory_errors_timestamps = []
+
+    for line in scan:
+        if PARSER_TIMEOUT in line:
+            timeout_errors.append(1)
+            timeout_errors_timestamps.append(get_line_epoch(line))
+
+        if PARSER_MEMORY_LIMIT in line:
+            memory_errors.append(1)
+            memory_errors_timestamps.append(get_line_epoch(line))
+
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
+
+    if not memory_errors and not timeout_errors:
+        print('No parser errors found')
+        return
+
+    print('Parser errors')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Parser errors'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
+    fig.set_y_limits(min_=0, max_=1)
+
+    fig.plot(timeout_errors,
+             timeout_errors_timestamps,
+             lc=50)
+
+    fig.plot(memory_errors,
+             memory_errors_timestamps,
+             lc=200)
+
+    print(fig.show(legend=True))
+    print('')
+    print('')
 
 
 def show_active_threads(scan):
@@ -144,7 +201,8 @@ def show_active_threads(scan):
             active_threads.append(float(match.group(1)))
             active_threads_timestamps.append(get_line_epoch(line))
 
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not active_threads:
         print('No active thread data found')
@@ -159,7 +217,7 @@ def show_active_threads(scan):
     fig.y_label = 'Thread count'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=active_threads_timestamps[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
     fig.plot(active_threads_timestamps,
@@ -182,7 +240,8 @@ def show_connection_pool_wait(scan):
             connection_pool_waits.append(float(match.group(1)))
             connection_pool_timestamps.append(get_line_epoch(line))
 
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not connection_pool_waits:
         print('No connection pool wait data found')
@@ -198,7 +257,7 @@ def show_connection_pool_wait(scan):
     fig.y_label = 'Waited time'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=connection_pool_timestamps[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
     fig.plot(connection_pool_timestamps,
@@ -297,7 +356,8 @@ def show_consumer_pool_size(scan):
             worker_pool_perc.append(percent)
             worker_pool_timestamps.append(get_line_epoch(line))
 
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not consumer_pool_perc_audit and not consumer_pool_perc_crawl:
         print('No thread pool data found')
@@ -315,7 +375,7 @@ def show_consumer_pool_size(scan):
     fig.y_label = 'Idle worker (%)'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=consumer_pool_timestamps_audit[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=100)
 
     fig.plot(consumer_pool_timestamps_audit,
@@ -350,7 +410,8 @@ def show_worker_pool_size(scan):
             worker_pool_sizes.append(int(match.group(1)))
             worker_pool_timestamps.append(get_line_epoch(line))
 
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not worker_pool_sizes:
         print('No worker pool size data found')
@@ -365,7 +426,7 @@ def show_worker_pool_size(scan):
     fig.y_label = 'Worker pool size'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=worker_pool_timestamps[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
     fig.plot(worker_pool_timestamps,
@@ -450,7 +511,8 @@ def show_timeout(scan):
             timeouts.append(float(match.group(1)))
             timeout_timestamps.append(get_line_epoch(line))
 
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not timeouts:
         print('No socket timeout data found')
@@ -465,7 +527,7 @@ def show_timeout(scan):
     fig.y_label = 'Socket timeout'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=timeout_timestamps[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
     fig.plot(timeout_timestamps,
@@ -517,7 +579,8 @@ def show_queue_size_crawl(scan):
             crawl_queue_timestamps.append(get_line_epoch(line))
 
     # Get the last timestamp to use as max in the graphs
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not crawl_queue_sizes:
         print('No crawl consumer queue size data found')
@@ -533,7 +596,7 @@ def show_queue_size_crawl(scan):
     fig.y_label = 'Items in CrawlInfra queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=crawl_queue_timestamps[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
     fig.plot(crawl_queue_timestamps,
@@ -558,7 +621,8 @@ def show_queue_size_audit(scan):
             auditor_queue_timestamps.append(get_line_epoch(line))
 
     # Get the last timestamp to use as max in the graphs
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not auditor_queue_sizes:
         print('No audit consumer queue size data found')
@@ -574,7 +638,7 @@ def show_queue_size_audit(scan):
     fig.y_label = 'Items in Audit queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=auditor_queue_timestamps[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
     fig.plot(auditor_queue_timestamps,
@@ -599,7 +663,8 @@ def show_queue_size_grep(scan):
             grep_queue_timestamps.append(get_line_epoch(line))
 
     # Get the last timestamp to use as max in the graphs
-    last_timestamp = get_line_epoch(line)
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
 
     if not grep_queue_sizes:
         print('No grep consumer queue size data found')
@@ -615,7 +680,7 @@ def show_queue_size_grep(scan):
     fig.y_label = 'Items in Grep queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
-    fig.set_x_limits(min_=grep_queue_timestamps[0], max_=last_timestamp)
+    fig.set_x_limits(min_=first_timestamp, max_=last_timestamp)
     fig.set_y_limits(min_=0, max_=None)
 
     fig.plot(grep_queue_timestamps,
@@ -782,9 +847,52 @@ def get_line_epoch(scan_line):
     except KeyboardInterrupt:
         sys.exit(3)
     except:
-        raise InvalidTimeStamp
+        raise InvalidTimeStamp('Invalid timestamp: "%s"' % scan_line)
     else:
         return int(parsed_time.strftime('%s'))
+
+
+FIRST_TIMESTAMP = None
+LAST_TIMESTAMP = None
+
+
+def get_first_timestamp(scan):
+    # This is so ugly...
+    global FIRST_TIMESTAMP
+
+    if FIRST_TIMESTAMP is not None:
+        return FIRST_TIMESTAMP
+
+    scan.seek(0)
+    line = scan.readline()
+    scan.seek(0)
+
+    timestamp = get_line_epoch(line)
+
+    if FIRST_TIMESTAMP is None:
+        FIRST_TIMESTAMP = timestamp
+
+    return FIRST_TIMESTAMP
+
+
+def get_last_timestamp(scan):
+    # This is so ugly...
+    global LAST_TIMESTAMP
+
+    if LAST_TIMESTAMP is not None:
+        return LAST_TIMESTAMP
+
+    scan.seek(0)
+    for line in scan:
+        pass
+
+    timestamp = get_line_epoch(line)
+    scan.seek(0)
+
+    if LAST_TIMESTAMP is None:
+        LAST_TIMESTAMP = timestamp
+
+    return LAST_TIMESTAMP
 
 
 def make_relative_timestamps(timestamps, first_timestamp):

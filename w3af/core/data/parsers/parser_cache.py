@@ -191,6 +191,15 @@ class ParserCache(CacheStats):
                 # Act just like when there is no parser
                 msg = 'Reached timeout parsing "%s".' % http_response.get_url()
                 raise BaseFrameworkException(msg)
+            except MemoryError:
+                # We failed to get a parser for this HTTP response, we better
+                # ban this HTTP response so we don't waste more CPU cycles or
+                # memory trying to parse it over and over.
+                self.add_to_blacklist(hash_string)
+
+                # Act just like when there is no parser
+                msg = 'Reached memory usage limit parsing "%s".' % http_response.get_url()
+                raise BaseFrameworkException(msg)
             except:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s".' % http_response.get_url()
