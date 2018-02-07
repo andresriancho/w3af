@@ -93,12 +93,12 @@ class error_500(GrepPlugin):
 
             if error_500_response_id not in all_vuln_ids:
                 # Found a error 500 that wasn't identified !
-                desc = 'An unidentified web application error (HTTP response'\
-                       ' code 500) was found at: "%s". Enable all plugins and'\
-                       ' try again, if the vulnerability still is not'\
-                       ' identified, please verify manually and report it to'\
-                       ' the w3af developers.'
-                desc = desc % request.get_url()
+                desc = ('An unidentified web application error (HTTP response'
+                        ' code 500) was found at: "%s". Enable all plugins and'
+                        ' try again, if the vulnerability still is not'
+                        ' identified, please verify manually and report it to'
+                        ' the w3af developers.')
+                desc %= request.get_url()
 
                 v = Vuln('Unhandled error in web application', desc,
                          severity.MEDIUM, error_500_response_id,
