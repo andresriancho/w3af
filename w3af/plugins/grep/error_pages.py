@@ -233,10 +233,8 @@ class error_pages(GrepPlugin):
         """
         This method is called when the plugin wont be used anymore.
         """
-        all_findings = kb.kb.get_all_findings()
-
         for title, desc, _id, url, highlight in self._potential_vulns:
-            for info in all_findings:
+            for info in kb.kb.get_all_findings_iter():
                 # This makes sure that if the sqli plugin found a vulnerability
                 # in the same URL as we found a detailed error, we won't report
                 # the detailed error.

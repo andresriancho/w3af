@@ -19,7 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.data.kb.config as cf
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
@@ -101,8 +104,27 @@ class grep(BaseConsumer):
         """
         Handle POISON_PILL
         """
+        msg = 'Starting Grep consumer _teardown() with %s plugins.'
+        om.out.debug(msg % len(self._consumer_plugins))
+
         for plugin in self._consumer_plugins:
-            plugin.end()
+            om.out.debug('Calling %s.end().' % plugin.get_name())
+            start_time = time.time()
+
+            try:
+                plugin.end()
+            except Exception, e:
+                msg = 'An exception was found while running %s.end(): "%s"'
+                args = (plugin.get_name(), e)
+                om.out.error(msg % args)
+                continue
+
+            spent_time = time.time() - start_time
+            msg = 'Spent %.2f seconds running %s.end().'
+            args = (spent_time, plugin.get_name())
+            om.out.debug(msg % args)
+
+        om.out.debug('Finished Grep consumer _teardown().')
 
     def _get_request_response_from_work_unit(self, work_unit):
         """

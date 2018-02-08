@@ -63,3 +63,11 @@ def get_w3af_version():
             'Branch: %(branch)s\n'
             'Local changes: %(dirty)s\n'
             'Author: Andres Riancho and the w3af team.') % version_dict
+
+
+def get_w3af_version_minimal():
+    """
+    :return: A string with the w3af version.
+    """
+    version_dict = get_w3af_version_as_dict()
+    return '%(version)s / %(revision)s / %(branch)s' % version_dict

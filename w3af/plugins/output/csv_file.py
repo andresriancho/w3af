@@ -78,7 +78,7 @@ class csv_file(OutputPlugin):
             output_handler.close()
             return
 
-        for info in kb.kb.get_all_findings():
+        for info in kb.kb.get_all_findings_iter():
             try:
                 row = [info.get_severity(),
                        info.get_name(),

@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.fuzzer.utils import rand_alnum
@@ -49,8 +51,13 @@ class audit(BaseConsumer):
                                     max_in_queue_size=max_qsize)
 
     def _teardown(self):
-        # End plugins
+        msg = 'Starting Audit consumer _teardown() with %s plugins.'
+        om.out.debug(msg % len(self._consumer_plugins))
+
         for plugin in self._consumer_plugins:
+            om.out.debug('Calling %s.end().' % plugin.get_name())
+            start_time = time.time()
+
             try:
                 plugin.end()
             except BaseFrameworkException, e:
@@ -58,6 +65,13 @@ class audit(BaseConsumer):
             except Exception, e:
                 self.handle_exception('audit', plugin.get_name(),
                                       'plugin.end()', e)
+
+            spent_time = time.time() - start_time
+            msg = 'Spent %.2f seconds running %s.end().'
+            args = (spent_time, plugin.get_name())
+            om.out.debug(msg % args)
+
+        om.out.debug('Finished Audit consumer _teardown().')
 
     def get_original_response(self, fuzzable_request):
         plugin = self._consumer_plugins[0]
