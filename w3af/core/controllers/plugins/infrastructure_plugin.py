@@ -35,9 +35,6 @@ class InfrastructurePlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # in seconds
-    PLUGIN_TIMEOUT = 5 * 60
-
     def discover_wrapper(self, fuzzable_request):
         """
         Wrapper around the discover method in order to perform some generic

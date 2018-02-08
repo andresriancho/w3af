@@ -41,9 +41,6 @@ class AuditPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # in seconds
-    PLUGIN_TIMEOUT = 5 * 60
-
     def __init__(self):
         Plugin.__init__(self)
         

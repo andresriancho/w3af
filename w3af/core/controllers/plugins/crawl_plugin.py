@@ -37,9 +37,6 @@ class CrawlPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # in seconds
-    PLUGIN_TIMEOUT = 5 * 60
-
     def crawl_wrapper(self, fuzzable_request):
         """
         Wrapper around the crawl method in order to perform some generic tasks.
