@@ -97,6 +97,7 @@ class ExtendedUrllib(object):
         # Cache to measure RTT
         self._rtt_mutant_cache = SynchronizedLRUDict(capacity=128)
         self._rtt_mutant_lock = threading.RLock()
+        self._specific_rtt_mutant_locks = dict()
 
         # Avoid multiple consecutive calls to reduce the worker pool size
         self._last_call_to_adjust_workers = None
@@ -333,7 +334,9 @@ class ExtendedUrllib(object):
         # different threads which need the same result from duplicating efforts
         #
         with self._rtt_mutant_lock:
+            specific_rtt_mutant_lock = self._get_specific_rtt_mutant_lock(cache_key)
 
+        with specific_rtt_mutant_lock:
             cached_value = self._rtt_mutant_cache.get(cache_key, default=None)
 
             #
@@ -362,10 +365,24 @@ class ExtendedUrllib(object):
             average_rtt = float(sum(rtts)) / len(rtts)
             self._rtt_mutant_cache[cache_key] = (time.time(), average_rtt)
 
+        with self._rtt_mutant_lock:
+            if cache_key in self._specific_rtt_mutant_locks:
+                self._specific_rtt_mutant_locks.pop(cache_key)
+
         msg = 'Returning fresh average RTT of %.2f seconds for mutant %s'
         om.out.debug(msg % (average_rtt, cache_key))
 
         return average_rtt
+
+    def _get_specific_rtt_mutant_lock(self, cache_key):
+        specific_rtt_mutant_lock = self._specific_rtt_mutant_locks.get(cache_key)
+
+        if specific_rtt_mutant_lock is not None:
+            return specific_rtt_mutant_lock
+
+        specific_rtt_mutant_lock = threading.RLock()
+        self._specific_rtt_mutant_locks[cache_key] = specific_rtt_mutant_lock
+        return specific_rtt_mutant_lock
 
     def _should_auto_adjust_now(self):
         """
