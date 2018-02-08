@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-import resource
 import time
 
 from pebble import ProcessPool
+from w3af.core.data.parsers.mp_document_parser import limit_memory_usage
 
 
 def just_sleep(secs):
@@ -32,18 +32,21 @@ def just_sleep(secs):
 
 
 def use_memory_in_string(memory):
-    block_size = 256
+    block_size = 1024
     memory_user = ''
 
     for _ in xrange(int(memory / block_size)):
-        memory_user += 256 * 'A'
+        memory_user += block_size * 'A'
 
     return len(memory_user)
 
 
 class TestPebbleMemoryUsage(unittest.TestCase):
 
-    MEMORY_LIMIT = 67108864
+    # From the current virtual memory used by the process, we allow the
+    # sub-processes (which have the same virtual memory because they are forks)
+    # to grow 8 MB more:
+    MEMORY_LIMIT = 1024 * 1024 * 8
 
     def test_sub_process_with_low_memory_usage_not_affected(self):
         #
@@ -75,7 +78,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         # Get the worker pids
         workers_before_test = pool._pool_manager.worker_manager.workers.keys()[:]
 
-        usage = self.MEMORY_LIMIT / 16
+        usage = self.MEMORY_LIMIT / 2.0
         future = pool.schedule(use_memory_in_string, args=(usage,))
 
         self.assertEqual(future.result(), usage)
@@ -83,15 +86,17 @@ class TestPebbleMemoryUsage(unittest.TestCase):
 
     def test_effective_kill_limit(self):
         #
-        # This is just a tool to let me know when the process is killed. It increases the
-        # memory usage by 10k on each test until it finds the limit.
+        # This started as a tool to let me know when the process is killed.
+        # It increases the memory usage by 10k on each test until it finds the
+        # limit.
         #
         # It makes sense that the limit set in resource.setrlimit is not exactly equal to
-        # the memory I consume since there is process overhead
+        # the memory I consume since there is process overhead (the python VM). See
+        # how the real limit is calculated in get_real_limit().
         #
         pool = self.get_pool_with_memlimit()
 
-        block_size = 10000
+        block_size = 1024 * 10
         current_len = 0
 
         while True:
@@ -102,6 +107,9 @@ class TestPebbleMemoryUsage(unittest.TestCase):
             except MemoryError:
                 print('Limit found at %s bytes' % current_len)
                 break
+
+        #self.assertGreaterEqual(self.MEMORY_LIMIT * 1.2, current_len)
+        #self.assertLessEqual(self.MEMORY_LIMIT * 0.8, current_len)
 
     def test_sub_process_with_high_memory_usage_is_killed(self):
         #
@@ -117,7 +125,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         # Get the worker pids
         workers_before_test = pool._pool_manager.worker_manager.workers.keys()[:]
 
-        usage = self.MEMORY_LIMIT
+        usage = self.MEMORY_LIMIT * 5.0
         future = pool.schedule(use_memory_in_string, args=(usage,))
 
         # When the memory limit is reached, the process raises MemoryError
@@ -151,7 +159,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
             results.append(future)
 
         # Use a lot of memory in the parent process
-        use_memory_in_string(self.MEMORY_LIMIT)
+        use_memory_in_string(self.MEMORY_LIMIT * 2.0)
 
         # Get all the results, none should be a MemoryError
         for future in results:
@@ -165,11 +173,11 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         #
 
         # Use a lot of memory in the parent process
-        block_size = 256
+        block_size = 1024
         memory_user = ''
 
-        for _ in xrange(int(self.MEMORY_LIMIT / block_size)):
-            memory_user += 256 * 'A'
+        for _ in xrange(int(self.MEMORY_LIMIT * 2.0 / block_size)):
+            memory_user += block_size * 'A'
 
         # Now do the pool stuff
         pool = self.get_pool_with_memlimit()
@@ -185,26 +193,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
             self.assertEqual(future.result(), secs)
 
     def get_pool_with_memlimit(self):
-
-        def initializer(memlimit):
-            """
-            Set the soft memory limit for the worker process.
-
-            Retrieve current limits, re-use the hard limit.
-            """
-            if hasattr(resource, 'RLIMIT_AS'):
-                # This works on Linux
-                soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-                resource.setrlimit(resource.RLIMIT_AS, (memlimit, hard))
-            elif hasattr(resource, 'RLIMIT_VMEM'):
-                # This works on other OS (Mac)
-                soft, hard = resource.getrlimit(resource.RLIMIT_VMEM)
-                resource.setrlimit(resource.RLIMIT_VMEM, (memlimit, hard))
-            else:
-                print('w3af was unable to limit the resource usage of parser processes.')
-
-        # 64 Mb of limit per each process
-        pool = ProcessPool(initializer=initializer,
+        pool = ProcessPool(initializer=limit_memory_usage,
                            initargs=[self.MEMORY_LIMIT],
                            max_workers=3)
         return pool

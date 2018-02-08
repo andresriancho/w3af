@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement, print_function
 
 import os
+import psutil
 import signal
 import atexit
 import resource
@@ -46,14 +47,16 @@ from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemall
 from w3af.core.controllers.profiling.cpu_usage import user_wants_cpu_profiling
 from w3af.core.data.parsers.document_parser import DocumentParser
 
-DEFAULT_MEMORY_LIMIT = 67108864
+# 128 MB
+DEFAULT_MEMORY_LIMIT = 128 * 1024 * 1024
 
 
 def get_memory_limit():
-    env_memory_limit = os.environ.get('MEMORY_LIMIT', None)
+    env_memory_limit = os.environ.get('PARSER_MEMORY_LIMIT', '')
 
     if env_memory_limit.isdigit():
-        print('Using MEMORY_LIMIT of %s as defined in env.' % env_memory_limit)
+        msg = 'Using parser process virtual memory limit of %s bytes that was defined in env.'
+        print(msg % env_memory_limit)
         return int(env_memory_limit)
 
     return DEFAULT_MEMORY_LIMIT
@@ -329,15 +332,53 @@ def limit_memory_usage(mem_limit):
     Set the soft memory limit for the worker process.
 
     Retrieve current limits, re-use the hard limit.
+
+    See documentation on resources at:
+        https://linux.die.net/man/2/getrlimit
+
+    Not available:
+        RLIMIT_RSS is not available for new kernel versions
+
+    Could work:
+        RLIMIT_AS The maximum size of the process's virtual memory
+                  (address space) in bytes.
+
+                  Reminder of how virtual memory works:
+                  https://en.wikipedia.org/wiki/Virtual_memory
+
+        RLIMIT_STACK The maximum size of the process stack, in bytes.
+        RLIMIT_DATA The maximum size of the process's data segment
+                    (initialized data, uninitialized data, and heap)
+
+    Not sure:
+        RLIMIT_MEMLOCK The maximum number of bytes of memory that may
+        be locked into RAM
     """
-    if hasattr(resource, 'RLIMIT_AS'):
-        # This works on Linux
-        soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-        resource.setrlimit(resource.RLIMIT_AS, (mem_limit, hard))
-    else:
+    # This works on Linux only (for now)
+    if not hasattr(resource, 'RLIMIT_AS'):
         print('w3af was unable to limit the memory usage of parser processes.'
               ' This feature is only supported in Linux OS, create an issue'
               ' in our repository and we might implement it for your OS.')
+        return
+
+    # Note that this is run on every process start, which is what we need
+    #
+    # Since the real memory limit will be w3af's main process memory usage
+    # plus the imposed memory limit (mem_limit) we want to calculate this
+    # as often as possible.
+    #
+    # New processes are created in the pool after 20 jobs (max_tasks=20) so
+    # that should take care of cycling processes with different real memory
+    # limits
+    p = psutil.Process()
+    real_memory_limit = p.memory_info().vms + mem_limit
+
+    soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+    resource.setrlimit(resource.RLIMIT_AS, (real_memory_limit, hard))
+
+    limit_mb = (real_memory_limit / 1024 / 1024)
+    msg = 'Using RLIMIT_AS memory usage limit %s MB for new pool process'
+    om.out.debug(msg % limit_mb)
 
 
 if is_main_process():
