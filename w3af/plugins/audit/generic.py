@@ -152,7 +152,8 @@ class generic(AuditPlugin):
         """
         self._potential_vulns.append((mutant.get_url(),
                                       mutant.get_token_name(),
-                                      mutant, id_list))
+                                      mutant,
+                                      id_list))
 
     def _has_potential_vuln(self, mutant):
         """
