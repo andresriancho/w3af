@@ -891,7 +891,13 @@ def show_freeze_locations(scan):
 
         if time_spent > 5:
             line = line.strip()
-            freezes.append('Found %s second freeze at: %s...' % (time_spent, line[:80]))
+
+            if len(line) >= 80:
+                msg = 'Found %s second freeze at: %s...' % (time_spent, line[:80])
+            else:
+                msg = 'Found %s second freeze at: %s' % (time_spent, line)
+
+            freezes.append(msg)
 
         previous_line_time = current_line_epoch
 
