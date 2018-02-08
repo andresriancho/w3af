@@ -34,6 +34,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.get_w3af_version import get_w3af_version_minimal
 from w3af.core.controllers.core_helpers.profiles import CoreProfiles
 from w3af.core.controllers.core_helpers.plugins import CorePlugins
 from w3af.core.controllers.core_helpers.target import CoreTarget
@@ -214,7 +215,9 @@ class w3afCore(object):
                                        self.plugins.get_all_plugin_options())
 
         self._first_scan = False
-        
+
+        om.out.debug('Starting the scan using w3af version %s' % get_w3af_version_minimal())
+
         try:
             self.strategy.start()
         except MemoryError:
