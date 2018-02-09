@@ -441,7 +441,7 @@ class fingerprint_404(object):
         """
         Performs a very simple check to verify if this response is a 404 or not.
 
-        It takes the original URL and modifies it by pre-pending a "not-" to the
+        It takes the original URL and modifies it by flipping some bytes in the
         filename, then performs a request to that URL and compares the original
         response with the modified one. If they are equal then the original
         request is a 404.
