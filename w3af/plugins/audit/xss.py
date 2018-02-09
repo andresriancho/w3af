@@ -256,6 +256,8 @@ class xss(AuditPlugin):
         
         :return: None, Vuln (if any) are saved to the kb.
         """
+        om.out.debug('Analyzing HTTP response %s to verify if XSS token was persisted.')
+
         body = response.get_body()
 
         for mutant, mutant_response_id in self._xss_mutants:
