@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from ahocorasick import Automaton
+from acora import AcoraBuilder
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
@@ -46,7 +46,7 @@ class MultiIn(object):
         self._acora = self._build()
 
     def _build(self):
-        builder = Automaton()
+        builder = AcoraBuilder()
 
         for idx, item in enumerate(self._keywords_or_assoc):
 
@@ -59,15 +59,14 @@ class MultiIn(object):
 
                 self._translator[keyword] = item[1:]
 
-                builder.add_word(keyword, (idx, keyword))
+                builder.add(keyword)
             elif isinstance(item, basestring):
                 keyword = item.encode(DEFAULT_ENCODING)
-                builder.add_word(keyword, (idx, keyword))
+                builder.add(keyword)
             else:
                 raise ValueError('Can NOT build MultiIn with provided values.')
 
-        builder.make_automaton()
-        return builder
+        return builder.build()
 
     def query(self, target_str):
         """
@@ -81,7 +80,7 @@ class MultiIn(object):
 
         seen = []
 
-        for end_index, (insert_order, match) in self._acora.iter(target_str):
+        for match, position in self._acora.finditer(target_str):
             if match in seen:
                 continue
 

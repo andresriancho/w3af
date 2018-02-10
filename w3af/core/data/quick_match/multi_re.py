@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import esmre
 
-from ahocorasick import Automaton
+from acora import AcoraBuilder
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
@@ -59,7 +59,7 @@ class MultiRE(object):
         self._acora = self._build()
 
     def _build(self):
-        builder = Automaton()
+        builder = AcoraBuilder()
 
         for idx, item in enumerate(self._regexes_or_assoc):
 
@@ -103,14 +103,13 @@ class MultiRE(object):
             # Add this keyword to the acora index, and also save a way to associate the
             # keyword with the regular expression
             regex_keyword = regex_keyword.lower()
-            builder.add_word(regex_keyword, (idx, regex_keyword))
+            builder.add(regex_keyword)
 
             regexes_matching_keyword = self._keyword_to_re.get(regex_keyword, [])
             regexes_matching_keyword.append(regex)
             self._keyword_to_re[regex_keyword] = regexes_matching_keyword
 
-        builder.make_automaton()
-        return builder
+        return builder.build()
 
     def query(self, target_str):
         """
@@ -140,13 +139,10 @@ class MultiRE(object):
         #   Match the regular expressions that have keywords and those
         #   keywords are found in the target string by acora
         #
-        if self._acora.kind == 0:
-            return
-
         seen = []
         target_str = target_str.lower()
 
-        for end_index, (insert_order, match) in self._acora.iter(target_str):
+        for match, position in self._acora.finditer(target_str):
             if match in seen:
                 continue
 
