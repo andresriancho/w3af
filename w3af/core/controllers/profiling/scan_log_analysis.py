@@ -3,6 +3,8 @@
 import os
 import re
 import sys
+import time
+import argparse
 import datetime
 
 from urlparse import urlparse
@@ -25,6 +27,13 @@ The tool takes a scan log as input, and outputs:
  * Locations in the scan logs where the output was silent (no lines written in more than N seconds)
 
 The scan log needs to have debug enabled in order for this tool to work as expected.
+
+It is also possible to just watch one graph in the console using:
+
+    --watch <function-name>
+
+Where <function-name> is the name of the function in the scan_log_analysis.py file
+you want to watch.
 '''
 SCAN_FINISHED_IN = re.compile('Scan finished in (.*).')
 
@@ -1119,19 +1128,43 @@ def make_relative_timestamps(timestamps, first_timestamp):
     return [t - first_timestamp for t in timestamps]
 
 
+def watch(scan, function_name):
+    scan.seek(0)
+
+    while True:
+        clear_screen()
+
+        try:
+            # Hack me here
+            globals()[function_name](scan)
+            time.sleep(5)
+        except KeyboardInterrupt:
+            sys.exit(0)
+        except Exception, e:
+            print('Exception: %s' % e)
+            sys.exit(1)
+
+
+def clear_screen():
+    os.system('clear')
+
+
 if __name__ == '__main__':
-    try:
-        # pylint: disable=E0632
-        _, scan = sys.argv
-        # pylint: enable=E0632
-    except:
-        print(HELP)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='w3af scan log analyzer', usage=HELP)
+
+    parser.add_argument('scan_log', action='store')
+    parser.add_argument('--watch', action='store', dest='watch',
+                        help='Show only one graph and refresh every 5 seconds.')
+
+    parsed_args = parser.parse_args()
 
     try:
-        scan = file(scan)
+        scan = file(parsed_args.scan_log)
     except:
-        print(HELP)
+        print('The scan log file does not exist!')
         sys.exit(2)
 
-    show_scan_stats(scan)
+    if parsed_args.watch:
+        watch(scan, parsed_args.watch)
+    else:
+        show_scan_stats(scan)
