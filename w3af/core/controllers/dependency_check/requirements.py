@@ -25,7 +25,7 @@ CORE = 1
 GUI = 2
 
 
-CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
+CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('github', 'PyGithub', '1.21.0'),
                      PIPDependency('git.util', 'GitPython', '2.1.3'),
                      PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.14'),
