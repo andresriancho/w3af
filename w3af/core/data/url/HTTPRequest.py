@@ -39,7 +39,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
                  new_connection=False, follow_redirects=False,
                  use_basic_auth=True, use_proxy=True,
-                 debugging_id=None):
+                 debugging_id=None, binary_response=False):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -61,6 +61,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         self.use_basic_auth = use_basic_auth
         self.use_proxy = use_proxy
         self.debugging_id = debugging_id
+        self._binary_response = binary_response
 
         self.method = method
         if self.method is None:
@@ -82,6 +83,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                 self.get_headers() == other.get_headers() and
                 self.get_data() == other.get_data() and
                 self.get_timeout() == other.get_timeout())
+
+    def with_binary_response(self):
+        return self._binary_response
 
     def add_header(self, key, val):
         """
@@ -132,7 +136,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         sdict['use_basic_auth'] = self.use_basic_auth
         sdict['use_proxy'] = self.use_proxy
         sdict['debugging_id'] = self.debugging_id
-            
+        sdict['binary_response'] = self._binary_response
+
         return serializable_dict
 
     @classmethod
@@ -172,6 +177,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         use_basic_auth = udict['use_basic_auth']
         use_proxy = udict['use_proxy']
         debugging_id = udict['debugging_id']
+        binary_response = udict['binary_response']
 
         headers_inst = Headers(headers.items())
         url = URL(uri)
@@ -181,7 +187,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
                    timeout=timeout, new_connection=new_connection,
                    follow_redirects=follow_redirects,
                    use_basic_auth=use_basic_auth, use_proxy=use_proxy,
-                   debugging_id=debugging_id)
+                   debugging_id=debugging_id, binary_response=binary_response)
 
     def copy(self):
         return copy.deepcopy(self)
