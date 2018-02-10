@@ -174,7 +174,7 @@ class fingerprint_404(object):
             for j in self._404_responses:
 
                 if i is j:
-                    continue
+                    break
 
                 if fuzzy_equal(i.body, j.body, IS_EQUAL_RATIO):
                     # i already exists in the self._404_responses, no need
