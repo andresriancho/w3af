@@ -20,45 +20,49 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
-from nose.plugins.attrib import attr
 from w3af import ROOT_PATH
 
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.plugins.crawl.dot_listing import dot_listing
 
 
 class TestDotListing(PluginTest):
 
-    base_url = 'https://moth/w3af/crawl/dot_listing/'
+    target_url = 'http://mock'
 
-    _run_config = {
-        'target': base_url,
-        'plugins': {'crawl': (PluginConfig('dot_listing'),)}
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('dot_listing'),)}
+        }
     }
 
-    @attr('ci_fails')
+    DOT_LISTING = file(os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'dot_listing', 'listing_test_1.txt')).read()
+
+    MOCK_RESPONSES = [MockResponse('http://mock/.listing', DOT_LISTING),
+                      MockResponse('http://mock/wasadhiya-7.mp3', 'Secret file'),
+                      MockResponse('http://mock/', 'Not here', status=404)]
+
     def test_dot_listing(self):
-        self._scan(self._run_config['target'], self._run_config['plugins'])
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
 
         infos = self.kb.get('dot_listing', 'dot_listing')
-        self.assertEqual(len(infos), 2)
+        self.assertEqual(len(infos), 1, infos)
 
-        self.assertEqual(
-            set(['.listing file found',
-                'Operating system username and group leak']),
-            set([i.get_name() for i in infos]))
-        self.assertEqual(set([self.base_url + '.listing'] * 2),
-                         set([i.get_url().url_string for i in infos]))
+        info = infos[0]
+        self.assertEqual(info.get_name(), '.listing file found')
 
+        expected_urls = ('/', '/.listing', '/wasadhiya-7.mp3')
         urls = self.kb.get_all_known_urls()
-        urls = [url.url_string for url in urls]
 
-        self.assertTrue(self.base_url + '.listing' in urls)
-        self.assertTrue(self.base_url + 'hidden.txt' in urls)
+        self.assertEquals(
+            set(str(u) for u in urls),
+            set((self.target_url + end) for end in expected_urls)
+        )
 
     def test_listing_extraction(self):
-        listing_files_path = os.path.join(ROOT_PATH, 'plugins', 'tests',
-                                          'crawl', 'dot_listing')
+        listing_files_path = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'dot_listing')
         file_name_fmt = 'listing_test_%s.txt'
 
         dot_listing_inst = dot_listing()
