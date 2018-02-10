@@ -53,10 +53,15 @@ class dwsync_xml(CrawlPlugin):
         :parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
+        directories_to_check = []
+
         for domain_path in fuzzable_request.get_url().get_directories():
             if domain_path not in self._analyzed_dirs:
                 self._analyzed_dirs.add(domain_path)
-                self._find_dwsync(domain_path)
+                directories_to_check.append(domain_path)
+
+        # Send the requests using threads
+        self.worker_pool.map(self._find_dwsync, directories_to_check)
 
     def _find_dwsync(self, domain_path):
         dwsync_url = domain_path.url_join(self.DWSYNC)

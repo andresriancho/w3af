@@ -368,8 +368,9 @@ class web_spider(CrawlPlugin):
                 t = (resp.get_url(), original_request.get_uri())
                 self._broken_links.add(t)
         else:
-            msg = '[web_spider] Sending link to w3af core: "%s"'
-            om.out.debug(msg % reference)
+            msg = '[web_spider] Found new link "%s" at "%s"'
+            args = (reference, original_response.get_url())
+            om.out.debug(msg % args)
 
             fuzz_req = FuzzableRequest(reference, headers=headers)
 

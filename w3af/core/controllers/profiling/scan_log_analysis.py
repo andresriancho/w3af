@@ -3,7 +3,11 @@
 import os
 import re
 import sys
+import time
+import argparse
 import datetime
+
+from urlparse import urlparse
 
 try:
     import plotille
@@ -23,6 +27,13 @@ The tool takes a scan log as input, and outputs:
  * Locations in the scan logs where the output was silent (no lines written in more than N seconds)
 
 The scan log needs to have debug enabled in order for this tool to work as expected.
+
+It is also possible to just watch one graph in the console using:
+
+    --watch <function-name>
+
+Where <function-name> is the name of the function in the scan_log_analysis.py file
+you want to watch.
 '''
 SCAN_FINISHED_IN = re.compile('Scan finished in (.*).')
 
@@ -32,6 +43,8 @@ HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
 FROM_CACHE = 'from_cache=1'
 
 SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) seconds')
+
+EXTENDED_URLLIB_ERRORS_RE = re.compile('ExtendedUrllib error rate is at (.*?)%')
 
 GREP_DISK_DICT = re.compile('The current Grep DiskDict size is (\d*).')
 AUDITOR_DISK_DICT = re.compile('The current Auditor DiskDict size is (\d*).')
@@ -54,6 +67,7 @@ JOIN_TIMES = re.compile('(.*?) took (.*?) seconds to join\(\)')
 
 CONNECTION_POOL_WAIT = re.compile('Waited (.*?)s for a connection to be available in the pool.')
 
+WEBSPIDER_FOUND_LINK = re.compile('\[web_spider\] Found new link "(.*?)" at "(.*?)"')
 IDLE_CONSUMER_WORKERS = re.compile('\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
 
 PARSER_TIMEOUT = '[timeout] The parser took more than'
@@ -109,12 +123,14 @@ def show_scan_stats(scan):
     show_total_http_requests(scan)
     show_rtt_histo(scan)
     show_timeout(scan)
+    show_extended_urllib_error_rate(scan)
     show_connection_pool_wait(scan)
     show_http_requests_over_time(scan)
 
     print('')
 
     show_crawling_stats(scan)
+    generate_crawl_graph(scan)
 
     print('')
 
@@ -140,6 +156,93 @@ def show_scan_stats(scan):
     print('')
 
     show_freeze_locations(scan)
+
+
+def show_extended_urllib_error_rate(scan):
+    error_rate = []
+    error_rate_timestamps = []
+
+    for line in scan:
+        match = EXTENDED_URLLIB_ERRORS_RE.search(line)
+        if match:
+            error_rate.append(int(match.group(1)))
+            error_rate_timestamps.append(get_line_epoch(line))
+
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
+    spent_epoch = last_timestamp - first_timestamp
+    error_rate_timestamps = [ts - first_timestamp for ts in error_rate_timestamps]
+
+    if not error_rate:
+        print('No error rate information found')
+        return
+
+    print('Extended URL library error rate')
+    print('    Error rate exceeded 10%%: %s' % (max(error_rate) > 10,))
+    print('    Error rate exceeded 20%%: %s' % (max(error_rate) > 10,))
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.y_label = 'Error rate'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=spent_epoch)
+    fig.set_y_limits(min_=0, max_=max(error_rate) * 1.1)
+
+    fig.plot(error_rate_timestamps,
+             error_rate,
+             label='Error rate')
+
+    print(fig.show())
+    print('')
+    print('')
+
+
+def get_path(url):
+    return urlparse(url).path
+
+
+def generate_crawl_graph(scan):
+    scan.seek(0)
+
+    data = {}
+
+    for line in scan:
+        match = WEBSPIDER_FOUND_LINK.search(line)
+        if not match:
+            continue
+        new_link = get_path(match.group(1))
+        referer = get_path(match.group(2))
+        if referer in data:
+            data[referer].append(new_link)
+        else:
+            data[referer] = [new_link]
+
+    if not data:
+        print('No web_spider data found!')
+
+    def sort_by_len(a, b):
+        return cmp(len(a), len(b))
+
+    referers = data.keys()
+    referers.sort(sort_by_len)
+
+    print('web_spider crawling data (source -> new link)')
+
+    previous_referer = None
+
+    for referer in referers:
+        new_links = data[referer]
+        new_links.sort(sort_by_len)
+        for new_link in new_links:
+            if referer is previous_referer:
+                spaces = ' ' * len('%s -> ' % previous_referer)
+                print('%s%s' % (spaces, new_link))
+            else:
+                print('%s -> %s' % (referer, new_link))
+                previous_referer = referer
 
 
 def show_parser_process_memory_limit(scan):
@@ -1025,19 +1128,43 @@ def make_relative_timestamps(timestamps, first_timestamp):
     return [t - first_timestamp for t in timestamps]
 
 
+def watch(scan, function_name):
+    scan.seek(0)
+
+    while True:
+        clear_screen()
+
+        try:
+            # Hack me here
+            globals()[function_name](scan)
+            time.sleep(5)
+        except KeyboardInterrupt:
+            sys.exit(0)
+        except Exception, e:
+            print('Exception: %s' % e)
+            sys.exit(1)
+
+
+def clear_screen():
+    os.system('clear')
+
+
 if __name__ == '__main__':
-    try:
-        # pylint: disable=E0632
-        _, scan = sys.argv
-        # pylint: enable=E0632
-    except:
-        print(HELP)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='w3af scan log analyzer', usage=HELP)
+
+    parser.add_argument('scan_log', action='store')
+    parser.add_argument('--watch', action='store', dest='watch',
+                        help='Show only one graph and refresh every 5 seconds.')
+
+    parsed_args = parser.parse_args()
 
     try:
-        scan = file(scan)
+        scan = file(parsed_args.scan_log)
     except:
-        print(HELP)
+        print('The scan log file does not exist!')
         sys.exit(2)
 
-    show_scan_stats(scan)
+    if parsed_args.watch:
+        watch(scan, parsed_args.watch)
+    else:
+        show_scan_stats(scan)

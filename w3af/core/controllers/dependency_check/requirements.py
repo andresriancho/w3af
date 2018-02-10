@@ -25,7 +25,7 @@ CORE = 1
 GUI = 2
 
 
-CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
+CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('github', 'PyGithub', '1.21.0'),
                      PIPDependency('git.util', 'GitPython', '2.1.3'),
                      PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.14'),
@@ -57,6 +57,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      # regular users too, do not remove!
                      PIPDependency('psutil', 'psutil', '2.2.1'),
 
+                     # Added for the crawl.ds_store plugin
+                     PIPDependency('ds_store', 'ds-store', '1.1.2'),
+
                      # Console colors
                      PIPDependency('termcolor', 'termcolor', '1.1.0'),
 
@@ -82,7 +85,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      # acora speeds up string search, for regular expressions
                      # we use esmre to extract the string literals from the re
                      # and acora to match those against the target string
-                     PIPDependency('ahocorasick', 'pyahocorasick', '1.1.6'),
+                     PIPDependency('acora', 'acora', '2.1'),
                      PIPDependency('esmre', 'esmre', '0.3.1'),
                      ]
 

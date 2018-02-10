@@ -37,9 +37,6 @@ class sitemap_xml(CrawlPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    def __init__(self):
-        CrawlPlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
@@ -52,32 +49,37 @@ class sitemap_xml(CrawlPlugin):
         sitemap_url = base_url.url_join('sitemap.xml')
         response = self._uri_opener.GET(sitemap_url, cache=True)
 
-        if '</urlset>' in response and not is_404(response):
-            # Send response to core
-            fr = FuzzableRequest.from_http_response(response)
-            self.output_queue.put(fr)
+        if '</urlset>' not in response:
+            return
 
-            om.out.debug('Parsing xml file with xml.dom.minidom.')
-            try:
-                dom = xml.dom.minidom.parseString(response.get_body())
-            except:
-                raise BaseFrameworkException('Error while parsing sitemap.xml')
-            else:
-                raw_url_list = dom.getElementsByTagName("loc")
-                parsed_url_list = []
-                for url in raw_url_list:
-                    try:
-                        url = url.childNodes[0].data
-                        url = URL(url)
-                    except ValueError, ve:
-                        msg = 'Sitemap file had an invalid URL: "%s"'
-                        om.out.debug(msg % ve)
-                    except:
-                        om.out.debug('Sitemap file had an invalid format')
-                    else:
-                        parsed_url_list.append(url)
+        if is_404(response):
+            return
 
-                self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
+        # Send response to core
+        fr = FuzzableRequest.from_http_response(response)
+        self.output_queue.put(fr)
+
+        om.out.debug('Parsing xml file with xml.dom.minidom.')
+        try:
+            dom = xml.dom.minidom.parseString(response.get_body())
+        except:
+            raise BaseFrameworkException('Error while parsing sitemap.xml')
+        else:
+            raw_url_list = dom.getElementsByTagName("loc")
+            parsed_url_list = []
+            for url in raw_url_list:
+                try:
+                    url = url.childNodes[0].data
+                    url = URL(url)
+                except ValueError, ve:
+                    msg = 'Sitemap file had an invalid URL: "%s"'
+                    om.out.debug(msg % ve)
+                except:
+                    om.out.debug('Sitemap file had an invalid format')
+                else:
+                    parsed_url_list.append(url)
+
+            self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
 
     def get_long_desc(self):
         """

@@ -63,6 +63,7 @@ class HTTPResponse(object):
                  '_headers',
                  '_body',
                  '_raw_body',
+                 '_binary_response',
                  '_content_type',
                  '_dom',
                  'id',
@@ -80,7 +81,7 @@ class HTTPResponse(object):
 
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
-                 charset=None):
+                 charset=None, binary_response=False):
         """
         :param code: HTTP code
         :param read: HTTP body text; typically a string
@@ -115,6 +116,7 @@ class HTTPResponse(object):
         self._headers = None
         self._body = None
         self._raw_body = read
+        self._binary_response = binary_response
         self._content_type = None
         self._dom = None
         # A unique id identifier for the response
@@ -145,7 +147,7 @@ class HTTPResponse(object):
         self._body_lock = threading.RLock()
 
     @classmethod
-    def from_httplib_resp(cls, httplibresp, original_url=None):
+    def from_httplib_resp(cls, httplibresp, original_url=None, binary_response=False):
         """
         Factory function. Build a HTTPResponse object from a
         httplib.HTTPResponse instance
@@ -179,7 +181,8 @@ class HTTPResponse(object):
             charset = getattr(resp, 'encoding', None)
         
         return cls(code, body, hdrs, url_inst, original_url,
-                   msg, charset=charset, time=httplib_time)
+                   msg, charset=charset, time=httplib_time,
+                   binary_response=binary_response)
 
     @classmethod    
     def from_dict(cls, unserialized_dict):
@@ -264,8 +267,11 @@ class HTTPResponse(object):
         with self._body_lock:
             if self._body is None:
                 self._body, self._charset = self._charset_handling()
-                # Free 'raw_body'
-                self._raw_body = None
+
+                # The user wants the raw body, without any modifications / decoding?
+                if not self._binary_response:
+                    self._raw_body = None
+
             return self._body
 
     def set_body(self, body):
@@ -282,6 +288,21 @@ class HTTPResponse(object):
         self._raw_body = body
 
     body = property(get_body, set_body)
+
+    def get_raw_body(self):
+        """
+        Return the raw body as it came from the wire.
+
+        This is useful when we want to parse binary files such as images and DS_Store.
+
+        IMPORTANT! Because we want to save some memory the raw body will be set
+                   to None after the first call to get_body(), so please use
+                   binary_response in your requests in order to let us know
+                   that you want the raw body
+
+        :return: The raw body as it came from the wire
+        """
+        return self._raw_body
 
     def get_clear_text_body(self):
         """

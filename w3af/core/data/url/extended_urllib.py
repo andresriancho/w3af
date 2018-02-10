@@ -656,7 +656,8 @@ class ExtendedUrllib(object):
                     cookies=True, error_handling=True, timeout=None,
                     follow_redirects=False, use_basic_auth=True,
                     respect_size_limit=True,
-                    debugging_id=None):
+                    debugging_id=None,
+                    binary_response=False):
         """
         Sends a mutant to the remote web server.
 
@@ -695,7 +696,8 @@ class ExtendedUrllib(object):
             'follow_redirects': follow_redirects,
             'use_basic_auth': use_basic_auth,
             'respect_size_limit': respect_size_limit,
-            'debugging_id': debugging_id
+            'debugging_id': debugging_id,
+            'binary_response': binary_response
         }
         method = mutant.get_method()
 
@@ -713,7 +715,8 @@ class ExtendedUrllib(object):
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
             error_handling=True, timeout=None, follow_redirects=False,
-            use_basic_auth=True, use_proxy=True, debugging_id=None):
+            use_basic_auth=True, use_proxy=True, debugging_id=None,
+            binary_response=False):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -756,7 +759,8 @@ class ExtendedUrllib(object):
                           timeout=timeout, new_connection=new_connection,
                           follow_redirects=follow_redirects,
                           use_basic_auth=use_basic_auth, use_proxy=use_proxy,
-                          debugging_id=debugging_id)
+                          debugging_id=debugging_id,
+                          binary_response=binary_response)
         req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
@@ -765,7 +769,9 @@ class ExtendedUrllib(object):
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
              cookies=True, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
-             debugging_id=None, respect_size_limit=None):
+             debugging_id=None,
+             respect_size_limit=None,
+             binary_response=False):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -808,7 +814,7 @@ class ExtendedUrllib(object):
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
                           use_basic_auth=use_basic_auth, use_proxy=use_proxy,
-                          debugging_id=debugging_id)
+                          debugging_id=debugging_id, binary_response=binary_response)
         req = self.add_headers(req, headers)
 
         return self.send(req, grep=grep)
@@ -863,8 +869,11 @@ class ExtendedUrllib(object):
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
                        cache=False, grep=True, cookies=True,
                        error_handling=True, timeout=None, use_basic_auth=True,
-                       use_proxy=True, follow_redirects=False, debugging_id=None,
-                       respect_size_limit=None):
+                       use_proxy=True,
+                       follow_redirects=False,
+                       debugging_id=None,
+                       respect_size_limit=None,
+                       binary_response=False):
             """
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
@@ -893,7 +902,8 @@ class ExtendedUrllib(object):
                               use_basic_auth=use_basic_auth,
                               follow_redirects=follow_redirects,
                               use_proxy=use_proxy,
-                              debugging_id=debugging_id)
+                              debugging_id=debugging_id,
+                              binary_response=binary_response)
             req = uri_opener.add_headers(req, headers or {})
             return uri_opener.send(req, grep=grep)
 
@@ -1175,7 +1185,9 @@ class ExtendedUrllib(object):
 
         from_cache = hasattr(res, 'from_cache') and res.from_cache
 
-        http_resp = HTTPResponse.from_httplib_resp(res, original_url=original_url_inst)
+        http_resp = HTTPResponse.from_httplib_resp(res,
+                                                   original_url=original_url_inst,
+                                                   binary_response=req.with_binary_response())
         http_resp.set_id(res.id)
         http_resp.set_from_cache(from_cache)
 

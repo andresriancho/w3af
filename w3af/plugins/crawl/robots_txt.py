@@ -52,40 +52,41 @@ class robots_txt(CrawlPlugin):
         robots_url = base_url.url_join('robots.txt')
         http_response = self._uri_opener.GET(robots_url, cache=True)
 
-        if not is_404(http_response):
-            # Save it to the kb!
-            desc = 'A robots.txt file was found at: "%s", this file might'\
-                   ' expose private URLs and requires a manual review. The'\
-                   ' scanner will add all URLs listed in this files to the'\
-                   ' analysis queue.'
-            desc =  desc % robots_url
-            
-            i = Info('robots.txt file', desc,
-                     http_response.id, self.get_name())
-            i.set_url(robots_url)
-            
-            kb.kb.append(self, 'robots.txt', i)
-            om.out.information(i.get_desc())
+        if is_404(http_response):
+            return
 
-            # Work with it...
-            dirs.append(robots_url)
-            for line in http_response.get_body().split('\n'):
+        # Save it to the kb!
+        desc = ('A robots.txt file was found at: "%s", this file might'
+                ' expose private URLs and requires a manual review. The'
+                ' scanner will add all URLs listed in this files to the'
+                ' analysis queue.')
+        desc %= robots_url
 
-                line = line.strip()
+        i = Info('robots.txt file', desc, http_response.id, self.get_name())
+        i.set_url(robots_url)
 
-                if len(line) > 0 and line[0] != '#' and \
-                    (line.upper().find('ALLOW') == 0 or
-                     line.upper().find('DISALLOW') == 0):
+        kb.kb.append(self, 'robots.txt', i)
+        om.out.information(i.get_desc())
 
-                    url = line[line.find(':') + 1:]
-                    url = url.strip()
-                    try:
-                        url = base_url.url_join(url)
-                    except:
-                        # Simply ignore the invalid URL
-                        pass
-                    else:
-                        dirs.append(url)
+        # Work with it...
+        dirs.append(robots_url)
+        for line in http_response.get_body().split('\n'):
+
+            line = line.strip()
+
+            if len(line) > 0 and line[0] != '#' and \
+                (line.upper().find('ALLOW') == 0 or
+                 line.upper().find('DISALLOW') == 0):
+
+                url = line[line.find(':') + 1:]
+                url = url.strip()
+                try:
+                    url = base_url.url_join(url)
+                except:
+                    # Simply ignore the invalid URL
+                    pass
+                else:
+                    dirs.append(url)
 
         self.worker_pool.map(self.http_get_and_parse, dirs)
 
