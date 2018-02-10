@@ -57,6 +57,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.3.15'),
                      # regular users too, do not remove!
                      PIPDependency('psutil', 'psutil', '2.2.1'),
 
+                     # Added for the crawl.ds_store plugin
+                     PIPDependency('ds_store', 'ds_store', '1.1.2'),
+
                      # Console colors
                      PIPDependency('termcolor', 'termcolor', '1.1.0'),
 
