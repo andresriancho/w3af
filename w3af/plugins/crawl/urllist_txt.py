@@ -50,31 +50,34 @@ class urllist_txt(CrawlPlugin):
         urllist_url = base_url.url_join('urllist.txt')
         http_response = self._uri_opener.GET(urllist_url, cache=True)
 
-        if not is_404(http_response):
-            if self._is_urllist_txt(base_url, http_response.get_body()):
-                # Save it to the kb!
-                desc = 'A urllist.txt file was found at: "%s", this file might'\
-                       ' expose private URLs and requires a manual review. The'\
-                       ' scanner will add all URLs listed in this files to the'\
-                       ' analysis queue.'
-                desc = desc % urllist_url
-                
-                i = Info('urllist.txt file', desc, http_response.id,
-                         self.get_name())
-                i.set_url(urllist_url)
-                
-                kb.kb.append(self, 'urllist.txt', i)
-                om.out.information(i.get_desc())
+        if is_404(http_response):
+            return
 
-            # Even in the case where it is NOT a valid urllist.txt it might be
-            # the case where some URLs are present, so I'm going to extract them
-            # from the file as if it is a valid urllist.txt
+        if not self._is_urllist_txt(base_url, http_response.get_body()):
+            return
 
-            url_generator = self._extract_urls_generator(base_url,
-                                                         http_response.get_body())
+        # Save it to the kb!
+        desc = ('A urllist.txt file was found at: "%s", this file might'
+                ' expose private URLs and requires a manual review. The'
+                ' scanner will add all URLs listed in this files to the'
+                ' analysis queue.')
+        desc %= urllist_url
 
-            # Send the requests using threads:
-            self.worker_pool.map(self.http_get_and_parse, url_generator)
+        i = Info('urllist.txt file', desc, http_response.id, self.get_name())
+        i.set_url(urllist_url)
+
+        kb.kb.append(self, 'urllist.txt', i)
+        om.out.information(i.get_desc())
+
+        # Even in the case where it is NOT a valid urllist.txt it might be
+        # the case where some URLs are present, so I'm going to extract them
+        # from the file as if it is a valid urllist.txt
+
+        url_generator = self._extract_urls_generator(base_url,
+                                                     http_response.get_body())
+
+        # Send the requests using threads:
+        self.worker_pool.map(self.http_get_and_parse, url_generator)
 
     def _is_urllist_txt(self, base_url, body):
         """

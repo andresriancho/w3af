@@ -53,14 +53,14 @@ class wsdl_finder(CrawlPlugin):
         url = fuzzable_request.get_url().uri2url()
         url_string = url.url_string
 
-        if url_string not in self._already_tested:
-            self._already_tested.add(url_string)
+        if url_string in self._already_tested:
+            return
 
-            wsdl_url_generator = self.wsdl_url_generator(url_string)
+        self._already_tested.add(url_string)
 
-            self.worker_pool.map(self._do_request,
-                                    wsdl_url_generator,
-                                    chunksize=1)
+        wsdl_url_generator = self.wsdl_url_generator(url_string)
+
+        self.worker_pool.map(self._do_request, wsdl_url_generator, chunksize=1)
 
     def wsdl_url_generator(self, url_string):
         for wsdl_parameter in self.WSDL:

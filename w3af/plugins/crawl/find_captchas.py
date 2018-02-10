@@ -54,17 +54,19 @@ class find_captchas(CrawlPlugin):
         """
         result, captchas = self._identify_captchas(fuzzable_request)
         
-        if result:
-            for captcha in captchas:
-                
-                desc = 'Found a CAPTCHA image at: "%s".' % captcha.img_src
-                response_ids = [response.id for response in captcha.http_responses]
-                
-                i = Info('Captcha image detected', desc, response_ids, self.get_name())
-                i.set_uri(captcha.img_src)
-    
-                kb.kb.append(self, 'CAPTCHA', i)
-                om.out.information(i.get_desc())
+        if not result:
+            return
+
+        for captcha in captchas:
+
+            desc = 'Found a CAPTCHA image at: "%s".' % captcha.img_src
+            response_ids = [response.id for response in captcha.http_responses]
+
+            i = Info('Captcha image detected', desc, response_ids, self.get_name())
+            i.set_uri(captcha.img_src)
+
+            kb.kb.append(self, 'CAPTCHA', i)
+            om.out.information(i.get_desc())
 
     def _identify_captchas(self, fuzzable_request):
         """

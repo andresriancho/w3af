@@ -76,7 +76,7 @@ class wordpress_enumerate_users(CrawlPlugin):
         domain_path = fuzzable_request.get_url().get_domain_path()
 
         # Loop into authors and increment user ID
-        while (gap <= gap_tolerance):
+        while gap <= gap_tolerance:
 
             uid += 1
             gap += 1
@@ -157,11 +157,12 @@ class wordpress_enumerate_users(CrawlPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds usernames in WordPress installations.
+        This plugin finds user names in WordPress installations.
 
-        The author's archive page is tried using "?author=ID" query and
-        incrementing the ID for each request until 404. If the response is a
-        redirect, the blog is affected by TALSOFT-2011-0526
+        The author's archive page is tried using "?author=ID" query and 
+        incrementing the ID for each request until a 404 response is received.
+        
+        If the response is a redirect, the blog is affected by TALSOFT-2011-0526
         (http://seclists.org/fulldisclosure/2011/May/493) advisory. If no
         redirect is done, the plugin will try to fetch the username from title.
         """
