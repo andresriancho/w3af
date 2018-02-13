@@ -75,6 +75,11 @@ PARSER_MEMORY_LIMIT = 'The parser exceeded the memory usage limit of'
 PARSER_PROCESS_MEMORY_LIMIT = re.compile('Using RLIMIT_AS memory usage limit (.*?) MB for new pool process')
 
 
+def _num_formatter(val, chars, delta, left=False):
+    align = '<' if left else ''
+    return '{:{}{}d}'.format(int(val), align, chars)
+
+
 def epoch_to_string(spent_time):
     time_delta = datetime.timedelta(seconds=spent_time)
 
@@ -185,6 +190,8 @@ def show_extended_urllib_error_rate(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Error rate'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -273,6 +280,8 @@ def show_parser_process_memory_limit(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Parser memory limit (MB)'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -328,6 +337,8 @@ def show_parser_errors(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Parser errors'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -376,6 +387,8 @@ def show_active_threads(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Thread count'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -418,6 +431,8 @@ def show_connection_pool_wait(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Waited time'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -434,6 +449,8 @@ def show_connection_pool_wait(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Count'
     fig.x_label = 'Time waiting for available TCP/IP connection'
     fig.set_x_limits(min_=0)
@@ -538,6 +555,8 @@ def show_consumer_pool_size(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Idle worker (%)'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -591,6 +610,8 @@ def show_worker_pool_size(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Worker pool size'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -654,6 +675,8 @@ def show_http_requests_over_time(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'HTTP requests'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -694,6 +717,8 @@ def show_timeout(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Socket timeout'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -721,6 +746,8 @@ def show_rtt_histo(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Count'
     fig.x_label = 'RTT'
     fig.set_x_limits(min_=0)
@@ -765,6 +792,8 @@ def show_queue_size_crawl(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Items in CrawlInfra queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -810,6 +839,8 @@ def show_queue_size_audit(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Items in Audit queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -854,6 +885,8 @@ def show_queue_size_grep(scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
     fig.y_label = 'Items in Grep queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
