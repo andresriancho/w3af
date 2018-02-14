@@ -408,14 +408,14 @@ class rfi(AuditPlugin):
         """
         ol = OptionList()
 
-        d = 'IP address that the webserver will use to receive requests'
-        h = 'w3af runs a webserver to serve the files to the target web'\
+        d = 'IP address that the web server will use to receive requests'
+        h = 'w3af runs a web server to serve the files to the target web'\
             ' application when doing remote file inclusions. This setting'\
-            ' configures where the webserver is going to listen for requests.'
+            ' configures where the web server is going to listen for requests.'
         o = opt_factory('listen_address', self._listen_address, d, STRING, help=h)
         ol.add(o)
 
-        d = 'TCP port that the webserver will use to receive requests'
+        d = 'TCP port that the web server will use to receive requests'
         o = opt_factory('listen_port', self._listen_port, d, PORT)
         ol.add(o)
 
@@ -430,7 +430,7 @@ class rfi(AuditPlugin):
         h = 'The plugin uses the target to decide whether to handle listen address'\
             ' as an IPv4 or IPv6 address'
         o = opt_factory('target', self._target, d, STRING, help=h)
-                        ol.add(o)
+        ol.add(o)
 
         return ol
 
