@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import socket
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af.core.controllers.misc.is_ip_address import is_ipv6_address, is_ip_address
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.misc.decorators import runonce
@@ -36,14 +36,9 @@ from w3af.core.data.kb.info import Info
 class dns_wildcard(InfrastructurePlugin):
     """
     Find out if www.site.com and site.com return the same page.
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    SIMPLE_IP_RE = re.compile('\d?\d?\d\.\d?\d?\d\.\d?\d?\d\.\d?\d?\d')
-
-    def __init__(self):
-        InfrastructurePlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
     def discover(self, fuzzable_request):
         """
@@ -52,35 +47,33 @@ class dns_wildcard(InfrastructurePlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
+        domain = fuzzable_request.get_url().get_domain()
 
         # Only do all this if this is a domain name!
-        if not self.SIMPLE_IP_RE.match(fuzzable_request.get_url().get_domain()):
+        if is_ip_address(domain):
+            return
 
-            base_url = fuzzable_request.get_url().base_url()
-            original_response = self._uri_opener.GET(base_url, cache=True)
+        if is_ipv6_address(domain):
+            return
 
-            domain = fuzzable_request.get_url().get_domain()
-            dns_wildcard_url = fuzzable_request.get_url().copy()
+        base_url = fuzzable_request.get_url().base_url()
+        original_response = self._uri_opener.GET(base_url, cache=True)
 
-            root_domain = base_url.get_root_domain()
-            if len(domain) > len(root_domain):
-                # Remove the last subdomain and test with that
-                domain_without_subdomain = '.'.join(domain.split('.')[1:])
-                dns_wildcard_url.set_domain(domain_without_subdomain)
-            else:
-                try:
-                    socket.gethostbyname(domain)
-                except socket.gaierror:
-                    # The target is not recognized as an IPv4 address or
-                    # domain name because it's a IPv6 address containing [ and
-                    # ].
-                    return
-                dns_wildcard_url.set_domain('foobar.' + domain)
+        domain = fuzzable_request.get_url().get_domain()
+        dns_wildcard_url = fuzzable_request.get_url().copy()
 
-            self._test_DNS(original_response, dns_wildcard_url)
-            self._test_IP(original_response, domain)
+        root_domain = base_url.get_root_domain()
+        if len(domain) > len(root_domain):
+            # Remove the last subdomain and test with that
+            domain_without_subdomain = '.'.join(domain.split('.')[1:])
+            dns_wildcard_url.set_domain(domain_without_subdomain)
+        else:
+            dns_wildcard_url.set_domain('foobar.' + domain)
 
-    def _test_IP(self, original_response, domain):
+        self._test_dns(original_response, dns_wildcard_url)
+        self._test_ip(original_response, domain)
+
+    def _test_ip(self, original_response, domain):
         """
         Check if http://ip(domain)/ == http://domain/
         """
@@ -114,7 +107,7 @@ class dns_wildcard(InfrastructurePlugin):
                 kb.kb.append(self, 'dns_wildcard', i)
                 om.out.information(i.get_desc())
 
-    def _test_DNS(self, original_response, dns_wildcard_url):
+    def _test_dns(self, original_response, dns_wildcard_url):
         """
         Check if http://www.domain.tld/ == http://domain.tld/
         """
