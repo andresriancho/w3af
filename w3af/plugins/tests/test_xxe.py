@@ -22,8 +22,11 @@ import re
 import urllib
 
 from lxml import etree
+from xml import sax
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.plugins.audit.xxe import xxe
+from mock import patch, PropertyMock
 
 
 test_config = {
@@ -57,6 +60,64 @@ class TestXXESimple(PluginTest):
 
     def test_found_xxe(self):
         self._scan(self.target_url, test_config)
+        vulns = self.kb.get('xxe', 'xxe')
+
+        self.assertEquals(1, len(vulns), vulns)
+
+        # Now some tests around specific details of the found vuln
+        vuln = vulns[0]
+
+        self.assertEquals('xml', vuln.get_token_name())
+        self.assertEquals('XML External Entity', vuln.get_name())
+
+
+class NoOpContentHandler(sax.ContentHandler):
+    def __init__(self):
+        sax.ContentHandler.__init__(self)
+        self.chars = ''
+
+    def startElement(self, name, attrs):
+        pass
+
+    def endElement(self, name):
+        pass
+
+    def characters(self, content):
+        self.chars += content
+
+
+class TestXXERemoteLoading(PluginTest):
+
+    target_url = 'http://mock/xxe.simple?xml='
+
+    class XXEMockResponse(MockResponse):
+        def get_response(self, http_request, uri, response_headers):
+            uri = urllib.unquote(uri)
+            xml = uri[uri.find('=') + 1:]
+
+            # A very vulnerable parser that loads remote files over https
+            handler = NoOpContentHandler()
+
+            try:
+                sax.parseString(xml, handler)
+            except Exception, e:
+                body = str(e)
+            else:
+                body = handler.chars
+
+            return self.status, response_headers, body
+
+    MOCK_RESPONSES = [XXEMockResponse(re.compile('.*'), body=None,
+                                      method='GET', status=200)]
+
+    def test_found_xxe_with_remote(self):
+
+        # Use this mock to make sure that the vulnerability is found using
+        # remote loading
+        with patch('w3af.plugins.audit.xxe.xxe.LINUX_FILES') as linux_mock:
+            linux_mock.return_value = []
+            self._scan(self.target_url, test_config)
+
         vulns = self.kb.get('xxe', 'xxe')
 
         self.assertEquals(1, len(vulns), vulns)

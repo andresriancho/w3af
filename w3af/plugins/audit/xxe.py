@@ -49,6 +49,13 @@ class xxe(AuditPlugin):
         '/etc/passwd',
     ]
 
+    REMOTE_FILES = [
+        'http://w3af.org/xxe.txt'
+    ]
+
+    # This is the only content stored in the https://w3af.org/xxe.txt file
+    REMOTE_SUCCESS = '667067323'
+
     ENTITY_DEF = '<!DOCTYPE xxe_test [ <!ENTITY xxe_test SYSTEM "%s"> ]>'
     ENTITY = '&xxe_test;'
 
@@ -85,6 +92,7 @@ class xxe(AuditPlugin):
         'No declaration for element',
 
         # libxml and python
+        'failed to load external entity',
         'Start tag expected',
         'Invalid URI: file:///',
         'Malformed declaration expecting version',
@@ -154,7 +162,9 @@ class xxe(AuditPlugin):
         # First we send the generic tests, which don't take the original value
         # into account and are likely to work on some cases
         #
-        for file_name in itertools.chain(self.WINDOWS_FILES, self.LINUX_FILES):
+        for file_name in itertools.chain(self.WINDOWS_FILES,
+                                         self.LINUX_FILES,
+                                         self.REMOTE_FILES):
             for payload in self.GENERIC_PAYLOADS:
                 yield payload % file_name
 
@@ -198,7 +208,8 @@ class xxe(AuditPlugin):
             tag_orig = tag.text
             tag.text = self.TOKEN_XXE
 
-            for file_name in itertools.chain(self.WINDOWS_FILES, self.LINUX_FILES):
+            for file_name in itertools.chain(self.WINDOWS_FILES,
+                                             self.LINUX_FILES):
                 dtd = self.ENTITY_DEF % file_name
                 xml_body = etree.tostring(xml_root).replace(self.TOKEN_XXE, self.ENTITY)
                 yield dtd + xml_body
@@ -279,10 +290,10 @@ class xxe(AuditPlugin):
         orig_resp_body = mutant.get_original_response_body()
         body = response.get_body()
 
-        for file_pattern_match in self.file_pattern_multi_in.query(body):
+        for pattern_match in self._find_patterns(body):
 
             # Remove false positives
-            if file_pattern_match in orig_resp_body:
+            if pattern_match in orig_resp_body:
                 continue
 
             # Only report vulnerabilities once
@@ -296,7 +307,7 @@ class xxe(AuditPlugin):
             v = Vuln.from_mutant('XML External Entity', desc, severity.HIGH,
                                  response.id, self.get_name(), mutant)
 
-            v.add_to_highlight(file_pattern_match)
+            v.add_to_highlight(pattern_match)
 
             self.kb_append_uniq(self, 'xxe', v)
             return
@@ -328,6 +339,19 @@ class xxe(AuditPlugin):
 
             self.kb_append_uniq(self, 'errors', v)
             return
+
+    def _find_patterns(self, body):
+        """
+        Find the patterns we need to confirm the vulnerability
+
+        :param body: The HTTP response body
+        :yield: All the patterns we find
+        """
+        if self.REMOTE_SUCCESS in body:
+            yield self.REMOTE_SUCCESS
+
+        for file_pattern_match in self.file_pattern_multi_in.query(body):
+            yield file_pattern_match
 
     def get_long_desc(self):
         """
