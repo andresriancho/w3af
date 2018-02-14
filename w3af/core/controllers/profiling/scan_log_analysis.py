@@ -440,6 +440,8 @@ def show_connection_pool_wait(scan):
     fig.set_y_limits(min_=0)
     fig.color_mode = 'byte'
 
+    print('Time waiting for available TCP/IP connection')
+    print('')
     print(plotille.hist(connection_pool_waits, bins=25))
     print('')
     print('')
@@ -727,11 +729,9 @@ def show_rtt_histo(scan):
     fig.set_y_limits(min_=0)
     fig.color_mode = 'byte'
 
-    fig.histogram(rtts, bins=60)
-
     print('RTT Histogram')
     print('')
-    print(fig.show())
+    print(plotille.hist(rtts, bins=25))
     print('')
     print('')
 
