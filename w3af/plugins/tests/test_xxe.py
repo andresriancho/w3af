@@ -140,3 +140,52 @@ class TestXXENegativeNoError(PluginTest):
 
         self.assertEquals(0, len(vulns), vulns)
         self.assertEquals(0, len(errors), errors)
+
+
+class TestXXEInParameter(PluginTest):
+
+    XML_NOTE = ('<note>'
+                '<to>Tove</to>'
+                '<from>Jani</from>'
+                '<heading>Reminder</heading>'
+                '<body>Forget me this weekend!</body>'
+                '</note>')
+
+    target_url = 'http://mock/xxe.simple?xml=%s' % XML_NOTE
+
+    class XXEMockResponse(MockResponse):
+        def get_response(self, http_request, uri, response_headers):
+            uri = urllib.unquote(uri)
+            xml = uri[uri.find('=') + 1:]
+
+            # A very vulnerable parser
+            parser = etree.XMLParser(load_dtd=True,
+                                     no_network=False,
+                                     resolve_entities=True)
+
+            try:
+                root = etree.fromstring(str(xml), parser=parser)
+            except Exception, e:
+                body = str(e)
+                return self.status, response_headers, body
+
+            for tag in root.iter():
+                if tag.tag == 'from':
+                    return self.status, response_headers, tag.text
+
+            return self.status, response_headers, 'Invalid XML.'
+
+    MOCK_RESPONSES = [XXEMockResponse(re.compile('.*'), body=None,
+                                      method='GET', status=200)]
+
+    def test_found_xxe(self):
+        self._scan(self.target_url, test_config)
+        vulns = self.kb.get('xxe', 'xxe')
+
+        self.assertEquals(1, len(vulns), vulns)
+
+        # Now some tests around specific details of the found vuln
+        vuln = vulns[0]
+
+        self.assertEquals('xml', vuln.get_token_name())
+        self.assertEquals('XML External Entity', vuln.get_name())
