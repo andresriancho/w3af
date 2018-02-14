@@ -94,6 +94,12 @@ class xxe(AuditPlugin):
         'ParseError',
         'nokogiri',
         'REXML',
+
+        # golang
+        'XML syntax error on line',
+        'Error unmarshaling XML',
+        'conflicts with field',
+        'illegal character code'
     ]
 
     file_pattern_multi_in = MultiIn(FILE_PATTERNS)
