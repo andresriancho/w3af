@@ -49,6 +49,12 @@ class PlainContainer(DataContainer):
     def __contains__(self, item):
         return False
 
+    def get_plain_data(self):
+        return self.plain_data
+
+    def set_plain_data(self, plain_data):
+        self.plain_data = plain_data
+
     @classmethod
     def from_postdata(cls, headers, post_data):
         content_type, _ = headers.iget('content-type', None)
