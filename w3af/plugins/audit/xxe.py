@@ -107,6 +107,12 @@ class xxe(AuditPlugin):
         'Error unmarshaling XML',
         'conflicts with field',
         'illegal character code'
+        
+        # .NET
+        'XML Parsing Error',
+        'SyntaxError',
+        'no root element',
+        'not well-formed',
     ]
 
     MAX_XML_PARAM_MUTANTS = 5
