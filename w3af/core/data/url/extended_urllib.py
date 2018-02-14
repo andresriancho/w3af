@@ -64,7 +64,8 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           TIMEOUT_ADJUST_LIMIT,
                                           TIMEOUT_MIN, DEFAULT_TIMEOUT,
                                           ACCEPTABLE_ERROR_RATE,
-                                          ERROR_DELAY_LIMIT)
+                                          ERROR_DELAY_LIMIT,
+                                          MAX_TIMEOUT)
 
 
 class ExtendedUrllib(object):
@@ -178,6 +179,7 @@ class ExtendedUrllib(object):
         Sets the timeout to use in HTTP requests, usually called by the auto
         timeout adjust feature in extended_urllib.py
         """
+        timeout = min(MAX_TIMEOUT, timeout)
         msg = 'Updating socket timeout for %s from %s to %s seconds'
         om.out.debug(msg % (host, self.get_timeout(host), timeout))
 
