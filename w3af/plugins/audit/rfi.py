@@ -40,6 +40,7 @@ from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.controllers.misc.is_ip_address import is_ipv6_address
 
 
 CONFIG_OK = 'Ok'
@@ -76,8 +77,9 @@ class rfi(AuditPlugin):
         self._vulns = []
 
         # User configured parameters
+        self._target = ''
         self._listen_port = ports.REMOTEFILEINCLUDE
-        self._listen_address = get_local_ip() or ''
+        self._listen_address = get_local_ip(self._target) or ''
         self._use_w3af_site = True
 
     def audit(self, freq, orig_response):
@@ -173,7 +175,10 @@ class rfi(AuditPlugin):
                     return True, CONFIG_OK
 
                 # Test if it's possible to bind the address
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                if is_ipv6_address(listen_address):
+                    s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+                else:
+                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 bind_args = (listen_address, listen_port)
                 try:
@@ -421,6 +426,12 @@ class rfi(AuditPlugin):
         o = opt_factory('use_w3af_site', self._use_w3af_site, d, BOOL, help=h)
         ol.add(o)
 
+        d = 'Target domain to bind for remote file inclusion test'
+        h = 'The plugin uses the target to decide whether to handle listen address'\
+            ' as an IPv4 or IPv6 address'
+        o = opt_factory('target', self._target, d, STRING, help=h)
+                        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -434,6 +445,10 @@ class rfi(AuditPlugin):
         self._listen_address = options_list['listen_address'].get_value()
         self._listen_port = options_list['listen_port'].get_value()
         self._use_w3af_site = options_list['use_w3af_site'].get_value()
+        self._target = options_list['target'].get_value()
+
+        if self._target:
+            self._listen_address = get_local_ip(self._target)
 
         config_ok, config_message = self._correctly_configured()
 

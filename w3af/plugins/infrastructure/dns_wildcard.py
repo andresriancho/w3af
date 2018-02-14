@@ -68,6 +68,13 @@ class dns_wildcard(InfrastructurePlugin):
                 domain_without_subdomain = '.'.join(domain.split('.')[1:])
                 dns_wildcard_url.set_domain(domain_without_subdomain)
             else:
+                try:
+                    socket.gethostbyname(domain)
+                except socket.gaierror:
+                    # The target is not recognized as an IPv4 address or
+                    # domain name because it's a IPv6 address containing [ and
+                    # ].
+                    return
                 dns_wildcard_url.set_domain('foobar.' + domain)
 
             self._test_DNS(original_response, dns_wildcard_url)

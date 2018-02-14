@@ -66,10 +66,15 @@ class hmap(InfrastructurePlugin):
             port = 80
             ssl = False
 
-        # Override the defaults
-        if server.count(':'):
-            port = int(server.split(':')[1])
-            server = server.split(':')[0]
+        # Fix for IPv6 address - remove brackets
+        if server[0] == '[' and server[-1] == ']':
+            server = server.replace('[', '')
+            server = server.replace(']', '')
+        else:
+            # Override the defaults
+            if server.count(':'):
+                port = int(server.split(':')[1])
+                server = server.split(':')[0]
 
         try:
             results = originalHmap.testServer(ssl, server, port, 1,

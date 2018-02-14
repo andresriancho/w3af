@@ -19,6 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import socket
+
+
 def is_ip_address(address):
     if not isinstance(address, basestring):
         return False
@@ -34,4 +37,11 @@ def is_ip_address(address):
         if not 0 <= int(item) <= 255:
             return False
 
+    return True
+
+def is_ipv6_address(address):
+    try:
+        socket.inet_pton(socket.AF_INET6, address)
+    except socket.error:
+        return False
     return True
