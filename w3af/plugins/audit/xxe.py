@@ -166,10 +166,10 @@ class xxe(AuditPlugin):
         #
         xml_root = self._parse_xml(original_value)
         if xml_root is not None:
-            for mutant in self._create_xml_mutants(xml_root):
-                yield mutant
+            for payload in self._create_xml_payloads(xml_root):
+                yield payload
 
-    def _create_xml_mutants(self, xml_root):
+    def _create_xml_payloads(self, xml_root):
         """
         This method receives the XML as captured by w3af during crawling and
         modifies it to add entities which will inject file contents
@@ -232,8 +232,9 @@ class xxe(AuditPlugin):
 
         return xml_root
 
-    def _injectable_mutants_iterator(self, mutants):
+    def _injectable_mutants_iterator(self, freq, mutants):
         """
+        :param freq: The fuzzable request
         :param mutants: All the mutants
         :yield: Only the mutants that need to be tested
         """
@@ -261,7 +262,7 @@ class xxe(AuditPlugin):
         mutants = create_mutants(freq, [''], orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                      self._injectable_mutants_iterator(mutants),
+                                      self._injectable_mutants_iterator(freq, mutants),
                                       self._analyze_result,
                                       debugging_id=debugging_id)
 
