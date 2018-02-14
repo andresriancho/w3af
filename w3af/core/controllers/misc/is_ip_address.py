@@ -39,6 +39,7 @@ def is_ip_address(address):
 
     return True
 
+
 def is_ipv6_address(address):
     try:
         socket.inet_pton(socket.AF_INET6, address)
