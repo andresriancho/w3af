@@ -180,7 +180,7 @@ class ExtendedUrllib(object):
         timeout adjust feature in extended_urllib.py
         """
         timeout = min(MAX_TIMEOUT, timeout)
-        msg = 'Updating socket timeout for %s from %s to %s seconds'
+        msg = 'Updating socket timeout for %s from %.2f to %.2f seconds'
         om.out.debug(msg % (host, self.get_timeout(host), timeout))
 
         self._host_timeout[host] = timeout
