@@ -398,9 +398,24 @@ class URL(DiskItem):
         http://host.tld/foo/bar could also be found by the web_spider
         plugin, so we are analyzing the same thing twice.
         """
+        ipv6 = False
+
         # net location normalization:
         net_location = self.get_net_location()
         protocol = self.get_protocol()
+
+        # IPv6 address
+        if net_location.startswith('['):
+            ipv6 = True
+            host = re.search(r'\[(.*)\]', net_location).group(1)
+
+            # net_location contains ']:'
+            if re.match('^.*\]:(.*)$', net_location):
+                port = re.search(r'\]:(.*)', net_location).group(1)
+            elif protocol == 'http':
+                port = '80'
+            elif protocol == 'https':
+                port = '443'
 
         # We may have auth URLs like <http://user:passwd@host.tld:80>.
         # Notice the ":" duplication. We'll be interested in transforming
@@ -409,10 +424,11 @@ class URL(DiskItem):
         colon_symb_max_index = net_location.rfind(':')
         
         # Found
-        if colon_symb_max_index > at_symb_index:
+        if colon_symb_max_index > at_symb_index or ipv6:
 
-            host = net_location[:colon_symb_max_index]
-            port = net_location[(colon_symb_max_index + 1):]
+            if not ipv6:
+                host = net_location[:colon_symb_max_index]
+                port = net_location[(colon_symb_max_index + 1):]
 
             if not port:
                 msg = 'Expected protocol number, got an empty string instead.'
@@ -457,8 +473,12 @@ class URL(DiskItem):
         #       test_url.py -> test_url_in_filename
         #       https://github.com/andresriancho/w3af/issues/475
         #
-        fixed_url = urlparse.urlunparse((protocol, net_location, self.path,
-                                         self.params, '', self.fragment))
+        if ipv6:
+            fixed_url = urlparse.urlunparse((protocol, '[' + net_location + ']', self.path,
+                                             self.params, '', self.fragment))
+        else:
+            fixed_url = urlparse.urlunparse((protocol, net_location, self.path,
+                                             self.params, '', self.fragment))
 
         # "re-init" the object
         (self.scheme, self.netloc, self.path,

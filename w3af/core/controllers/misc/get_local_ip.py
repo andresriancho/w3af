@@ -34,7 +34,10 @@ def get_local_ip(target=None):
     """
     connect_target = '4.4.4.2' if target is None else target
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if is_ipv6_address(connect_target):
+            sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+        else:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         #   UDP is connection-less, no packets are sent to 4.4.4.2
         #   I use port 80, but could use any port
         sock.connect((connect_target, 80))
