@@ -173,9 +173,9 @@ class AuditPlugin(Plugin):
         :param mutant: A Mutant sub-class.
         :param varname: Typically the name of the injection parameter.
         :param pname: The name of the plugin that presumably reported
-            the vulnerability. Defaults to self.name.
+                      the vulnerability. Defaults to self.name.
         :param kb_varname: The name of the variable in the kb, where
-            the vulnerability was saved. Defaults to self.name.
+                           the vulnerability was saved. Defaults to self.name.
         """
         with self._plugin_lock:
             pname = pname or self.get_name()
