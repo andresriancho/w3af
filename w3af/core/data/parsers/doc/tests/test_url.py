@@ -397,90 +397,103 @@ class TestURLParser(unittest.TestCase):
     #
     #    normalize_url
     #
-    def normalize_url_case01(self):
+    def test_normalize_url_case01(self):
         u = URL('http://host.tld:80/foo/bar')
         u.normalize_url()
         self.assertEqual(u.url_string, u'http://host.tld/foo/bar')
 
-    def normalize_url_case02(self):
+    def test_normalize_url_case02(self):
         u = URL('https://host.tld:443/foo/bar')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'https://host.tld/foo/bar')
 
-    def normalize_url_case03(self):
+    def test_normalize_url_case03(self):
         u = URL('https://host.tld:443////////////////')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'https://host.tld/')
 
-    def normalize_url_case04(self):
+    def test_normalize_url_case04(self):
         u = URL('https://host.tld:443////////////////?id=3&bar=4')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'https://host.tld/?id=3&bar=4')
 
-    def normalize_url_case05(self):
+    def test_normalize_url_case05(self):
         u = URL('http://w3af.com/../f00.b4r?id=3&bar=4')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r?id=3&bar=4')
 
-    def normalize_url_case06(self):
+    def test_normalize_url_case06(self):
         u = URL('http://w3af.com/f00.b4r?id=3&bar=//')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r?id=3&bar=//')
 
-    def normalize_url_case07(self):
+    def test_normalize_url_case07(self):
         u = URL('http://user:passwd@host.tld:80')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://user:passwd@host.tld/')
 
-    def normalize_url_case08_collapse_root(self):
+    def test_normalize_url_case08_collapse_root(self):
         u = URL('http://w3af.com/../f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r')
 
-    def normalize_url_case09_collapse_path(self):
+    def test_normalize_url_case09_collapse_path(self):
         u = URL('http://w3af.com/abc/../f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r')
 
-    def normalize_url_case10_collapse_double_slash(self):
+    def test_normalize_url_case10_collapse_double_slash(self):
         u = URL('http://w3af.com/a//b/f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/a/b/f00.b4r')
 
-    def normalize_url_case11_double_dotdot_root(self):
+    def test_normalize_url_case11_double_dotdot_root(self):
         u = URL('http://w3af.com/../../f00.b4r')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r')
 
-    def normalize_url_dotdot_in_qs(self):
+    def test_normalize_url_dotdot_in_qs(self):
         u = URL('http://w3af.com/f00.b4r?id=/../spam.py')
         u.normalize_url()
         self.assertEqual(u.url_string,
                          u'http://w3af.com/f00.b4r?id=/../spam.py')
 
-    def normalize_url_case12(self):
-        # IPv6 support
-        u = URL('http://fe80:0:0:0:202:b3ff:fe1e:8329/')
-        u.normalize_url()
-        self.assertEqual(u.url_string,
-                         u'http://fe80:0:0:0:202:b3ff:fe1e:8329/')
-
-    def normalize_url_case13(self):
+    def test_normalize_url_case13(self):
         u = URL('http://host.tld:80/foo/bar')
         orig_id = id(u.querystring)
         u.normalize_url()
 
         self.assertEqual(orig_id, id(u.querystring))
+
+    def test_normalize_url_ipv6_1(self):
+        # IPv6 support
+        u = URL('http://[fe80:0:0:0:202:b3ff:fe1e:8329]/')
+        u.normalize_url()
+        self.assertEqual(u.url_string, u'http://[fe80:0:0:0:202:b3ff:fe1e:8329]/')
+
+    def test_normalize_url_ipv6_2(self):
+        # IPv6 support with port
+        u = URL('http://[fe80:0:0:0:202:b3ff:fe1e:8329]:80/')
+        u.normalize_url()
+        self.assertEqual(u.url_string, u'http://[fe80:0:0:0:202:b3ff:fe1e:8329]/')
+        self.assertEqual(u.get_port(), 80)
+
+    def test_normalize_url_ipv6_3(self):
+        # IPv6 support with port
+        u = URL('http://user:host@[fe80:0:0:0:202:b3ff:fe1e:8329]:81/')
+        u.normalize_url()
+        self.assertEqual(u.url_string, u'http://user:host@[fe80:0:0:0:202:b3ff:fe1e:8329]/')
+        self.assertEqual(u.get_port(), 81)
 
     #
     #    __str__

@@ -29,7 +29,7 @@ from functools import wraps
 from ruamel.ordereddict import ordereddict as OrderedDict
 from tldextract import TLDExtract
 
-from w3af.core.controllers.misc.is_ip_address import is_ip_address
+from w3af.core.controllers.misc.is_ip_address import is_ip_address, is_ipv6_address
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
@@ -173,6 +173,8 @@ class URL(DiskItem):
     """
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
+
+    IPV6_HOST_RE = re.compile('\[(.*?)\](:(\d{1,5}))?')
 
     __slots__ = ('_querystr',
                  '_cache',
@@ -398,20 +400,34 @@ class URL(DiskItem):
         http://host.tld/foo/bar could also be found by the web_spider
         plugin, so we are analyzing the same thing twice.
         """
-        ipv6 = False
-
         # net location normalization:
         net_location = self.get_net_location()
         protocol = self.get_protocol()
 
-        # IPv6 address
-        if net_location.startswith('['):
-            ipv6 = True
-            host = re.search(r'\[(.*)\]', net_location).group(1)
+        #
+        # IPv6 address handling
+        #
+        ipv6 = False
 
-            # net_location contains ']:'
-            if re.match('^.*\]:(.*)$', net_location):
-                port = re.search(r'\]:(.*)', net_location).group(1)
+        if net_location.startswith('['):
+            ipv6_match = re.search(self.IPV6_HOST_RE, net_location)
+
+            if not ipv6_match:
+                msg = 'Net location started with [ but is not a valid IPv6 address.'
+                raise ValueError(msg)
+
+            host = ipv6_match.group(1)
+
+            if not is_ipv6_address(host):
+                msg = 'Net location used [] notation but host is not a valid IPv6 address.'
+                raise ValueError(msg)
+
+            # Only use ipv6 if the host is valid
+            ipv6 = True
+
+            # net_location contains ']:' and specifies port
+            if len(ipv6_match.groups()) == 3:
+                port = ipv6_match.group(2)
             elif protocol == 'http':
                 port = '80'
             elif protocol == 'https':
@@ -431,22 +447,21 @@ class URL(DiskItem):
                 port = net_location[(colon_symb_max_index + 1):]
 
             if not port:
-                msg = 'Expected protocol number, got an empty string instead.'
+                msg = 'Expected port number, got an empty string instead.'
                 raise ValueError(msg)
 
-            # Assign default port if nondigit.
+            # Raise an exception if port is not a digit
             if not port.isdigit():
-                msg = 'Expected protocol number, got "%s" instead.'
+                msg = 'Expected port number, got "%s" instead.'
                 raise ValueError(msg % port)
 
             if int(port) > 65535 or int(port) < 1:
-                msg = ('Invalid TCP port "%s", expected a number in range'
-                       ' 1-65535.')
+                msg = 'Invalid TCP port "%s", expected a number in range 1-65535.'
                 raise ValueError(msg % port)
             
             # Collapse port
             if (protocol == 'http' and port == '80') or \
-            (protocol == 'https' and port == '443'):
+               (protocol == 'https' and port == '443'):
                 net_location = host
             else:
                 # The net location has a specific port definition
@@ -474,7 +489,8 @@ class URL(DiskItem):
         #       https://github.com/andresriancho/w3af/issues/475
         #
         if ipv6:
-            fixed_url = urlparse.urlunparse((protocol, '[' + net_location + ']', self.path,
+            net_location = '[%s]:%s' % (host, port)
+            fixed_url = urlparse.urlunparse((protocol, net_location, self.path,
                                              self.params, '', self.fragment))
         else:
             fixed_url = urlparse.urlunparse((protocol, net_location, self.path,
