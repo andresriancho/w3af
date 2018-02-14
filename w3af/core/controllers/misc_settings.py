@@ -66,6 +66,7 @@ class MiscSettings(Configurable):
         cf.cf.save('form_fuzzing_mode', 'tmb')
 
         cf.cf.save('max_discovery_time', 120)
+        cf.cf.save('max_discovery_urls', 0)
 
         cf.cf.save('msf_location', '/opt/metasploit3/bin/')
 
@@ -181,6 +182,11 @@ class MiscSettings(Configurable):
                           desc, INT, help=h, tabid='Core settings')
         ol.add(opt)
 
+        desc = 'Maximum URLs to crawl'
+        opt = opt_factory('max_discovery_urls', cf.cf.get('max_discovery_urls'),
+                          desc, INT, tabid='Core settings')
+        ol.add(opt)
+
         #
         # Network parameters
         #
@@ -255,9 +261,10 @@ class MiscSettings(Configurable):
         to_save = ('fuzz_cookies', 'fuzz_form_files', 'fuzz_url_filenames',
                    'fuzz_url_parts', 'fuzzed_files_extension',
                    'form_fuzzing_mode', 'max_discovery_time',
-                   'fuzzable_headers', 'interface', 'local_ip_address',
-                   'msf_location', 'stop_on_first_exception',
-                   'non_targets', 'form_id_action', 'form_id_list')
+                   'max_discovery_urls', 'fuzzable_headers', 'interface',
+                   'local_ip_address', 'msf_location',
+                   'stop_on_first_exception', 'non_targets', 'form_id_action',
+                   'form_id_list')
 
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())

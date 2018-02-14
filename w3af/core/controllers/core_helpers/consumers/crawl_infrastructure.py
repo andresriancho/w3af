@@ -46,19 +46,23 @@ class crawl_infrastructure(BaseConsumer):
     """
 
     def __init__(self, crawl_infrastructure_plugins, w3af_core,
-                 max_discovery_time):
+                 max_discovery_time, max_discover_urls):
         """
         :param crawl_infrastructure_plugins: Instances of crawl_infrastructure
                                              plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param max_discovery_time: The max time (in seconds) to use for the
                                    discovery phase
+        :param max_discover_urls: The amount of URLs to crawl in discovery
+                                  phase.
         """
         super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
                                                    w3af_core,
                                                    thread_name='CrawlInfra',
                                                    max_pool_queued_tasks=100)
         self._max_discovery_time = int(max_discovery_time)
+        self._max_discover_urls = int(max_discover_urls)
+        self._tested_urls = 0
 
         # For filtering fuzzable requests found by plugins:
         self._variant_db = VariantDB()
@@ -314,6 +318,12 @@ class crawl_infrastructure(BaseConsumer):
         if not self._running:
             return True
 
+        if self._max_discover_urls and self._tested_urls >= self._max_discover_urls:
+            msg = ('Maximum crawl URL limit (%d) hit, no new URLs will be '
+                   'added to the queue.')
+            om.out.information(msg % self._max_discover_urls)
+            return True
+
         if self._w3af_core.status.get_run_time() > self._max_discovery_time:
             if self._report_max_time:
                 self._report_max_time = False
@@ -413,8 +423,9 @@ class crawl_infrastructure(BaseConsumer):
         # https://github.com/andresriancho/w3af/issues/8496
         url = fuzzable_request.get_url()
         if self._reported_found_urls.add(url):
-            msg = 'New URL found by %s plugin: "%s"'
-            args = (plugin.get_name(), url)
+            self._tested_urls += 1
+            msg = 'New URL found by %s plugin (%d): "%s"'
+            args = (plugin.get_name(), self._tested_urls, url)
             om.out.information(msg % args)
 
         return True
