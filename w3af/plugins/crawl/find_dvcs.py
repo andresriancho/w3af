@@ -202,7 +202,7 @@ class find_dvcs(CrawlPlugin):
         else:
             return set()
 
-        for _ in range(0, index_entries):
+        for _ in xrange(index_entries):
             offset += filename_offset - 1
             length, = struct.unpack('>B', body[offset:offset + 1])
             if length > (len(body) - offset):
@@ -250,7 +250,7 @@ class find_dvcs(CrawlPlugin):
 
         body = body.split('\x00')
         found = True
-        for offset in range(0, len(body)):
+        for offset in xrange(len(body)):
             filename = body[offset - 2]
             if body[offset] == 'd':
                 if found:

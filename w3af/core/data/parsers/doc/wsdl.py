@@ -132,7 +132,7 @@ class WSDLParser(object):
         else:
             res = []
             inps = self._proxy.methods[methodName].inparams
-            for param in range(len(inps)):
+            for param in xrange(len(inps)):
                 details = inps[param]
                 parameterObject = parameter()
                 parameterObject.set_name(str(details.name))
