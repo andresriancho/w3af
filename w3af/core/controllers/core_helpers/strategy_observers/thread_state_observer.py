@@ -153,30 +153,39 @@ class ThreadStateObserver(StrategyObserver):
         #
         #   Write the detailed information
         #
+        idle_workers = []
+
         for worker_state in inspect_data:
             if worker_state['idle']:
-                message = 'Worker with ID %s(%s) is idle.'
-                message %= (worker_state['name'],
-                            worker_state['worker_id'])
+                idle_workers.append(worker_state)
+                continue
 
-            else:
-                spent = time.time() - worker_state['start_time']
-                args_str = ', '.join(smart_str_ignore(repr(arg)) for arg in worker_state['args'])
-                kwargs_str = smart_str_ignore(worker_state['kwargs'])
+            spent = time.time() - worker_state['start_time']
+            args_str = ', '.join(smart_str_ignore(repr(arg)) for arg in worker_state['args'])
+            kwargs_str = smart_str_ignore(worker_state['kwargs'])
 
-                func_name = smart_str_ignore(worker_state['func_name'])
-                func_name = self.clean_function_name(func_name)
+            func_name = smart_str_ignore(worker_state['func_name'])
+            func_name = self.clean_function_name(func_name)
 
-                message = ('Worker with ID %s(%s) has been running job %s for %.2f seconds.'
-                           ' The job is: %s(%s, kwargs=%s)')
-                message %= (worker_state['name'],
-                            worker_state['worker_id'],
-                            worker_state['job'],
-                            spent,
-                            func_name,
-                            args_str,
-                            kwargs_str)
+            message = ('Worker with ID %s(%s) has been running job %s for %.2f seconds.'
+                       ' The job is: %s(%s, kwargs=%s)')
+            message %= (worker_state['name'],
+                        worker_state['worker_id'],
+                        worker_state['job'],
+                        spent,
+                        func_name,
+                        args_str,
+                        kwargs_str)
 
+            self.write_to_log(message)
+
+        #
+        #   Write the idle workers all together at the end, this makes
+        #   the log easier to read
+        #
+        for worker_state in idle_workers:
+            message = 'Worker with ID %s(%s) is idle.'
+            message %= (worker_state['name'], worker_state['worker_id'])
             self.write_to_log(message)
 
         #
