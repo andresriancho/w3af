@@ -498,7 +498,7 @@ class FormParameters(OrderedDict):
             if variants_total > self.TOP_VARIANTS:
                 # Inform user
                 msg = ('w3af found an HTML form that has several'
-                       'checkbox, radio and select input tags inside.'
+                       ' checkbox, radio and select input tags inside.'
                        ' Testing all combinations of those values would'
                        ' take too much time, the framework will only'
                        ' test %s randomly distributed variants.')
