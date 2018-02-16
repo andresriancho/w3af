@@ -1,6 +1,6 @@
 {
     "1": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkxCnRwMgpScDMKLg==",
-          "offset": 17},
+          "offsets": [17]},
     "2": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkyMgp0cDIKUnAzCi4=",
-          "offset": 17}
+          "offsets": [17]}
 }

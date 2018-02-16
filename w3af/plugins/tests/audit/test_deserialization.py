@@ -226,22 +226,17 @@ class TestJSONPayloadIsValid(unittest.TestCase):
                     self.assertIn('2', data)
 
                     self.assertIn('payload', data['1'])
-                    self.assertIn('offset', data['1'])
+                    self.assertIn('offsets', data['1'])
 
                     self.assertIn('payload', data['2'])
-                    self.assertIn('offset', data['2'])
+                    self.assertIn('offsets', data['2'])
 
-                    payload_1 = base64.b64decode(data['1']['payload'])
-                    payload_2 = base64.b64decode(data['2']['payload'])
+                    for delay_len in [1, 2]:
+                        for offset in data[str(delay_len)]['offsets']:
+                            self.assertIsInstance(offset, int)
 
-                    offset_1 = data['1']['offset']
-                    offset_2 = data['2']['offset']
-
-                    self.assertIsInstance(offset_1, int)
-                    self.assertIsInstance(offset_2, int)
-
-                    self.assertGreater(len(payload_1), offset_1)
-                    self.assertGreater(len(payload_2), offset_2)
+                            payload = base64.b64decode(data[str(delay_len)]['payload'])
+                            self.assertGreater(len(payload), offset)
 
                     loaded_payloads += 1
 
@@ -252,9 +247,9 @@ class TestExactDelay(unittest.TestCase):
     def test_get_payload(self):
         payload = {
             "1": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkxCnRwMgpScDMKLg==",
-                  "offset": 17},
+                  "offsets": [17]},
             "2": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkyMgp0cDIKUnAzCi4=",
-                  "offset": 17}
+                  "offsets": [17]}
         }
 
         ed = B64DeserializationExactDelay(payload)

@@ -251,9 +251,9 @@ class DeserializationExactDelay(ExactDelay):
         payload = data_for_delay_len['payload']
         payload = base64.b64decode(payload)
 
-        offset = data_for_delay_len['offset']
+        offsets = data_for_delay_len['offsets']
 
-        return payload, offset
+        return payload, offsets
 
     def get_string_for_delay(self, seconds):
         """
@@ -262,8 +262,15 @@ class DeserializationExactDelay(ExactDelay):
         """
         seconds = str(seconds)
         delay_len = len(seconds)
-        payload, offset = self._get_payload_and_offset(delay_len)
-        return payload[:offset] + seconds + payload[offset + delay_len:]
+
+        payload, offsets = self._get_payload_and_offset(delay_len)
+        payload_lst = list(payload)
+
+        for offset in offsets:
+            for i, second_i in enumerate(seconds):
+                payload_lst[offset + i] = second_i
+
+        return ''.join(payload_lst)
 
 
 class B64DeserializationExactDelay(DeserializationExactDelay):
