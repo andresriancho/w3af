@@ -22,8 +22,16 @@ import re
 import urllib
 import cPickle
 import base64
+import unittest
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.plugins.audit.deserialization import deserialization
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
+from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.parsers.utils.form_params import FormParameters
 
 
 test_config = {
@@ -69,3 +77,65 @@ class TestDeserializePickle(PluginTest):
 
         self.assertEquals('message', vuln.get_token_name())
         self.assertEquals('Insecure deserialization', vuln.get_name())
+
+
+class TestShouldInject(unittest.TestCase):
+    def setUp(self):
+        self.plugin = deserialization()
+        self.payloads = ['']
+        self.fuzzer_config = {}
+
+    def test_should_inject_empty_qs(self):
+        self.url = URL('http://moth/?id=')
+        freq = FuzzableRequest(self.url)
+
+        mutant = QSMutant.create_mutants(freq, self.payloads, [],
+                                         False, self.fuzzer_config)[0]
+
+        self.assertTrue(self.plugin._should_inject(mutant))
+
+    def test_should_not_inject_qs_with_digit(self):
+        self.url = URL('http://moth/?id=1')
+        freq = FuzzableRequest(self.url)
+
+        mutant = QSMutant.create_mutants(freq, self.payloads, [],
+                                         False, self.fuzzer_config)[0]
+
+        self.assertFalse(self.plugin._should_inject(mutant))
+
+    def test_should_inject_qs_with_b64(self):
+        b64data = base64.b16encode('just some random b64 data here')
+        self.url = URL('http://moth/?id=%s' % b64data)
+        freq = FuzzableRequest(self.url)
+
+        mutant = QSMutant.create_mutants(freq, self.payloads, [],
+                                         False, self.fuzzer_config)[0]
+
+        self.assertTrue(self.plugin._should_inject(mutant))
+
+    def test_should_inject_qs_with_pickle(self):
+        pickle_data = cPickle.dumps(1)
+        self.url = URL('http://moth/?id=%s' % pickle_data)
+        freq = FuzzableRequest(self.url)
+
+        mutant = QSMutant.create_mutants(freq, self.payloads, [],
+                                         False, self.fuzzer_config)[0]
+
+        self.assertTrue(self.plugin._should_inject(mutant))
+
+    def test_should_inject_form_hidden(self):
+        form_params = FormParameters()
+        form_params.add_field_by_attr_items([("name", "username"), ("type", "text")])
+        form_params.add_field_by_attr_items([("name", "csrf_token"), ("type", "hidden")])
+
+        form = URLEncodedForm(form_params)
+        freq = FuzzableRequest(URL('http://www.w3af.com/'),
+                               post_data=form,
+                               method='PUT')
+        m = PostDataMutant(freq)
+        m.get_dc().set_token(('username', 0))
+
+        self.assertFalse(self.plugin._should_inject(m))
+
+        m.get_dc().set_token(('csrf_token', 0))
+        self.assertTrue(self.plugin._should_inject(m))
