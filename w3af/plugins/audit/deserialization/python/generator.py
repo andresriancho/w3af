@@ -16,7 +16,7 @@ payload = base64.b64encode(dump_with_replace)
 
 print repr(dump_with_replace)
 
-print('Save this to pickle.payload: %s' % payload)
+print('Save this to pickle.json: %s' % payload)
 
 # Just for testing that everything works as expected
 for i in [1, 3, 5, 11]:

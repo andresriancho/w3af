@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 import os
+import json
 import base64
 import binascii
 
@@ -48,7 +49,7 @@ class deserialization(AuditPlugin):
     """
 
     PAYLOADS = os.path.join(ROOT_PATH, 'plugins/audit/deserialization/')
-    PAYLOAD_EXTENSION = '.payload'
+    PAYLOAD_EXTENSION = '.json'
 
     def audit(self, freq, orig_response, debugging_id):
         """
@@ -158,7 +159,8 @@ class deserialization(AuditPlugin):
         for root, dirs, files in os.walk(self.PAYLOADS):
             for file_name in files:
                 if file_name.endswith(self.PAYLOAD_EXTENSION):
-                    yield file(os.path.join(root, file_name)).read().strip()
+                    json_str = file(os.path.join(root, file_name)).read()
+                    yield json.loads(json_str)
 
     def _find_delay_in_mutant(self, (mutant, delay_obj), debugging_id=None):
         """
@@ -209,43 +211,65 @@ class deserialization(AuditPlugin):
 
 class DeserializationExactDelay(ExactDelay):
     """
-    Subclass in order to provide binary data as a result of get_string_for_delay().
+    Subclass in order to handle creating payloads with different delays, for
+    multiple serialization formats.
 
-    The delay_fmt is provided base64 encoded
+    The delay_data looks like this:
 
-    Instead of using string formatting to replace the delay we do a string replace
-    of __DELAY_HERE__. This change is to make sure that we don't break the payload
-    in any way, or crash because the payload has a %s we never expected.
+        {
+            "1": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkxCnRwMgpScDMKLg==",
+                  "offset": 17},
+            "2": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkxCnRwMgpScDMKLg==",
+                  "offset": 17}
+        }
+
+    Where 1 and 2 are the lengths of the delays to add. So, for example if we
+    want to delay for 1, 3, or 9 seconds we need to use the first payload,
+    and if we want to delay for 11, 32 or 99 seconds we need to use the second
+    one.
+
+    This is required because some serialization formats serialize strings using:
+
+        S<length><string-contents>
+
+    We can't just have one payload and replace <string-contents> with 1 or 11,
+    the <length> will not match.
+
+    Of course... I could have written an object serializer for java, .net, nodejs,
+    python, etc. in order to avoid this ugly solution, but that would have taken
+    a few weeks of work to complete.
     """
-    REPLACE_TOKEN = '__DELAY_HERE__'
-
-    def __init__(self, delay_fmt, delta=0, mult=1):
-        super(DeserializationExactDelay, self).__init__(delay_fmt,
+    def __init__(self, delay_data, delta=0, mult=1):
+        super(DeserializationExactDelay, self).__init__(delay_data,
                                                         delta=delta,
                                                         mult=mult)
-        self._delay_fmt = decode_base64(delay_fmt)
+        self._delay_data = delay_data
+
+    def _get_payload_and_offset(self, delay_len):
+        data_for_delay_len = self._delay_data[str(delay_len)]
+
+        payload = data_for_delay_len['payload']
+        payload = base64.b64decode(payload)
+
+        offset = data_for_delay_len['offset']
+
+        return payload, offset
 
     def get_string_for_delay(self, seconds):
         """
         Applies :param seconds to self._delay_fmt and returns a base64 encoded
         string.
         """
-        real_delay = ((seconds * self._delay_multiplier) + self._delay_delta)
-        real_delay = str(real_delay)
-        payload = self._delay_fmt.replace(self.REPLACE_TOKEN, real_delay)
-        return base64.b64encode(payload)
+        seconds = str(seconds)
+        delay_len = len(seconds)
+        payload, offset = self._get_payload_and_offset(delay_len)
+        return payload[:offset] + seconds + payload[offset + delay_len:]
 
 
 class B64DeserializationExactDelay(DeserializationExactDelay):
     """
     Subclass in order to provide base64 encoded data as a result of
     get_string_for_delay().
-
-    The delay_fmt is provided base64 encoded
-
-    Instead of using string formatting to replace the delay we do a string replace
-    of __DELAY_HERE__. This change is to make sure that we don't break the payload
-    in any way, or crash because the payload has a %s we never expected.
     """
     def get_string_for_delay(self, seconds):
         """

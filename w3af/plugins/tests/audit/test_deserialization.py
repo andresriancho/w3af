@@ -18,14 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import os
 import re
+import json
 import urllib
 import cPickle
 import base64
 import unittest
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
-from w3af.plugins.audit.deserialization import deserialization
+from w3af.plugins.audit.deserialization import deserialization, B64DeserializationExactDelay
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
@@ -53,6 +55,41 @@ class TestDeserializePickle(PluginTest):
             except Exception, e:
                 body = str(e)
                 return self.status, response_headers, body
+
+            try:
+                cPickle.loads(message)
+            except Exception, e:
+                body = str(e)
+                return self.status, response_headers, body
+
+            body = 'Message received'
+            return self.status, response_headers, body
+
+    MOCK_RESPONSES = [DeserializeMockResponse(re.compile('.*'), body=None,
+                                              method='GET', status=200)]
+
+    def test_found_deserialization_in_pickle(self):
+        self._scan(self.target_url, test_config)
+        vulns = self.kb.get('deserialization', 'deserialization')
+
+        self.assertEquals(1, len(vulns), vulns)
+
+        # Now some tests around specific details of the found vuln
+        vuln = vulns[0]
+
+        self.assertEquals('message', vuln.get_token_name())
+        self.assertEquals('Insecure deserialization', vuln.get_name())
+
+
+class TestDeserializePickleNotBase64(PluginTest):
+
+    target_url = 'http://mock/deserialize?message='
+
+    class DeserializeMockResponse(MockResponse):
+        def get_response(self, http_request, uri, response_headers):
+            uri = urllib.unquote(uri)
+            message = uri[uri.find('=') + 1:]
+            message = str(message)
 
             try:
                 cPickle.loads(message)
@@ -173,3 +210,57 @@ class TestShouldInject(unittest.TestCase):
 
         m.get_dc().set_token(('csrf_token', 0))
         self.assertTrue(self.plugin._should_inject(m))
+
+
+class TestJSONPayloadIsValid(unittest.TestCase):
+    def test_all_jsons_are_valid(self):
+        loaded_payloads = 0
+
+        for root, dirs, files in os.walk(deserialization.PAYLOADS):
+            for file_name in files:
+                if file_name.endswith(deserialization.PAYLOAD_EXTENSION):
+                    json_str = file(os.path.join(root, file_name)).read()
+                    data = json.loads(json_str)
+
+                    self.assertIn('1', data)
+                    self.assertIn('2', data)
+
+                    self.assertIn('payload', data['1'])
+                    self.assertIn('offset', data['1'])
+
+                    self.assertIn('payload', data['2'])
+                    self.assertIn('offset', data['2'])
+
+                    payload_1 = base64.b64decode(data['1']['payload'])
+                    payload_2 = base64.b64decode(data['2']['payload'])
+
+                    offset_1 = data['1']['offset']
+                    offset_2 = data['2']['offset']
+
+                    self.assertIsInstance(offset_1, int)
+                    self.assertIsInstance(offset_2, int)
+
+                    self.assertGreater(len(payload_1), offset_1)
+                    self.assertGreater(len(payload_2), offset_2)
+
+                    loaded_payloads += 1
+
+        self.assertGreater(loaded_payloads, 0)
+
+
+class TestExactDelay(unittest.TestCase):
+    def test_get_payload(self):
+        payload = {
+            "1": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkxCnRwMgpScDMKLg==",
+                  "offset": 17},
+            "2": {"payload": "Y3RpbWUKc2xlZXAKcDEKKEkyMgp0cDIKUnAzCi4=",
+                  "offset": 17}
+        }
+
+        ed = B64DeserializationExactDelay(payload)
+
+        payload_1 = ed.get_string_for_delay(1)
+        payload_22 = ed.get_string_for_delay(22)
+
+        self.assertEqual(payload['1']['payload'], payload_1)
+        self.assertEqual(payload['2']['payload'], payload_22)

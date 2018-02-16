@@ -90,6 +90,9 @@ class ExactDelayController(object):
 
         for i, delay in enumerate(self.DELAY_SECONDS):
 
+            # Added for the deserialization plugin
+            assert delay < 100, 'Some ExactDelay instances can NOT handle large delays'
+
             # Only grep on the first test, to give the grep plugins the chance
             # to find something interesting. The other requests are not sent
             # to grep plugins for performance
