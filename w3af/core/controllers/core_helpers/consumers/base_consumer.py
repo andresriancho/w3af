@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import sys
 import time
-import Queue
 import random
 
 from multiprocessing.dummy import Process
@@ -88,8 +87,50 @@ class BaseConsumer(Process):
         super(BaseConsumer, self).__init__(name='%sController' % thread_name)
 
         self.in_queue = CachedQueue(maxsize=max_in_queue_size,
-                                    name=thread_name)
-        self._out_queue = Queue.Queue()
+                                    name=thread_name + 'In')
+
+        #
+        # Crawl and infrastructure plugins write to this queue using:
+        #
+        #   self.output_queue.put(fuzz_req)
+        #
+        # The strategy will read items from this queue in a tight loop using:
+        #
+        #   result_item = url_producer.get_result(timeout=0.1)
+        #
+        # And write them to self.in_queue (defined above) for all the url consumers
+        #
+        # Since this queue is read in a tight loop, items that are written here
+        # will, in theory, not stay in memory for long.
+        #
+        # Also, items written here are fuzzable requests, which shouldn't use a lot
+        # of memory.
+        #
+        # The only scenario I can think of where this queue is full of items
+        # is one where the strategy loop is slow / delayed and the crawl plugins
+        # are all findings many new URLs and forms.
+        #
+        # Tests showed something like this for a common site:
+        #
+        #   [Thu Feb 15 16:45:36 2018 - debug] CachedQueue.get() ... CrawlInfraOut DiskDict size is 19.
+        #   [Thu Feb 15 16:45:36 2018 - debug] CachedQueue.get() ... CrawlInfraOut DiskDict size is 28.
+        #   [Thu Feb 15 16:45:37 2018 - debug] CachedQueue.get() ... CrawlInfraOut DiskDict size is 27.
+        #   ...
+        #   [Thu Feb 15 16:45:52 2018 - debug] CachedQueue.get() ... CrawlInfraOut DiskDict size is 1.
+        #
+        # This was with a max_in_queue_size of 100 set for the CachedQueue defined below.
+        #
+        # Meaning that:
+        #       * There were 119 items in the queue (100 in memory ) in the first log line
+        #       * Also at 16:45:36, there were 128 items in the queue (100 in memory)
+        #       * It took 16 seconds to consume 28 items from the queue (from second 36 to second 52)
+        #
+        # This surprises me a little bit. I expected this queue to have less items in memory.
+        # Since I want to remove the memory usage in the framework, I'm going to reduce the
+        # maxsize sent to this CachedQueue to 50
+        #
+        # But just in case I'm using a CachedQueue!
+        self._out_queue = CachedQueue(maxsize=75, name=thread_name + 'Out')
 
         self._thread_name = thread_name
         self._consumer_plugins = consumer_plugins
