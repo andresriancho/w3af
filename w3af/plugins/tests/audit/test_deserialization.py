@@ -79,6 +79,40 @@ class TestDeserializePickle(PluginTest):
         self.assertEquals('Insecure deserialization', vuln.get_name())
 
 
+class TestShouldInjectIsCalled(PluginTest):
+
+    target_url = 'http://mock/deserialize?message=this-disables-injection'
+
+    class DeserializeMockResponse(MockResponse):
+        def get_response(self, http_request, uri, response_headers):
+            uri = urllib.unquote(uri)
+            b64message = uri[uri.find('=') + 1:]
+
+            try:
+                message = base64.b64decode(b64message)
+            except Exception, e:
+                body = str(e)
+                return self.status, response_headers, body
+
+            try:
+                cPickle.loads(message)
+            except Exception, e:
+                body = str(e)
+                return self.status, response_headers, body
+
+            body = 'Message received'
+            return self.status, response_headers, body
+
+    MOCK_RESPONSES = [DeserializeMockResponse(re.compile('.*'), body=None,
+                                              method='GET', status=200)]
+
+    def test_found_deserialization_in_pickle(self):
+        self._scan(self.target_url, test_config)
+        vulns = self.kb.get('deserialization', 'deserialization')
+
+        self.assertEquals(0, len(vulns), vulns)
+
+
 class TestShouldInject(unittest.TestCase):
     def setUp(self):
         self.plugin = deserialization()
