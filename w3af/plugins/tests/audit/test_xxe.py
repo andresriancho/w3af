@@ -25,8 +25,7 @@ from lxml import etree
 from xml import sax
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
-from w3af.plugins.audit.xxe import xxe
-from mock import patch, PropertyMock
+from mock import patch
 
 
 test_config = {
