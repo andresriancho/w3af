@@ -154,6 +154,9 @@ class ExtendedUrllib(object):
             - The pause/stop feature
             - Memory debugging features
         """
+        # Handle errors (HTTP timeout, etc.)
+        self._raise_if_should_stop()
+
         self._pause_and_stop()
         self._pause_on_http_error(request)
 
@@ -518,6 +521,15 @@ class ExtendedUrllib(object):
 
         self._rate_limit_last_time_called = time.clock()
 
+    def _raise_if_should_stop(self):
+        # There might be errors that make us stop the process, the exception
+        # was already raised (see below) but we want to make sure that we
+        # keep raising it until the w3afCore really stops.
+        if self._stop_exception is not None:
+            # pylint: disable=E0702
+            raise self._stop_exception
+            # pylint: enable=E0702
+
     def _pause_and_stop(self):
         """
         This method sleeps until self._user_paused is False.
@@ -531,13 +543,8 @@ class ExtendedUrllib(object):
                 msg = 'The user stopped the scan.'
                 raise ScanMustStopByUserRequest(msg)
 
-            # There might be errors that make us stop the process, the exception
-            # was already raised (see below) but we want to make sure that we
-            # keep raising it until the w3afCore really stops.
-            if self._stop_exception is not None:
-                # pylint: disable=E0702
-                raise self._stop_exception
-                # pylint: enable=E0702
+            # Handle errors (HTTP timeout, etc.)
+            self._raise_if_should_stop()
 
         while self._user_paused:
             time.sleep(0.2)
