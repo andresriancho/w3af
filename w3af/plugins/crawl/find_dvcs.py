@@ -113,8 +113,8 @@ class find_dvcs(CrawlPlugin):
         """
         for repo in self._dvcs.keys():
             repo_url = domain_path.url_join(self._dvcs[repo]['filename'])
-            function = self._dvcs[repo]['function']
-            yield repo_url, function, repo, domain_path
+            _function = self._dvcs[repo]['function']
+            yield repo_url, _function, repo, domain_path
 
     def _clean_filenames(self, filenames):
         """
@@ -142,34 +142,48 @@ class find_dvcs(CrawlPlugin):
 
         :return: None, everything is saved to the self.out_queue.
         """
-        http_response = self.http_get_and_parse(repo_url)
+        http_response = self.http_get_and_parse(repo_url, binary_response=True)
 
         if is_404(http_response):
             return
 
-        filenames = repo_get_files(http_response.get_body())
-        parsed_url_set = set()
+        try:
+            filenames = repo_get_files(http_response.get_raw_body())
+        except Exception, e:
+            # We get here when the HTTP response is NOT a 404, but the response
+            # body couldn't be properly parsed. This is usually because of a false
+            # positive in the is_404 function, OR a new version-format of the file
+            # to be parsed.
+            #
+            # Log in order to be able to improve the framework.
+            args = (e, repo_get_files.__name__, repo_url)
+            om.out.debug('Got a "%s" exception while running "%s" on "%s"' % args)
+        else:
+            parsed_url_set = set()
 
-        for filename in self._clean_filenames(filenames):
-            test_url = domain_path.url_join(filename)
-            if test_url not in self._analyzed_filenames:
+            for filename in self._clean_filenames(filenames):
+                test_url = domain_path.url_join(filename)
+                if test_url in self._analyzed_filenames:
+                    continue
+
                 parsed_url_set.add(test_url)
                 self._analyzed_filenames.add(filename)
 
-        self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
+            self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
-        if parsed_url_set:
-            desc = ('A %s was found at: "%s"; this could indicate that'
-                    ' a %s is accessible. You might be able to download'
-                    ' the Web application source code.')
-            desc %= repo, http_response.get_url(), repo
+        # Now we send this finding to the report for manual analysis. Even
+        # after a failed parsing, we'll trust the is_404 function result.
+        desc = ('A %s was found at: "%s"; this could indicate that a %s is'
+                ' accessible. You might be able to download the Web application'
+                ' source code.')
+        desc %= repo, http_response.get_url(), repo
 
-            v = Vuln('Source code repository', desc, severity.MEDIUM,
-                     http_response.id, self.get_name())
-            v.set_url(http_response.get_url())
+        v = Vuln('Source code repository', desc, severity.MEDIUM,
+                 http_response.id, self.get_name())
+        v.set_url(http_response.get_url())
 
-            kb.kb.append(self, repo, v)
-            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+        kb.kb.append(self, repo, v)
+        om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def git_index(self, body):
         """
