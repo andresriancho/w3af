@@ -48,8 +48,9 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
-from w3af.plugins.output.xml_file import xml_file, CachedXMLNode, FindingsCache
-from w3af.plugins.output.xml_file import HTTPTransaction, ScanInfo, Finding
+from w3af.plugins.output.xml_file import (xml_file, CachedXMLNode, FindingsCache,
+                                          HTTPTransaction, ScanInfo, Finding,
+                                          jinja2_attr_value_escape_filter)
 
 
 @attr('smoke')
@@ -863,3 +864,12 @@ class TestFindingsCache(XMLNodeGeneratorTest):
 
         expected = {vuln1.get_uniq_id()}
         self.assertEquals(set(cache.list()), expected)
+
+
+class TestAttrValueEscapeFilter(unittest.TestCase):
+    def test_invalid_ascii(self):
+        result = jinja2_attr_value_escape_filter('é')
+
+        self.assertIsInstance(result, unicode)
+        self.assertEqual(result, u'é')
+
