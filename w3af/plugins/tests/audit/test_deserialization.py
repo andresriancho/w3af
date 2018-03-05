@@ -222,21 +222,21 @@ class TestJSONPayloadIsValid(unittest.TestCase):
                     json_str = file(os.path.join(root, file_name)).read()
                     data = json.loads(json_str)
 
-                    self.assertIn('1', data)
-                    self.assertIn('2', data)
+                    self.assertIn('1', data, file_name)
+                    self.assertIn('2', data, file_name)
 
-                    self.assertIn('payload', data['1'])
-                    self.assertIn('offsets', data['1'])
+                    self.assertIn('payload', data['1'], file_name)
+                    self.assertIn('offsets', data['1'], file_name)
 
-                    self.assertIn('payload', data['2'])
-                    self.assertIn('offsets', data['2'])
+                    self.assertIn('payload', data['2'], file_name)
+                    self.assertIn('offsets', data['2'], file_name)
 
                     for delay_len in [1, 2]:
                         for offset in data[str(delay_len)]['offsets']:
-                            self.assertIsInstance(offset, int)
+                            self.assertIsInstance(offset, int, file_name)
 
                             payload = base64.b64decode(data[str(delay_len)]['payload'])
-                            self.assertGreater(len(payload), offset)
+                            self.assertGreater(len(payload), offset, file_name)
 
                     loaded_payloads += 1
 
@@ -259,3 +259,21 @@ class TestExactDelay(unittest.TestCase):
 
         self.assertEqual(payload['1']['payload'], payload_1)
         self.assertEqual(payload['2']['payload'], payload_22)
+
+    def test_get_payload_all(self):
+        for root, dirs, files in os.walk(deserialization.PAYLOADS):
+            for file_name in files:
+                if file_name.endswith(deserialization.PAYLOAD_EXTENSION):
+                    json_str = file(os.path.join(root, file_name)).read()
+                    payload = json.loads(json_str)
+
+                    ed = B64DeserializationExactDelay(payload)
+
+                    payload_1 = ed.get_string_for_delay(1)
+                    payload_22 = ed.get_string_for_delay(22)
+
+                    #file('1', 'w').write(base64.b64decode(payload['1']['payload']))
+                    #file('2', 'w').write(base64.b64decode(payload_1))
+
+                    self.assertEqual(payload['1']['payload'], payload_1, file_name)
+                    self.assertEqual(payload['2']['payload'], payload_22, file_name)
