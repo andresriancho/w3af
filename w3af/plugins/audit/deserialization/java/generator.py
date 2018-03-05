@@ -1,4 +1,3 @@
-import os
 import base64
 import json
 import difflib
@@ -36,70 +35,74 @@ PAYLOADS = ['BeanShell1',
             'URLDNS'
             'Wicket1']
 
-PAYLOADS = [
-            'Jdk7u21',
-            ]
-
-
-SLEEP_SAMPLES = {1: ['1', '2'],
-                 2: ['11', '22']}
+SLEEP_SAMPLES = {1: ['1', '3'],
+                 2: ['22', '77']}
 
 COMMAND = 'java -jar ysoserial-0.0.6-SNAPSHOT-all.jar %s "sleep %s"'
 
 
 def get_payload_bin(payload, seconds):
-    subprocess.check_output(shlex.split(COMMAND % (payload, seconds)))
+    return subprocess.check_output(shlex.split(COMMAND % (payload, seconds)))
 
 
-for payload in PAYLOADS:
+def get_payload_bin_for_command_len(payload, command_len):
+    sample_1 = SLEEP_SAMPLES[command_len][0]
+    sample_2 = SLEEP_SAMPLES[command_len][1]
 
-    payload_json = {"1": {"payload": None,
-                          "offsets": []},
-                    "2": {"payload": None,
-                          "offsets": []}}
+    # Get two payloads, both with the same length of command but different
+    # commands, this will help me identify the differences using difflib
+    payload_bin_1 = get_payload_bin(payload, sample_1)
+    payload_bin_2 = get_payload_bin(payload, sample_2)
 
-    # Generate the payloads
-    for sleep_len, sleep in enumerate((1, 22)):
-        args = (payload, sleep, payload, sleep)
-        os.system()
+    # Enable for debugging only
+    #file('%s-%s-a.bin' % (payload, command_len), 'w').write(payload_bin_1)
+    #file('%s-%s-b.bin' % (payload, command_len), 'w').write(payload_bin_2)
 
-        payload_file = '%s.%s' % (payload, sleep)
+    offsets = []
 
-        if not os.path.exists(payload_file):
+    for a_index, b_index, size in difflib.SequenceMatcher(None, payload_bin_1, payload_bin_2).get_matching_blocks():
+
+        # The last match is a dummy with size 0, we want to skip it
+        if size == 0:
             break
 
-        payload_bin = file(payload_file).read()
-        os.remove(payload_file)
+        equals_1 = False
+        equals_2 = False
 
-        payload_json[str(sleep_len + 1)]['payload'] = base64.b64encode(payload_bin)
+        bytes_at_p1 = payload_bin_1[a_index + size: a_index + size + command_len]
+        bytes_at_p2 = payload_bin_2[b_index + size: b_index + size + command_len]
 
-    # Generate the offsets
-    for sleep_len, sleep in enumerate((1, 22)):
-        # Generate two samples for each payload
-        for sleep_sample in SLEEP_SAMPLES:
-            args = (payload, sleep_sample, payload, sleep_sample)
-            os.system('java -jar ysoserial-0.0.6-SNAPSHOT-all.jar %s "sleep %s" > %s.%s' % args)
+        if bytes_at_p1 == sample_1:
+            equals_1 = True
 
-        # Now we get the offsets from the two samples
-        sample_file_1 = '%s.%s' % (payload, SLEEP_SAMPLES[sleep_len + 1][0])
-        sample_file_2 = '%s.%s' % (payload, SLEEP_SAMPLES[sleep_len + 1][1])
+        if bytes_at_p2 == sample_2:
+            equals_2 = True
 
-        if not os.path.exists(sample_file_1):
-            break
+        if equals_1 and equals_2:
+            offsets.append(a_index + size)
 
-        sample_bin_1 = file(sample_file_1).read()
-        sample_bin_2 = file(sample_file_2).read()
+    return payload_bin_1, offsets
 
-        for a_index, b_index, size in difflib.SequenceMatcher(None, sample_bin_1, sample_bin_2).get_matching_blocks():
-            if sample_bin_1[size: size + sleep_len + 1] == SLEEP_SAMPLES[sleep_len + 1][0]:
-                payload_json[str(sleep_len + 1)]['offsets'].append(size)
 
-        # Cleanup
-        for sleep_sample in SLEEP_SAMPLES:
-            sample_file = '%s.%s' % (payload, sleep_sample)
-            if os.path.exists(sample_file):
-                os.remove(sample_file)
+def main(payloads):
+    for payload in payloads:
 
-    file('%s.json' % payload, 'w').write(json.dumps(payload_json, indent=4))
+        try:
+            p1, o1 = get_payload_bin_for_command_len(payload, 1)
+            p2, o2 = get_payload_bin_for_command_len(payload, 2)
+        except Exception, e:
+            args = (payload, e)
+            msg = 'Failed to create payload.json for "%s", exception: "%s"'
+            print(msg % args)
+            continue
 
-print('Remember to set the offsets in all json files!')
+        payload_json = {"1": {"payload": base64.b64encode(p1),
+                              "offsets": o1},
+                        "2": {"payload": base64.b64encode(p2),
+                              "offsets": o2}}
+
+        file('%s.json' % payload, 'w').write(json.dumps(payload_json, indent=4))
+
+
+if __name__ == '__main__':
+    main(PAYLOADS)
