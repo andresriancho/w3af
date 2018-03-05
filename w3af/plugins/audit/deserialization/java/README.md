@@ -15,3 +15,18 @@ cd w3af/plugins/audit/deserialization/java/
 python generator.py
 ```
 
+## Testing the payloads
+
+Start the deserialize server:
+
+```
+git clone https://github.com/yolosec/deserialize-server.git
+./gradlew bootRun
+```
+
+Take one of the payloads from the JSON file and send it:
+
+```
+curl  --insecure 'http://localhost:8222/suffer' -d 'PAYLOAD'
+```
+
