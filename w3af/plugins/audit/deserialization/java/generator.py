@@ -30,9 +30,9 @@ PAYLOADS = ['BeanShell1',
             'Myfaces1',
             'Myfaces2',
             'ROME',
-            'Spring1'
-            'Spring2'
-            'URLDNS'
+            'Spring1',
+            'Spring2',
+            'URLDNS',
             'Wicket1']
 
 SLEEP_SAMPLES = {1: ['1', '3'],
@@ -92,8 +92,9 @@ def main(payloads):
             p2, o2 = get_payload_bin_for_command_len(payload, 2)
         except Exception, e:
             args = (payload, e)
-            msg = 'Failed to create payload.json for "%s", exception: "%s"'
+            msg = 'Failed to create %s.json, exception: "%s"'
             print(msg % args)
+            print('\n\n\n')
             continue
 
         payload_json = {"1": {"payload": base64.b64encode(p1),
@@ -102,6 +103,8 @@ def main(payloads):
                               "offsets": o2}}
 
         file('%s.json' % payload, 'w').write(json.dumps(payload_json, indent=4))
+        print('Successfully created %s.json' % payload)
+        print('\n\n\n')
 
 
 if __name__ == '__main__':
