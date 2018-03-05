@@ -94,3 +94,4 @@ docker/kali-debootstrap
 *.deb
 
 w3af/core/data/parsers/tests/data/huge.html
+ysoserial-0.0.6-SNAPSHOT-all.jar
