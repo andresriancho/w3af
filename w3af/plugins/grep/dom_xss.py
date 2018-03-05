@@ -56,8 +56,8 @@ class dom_xss(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Compile the regular expressions
-        self._script_re = re.compile(
-            '< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL)
+        self._script_re = re.compile('< *script *>(.*?)</ *script *>',
+                                     re.IGNORECASE | re.DOTALL)
 
     def grep(self, request, response):
         """

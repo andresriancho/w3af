@@ -18,7 +18,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from mock import patch
+
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.controllers.ci.php_moth import get_php_moth_http as moth
 
 
@@ -91,3 +93,72 @@ class TestFileUpload(PluginTest):
         EXPECTED_FILES = {'uploader.php', 'uploader.534'}
         found_files = set(v.get_url().get_file_name() for v in fu_vulns)
         self.assertEquals(EXPECTED_FILES, found_files)
+
+
+class TestParseOutputFromUpload(PluginTest):
+
+    target_url = u'http://w3af.org/'
+
+    FORM = """\
+          <form enctype="multipart/form-data" action="upload" method="POST">
+              <input type="hidden" name="MAX_FILE_SIZE" value="10000000" />
+              Choose a file to upload: <input name="uploadedfile" type="file" /><br />
+              <input type="submit" value="Upload File" />
+          </form>
+          """
+
+    RESULT = """Thanks for uploading your file to <a href='/uploads/foo.png'>x</a>"""
+
+    image_content = 'PNG' + 'B' * 239
+
+    MOCK_RESPONSES = [
+              MockResponse(url=target_url,
+                           body=FORM,
+                           content_type='text/html',
+                           method='GET', status=200),
+
+              MockResponse(url=target_url + 'upload',
+                           body=RESULT,
+                           content_type='text/html',
+                           method='POST', status=200),
+
+              MockResponse(url=target_url + 'uploads/foo.png',
+                           body=image_content,
+                           content_type='image/png',
+                           method='GET', status=200),
+
+    ]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'audit': (PluginConfig('file_upload'),),
+
+                'crawl': (
+                    PluginConfig('web_spider',
+
+                                 ('only_forward', True, PluginConfig.BOOL),
+
+                                 ('ignore_regex',
+                                  '.*logout.php*',
+                                  PluginConfig.STR)),
+                )
+            },
+        }
+    }
+
+    def test_parse_response(self):
+        cfg = self._run_configs['cfg']
+
+        with patch('w3af.core.data.fuzzer.utils.rand_alnum') as rand_alnum_mock:
+            rand_alnum_mock.side_effect = 'B' * 239
+
+            self._scan(cfg['target'], cfg['plugins'])
+
+        fu_vulns = self.kb.get('file_upload', 'file_upload')
+        self.assertEquals(1, len(fu_vulns))
+
+        v = fu_vulns[0]
+        self.assertEquals(v.get_name(), 'Insecure file upload')
+        self.assertEquals(str(v.get_url().get_domain_path()), self.target_url)

@@ -67,8 +67,10 @@ class csv_file(OutputPlugin):
             return
 
         try:
-            csv_writer = csv.writer(output_handler, delimiter=',',
-                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(output_handler,
+                                    delimiter=',',
+                                    quotechar='|',
+                                    quoting=csv.QUOTE_MINIMAL)
         except Exception, e:
             msg = ('An exception was raised while trying to open the '
                    ' CSV writer. Exception: "%s"')

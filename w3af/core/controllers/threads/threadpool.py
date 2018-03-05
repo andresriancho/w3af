@@ -23,13 +23,15 @@ import threading
 import Queue
 import time
 
-from functools import partial, wraps
+from functools import partial
 
-from multiprocessing.dummy import Process
-from multiprocessing.util import Finalize
+from multiprocessing.dummy import Process, current_process
+from multiprocessing.util import Finalize, debug
 from multiprocessing import cpu_count
 
 from .pool276 import ThreadPool, RUN
+
+from w3af.core.data.misc.smart_queue import SmartQueue
 
 __all__ = ['Pool']
 
@@ -63,10 +65,33 @@ class return_args(object):
 
 
 class DaemonProcess(Process):
-    
+
     def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         super(DaemonProcess, self).__init__(group, target, name, args, kwargs)
         self.daemon = True
+
+    def start(self):
+        """
+        This is a race condition in DaemonProcess.start() which was found
+        during some of the test scans I run. The race condition exists
+        because we're using Threads for a Pool that was designed to be
+        used with real processes: thus there is no worker.exitcode,
+        thus it has to be simulated in a race condition-prone way.
+
+        I'm overriding this method in order to move this line:
+
+            self._start_called = True
+
+        Closer to the call to .start(), which should reduce the chances
+        of triggering the race conditions by 1% ;-)
+        """
+        assert self._parent is current_process()
+
+        if hasattr(self._parent, '_children'):
+            self._parent._children[self] = None
+
+        self._start_called = True
+        threading.Thread.start(self)
 
 
 class Pool(ThreadPool):
@@ -81,6 +106,7 @@ class Pool(ThreadPool):
         """
         self.Process = partial(DaemonProcess, name=worker_names)
 
+        self.worker_names = worker_names
         self._setup_queues(max_queued_tasks)
         self._taskqueue = Queue.Queue()
         self._cache = {}
@@ -135,13 +161,43 @@ class Pool(ThreadPool):
                   self._worker_handler, self._task_handler,
                   self._result_handler, self._cache),
             exitpriority=15)
-    
+
+    def get_worker_count(self):
+        return len(self._pool)
+
+    def set_worker_count(self, count):
+        """
+        Set the number of workers.
+
+        Keep in mind that this is not an immediate when decreasing
+        the pool process count!
+
+            * When increasing the size, the threadpool will call
+              repopulate_pool() and the new threads will be created
+
+            * When decreasing the size, a thread will finish because
+              of maxtasksperchild, then repopulate_pool() will be
+              called async and the thread will *not* be created,
+              thus decreasing the pool size
+
+        The change is made effective depending on the work load and
+        the time required to finish each task.
+
+        :param count: The new process count
+        :return: None
+        """
+        assert self._maxtasksperchild, 'Can only adjust size if maxtasksperchild is set'
+        assert count >= 1, 'Number of processes must be at least 1'
+        self._processes = count
+        self._repopulate_pool()
+
     def _setup_queues(self, max_queued_tasks):
+        #self._inqueue = SmartQueue(maxsize=max_queued_tasks, name=self.worker_names)
         self._inqueue = Queue.Queue(maxsize=max_queued_tasks)
         self._outqueue = Queue.Queue()
         self._quick_put = self._inqueue.put
         self._quick_get = self._outqueue.get
-        
+
     def map_multi_args(self, func, iterable, chunksize=None):
         """
         Blocks until all results are done (please note the .get())
@@ -158,6 +214,34 @@ class Pool(ThreadPool):
     def terminate_join(self):
         self.terminate()
         self.join()
+
+    def _join_exited_workers(self):
+        """Cleanup after any worker processes which have exited due to reaching
+        their specified lifetime.  Returns True if any workers were cleaned up.
+        """
+        cleaned = False
+        for i in reversed(range(len(self._pool))):
+            worker = self._pool[i]
+            if worker.exitcode is not None:
+                # worker exited
+                try:
+                    worker.join()
+                except RuntimeError:
+                    #
+                    # RuntimeError: cannot join thread before it is started
+                    #
+                    # This is a race condition in DaemonProcess.start() which was found
+                    # during some of the test scans I run. The race condition exists
+                    # because we're using Threads for a Pool that was designed to be
+                    # used with real processes: thus there is no worker.exitcode,
+                    # thus it has to be simulated in a race condition-prone way.
+                    #
+                    continue
+                else:
+                    debug('cleaning up worker %d' % i)
+                cleaned = True
+                del self._pool[i]
+        return cleaned
 
     def finish(self, timeout=120):
         """

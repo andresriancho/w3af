@@ -1,5 +1,5 @@
 """
-test_queue_speed.py
+test_smart_queue.py
 
 Copyright 2013 Andres Riancho
 
@@ -23,13 +23,13 @@ import unittest
 import time
 import Queue
 
-from w3af.core.data.misc.queue_speed import QueueSpeed
+from w3af.core.data.misc.smart_queue import SmartQueue
 
 
-class TestQueueSpeed(unittest.TestCase):
+class TestSmarterQueue(unittest.TestCase):
     
     def test_simple(self):
-        q = QueueSpeed()
+        q = SmartQueue()
         
         self.assertEqual(None, q.get_input_rpm())
         self.assertEqual(None, q.get_output_rpm())
@@ -54,14 +54,14 @@ class TestQueueSpeed(unittest.TestCase):
         self.assertEqual(q.qsize(), 0)
 
     def test_no_data(self):
-        q = QueueSpeed()
+        q = SmartQueue()
         
         for _ in xrange(10):
             self.assertEqual(None, q.get_input_rpm())
             self.assertEqual(None, q.get_output_rpm())
     
     def test_many_items(self):
-        q = QueueSpeed()
+        q = SmartQueue()
 
         self.assertEqual(len(q._input_data), 0)
         
@@ -77,7 +77,7 @@ class TestQueueSpeed(unittest.TestCase):
         self.assertEqual(len(q._output_data), q.MAX_SIZE - 1)
     
     def test_exceptions(self):
-        q = QueueSpeed(4)
+        q = SmartQueue(4)
         
         self.assertEqual(None, q.get_input_rpm())
         self.assertEqual(None, q.get_output_rpm())
@@ -108,7 +108,7 @@ class TestQueueSpeed(unittest.TestCase):
         self.assertEqual(q.qsize(), 0)
     
     def test_wrapper(self):
-        q = QueueSpeed(4)
+        q = SmartQueue(4)
         self.assertEqual(q.qsize(), 0)
         
         q.put(None)

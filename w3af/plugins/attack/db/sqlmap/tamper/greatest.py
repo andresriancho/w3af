@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import re
@@ -36,10 +36,10 @@ def tamper(payload, **kwargs):
     retVal = payload
 
     if payload:
-        match = re.search(r"(?i)(\b(AND|OR)\b\s+)(?!.*\b(AND|OR)\b)([^>]+?)\s*>\s*([^>#-]+)", payload)
+        match = re.search(r"(?i)(\b(AND|OR)\b\s+)([^>]+?)\s*>\s*(\w+|'[^']+')", payload)
 
         if match:
-            _ = "%sGREATEST(%s,%s+1)=%s" % (match.group(1), match.group(4), match.group(5), match.group(4))
+            _ = "%sGREATEST(%s,%s+1)=%s" % (match.group(1), match.group(3), match.group(4), match.group(3))
             retVal = retVal.replace(match.group(0), _)
 
     return retVal

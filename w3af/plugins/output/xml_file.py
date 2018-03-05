@@ -20,77 +20,42 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
-import re
 import sys
+import gzip
 import time
 import base64
-import xml.dom.minidom
+import jinja2
+
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from unicodedata import category
 
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.misc import get_w3af_version
 from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
-from w3af.core.data.misc.encoding import smart_str
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.url.HTTPRequest import HTTPRequest
-
-
-NON_BIN = ('atom+xml', 'ecmascript', 'EDI-X12', 'EDIFACT', 'json',
-           'javascript', 'rss+xml', 'soap+xml', 'font-woff',
-           'xhtml+xml', 'xml-dtd', 'xop+xml')
+from w3af.core.data.misc.encoding import smart_str_ignore, smart_unicode
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
-# https://stackoverflow.com/questions/1707890/fast-way-to-filter-illegal-xml-unicode-chars-in-python
-_illegal_unichrs = [(0x00, 0x08), (0x0B, 0x0C), (0x0E, 0x1F),
-                    (0x7F, 0x84), (0x86, 0x9F),
-                    (0xFDD0, 0xFDDF), (0xFFFE, 0xFFFF)]
-
-if sys.maxunicode >= 0x10000:  # not narrow build
-    _illegal_unichrs.extend([(0x1FFFE, 0x1FFFF), (0x2FFFE, 0x2FFFF),
-                             (0x3FFFE, 0x3FFFF), (0x4FFFE, 0x4FFFF),
-                             (0x5FFFE, 0x5FFFF), (0x6FFFE, 0x6FFFF),
-                             (0x7FFFE, 0x7FFFF), (0x8FFFE, 0x8FFFF),
-                             (0x9FFFE, 0x9FFFF), (0xAFFFE, 0xAFFFF),
-                             (0xBFFFE, 0xBFFFF), (0xCFFFE, 0xCFFFF),
-                             (0xDFFFE, 0xDFFFF), (0xEFFFE, 0xEFFFF),
-                             (0xFFFFE, 0xFFFFF), (0x10FFFE, 0x10FFFF)])
-
-_illegal_ranges = ['%s-%s' % (unichr(low), unichr(high)) for (low, high) in _illegal_unichrs]
-INVALID_XML = re.compile(u'[%s]' % u''.join(_illegal_ranges))
-
-
-def xml_str(s, replace_invalid=True):
-    """
-    Avoid encoding errors while generating objects' utf8 byte-string
-    representations.
-
-    Should fix issues similar to:
-    https://github.com/andresriancho/w3af/issues/12924
-
-    :param s: The input string/unicode
-    :param replace_invalid: If there are invalid XML chars, replace them.
-    :return: A string ready to be sent to the XML file
-    """
-    encoded_str = smart_str(s, encoding='utf8', errors='xmlcharrefreplace')
-
-    if replace_invalid:
-        encoded_str = INVALID_XML.sub('?', encoded_str)
-
-    return encoded_str
+TEMPLATE_ROOT = os.path.join(ROOT_PATH, 'plugins/output/xml_file/')
 
 
 class xml_file(OutputPlugin):
     """
     Print all messages to a xml file.
 
-    :author: Kevin Denver ( muffysw@hotmail.com )
+    :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
     XML_OUTPUT_VERSION = '2.1'
@@ -110,19 +75,17 @@ class xml_file(OutputPlugin):
         self._plugins_dict = {}
         self._options_dict = {}
 
+        # Keep internal state
+        self._is_working = False
+        self._jinja2_env = self._get_jinja2_env()
+
         # List with additional xml elements
         self._errors = DiskList()
-
-        # xml document that helps with the creation of new elements
-        # this is an empty document until we want to write to the
-        # output file, where we populate it, serialize it to the file,
-        # and empty it again
-        self._xml = None
 
     def _open_file(self):
         self._file_name = os.path.expanduser(self._file_name)
         try:
-            self._file = open(self._file_name, 'w')
+            self._file = open(self._file_name, 'wb')
         except IOError, io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._file_name), io.strerror)
@@ -200,306 +163,148 @@ class xml_file(OutputPlugin):
         self._plugins_dict = {}
         self._options_dict = {}
         self._errors.cleanup()
+        self._jinja2_env = None
 
+    #@profile
     def flush(self):
         """
         Write the XML to the output file
         :return: None
         """
-        # Start from a clean state, just in case.
-        self._empty_xml_root()
+        # Create the cache path
+        CachedXMLNode.create_cache_path()
+        FindingsCache.create_cache_path()
 
-        self._create_root_xml_elems()
-        self._log_enabled_plugins_to_xml()
-        self._write_findings_to_xml()
-        self._write_errors_to_xml()
-        self._write_xml_to_file()
+        # Create the context
+        context = dotdict({})
 
-        # Free some memory
-        self._empty_xml_root()
+        self._add_root_info_to_context(context)
+        self._add_scan_info_to_context(context)
+        self._add_findings_to_context(context)
+        self._add_errors_to_context(context)
 
-    def _empty_xml_root(self):
-        self._xml = None
-        self._top_elem = None
-        self._scan_info = None
+        # Write to file
+        self._write_context_to_file(context)
 
-    def _create_root_xml_elems(self):
-        # XML root
-        self._xml = xml.dom.minidom.Document()
+    #@profile
+    def _add_root_info_to_context(self, context):
+        context.start_timestamp = self._timestamp
+        context.start_time_long = self._long_timestamp
+        context.xml_version = self.XML_OUTPUT_VERSION
+        context.w3af_version = get_w3af_version.get_w3af_version()
 
-        # The scan tag, with all vulnerabilities as child
-        self._top_elem = self._xml.createElement('w3af-run')
-        self._top_elem.setAttribute('start', self._timestamp)
-        self._top_elem.setAttribute('start-long', self._long_timestamp)
-        self._top_elem.setAttribute('version', self.XML_OUTPUT_VERSION)
+    #@profile
+    def _add_scan_info_to_context(self, context):
+        scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
 
-        # Add in the version details
-        version_element = self._xml.createElement('w3af-version')
-        version = xml_str(get_w3af_version.get_w3af_version())
-        version_data = self._xml.createTextNode(version)
-        version_element.appendChild(version_data)
-        self._top_elem.appendChild(version_element)
+        scan_info = ScanInfo(self._jinja2_env, scan_targets, self._plugins_dict, self._options_dict)
+        context.scan_info = scan_info.to_string()
 
-    def _write_xml_to_file(self):
+    #@profile
+    def _add_errors_to_context(self, context):
+        context.errors = self._errors
+
+    def findings(self):
         """
-        Write xml report
+        A small generator that queries the findings cache and yields all the findings
+        so they get written to the XML.
+
+        :yield: Strings representing the findings as XML
+        """
+        cache = FindingsCache()
+        cached_nodes = cache.list()
+
+        processed_uniq_ids = []
+
+        #
+        # This for loop is a performance improvement which should yield
+        # really good results, taking into account that get_all_uniq_ids_iter
+        # will only query the DB and yield IDs, without doing any of the
+        # CPU-intensive cPickle.loads() done in get_all_findings_iter()
+        # which we do below.
+        #
+        # Ideally, we're only doing a cPickle.loads() once for each finding
+        # the rest of the calls to flush() will load the finding from the
+        # cache in this loop, and use the exclude_ids to prevent cached
+        # entries from being queried
+        #
+        # What this for loop also guarantees is that we're not simply
+        # reading all the items from the cache and putting them into the XML,
+        # which would be incorrect because some items are modified in the
+        # KB (which changes their uniq id)
+        #
+        for uniq_id in kb.kb.get_all_uniq_ids_iter():
+            if uniq_id in cached_nodes:
+                yield cache.get_node_from_cache(uniq_id)
+                processed_uniq_ids.append(uniq_id)
+
+        #
+        # This for loop is getting all the new findings that w3af has found
+        # In this context "new" means that the findings are not in the cache
+        #
+        for finding in kb.kb.get_all_findings_iter(exclude_ids=cached_nodes):
+            uniq_id = finding.get_uniq_id()
+            processed_uniq_ids.append(uniq_id)
+            node = Finding(self._jinja2_env, finding).to_string()
+            cache.save_finding_to_cache(uniq_id, node)
+            yield node
+
+        #
+        # Now that we've finished processing all the new findings we can
+        # evict the findings that were removed from the KB from the cache
+        #
+        for cached_finding in cached_nodes:
+            if cached_finding not in processed_uniq_ids:
+                cache.evict_from_cache(cached_finding)
+
+    #@profile
+    def _add_findings_to_context(self, context):
+        context.findings = (f for f in self.findings())
+
+    def _get_jinja2_env(self):
+        """
+        Creates the jinja2 environment which will be used to render all templates
+
+        The same environment is used in order to take advantage of jinja's template
+        cache.
+
+        :return: A jinja2 environment
+        """
+        env_config = {'undefined': StrictUndefined,
+                      'trim_blocks': True,
+                      'autoescape': True,
+                      'lstrip_blocks': True}
+
+        jinja2_env = Environment(**env_config)
+        jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
+        jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
+        return jinja2_env
+
+    #@profile
+    def _write_context_to_file(self, context):
+        """
+        Write xml report to the file by rendering the context
         :return: None
         """
+        template = self._jinja2_env.get_template('root.tpl')
+
+        # We use streaming as explained here:
+        #
+        # http://flask.pocoo.org/docs/0.12/patterns/streaming/
+        #
+        # To prevent having the whole XML in memory
+        # pylint: disable=E1101
+        report_stream = template.stream(context)
+        report_stream.enable_buffering(3)
+        # pylint: enable=E1101
+
         self._open_file()
-        self._xml.appendChild(self._top_elem)
 
-        try:
-            self._xml.writexml(self._file,
-                               addindent=' ' * 4,
-                               newl='\n',
-                               encoding='UTF-8')
-            self._file.flush()
-        finally:
-            self._file.close()
+        # Write each report section to the output file
+        for report_section in report_stream:
+            self._file.write(report_section.encode(DEFAULT_ENCODING))
 
-    def _write_errors_to_xml(self):
-        """
-        Write all errors and callers to the XML output file.
-        :return: None, we write the data to the XML
-        """
-        for message, caller in self._errors:
-            message_node = self._xml.createElement('error')
-            message_node.setAttribute('caller', xml_str(caller))
-
-            description = self._xml.createTextNode(xml_str(message))
-            message_node.appendChild(description)
-            self._top_elem.appendChild(message_node)
-
-    def _write_findings_to_xml(self):
-        """
-        Write all the findings to the XML file
-        :return: None, we write the data to the XML
-        """
-        # HistoryItem to get requests/responses
-        req_history = HistoryItem()
-
-        for i in kb.kb.get_all_findings():
-            message_node = self._xml.createElement('vulnerability')
-
-            message_node.setAttribute('severity', xml_str(i.get_severity()))
-            message_node.setAttribute('method', xml_str(i.get_method()))
-            message_node.setAttribute('url', xml_str(i.get_url()))
-            message_node.setAttribute('var', xml_str(i.get_token_name()))
-            message_node.setAttribute('name', xml_str(i.get_name()))
-            message_node.setAttribute('plugin', xml_str(i.get_plugin_name()))
-
-            # Wrap description in a <description> element and put it above the
-            # request/response elements
-            desc_str = xml_str(i.get_desc(with_id=False))
-            description_node = self._xml.createElement('description')
-            description = self._xml.createTextNode(desc_str)
-            description_node.appendChild(description)
-            message_node.appendChild(description_node)
-
-            # If there is information from the vulndb, then we should write it
-            if i.has_db_details():
-                desc_str = xml_str(i.get_long_description())
-                description_node = self._xml.createElement('long-description')
-                description = self._xml.createTextNode(desc_str)
-                description_node.appendChild(description)
-                message_node.appendChild(description_node)
-
-                fix_str = xml_str(i.get_fix_guidance())
-                fix_node = self._xml.createElement('fix-guidance')
-                fix = self._xml.createTextNode(fix_str)
-                fix_node.appendChild(fix)
-                message_node.appendChild(fix_node)
-
-                fix_effort_str = xml_str(i.get_fix_effort())
-                fix_node = self._xml.createElement('fix-effort')
-                fix = self._xml.createTextNode(fix_effort_str)
-                fix_node.appendChild(fix)
-                message_node.appendChild(fix_node)
-
-                if i.get_references():
-                    references_node = self._xml.createElement('references')
-
-                    for ref in i.get_references():
-                        ref_node = self._xml.createElement('reference')
-                        ref_node.setAttribute('title', xml_str(ref.title))
-                        ref_node.setAttribute('url', xml_str(ref.url))
-                        references_node.appendChild(ref_node)
-
-                    message_node.appendChild(references_node)
-
-            if i.get_id():
-                message_node.setAttribute('id', str(i.get_id()))
-                # Wrap all transactions in a http-transactions node
-                transaction_set = self._xml.createElement('http-transactions')
-                message_node.appendChild(transaction_set)
-
-                for request_id in i.get_id():
-                    try:
-                        details = req_history.read(request_id)
-                    except DBException:
-                        msg = 'Failed to retrieve request with id %s from DB.'
-                        print(msg % request_id)
-                        continue
-
-                    # Wrap the entire http transaction in a single block
-                    action_set = self._xml.createElement('http-transaction')
-                    action_set.setAttribute('id', str(request_id))
-                    transaction_set.appendChild(action_set)
-
-                    request_node = self._xml.createElement('http-request')
-                    self.report_http_action(request_node, details.request)
-                    action_set.appendChild(request_node)
-
-                    response_node = self._xml.createElement('http-response')
-                    self.report_http_action(response_node, details.response)
-                    action_set.appendChild(response_node)
-
-            self._top_elem.appendChild(message_node)
-
-    def _log_enabled_plugins_to_xml(self):
-        """
-        The previous versions of this plugin kept a lot of data in memory, using
-        a xml.dom.minidom.Document. Now we keep the data in raw format in memory and
-        just open the XML when we're writing to it.
-
-        :return: None
-        """
-        self._scan_info = self._xml.createElement('scan-info')
-
-        # Add the user configured targets to scan-info
-        str_targets = ','.join([xml_str(t.url_string) for t in cf.cf.get('targets')])
-        self._scan_info.setAttribute('target', str_targets)
-
-        # Add enabled plugins and their configuration to scan-info
-        for plugin_type in self._plugins_dict:
-            self._build_plugin_scaninfo(plugin_type,
-                                        self._plugins_dict[plugin_type],
-                                        self._options_dict[plugin_type])
-
-        # Add scan-info to the report
-        self._top_elem.appendChild(self._scan_info)
-
-    def _build_plugin_scaninfo(self, group_name, plugin_list, options_dict):
-        """
-        This method builds the xml structure for the plugins and their
-        configuration
-        """
-        node = self._xml.createElement(xml_str(group_name))
-        for plugin_name in plugin_list:
-            plugin_node = self._xml.createElement('plugin')
-            plugin_node.setAttribute('name', xml_str(plugin_name))
-
-            if plugin_name in options_dict:
-                for plugin_option in options_dict[plugin_name]:
-                    config_node = self._xml.createElement('config')
-                    config_node.setAttribute('parameter',
-                                             xml_str(plugin_option.get_name()))
-                    config_node.setAttribute('value',
-                                             xml_str(plugin_option.get_value()))
-                    plugin_node.appendChild(config_node)
-
-            node.appendChild(plugin_node)
-
-        self._scan_info.appendChild(node)
-
-    def report_http_action(self, parent_node, action):
-        """
-        Write out the request/response in a more parseable XML format will
-        factor anything with a content-type not prefixed with a text/ in a
-        CDATA.
-
-        parent - the parent node (eg http-request/http-response)
-        action - either a details.request or details.response
-        """
-        headers, body = self.handle_headers(parent_node, action)
-
-        if body:
-            self.handle_body(parent_node, headers, body)
-
-    def handle_headers(self, parent_node, action):
-        if isinstance(action, HTTPRequest):
-            headers = action.get_headers()
-            body = action.get_data() or ''
-            status = xml_str(action.get_request_line())
-        else:
-            headers = action.headers
-            body = action.body or ''
-            status = xml_str(action.get_status_line())
-
-        # Put out the status as an element
-        action_status_node = self._xml.createElement('status')
-        # strip is to remove the extraneous newline
-        action_status = self._xml.createTextNode(status.strip())
-        action_status_node.appendChild(action_status)
-        parent_node.appendChild(action_status_node)
-
-        # Put out the headers as XML entity
-        action_headers_node = self._xml.createElement('headers')
-        for header, header_content in headers.iteritems():
-            header_detail = self._xml.createElement('header')
-            header_detail.setAttribute('content', xml_str(header_content))
-            header_detail.setAttribute('field', xml_str(header))
-            action_headers_node.appendChild(header_detail)
-
-        parent_node.appendChild(action_headers_node)
-
-        return headers, body
-
-    def handle_body(self, parent_node, headers, body):
-        """
-        Create the XML tags that hold the http request or response body
-        """
-        action_body_node = self._xml.createElement('body')
-        action_body_node.setAttribute('content-encoding', 'text')
-
-        # https://github.com/andresriancho/w3af/issues/264 is fixed by encoding
-        # the ']]>', which in some cases would end up in a CDATA section and
-        # break it, using base64 encoding
-        if INVALID_XML.search(body) or ']]>' in body:
-            # irrespective of the mimetype; if the NULL char is present; then
-            # base64.encode it
-            encoded = base64.encodestring(xml_str(body, replace_invalid=False))
-            action_body_content = self._xml.createTextNode(encoded)
-            action_body_node.setAttribute('content-encoding', 'base64')
-
-        else:
-            # try and extract the Content-Type header
-            content_type, _ = headers.iget('Content-Type', '')
-
-            try:
-                # if we know the Content-Type (ie it's in the headers)
-                mime_type, sub_type = content_type.split('/', 1)
-            except ValueError:
-                # not strictly valid mime-type, it doesn't respect the usual
-                # foo/bar format. Play it safe with the content by forcing it
-                # to be written in base64 encoded form
-                mime_type = 'application'
-                sub_type = 'octet-stream'
-
-            if mime_type == 'text':
-                # There shouldn't be any invalid chars, so for perf we just send
-                # false and avoid a RE sub call to the body
-                encoded_body = xml_str(body, replace_invalid=False)
-                action_body_content = self._xml.createTextNode(encoded_body)
-
-            elif mime_type == 'application' and sub_type in NON_BIN:
-                # Textual type application, eg json, javascript
-                # which for readability we'd rather not base64.encode
-                #
-                # There shouldn't be any invalid chars, so for perf we just send
-                # false and avoid a RE sub call to the body
-                encoded_body = xml_str(body, replace_invalid=False)
-                action_body_content = self._xml.createCDATASection(encoded_body)
-
-            else:
-                # either known (image, audio, video) or unknown binary format
-                # Write it as base64encoded text
-                encoded = base64.encodestring(xml_str(body, replace_invalid=False))
-                action_body_content = self._xml.createTextNode(encoded)
-                action_body_node.setAttribute('content-encoding', 'base64')
-
-        action_body_node.appendChild(action_body_content)
-        parent_node.appendChild(action_body_node)
+        self._file.close()
 
     def get_long_desc(self):
         """
@@ -517,4 +322,357 @@ class xml_file(OutputPlugin):
 
         The generated XML file validates against the report.xsd file which is
         distributed with the plugin.
+        
+        Some vulnerabilities require special characters to be triggered, those
+        special characters might not be valid according to the XML specification,
+        in order to be able to write these to the report, tags like the following
+        are used:
+        
+            <character code="hhhh"/>
+        
+        Where "hhhh" is the hex representation of the character. The XML parser
+        should handle these tags and show the real character to the user, encoded
+        as expected in the final format. 
         """
+
+
+class FindingsCache(object):
+
+    COMPRESSION_LEVEL = 2
+
+    @staticmethod
+    def create_cache_path():
+        cache_path = FindingsCache.get_cache_path()
+
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
+
+    @staticmethod
+    def get_cache_path():
+        return os.path.join(get_temp_dir(), 'xml_file', 'findings')
+
+    def get_filename_from_uniq_id(self, uniq_id):
+        return os.path.join(FindingsCache.get_cache_path(), uniq_id)
+
+    def get_node_from_cache(self, uniq_id):
+        filename = self.get_filename_from_uniq_id(uniq_id)
+
+        try:
+            node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+        except IOError:
+            return None
+
+        return node.decode('utf-8')
+
+    def save_finding_to_cache(self, uniq_id, node):
+        filename = self.get_filename_from_uniq_id(uniq_id)
+        node = node.encode('utf-8')
+        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(node)
+
+    def evict_from_cache(self, uniq_id):
+        filename = self.get_filename_from_uniq_id(uniq_id)
+
+        if os.path.exists(filename):
+            os.remove(filename)
+
+    def list(self):
+        return os.listdir(FindingsCache.get_cache_path())
+
+
+class XMLNode(object):
+
+    TEMPLATE = None
+    TEMPLATE_INST = None
+
+    def __init__(self, jinja2_env):
+        """
+        :param jinja2_env: The jinja2 environment to use for rendering
+        """
+        self._jinja2_env = jinja2_env
+
+    def get_template(self, template_name):
+        return self._jinja2_env.get_template(template_name)
+
+
+class CachedXMLNode(XMLNode):
+
+    COMPRESSION_LEVEL = 2
+
+    @staticmethod
+    def create_cache_path():
+        cache_path = CachedXMLNode.get_cache_path()
+
+        if not os.path.exists(cache_path):
+            os.makedirs(cache_path)
+
+    @staticmethod
+    def get_cache_path():
+        return os.path.join(get_temp_dir(), 'xml_file')
+
+    def get_cache_key(self):
+        raise NotImplementedError
+
+    def get_filename(self):
+        return os.path.join(CachedXMLNode.get_cache_path(), self.get_cache_key())
+
+    def get_node_from_cache(self):
+        filename = self.get_filename()
+
+        try:
+            node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+        except IOError:
+            return None
+
+        return node.decode('utf-8')
+
+    def save_node_to_cache(self, node):
+        filename = self.get_filename()
+        node = node.encode('utf-8')
+        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(node)
+
+
+class HTTPTransaction(CachedXMLNode):
+
+    TEMPLATE = 'http_transaction.tpl'
+
+    def __init__(self, jinja2_env, _id):
+        """
+        :param _id: The HTTP request / response ID from w3af. This is is used to query
+                    the history and get the information. In most cases we'll get the
+                    information from the cache and return the XML node.
+
+        """
+        super(HTTPTransaction, self).__init__(jinja2_env)
+        self._id = _id
+
+    def get_cache_key(self):
+        return 'http-transaction-%s.data' % self._id
+
+    #@profile
+    def to_string(self):
+        """
+        :return: An xml node (as a string) representing the HTTP request / response.
+
+        <http-transaction id="...">
+            <http-request>
+                <status></status>
+                <headers>
+                    <header>
+                        <field></field>
+                        <content></content>
+                    </header>
+                </headers>
+                <body content-encoding="base64"></body>
+            </http-request>
+
+            <http-response>
+                <status></status>
+                <headers>
+                    <header>
+                        <field></field>
+                        <content></content>
+                    </header>
+                </headers>
+                <body content-encoding="base64"></body>
+            </http-response>
+        </http-transaction>
+
+        One of the differences this class has with the previous implementation is
+        that the body is always encoded, no matter the content-type. This helps
+        prevent encoding issues.
+        """
+        # Get the data from the cache
+        node = self.get_node_from_cache()
+        if node is not None:
+            return node
+
+        # HistoryItem to get requests/responses
+        req_history = HistoryItem()
+
+        # This might raise a DBException in some cases (which I still
+        # need to identify and fix). When an exception is raised here
+        # the caller needs to handle it by ignoring this part of the
+        # HTTP transaction
+        request, response = req_history.load_from_file(self._id)
+
+        data = request.get_data() or ''
+        b64_encoded_request_body = base64.encodestring(smart_str_ignore(data))
+
+        body = response.get_body() or ''
+        b64_encoded_response_body = base64.encodestring(smart_str_ignore(body))
+
+        context = {'id': self._id,
+                   'request': {'status': request.get_request_line().strip(),
+                               'headers': request.get_headers(),
+                               'body': b64_encoded_request_body},
+                   'response': {'status': response.get_status_line().strip(),
+                                'headers': response.get_headers(),
+                                'body': b64_encoded_response_body}}
+
+        context = dotdict(context)
+
+        template = self.get_template(self.TEMPLATE)
+        transaction = template.render(context)
+        self.save_node_to_cache(transaction)
+
+        return transaction
+
+
+class ScanInfo(CachedXMLNode):
+    TEMPLATE = 'scan_info.tpl'
+
+    def __init__(self, jinja2_env, scan_target, plugins_dict, options_dict):
+        """
+        Represents the w3af scan information
+
+        :param plugins_dict: The plugins which were enabled
+        :param options_dict: The options for each plugin
+        """
+        super(ScanInfo, self).__init__(jinja2_env)
+        self._scan_target = scan_target
+        self._plugins_dict = plugins_dict
+        self._options_dict = options_dict
+
+    def get_cache_key(self):
+        return 'scan-info.data'
+
+    #@profile
+    def to_string(self):
+        # Get the data from the cache
+        node = self.get_node_from_cache()
+        if node is not None:
+            return node
+
+        context = {'enabled_plugins': self._plugins_dict,
+                   'plugin_options': self._options_dict,
+                   'scan_target': self._scan_target}
+
+        template = self.get_template(self.TEMPLATE)
+        transaction = template.render(context)
+        self.save_node_to_cache(transaction)
+
+        return transaction
+
+
+class Finding(XMLNode):
+    TEMPLATE = 'finding.tpl'
+
+    def __init__(self, jinja2_env, info):
+        """
+        Represents a finding in the w3af framework, which will be serialized
+        as an XML node
+        """
+        super(Finding, self).__init__(jinja2_env)
+        self._info = info
+
+    #@profile
+    def to_string(self):
+        info = self._info
+        context = dotdict({})
+
+        context.id_list = info.get_id()
+        context.http_method = info.get_method()
+        context.name = info.get_name()
+        context.plugin_name = info.get_plugin_name()
+        context.severity = info.get_severity()
+        context.url = info.get_url()
+        context.var = info.get_token_name()
+        context.description = info.get_desc(with_id=False)
+
+        #
+        #   Add the information from the vuln db (if any)
+        #
+        context.long_description = None
+
+        if info.has_db_details():
+            context.long_description = info.get_long_description()
+            context.fix_guidance = info.get_fix_guidance()
+            context.fix_effort = info.get_fix_effort()
+            context.references = info.get_references()
+
+        #
+        #   Add the HTTP transactions
+        #
+        context.http_transactions = []
+        for transaction in info.get_id():
+            try:
+                xml = HTTPTransaction(self._jinja2_env, transaction).to_string()
+            except DBException, e:
+                msg = 'Failed to retrieve request with id %s from DB: "%s"'
+                om.out.error(msg % (transaction, e))
+                continue
+            else:
+                context.http_transactions.append(xml)
+
+        template = self.get_template(self.TEMPLATE)
+        transaction = template.render(context)
+
+        return transaction
+
+
+class dotdict(dict):
+    """dot.notation access to dictionary attributes"""
+
+    def __setattr__(self, key, value):
+        """
+        Overriding in order to translate every value to an unicode object
+
+        :param key: The attribute name to set
+        :param value: The value (string, unicode or anything else)
+        :return: None
+        """
+        if isinstance(value, basestring):
+            value = smart_unicode(value)
+
+        self[key] = value
+
+    #__setattr__ = dict.__setitem__
+    __getattr__ = dict.get
+    __delattr__ = dict.__delitem__
+
+
+def is_unicode_escape(i):
+    return category(unichr(i)).startswith('C')
+
+
+ATTR_VALUE_ESCAPES = {
+    u'"': u'&quot;',
+    u'&': u'&amp;',
+    u'<': u'&lt;',
+    u'>': u'&gt;',
+
+    # Note that here we replace tabs with 4-spaces, like in python ;-)
+    # but it makes sense for easy parsing and showing to users
+    u'\t': u'    ',
+}
+
+ATTR_VALUE_ESCAPES.update(dict((unichr(i), '<character code="%04x"/>' % i)
+                               for i in xrange(sys.maxunicode)
+                               if is_unicode_escape(i)))
+
+ATTR_VALUE_ESCAPES_IGNORE = {'\n', '\r'}
+
+
+def jinja2_attr_value_escape_filter(value):
+    if not isinstance(value, basestring):
+        return value
+
+    # Fix some encoding errors which are triggered when the value is not an
+    # unicode string
+    value = smart_unicode(value)
+    retval = u''
+
+    for letter in value:
+        if letter in ATTR_VALUE_ESCAPES_IGNORE:
+            retval += letter
+            continue
+
+        escape = ATTR_VALUE_ESCAPES.get(letter, None)
+        if escape is not None:
+            retval += escape
+        else:
+            retval += letter
+
+    return jinja2.Markup(retval)
+
+

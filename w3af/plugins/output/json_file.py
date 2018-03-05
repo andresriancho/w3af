@@ -36,6 +36,7 @@ from w3af.core.data.options.option_list import OptionList
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
+
 class json_file(OutputPlugin):
     """
     Export identified vulnerabilities to a JSON file.
@@ -58,7 +59,7 @@ class json_file(OutputPlugin):
         pass
 
     debug = log_http = vulnerability = do_nothing
-    information = error = console = log_enabled_plugins = do_nothing
+    information = error = console = do_nothing
 
     def end(self):
         self.flush()
@@ -73,7 +74,6 @@ class json_file(OutputPlugin):
                                 enabled plugins for that type of plugin.
         :param options_dict: A dict with the options for every plugin.
         """
-
         # TODO: Improve so it contains the plugin configuration too
         for plugin_type, enabled in plugins_dict.iteritems():
             self._enabled_plugins[plugin_type] = enabled        
@@ -100,8 +100,8 @@ class json_file(OutputPlugin):
                 return x._desc
             except AttributeError:
                 return None
-        findings = filter(None, [ _get_desc(x) for x in kb.kb.get_all_findings() ])
-        known_urls = [ str(x) for x in kb.kb.get_all_known_urls() ]
+        findings = filter(None, [_get_desc(x) for x in kb.kb.get_all_findings()])
+        known_urls = [str(x) for x in kb.kb.get_all_known_urls()]
                         
         items = []
         for info in kb.kb.get_all_findings():

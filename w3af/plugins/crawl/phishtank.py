@@ -29,7 +29,7 @@ import w3af.core.data.constants.severity as severity
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.vuln import Vuln
-from w3af.core.data.esmre.esm_multi_in import esm_multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
@@ -50,7 +50,7 @@ class phishtank(CrawlPlugin):
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-        self._to_check_esm = None
+        self._multi_in = None
 
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
@@ -121,7 +121,7 @@ class phishtank(CrawlPlugin):
             raise BaseFrameworkException(msg % (self.PHISHTANK_DB, e))
 
         pt_matches = []
-        self._to_check_esm = esm_multi_in(to_check)
+        self._multi_in = MultiIn(to_check)
 
         om.out.debug('Starting the phishtank CSV parsing.')
 
@@ -143,9 +143,7 @@ class phishtank(CrawlPlugin):
         :return: A PhishTankMatch if url matches what we're looking for, None
                  if there is no match
         """
-        query_result = self._to_check_esm.query(phishing_url)
-
-        if query_result:
+        for query_result in self._multi_in.query(phishing_url):
             phish_url = URL(phishing_url)
             target_host_url = URL(query_result[0])
 

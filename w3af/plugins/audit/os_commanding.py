@@ -28,7 +28,7 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
 from w3af.core.data.kb.vuln import Vuln
 
@@ -40,7 +40,7 @@ class os_commanding(AuditPlugin):
     """
 
     FILE_PATTERNS = FILE_PATTERNS 
-    _multi_in = multi_in(FILE_PATTERNS)
+    _multi_in = MultiIn(FILE_PATTERNS)
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -51,11 +51,13 @@ class os_commanding(AuditPlugin):
         self._special_chars = ['', '&&', '|', ';', '\n', '\r\n']
         self._file_compiled_regex = []
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for OS Commanding vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # We are implementing two different ways of detecting OS Commanding
         # vulnerabilities:
@@ -72,10 +74,10 @@ class os_commanding(AuditPlugin):
         # This also speeds-up the detection process a little bit in the cases
         # where there IS a vulnerability present and can be found with both
         # methods.
-        self._with_echo(freq, orig_response)
-        self._with_time_delay(freq)
+        self._with_echo(freq, orig_response, debugging_id)
+        self._with_time_delay(freq, debugging_id)
 
-    def _with_echo(self, freq, orig_response):
+    def _with_echo(self, freq, orig_response, debugging_id):
         """
         Tests an URL for OS Commanding vulnerabilities using cat/type to write
         the content of a known file (i.e. /etc/passwd) to the HTML.
@@ -88,14 +90,18 @@ class os_commanding(AuditPlugin):
 
         # Create the mutants, notice that we use append=False (default) and
         # True to have better coverage.
-        mutants = create_mutants(freq, only_command_strings,
+        mutants = create_mutants(freq,
+                                 only_command_strings,
                                  orig_resp=orig_response)
-        mutants.extend(create_mutants(freq, only_command_strings,
-                                      append=True, orig_resp=orig_response))
+        mutants.extend(create_mutants(freq,
+                                      only_command_strings,
+                                      orig_resp=orig_response,
+                                      append=True))
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_echo)
+                                      self._analyze_echo,
+                                      debugging_id=debugging_id)
 
     def _analyze_echo(self, mutant, response):
         """
@@ -110,22 +116,24 @@ class os_commanding(AuditPlugin):
 
         for file_pattern_match in self._multi_in.query(response.get_body()):
 
-            if file_pattern_match not in mutant.get_original_response_body():
-                # Search for the correct command and separator
-                sent_os, sent_separator = self._get_os_separator(mutant)
+            if file_pattern_match in mutant.get_original_response_body():
+                continue
 
-                desc = 'OS Commanding was found at: %s' % mutant.found_at()
-                # Create the vuln obj
-                v = Vuln.from_mutant('OS commanding vulnerability', desc,
-                                     severity.HIGH, response.id,
-                                     self.get_name(), mutant)
+            # Search for the correct command and separator
+            sent_os, sent_separator = self._get_os_separator(mutant)
 
-                v['os'] = sent_os
-                v['separator'] = sent_separator
-                v.add_to_highlight(file_pattern_match)
+            desc = 'OS Commanding was found at: %s' % mutant.found_at()
+            # Create the vuln obj
+            v = Vuln.from_mutant('OS commanding vulnerability', desc,
+                                 severity.HIGH, response.id,
+                                 self.get_name(), mutant)
 
-                self.kb_append_uniq(self, 'os_commanding', v)
-                break
+            v['os'] = sent_os
+            v['separator'] = sent_separator
+            v.add_to_highlight(file_pattern_match)
+
+            self.kb_append_uniq(self, 'os_commanding', v)
+            break
 
     def _get_os_separator(self, mutant):
         """
@@ -138,7 +146,7 @@ class os_commanding(AuditPlugin):
         # Retrieve the data I need to create the vuln and the info objects
         command_list = self._get_echo_commands()
 
-        ### BUGBUG: Are you sure that this works as expected?!?!?!
+        # TODO: Are you sure that this works as expected ?!
         for comm in command_list:
             if comm.get_command() in mutant.get_token_value():
                 os = comm.get_OS()
@@ -146,37 +154,59 @@ class os_commanding(AuditPlugin):
 
         return os, separator
 
-    def _with_time_delay(self, freq):
+    def _with_time_delay(self, freq, debugging_id):
         """
         Tests an URL for OS Commanding vulnerabilities using time delays.
 
         :param freq: A FuzzableRequest
         """
+        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
+                                      iterable=self._generate_delay_tests(freq, debugging_id),
+                                      callback=lambda x, y: None)
+
+    def _generate_delay_tests(self, freq, debugging_id):
         fake_mutants = create_mutants(freq, ['', ])
         fake_mutants.extend(create_mutants(freq, ['', ], append=True))
 
         for mutant in fake_mutants:
-
+            #
+            # Don't try to find an OS commanding using a time delay method
+            # if we already found it via echo
+            #
             if self._has_bug(mutant):
-                continue
+                return
 
             for delay_obj in self._get_wait_commands():
+                yield mutant, delay_obj, debugging_id
 
-                ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
-                success, responses = ed.delay_is_controlled()
+    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+        """
+        Try to delay the response and save a vulnerability if successful
 
-                if success:
-                    desc = 'OS Commanding was found at: %s' % mutant.found_at()
-                                        
-                    v = Vuln.from_mutant('OS commanding vulnerability', desc,
-                                         severity.HIGH, [r.id for r in responses],
-                                         self.get_name(), mutant)
+        :param mutant: The mutant to modify and test
+        :param delay_obj: The delay to use
+        :param debugging_id: The debugging ID for logging
+        """
+        if self._has_bug(mutant):
+            return
 
-                    v['os'] = delay_obj.get_OS()
-                    v['separator'] = delay_obj.get_separator()
+        ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+        ed.set_debugging_id(debugging_id)
+        success, responses = ed.delay_is_controlled()
 
-                    self.kb_append_uniq(self, 'os_commanding', v)
-                    break
+        if not success:
+            return
+
+        desc = 'OS Commanding was found at: %s' % mutant.found_at()
+
+        v = Vuln.from_mutant('OS commanding vulnerability', desc,
+                             severity.HIGH, [r.id for r in responses],
+                             self.get_name(), mutant)
+
+        v['os'] = delay_obj.get_OS()
+        v['separator'] = delay_obj.get_separator()
+
+        self.kb_append_uniq(self, 'os_commanding', v)
 
     def _get_echo_commands(self):
         """

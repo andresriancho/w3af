@@ -19,8 +19,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-import copy
 import cPickle
+import copy
+import time
 
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_constants import (MODE_ALL, MODE_TB,
@@ -272,6 +273,37 @@ class TestFormParams(unittest.TestCase):
                                              form_select_misc)
         self.assertEquals(FormParameters.TOP_VARIANTS,
                           len([fv for fv in new_form.get_variants(mode=MODE_ALL)]) - 1)
+
+    def test_max_variants_many_fields(self):
+        # Makes sure that the get_variants will return 15 even when we have tons
+        # of parameters
+        form_params = []
+
+        for i in xrange(50):
+            form_params.append({'type': 'select',
+                                'name': 'cars_%s' % i,
+                                'values': ('volvo_%s' % i,
+                                           'saab_%s' % i,
+                                           'jeep_%s' % i,
+                                           'chevy_%s' % i,
+                                           'fiat_%s' % i,)})
+
+        # Really large form
+        new_form = create_form_params_helper(form_params)
+
+        start_time = time.time()
+
+        self.assertEquals(FormParameters.TOP_VARIANTS,
+                          len([fv for fv in new_form.get_variants(mode=MODE_TMB)]) - 1)
+
+        # With the previous version of our code this took considerable time, because range(10 ** 9)
+        # was called (doh!) creating 10 ** 9 integer objects in memory, which took a lot of time
+        # to complete (20 sec) and consumed many GB of RAM.
+        #
+        # Since measuring memory usage for a test is hard, I'm measuring spent time to make sure
+        # we don't have this regression anymore.
+        spent_time = time.time() - start_time
+        self.assertGreaterEqual(1, spent_time)
 
     def test_same_variants_generation(self):
         # Combinatoric explosion (mode=MODE_ALL): total_variants = 250 > 150

@@ -72,8 +72,6 @@ class get_emails(GrepPlugin):
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
         except BaseFrameworkException:
-            msg = 'Failed to get document parser for "%s" at get_emails.'
-            om.out.debug(msg % response.get_url())
             return
 
         emails = set(dp.get_emails(domain))

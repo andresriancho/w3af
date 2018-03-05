@@ -31,6 +31,7 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -64,11 +65,13 @@ class csrf(AuditPlugin):
         self._strict_mode = False
         self._equal_limit = 0.90
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Test URLs for CSRF vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         if not self._is_suitable(freq):
             return
@@ -83,7 +86,7 @@ class csrf(AuditPlugin):
         # domain.
         #
         # TODO: This algorithm has lots of room for improvement
-        if self._is_origin_checked(freq, orig_response):
+        if self._is_origin_checked(freq, orig_response, debugging_id):
             om.out.debug('Origin for %s is checked' % freq.get_url())
             return
 
@@ -148,7 +151,7 @@ class csrf(AuditPlugin):
         om.out.debug('%s is suitable for CSRF attack' % freq.get_url())
         return True
 
-    def _is_origin_checked(self, freq, orig_response):
+    def _is_origin_checked(self, freq, orig_response, debugging_id):
         """
         :return: True if the remote web application verifies the Referer before
                  processing the HTTP request.
@@ -160,7 +163,7 @@ class csrf(AuditPlugin):
         headers['Referer'] = fake_ref
         mutant.set_token(('Referer',))
 
-        mutant_response = self._uri_opener.send_mutant(mutant)
+        mutant_response = self._uri_opener.send_mutant(mutant, debugging_id=debugging_id)
         
         if not self._is_resp_equal(orig_response, mutant_response):
             return True
@@ -235,10 +238,18 @@ class csrf(AuditPlugin):
         http://en.wikipedia.org/wiki/Password_strength
         """
         min_length = 5
+        max_length = 512
         min_entropy = 2.4
 
         # Check length
         if len(value) <= min_length:
+            return False
+
+        if len(value) > max_length:
+            # I have never seen a CSRF token longer than 256 bytes,
+            # doubling that and checking to make sure we don't check
+            # parameters which are files in multipart uploads or stuff
+            # like that
             return False
         
         # Check for common CSRF token names
@@ -247,7 +258,7 @@ class csrf(AuditPlugin):
                 return True
     
         # Calculate entropy
-        entropy = self.shannon_entropy(value.encode('utf8', errors='ignore'))
+        entropy = self.shannon_entropy(smart_str_ignore(value))
         if entropy >= min_entropy:
             return True
 

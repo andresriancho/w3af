@@ -21,11 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.output_manager import out
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
-from w3af.core.controllers.delay_detection.delay_mixin import DelayMixIn
 from w3af.core.data.url.helpers import new_no_content_resp
 
 
-class ExactDelayController(DelayMixIn):
+class ExactDelayController(object):
     """
     Given that more than one vulnerability can be detected using time delays,
     just to name a couple blind SQL injections and OS commandings, I decided to
@@ -66,6 +65,13 @@ class ExactDelayController(DelayMixIn):
 
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
+        self._debugging_id = None
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
+    def get_debugging_id(self):
+        return self._debugging_id
 
     def delay_is_controlled(self):
         """
@@ -81,12 +87,20 @@ class ExactDelayController(DelayMixIn):
         in place.
         """
         responses = []
-        
-        for delay in self.DELAY_SECONDS:
-            # Update the wait time before each test
-            original_wait_time = self.get_original_time()
 
-            success, response = self.delay_for(delay, original_wait_time)
+        for i, delay in enumerate(self.DELAY_SECONDS):
+
+            # Only grep on the first test, to give the grep plugins the chance
+            # to find something interesting. The other requests are not sent
+            # to grep plugins for performance
+            grep = i == 0
+
+            # Please note that this call is cached, it will only generate HTTP
+            # requests every N calls for the same HTTP request.
+            original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
+                                                                      debugging_id=self.get_debugging_id())
+
+            success, response = self.delay_for(delay, original_rtt, grep)
             if success:
                 self._log_success(delay, response)
                 responses.append(response)
@@ -97,30 +111,37 @@ class ExactDelayController(DelayMixIn):
         return True, responses
 
     def _log_success(self, delay, response):
-        msg = (u'(Test id: %s) Successfully controlled HTTP response delay for'
+        msg = (u'[did: %s] [id: %s] Successfully controlled HTTP response delay for'
                u' URL %s - parameter "%s" for %s seconds using %r, response'
                u' wait time was: %s seconds and response ID: %s.')
         self._log_generic(msg, delay, response)
 
     def _log_failure(self, delay, response):
-        msg = (u'(Test id: %s) Failed to control HTTP response delay for'
+        msg = (u'[did: %s] [id: %s] Failed to control HTTP response delay for'
                u' URL %s - parameter "%s" for %s seconds using %r, response'
                u' wait time was: %s seconds and response ID: %s.')
         self._log_generic(msg, delay, response)
 
     def _log_generic(self, msg, delay, response):
-        args = (id(self), self.mutant.get_url(), self.mutant.get_token_name(),
-                delay, self.delay_obj, response.get_wait_time(),
+        args = (self._debugging_id,
+                id(self),
+                self.mutant.get_url(),
+                self.mutant.get_token_name(),
+                delay,
+                self.delay_obj,
+                response.get_wait_time(),
                 response.id)
         out.debug(msg % args)
 
-    def delay_for(self, delay, original_wait_time):
+    def delay_for(self, delay, original_wait_time, grep):
         """
         Sends a request to the remote end that "should" delay the response in
         `delay` seconds.
 
+        :param delay: The delay object
         :param original_wait_time: The time that it takes to perform the
                                    request without adding any delays.
+        :param grep: Should the framework grep the HTTP response sent for testing?
 
         :return: (True, response) if there was a delay. In order to make
                  things right we first send some requests to measure the
@@ -139,8 +160,11 @@ class ExactDelayController(DelayMixIn):
         # Send, it is important to notice that we don't use the cache
         # to avoid any interference
         try:
-            response = self.uri_opener.send_mutant(mutant, cache=False,
-                                                   timeout=upper_bound * 10)
+            response = self.uri_opener.send_mutant(mutant,
+                                                   cache=False,
+                                                   grep=grep,
+                                                   timeout=upper_bound * 10,
+                                                   debugging_id=self.get_debugging_id())
         except HTTPRequestException, hre:
             # NOTE: In some cases where the remote web server timeouts we reach
             #       this code section. The handling of that situation is done
@@ -150,11 +174,9 @@ class ExactDelayController(DelayMixIn):
         # Test if the delay worked
         current_response_wait_time = response.get_wait_time()
         args = (id(self), current_response_wait_time, lower_bound)
-        out.debug(u'(Test id: %s) %s > %s' % args)
+        out.debug(u'[id: %s] HTTP response delay was %.2f. Expected delay was %.2f.' % args)
 
         if current_response_wait_time > lower_bound:
             return True, response
 
         return False, response
-
-

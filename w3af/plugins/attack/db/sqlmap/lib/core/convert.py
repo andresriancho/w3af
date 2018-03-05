@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 try:
@@ -110,7 +110,7 @@ def hexdecode(value):
     value = value.lower()
     return (value[2:] if value.startswith("0x") else value).decode("hex")
 
-def hexencode(value):
+def hexencode(value, encoding=None):
     """
     Encodes string value from plain to hex format
 
@@ -118,7 +118,7 @@ def hexencode(value):
     '666f6f626172'
     """
 
-    return utf8encode(value).encode("hex")
+    return unicodeencode(value, encoding).encode("hex")
 
 def unicodeencode(value, encoding=None):
     """
@@ -166,7 +166,7 @@ def htmlunescape(value):
 
     retVal = value
     if value and isinstance(value, basestring):
-        codes = (('&lt;', '<'), ('&gt;', '>'), ('&quot;', '"'), ('&nbsp;', ' '), ('&amp;', '&'))
+        codes = (("&lt;", '<'), ("&gt;", '>'), ("&quot;", '"'), ("&nbsp;", ' '), ("&amp;", '&'), ("&apos;", "'"))
         retVal = reduce(lambda x, y: x.replace(y[0], y[1]), codes, retVal)
         try:
             retVal = re.sub(r"&#x([^ ;]+);", lambda match: unichr(int(match.group(1), 16)), retVal)

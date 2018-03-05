@@ -20,12 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
-import time
 
 import w3af.core.controllers.output_manager as om
 
 from .base_consumer import BaseConsumer, task_decorator
 from .constants import POISON_PILL, FORCE_LOGIN
+from w3af.core.controllers.profiling.took_helper import TookLine
 
 
 class auth(BaseConsumer):
@@ -68,11 +68,11 @@ class auth(BaseConsumer):
 
                 if action == POISON_PILL:
 
-                    for plugin in self._consumer_plugins:
-                        plugin.end()
-
-                    self.in_queue.task_done()
-                    break
+                    try:
+                        self._end_plugins()
+                    finally:
+                        self.in_queue.task_done()
+                        break
 
                 elif action == FORCE_LOGIN:
                     # pylint: disable=E1120
@@ -81,6 +81,10 @@ class auth(BaseConsumer):
                     finally:
                         self.in_queue.task_done()
                     # pylint: enable=E1120
+
+    def _end_plugins(self):
+        for plugin in self._consumer_plugins:
+            plugin.end()
 
     # Adding task here because we want to let the rest of the world know
     # that we're still doing something. The _task_done below will "undo"
@@ -95,7 +99,9 @@ class auth(BaseConsumer):
 
             args = (plugin.get_name(), plugin.get_name())
             om.out.debug('%s.is_logged() and %s.login()' % args)
-            start_time = time.time()
+            took_line = TookLine(self._w3af_core,
+                                 plugin.get_name(),
+                                 '_login')
 
             try:
                 if not plugin.is_logged():
@@ -103,9 +109,7 @@ class auth(BaseConsumer):
             except Exception, e:
                 self.handle_exception('auth', plugin.get_name(), None, e)
 
-            spent_time = time.time() - start_time
-            args = (plugin.get_name(), plugin.get_name(), spent_time)
-            om.out.debug('%s.is_logged() and %s.login() took %.2f seconds to run' % args)
+            took_line.send()
 
     def async_force_login(self):
         self.in_queue_put(FORCE_LOGIN)

@@ -25,14 +25,14 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from w3af.core.controllers.auto_update.git_client import GitClient, GitClientError
-from w3af.core.controllers.auto_update.utils import (to_short_id,
-                                                get_commit_id_date)
 from w3af.core.data.db.startup_cfg import StartUpConfig
+from w3af.core.controllers.auto_update.utils import (to_short_id,
+                                                     get_commit_id_date)
 
 
 class VersionMgr(object):
     """
-    Perform SVN w3af code update and commit. When an instance is created loads
+    Perform git w3af code update and commit. When an instance is created loads
     data from a .conf file that will be used when actions are executed.
     Also provides some callbacks as well as events to register to.
 

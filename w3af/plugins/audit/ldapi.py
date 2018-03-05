@@ -25,7 +25,7 @@ import w3af.core.data.constants.severity as severity
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.kb.vuln import Vuln
 
@@ -79,25 +79,25 @@ class ldapi(AuditPlugin):
         'Module Products.LDAPMultiPlugins'
     )
 
-    _multi_in = multi_in(LDAP_ERRORS)
+    _multi_in = MultiIn(LDAP_ERRORS)
 
     LDAPI_STRINGS = ["^(#$!@#$)(()))******", ]
 
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for LDAP injection vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         mutants = create_mutants(freq, self.LDAPI_STRINGS,
                                  orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """
@@ -132,11 +132,10 @@ class ldapi(AuditPlugin):
         """
         res = []
         for match_string in self._multi_in.query(response.body):
-            msg = 'Found LDAP error string. The error returned by the web'
-            msg += ' application is (only a fragment is shown): "'
-            msg += match_string + '". The error was found on '
-            msg += 'response with id ' + str(response.id) + '.'
-            om.out.information(msg)
+            msg = ('Found LDAP error string. The error returned by the web'
+                   ' application is (only a fragment is shown): "%s". The error'
+                   ' was found in response with ID %s')
+            om.out.information(msg % (match_string, response.id))
             res.append(match_string)
         return res
 

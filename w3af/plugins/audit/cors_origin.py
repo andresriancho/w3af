@@ -60,22 +60,26 @@ class cors_origin(AuditPlugin):
         # Internal variables
         self._reported_global = set()
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Plugin entry point.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # Detect if current url provides CORS features
-        if not provides_cors_features(freq, self._uri_opener):
+        if not provides_cors_features(freq, self._uri_opener, debugging_id):
             return
 
         url = freq.get_url()
-        self.analyze_cors_security(url)
+        self.analyze_cors_security(url, debugging_id)
 
-    def analyze_cors_security(self, url):
+    def analyze_cors_security(self, url, debugging_id):
         """
         Send forged HTTP requests in order to test target application behavior.
+
+        :param debugging_id: A unique identifier for this call to audit()
         """
         origin_list = [self.origin_header_value, ]
 
@@ -95,7 +99,8 @@ class cors_origin(AuditPlugin):
             forged_req = build_cors_request(url, origin)
 
             # Send forged request and retrieve response information
-            response = self._uri_opener.send_mutant(forged_req)
+            response = self._uri_opener.send_mutant(forged_req, debugging_id=debugging_id)
+
             allow_origin = retrieve_cors_header(response, ACAO)
             allow_credentials = retrieve_cors_header(response, ACAC)
             allow_methods = retrieve_cors_header(response, ACAM)

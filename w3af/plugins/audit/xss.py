@@ -84,11 +84,13 @@ class xss(AuditPlugin):
         # User configured parameters
         self._check_persistent_xss = True
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for XSS vulnerabilities.
         
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         fake_mutants = create_mutants(freq, [''])
 
@@ -99,14 +101,14 @@ class xss(AuditPlugin):
         #
         # So I simply migrated this to a slower for loop.
         for fake_mutant in fake_mutants:
-            self._check_xss_in_parameter(fake_mutant)
+            self._check_xss_in_parameter(fake_mutant, debugging_id)
 
-    def _check_xss_in_parameter(self, mutant):
+    def _check_xss_in_parameter(self, mutant, debugging_id):
         """
         Tries to identify (persistent) XSS in one parameter.
         """
         if not self._identify_trivial_xss(mutant):
-            self._search_xss(mutant)
+            self._search_xss(mutant, debugging_id)
 
     def _report_vuln(self, mutant, response, mod_value):
         """
@@ -146,7 +148,7 @@ class xss(AuditPlugin):
         trivial_mutant = mutant.copy()
         trivial_mutant.set_token_value(payload)
         
-        response = self._uri_opener.send_mutant(trivial_mutant)
+        response = self._uri_opener.send_mutant(trivial_mutant, grep=True)
 
         # Add data for the persistent xss checking
         if self._check_persistent_xss:
@@ -168,7 +170,7 @@ class xss(AuditPlugin):
         
         return False
 
-    def _search_xss(self, mutant):
+    def _search_xss(self, mutant, debugging_id):
         """
         Analyze the mutant for reflected XSS.
         
@@ -184,7 +186,9 @@ class xss(AuditPlugin):
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutant_list,
-                                      self._analyze_echo_result)
+                                      self._analyze_echo_result,
+                                      debugging_id=debugging_id,
+                                      grep=False)
 
     def _analyze_echo_result(self, mutant, response):
         """
@@ -233,11 +237,16 @@ class xss(AuditPlugin):
         """
         # Get all known fuzzable requests from the core
         fuzzable_requests = kb.kb.get_all_known_fuzzable_requests()
-        
+
+        debugging_id = rand_alnum(8)
+        om.out.debug('Starting stored XSS search (did=%s)' % debugging_id)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       fuzzable_requests,
                                       self._analyze_persistent_result,
-                                      grep=False, cache=False)    
+                                      grep=False,
+                                      cache=False,
+                                      debugging_id=debugging_id)
     
     def _analyze_persistent_result(self, fuzzable_request, response):
         """
@@ -247,6 +256,8 @@ class xss(AuditPlugin):
         
         :return: None, Vuln (if any) are saved to the kb.
         """
+        om.out.debug('Analyzing HTTP response %s to verify if XSS token was persisted.')
+
         body = response.get_body()
 
         for mutant, mutant_response_id in self._xss_mutants:

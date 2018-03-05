@@ -104,7 +104,7 @@ class KeepAliveHandler(object):
         Close all open connections
         """
         for conns in self._cm.get_all().values():
-            for conn in conns:
+            for conn in conns.copy():
                 self._cm.remove_connection(conn, reason='close all connections')
 
     def _request_closed(self, connection):
@@ -199,10 +199,9 @@ class KeepAliveHandler(object):
         elapsed = time.time() - start
         resp.set_wait_time(elapsed)
 
-        debug("HTTP response: %s - %s - %s with %s" % (req.get_selector(),
-                                                       resp.status,
-                                                       resp.reason,
-                                                       conn))
+        msg = "HTTP response: %s - %s - %s with %s in %s seconds"
+        args = (req.get_selector(), resp.status, resp.reason, conn, elapsed)
+        debug(msg % args)
 
         return resp
 

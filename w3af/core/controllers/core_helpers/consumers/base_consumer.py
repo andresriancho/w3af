@@ -19,19 +19,22 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import Queue
 import sys
+import time
+import Queue
 import random
 
 from multiprocessing.dummy import Process
 from functools import wraps
+
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exception_handling.helpers import pprint_plugins
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
 from w3af.core.controllers.core_helpers.status import w3af_core_status
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
-from w3af.core.data.misc.queue_speed import QueueSpeed
+from w3af.core.data.misc.cached_queue import CachedQueue
 
 # For some reason getting a randint with a large MAX like this is faster than
 # with a small one like 10**10
@@ -75,7 +78,7 @@ class BaseConsumer(Process):
 
     def __init__(self, consumer_plugins, w3af_core, thread_name,
                  create_pool=True, max_pool_queued_tasks=0,
-                 max_in_queue_size=0):
+                 max_in_queue_size=0, thread_pool_size=None):
         """
         :param consumer_plugins: Instances of base_consumer plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
@@ -84,10 +87,11 @@ class BaseConsumer(Process):
         """
         super(BaseConsumer, self).__init__(name='%sController' % thread_name)
 
-        self.in_queue = QueueSpeed(maxsize=max_in_queue_size,
-                                   name=thread_name)
+        self.in_queue = CachedQueue(maxsize=max_in_queue_size,
+                                    name=thread_name)
         self._out_queue = Queue.Queue()
-        
+
+        self._thread_name = thread_name
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
         self._observers = []
@@ -98,7 +102,7 @@ class BaseConsumer(Process):
         self._threadpool = None
 
         if create_pool:
-            self._threadpool = Pool(self.THREAD_POOL_SIZE,
+            self._threadpool = Pool(thread_pool_size or self.THREAD_POOL_SIZE,
                                     worker_names='%sWorker' % thread_name,
                                     max_queued_tasks=max_pool_queued_tasks)
 
@@ -124,7 +128,7 @@ class BaseConsumer(Process):
                 # Close the pool and wait for everyone to finish
                 self._threadpool.close()
                 self._threadpool.join()
-                del self._threadpool
+                self._threadpool = None
 
                 self._teardown()
 
@@ -194,6 +198,13 @@ class BaseConsumer(Process):
         self._tasks_in_progress[function_id] = 1
 
     def in_queue_put(self, work):
+        # Force the queue not to accept anything after POISON_PILL is sent.
+        # If anything is put to the queue after POISON_PILL, a race condition might happens
+        #    and the consumer might never stop
+        # https://github.com/andresriancho/w3af/pull/16063
+        if self._poison_pill_sent:
+            return
+        
         if work is not None:
             return self.in_queue.put(work)
 
@@ -219,9 +230,12 @@ class BaseConsumer(Process):
         # This is a special case which loosely translates to: "If there are any
         # pending tasks in the threadpool, even if they haven't yet called the
         # _add_task method, we know we have pending work to do".
-        if hasattr(self, '_threadpool') and self._threadpool is not None:
-            if self._threadpool._inqueue.qsize() > 0 \
-            or self._threadpool._outqueue.qsize() > 0:
+        if self._threadpool is not None:
+
+            if self._threadpool._inqueue.qsize() > 0:
+                return True
+
+            if self._threadpool._outqueue.qsize() > 0:
                 return True
         
         return False
@@ -242,17 +256,29 @@ class BaseConsumer(Process):
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         """
+        start_time = time.time()
+
         if not self.is_alive():
             # This return has a long history, follow it here:
             # https://github.com/andresriancho/w3af/issues/1172
             return
 
         if not self._poison_pill_sent:
-            # https://github.com/andresriancho/w3af/issues/9587
-            self._poison_pill_sent = True
+            # send the poison pill
             self.in_queue_put(POISON_PILL)
 
+            # https://github.com/andresriancho/w3af/issues/9587
+            # let put() know that all new tasks should be ignored
+            self._poison_pill_sent = True
+
         self.in_queue.join()
+
+        if self._threadpool is not None:
+            self._threadpool.close()
+            self._threadpool.join()
+
+        spent_time = time.time() - start_time
+        om.out.debug('%s took %.2f seconds to join()' % (self._thread_name, spent_time))
 
     def terminate(self):
         """

@@ -23,7 +23,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -49,7 +49,7 @@ class directory_indexing(GrepPlugin):
         # IIS 5.0
         '<A HREF=".*?">.*?</A><br></pre><hr></body></html>'
     )
-    _multi_in = multi_in(DIR_INDEXING)
+    _multi_in = MultiIn(DIR_INDEXING)
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -72,7 +72,8 @@ class directory_indexing(GrepPlugin):
         self._already_visited.add(response.get_url().get_domain_path())
         
         html_string = response.get_body()
-        if self._multi_in.query(html_string):
+
+        for _ in self._multi_in.query(html_string):
             
             desc = 'The URL: "%s" has a directory indexing vulnerability.'
             desc = desc % response.get_url()
@@ -82,6 +83,7 @@ class directory_indexing(GrepPlugin):
             v.set_url(response.get_url())
 
             self.kb_append_uniq(self, 'directory', v, 'URL')
+            break
 
     def get_long_desc(self):
         """

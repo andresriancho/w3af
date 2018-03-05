@@ -58,7 +58,6 @@ class TestBaseConsumer(unittest.TestCase):
         
         self.assertEqual(self.bc._teardown.call_count, 1)
 
-    @attr('ci_fails')
     def test_terminate_terminate(self):
         self.bc.start()
 
@@ -67,4 +66,3 @@ class TestBaseConsumer(unittest.TestCase):
         self.bc.terminate()
 
         self.assertEqual(self.bc._teardown.call_count, 1)
-        self.assertRaises(AssertionError, self.bc.terminate)

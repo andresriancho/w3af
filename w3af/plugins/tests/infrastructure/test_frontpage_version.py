@@ -18,23 +18,28 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
-from nose.plugins.attrib import attr
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 class TestFrontpageVersion(PluginTest):
 
-    base_url = 'http://moth'
+    target_url = 'http://httpretty'
+
+    FRONTPAGE_BODY = ('FPVersion="1.2.3"\n'
+                      'FPAdminScriptUrl="/admin"\n'
+                      'FPAuthorScriptUrl="/author"\n')
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/_vti_inf.html',
+                                   body=FRONTPAGE_BODY,
+                                   method='GET', status=200)]
 
     _run_configs = {
         'cfg': {
-            'target': base_url,
+            'target': target_url,
             'plugins': {'infrastructure': (PluginConfig('frontpage_version'),)}
         }
     }
 
-    @attr('ci_fails')
     def test_find_version(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -42,11 +47,10 @@ class TestFrontpageVersion(PluginTest):
         infos = self.kb.get('frontpage_version', 'frontpage_version')
 
         EXPECTED = ('/_vti_inf.html',
-                    '/_vti_bin/_vti_adm/admin.exe',
-                    '/_vti_bin/_vti_aut/author.exe')
+                    '/author',
+                    '/admin')
 
         self.assertEqual(len(infos), len(EXPECTED), infos)
 
-        self.assertEqual(
-            set([self.base_url + path_file for path_file in EXPECTED]),
-            set([i.get_url().url_string for i in infos]))
+        self.assertEqual(set([self.target_url + path_file for path_file in EXPECTED]),
+                         set([i.get_url().url_string for i in infos]))

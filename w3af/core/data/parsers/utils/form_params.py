@@ -498,7 +498,7 @@ class FormParameters(OrderedDict):
             if variants_total > self.TOP_VARIANTS:
                 # Inform user
                 msg = ('w3af found an HTML form that has several'
-                       'checkbox, radio and select input tags inside.'
+                       ' checkbox, radio and select input tags inside.'
                        ' Testing all combinations of those values would'
                        ' take too much time, the framework will only'
                        ' test %s randomly distributed variants.')
@@ -511,26 +511,10 @@ class FormParameters(OrderedDict):
                 rand = random.Random()
                 rand.seed(self.SEED)
 
-                # xrange in python2 has the following issue:
-                # >>> xrange(10**10)
-                # Traceback (most recent call last):
-                # File "<stdin>", line 1, in <module>
-                # OverflowError: long int too large to convert to int
-                #
-                # Which was amazingly reported by one of our users
-                # http://sourceforge.net/apps/trac/w3af/ticket/161481
-                #
-                # Given that we want to test SOME of the combinations we're
-                # going to settle with a rand.sample from the first
-                # MAX_VARIANTS_TOTAL (=10**9) items (that works in python2)
-                #
-                # >>> xrange(10**9)
-                # xrange(1000000000)
-                # >>>
                 variants_total = min(variants_total, self.MAX_VARIANTS_TOTAL)
 
-                for path in rand.sample(range(variants_total),
-                                        self.TOP_VARIANTS):
+                for _ in xrange(self.TOP_VARIANTS):
+                    path = rand.randint(0, variants_total)
                     yield self._decode_path(path, matrix)
 
             # Less than TOP_VARIANTS elems in matrix

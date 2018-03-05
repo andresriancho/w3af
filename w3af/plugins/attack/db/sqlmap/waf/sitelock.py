@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 from lib.core.settings import WAF_ATTACK_VECTORS
@@ -14,7 +14,7 @@ def detect(get_page):
 
     for vector in WAF_ATTACK_VECTORS:
         page, _, _ = get_page(get=vector)
-        retval = "SiteLock Incident ID" in (page or "")
+        retval |= any(_ in (page or "") for _ in ("SiteLock Incident ID", "sitelock-site-verification", "sitelock_shield_logo"))
         if retval:
             break
 

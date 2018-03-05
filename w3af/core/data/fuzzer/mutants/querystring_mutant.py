@@ -38,5 +38,3 @@ class QSMutant(Mutant):
     @staticmethod
     def get_mutant_type():
         return 'query string'
-
-

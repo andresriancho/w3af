@@ -24,30 +24,36 @@ import urllib
 import socket
 import urllib2
 import httplib
+import hashlib
 import threading
 import traceback
 import functools
+import OpenSSL
+
 from contextlib import contextmanager
 from collections import deque
 
-import OpenSSL
+# pylint: disable=E0401
+from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import opener_settings
+
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException,
                                               HTTPRequestException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByKnownReasonExc,
                                               ScanMustStopByUserRequest)
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
 from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
@@ -58,7 +64,8 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           TIMEOUT_ADJUST_LIMIT,
                                           TIMEOUT_MIN, DEFAULT_TIMEOUT,
                                           ACCEPTABLE_ERROR_RATE,
-                                          ERROR_DELAY_LIMIT)
+                                          ERROR_DELAY_LIMIT,
+                                          MAX_TIMEOUT)
 
 
 class ExtendedUrllib(object):
@@ -70,6 +77,7 @@ class ExtendedUrllib(object):
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
+        self._w3af_core = None
 
         # In exploit mode we disable some timeout/delay/error handling stuff
         self.exploit_mode = False
@@ -83,6 +91,17 @@ class ExtendedUrllib(object):
         # For rate limiting
         self._rate_limit_last_time_called = 0.0
         self._rate_limit_lock = threading.RLock()
+
+        # Keep track of sum(rtt) for each debugging_id
+        self._rtt_sum_debugging_id = SynchronizedLRUDict(capacity=128)
+
+        # Cache to measure RTT
+        self._rtt_mutant_cache = SynchronizedLRUDict(capacity=128)
+        self._rtt_mutant_lock = threading.RLock()
+
+        # Avoid multiple consecutive calls to reduce the worker pool size
+        self._last_call_to_adjust_workers = None
+        self._should_adjust_workers_lock = threading.RLock()
 
         # For timeout auto adjust and general stats
         self._total_requests = 0
@@ -119,6 +138,15 @@ class ExtendedUrllib(object):
         """
         self._user_stopped = True
 
+    def set_w3af_core(self, w3af_core):
+        self._w3af_core = w3af_core
+
+    def get_w3af_core(self):
+        return self._w3af_core
+
+    def has_w3af_core(self):
+        return self._w3af_core is not None
+
     def _before_send_hook(self, request):
         """
         This is a method that is called before every request is sent. I'm using
@@ -151,7 +179,8 @@ class ExtendedUrllib(object):
         Sets the timeout to use in HTTP requests, usually called by the auto
         timeout adjust feature in extended_urllib.py
         """
-        msg = 'Updating socket timeout for %s from %s to %s seconds'
+        timeout = min(MAX_TIMEOUT, timeout)
+        msg = 'Updating socket timeout for %s from %.2f to %.2f seconds'
         om.out.debug(msg % (host, self.get_timeout(host), timeout))
 
         self._host_timeout[host] = timeout
@@ -273,6 +302,73 @@ class ExtendedUrllib(object):
             average_rtt = float(rtt_sum) / add_count
             return average_rtt, add_count
 
+    def get_average_rtt_for_mutant(self, mutant, count=3, debugging_id=None):
+        """
+        Get the average time for the HTTP request represented as a mutant.
+
+        This method caches responses. The cache entries are valid for 5 seconds,
+        after that period of time the entry is removed from the cache, the average RTT
+        is re-calculated and stored again.
+
+        :param mutant: The mutant to send and measure RTT from
+        :param count: Number of checks to perform
+        :param debugging_id: Unique ID used for logging
+        :return: A float representing the seconds it took to get the response
+        """
+        #
+        # Get the cache key for this mutant
+        #
+        method = mutant.get_method()
+        uri = mutant.get_uri()
+        data = mutant.get_data()
+        headers = mutant.get_all_headers()
+
+        cache_key_parts = [method, uri, data, headers]
+        cache_key_str = ''.join([smart_str_ignore(i) for i in cache_key_parts])
+
+        m = hashlib.md5()
+        m.update(cache_key_str)
+        cache_key = m.hexdigest()
+
+        #
+        # Only perform one of these checks at the time, this is useful to prevent
+        # different threads which need the same result from duplicating efforts
+        #
+        with self._rtt_mutant_lock:
+
+            cached_value = self._rtt_mutant_cache.get(cache_key, default=None)
+
+            #
+            # The cache entry is still valid, return the cached value
+            #
+            if cached_value is not None:
+                timestamp, value = cached_value
+                if time.time() - timestamp <= 5:
+                    msg = 'Returning cached average RTT of %.2f seconds for mutant %s'
+                    om.out.debug(msg % (value, cache_key))
+                    return value
+
+            #
+            # Need to send the HTTP requests and do the average
+            #
+            rtts = []
+
+            for _ in xrange(count):
+                resp = self.send_mutant(mutant,
+                                        cache=False,
+                                        grep=False,
+                                        debugging_id=debugging_id)
+                rtt = resp.get_wait_time()
+                rtts.append(rtt)
+
+            average_rtt = float(sum(rtts)) / len(rtts)
+            self._rtt_mutant_cache[cache_key] = (time.time(), average_rtt)
+
+        msg = 'Returning fresh average RTT of %.2f seconds for mutant %s'
+        om.out.debug(msg % (average_rtt, cache_key))
+
+        return average_rtt
+
     def _should_auto_adjust_now(self):
         """
         :return: True if we need to auto adjust the timeout now
@@ -388,17 +484,24 @@ class ExtendedUrllib(object):
         """
         max_requests_per_second = self.settings.get_max_requests_per_second()
 
-        if max_requests_per_second > 0:
+        if max_requests_per_second <= 0:
+            return
 
-            min_interval = 1.0 / float(max_requests_per_second)
-            elapsed = time.clock() - self._rate_limit_last_time_called
-            left_to_wait = min_interval - elapsed
+        min_interval = 1.0 / float(max_requests_per_second)
+        elapsed = time.clock() - self._rate_limit_last_time_called
+        left_to_wait = min_interval - elapsed
 
-            with self._rate_limit_lock:
-                if left_to_wait > 0:
-                    time.sleep(left_to_wait)
+        with self._rate_limit_lock:
+            if left_to_wait > 0:
+                #
+                # This is useful for debugging, but will fill the output log in most
+                # scenarios, you have been warned
+                #
+                #om.out.debug('ExtendedUrllib rate limit in place. Blocking all HTTP'
+                #             ' requests for %s seconds.' % left_to_wait)
+                time.sleep(left_to_wait)
 
-            self._rate_limit_last_time_called = time.clock()
+        self._rate_limit_last_time_called = time.clock()
 
     def _pause_and_stop(self):
         """
@@ -478,7 +581,7 @@ class ExtendedUrllib(object):
         """
         return self.settings.get_cookies()
 
-    def send_clean(self, mutant):
+    def send_clean(self, mutant, debugging_id=None, grep=True):
         """
         Sends a mutant to the network (without using the cache) and then returns
         the HTTP response object and a sanitized response body (which doesn't
@@ -488,10 +591,13 @@ class ExtendedUrllib(object):
         responses that were generated with different mutants.
 
         :param mutant: The mutant to send to the network.
-        :return: (HTTP response,
-                  Sanitized HTTP response body)
+        :param debugging_id: A unique identifier for this call to audit()
+        :return: (HTTP response, Sanitized HTTP response body)
         """
-        http_response = self.send_mutant(mutant, cache=False)
+        http_response = self.send_mutant(mutant,
+                                         cache=False,
+                                         debugging_id=debugging_id,
+                                         grep=grep)
         clean_body = get_clean_body(mutant, http_response)
 
         return http_response, clean_body
@@ -533,13 +639,16 @@ class ExtendedUrllib(object):
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
                     cookies=True, error_handling=True, timeout=None,
-                    follow_redirects=False, use_basic_auth=True):
+                    follow_redirects=False, use_basic_auth=True,
+                    debugging_id=None, binary_response=False):
         """
         Sends a mutant to the remote web server.
 
         :param callback: If None, return the HTTP response object, else call
                          the callback with the mutant and the http response as
                          parameters.
+
+        :param debugging_id: A unique identifier for this call to audit()
 
         :return: The HTTPResponse object associated with the request
                  that was just sent.
@@ -569,6 +678,8 @@ class ExtendedUrllib(object):
             'timeout': timeout,
             'follow_redirects': follow_redirects,
             'use_basic_auth': use_basic_auth,
+            'debugging_id': debugging_id,
+            'binary_response': binary_response
         }
         method = mutant.get_method()
 
@@ -586,7 +697,8 @@ class ExtendedUrllib(object):
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, respect_size_limit=True,
             error_handling=True, timeout=None, follow_redirects=False,
-            use_basic_auth=True, use_proxy=True):
+            use_basic_auth=True, use_proxy=True, debugging_id=None,
+            binary_response=False):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -604,6 +716,7 @@ class ExtendedUrllib(object):
                         request. The timeout is specified in seconds
         :param cookies: Send stored cookies in request (or not)
         :param follow_redirects: Follow 30x redirects (or not)
+        :param debugging_id: A unique identifier for this call to audit()
 
         :return: An HTTPResponse object.
         """
@@ -627,7 +740,9 @@ class ExtendedUrllib(object):
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
                           follow_redirects=follow_redirects,
-                          use_basic_auth=use_basic_auth, use_proxy=use_proxy)
+                          use_basic_auth=use_basic_auth, use_proxy=use_proxy,
+                          debugging_id=debugging_id,
+                          binary_response=binary_response)
         req = self.add_headers(req, headers)
 
         with raise_size_limit(respect_size_limit):
@@ -635,13 +750,16 @@ class ExtendedUrllib(object):
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
              cookies=True, error_handling=True, timeout=None,
-             follow_redirects=None, use_basic_auth=True, use_proxy=True):
+             follow_redirects=None, use_basic_auth=True, use_proxy=True,
+             debugging_id=None, binary_response=False):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
 
         :param uri: This is the url where to post.
         :param data: A string with the data for the POST.
+        :param debugging_id: A unique identifier for this call to audit()
+
         :see: The GET() for documentation on the other parameters
         :return: An HTTPResponse object.
         """
@@ -675,7 +793,8 @@ class ExtendedUrllib(object):
                           error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
-                          use_basic_auth=use_basic_auth, use_proxy=use_proxy)
+                          use_basic_auth=use_basic_auth, use_proxy=use_proxy,
+                          debugging_id=debugging_id, binary_response=binary_response)
         req = self.add_headers(req, headers)
 
         return self.send(req, grep=grep)
@@ -730,7 +849,8 @@ class ExtendedUrllib(object):
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
                        cache=False, grep=True, cookies=True,
                        error_handling=True, timeout=None, use_basic_auth=True,
-                       use_proxy=True, follow_redirects=False):
+                       use_proxy=True, follow_redirects=False, debugging_id=None,
+                       binary_response=False):
             """
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
@@ -758,13 +878,49 @@ class ExtendedUrllib(object):
                               new_connection=new_connection,
                               use_basic_auth=use_basic_auth,
                               follow_redirects=follow_redirects,
-                              use_proxy=True)
+                              use_proxy=use_proxy,
+                              debugging_id=debugging_id,
+                              binary_response=binary_response)
             req = uri_opener.add_headers(req, headers or {})
             return uri_opener.send(req, grep=grep)
 
         method_partial = functools.partial(any_method, self, method_name)
         method_partial.__doc__ = 'Send %s HTTP request' % method_name
         return method_partial
+
+    def _track_rtt(self, http_response, debugging_id):
+        """
+        Add the RTT associated with this response to the sum of all RTTs sent
+        during this debugging_id.
+
+        :param http_response: The HTTP response that is going out to the caller
+        :param debugging_id: The debugging_id (if any) associated with the request
+        :return: None
+        """
+        if not debugging_id:
+            return
+
+        if not http_response:
+            return
+
+        if not hasattr(http_response, 'get_wait_time'):
+            return
+
+        rtt = http_response.get_wait_time()
+        if not rtt:
+            return
+
+        rtt_sum = self._rtt_sum_debugging_id.get(debugging_id, default=None)
+        if rtt_sum is None:
+            self._rtt_sum_debugging_id[debugging_id] = rtt
+        else:
+            self._rtt_sum_debugging_id[debugging_id] = rtt_sum + rtt
+
+    def get_rtt_for_debugging_id(self, debugging_id):
+        if debugging_id is None:
+            return
+
+        return self._rtt_sum_debugging_id.get(debugging_id, default=None)
 
     def add_headers(self, req, headers=Headers()):
         """
@@ -812,9 +968,11 @@ class ExtendedUrllib(object):
             # We usually get here when response codes in [404, 403, 401,...]
             return self._handle_send_success(req, e, grep, original_url,
                                              original_url_inst)
-        
-        except (socket.error, URLTimeoutError,
-                ConnectionPoolException, OpenSSL.SSL.SysCallError,
+
+        except (socket.error,
+                URLTimeoutError,
+                ConnectionPoolException,
+                OpenSSL.SSL.SysCallError,
                 OpenSSL.SSL.ZeroReturnError), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
@@ -824,7 +982,102 @@ class ExtendedUrllib(object):
         else:
             return self._handle_send_success(req, res, grep, original_url,
                                              original_url_inst)
-    
+
+    def _decrease_worker_pool_size(self):
+        w3af_core = self.get_w3af_core()
+        worker_pool = w3af_core.worker_pool
+        error_rate = self.get_error_rate()
+        min_workers = 10
+
+        # Note that we decrease by two here, and increase by one below
+        new_worker_count = worker_pool.get_worker_count() - 2
+        new_worker_count = max(new_worker_count, min_workers)
+
+        if new_worker_count >= min_workers:
+            worker_pool.set_worker_count(new_worker_count)
+            msg = 'Decreased the worker pool size to %s (error rate: %i%%)'
+        else:
+            msg = ('Not decreasing the worker pool size since it is lower'
+                   ' than the min value required by w3af: %s (error rate:'
+                   ' %i%%)')
+
+        om.out.debug(msg % (new_worker_count, error_rate))
+
+    def _increase_worker_pool_size(self):
+        w3af_core = self.get_w3af_core()
+        worker_pool = w3af_core.worker_pool
+        error_rate = self.get_error_rate()
+        max_workers = 100
+
+        # Note that we increase by one here, and decrease by two above
+        new_worker_count = worker_pool.get_worker_count() + 1
+        new_worker_count = min(new_worker_count, max_workers)
+
+        if new_worker_count <= max_workers:
+            worker_pool.set_worker_count(new_worker_count)
+            msg = 'Increased the worker pool size to %s (error rate: %i%%)'
+            om.out.debug(msg % (new_worker_count, error_rate))
+        else:
+            msg = 'Not increasing the worker pool size since it exceeds the max: %s'
+            om.out.debug(msg % max_workers)
+
+    def _should_increase_worker_pool(self):
+        """
+        We want to be very strict here, do not increase the worker pool
+        size when there are "some errors". Just increase when there are
+        "almost no errors"
+        """
+        error_rate = self.get_error_rate()
+        if error_rate >= (ACCEPTABLE_ERROR_RATE / 4.0):
+            return False
+
+        return True
+
+    def _should_decrease_worker_pool_size(self):
+        error_rate = self.get_error_rate()
+        if error_rate >= (ACCEPTABLE_ERROR_RATE / 2.0):
+            return True
+
+        return False
+
+    def _handle_worker_pool_size(self):
+        """
+        Increase or decrease the worker pool size
+        :return: None
+        """
+        if not self.has_w3af_core():
+            return
+
+        if not self._should_adjust_workers():
+            return
+
+        if self._should_decrease_worker_pool_size():
+            self._decrease_worker_pool_size()
+
+        elif self._should_increase_worker_pool():
+            self._increase_worker_pool_size()
+
+    def _should_adjust_workers(self):
+        """
+        :return: True if we should decrease the number of workers. The
+                 idea behind this is to give the framework time to adjust
+                 to the new thread pool size.
+
+                 We usually see ~10 ConnectionPoolExceptions being raised
+                 at the same time, thus we only want to react to the first
+                 one and give the framework time to see what happens.
+        """
+        with self._should_adjust_workers_lock:
+            if self._last_call_to_adjust_workers is None:
+                self._last_call_to_adjust_workers = time.time()
+                return True
+
+            elif (time.time() - self._last_call_to_adjust_workers) >= 45:
+                self._last_call_to_adjust_workers = time.time()
+                return True
+
+            return False
+
     def _handle_send_socket_error(self, req, exception, grep, original_url):
         """
         This error handling is separated from the other because we want to have
@@ -861,7 +1114,8 @@ class ExtendedUrllib(object):
 
         # Don't make a lot of noise on URLTimeoutError which is pretty common
         # and properly handled by this library
-        if not isinstance(exception, URLTimeoutError):
+        no_traceback_for = (URLTimeoutError, ConnectionPoolException)
+        if not isinstance(exception, no_traceback_for):
             msg = 'Traceback for this error: %s'
             om.out.debug(msg % traceback.format_exc())
 
@@ -871,6 +1125,8 @@ class ExtendedUrllib(object):
             should_stop_scan = self._should_stop_scan(req)
             if should_stop_scan:
                 self._handle_error_count_exceeded(exception)
+
+        self._handle_worker_pool_size()
 
         # Then retry!
         req._Request__original = original_url
@@ -906,18 +1162,22 @@ class ExtendedUrllib(object):
 
         from_cache = hasattr(res, 'from_cache') and res.from_cache
 
-        http_resp = HTTPResponse.from_httplib_resp(res, original_url=original_url_inst)
+        http_resp = HTTPResponse.from_httplib_resp(res,
+                                                   original_url=original_url_inst,
+                                                   binary_response=req.with_binary_response())
         http_resp.set_id(res.id)
         http_resp.set_from_cache(from_cache)
 
-        args = (res.id, from_cache, grep, http_resp.get_wait_time())
-        flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f)' % args
+        args = (res.id, from_cache, grep, http_resp.get_wait_time(), req.debugging_id)
+        flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f,did=%s)' % args
 
         msg += flags
         om.out.debug(msg)
 
         # Clear the log of failed requests; this request is DONE!
         self._log_successful_response(http_resp)
+        self._track_rtt(res, req.debugging_id)
+        self._handle_worker_pool_size()
 
         if grep:
             self._grep(req, http_resp)
@@ -1172,21 +1432,10 @@ class ExtendedUrllib(object):
         return request
 
     def _grep(self, request, response):
+        if self._grep_queue_put is None:
+            return
 
-        url_instance = request.url_object
-        domain = url_instance.get_domain()
-
-        if self._grep_queue_put is not None and\
-        domain in cf.cf.get('target_domains'):
-
-            # Create a fuzzable request based on the urllib2 request object
-            headers_inst = Headers(request.header_items())
-            fr = FuzzableRequest.from_parts(url_instance,
-                                            request.get_method(),
-                                            request.get_data() or '',
-                                            headers_inst)
-
-            self._grep_queue_put((fr, response))
+        self._grep_queue_put(request, response)
 
 
 @contextmanager

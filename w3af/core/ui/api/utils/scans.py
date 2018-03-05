@@ -24,12 +24,8 @@ import os
 from uuid import uuid4
 from tempfile import tempdir
 
+from w3af.core.ui.api.db.master import SCANS
 import w3af.core.controllers.output_manager as om
-
-from w3af.core.ui.api.db.master import SCANS, ScanInfo
-from w3af.core.ui.api.utils.log_handler import RESTAPIOutput
-from w3af.core.controllers.w3afCore import w3afCore
-from w3af.core.data.parsers.doc.url import URL
 
 
 def get_scan_info_from_id(scan_id):
@@ -53,42 +49,20 @@ def create_temp_profile(scan_profile):
     return scan_profile_file, tempdir
 
 
-def start_scan_helper(target_urls, scan_profile, scan_info_setup):
+def start_scan_helper(scan_info):
     """
-    Create a new instance of w3afCore, save it to SCANS and run core.start()
+    Start scan from scan_info
 
-    :param scan_profile: The contents of a profile configuration
-    :param scan_info_setup: Event to set when the scan started
-    :return: The instance of w3afCore.
+    :param scan_info: ScanInfo object contains initialized w3afCore
     """
-    scan_info = ScanInfo()
-    SCANS[get_new_scan_id()] = scan_info
-    scan_info.w3af_core = w3af_core = w3afCore()
-    scan_info.target_urls = target_urls
-    scan_info.output = RESTAPIOutput()
-
-    scan_info_setup.set()
-
-    scan_profile_file_name, profile_path = create_temp_profile(scan_profile)
-
-    # Clear all current output plugins
-    om.manager.set_output_plugins([])
-
+    w3af_core = scan_info.w3af_core
     try:
-        # Load the profile with the core and plugin config
-        w3af_core.profiles.use_profile(scan_profile_file_name,
-                                       workdir=profile_path)
-
-        # Override the target that's set in the profile
-        target_options = w3af_core.target.get_options()
-        target_option = target_options['target']
-
-        target_option.set_value([URL(u) for u in target_urls])
-        w3af_core.target.set_options(target_options)
-
+        # Init plugins!
         w3af_core.plugins.init_plugins()
 
+        # Clear all current output plugins
         # Add the REST API output plugin
+        om.manager.set_output_plugins([])
         om.manager.set_output_plugin_inst(scan_info.output)
 
         # Start the scan!
@@ -106,7 +80,7 @@ def start_scan_helper(target_urls, scan_profile, scan_info_setup):
         scan_info.finished = True
 
         try:
-            os.unlink(os.path.join(profile_path, scan_profile_file_name))
+            os.unlink(scan_info.profile_path)
         except (AttributeError, IOError) as _:
             # Reduce some exceptions found during interpreter shutdown
             pass

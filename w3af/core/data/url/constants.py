@@ -35,6 +35,11 @@ ERROR_DELAY_LIMIT = 5
 # timeouts we actually need *some* timeout to start from, this is the value:
 DEFAULT_TIMEOUT = 6
 
+# Max timeout that can be set by the framework's socket timeout auto-adjust
+# feature. This will stop scans that are run on *very* slow applications instead
+# of just trying to scan them at awfully slow speeds
+MAX_TIMEOUT = 120
+
 # Run the timeout adjustment every N HTTP requests
 TIMEOUT_ADJUST_LIMIT = 50
 

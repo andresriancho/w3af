@@ -27,6 +27,9 @@ from w3af.core.controllers.misc.get_net_iface import get_net_iface
 from w3af.core.data.parsers.utils.form_id_matcher_list import FormIDMatcherList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.db.variant_db import (PATH_MAX_VARIANTS,
+                                          PARAMS_MAX_VARIANTS,
+                                          MAX_EQUAL_FORM_VARIANTS)
 from w3af.core.data.options.option_types import (URL_LIST, COMBO, BOOL, LIST,
                                                  STRING, INT, FORM_ID_LIST)
 
@@ -64,6 +67,10 @@ class MiscSettings(Configurable):
         cf.cf.save('fuzzable_headers', [])
 
         cf.cf.save('form_fuzzing_mode', 'tmb')
+
+        cf.cf.save('path_max_variants', PATH_MAX_VARIANTS)
+        cf.cf.save('params_max_variants', PARAMS_MAX_VARIANTS)
+        cf.cf.save('max_equal_form_variants', MAX_EQUAL_FORM_VARIANTS)
 
         cf.cf.save('max_discovery_time', 120)
 
@@ -181,6 +188,38 @@ class MiscSettings(Configurable):
                           desc, INT, help=h, tabid='Core settings')
         ol.add(opt)
 
+        desc = 'Limit requests for each URL sub-path'
+        h = ('Limit how many requests are performed for each URL sub-path'
+             ' during crawling. For example, if the application links to'
+             ' three products: /product/1 /product/2 and /product/3, and'
+             ' this variable is set to two, only the first two URLs:'
+             ' /product/1 and /product/2 will be crawled.')
+        opt = opt_factory('path_max_variants',
+                          cf.cf.get('path_max_variants'),
+                          desc, INT, help=h, tabid='Core settings')
+        ol.add(opt)
+
+        desc = 'Limit requests for each URL and parameter set'
+        h = ('Limit how many requests are performed for each URL and parameter'
+             ' set. For example, if the application links to three products:'
+             ' /product?id=1 , /product?id=2 and /product?id=3, and this'
+             ' variable is set to two, only the first two URLs:'
+             ' /product?id=1 and /product?id=2 will crawled.')
+        opt = opt_factory('params_max_variants',
+                          cf.cf.get('params_max_variants'),
+                          desc, INT, help=h, tabid='Core settings')
+        ol.add(opt)
+
+        desc = 'Limit requests for similar forms'
+        h = ('Limit the number of HTTP requests to be sent to similar forms'
+             ' during crawling. For example, if the application has multiple'
+             ' HTML forms with the same parameters and different URLs set in'
+             ' actions then only the configured number of forms are crawled.')
+        opt = opt_factory('max_equal_form_variants',
+                          cf.cf.get('max_equal_form_variants'),
+                          desc, INT, help=h, tabid='Core settings')
+        ol.add(opt)
+
         #
         # Network parameters
         #
@@ -257,7 +296,9 @@ class MiscSettings(Configurable):
                    'form_fuzzing_mode', 'max_discovery_time',
                    'fuzzable_headers', 'interface', 'local_ip_address',
                    'msf_location', 'stop_on_first_exception',
-                   'non_targets', 'form_id_action', 'form_id_list')
+                   'non_targets', 'form_id_action', 'form_id_list',
+                   'path_max_variants', 'params_max_variants',
+                   'max_equal_form_variants')
 
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())

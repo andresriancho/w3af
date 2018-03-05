@@ -60,11 +60,13 @@ class shell_shock(AuditPlugin):
         super(shell_shock, self).__init__()
         self.already_tested_urls = ScalableBloomFilter()
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for shell shock vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         url = freq.get_url()
 
@@ -79,10 +81,10 @@ class shell_shock(AuditPlugin):
             for detection_method in [self._with_header_echo_injection,
                                      #self._with_body_echo_injection,
                                      self._with_time_delay]:
-                if detection_method(freq):
+                if detection_method(freq, debugging_id):
                     break
 
-    def _with_header_echo_injection(self, freq):
+    def _with_header_echo_injection(self, freq, debugging_id):
         """
         We're sending a payload that will trigger the injection of various
         headers in the HTTP response body.
@@ -97,7 +99,7 @@ class shell_shock(AuditPlugin):
         mutant = self.create_mutant(freq, TEST_HEADER)
         mutant.set_token_value(payload)
 
-        response = self._uri_opener.send_mutant(mutant)
+        response = self._uri_opener.send_mutant(mutant, debugging_id=debugging_id)
         header_value, header_name = response.get_headers().iget(injected_header)
 
         if header_value is not None and injected_value in header_value.lower():
@@ -110,7 +112,7 @@ class shell_shock(AuditPlugin):
             self.kb_append_uniq(self, 'shell_shock', v)
             return True
 
-    def _with_body_echo_injection(self, freq):
+    def _with_body_echo_injection(self, freq, debugging_id):
         """
         We're sending a payload that will trigger the injection of new lines
         that will make the response transition from "headers" to "body".
@@ -132,29 +134,46 @@ class shell_shock(AuditPlugin):
 
         return mutant
 
-    def _with_time_delay(self, freq):
+    def _with_time_delay(self, freq, debugging_id):
         """
         Tests an URLs for shell shock vulnerabilities using time delays.
 
         :param freq: A FuzzableRequest
         :return: True if a vulnerability was found
         """
-        mutant = self.create_mutant(freq, TEST_HEADER)
+        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
+                                      iterable=self._generate_delay_tests(freq, debugging_id),
+                                      callback=lambda x, y: None)
 
+    def _generate_delay_tests(self, freq, debugging_id):
         for delay_obj in self.DELAY_TESTS:
-            ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
-            success, responses = ed.delay_is_controlled()
+            mutant = self.create_mutant(freq, TEST_HEADER)
+            yield mutant, delay_obj, debugging_id
 
-            if success:
-                mutant.set_token_value(delay_obj.get_string_for_delay(3))
-                desc = u'Shell shock was found at: %s' % mutant.found_at()
+    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+        """
+        Try to delay the response and save a vulnerability if successful
 
-                v = Vuln.from_mutant(u'Shell shock vulnerability', desc,
-                                     severity.HIGH, [r.id for r in responses],
-                                     self.get_name(), mutant)
+        :param mutant: The mutant to modify and test
+        :param delay_obj: The delay to use
+        :param debugging_id: The debugging ID for logging
+        """
+        ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+        ed.set_debugging_id(debugging_id)
+        success, responses = ed.delay_is_controlled()
 
-                self.kb_append_uniq(self, 'shell_shock', v)
-                return True
+        if not success:
+            return False
+
+        mutant.set_token_value(delay_obj.get_string_for_delay(3))
+        desc = u'Shell shock was found at: %s' % mutant.found_at()
+
+        v = Vuln.from_mutant(u'Shell shock vulnerability', desc,
+                             severity.HIGH, [r.id for r in responses],
+                             self.get_name(), mutant)
+
+        self.kb_append_uniq(self, 'shell_shock', v)
+        return True
 
     def get_long_desc(self):
         """

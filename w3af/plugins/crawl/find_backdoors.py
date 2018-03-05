@@ -31,7 +31,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.esmre.multi_re import multi_re
+from w3af.core.data.quick_match.multi_re import MultiRE
 
 
 class find_backdoors(CrawlPlugin):
@@ -56,7 +56,7 @@ class find_backdoors(CrawlPlugin):
                 return
 
             signatures = self._read_signatures()
-            self._signature_re = multi_re(signatures, hint_len=2)
+            self._signature_re = MultiRE(signatures, hint_len=2)
 
     def _read_signatures(self):
         for line in file(self.SIGNATURE_DB):

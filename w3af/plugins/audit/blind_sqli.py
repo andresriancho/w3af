@@ -43,29 +43,58 @@ class blind_sqli(AuditPlugin):
         # User configured variables
         self._eq_limit = 0.9
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for blind SQL injection vulnerabilities.
 
         :param freq: A FuzzableRequest
         :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         #
-        #    Setup blind SQL injection detector objects
+        #    Blind SQL injection response diff
         #
         bsqli_resp_diff = BlindSqliResponseDiff(self._uri_opener)
         bsqli_resp_diff.set_eq_limit(self._eq_limit)
+        bsqli_resp_diff.set_debugging_id(debugging_id)
 
+        test_iterator = self._generate_response_diff_tests(freq, bsqli_resp_diff)
+
+        self._send_mutants_in_threads(func=self._find_response_diff_sql,
+                                      iterable=test_iterator,
+                                      callback=lambda x, y: None)
+
+        #
+        #    Blind SQL injection time delays
+        #
         bsqli_time_delay = BlindSQLTimeDelay(self._uri_opener)
+        bsqli_time_delay.set_debugging_id(debugging_id)
 
-        method_list = [bsqli_resp_diff, bsqli_time_delay]
+        test_iterator = self._generate_delay_tests(freq, bsqli_time_delay)
 
-        #
-        #    Use the objects to identify the vulnerabilities
-        #
-        fake_mutants = create_mutants(freq, ['', ])
+        self._send_mutants_in_threads(func=self._find_time_delay_sql,
+                                      iterable=test_iterator,
+                                      callback=lambda x, y: None)
 
-        for mutant in fake_mutants:
+    def _find_response_diff_sql(self, (bsqli_resp_diff, mutant, statement_type)):
+        """
+        :param bsqli_resp_diff: The logic used to find blind sql injections
+        :param mutant: The mutant object that I have to inject to
+        :param statement_type: The type of statement (string single, string double, int)
+        :return: A vulnerability or None
+        """
+        if self._has_bug(mutant):
+            return
+
+        vuln = bsqli_resp_diff.is_injectable(mutant, statement_type)
+
+        if vuln is None:
+            return
+
+        self.kb_append_uniq(self, 'blind_sqli', vuln)
+
+    def _generate_response_diff_tests(self, freq, bsqli_resp_diff):
+        for mutant in create_mutants(freq, ['', ]):
 
             if self._has_sql_injection(mutant):
                 #
@@ -75,12 +104,47 @@ class blind_sqli(AuditPlugin):
                 #
                 continue
 
-            for method in method_list:
-                found_vuln = method.is_injectable(mutant)
+            if self._has_bug(mutant):
+                #
+                # If we already identified a blind SQL injection in this
+                # mutant, maybe using response diff, then do not try to
+                # identify the issue again using time delays
+                #
+                return
 
-                if found_vuln is not None:
-                    self.kb_append_uniq(self, 'blind_sqli', found_vuln)
-                    break
+            for statement_type in bsqli_resp_diff.get_statement_types():
+                yield bsqli_resp_diff, mutant, statement_type
+
+    def _generate_delay_tests(self, freq, bsqli_time_delay):
+        for mutant in create_mutants(freq, ['', ]):
+
+            if self._has_sql_injection(mutant):
+                #
+                # If sqli.py was enabled and already detected a vulnerability
+                # in this parameter, then it makes no sense to test it again
+                # and report a duplicate to the user
+                #
+                continue
+
+            for delay_obj in bsqli_time_delay.get_delays():
+                yield bsqli_time_delay, mutant, delay_obj
+
+    def _find_time_delay_sql(self, (bsqli_time_delay, mutant, delay_obj)):
+        """
+        :param bsqli_time_delay: The logic used to find blind sql injections
+        :param mutant: The mutant object that I have to inject to
+        :param delay_obj: The exact delay object
+        :return: A vulnerability or None
+        """
+        if self._has_bug(mutant):
+            return
+
+        vuln = bsqli_time_delay.is_injectable(mutant, delay_obj)
+
+        if vuln is None:
+            return
+
+        self.kb_append_uniq(self, 'blind_sqli', vuln)
 
     def _has_sql_injection(self, mutant):
         """
@@ -90,9 +154,13 @@ class blind_sqli(AuditPlugin):
         sql_injection_list = kb.kb.get('sqli', 'sqli')
 
         for sql_injection in sql_injection_list:
-            if sql_injection.get_url() == mutant.get_url() and \
-            sql_injection.get_token_name() == mutant.get_token_name():
-                return True
+            if sql_injection.get_url() != mutant.get_url():
+                continue
+
+            if sql_injection.get_token_name() != mutant.get_token_name():
+                continue
+
+            return True
 
         return False
 

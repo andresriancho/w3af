@@ -34,3 +34,68 @@ class TestWorkerPool(unittest.TestCase):
         worker_pool = Pool(1, worker_names='WorkerThread')
         worker_pool.terminate()
         worker_pool.join()
+
+    def test_decrease_number_of_workers(self):
+        worker_pool = Pool(processes=4,
+                           worker_names='WorkerThread',
+                           maxtasksperchild=3)
+
+        self.assertEqual(worker_pool.get_worker_count(), 4)
+
+        def noop():
+            return 1 + 2
+
+        for _ in xrange(12):
+            result = worker_pool.apply_async(func=noop)
+            self.assertEqual(result.get(), 3)
+
+        self.assertEqual(worker_pool.get_worker_count(), 4)
+
+        worker_pool.set_worker_count(1)
+
+        # It takes some time...
+        self.assertEqual(worker_pool.get_worker_count(), 4)
+
+        for _ in xrange(12):
+            result = worker_pool.apply_async(func=noop)
+            self.assertEqual(result.get(), 3)
+
+        self.assertEqual(worker_pool.get_worker_count(), 1)
+
+        worker_pool.terminate()
+        worker_pool.join()
+
+    def test_increase_number_of_workers(self):
+        worker_pool = Pool(processes=2,
+                           worker_names='WorkerThread',
+                           maxtasksperchild=3)
+
+        self.assertEqual(worker_pool.get_worker_count(), 2)
+
+        def noop():
+            return 1 + 2
+
+        for _ in xrange(12):
+            result = worker_pool.apply_async(func=noop)
+            self.assertEqual(result.get(), 3)
+
+        self.assertEqual(worker_pool.get_worker_count(), 2)
+
+        worker_pool.set_worker_count(4)
+
+        # It takes some time...
+        self.assertEqual(worker_pool.get_worker_count(), 2)
+
+        for _ in xrange(12):
+            result = worker_pool.apply_async(func=noop)
+            self.assertEqual(result.get(), 3)
+
+        self.assertEqual(worker_pool.get_worker_count(), 4)
+
+        worker_pool.terminate()
+        worker_pool.join()
+
+    def test_change_number_of_workers_requirement(self):
+        worker_pool = Pool(processes=2,
+                           worker_names='WorkerThread')
+        self.assertRaises(AssertionError, worker_pool.set_worker_count, 3)

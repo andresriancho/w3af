@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import os
@@ -94,7 +94,7 @@ class DNSServer(object):
 
         with self._lock:
             for _ in self._requests:
-                if prefix is None and suffix is None or re.search("%s\..+\.%s" % (prefix, suffix), _, re.I):
+                if prefix is None and suffix is None or re.search(r"%s\..+\.%s" % (prefix, suffix), _, re.I):
                     retVal = _
                     self._requests.remove(_)
                     break

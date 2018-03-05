@@ -187,6 +187,10 @@ class Plugin(Configurable):
         """
         Please note that this method blocks from the caller's point of view
         but performs all the HTTP requests in parallel threads.
+
+        :param func: The function to use to send the mutants
+        :param iterable: A list with the mutants
+        :param callback: A callable to invoke after each mutant is sent
         """
         imap_unordered = self.worker_pool.imap_unordered
         awre = apply_with_return_error
@@ -257,6 +261,7 @@ class UrlOpenerProxy(object):
                       'get_remote_file_size',
                       'add_headers',
                       'assert_allowed_proto',
+                      'get_average_rtt_for_mutant',
                       '_handle_send_socket_error',
                       '_handle_send_urllib_error',
                       '_handle_send_success',

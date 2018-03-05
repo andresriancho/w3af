@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import httplib
@@ -64,14 +64,14 @@ def crawl(target):
                     if current:
                         content = Request.getPage(url=current, crawling=True, raise404=False)[0]
                 except SqlmapConnectionException, ex:
-                    errMsg = "connection exception detected (%s). skipping " % getSafeExString(ex)
+                    errMsg = "connection exception detected ('%s'). skipping " % getSafeExString(ex)
                     errMsg += "URL '%s'" % current
                     logger.critical(errMsg)
                 except SqlmapSyntaxException:
                     errMsg = "invalid URL detected. skipping '%s'" % current
                     logger.critical(errMsg)
                 except httplib.InvalidURL, ex:
-                    errMsg = "invalid URL detected (%s). skipping " % getSafeExString(ex)
+                    errMsg = "invalid URL detected ('%s'). skipping " % getSafeExString(ex)
                     errMsg += "URL '%s'" % current
                     logger.critical(errMsg)
 
@@ -112,9 +112,9 @@ def crawl(target):
                                         threadData.shared.deeper.add(url)
                                         if re.search(r"(.*?)\?(.+)", url):
                                             threadData.shared.value.add(url)
-                    except ValueError:          # for non-valid links
-                        pass
                     except UnicodeEncodeError:  # for non-HTML files
+                        pass
+                    except ValueError:          # for non-valid links
                         pass
                     finally:
                         if conf.forms:
