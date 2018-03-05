@@ -30,3 +30,5 @@ docker-tag-naming>=1.0.3
 
 # Most test servers are run inside docker containers
 docker-compose==1.2.0
+
+httpretty==0.8.14
