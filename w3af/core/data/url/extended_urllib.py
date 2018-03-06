@@ -1422,7 +1422,11 @@ class ExtendedUrllib(object):
 
             e = ScanMustStopByUnknownReasonExc(msg % args, errs=last_errors)
 
+        om.out.debug('The extended urllib will raise a scan must stop exception'
+                     ' for each request after this message. The remote server is'
+                     ' unreachable.')
         self._stop_exception = e
+
         # pylint: disable=E0702
         raise self._stop_exception
         # pylint: enable=E0702
