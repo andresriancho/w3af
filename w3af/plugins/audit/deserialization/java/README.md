@@ -30,3 +30,11 @@ Take one of the payloads from the JSON file and send it:
 curl  --insecure 'http://localhost:8222/suffer' -d 'PAYLOAD'
 ```
 
+Or send all payloads:
+
+```
+grep 'payload' *json | cut -d '"' -f 4 | xargs -L1 ./send-payload.sh
+```
+
+The expected result is a delay while waiting for the `curl` command
+to finish.
