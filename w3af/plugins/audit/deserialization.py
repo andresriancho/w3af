@@ -19,11 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import os
 import json
 import base64
-import binascii
 
 import w3af.core.data.constants.severity as severity
 
@@ -31,14 +29,11 @@ from w3af import ROOT_PATH
 from w3af.core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.data.misc.base64_nopadding import decode_base64
+from w3af.core.data.misc.base64_nopadding import is_base64
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_FILE, INPUT_TYPE_HIDDEN
-
-
-BASE64_RE = re.compile('^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=|[A-Z0-9+/]{4})$')
 
 
 class deserialization(AuditPlugin):
@@ -293,27 +288,3 @@ def is_pickled_data(data):
     :return: True if the data looks like a python pickle
     """
     return data.endswith('\n.')
-
-
-def is_base64(data):
-    """
-    Telling if a string is base64 encoded or not is hard. Simply decoding it
-    with base64.b64decode will yield a lot of false positives (it successfully
-    decodes strings with characters outside of the base64 RFC).
-
-    :param data: A string we saw in the web application
-    :return: True if data is a base64 encoded string
-    """
-    # At least for this plugin we want long base64 strings
-    if len(data) < 16:
-        return False
-
-    if not BASE64_RE.match(data):
-        return False
-
-    try:
-        decode_base64(data)
-    except binascii.Error:
-        return False
-
-    return True
