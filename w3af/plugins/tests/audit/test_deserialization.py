@@ -217,7 +217,17 @@ class TestJSONPayloadIsValid(unittest.TestCase):
         loaded_payloads = 0
 
         for root, dirs, files in os.walk(deserialization.PAYLOADS):
+
+            # Ignore helpers used for creating the nodejs payloads
+            if 'node_modules' in root:
+                continue
+
             for file_name in files:
+
+                # Ignore helpers used for creating the nodejs payloads
+                if file_name in ('package-lock.json', 'package.json'):
+                    continue
+
                 if file_name.endswith(deserialization.PAYLOAD_EXTENSION):
                     json_str = file(os.path.join(root, file_name)).read()
                     data = json.loads(json_str)
@@ -262,15 +272,30 @@ class TestExactDelay(unittest.TestCase):
 
     def test_get_payload_all(self):
         for root, dirs, files in os.walk(deserialization.PAYLOADS):
+
+            # Ignore helpers used for creating the nodejs payloads
+            if 'node_modules' in root:
+                continue
+
             for file_name in files:
+
+                # Ignore helpers used for creating the nodejs payloads
+                if file_name in ('package-lock.json', 'package.json'):
+                    continue
+
                 if file_name.endswith(deserialization.PAYLOAD_EXTENSION):
                     json_str = file(os.path.join(root, file_name)).read()
                     payload = json.loads(json_str)
 
                     ed = B64DeserializationExactDelay(payload)
 
-                    payload_1 = ed.get_string_for_delay(1)
-                    payload_22 = ed.get_string_for_delay(22)
+                    try:
+                        payload_1 = ed.get_string_for_delay(1)
+                        payload_22 = ed.get_string_for_delay(22)
+                    except Exception, e:
+                        msg = 'Raised exception "%s" on "%s"'
+                        args = (e, file_name)
+                        self.assertTrue(False, msg % args)
 
                     #file('1', 'w').write(base64.b64decode(payload['1']['payload']))
                     #file('2', 'w').write(base64.b64decode(payload_1))

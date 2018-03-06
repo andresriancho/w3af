@@ -152,7 +152,17 @@ class deserialization(AuditPlugin):
         Remember that all payloads are base64 encoded!
         """
         for root, dirs, files in os.walk(self.PAYLOADS):
+
+            # Ignore helpers used for creating the nodejs payloads
+            if 'node_modules' in root:
+                continue
+
             for file_name in files:
+
+                # Ignore helpers used for creating the nodejs payloads
+                if file_name in ('package-lock.json', 'package.json'):
+                    continue
+
                 if file_name.endswith(self.PAYLOAD_EXTENSION):
                     json_str = file(os.path.join(root, file_name)).read()
                     yield json.loads(json_str)
