@@ -196,6 +196,9 @@ class deserialization(AuditPlugin):
 
         self.kb_append_uniq(self, 'deserialization', v)
 
+    def get_plugin_deps(self):
+        return ['grep.serialized_object']
+
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
