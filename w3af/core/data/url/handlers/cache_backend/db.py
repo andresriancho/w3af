@@ -89,6 +89,10 @@ class SQLCachedResponse(CachedResponse):
                 
             raise ScanMustStopException(msg)
 
+        except OverflowError:
+            # Got this one during a moth scan, need to debug further
+            raise
+
         except Exception, ex:
             args = (ex, resp.get_id(), request.get_uri(), resp.get_code())
             msg = ('Exception while inserting request/response to the'

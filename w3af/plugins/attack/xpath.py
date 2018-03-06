@@ -428,7 +428,7 @@ class XPathReader(Shell):
         """
         mutant = self.get_mutant()
 
-        for c in range(32, 127):
+        for c in xrange(32, 127):
 
             orig_value = mutant.get_token_original_value()
             skip_len = len(orig_value) + len(self.STR_DELIM) + len(' ')

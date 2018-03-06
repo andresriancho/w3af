@@ -242,6 +242,15 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host, reason='ZeroReturnError')
             resp = None
             reason = e
+        except OpenSSL.SSL.SysCallError, e:
+            # Not sure why we're getting this exception when trying to reuse a
+            # connection (but not when doing the initial request). So we just
+            # ignore the exception and go on.
+            #
+            # A new connection will be created and the scan should continue without
+            # problems
+            resp = None
+            reason = e
         except Exception, e:
             # adding this block just in case we've missed something we will
             # still raise the exception, but lets try and close the connection

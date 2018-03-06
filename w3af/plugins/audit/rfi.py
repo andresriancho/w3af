@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import socket
+import errno
 import BaseHTTPServer
 from functools import partial
 
@@ -245,6 +246,17 @@ class rfi(AuditPlugin):
 
                 # Perform the real work
                 self._test_inclusion(freq, rfi_data, orig_response, debugging_id)
+            except socket.error, se:
+                errorcode = se[0]
+                if errorcode == errno.EADDRINUSE:
+                    # We can't use this address because it is already in use
+                    self._listen_address = None
+
+                    # Let the user know
+                    msg = ('Failed to bind to the provided listen address in the audit.'
+                           'rfi plugin. The address is already in use by another process.')
+                    om.out.error(msg)
+
             except Exception, e:
                 msg = 'An error occurred while running local web server for' \
                       ' the remote file inclusion (rfi) plugin: "%s"'

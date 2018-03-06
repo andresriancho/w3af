@@ -169,6 +169,9 @@ class Plugin(Configurable):
         """
         return self.__class__.__name__ == other.__class__.__name__
 
+    def __repr__(self):
+        return '<%s.%s>' % (self.get_type(), self.get_name())
+
     def end(self):
         """
         This method is called by w3afCore to let the plugin know that it wont

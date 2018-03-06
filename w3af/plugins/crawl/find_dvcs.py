@@ -124,15 +124,21 @@ class find_dvcs(CrawlPlugin):
         """
         resources = set()
 
-        for line in filenames:
-            if line.startswith('/'):
-                line = line[1:]
-            if line.startswith('./'):
-                line = line[2:]
-            if line.endswith('/'):
-                line = line[:-1]
+        for filename in filenames:
 
-            resources.add(line)
+            # Sometimes we get random bytes from the .git/index because of
+            # git versions we don't fully support, so we ignore any encoding
+            # errors
+            filename = smart_unicode(filename, errors='ignore')
+
+            if filename.startswith('/'):
+                filename = filename[1:]
+            if filename.startswith('./'):
+                filename = filename[2:]
+            if filename.endswith('/'):
+                filename = filename[:-1]
+
+            resources.add(filename)
 
         return resources
 
@@ -142,7 +148,7 @@ class find_dvcs(CrawlPlugin):
 
         :return: None, everything is saved to the self.out_queue.
         """
-        http_response = self.http_get_and_parse(repo_url, binary_response=True)
+        http_response = self.http_get_and_parse(repo_url, binary_response=True, respect_size_limit=False)
 
         if is_404(http_response):
             return
@@ -209,7 +215,7 @@ class find_dvcs(CrawlPlugin):
         else:
             return set()
 
-        for _ in range(0, index_entries):
+        for _ in xrange(index_entries):
             offset += filename_offset - 1
             length, = struct.unpack('>B', body[offset:offset + 1])
             if length > (len(body) - offset):
@@ -257,7 +263,7 @@ class find_dvcs(CrawlPlugin):
 
         body = body.split('\x00')
         found = True
-        for offset in range(0, len(body)):
+        for offset in xrange(len(body)):
             filename = body[offset - 2]
             if body[offset] == 'd':
                 if found:

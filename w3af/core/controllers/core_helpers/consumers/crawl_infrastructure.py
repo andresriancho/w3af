@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
 import Queue
 
 import w3af.core.controllers.output_manager as om
@@ -31,7 +32,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
-from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
+from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce, ScanMustStopException
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
                                                                         task_decorator)
@@ -130,18 +131,45 @@ class crawl_infrastructure(BaseConsumer):
         if plugin is None:
             to_teardown = self._consumer_plugins
         else:
-            to_teardown = [plugin, ]
+            to_teardown = [plugin]
 
         # When we disable a plugin, we call .end() , so no need to call the
         # same method twice
         to_teardown = set(to_teardown) - self._disabled_plugins
 
+        msg = 'Starting CrawlInfra consumer _teardown() with %s plugins.'
+        om.out.debug(msg % len(to_teardown))
+
         for plugin in to_teardown:
+            om.out.debug('Calling %s.end().' % plugin.get_name())
+            start_time = time.time()
+
             try:
                 plugin.end()
-            except BaseFrameworkException, e:
-                om.out.error('The plugin "%s" raised an exception in the '
-                             'end() method: %s' % (plugin.get_name(), e))
+            except ScanMustStopException:
+                # If we reach this exception here we don't care much
+                # since the scan is ending already. The log message stating
+                # that the scan will end because of this error was already
+                # delivered by the HTTP client.
+                #
+                # We `pass` instead of `break` because some plugins might
+                # still be able to `end()` without sending HTTP requests to
+                # the remote server
+                msg_fmt = ('Spent %.2f seconds running %s.end() until a'
+                           ' scan must stop exception was raised.')
+                self._log_end_took(msg_fmt, start_time, plugin)
+
+            except Exception, e:
+                msg_fmt = ('Spent %.2f seconds running %s.end() until an'
+                           ' unhandled exception was found.')
+                self._log_end_took(msg_fmt, start_time, plugin)
+
+                self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)
+            else:
+                msg_fmt = 'Spent %.2f seconds running %s.end().'
+                self._log_end_took(msg_fmt, start_time, plugin)
+
+        om.out.debug('Finished CrawlInfra consumer _teardown().')
 
     @task_decorator
     def _consume(self, function_id, work_unit):
@@ -172,7 +200,7 @@ class crawl_infrastructure(BaseConsumer):
         """
         try:
             for observer in self._observers:
-                observer.crawl(fuzzable_request)
+                observer.crawl(self, fuzzable_request)
         except Exception, e:
             self.handle_exception('crawl_infrastructure',
                                   'crawl_infrastructure._run_observers()',

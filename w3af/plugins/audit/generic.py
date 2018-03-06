@@ -152,7 +152,8 @@ class generic(AuditPlugin):
         """
         self._potential_vulns.append((mutant.get_url(),
                                       mutant.get_token_name(),
-                                      mutant, id_list))
+                                      mutant,
+                                      id_list))
 
     def _has_potential_vuln(self, mutant):
         """
@@ -248,10 +249,8 @@ class generic(AuditPlugin):
         """
         This method is called when the plugin wont be used anymore.
         """
-        all_findings = kb.kb.get_all_findings()
-
         for url, variable, mutant, id_list in self._potential_vulns:
-            for info in all_findings:
+            for info in kb.kb.get_all_findings_iter():
                 if info.get_token_name() == variable and info.get_url() == url:
                     break
             else:

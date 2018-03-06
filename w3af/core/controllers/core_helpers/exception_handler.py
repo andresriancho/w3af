@@ -118,15 +118,15 @@ class ExceptionHandler(object):
 
             count = 0
             for stored_edata in self._exception_data:
-                if edata.plugin == stored_edata.plugin and\
+                if edata.plugin == stored_edata.plugin and \
                 edata.phase == stored_edata.phase:
                     count += 1
 
             if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
                 self._exception_data.append(edata)
                 msg = edata.get_summary()
-                msg += ' The scan will continue but some vulnerabilities might'\
-                       ' not be identified.'
+                msg += (' The scan will continue but some vulnerabilities might'
+                        ' not be identified.')
                 om.out.error(msg)
 
         filename = self.write_crash_file(edata)

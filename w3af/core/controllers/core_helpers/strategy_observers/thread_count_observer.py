@@ -41,7 +41,7 @@ class ThreadCountObserver(StrategyObserver):
         self.last_call = 0
 
     def log_thread_count(self, *args):
-        # Don't measure disk usage each time we get called
+        # Don't measure threads each time we get called
         current_time = time.time()
         if (current_time - self.last_call) < self.ANALYZE_EVERY:
             return

@@ -102,7 +102,9 @@ class hash_analysis(GrepPlugin):
             else:
                 return False
 
-        if numbers in range(letters - len(possible_hash) / 2, letters + len(possible_hash) / 2):
+        low = letters - len(possible_hash) / 2
+        high = letters + len(possible_hash) / 2
+        if low < numbers < high:
             # Seems to be a hash, let's make a final test to avoid false positives with
             # strings like:
             # 2222222222222222222aaaaaaaaaaaaa
