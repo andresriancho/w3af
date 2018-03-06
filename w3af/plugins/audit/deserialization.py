@@ -209,7 +209,7 @@ class deserialization(AuditPlugin):
         
         These vulnerabilities are found when the application loads an untrusted,
         user-controlled, binary blob into an instance using methods such as
-        pickle (Python) or unserialize (PHP and Node JS).
+        pickle (Python) or unserialize (Node JS).
         
         The plugin will send various payloads to identify vulnerabilities in
         different languages and programming frameworks, all payloads use time
