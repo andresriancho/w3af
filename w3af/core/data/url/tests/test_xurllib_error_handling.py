@@ -67,6 +67,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
 
         # We want to keep going, don't test the _should_stop_scan here.
         self.uri_opener._should_stop_scan = lambda x: False
+        self.uri_opener._rate_limit = lambda: True
 
         url = URL('http://127.0.0.1:%s/' % port)
         http_exception_count = 0
