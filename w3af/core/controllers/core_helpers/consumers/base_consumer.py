@@ -367,3 +367,8 @@ class BaseConsumer(Process):
 
     def add_observer(self, observer):
         self._observers.append(observer)
+
+    def _log_end_took(self, msg_fmt, start_time, plugin):
+        spent_time = time.time() - start_time
+        args = (spent_time, plugin.get_name())
+        om.out.debug(msg_fmt % args)

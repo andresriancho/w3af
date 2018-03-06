@@ -23,7 +23,7 @@ import time
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
@@ -54,13 +54,30 @@ class bruteforce(BaseConsumer):
 
             try:
                 plugin.end()
-            except BaseFrameworkException, e:
-                om.out.error(str(e))
+            except ScanMustStopException:
+                # If we reach this exception here we don't care much
+                # since the scan is ending already. The log message stating
+                # that the scan will end because of this error was already
+                # delivered by the HTTP client.
+                #
+                # We `pass` instead of `break` because some plugins might
+                # still be able to `end()` without sending HTTP requests to
+                # the remote server
+                msg_fmt = ('Spent %.2f seconds running %s.end() until a'
+                           ' scan must stop exception was raised.')
+                self._log_end_took(msg_fmt, start_time, plugin)
 
-            spent_time = time.time() - start_time
-            msg = 'Spent %.2f seconds running %s.end().'
-            args = (spent_time, plugin.get_name())
-            om.out.debug(msg % args)
+            except Exception, e:
+                msg_fmt = ('Spent %.2f seconds running %s.end() until an'
+                           ' unhandled exception was found.')
+                self._log_end_took(msg_fmt, start_time, plugin)
+
+                self.handle_exception('bruteforce', plugin.get_name(),
+                                      'plugin.end()', e)
+
+            else:
+                msg_fmt = 'Spent %.2f seconds running %s.end().'
+                self._log_end_took(msg_fmt, start_time, plugin)
 
         om.out.debug('Finished Bruteforce consumer _teardown().')
 
