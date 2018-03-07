@@ -49,8 +49,8 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.plugins.output.xml_file import (xml_file, CachedXMLNode, FindingsCache,
-                                          HTTPTransaction, ScanInfo, Finding,
-                                          jinja2_attr_value_escape_filter)
+                                          HTTPTransaction, ScanInfo, ScanStatus,
+                                          Finding, jinja2_attr_value_escape_filter)
 
 
 @attr('smoke')
@@ -99,8 +99,7 @@ class TestXMLOutput(PluginTest):
             set(sorted([v.get_plugin_name() for v in file_vulns]))
         )
 
-        self.assertEqual(validate_xml(file(self.FILENAME).read(), self.XSD),
-                         '')
+        self.assertEqual(validate_xml(file(self.FILENAME).read(), self.XSD), '')
 
     def tearDown(self):
         super(TestXMLOutput, self).tearDown()
@@ -112,8 +111,13 @@ class TestXMLOutput(PluginTest):
             self.kb.cleanup()
 
     def test_error_null_byte(self):
-        # https://github.com/andresriancho/w3af/issues/12924
+        w3af_core = w3afCore()
+        w3af_core.status.start()
+
         plugin_instance = xml_file()
+        plugin_instance.set_w3af_core(w3af_core)
+
+        # https://github.com/andresriancho/w3af/issues/12924
         plugin_instance.error('\0')
         plugin_instance.flush()
 
@@ -128,6 +132,8 @@ class TestNoDuplicate(unittest.TestCase):
         CachedXMLNode.create_cache_path()
         FindingsCache.create_cache_path()
         HistoryItem().init()
+        self.w3af_core = w3afCore()
+        self.w3af_core.status.start()
 
     def tearDown(self):
         remove_temp_dir()
@@ -165,6 +171,7 @@ class TestNoDuplicate(unittest.TestCase):
 
         # Setup the plugin
         plugin_instance = xml_file()
+        plugin_instance.set_w3af_core(self.w3af_core)
 
         # Set the output file for the unittest
         ol = OptionList()
@@ -594,6 +601,72 @@ class TestScanInfo(XMLNodeGeneratorTest):
                     u'    <auth>\n'
                     u'    </auth>\n'
                     u'</scan-info>')
+
+        self.assertEqual(xml, expected)
+        self.assertValidXML(xml)
+
+
+class TestScanStatus(XMLNodeGeneratorTest):
+    def setUp(self):
+        kb.kb.cleanup()
+        create_temp_dir()
+
+    def tearDown(self):
+        remove_temp_dir()
+        HistoryItem().clear()
+        kb.kb.cleanup()
+
+    def test_render_simple(self):
+        w3af_core = w3afCore()
+
+        w3af_core.status.start()
+        w3af_core.status.set_running_plugin('crawl', 'web_spider')
+        status = w3af_core.status.get_status_as_dict()
+        total_urls = 150
+
+        x = xml_file()
+
+        scan_status = ScanStatus(x._get_jinja2_env(), status, total_urls)
+        xml = scan_status.to_string()
+        self.maxDiff = None
+        expected = (u'<scan-status>\n'
+                    u'    <status>Running</status>\n'
+                    u'    <is-paused>False</is-paused>\n'
+                    u'    <is-running>True</is-running>\n'
+                    u'\n'
+                    u'    <active-plugin>\n'
+                    u'        <crawl>web_spider</crawl>\n'
+                    u'        <audit>None</audit>\n'
+                    u'    </active-plugin>\n'
+                    u'\n'
+                    u'    <current-request>\n'
+                    u'        <crawl>None</crawl>\n'
+                    u'        <audit>None</audit>\n'
+                    u'    </current-request>\n'
+                    u'\n'
+                    u'    <queues>\n'
+                    u'        <crawl>\n'
+                    u'            <input-speed>None</input-speed>\n'
+                    u'            <output-speed>None</output-speed>\n'
+                    u'            <length>None</length>\n'
+                    u'        </crawl>\n'
+                    u'\n'
+                    u'        <audit>\n'
+                    u'            <input-speed>None</input-speed>\n'
+                    u'            <output-speed>None</output-speed>\n'
+                    u'            <length>None</length>\n'
+                    u'        </audit>\n'
+                    u'    </queues>\n'
+                    u'\n'
+                    u'    <eta>\n'
+                    u'        <crawl>None</crawl>\n'
+                    u'        <audit>None</audit>\n'
+                    u'    </eta>\n'
+                    u'\n'
+                    u'    <rpm>0</rpm>\n'
+                    u'\n'
+                    u'    <total-urls>150</total-urls>\n'
+                    u'</scan-status>')
 
         self.assertEqual(xml, expected)
         self.assertValidXML(xml)

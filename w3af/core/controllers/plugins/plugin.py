@@ -56,8 +56,9 @@ class Plugin(Configurable):
         Create some generic attributes that are going to be used by most plugins
         """
         self._uri_opener = None
+        self._w3af_core = None
         self.worker_pool = None
-        
+
         self.output_queue = Queue.Queue()
         self._plugin_lock = threading.RLock()
 
@@ -84,6 +85,19 @@ class Plugin(Configurable):
         :return: No value is returned.
         """
         self._uri_opener = UrlOpenerProxy(url_opener, self)
+
+    def set_w3af_core(self, w3af_core):
+        """
+        Set the w3af core instance to the plugin. This shouldn't be used much
+        but it is helpful when the plugin needs to query something about the
+        core status.
+
+        :return: None
+        """
+        self._w3af_core = w3af_core
+
+    def get_w3af_core(self):
+        return self._w3af_core
 
     def set_options(self, options_list):
         """

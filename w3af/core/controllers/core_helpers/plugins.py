@@ -49,21 +49,37 @@ class CorePlugins(object):
         process starts, and when the user loads a new profile.
         """
         # A dict with plugin types as keys and a list of plugin names as values
-        self._plugins_names_dict = {'audit': [], 'grep': [],
-                                    'bruteforce': [], 'crawl': [],
-                                    'evasion': [], 'mangle': [],
-                                    'output': [], 'auth': [],
+        self._plugins_names_dict = {'audit': [],
+                                    'grep': [],
+                                    'bruteforce': [],
+                                    'crawl': [],
+                                    'evasion': [],
+                                    'mangle': [],
+                                    'output': [],
+                                    'auth': [],
                                     'infrastructure': []}
 
-        self._plugins_options = {'audit': {}, 'grep': {}, 'bruteforce': {},
-                                 'crawl': {}, 'evasion': {}, 'mangle': {},
-                                 'output': {}, 'attack': {}, 'auth': {},
+        self._plugins_options = {'audit': {},
+                                 'grep': {},
+                                 'bruteforce': {},
+                                 'crawl': {},
+                                 'evasion': {},
+                                 'mangle': {},
+                                 'output': {},
+                                 'attack': {},
+                                 'auth': {},
                                  'infrastructure': {}}
 
         # A dict with plugin types as keys and a list of plugin instances as
         # values
-        self.plugins = {'audit': [], 'grep': [], 'bruteforce': [], 'crawl': [],
-                        'evasion': [], 'mangle': [], 'output': [], 'auth': [],
+        self.plugins = {'audit': [],
+                        'grep': [],
+                        'bruteforce': [],
+                        'crawl': [],
+                        'evasion': [],
+                        'mangle': [],
+                        'output': [],
+                        'auth': [],
                         'infrastructure': []}
 
         # After we zero all options and enabled plugins we need to call
@@ -212,13 +228,12 @@ class CorePlugins(object):
                             'sqli', etc
         """
         try:
-            aModule = sys.modules['w3af.plugins.' + plugin_type +
-                                  '.' + plugin_name]
+            amodule = sys.modules['w3af.plugins.%s.%s' % (plugin_type, plugin_name)]
         except KeyError:
             msg = 'Tried to reload a plugin that was never imported! (%s.%s)'
             om.out.debug(msg % (plugin_type, plugin_name))
         else:
-            reload(aModule)
+            reload(amodule)
 
     def get_plugin_type_desc(self, plugin_type):
         """
@@ -226,8 +241,8 @@ class CorePlugins(object):
         :return: A description of the plugin type passed as parameter
         """
         try:
-            __import__('w3af.plugins.' + plugin_type)
-            a_module = sys.modules['w3af.plugins.' + plugin_type]
+            __import__('w3af.plugins.%s' % plugin_type)
+            a_module = sys.modules['w3af.plugins.%s' % plugin_type]
         except Exception:
             msg = 'Unknown plugin type: "%s".'
             raise BaseFrameworkException(msg % plugin_type)
@@ -267,6 +282,7 @@ class CorePlugins(object):
         plugin_inst = factory('w3af.plugins.%s.%s' % (plugin_type, plugin_name))
         plugin_inst.set_url_opener(self._w3af_core.uri_opener)
         plugin_inst.set_worker_pool(self._w3af_core.worker_pool)
+        plugin_inst.set_w3af_core(self._w3af_core)
         
         if plugin_name in self._plugins_options[plugin_type].keys():
             custom_options = self._plugins_options[plugin_type][plugin_name]
@@ -410,5 +426,4 @@ class CorePlugins(object):
         self._plugins_names_dict['evasion'] = evasion_plugins
         self.plugin_factory()
 
-        self._w3af_core.uri_opener.set_evasion_plugins(
-            self.plugins['evasion'])
+        self._w3af_core.uri_opener.set_evasion_plugins(self.plugins['evasion'])

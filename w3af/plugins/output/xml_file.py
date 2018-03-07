@@ -58,7 +58,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.1'
+    XML_OUTPUT_VERSION = '2.2'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -165,7 +165,6 @@ class xml_file(OutputPlugin):
         self._errors.cleanup()
         self._jinja2_env = None
 
-    #@profile
     def flush(self):
         """
         Write the XML to the output file
@@ -180,27 +179,32 @@ class xml_file(OutputPlugin):
 
         self._add_root_info_to_context(context)
         self._add_scan_info_to_context(context)
+        self._add_scan_status_to_context(context)
         self._add_findings_to_context(context)
         self._add_errors_to_context(context)
 
         # Write to file
         self._write_context_to_file(context)
 
-    #@profile
     def _add_root_info_to_context(self, context):
         context.start_timestamp = self._timestamp
         context.start_time_long = self._long_timestamp
         context.xml_version = self.XML_OUTPUT_VERSION
         context.w3af_version = get_w3af_version.get_w3af_version()
 
-    #@profile
     def _add_scan_info_to_context(self, context):
         scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
 
         scan_info = ScanInfo(self._jinja2_env, scan_targets, self._plugins_dict, self._options_dict)
         context.scan_info = scan_info.to_string()
 
-    #@profile
+    def _add_scan_status_to_context(self, context):
+        status = self.get_w3af_core().status.get_status_as_dict()
+        total_urls = len(kb.kb.get_all_known_fuzzable_requests())
+
+        scan_status = ScanStatus(self._jinja2_env, status, total_urls)
+        context.scan_status = scan_status.to_string()
+
     def _add_errors_to_context(self, context):
         context.errors = self._errors
 
@@ -257,7 +261,6 @@ class xml_file(OutputPlugin):
             if cached_finding not in processed_uniq_ids:
                 cache.evict_from_cache(cached_finding)
 
-    #@profile
     def _add_findings_to_context(self, context):
         context.findings = (f for f in self.findings())
 
@@ -280,7 +283,6 @@ class xml_file(OutputPlugin):
         jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
         return jinja2_env
 
-    #@profile
     def _write_context_to_file(self, context):
         """
         Write xml report to the file by rendering the context
@@ -448,7 +450,6 @@ class HTTPTransaction(CachedXMLNode):
     def get_cache_key(self):
         return 'http-transaction-%s.data' % self._id
 
-    #@profile
     def to_string(self):
         """
         :return: An xml node (as a string) representing the HTTP request / response.
@@ -536,7 +537,6 @@ class ScanInfo(CachedXMLNode):
     def get_cache_key(self):
         return 'scan-info.data'
 
-    #@profile
     def to_string(self):
         # Get the data from the cache
         node = self.get_node_from_cache()
@@ -554,6 +554,48 @@ class ScanInfo(CachedXMLNode):
         return transaction
 
 
+class ScanStatus(XMLNode):
+    TEMPLATE = 'scan_status.tpl'
+
+    def __init__(self, jinja2_env, status, total_urls):
+        """
+        Represents the current w3af scan status
+
+        :param status: The w3af status as reported by the w3af core
+        :param total_urls: The number of identified URLs
+        """
+        super(ScanStatus, self).__init__(jinja2_env)
+        self._status = status
+        self._total_urls = total_urls
+
+    def to_string(self):
+        context = dotdict({})
+
+        context.status = self._status['status']
+        context.is_paused = self._status['is_paused']
+        context.is_running = self._status['is_running']
+        context.active_crawl_plugin = self._status['active_plugin']['crawl']
+        context.active_audit_plugin = self._status['active_plugin']['audit']
+        context.current_crawl_request = self._status['current_request']['crawl']
+        context.current_audit_request = self._status['current_request']['audit']
+        context.crawl_input_speed = self._status['queues']['crawl']['input_speed']
+        context.crawl_output_speed = self._status['queues']['crawl']['output_speed']
+        context.crawl_queue_length = self._status['queues']['crawl']['length']
+        context.audit_input_speed = self._status['queues']['audit']['input_speed']
+        context.audit_output_speed = self._status['queues']['audit']['output_speed']
+        context.audit_queue_length = self._status['queues']['audit']['length']
+        context.crawl_eta = self._status['eta']['crawl']
+        context.audit_eta = self._status['eta']['audit']
+        context.rpm = self._status['rpm']
+
+        context.total_urls = self._total_urls
+
+        template = self.get_template(self.TEMPLATE)
+        transaction = template.render(context)
+
+        return transaction
+
+
 class Finding(XMLNode):
     TEMPLATE = 'finding.tpl'
 
@@ -565,7 +607,6 @@ class Finding(XMLNode):
         super(Finding, self).__init__(jinja2_env)
         self._info = info
 
-    #@profile
     def to_string(self):
         info = self._info
         context = dotdict({})

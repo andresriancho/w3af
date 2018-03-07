@@ -24,7 +24,7 @@ import time
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.fuzzer.utils import rand_alnum
-from w3af.core.controllers.exceptions import BaseFrameworkException, ScanMustStopException
+from w3af.core.controllers.exceptions import ScanMustStopException
 from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
                                                                         task_decorator)

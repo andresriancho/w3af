@@ -5,6 +5,8 @@
 
     {{ scan_info | safe }}
 
+    {{ scan_status | safe }}
+
     {% for finding in findings %}
         {{ finding | safe }}
     {% endfor %}
