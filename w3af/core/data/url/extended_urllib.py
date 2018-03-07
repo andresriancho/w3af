@@ -98,6 +98,7 @@ class ExtendedUrllib(object):
         # Cache to measure RTT
         self._rtt_mutant_cache = SynchronizedLRUDict(capacity=128)
         self._rtt_mutant_lock = threading.RLock()
+        self._specific_rtt_mutant_locks = dict()
 
         # Avoid multiple consecutive calls to reduce the worker pool size
         self._last_call_to_adjust_workers = None
@@ -154,6 +155,9 @@ class ExtendedUrllib(object):
             - The pause/stop feature
             - Memory debugging features
         """
+        # Handle errors (HTTP timeout, etc.)
+        self._raise_if_should_stop()
+
         self._pause_and_stop()
         self._pause_on_http_error(request)
 
@@ -335,7 +339,9 @@ class ExtendedUrllib(object):
         # different threads which need the same result from duplicating efforts
         #
         with self._rtt_mutant_lock:
+            specific_rtt_mutant_lock = self._get_specific_rtt_mutant_lock(cache_key)
 
+        with specific_rtt_mutant_lock:
             cached_value = self._rtt_mutant_cache.get(cache_key, default=None)
 
             #
@@ -364,10 +370,24 @@ class ExtendedUrllib(object):
             average_rtt = float(sum(rtts)) / len(rtts)
             self._rtt_mutant_cache[cache_key] = (time.time(), average_rtt)
 
+        with self._rtt_mutant_lock:
+            if cache_key in self._specific_rtt_mutant_locks:
+                self._specific_rtt_mutant_locks.pop(cache_key)
+
         msg = 'Returning fresh average RTT of %.2f seconds for mutant %s'
         om.out.debug(msg % (average_rtt, cache_key))
 
         return average_rtt
+
+    def _get_specific_rtt_mutant_lock(self, cache_key):
+        specific_rtt_mutant_lock = self._specific_rtt_mutant_locks.get(cache_key)
+
+        if specific_rtt_mutant_lock is not None:
+            return specific_rtt_mutant_lock
+
+        specific_rtt_mutant_lock = threading.RLock()
+        self._specific_rtt_mutant_locks[cache_key] = specific_rtt_mutant_lock
+        return specific_rtt_mutant_lock
 
     def _should_auto_adjust_now(self):
         """
@@ -503,6 +523,15 @@ class ExtendedUrllib(object):
 
         self._rate_limit_last_time_called = time.clock()
 
+    def _raise_if_should_stop(self):
+        # There might be errors that make us stop the process, the exception
+        # was already raised (see below) but we want to make sure that we
+        # keep raising it until the w3afCore really stops.
+        if self._stop_exception is not None:
+            # pylint: disable=E0702
+            raise self._stop_exception
+            # pylint: enable=E0702
+
     def _pause_and_stop(self):
         """
         This method sleeps until self._user_paused is False.
@@ -516,13 +545,8 @@ class ExtendedUrllib(object):
                 msg = 'The user stopped the scan.'
                 raise ScanMustStopByUserRequest(msg)
 
-            # There might be errors that make us stop the process, the exception
-            # was already raised (see below) but we want to make sure that we
-            # keep raising it until the w3afCore really stops.
-            if self._stop_exception is not None:
-                # pylint: disable=E0702
-                raise self._stop_exception
-                # pylint: enable=E0702
+            # Handle errors (HTTP timeout, etc.)
+            self._raise_if_should_stop()
 
         while self._user_paused:
             time.sleep(0.2)
@@ -640,7 +664,9 @@ class ExtendedUrllib(object):
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
                     cookies=True, error_handling=True, timeout=None,
                     follow_redirects=False, use_basic_auth=True,
-                    debugging_id=None, binary_response=False):
+                    respect_size_limit=True,
+                    debugging_id=None,
+                    binary_response=False):
         """
         Sends a mutant to the remote web server.
 
@@ -678,6 +704,7 @@ class ExtendedUrllib(object):
             'timeout': timeout,
             'follow_redirects': follow_redirects,
             'use_basic_auth': use_basic_auth,
+            'respect_size_limit': respect_size_limit,
             'debugging_id': debugging_id,
             'binary_response': binary_response
         }
@@ -751,7 +778,9 @@ class ExtendedUrllib(object):
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
              cookies=True, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
-             debugging_id=None, binary_response=False):
+             debugging_id=None,
+             respect_size_limit=None,
+             binary_response=False):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -849,7 +878,10 @@ class ExtendedUrllib(object):
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
                        cache=False, grep=True, cookies=True,
                        error_handling=True, timeout=None, use_basic_auth=True,
-                       use_proxy=True, follow_redirects=False, debugging_id=None,
+                       use_proxy=True,
+                       follow_redirects=False,
+                       debugging_id=None,
+                       respect_size_limit=None,
                        binary_response=False):
             """
             :return: An HTTPResponse object that's the result of sending
@@ -1392,7 +1424,11 @@ class ExtendedUrllib(object):
 
             e = ScanMustStopByUnknownReasonExc(msg % args, errs=last_errors)
 
+        om.out.debug('The extended urllib will raise a scan must stop exception'
+                     ' for each request after this message. The remote server is'
+                     ' unreachable.')
         self._stop_exception = e
+
         # pylint: disable=E0702
         raise self._stop_exception
         # pylint: enable=E0702

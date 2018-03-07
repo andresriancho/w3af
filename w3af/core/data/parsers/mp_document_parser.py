@@ -21,8 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement, print_function
 
+import os
+import psutil
 import signal
 import atexit
+import resource
 import threading
 import multiprocessing
 
@@ -35,7 +38,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.profiling import start_profiling_no_core
 from w3af.core.controllers.threads.is_main_process import is_main_process
 from w3af.core.controllers.output_manager import log_sink_factory
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.exceptions import ScanMustStopException
 from w3af.core.controllers.ci.detect import is_running_on_ci
 from w3af.core.controllers.threads.decorators import apply_with_return_error
 from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
@@ -43,6 +46,20 @@ from w3af.core.controllers.profiling.memory_usage import user_wants_memory_profi
 from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemalloc
 from w3af.core.controllers.profiling.cpu_usage import user_wants_cpu_profiling
 from w3af.core.data.parsers.document_parser import DocumentParser
+
+# 128 MB
+DEFAULT_MEMORY_LIMIT = 128 * 1024 * 1024
+
+
+def get_memory_limit():
+    env_memory_limit = os.environ.get('PARSER_MEMORY_LIMIT', '')
+
+    if env_memory_limit.isdigit():
+        msg = 'Using parser process virtual memory limit of %s bytes that was defined in env.'
+        print(msg % env_memory_limit)
+        return int(env_memory_limit)
+
+    return DEFAULT_MEMORY_LIMIT
 
 
 class MultiProcessingDocumentParser(object):
@@ -68,6 +85,15 @@ class MultiProcessingDocumentParser(object):
     # in seconds
     PARSER_TIMEOUT = 60 * 3 if PROFILING_ENABLED else 10
 
+    # Document parsers can go crazy on memory usage when parsing some very
+    # specific HTML / PDF documents. Sometimes when this happens the operating
+    # system does an out of memory (OOM) kill of a "randomly chosen" process.
+    #
+    # We limit the memory which can be used by parsing processes to this constant
+    #
+    # The feature was tested in test_pebble_limit_memory_usage.py
+    MEMORY_LIMIT = get_memory_limit()
+
     def __init__(self):
         self._pool = None
         self._start_lock = threading.RLock()
@@ -85,7 +111,7 @@ class MultiProcessingDocumentParser(object):
                 self._pool = ProcessPool(self.MAX_WORKERS,
                                          max_tasks=20,
                                          initializer=init_worker,
-                                         initargs=(log_queue,))
+                                         initargs=(log_queue, self.MEMORY_LIMIT))
 
         return self._pool
 
@@ -119,24 +145,42 @@ class MultiProcessingDocumentParser(object):
                       self.DEBUG)
 
         # Push the task to the workers
-        future = self._pool.schedule(apply_with_return_error,
-                                     args=(apply_args,),
-                                     timeout=self.PARSER_TIMEOUT)
+        try:
+            future = self._pool.schedule(apply_with_return_error,
+                                         args=(apply_args,),
+                                         timeout=self.PARSER_TIMEOUT)
+        except RuntimeError, rte:
+            # We get here when the pebble pool management thread dies and
+            # suddenly starts answering all calls with:
+            #
+            # RuntimeError('Unexpected error within the Pool')
+            #
+            # The scan needs to stop because we can't parse any more
+            # HTTP responses, which is a very critical part of the process
+            msg = str(rte)
+            raise ScanMustStopException(msg)
 
         try:
             parser_output = future.result()
         except TimeoutError:
-            # Act just like when there is no parser
             msg = ('[timeout] The parser took more than %s seconds'
                    ' to complete parsing of "%s", killed it!')
-
             args = (self.PARSER_TIMEOUT, http_response.get_url())
+            raise TimeoutError(msg % args)
 
-            raise BaseFrameworkException(msg % args)
-        else:
-            if isinstance(parser_output, Error):
-                parser_output.reraise()
+        # We still need to perform some error handling here...
+        if isinstance(parser_output, Error):
+            if isinstance(parser_output.exc_value, MemoryError):
+                msg = ('The parser exceeded the memory usage limit of %s bytes'
+                       ' while trying to parse "%s". The parser was stopped in'
+                       ' order to prevent OOM issues.')
+                args = (self.MEMORY_LIMIT, http_response.get_url())
+                om.out.debug(msg % args)
+                raise MemoryError(msg % args)
 
+            parser_output.reraise()
+
+        # Success!
         return parser_output
 
     def get_tags_by_filter(self, http_response, tags, yield_text=False):
@@ -174,21 +218,41 @@ class MultiProcessingDocumentParser(object):
                       yield_text,
                       self.DEBUG)
 
+        #
         # Push the task to the workers
-        future = self._pool.schedule(apply_with_return_error,
-                                     args=(apply_args,),
-                                     timeout=self.PARSER_TIMEOUT)
+        #
+        try:
+            future = self._pool.schedule(apply_with_return_error,
+                                         args=(apply_args,),
+                                         timeout=self.PARSER_TIMEOUT)
+        except RuntimeError, rte:
+            # We get here when the pebble pool management thread dies and
+            # suddenly starts answering all calls with:
+            #
+            # RuntimeError('Unexpected error within the Pool')
+            #
+            # The scan needs to stop because we can't parse any more
+            # HTTP responses, which is a very critical part of the process
+            msg = str(rte)
+            raise ScanMustStopException(msg)
 
         try:
             filtered_tags = future.result()
         except TimeoutError:
             # We hit a timeout, return an empty list
             return []
-        else:
-            # There was an exception in the parser, maybe the HTML was really
-            # broken, or it wasn't an HTML at all.
-            if isinstance(filtered_tags, Error):
-                return []
+
+        # There was an exception in the parser, maybe the HTML was really
+        # broken, or it wasn't an HTML at all.
+        if isinstance(filtered_tags, Error):
+            if isinstance(filtered_tags.exc_value, MemoryError):
+                msg = ('The parser exceeded the memory usage limit of %s bytes'
+                       ' while trying to parse "%s". The parser was stopped in'
+                       ' order to prevent OOM issues.')
+                args = (self.MEMORY_LIMIT, http_response.get_url())
+                om.out.debug(msg % args)
+
+            return []
 
         return filtered_tags
 
@@ -249,7 +313,7 @@ def cleanup_pool():
         mp_doc_parser.stop_workers()
 
 
-def init_worker(log_queue):
+def init_worker(log_queue, mem_limit):
     """
     This function is called right after each Process in the ProcessPool is
     created, and it will initialized some variables/handlers which are required
@@ -260,6 +324,61 @@ def init_worker(log_queue):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     log_sink_factory(log_queue)
     start_profiling_no_core()
+    limit_memory_usage(mem_limit)
+
+
+def limit_memory_usage(mem_limit):
+    """
+    Set the soft memory limit for the worker process.
+
+    Retrieve current limits, re-use the hard limit.
+
+    See documentation on resources at:
+        https://linux.die.net/man/2/getrlimit
+
+    Not available:
+        RLIMIT_RSS is not available for new kernel versions
+
+    Could work:
+        RLIMIT_AS The maximum size of the process's virtual memory
+                  (address space) in bytes.
+
+                  Reminder of how virtual memory works:
+                  https://en.wikipedia.org/wiki/Virtual_memory
+
+        RLIMIT_STACK The maximum size of the process stack, in bytes.
+        RLIMIT_DATA The maximum size of the process's data segment
+                    (initialized data, uninitialized data, and heap)
+
+    Not sure:
+        RLIMIT_MEMLOCK The maximum number of bytes of memory that may
+        be locked into RAM
+    """
+    # This works on Linux only (for now)
+    if not hasattr(resource, 'RLIMIT_AS'):
+        print('w3af was unable to limit the memory usage of parser processes.'
+              ' This feature is only supported in Linux OS, create an issue'
+              ' in our repository and we might implement it for your OS.')
+        return
+
+    # Note that this is run on every process start, which is what we need
+    #
+    # Since the real memory limit will be w3af's main process memory usage
+    # plus the imposed memory limit (mem_limit) we want to calculate this
+    # as often as possible.
+    #
+    # New processes are created in the pool after 20 jobs (max_tasks=20) so
+    # that should take care of cycling processes with different real memory
+    # limits
+    p = psutil.Process()
+    real_memory_limit = p.memory_info().vms + mem_limit
+
+    soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+    resource.setrlimit(resource.RLIMIT_AS, (real_memory_limit, hard))
+
+    limit_mb = (real_memory_limit / 1024 / 1024)
+    msg = 'Using RLIMIT_AS memory usage limit %s MB for new pool process'
+    om.out.debug(msg % limit_mb)
 
 
 if is_main_process():

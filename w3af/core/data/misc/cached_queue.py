@@ -77,7 +77,6 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
         """
         Initialize the dicts and pointer
         :param maxsize: The max size for the queue
-        :return:
         """
         self.memory = dict()
         self.disk = DiskDict(table_prefix='%sCachedQueue' % self.name)

@@ -225,7 +225,7 @@ class csrf(AuditPlugin):
 
         entropy = 0
 
-        for x in range(256):
+        for x in xrange(256):
             p_x = float(data.count(chr(x)))/len(data)
             if p_x > 0:
                 entropy += - p_x * log(p_x, 2)

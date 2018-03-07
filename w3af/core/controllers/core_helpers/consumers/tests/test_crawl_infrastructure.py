@@ -99,4 +99,3 @@ class TestTimeLimit(PluginTest):
         at_least_takes = setup_delta + 120 - 10
         
         self.assertGreater(second_scan_time, at_least_takes)
-        

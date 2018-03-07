@@ -120,10 +120,9 @@ class server_header(InfrastructurePlugin):
                         #    I don't have it in the KB, so I need to add it,
                         #
                         desc = 'The %s header for the target HTTP server is "%s".'
-                        desc = desc % (header_name, powered_by)
+                        desc %= (header_name, powered_by)
                         
-                        i = Info('Powered-by header', desc, response.id,
-                                 self.get_name())
+                        i = Info('Powered-by header', desc, response.id, self.get_name())
                         i['powered_by'] = powered_by
                         i.add_to_highlight(header_name + ':')
                         
@@ -139,8 +138,7 @@ class server_header(InfrastructurePlugin):
                         
                         # Update the list and save it,
                         powered_by_in_kb.append(powered_by)
-                        kb.kb.raw_write(self, 'powered_by_string',
-                                        powered_by_in_kb)
+                        kb.kb.raw_write(self, 'powered_by_string', powered_by_in_kb)
 
     def get_long_desc(self):
         """

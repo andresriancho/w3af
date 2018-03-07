@@ -124,7 +124,7 @@ class BlindSQLTimeDelay(object):
             # Now I can be sure that I found a vuln, we control the response
             # time with the delay
             desc = 'Blind SQL injection using time delays was found at: %s'
-            desc = desc % mutant.found_at()
+            desc %= mutant.found_at()
 
             response_ids = [r.id for r in responses]
 
@@ -147,3 +147,5 @@ class BlindSQLTimeDelay(object):
         """
         return self.DELAYS
 
+    def __repr__(self):
+        return '<BlindSQLTimeDelay did=%s>' % self.get_debugging_id()

@@ -471,23 +471,24 @@ class OutputManager(Process):
         """
         if output_plugin_name == 'all':
             file_list = os.listdir(os.path.join(ROOT_PATH, 'plugins', 'output'))
-            str_req_plugins = [os.path.splitext(f)[0] for f in file_list
-                               if os.path.splitext(f)[1] == '.py']
+
+            sext = os.path.splitext
+            str_req_plugins = [sext(f)[0] for f in file_list if sext(f)[1] == '.py']
             str_req_plugins.remove('__init__')
 
             for plugin_name in str_req_plugins:
-                plugin = factory('w3af.plugins.output.' + plugin_name)
-
-                if plugin_name in self._plugin_options.keys():
-                    plugin.set_options(self._plugin_options[plugin_name])
-
-                # Append the plugin to the list
+                plugin = self._get_plugin_instance(plugin_name)
                 self._output_plugin_instances.append(plugin)
 
         else:
-            plugin = factory('w3af.plugins.output.' + output_plugin_name)
-            if output_plugin_name in self._plugin_options.keys():
-                plugin.set_options(self._plugin_options[output_plugin_name])
-
-                # Append the plugin to the list
+            plugin = self._get_plugin_instance(output_plugin_name)
             self._output_plugin_instances.append(plugin)
+
+    def _get_plugin_instance(self, plugin_name):
+        plugin = factory('w3af.plugins.output.%s' % plugin_name)
+        plugin.set_w3af_core(self._w3af_core)
+
+        if plugin_name in self._plugin_options.keys():
+            plugin.set_options(self._plugin_options[plugin_name])
+
+        return plugin

@@ -27,6 +27,7 @@ from mock import Mock, patch, call
 from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.core.controllers.exceptions import ScanMustStopByKnownReasonExc
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.tests.helpers.upper_daemon import ThreadingUpperDaemon
 from w3af.core.data.constants.file_patterns import FILE_PATTERNS
@@ -67,12 +68,13 @@ class TestXUrllibDelayOnError(unittest.TestCase):
 
         # We want to keep going, don't test the _should_stop_scan here.
         self.uri_opener._should_stop_scan = lambda x: False
+        self.uri_opener._rate_limit = lambda: True
 
         url = URL('http://127.0.0.1:%s/' % port)
         http_exception_count = 0
         loops = 100
 
-        # Not check the delays
+        # Now check the delays
         with patch('w3af.core.data.url.extended_urllib.time.sleep') as sleepm:
             for i in xrange(loops):
                 try:
@@ -138,6 +140,49 @@ class TestXUrllibDelayOnError(unittest.TestCase):
             self.assertTrue(False, 'Exception not raised')
 
         self.uri_opener.settings.set_default_values()
+
+    def test_exception_is_raised_always_after_stop(self):
+        return_empty_daemon = UpperDaemon(EmptyTCPHandler)
+        return_empty_daemon.start()
+        return_empty_daemon.wait_for_start()
+
+        port = return_empty_daemon.get_port()
+
+        # No retries means that the test is easier to read/understand
+        self.uri_opener.settings.set_max_http_retries(0)
+
+        # Don't rate limit
+        self.uri_opener._rate_limit = lambda: True
+
+        url = URL('http://127.0.0.1:%s/' % port)
+        http_exception_count = 0
+        loops = 100
+
+        # Loop until we reach a must stop exception
+        for i in xrange(loops):
+            try:
+                self.uri_opener.GET(url, cache=False)
+            except HTTPRequestException:
+                http_exception_count += 1
+            except ScanMustStopByKnownReasonExc, smse:
+                break
+            except Exception, e:
+                msg = 'Not expecting: "%s"'
+                self.assertTrue(False, msg % e.__class__.__name__)
+            else:
+                self.assertTrue(False, 'Expecting an exception')
+
+        # We quickly reach this state, which is good since the server is down
+        self.assertEquals(http_exception_count, 9)
+
+        # After reaching this state we will always yield ScanMustStopByKnownReasonExc
+        for i in xrange(loops):
+            self.assertRaises(ScanMustStopByKnownReasonExc,
+                              self.uri_opener.GET, url, cache=False)
+
+        # Confirm that this is the code section raising the exception
+        self.uri_opener._raise_if_should_stop = lambda: True
+        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url, cache=False)
 
 
 class TestXUrllibErrorHandling(PluginTest):

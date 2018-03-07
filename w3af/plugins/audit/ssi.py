@@ -43,6 +43,7 @@ class ssi(AuditPlugin):
         AuditPlugin.__init__(self)
 
         # Internal variables
+        self._persistent_multi_in = None
         self._expected_mutant_dict = DiskDict(table_prefix='ssi')
         self._extract_expected_re = re.compile('[1-9]{5}')
 
@@ -165,6 +166,9 @@ class ssi(AuditPlugin):
         debugging_id = rand_alnum(8)
         om.out.debug('Starting stored SSI search (did=%s)' % debugging_id)
 
+        self._persistent_multi_in = MultiIn(self._expected_mutant_dict.keys())
+        om.out.debug('Created stored SSI MultiIn (did=%s)' % debugging_id)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       fuzzable_request_set,
                                       self._analyze_persistent,
@@ -183,9 +187,7 @@ class ssi(AuditPlugin):
         :param response: The HTTP response
         :return: None, vulns are stored in KB
         """
-        multi_in_inst = MultiIn(self._expected_mutant_dict.keys())
-
-        for matched_expected_result in multi_in_inst.query(response.get_body()):
+        for matched_expected_result in self._persistent_multi_in.query(response.get_body()):
             # We found one of the expected results, now we search the
             # self._expected_mutant_dict to find which of the mutants sent it
             # and create the vulnerability

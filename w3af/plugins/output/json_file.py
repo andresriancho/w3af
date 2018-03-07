@@ -100,11 +100,11 @@ class json_file(OutputPlugin):
                 return x._desc
             except AttributeError:
                 return None
-        findings = filter(None, [_get_desc(x) for x in kb.kb.get_all_findings()])
+        findings = filter(None, [_get_desc(x) for x in kb.kb.get_all_findings_iter()])
         known_urls = [str(x) for x in kb.kb.get_all_known_urls()]
                         
         items = []
-        for info in kb.kb.get_all_findings():
+        for info in kb.kb.get_all_findings_iter():
             try:
                 item = {"Severity": info.get_severity(),
                         "Name": info.get_name(),
