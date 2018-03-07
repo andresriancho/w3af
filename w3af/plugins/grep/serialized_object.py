@@ -92,8 +92,6 @@ class serialized_object(GrepPlugin):
         :param parameter_value: The parameter value to inspect
         :return: True if we should skip analysis phase for this parameter
         """
-        parameter_value = smart_str_ignore(parameter_value)
-
         if len(parameter_value) <= 16:
             # Really short strings can't contain a serialized object
             return True
@@ -130,8 +128,6 @@ class serialized_object(GrepPlugin):
         :param serialized_object_re: The regular expression to match
         :return: None. We just save the vulnerability to the KB
         """
-        parameter_value = smart_str_ignore(parameter_value)
-        
         if not serialized_object_re.search(parameter_value):
             return
 
@@ -174,7 +170,9 @@ class serialized_object(GrepPlugin):
 
         for token in token_generators:
             token_name = token.get_name()
+
             token_value = token.get_value()
+            token_value = smart_str_ignore(token_value)
 
             yield token_name, token_value
 
