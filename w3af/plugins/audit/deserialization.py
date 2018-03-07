@@ -29,11 +29,15 @@ from w3af import ROOT_PATH
 from w3af.core.controllers.delay_detection.exact_delay_controller import ExactDelayController
 from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.data.misc.base64_nopadding import is_base64
+from w3af.core.data.misc.base64_nopadding import maybe_decode_base64
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_FILE, INPUT_TYPE_HIDDEN
+from w3af.core.data.serialization.detect import (is_java_serialized_data,
+                                                 is_net_serialized_data,
+                                                 is_nodejs_serialized_data,
+                                                 is_pickled_data)
 
 
 class deserialization(AuditPlugin):
@@ -45,6 +49,10 @@ class deserialization(AuditPlugin):
 
     PAYLOADS = os.path.join(ROOT_PATH, 'plugins/audit/deserialization/')
     PAYLOAD_EXTENSION = '.json'
+    IS_LANG_FUNCTION_MAP = {'java': is_java_serialized_data,
+                            'net': is_net_serialized_data,
+                            'node': is_nodejs_serialized_data,
+                            'python': is_pickled_data}
 
     def audit(self, freq, orig_response, debugging_id):
         """
@@ -59,7 +67,7 @@ class deserialization(AuditPlugin):
                                       callback=lambda x, y: None,
                                       debugging_id=debugging_id)
 
-    def _should_inject(self, mutant):
+    def _should_inject(self, mutant, language):
         """
         Should we inject into this mutant? This method will return True only if:
 
@@ -108,15 +116,22 @@ class deserialization(AuditPlugin):
             return True
 
         #
-        # If the parameter is base64 encoded, then we inject into it.
+        # If the parameter is base64 encoded, then we want to decode it and
+        # perform some analysis on it later. While base64 encoding is commonly
+        # used for sending serialized objects, not all base64-encoded strings
+        # are serialized objects.
         #
-        # Why: In most cases base64 is used to encode binary data. Serialized
-        #      objects in most languages are composed of binary data.
-        #
-        if is_base64(original_value):
-            return True
+        isb64, b64_decoded_ov = maybe_decode_base64(original_value)
+        if isb64:
+            original_value = b64_decoded_ov
 
-        if is_pickled_data(original_value):
+        #
+        # This code makes sure that we only send payloads with the expected
+        # serialization format. We don't want to send a python pickle when
+        # a java serialized object was found in the original_value
+        #
+        is_lang_serialized_obj = self.IS_LANG_FUNCTION_MAP.get(language)
+        if is_lang_serialized_obj(original_value):
             return True
 
         return False
@@ -129,25 +144,17 @@ class deserialization(AuditPlugin):
         :yield: Tuples with mutants and ExactDelay instances
         """
         for mutant in create_mutants(freq, ['', ]):
+            for language, payload in self._get_payloads():
+                if not self._should_inject(mutant, language):
+                    continue
 
-            if not self._should_inject(mutant):
-                continue
-
-            for delay_obj in self._get_time_delay_payloads():
-                yield mutant, delay_obj
-
-    def _get_time_delay_payloads(self):
-        """
-        :return: This method yields payloads that when deserialized will introduce
-                 a time delay
-        """
-        for payload in self._get_payloads():
-            yield B64DeserializationExactDelay(payload)
-            yield DeserializationExactDelay(payload)
+                yield mutant, B64DeserializationExactDelay(payload)
+                yield mutant, DeserializationExactDelay(payload)
 
     def _get_payloads(self):
         """
-        :yield: all payloads from the audit/deserialization/ directory
+        :yield: all payloads from the audit/deserialization/ directory.
+                The results are (language, payload) tuples.
 
         Remember that all payloads are base64 encoded!
         """
@@ -157,6 +164,8 @@ class deserialization(AuditPlugin):
             if 'node_modules' in root:
                 continue
 
+            _, language = os.path.split(root)
+
             for file_name in files:
 
                 # Ignore helpers used for creating the nodejs payloads
@@ -165,7 +174,7 @@ class deserialization(AuditPlugin):
 
                 if file_name.endswith(self.PAYLOAD_EXTENSION):
                     json_str = file(os.path.join(root, file_name)).read()
-                    yield json.loads(json_str)
+                    yield language, json.loads(json_str)
 
     def _find_delay_in_mutant(self, (mutant, delay_obj), debugging_id=None):
         """
@@ -293,11 +302,3 @@ class B64DeserializationExactDelay(DeserializationExactDelay):
         """
         payload = super(B64DeserializationExactDelay, self).get_string_for_delay(seconds)
         return base64.b64encode(payload)
-
-
-def is_pickled_data(data):
-    """
-    :param data: Some data that we see on the application
-    :return: True if the data looks like a python pickle
-    """
-    return data.endswith('\n.')

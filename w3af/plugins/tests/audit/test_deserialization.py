@@ -29,9 +29,11 @@ import unittest
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.plugins.audit.deserialization import deserialization, B64DeserializationExactDelay
 from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from w3af.core.data.fuzzer.mutants.cookie_mutant import CookieMutant
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.parsers.utils.form_params import FormParameters
 
@@ -89,7 +91,6 @@ class TestDeserializePickleNotBase64(PluginTest):
         def get_response(self, http_request, uri, response_headers):
             uri = urllib.unquote(uri)
             message = uri[uri.find('=') + 1:]
-            message = str(message)
 
             try:
                 cPickle.loads(message)
@@ -154,7 +155,7 @@ class TestShouldInject(unittest.TestCase):
     def setUp(self):
         self.plugin = deserialization()
         self.payloads = ['']
-        self.fuzzer_config = {}
+        self.fuzzer_config = {'fuzz_cookies': True}
 
     def test_should_inject_empty_qs(self):
         self.url = URL('http://moth/?id=')
@@ -163,7 +164,7 @@ class TestShouldInject(unittest.TestCase):
         mutant = QSMutant.create_mutants(freq, self.payloads, [],
                                          False, self.fuzzer_config)[0]
 
-        self.assertTrue(self.plugin._should_inject(mutant))
+        self.assertTrue(self.plugin._should_inject(mutant, 'python'))
 
     def test_should_not_inject_qs_with_digit(self):
         self.url = URL('http://moth/?id=1')
@@ -172,17 +173,38 @@ class TestShouldInject(unittest.TestCase):
         mutant = QSMutant.create_mutants(freq, self.payloads, [],
                                          False, self.fuzzer_config)[0]
 
-        self.assertFalse(self.plugin._should_inject(mutant))
+        self.assertFalse(self.plugin._should_inject(mutant, 'python'))
 
-    def test_should_inject_qs_with_b64(self):
-        b64data = base64.b16encode('just some random b64 data here')
+    def test_should_not_inject_qs_with_b64(self):
+        b64data = base64.b64encode('just some random b64 data here')
         self.url = URL('http://moth/?id=%s' % b64data)
         freq = FuzzableRequest(self.url)
 
         mutant = QSMutant.create_mutants(freq, self.payloads, [],
                                          False, self.fuzzer_config)[0]
 
-        self.assertTrue(self.plugin._should_inject(mutant))
+        self.assertFalse(self.plugin._should_inject(mutant, 'python'))
+
+    def test_should_inject_qs_with_b64_pickle(self):
+        b64data = base64.b64encode(cPickle.dumps({'data': 'here',
+                                                  'cookie': 'A' * 16}))
+        self.url = URL('http://moth/?id=%s' % b64data)
+        freq = FuzzableRequest(self.url)
+
+        mutant = QSMutant.create_mutants(freq, self.payloads, [],
+                                         False, self.fuzzer_config)[0]
+
+        self.assertTrue(self.plugin._should_inject(mutant, 'python'))
+
+    def test_should_not_inject_qs_with_b64_pickle_java(self):
+        b64data = base64.b64encode(cPickle.dumps(1))
+        self.url = URL('http://moth/?id=%s' % b64data)
+        freq = FuzzableRequest(self.url)
+
+        mutant = QSMutant.create_mutants(freq, self.payloads, [],
+                                         False, self.fuzzer_config)[0]
+
+        self.assertFalse(self.plugin._should_inject(mutant, 'java'))
 
     def test_should_inject_qs_with_pickle(self):
         pickle_data = cPickle.dumps(1)
@@ -192,7 +214,7 @@ class TestShouldInject(unittest.TestCase):
         mutant = QSMutant.create_mutants(freq, self.payloads, [],
                                          False, self.fuzzer_config)[0]
 
-        self.assertTrue(self.plugin._should_inject(mutant))
+        self.assertTrue(self.plugin._should_inject(mutant, 'python'))
 
     def test_should_inject_form_hidden(self):
         form_params = FormParameters()
@@ -206,10 +228,32 @@ class TestShouldInject(unittest.TestCase):
         m = PostDataMutant(freq)
         m.get_dc().set_token(('username', 0))
 
-        self.assertFalse(self.plugin._should_inject(m))
+        self.assertFalse(self.plugin._should_inject(m, 'python'))
 
         m.get_dc().set_token(('csrf_token', 0))
-        self.assertTrue(self.plugin._should_inject(m))
+        self.assertTrue(self.plugin._should_inject(m, 'python'))
+
+    def test_should_inject_cookie_value(self):
+        b64data = base64.b64encode(cPickle.dumps({'data': 'here',
+                                                  'cookie': 'A' * 16}))
+
+        url = URL('http://moth/')
+        cookie = Cookie('foo=%s' % b64data)
+        freq = FuzzableRequest(url, cookie=cookie)
+
+        mutant = CookieMutant.create_mutants(freq, self.payloads, [],
+                                             False, self.fuzzer_config)[0]
+
+        self.assertTrue(self.plugin._should_inject(mutant, 'python'))
+
+    def test_should_not_inject_random_binary(self):
+        self.url = URL('http://moth/?id=%s' % '\x00\x01\x02')
+        freq = FuzzableRequest(self.url)
+
+        mutant = QSMutant.create_mutants(freq, self.payloads, [],
+                                         False, self.fuzzer_config)[0]
+
+        self.assertFalse(self.plugin._should_inject(mutant, 'java'))
 
 
 class TestJSONPayloadIsValid(unittest.TestCase):
