@@ -738,14 +738,14 @@ class URL(DiskItem):
         :return: String that represents the current URL
         """
         self_str = str(self)
-        qs = u''
-        qs_start_index = self_str.find(u'?')
+        qs = ''
+        qs_start_index = self_str.find('?')
 
         if qs_start_index > -1:
-            qs = u'?' + str(self.querystring)
+            qs = '?' + str(self.querystring)
             self_str = self_str[:qs_start_index]
 
-        return u'%s%s' % (urllib.quote(self_str, safe=self.SAFE_CHARS), qs)
+        return '%s%s' % (urllib.quote(self_str, safe=self.SAFE_CHARS), qs)
 
     def get_directories(self):
         """
