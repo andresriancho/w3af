@@ -27,6 +27,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 
@@ -148,7 +149,9 @@ class find_dvcs(CrawlPlugin):
 
         :return: None, everything is saved to the self.out_queue.
         """
-        http_response = self.http_get_and_parse(repo_url, binary_response=True, respect_size_limit=False)
+        http_response = self.http_get_and_parse(repo_url,
+                                                binary_response=True,
+                                                respect_size_limit=False)
 
         if is_404(http_response):
             return
@@ -193,10 +196,10 @@ class find_dvcs(CrawlPlugin):
 
     def git_index(self, body):
         """
-        Analyze the contents of the Git index and extract filenames.
+        Analyze the contents of the Git index and extract file names.
 
         :param body: The contents of the file to analyze.
-        :return: A list of filenames found.
+        :return: A list of file names found.
         """
         filenames = set()
         signature = 'DIRC'
