@@ -69,13 +69,11 @@ class deserialization(AuditPlugin):
 
     def _should_inject(self, mutant, language):
         """
-        Should we inject into this mutant? This method will return True only if:
+        Should we inject a `language` payload into this mutant? This method will return
+        True only if:
 
             * If the parameter was found in an HTML form, only inject if the type
               is hidden or file
-
-            * Always inject if the parameter is base64 encoded (use a base64 decoder
-              that doesn't care about padding to check if a string is base64 encoded!)
 
             * Always inject if the parameter is similar to one of our payloads (try
               to identify common strings / magic chars used by payloads)
@@ -194,7 +192,8 @@ class deserialization(AuditPlugin):
         if not success:
             return
 
-        desc = 'Insecure deserialization vulnerability was found at: %s' % mutant.found_at()
+        desc = 'Insecure deserialization vulnerability was found at: %s'
+        desc %= mutant.found_at()
 
         v = Vuln.from_mutant('Insecure deserialization',
                              desc,
