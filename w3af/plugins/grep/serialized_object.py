@@ -92,11 +92,12 @@ class serialized_object(GrepPlugin):
         :param parameter_value: The parameter value to inspect
         :return: True if we should skip analysis phase for this parameter
         """
+        parameter_value = smart_str_ignore(parameter_value)
+        
         if len(parameter_value) <= 16:
             # Really short strings can't contain a serialized object
             return True
 
-        parameter_value = smart_str_ignore(parameter_value)
         pv_hash = zlib.adler32(parameter_value)
 
         if pv_hash in self._cache:
