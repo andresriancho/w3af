@@ -33,6 +33,14 @@ INTERESTING_JAVA_STRINGS = ['java.util',
                             'java.rmi.',
                             'javax/',
                             'com/sun/']
+INTERESTING_NET_STRINGS = ['mscorlib',
+                           'System.Data',
+                           'System.Collections',
+                           'Int32',
+                           'System.Windows',
+                           '$type',
+                           'MethodName',
+                           'PublicKeyToken']
 
 
 def is_pickled_data(data):
@@ -84,4 +92,12 @@ def is_nodejs_serialized_data(data):
 
 
 def is_net_serialized_data(data):
-    raise NotImplementedError
+    """
+    :param data: Some data that we see on the application
+    :return: True if the data looks like a .NET serialized object
+    """
+    for interesting_string in INTERESTING_NET_STRINGS:
+        if interesting_string in data:
+            return True
+
+    return False
