@@ -155,7 +155,7 @@ class OpenAPI(BaseParser):
 
     def parse(self):
         """
-        Get the URLs using a regex
+        Extract all the API endpoints using the bravado Open API parser
         """
         spec_dict = self._load_spec_dict()
         if spec_dict is None:
@@ -177,7 +177,8 @@ class OpenAPI(BaseParser):
                     om.out.debug(msg % rte)
                     continue
                 except OpenAPIParamResolutionException as oae:
-                    msg = ()
+                    msg = ('An Open API parameter resolution exception was raised'
+                           ' by OpenAPI._get_params(). The exception was: "%s".')
                     om.out.debug(msg % oae)
                     continue
 
@@ -401,7 +402,6 @@ class OpenAPI(BaseParser):
         #
         # And we need to fill the array with one or more tags
         #
-
         value = None
 
         # Handle arrays which hold primitive types
@@ -436,7 +436,6 @@ class OpenAPI(BaseParser):
 
         # We did our best with the previous steps, now we just guess
         return smart_fill(parameter.name)
-
 
     def _handle_model(self, spec, parameter):
         """
