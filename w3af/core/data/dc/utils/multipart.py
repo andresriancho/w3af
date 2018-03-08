@@ -56,7 +56,7 @@ def _split_vars_files(data):
         pname = token.get_name()
         value = token.get_value()
 
-        enc_pname = smart_str(pname, encoding=DEFAULT_ENCODING)
+        enc_pname = smart_str(pname, encoding=DEFAULT_ENCODING, errors='ignore')
 
         if is_file_like(value):
             if not value.closed:
@@ -67,7 +67,7 @@ def _split_vars_files(data):
             v_files.append((enc_pname, value))
         else:
             # Ensuring we actually send a string
-            value = smart_str(value, encoding=DEFAULT_ENCODING)
+            value = smart_str(value, encoding=DEFAULT_ENCODING, errors='ignore')
             v_vars.append((enc_pname, value))
 
     return v_vars, v_files
@@ -115,7 +115,7 @@ def multipart_encode(_vars, files, boundary=None, _buffer=None):
 
         guessed_mime = mimetypes.guess_type(filename)[0]
         content_type = guessed_mime or 'application/octet-stream'
-        args = (smart_str(key), smart_str(filename))
+        args = (smart_str(key, errors='ignore'), smart_str(filename, errors='ignore'))
 
         _buffer += '--%s\r\n' % boundary
         _buffer += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % args

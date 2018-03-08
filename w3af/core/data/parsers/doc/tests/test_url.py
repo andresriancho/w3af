@@ -20,9 +20,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import urllib2
 import cPickle
+import warnings
+import unittest
+
 from multiprocessing.queues import SimpleQueue
 
 from nose.plugins.skip import SkipTest
@@ -30,6 +32,11 @@ from nose.plugins.skip import SkipTest
 from w3af.core.data.parsers.doc.url import URL, parse_qs
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.misc.encoding import smart_str
+
+
+# Be strict on unicode warnings
+warnings.filterwarnings('error', category=UnicodeWarning)
 
 
 class TestURLParser(unittest.TestCase):
@@ -697,6 +704,15 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/foo%20bar/bar.txt?id=1')
         self.assertEqual(u.url_string,
                          u'http://w3af.com/foo%20bar/bar.txt?id=1')
+
+    def test_url_string_non_ascii(self):
+        u = URL('http://w3af.com/foo/á.txt')
+        self.assertEqual(u.url_string, u'http://w3af.com/foo/á.txt')
+
+    def test_url_encode_non_ascii(self):
+        u = URL('http://w3af.com/foo/á.txt')
+        self.assertEqual(u.url_encode(), u'http://w3af.com/foo/%C3%A1.txt')
+
     
     #
     #    has_querystring
@@ -823,23 +839,23 @@ class TestURLParser(unittest.TestCase):
     
     def test_set_filename(self):
         u = URL('https://w3af.com:443/xyz/def.html')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/xyz/abc.pdf')
         self.assertEqual(u.get_file_name(), 'abc.pdf')
 
         u = URL('https://w3af.com/xyz/def.html?id=1')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/xyz/abc.pdf?id=1')
 
         u = URL('https://w3af.com/xyz/def.html?file=/etc/passwd')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/xyz/abc.pdf?file=/etc/passwd')
 
         u = URL('https://w3af.com/')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/abc.pdf')
     
@@ -877,7 +893,7 @@ class TestURLParser(unittest.TestCase):
         u = URL('https://w3af.com:443/xyz/123/456/789/')
         self.assertEqual(u.get_path_without_file(), '/xyz/123/456/789/')
     
-    def test_get_path_qs(self):
+    def test_get_path_qs_simple(self):
         u = URL(u'https://w3af.com:443/xyz/123/456/789/')
         self.assertEqual(u.get_path(), u'/xyz/123/456/789/')
         
@@ -889,6 +905,26 @@ class TestURLParser(unittest.TestCase):
         
         u = URL(u'https://w3af.com:443/xyz/file.asp?id=1')
         self.assertEqual(u.get_path_qs(), u'/xyz/file.asp?id=1')
+
+    def test_get_path_qs_unicode(self):
+        u = URL(u'https://domain/konto/insättning?amount=1&method=abc')
+        self.assertEqual(u.get_path_qs(), u'/konto/insättning?amount=1&method=abc')
+
+        u = URL(u'https://domain/konto/insättning;x=1?amount=1&method=abc')
+        self.assertEqual(u.get_path_qs(), u'/konto/insättning;x=1?amount=1&method=abc')
+
+        u = URL(u'https://domain/konto/insättning;insättning=1?amount=1&method=abc')
+        self.assertEqual(u.get_path_qs(), u'/konto/insättning;insättning=1?amount=1&method=abc')
+
+    def test_get_path_qs_string(self):
+        u = URL('https://domain/konto/insättning?amount=1&method=abc')
+        self.assertEqual(smart_str(u.get_path_qs()), '/konto/insättning?amount=1&method=abc')
+
+        u = URL('https://domain/konto/insättning;x=1?amount=1&method=abc')
+        self.assertEqual(smart_str(u.get_path_qs()), '/konto/insättning;x=1?amount=1&method=abc')
+
+        u = URL('https://domain/konto/insättning;insättning=1?amount=1&method=abc')
+        self.assertEqual(smart_str(u.get_path_qs()), '/konto/insättning;insättning=1?amount=1&method=abc')
 
     def test_has_params(self):
         self.assertFalse(URL('http://w3af.com/').has_params())

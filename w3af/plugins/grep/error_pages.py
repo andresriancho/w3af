@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.data.db.disk_list import DiskList
-from w3af.core.data.esmre.multi_in import multi_in
-from w3af.core.data.esmre.multi_re import multi_re
+from w3af.core.data.quick_match.multi_in import MultiIn
+from w3af.core.data.quick_match.multi_re import MultiRE
 from w3af.core.data.kb.info import Info
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
@@ -129,7 +129,7 @@ class error_pages(GrepPlugin):
         '<h2 style="font:8pt/11pt verdana; color:000000">HTTP 403.6 - Forbidden: IP address rejected<br>',
         '<TITLE>500 Internal Server Error</TITLE>',
     )
-    _multi_in = multi_in(ERROR_PAGES)
+    _multi_in = MultiIn(ERROR_PAGES)
 
     VERSION_REGEX = (
         ('<address>(.*?)</address>', 'Apache'),
@@ -140,7 +140,7 @@ class error_pages(GrepPlugin):
         # <b>Version Information:</b>&nbsp;Microsoft .NET Framework Version:1.1.4322.2300; ASP.NET Version:1.1.4322.2300
         ('<b>Version Information:</b>&nbsp;(.*?)\n', 'ASP .NET')
     )
-    _multi_re = multi_re(VERSION_REGEX)
+    _multi_re = MultiRE(VERSION_REGEX)
 
     MAX_REPORTED_PER_MSG = 10
 
@@ -233,10 +233,8 @@ class error_pages(GrepPlugin):
         """
         This method is called when the plugin wont be used anymore.
         """
-        all_findings = kb.kb.get_all_findings()
-
         for title, desc, _id, url, highlight in self._potential_vulns:
-            for info in all_findings:
+            for info in kb.kb.get_all_findings_iter():
                 # This makes sure that if the sqli plugin found a vulnerability
                 # in the same URL as we found a detailed error, we won't report
                 # the detailed error.

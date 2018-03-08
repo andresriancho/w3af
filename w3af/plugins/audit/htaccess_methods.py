@@ -42,11 +42,13 @@ class htaccess_methods(AuditPlugin):
         AuditPlugin.__init__(self)
         self._already_tested = ScalableBloomFilter()
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for htaccess misconfigurations.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         url = freq.get_url()
 
@@ -57,9 +59,9 @@ class htaccess_methods(AuditPlugin):
         response = self._uri_opener.GET(freq.get_url(), cache=True)
 
         if response.get_code() in self.AUTH_CODES:
-            self._check_methods(url)
+            self._check_methods(url, debugging_id)
 
-    def _check_methods(self, url):
+    def _check_methods(self, url, debugging_id):
         """
         Perform some requests in order to check if we are able to retrieve
         some data with methods that may be wrongly enabled.
@@ -68,7 +70,7 @@ class htaccess_methods(AuditPlugin):
         for method in ['GET', 'POST', 'ABCD', 'HEAD']:
             method_functor = getattr(self._uri_opener, method)
             try:
-                response = apply(method_functor, (url,), {})
+                response = apply(method_functor, (url,), {'debugging_id': debugging_id})
                 code = response.get_code()
             except:
                 pass
@@ -80,10 +82,10 @@ class htaccess_methods(AuditPlugin):
             
             response_ids = [i for m, i in allowed_methods]
             methods = ', '.join([m for m, i in allowed_methods]) + '.'
-            desc = 'The resource: "%s" requires authentication but the access'\
-                   ' is misconfigured and can be bypassed using these'\
-                   ' methods: %s'
-            desc = desc % (url, methods)
+            desc = ('The resource: "%s" requires authentication but the access'
+                    ' is misconfigured and can be bypassed using these'
+                    ' methods: %s')
+            desc %= (url, methods)
             
             v = Vuln('Misconfigured access control', desc,
                      severity.MEDIUM, response_ids, self.get_name())

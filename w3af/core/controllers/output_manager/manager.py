@@ -30,9 +30,10 @@ from functools import wraps
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.misc.factory import factory
+from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
-from w3af.core.data.constants.encodings import UTF8
 from w3af.core.controllers.threads.silent_joinable_queue import SilentJoinableQueue
+from w3af.core.data.constants.encodings import UTF8
 
 
 def start_thread_on_demand(func):
@@ -84,7 +85,16 @@ class OutputManager(Process):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    FLUSH_TIMEOUT = 60
+    # If the FLUSH_TIMEOUT is larger (60 seconds for example) the time it takes
+    # for the plugin to process all the messages / vulnerabilities in a call to
+    # flush() will be larger, because w3af will (most likely) have found more
+    # vulnerabilities. So we're calling the flush() method more often and having
+    # shorter calls to flush() than before.
+    FLUSH_TIMEOUT = 30
+
+    # To prevent locks this always needs to be larger than the output plugins
+    # available in the w3af framework
+    WORKER_THREADS = 10
 
     # Thread locking to avoid starting the om many times from different threads
     start_lock = threading.RLock()
@@ -103,9 +113,16 @@ class OutputManager(Process):
         self.in_queue = SilentJoinableQueue()
         self._w3af_core = None
         self._last_output_flush = None
+        self._is_shutting_down = False
+        self._worker_pool = self.get_worker_pool()
 
     def set_w3af_core(self, w3af_core):
         self._w3af_core = w3af_core
+
+    def get_worker_pool(self):
+        return Pool(self.WORKER_THREADS,
+                    worker_names='WorkerThread',
+                    max_queued_tasks=self.WORKER_THREADS * 10)
 
     def get_in_queue(self):
         """
@@ -138,11 +155,21 @@ class OutputManager(Process):
                 # The queue which we're consuming ended abruptly, this is
                 # usually a side effect of the process ending and
                 # multiprocessing not handling things cleanly
-                break
+                try:
+                    self.in_queue.task_done()
+                finally:
+                    break
 
             if work_unit == POISON_PILL:
                 # This is added at fresh_output_manager_inst
+                self.in_queue.task_done()
                 break
+
+            elif self._is_shutting_down:
+                # Just ignore the log message if we're in the process of shutting
+                # down the output manager. This prevents some race conditions where
+                # messages are processed after plugins are ended
+                self.in_queue.task_done()
 
             else:
                 args, kwargs = work_unit
@@ -176,18 +203,62 @@ class OutputManager(Process):
         if not self.should_flush():
             return
 
+        pool = self._worker_pool
+        if pool.is_closed():
+            return
+
         self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
-            #
-            #   Plugins might crash when calling .flush(), a good example was
-            #   the unicodedecodeerror found in xml_file which was triggered
-            #   when the findings were written to file.
-            #
-            try:
-                o_plugin.flush()
-            except Exception, exception:
-                self._handle_output_plugin_exception(o_plugin, exception)
+            pool.apply_async(func=self.__inner_flush_plugin_output,
+                             args=(o_plugin,))
+
+    def __inner_flush_plugin_output(self, o_plugin):
+        """
+        This method is meant to be run in a thread. We run flush() in a thread
+        to avoid some issues where a long time to process the xml flush was
+        impacting the messages from being written to the text file.
+
+        When we run the flush() call make sure that we're not calling flush again
+        on the same plugin. This will prevent multiple simultaneous calls to flush
+        running in an endless way during the scan.
+
+        :param o_plugin: The output plugin to run
+        :return: None, we don't care about the output of this method.
+        """
+        # If for some reason the output plugin takes a lot of time to run
+        # and the output manager calls flush() for a second time while
+        # we're still running the first call, just ignore.
+        if o_plugin.is_running_flush:
+            import w3af.core.controllers.output_manager as om
+
+            msg = ('The %s plugin is still running flush(), the output'
+                   ' manager will not call flush() again to give the'
+                   ' plugin time to finish.')
+            args = (o_plugin.get_name(),)
+            om.out.debug(msg % args)
+            return
+
+        #
+        #   Plugins might crash when calling .flush(), a good example was
+        #   the unicodedecodeerror found in xml_file which was triggered
+        #   when the findings were written to file.
+        #
+        start_time = time.time()
+        o_plugin.is_running_flush = True
+
+        try:
+            o_plugin.flush()
+        except Exception, exception:
+            self._handle_output_plugin_exception(o_plugin, exception)
+        finally:
+            o_plugin.is_running_flush = False
+
+            spent_time = time.time() - start_time
+            args = (o_plugin.get_name(), spent_time)
+
+            import w3af.core.controllers.output_manager as om
+            om.out.debug('%s.flush() took %.2fs to run' % args)
 
     def _handle_output_plugin_exception(self, o_plugin, exception):
         if self._w3af_core is None:
@@ -236,6 +307,12 @@ class OutputManager(Process):
 
     def end_output_plugins(self):
         self.process_all_messages()
+
+        # Wait for any calls to flush() which might be running
+        self._worker_pool.close()
+        self._worker_pool.join()
+
+        # Now call end() on all plugins
         self.__end_output_plugins_impl()
 
     @start_thread_on_demand
@@ -246,6 +323,21 @@ class OutputManager(Process):
         self.in_queue.join()
 
     def __end_output_plugins_impl(self):
+        #
+        # Setting self._is_shutting_down here guarantees that no more
+        # messages are going to be processed by this output manager instance
+        # until we set the attribute to False again.
+        #
+        # This fixes an issue with "I/O operation on closed file" which was
+        # reported multiple times over the years. The race condition happen
+        # when a message was processed after the plugins were ended.
+        #
+        # By doing this we might lose some messages, BUT I reviewed the code
+        # to make sure end_output_plugins() is called at the end of the scan
+        # and that no "important messages" would be lost.
+        #
+        self._is_shutting_down = True
+
         for o_plugin in self._output_plugin_instances:
             o_plugin.end()
 
@@ -263,6 +355,9 @@ class OutputManager(Process):
         keep_enabled = [pname for pname in currently_enabled_plugins
                         if pname in ('console',)]
         self.set_output_plugins(keep_enabled)
+
+        # Process messages again, we removed the plugins which were ended
+        self._is_shutting_down = False
 
     @start_thread_on_demand
     def log_enabled_plugins(self, enabled_plugins, plugins_options):
@@ -323,7 +418,7 @@ class OutputManager(Process):
         #    om.out.error(msg, ignore_plugins=set([self.get_name()])
         #
         ignored_plugins = kwds.pop('ignore_plugins', set())
-        
+
         for o_plugin in self._output_plugin_instances:
             
             if o_plugin.get_name() in ignored_plugins:
@@ -344,7 +439,7 @@ class OutputManager(Process):
     def set_output_plugins(self, output_plugins):
         """
         :param output_plugins: A list with the names of Output Plugins that
-                                  will be used.
+                               will be used.
         :return: No value is returned.
         """
         self._output_plugin_instances = []
@@ -376,23 +471,24 @@ class OutputManager(Process):
         """
         if output_plugin_name == 'all':
             file_list = os.listdir(os.path.join(ROOT_PATH, 'plugins', 'output'))
-            str_req_plugins = [os.path.splitext(f)[0] for f in file_list
-                               if os.path.splitext(f)[1] == '.py']
+
+            sext = os.path.splitext
+            str_req_plugins = [sext(f)[0] for f in file_list if sext(f)[1] == '.py']
             str_req_plugins.remove('__init__')
 
             for plugin_name in str_req_plugins:
-                plugin = factory('w3af.plugins.output.' + plugin_name)
-
-                if plugin_name in self._plugin_options.keys():
-                    plugin.set_options(self._plugin_options[plugin_name])
-
-                # Append the plugin to the list
+                plugin = self._get_plugin_instance(plugin_name)
                 self._output_plugin_instances.append(plugin)
 
         else:
-            plugin = factory('w3af.plugins.output.' + output_plugin_name)
-            if output_plugin_name in self._plugin_options.keys():
-                plugin.set_options(self._plugin_options[output_plugin_name])
-
-                # Append the plugin to the list
+            plugin = self._get_plugin_instance(output_plugin_name)
             self._output_plugin_instances.append(plugin)
+
+    def _get_plugin_instance(self, plugin_name):
+        plugin = factory('w3af.plugins.output.%s' % plugin_name)
+        plugin.set_w3af_core(self._w3af_core)
+
+        if plugin_name in self._plugin_options.keys():
+            plugin.set_options(self._plugin_options[plugin_name])
+
+        return plugin

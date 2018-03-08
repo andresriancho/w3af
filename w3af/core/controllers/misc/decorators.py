@@ -32,6 +32,7 @@ import w3af.core.controllers.output_manager as om
 from darts.lib.utils.lru import SynchronizedLRUDict
 # pylint: enable=E0401
 
+
 def runonce(exc_class=Exception):
     """
     Function to decorate methods that should be called only once.

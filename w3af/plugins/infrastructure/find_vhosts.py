@@ -45,7 +45,6 @@ class find_vhosts(InfrastructurePlugin):
     Modify the HTTP Host header and try to find virtual hosts.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -89,10 +88,10 @@ class find_vhosts(InfrastructurePlugin):
             reported.add(vhost)
 
             domain = fuzzable_request.get_url().get_domain()
-            desc = u'Found a new virtual host at the target web server, the'\
-                   u' virtual host name is: "%s". To access this site' \
-                   u' you might need to change your DNS resolution settings'\
-                   u' in order to point "%s" to the IP address of "%s".'
+            desc = (u'Found a new virtual host at the target web server, the'
+                    u' virtual host name is: "%s". To access this site'
+                    u' you might need to change your DNS resolution settings'
+                    u' in order to point "%s" to the IP address of "%s".')
             desc %= (vhost, vhost, domain)
 
             v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
@@ -139,7 +138,6 @@ class find_vhosts(InfrastructurePlugin):
         parsed_references.extend(re_references)
 
         res = []
-
         vhosts = self._verify_link_domain(parsed_references)
 
         for domain, vhost_response in self._send_in_threads(base_url, vhosts):
@@ -150,9 +148,9 @@ class find_vhosts(InfrastructurePlugin):
             fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
                 res.append((domain, vhost_response.id))
             else:
-                desc = u'The content of "%s" references a non existent domain:'\
-                       u' "%s". This can be a broken link, or an internal'\
-                       u' domain name.'
+                desc = (u'The content of "%s" references a non existent domain:'
+                        u' "%s". This can be a broken link, or an internal'
+                        u' domain name.')
                 desc %= (fuzzable_request.get_url(), domain)
                 
                 i = Info(u'Internal hostname in HTML link', desc,
@@ -235,9 +233,9 @@ class find_vhosts(InfrastructurePlugin):
 
     def _get_common_virtualhosts(self, base_url):
         """
+        Get a list of common virtual hosts based on the target domain
 
         :param base_url: The target URL object.
-
         :return: A list of possible domain names that could be hosted in the
                  same web server that "domain".
 

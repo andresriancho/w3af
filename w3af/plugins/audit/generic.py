@@ -53,11 +53,13 @@ class generic(AuditPlugin):
         self._diff_ratio = 0.30
         self._extensive = False
 
-    def audit(self, freq, original_response):
+    def audit(self, freq, original_response, debugging_id):
         """
         Find all kind of "generic" bugs without using a fixed error database
 
         :param freq: A FuzzableRequest
+        :param original_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # Prevent some false positives for cases where the original response
         # is already triggering an error
@@ -150,7 +152,8 @@ class generic(AuditPlugin):
         """
         self._potential_vulns.append((mutant.get_url(),
                                       mutant.get_token_name(),
-                                      mutant, id_list))
+                                      mutant,
+                                      id_list))
 
     def _has_potential_vuln(self, mutant):
         """
@@ -246,10 +249,8 @@ class generic(AuditPlugin):
         """
         This method is called when the plugin wont be used anymore.
         """
-        all_findings = kb.kb.get_all_findings()
-
         for url, variable, mutant, id_list in self._potential_vulns:
-            for info in all_findings:
+            for info in kb.kb.get_all_findings_iter():
                 if info.get_token_name() == variable and info.get_url() == url:
                     break
             else:

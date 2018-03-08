@@ -24,6 +24,7 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
+from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 
 
 class click_jacking(GrepPlugin):
@@ -46,6 +47,9 @@ class click_jacking(GrepPlugin):
         Check x-frame-options header
         """
         if not response.is_text_or_html():
+            return
+
+        if is_404(response):
             return
 
         self._total_count += 1

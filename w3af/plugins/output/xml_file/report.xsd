@@ -6,6 +6,7 @@
       <xs:sequence>
         <xs:element name="w3af-version" minOccurs="1" maxOccurs="1" type="xs:string" />
         <xs:element ref="scan-info" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="scan-status" minOccurs="1" maxOccurs="1"/>
         <xs:element ref="vulnerability" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="error" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
@@ -19,7 +20,7 @@
     <xs:simpleType>
       <xs:restriction base="xs:decimal">
         <!-- Current version defined in xml_file.py XML_OUTPUT_VERSION -->
-        <xs:enumeration value="2.1"/>
+        <xs:enumeration value="2.2"/>
       </xs:restriction>
     </xs:simpleType>
   </xs:attribute>
@@ -116,6 +117,66 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="scan-status">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element type="xs:string" name="status"/>
+        <xs:element type="xs:string" name="is-paused"/>
+        <xs:element type="xs:string" name="is-running"/>
+        <xs:element name="active-plugin">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="crawl"/>
+              <xs:element type="xs:string" name="audit"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="current-request">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="crawl"/>
+              <xs:element type="xs:string" name="audit"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="queues">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="crawl">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="input-speed"/>
+                    <xs:element type="xs:string" name="output-speed"/>
+                    <xs:element type="xs:string" name="length"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="audit">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="input-speed"/>
+                    <xs:element type="xs:string" name="output-speed"/>
+                    <xs:element type="xs:string" name="length"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="eta">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element type="xs:string" name="crawl"/>
+              <xs:element type="xs:string" name="audit"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element type="xs:short" name="rpm"/>
+        <xs:element type="xs:short" name="total-urls"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

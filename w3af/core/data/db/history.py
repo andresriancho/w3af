@@ -117,7 +117,7 @@ class HistoryItem(object):
     def get_response(self):
         resp = self._response
         if not resp and self.id:
-            self._request, resp = self._load_from_file(self.id)
+            self._request, resp = self.load_from_file(self.id)
             self._response = resp
         return resp
 
@@ -129,7 +129,7 @@ class HistoryItem(object):
     def get_request(self):
         req = self._request
         if not req and self.id:
-            req, self._response = self._load_from_file(self.id)
+            req, self._response = self.load_from_file(self.id)
             self._request = req
         return req
 
@@ -188,8 +188,8 @@ class HistoryItem(object):
     def _get_fname_for_id(self, _id):
         return os.path.join(self._session_dir, str(_id) + self._EXTENSION)
     
-    def _load_from_file(self, id):
-        fname = self._get_fname_for_id(id)
+    def load_from_file(self, _id):
+        fname = self._get_fname_for_id(_id)
         WAIT_TIME = 0.05
 
         #
@@ -237,7 +237,7 @@ class HistoryItem(object):
 
         else:
             msg = 'Timeout expecting trace file to be ready "%s"' % fname
-            raise IOError(msg)
+            raise DBException(msg)
 
     @verify_has_db
     def delete(self, _id=None):

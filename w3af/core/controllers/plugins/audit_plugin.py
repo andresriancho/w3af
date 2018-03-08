@@ -28,8 +28,9 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.misc.safe_deepcopy import safe_deepcopy
-from w3af.core.data.request.variant_identification import are_variants
 from w3af.core.controllers.exceptions import FourOhFourDetectionException
+from w3af.core.data.request.variant_identification import are_variants
+from w3af.core.data.fuzzer.utils import rand_alnum
 
 
 class AuditPlugin(Plugin):
@@ -40,9 +41,6 @@ class AuditPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # in seconds
-    PLUGIN_TIMEOUT = 5 * 60
-
     def __init__(self):
         Plugin.__init__(self)
         
@@ -70,10 +68,11 @@ class AuditPlugin(Plugin):
         with self._audit_return_vulns_lock:
             
             self._store_kb_vulns = True
+            debugging_id = rand_alnum(8)
             
             try:
                 orig_response = self.get_original_response(fuzzable_request)
-                self.audit_with_copy(fuzzable_request, orig_response)
+                self.audit_with_copy(fuzzable_request, orig_response, debugging_id)
             except Exception, e:
                 om.out.error(str(e))
             finally:
@@ -121,11 +120,13 @@ class AuditPlugin(Plugin):
         
         super(AuditPlugin, self).kb_append(location_a, location_b, info)
 
-    def audit_with_copy(self, fuzzable_request, orig_resp):
+    def audit_with_copy(self, fuzzable_request, orig_resp, debugging_id):
         """
         :param freq: A FuzzableRequest
         :param orig_resp: The HTTP response we get from sending the freq
-        
+        :param debugging_id: A unique identifier for this call to audit().
+                             See https://github.com/andresriancho/w3af/issues/16220
+
         Copy the FuzzableRequest before auditing.
 
         I copy the fuzzable request, to avoid cross plugin contamination.
@@ -135,7 +136,7 @@ class AuditPlugin(Plugin):
         fuzzable_request = safe_deepcopy(fuzzable_request)
 
         try:
-            return self.audit(fuzzable_request, orig_resp)
+            return self.audit(fuzzable_request, orig_resp, debugging_id)
         except FourOhFourDetectionException, ffde:
             # We simply ignore any exceptions we find during the 404 detection
             # process. FYI: This doesn't break the xurllib error handling which
@@ -144,7 +145,7 @@ class AuditPlugin(Plugin):
             # https://github.com/andresriancho/w3af/issues/8949
             om.out.debug('%s' % ffde)
 
-    def audit(self, freq, orig_resp):
+    def audit(self, freq, orig_resp, debugging_id):
         """
         The freq is a FuzzableRequest that is going to be modified and sent.
 
@@ -152,6 +153,8 @@ class AuditPlugin(Plugin):
 
         :param freq: A FuzzableRequest
         :param orig_resp: The HTTP response we get from sending the freq
+        :param debugging_id: A unique identifier for this call to audit()
+                             See https://github.com/andresriancho/w3af/issues/16220
         """
         msg = 'Plugin is not implementing required method audit'
         raise NotImplementedError(msg)
@@ -167,9 +170,9 @@ class AuditPlugin(Plugin):
         :param mutant: A Mutant sub-class.
         :param varname: Typically the name of the injection parameter.
         :param pname: The name of the plugin that presumably reported
-            the vulnerability. Defaults to self.name.
+                      the vulnerability. Defaults to self.name.
         :param kb_varname: The name of the variable in the kb, where
-            the vulnerability was saved. Defaults to self.name.
+                           the vulnerability was saved. Defaults to self.name.
         """
         with self._plugin_lock:
             pname = pname or self.get_name()

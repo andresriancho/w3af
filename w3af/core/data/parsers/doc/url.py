@@ -20,8 +20,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import copy
 import re
+import copy
 import urllib
 import urlparse
 
@@ -112,7 +112,7 @@ def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
         nv = name_value.split('=', 1)
         if len(nv) != 2:
             if strict_parsing:
-                raise ValueError, "bad query field: %r" % (name_value,)
+                raise ValueError("bad query field: %r" % name_value)
             # Handle case of a control-name with no equal sign
             if keep_blank_values:
                 nv.append('')
@@ -174,9 +174,23 @@ class URL(DiskItem):
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
 
-    __slots__ = ('_querystr',
+    IS_VALID_DOMAIN_RE = re.compile('[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$')
+    SET_DOMAIN_RE = re.compile('[a-z0-9-.]+([a-z0-9-]+)*$')
+
+    __slots__ = (
+                 # URL attributes
+                 '_querystr',
+                 '_fragment',
+                 '_scheme',
+                 '_netloc',
+                 '_path',
+                 '_params',
+
+                 # Internals
                  '_cache',
                  '_encoding',
+
+                 # Easy access via properties
                  'scheme',
                  'netloc',
                  'path',
@@ -193,7 +207,15 @@ class URL(DiskItem):
         Simple generic test, more detailed tests in each method!
 
         """
+        # The different parts of the url
         self._querystr = None
+        self._fragment = None
+        self._scheme = None
+        self._netloc = None
+        self._path = None
+        self._params = None
+
+        # Internal attributes
         self._cache = {}
         self._encoding = encoding
 
@@ -211,11 +233,11 @@ class URL(DiskItem):
         # This is the case when someone creates a URL like
         # this: URL('www.w3af.com')
         #
-        if scheme == netloc == '' and not path.startswith('/'):
+        if scheme == netloc == '' and not path.startswith(u'/'):
             # By default we set the protocol to "http"
-            scheme = 'http'
+            scheme = u'http'
             netloc = path
-            path = ''
+            path = u''
 
         self.scheme = scheme or u''
         self.netloc = netloc or u''
@@ -249,7 +271,7 @@ class URL(DiskItem):
         path = path or u''
         params = params or u''
         qs = qs or u''
-        fragment = fragment or u'' 
+        fragment = fragment or u''
         
         data = (scheme, netloc, path, params, qs, fragment)
         url_str = urlparse.urlunparse(data)
@@ -272,7 +294,7 @@ class URL(DiskItem):
         encoding = src_url_obj.encoding
         qs = copy.deepcopy(src_url_obj.querystring)
 
-        data = (scheme, netloc, path, params, '', fragment)
+        data = (scheme, netloc, path, params, u'', fragment)
         url_str = urlparse.urlunparse(data)
 
         new_url = cls(url_str, encoding)
@@ -331,8 +353,7 @@ class URL(DiskItem):
         if isinstance(qs, DataContainer):
             self._querystr = qs
         elif isinstance(qs, basestring):
-            self._querystr = parse_qs(qs, ignore_exc=True,
-                                      encoding=self.encoding)
+            self._querystr = parse_qs(qs, ignore_exc=True, encoding=self.encoding)
         else:
             # This might fail because of the type-check performed in QueryString
             # __init__, but that's ok.
@@ -348,17 +369,22 @@ class URL(DiskItem):
         return URL.from_parts(self.scheme, self.netloc, self.path,
                               None, None, None, encoding=self._encoding)
 
+    def set_fragment(self, fragment):
+        self._fragment = smart_unicode(fragment)
+
     def get_fragment(self):
         """
         :return: Returns the #fragment of the URL.
         """
-        return self.fragment
+        return self._fragment
+
+    fragment = property(get_fragment, set_fragment)
 
     def remove_fragment(self):
         """
         :return: Removes the URL #fragment (if any)
         """
-        self.fragment = u''
+        self._fragment = u''
 
     def base_url(self):
         """
@@ -424,13 +450,12 @@ class URL(DiskItem):
                 raise ValueError(msg % port)
 
             if int(port) > 65535 or int(port) < 1:
-                msg = ('Invalid TCP port "%s", expected a number in range'
-                       ' 1-65535.')
+                msg = 'Invalid TCP port "%s", expected a number in range 1-65535.'
                 raise ValueError(msg % port)
             
             # Collapse port
             if (protocol == 'http' and port == '80') or \
-            (protocol == 'https' and port == '443'):
+               (protocol == 'https' and port == '443'):
                 net_location = host
             else:
                 # The net location has a specific port definition
@@ -441,15 +466,15 @@ class URL(DiskItem):
         trailer_slash = path.endswith('/')
 
         tokens = []
-        for p in path.split('/'):
+        for p in path.split(u'/'):
             if not p:
                 continue
-            elif p != '..':
+            elif p != u'..':
                 tokens.append(p)
             else:
                 if tokens:
                     tokens.pop()
-        self.path = '/'.join(tokens) + ('/' if trailer_slash else '')
+        self.path = u'/'.join(tokens) + (u'/' if trailer_slash else u'')
 
         #
         # Put everything together, do NOT use urlparse.urljoin here or you'll
@@ -458,7 +483,7 @@ class URL(DiskItem):
         #       https://github.com/andresriancho/w3af/issues/475
         #
         fixed_url = urlparse.urlunparse((protocol, net_location, self.path,
-                                         self.params, '', self.fragment))
+                                         self.params, u'', self.fragment))
 
         # "re-init" the object
         (self.scheme, self.netloc, self.path,
@@ -471,6 +496,7 @@ class URL(DiskItem):
         """
         net_location = self.get_net_location()
         protocol = self.get_protocol()
+
         if ':' in net_location:
             host, port = net_location.split(':')
             return int(port)
@@ -525,7 +551,7 @@ class URL(DiskItem):
         """
         :return: Returns the domain name for the url.
         """
-        if not re.match('[a-z0-9-\.]+([a-z0-9-]+)*$', new_domain):
+        if not self.SET_DOMAIN_RE.match(new_domain):
             raise ValueError("'%s' is an invalid domain" % new_domain)
 
         domain = self.netloc.split(':')[0]
@@ -533,30 +559,35 @@ class URL(DiskItem):
 
     def is_valid_domain(self):
         """
-        :param url: The url to parse.
-        :return: Returns a boolean that indicates if <url>'s domain is valid
+        :return: Returns a boolean that indicates if self.netloc domain is valid
         """
-        domain_re = '[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$'
-        return re.match(domain_re, self.netloc) is not None
+        return self.IS_VALID_DOMAIN_RE.match(self.netloc) is not None
 
     def get_net_location(self):
         """
         :return: Returns the net location for the url.
         """
-        return self.netloc
+        return self._netloc
+
+    def set_net_location(self, netloc):
+        self._netloc = smart_unicode(netloc)
+
+    netloc = property(get_net_location, set_net_location)
 
     def get_protocol(self):
         """
         :return: Returns the domain name for the url.
         """
-        return self.scheme
+        return self._scheme
 
     @set_changed
     def set_protocol(self, protocol):
         """
         :return: Returns the domain name for the url.
         """
-        self.scheme = protocol
+        self._scheme = smart_unicode(protocol)
+
+    scheme = property(get_protocol, set_protocol)
 
     def switch_protocol(self):
         """
@@ -567,10 +598,11 @@ class URL(DiskItem):
         """
         proto = self.get_protocol()
         changed_proto_url = self.copy()
-        if proto == 'https':
-            changed_proto_url.set_protocol('http')
+
+        if proto == u'https':
+            changed_proto_url.set_protocol(u'http')
         else:
-            changed_proto_url.set_protocol('https')
+            changed_proto_url.set_protocol(u'https')
 
         return changed_proto_url
 
@@ -597,10 +629,10 @@ class URL(DiskItem):
         :return: Returns the domain name and the path for the url.
         """
         if self.path:
-            res = self.scheme + '://' + self.netloc + \
+            res = self.scheme + u'://' + self.netloc + \
                 self.path[:self.path.rfind('/') + 1]
         else:
-            res = self.scheme + '://' + self.netloc + '/'
+            res = self.scheme + u'://' + self.netloc + u'/'
         return URL(res, self._encoding)
 
     def get_file_name(self):
@@ -614,11 +646,11 @@ class URL(DiskItem):
         """
         :return: Sets the filename name for the given URL.
         """
-        if self.path == '/':
-            self.path = '/' + new
+        if self.path == u'/':
+            self.path = u'/' + new
 
         else:
-            last_slash = self.path.rfind('/')
+            last_slash = self.path.rfind(u'/')
             self.path = self.path[:last_slash + 1] + new
 
     def get_extension(self):
@@ -626,9 +658,9 @@ class URL(DiskItem):
         :return: Returns the extension of the filename, if possible, else, ''.
         """
         fname = self.get_file_name()
-        extension = fname[fname.rfind('.') + 1:]
+        extension = fname[fname.rfind(u'.') + 1:]
         if extension == fname:
-            return ''
+            return u''
         else:
             return extension
 
@@ -640,14 +672,13 @@ class URL(DiskItem):
         original URL had no extension.
         """
         if not self.get_extension():
-            raise Exception(
-                'You can only set a new extension to a URL that had one.')
+            raise Exception('You can only set a new extension to a URL that had one.')
 
         filename = self.get_file_name()
 
-        split_filename = filename.split('.')
+        split_filename = filename.split(u'.')
         split_filename[-1] = extension
-        new_filename = '.'.join(split_filename)
+        new_filename = u'.'.join(split_filename)
 
         self.set_file_name(new_filename)
 
@@ -655,33 +686,35 @@ class URL(DiskItem):
         """
         :return: Returns the domain name and the path for the url.
         """
-        return self.netloc + self.path[:self.path.rfind('/') + 1]
+        return self.netloc + self.path[:self.path.rfind(u'/') + 1]
 
     def get_path(self):
         """
         :return: Returns the path for the url:
         """
-        return self.path
+        return self._path
 
     @set_changed
     def set_path(self, path):
-        self.path = path or u'/'
+        self._path = smart_unicode(path) or u'/'
+
+    path = property(get_path, set_path)
 
     def get_path_without_file(self):
         """
         :return: Returns the path for the url without the filename part
         """
-        return self.path[:self.path.rfind('/') + 1]
+        return self.path[:self.path.rfind(u'/') + 1]
 
     def get_path_qs(self):
         """
         :return: Returns the path for the url containing the QS
         """
         res = self.path
-        if self.params != '':
-            res += ';' + self.params
+        if self.params != u'':
+            res += u';' + self.params
         if self.has_query_string():
-            res += u'?' + unicode(self.querystring)
+            res += u'?' + smart_unicode(self.querystring)
         return res
 
     def url_decode(self):
@@ -712,7 +745,7 @@ class URL(DiskItem):
             qs = '?' + str(self.querystring)
             self_str = self_str[:qs_start_index]
 
-        return "%s%s" % (urllib.quote(self_str, safe=self.SAFE_CHARS), qs)
+        return '%s%s' % (urllib.quote(self_str, safe=self.SAFE_CHARS), qs)
 
     def get_directories(self):
         """
@@ -723,8 +756,8 @@ class URL(DiskItem):
         current_url = self.copy()
         res.append(current_url.get_domain_path())
 
-        while current_url.get_path().count('/') != 1:
-            current_url = current_url.url_join('../')
+        while current_url.get_path().count(u'/') != 1:
+            current_url = current_url.url_join(u'../')
             res.append(current_url)
 
         return res
@@ -735,7 +768,7 @@ class URL(DiskItem):
 
         :return: True if the URL has params.
         """
-        if self.params != '':
+        if self._params != u'':
             return True
         return False
 
@@ -743,7 +776,7 @@ class URL(DiskItem):
         """
         :return: Returns the params inside the url.
         """
-        return self.params
+        return self._params
 
     def remove_params(self):
         """
@@ -760,7 +793,9 @@ class URL(DiskItem):
         :param param_string: The param to set (e.g. "foo=aaa").
         :return: Returns the url containing param.
         """
-        self.params = param_string
+        self._params = smart_unicode(param_string)
+
+    params = property(get_params_string, set_param)
 
     def get_params(self, ignore_exc=True):
         """
@@ -777,9 +812,8 @@ class URL(DiskItem):
                                                 strict_parsing=True)
             except Exception:
                 if not ignore_exc:
-                    raise BaseFrameworkException('Strange things found when'
-                                                 ' parsing params string: %s' %
-                                                 self.params)
+                    msg = 'Strange things found when parsing params string: %s'
+                    raise BaseFrameworkException(msg % self.params)
             else:
                 for k, v in parsed_data.iteritems():
                     result[k] = v[0]
@@ -828,7 +862,7 @@ class URL(DiskItem):
         :return: A string representation of myself for debugging
 
         """
-        return '<URL for "%s">' % (self,)
+        return u'<URL for "%s">' % (self,)
 
     def __contains__(self, s):
         """

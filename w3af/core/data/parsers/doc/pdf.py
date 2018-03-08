@@ -52,23 +52,21 @@ class PDFParser(BaseParser):
         :return: True if the document parameter is a string that contains a PDF
                  document.
         """
-        if http_resp.content_type in ('application/x-pdf', 'application/pdf'):
-            document = http_resp.body
+        if http_resp.content_type not in ('application/x-pdf', 'application/pdf'):
+            return False
 
-            #   Safety check:
-            if not document:
-                return False
+        document = http_resp.body
 
-            #   Some PDF files don't end with %%EOF, they end with
-            #   things like %%EOF\n , or %%EOF\r, or %%EOF\r\n.
-            #   So... just to be sure I search in the last 12 characters.
-            if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
-                try:
-                    text = pdf_to_text(document)
-                except Exception:
-                    return False
-                else:
-                    return text != u''
+        # Safety check:
+        if not document:
+            return False
+
+        # Some PDF files don't end with %%EOF, they end with
+        # things like %%EOF\n , or %%EOF\r, or %%EOF\r\n.
+        #
+        # So... just to be sure I search in the last 12 characters.
+        if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
+            return True
 
         return False
 

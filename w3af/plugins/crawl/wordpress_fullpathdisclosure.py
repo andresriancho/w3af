@@ -25,9 +25,9 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class wordpress_fullpathdisclosure(CrawlPlugin):
@@ -43,29 +43,31 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         CrawlPlugin.__init__(self)
 
         # Internal variables
-        self._exec = True
+        self._already_tested = ScalableBloomFilter()
 
     def crawl(self, fuzzable_request):
         """
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         """
-        if not self._exec:
-            raise RunOnce()
-        else:
-            # Check if there is a wordpress installation in this directory
-            domain_path = fuzzable_request.get_url().get_domain_path()
-            wp_unique_url = domain_path.url_join('wp-login.php')
-            response = self._uri_opener.GET(wp_unique_url, cache=True)
+        # Check if there is a wordpress installation in this directory
+        domain_path = fuzzable_request.get_url().get_domain_path()
+        wp_unique_url = domain_path.url_join('wp-login.php')
+        response = self._uri_opener.GET(wp_unique_url, cache=True)
 
-            # If wp_unique_url is not 404, wordpress = true
-            if not is_404(response):
-                # Only run once
-                self._exec = False
+        # If wp_unique_url is not 404, wordpress = true
+        if is_404(response):
+            return
 
-                extracted_paths = self._extract_paths(domain_path)
-                self._force_disclosures(domain_path,
-                                        self.CHECK_PATHS + extracted_paths)
+        # Only run once
+        if wp_unique_url in self._already_tested:
+            return
+
+        self._already_tested.add(wp_unique_url)
+
+        extracted_paths = self._extract_paths(domain_path)
+        self._force_disclosures(domain_path,
+                                self.CHECK_PATHS + extracted_paths)
 
     def _extract_paths(self, domain_path):
         """
@@ -79,17 +81,18 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         theme_paths = []
         wp_root_response = self._uri_opener.GET(domain_path, cache=True)
 
-        if not is_404(wp_root_response):
-            response_body = wp_root_response.get_body()
+        if is_404(wp_root_response):
+            return
 
-            theme_regexp = '%swp-content/themes/(.*)/style.css' % domain_path
-            theme = re.search(theme_regexp, response_body, re.IGNORECASE)
-            if theme:
-                theme_name = theme.group(1)
-                for fname in ('header', 'footer'):
-                    path_fname = 'wp-content/themes/%s/%s.php' % (
-                        theme_name, fname)
-                    theme_paths.append(path_fname)
+        response_body = wp_root_response.get_body()
+
+        theme_regexp = '%swp-content/themes/(.*)/style.css' % domain_path
+        theme = re.search(theme_regexp, response_body, re.IGNORECASE)
+        if theme:
+            theme_name = theme.group(1)
+            for fname in ('header', 'footer'):
+                path_fname = 'wp-content/themes/%s/%s.php' % (theme_name, fname)
+                theme_paths.append(path_fname)
 
         return theme_paths
 

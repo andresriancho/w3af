@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
+
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
@@ -86,11 +87,11 @@ class test_strange_http_codes(unittest.TestCase):
         info_sets = kb.kb.get('strange_http_codes', 'strange_http_codes')
         self.assertEquals(len(info_sets), 1, info_sets)
 
-        expected_desc = u'The remote web server sent 2 HTTP responses with' \
-                        u' the uncommon response status code 666 using "OK"' \
-                        u' as message. The first ten URLs which sent the' \
-                        u' uncommon status code are:\n' \
-                        u' - http://www.w3af.com/2\n - http://www.w3af.com/1\n'
+        expected_desc = (u'The remote web server sent 2 HTTP responses with'
+                         u' the uncommon response status code 666 using "OK"'
+                         u' as message. The first ten URLs which sent the' 
+                         u' uncommon status code are:\n' 
+                         u' - http://www.w3af.com/2\n - http://www.w3af.com/1\n')
         info_set = info_sets[0]
         self.assertEqual(info_set.get_id(), [1, 2])
         self.assertEqual(info_set.get_desc(), expected_desc)
@@ -111,3 +112,19 @@ class test_strange_http_codes(unittest.TestCase):
 
         info_sets = kb.kb.get('strange_http_codes', 'strange_http_codes')
         self.assertEquals(len(info_sets), 2, info_sets)
+
+    def test_strange_http_codes_heavy_load(self):
+        body = ''
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+        request = FuzzableRequest(url, method='GET')
+
+        resp_503 = HTTPResponse(503, body, headers, url, url, _id=1)
+        resp_509 = HTTPResponse(509, body, headers, url, url, _id=1)
+        KNOWN_BAD = [resp_503, resp_509]
+
+        for resp in KNOWN_BAD:
+            kb.kb.cleanup()
+            self.plugin.grep(request, resp)
+            self.assertEquals(len(kb.kb.get('strange_http_codes',
+                                            'heavy_load')), 1)

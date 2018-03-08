@@ -18,3 +18,7 @@ document in our wiki. All contributions, no matter how small, are welcome.
 ## Links and documentation
  * [w3af's main site](http://w3af.org/)
  * [Project documentation](http://docs.w3af.org/en/latest/)
+
+## Sponsor the project
+
+Found this project useful? Donations are accepted via [ethereum](https://www.ethereum.org/) at `0xb1B56F04E6cc5F4ACcB19678959800824DA8DE82`

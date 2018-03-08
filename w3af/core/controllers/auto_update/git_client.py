@@ -28,8 +28,8 @@ from git.util import RemoteProgress
 from w3af.core.controllers.misc.decorators import retry
 from w3af.core.controllers.auto_update.changelog import ChangeLog
 from w3af.core.controllers.auto_update.utils import (get_latest_commit,
-                                                get_current_branch,
-                                                repo_has_conflicts)
+                                                     get_current_branch,
+                                                     repo_has_conflicts)
 
 
 class GitClientError(Exception):
@@ -167,4 +167,3 @@ class GitRemoteProgress(RemoteProgress):
     def update(self, op_code, cur_count, max_count=None, message=''):
         for observer in self.observers: 
             observer(op_code, cur_count, max_count, message)
-    

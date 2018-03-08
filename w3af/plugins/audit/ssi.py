@@ -23,9 +23,11 @@ import re
 
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.utils import rand_number
 from w3af.core.data.db.disk_dict import DiskDict
@@ -41,21 +43,25 @@ class ssi(AuditPlugin):
         AuditPlugin.__init__(self)
 
         # Internal variables
+        self._persistent_multi_in = None
         self._expected_mutant_dict = DiskDict(table_prefix='ssi')
         self._extract_expected_re = re.compile('[1-9]{5}')
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for server side inclusion vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         ssi_strings = self._get_ssi_strings()
         mutants = create_mutants(freq, ssi_strings, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
 
     def _get_ssi_strings(self):
         """
@@ -157,10 +163,17 @@ class ssi(AuditPlugin):
         """
         fuzzable_request_set = kb.kb.get_all_known_fuzzable_requests()
 
+        debugging_id = rand_alnum(8)
+        om.out.debug('Starting stored SSI search (did=%s)' % debugging_id)
+
+        self._persistent_multi_in = MultiIn(self._expected_mutant_dict.keys())
+        om.out.debug('Created stored SSI MultiIn (did=%s)' % debugging_id)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       fuzzable_request_set,
                                       self._analyze_persistent,
-                                      cache=False)
+                                      cache=False,
+                                      debugging_id=debugging_id)
 
         self._expected_mutant_dict.cleanup()
 
@@ -174,9 +187,7 @@ class ssi(AuditPlugin):
         :param response: The HTTP response
         :return: None, vulns are stored in KB
         """
-        multi_in_inst = multi_in(self._expected_mutant_dict.keys())
-
-        for matched_expected_result in multi_in_inst.query(response.get_body()):
+        for matched_expected_result in self._persistent_multi_in.query(response.get_body()):
             # We found one of the expected results, now we search the
             # self._expected_mutant_dict to find which of the mutants sent it
             # and create the vulnerability

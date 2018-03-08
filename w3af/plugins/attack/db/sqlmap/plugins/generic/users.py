@@ -2,7 +2,7 @@
 
 """
 Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
-See the file 'doc/COPYING' for copying permission
+See the file 'LICENSE' for copying permission
 """
 
 import re
@@ -165,7 +165,7 @@ class Users:
 
             if Backend.isDbms(DBMS.MYSQL):
                 for user in users:
-                    parsedUser = re.search("[\047]*(.*?)[\047]*\@", user)
+                    parsedUser = re.search(r"['\"]?(.*?)['\"]?\@", user)
 
                     if parsedUser:
                         users[users.index(user)] = parsedUser.groups()[0]
@@ -220,7 +220,7 @@ class Users:
 
                 if Backend.isDbms(DBMS.MYSQL):
                     for user in users:
-                        parsedUser = re.search("[\047]*(.*?)[\047]*\@", user)
+                        parsedUser = re.search(r"['\"]?(.*?)['\"]?\@", user)
 
                         if parsedUser:
                             users[users.index(user)] = parsedUser.groups()[0]
@@ -235,7 +235,7 @@ class Users:
 
                 if retVal:
                     for user, password in filterPairValues(zip(retVal[0]["%s.name" % randStr], retVal[0]["%s.password" % randStr])):
-                        password = "0x%s" % hexencode(password).upper()
+                        password = "0x%s" % hexencode(password, conf.encoding).upper()
 
                         if user not in kb.data.cachedUsersPasswords:
                             kb.data.cachedUsersPasswords[user] = [password]
@@ -349,7 +349,7 @@ class Users:
 
             if Backend.isDbms(DBMS.MYSQL):
                 for user in users:
-                    parsedUser = re.search("[\047]*(.*?)[\047]*\@", user)
+                    parsedUser = re.search(r"['\"]?(.*?)['\"]?\@", user)
 
                     if parsedUser:
                         users[users.index(user)] = parsedUser.groups()[0]
@@ -393,7 +393,7 @@ class Users:
                     user = None
                     privileges = set()
 
-                    for count in xrange(0, len(value)):
+                    for count in xrange(0, len(value or [])):
                         # The first column is always the username
                         if count == 0:
                             user = value[count]
@@ -463,7 +463,7 @@ class Users:
 
                 if Backend.isDbms(DBMS.MYSQL):
                     for user in users:
-                        parsedUser = re.search("[\047]*(.*?)[\047]*\@", user)
+                        parsedUser = re.search(r"['\"]?(.*?)['\"]?\@", user)
 
                         if parsedUser:
                             users[users.index(user)] = parsedUser.groups()[0]

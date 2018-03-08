@@ -34,6 +34,9 @@ from w3af.core.data.options.option_types import BOOL
 from w3af.core.data.options.option_list import OptionList
 
 
+ERROR = 'Error'
+
+
 def catch_ioerror(meth):
     """
     Function to decorate methods in order to catch IOError exceptions.
@@ -59,7 +62,8 @@ class console(OutputPlugin):
     SEVERITY_COLOR = {HIGH: 'red',
                       MEDIUM: 'yellow',
                       LOW: 'blue',
-                      INFORMATION: 'cyan'}
+                      INFORMATION: 'cyan',
+                      ERROR: 'white'}
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -97,8 +101,8 @@ class console(OutputPlugin):
             self._print_to_stdout(message, new_line)
 
     @catch_ioerror
-    def error(self, message, new_line=True, severity=HIGH):
-        self._print_to_stdout(message, new_line, severity=severity)
+    def error(self, message, new_line=True, severity=None):
+        self._print_to_stdout(message, new_line, severity=ERROR)
 
     @catch_ioerror
     def console(self, message, new_line=True, severity=None):

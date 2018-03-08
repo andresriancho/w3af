@@ -20,8 +20,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
+import httpretty
 
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
+
 
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.url.opener_settings import OpenerSettings
@@ -97,3 +100,31 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 1)
         cookie = [c for c in self.uri_opener.get_cookies()][0]
         self.assertEqual('127.0.0.1', cookie.domain)
+
+
+class TestUpperCaseHeaders(unittest.TestCase):
+
+    @SkipTest
+    @httpretty.activate
+    def test_headers_upper_case(self):
+        """
+        This unittest is skipped here, but shouldn't be removed, it is a reminder
+        that w3af (and urllib/httplib) does always perform a call to lower() for
+        all the data received over the wire.
+
+        This gives w3af a modified view of the reality, we never see what was
+        really sent to us.
+        """
+        url = "http://w3af.org/"
+
+        httpretty.register_uri(httpretty.GET, url,
+                               body='hello world',
+                               content_type="application/html")
+
+        uri_opener = ExtendedUrllib()
+        res = uri_opener.GET(URL(url), cache=False)
+        headers = res.get_headers()
+        content_encoding = headers.get('Content-Type', '')
+
+        self.assertIn('application/html', content_encoding)
+

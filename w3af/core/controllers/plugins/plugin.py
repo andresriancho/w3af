@@ -56,8 +56,9 @@ class Plugin(Configurable):
         Create some generic attributes that are going to be used by most plugins
         """
         self._uri_opener = None
+        self._w3af_core = None
         self.worker_pool = None
-        
+
         self.output_queue = Queue.Queue()
         self._plugin_lock = threading.RLock()
 
@@ -84,6 +85,19 @@ class Plugin(Configurable):
         :return: No value is returned.
         """
         self._uri_opener = UrlOpenerProxy(url_opener, self)
+
+    def set_w3af_core(self, w3af_core):
+        """
+        Set the w3af core instance to the plugin. This shouldn't be used much
+        but it is helpful when the plugin needs to query something about the
+        core status.
+
+        :return: None
+        """
+        self._w3af_core = w3af_core
+
+    def get_w3af_core(self):
+        return self._w3af_core
 
     def set_options(self, options_list):
         """
@@ -169,6 +183,9 @@ class Plugin(Configurable):
         """
         return self.__class__.__name__ == other.__class__.__name__
 
+    def __repr__(self):
+        return '<%s.%s>' % (self.get_type(), self.get_name())
+
     def end(self):
         """
         This method is called by w3afCore to let the plugin know that it wont
@@ -187,6 +204,10 @@ class Plugin(Configurable):
         """
         Please note that this method blocks from the caller's point of view
         but performs all the HTTP requests in parallel threads.
+
+        :param func: The function to use to send the mutants
+        :param iterable: A list with the mutants
+        :param callback: A callable to invoke after each mutant is sent
         """
         imap_unordered = self.worker_pool.imap_unordered
         awre = apply_with_return_error
@@ -257,6 +278,7 @@ class UrlOpenerProxy(object):
                       'get_remote_file_size',
                       'add_headers',
                       'assert_allowed_proto',
+                      'get_average_rtt_for_mutant',
                       '_handle_send_socket_error',
                       '_handle_send_urllib_error',
                       '_handle_send_success',

@@ -55,10 +55,15 @@ class dot_listing(CrawlPlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
+        directories_to_check = []
+
         for domain_path in fuzzable_request.get_url().get_directories():
             if domain_path not in self._analyzed_dirs:
                 self._analyzed_dirs.add(domain_path)
-                self._check_and_analyze(domain_path)
+                directories_to_check.append(domain_path)
+
+        # Send the requests using threads
+        self.worker_pool.map(self._check_and_analyze, directories_to_check)
 
     def _check_and_analyze(self, domain_path):
         """
@@ -95,9 +100,9 @@ class dot_listing(CrawlPlugin):
         self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
         if parsed_url_set:
-            desc = 'A .listing file was found at: "%s". The contents'\
-                   ' of this file disclose filenames.'
-            desc = desc % (response.get_url())
+            desc = ('A .listing file was found at: "%s". The contents'
+                    ' of this file disclose filenames.')
+            desc %= (response.get_url())
 
             v = Vuln('.listing file found', desc, severity.LOW, response.id,
                      self.get_name())
@@ -110,14 +115,14 @@ class dot_listing(CrawlPlugin):
         real_groups = set([g for g in groups if not g.isdigit()])
 
         if real_users or real_groups:
-            desc = 'A .listing file which leaks operating system usernames' \
-                   ' and groups was identified at %s. The leaked users are %s,'\
-                   ' and the groups are %s. This information can be used' \
-                   ' during a bruteforce attack to the Web application,' \
-                   ' SSH or FTP services.'
-            desc = desc % (response.get_url(),
-                           ', '.join(real_users),
-                           ', '.join(real_groups))
+            desc = ('A .listing file which leaks operating system usernames'
+                    ' and groups was identified at %s. The leaked users are %s,'
+                    ' and the groups are %s. This information can be used'
+                    ' during a bruteforce attack to the Web application,'
+                    ' SSH or FTP services.')
+            desc %= (response.get_url(),
+                     ', '.join(real_users),
+                     ', '.join(real_groups))
 
             v = Vuln('Operating system username and group leak', desc,
                      severity.LOW, response.id, self.get_name())
@@ -146,15 +151,17 @@ class dot_listing(CrawlPlugin):
         """
         return """
         This plugin searches for the .listing file in all the directories and
-        subdirectories that are sent as input and if found it will try to
-        discover new URLs from its content. The .listing file holds information
-        about the list of files in the current directory. These files are created
-        when download files from FTP with command "wget" and argument "-m" or
-        "--no-remove-listing". For example, if the input is:
+        subdirectories that are sent as input. If the file is found extract new
+        URLs from its content.
+        
+        The .listing file holds information about the list of files in the current
+        directory. These files are created when download files from FTP with command
+        "wget" and argument "-m" or "--no-remove-listing".
+        
+        For example, if the input is:
             - http://host.tld/w3af/index.php
 
         The plugin will perform these requests:
             - http://host.tld/w3af/.listing
             - http://host.tld/.listing
-
         """

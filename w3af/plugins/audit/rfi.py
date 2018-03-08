@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import socket
+import errno
 import BaseHTTPServer
 from functools import partial
 
@@ -29,6 +30,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 import w3af.core.controllers.daemons.webserver as webserver
 import w3af.core.data.constants.ports as ports
+
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.is_private_site import is_private_site
@@ -51,11 +53,11 @@ class rfi(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    CONFIG_ERROR_MSG = 'audit.rfi plugin needs to be correctly configured to' \
-                       ' use. Please set valid values for local address (eg.' \
-                       ' 10.5.2.5) and port (eg. 44449), or use the official' \
-                       ' w3af site as the target server for remote inclusions.'\
-                       ' The configuration error is: "%s"'
+    CONFIG_ERROR_MSG = ('audit.rfi plugin needs to be correctly configured to' 
+                        ' use. Please set valid values for local address (eg.' 
+                        ' 10.5.2.5) and port (eg. 44449), or use the official' 
+                        ' w3af site as the target server for remote inclusions.'
+                        ' The configuration error is: "%s"')
 
     RFI_TEST_URL = 'http://w3af.org/rfi.html'
 
@@ -80,16 +82,18 @@ class rfi(AuditPlugin):
         self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for remote file inclusion vulnerabilities.
 
-        :param freq: A FuzzableRequest object
+        :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
         # The plugin is going to use two different techniques:
         # 1- create a request that will include a file from the w3af site
         if self._use_w3af_site:
-            self._w3af_site_test_inclusion(freq, orig_response)
+            self._w3af_site_test_inclusion(freq, orig_response, debugging_id)
 
         # Sanity check required for #2 technique
         config_ok, config_message = self._correctly_configured()
@@ -101,7 +105,7 @@ class rfi(AuditPlugin):
             return
         
         # 2- create a request that will include a file from a local web server
-        self._local_test_inclusion(freq, orig_response)
+        self._local_test_inclusion(freq, orig_response, debugging_id)
         
         # Now that we've captured all vulnerabilities, report the ones with
         # higher risk
@@ -190,7 +194,7 @@ class rfi(AuditPlugin):
 
         return False, 'Listen address and port need to be configured'
 
-    def _local_test_inclusion(self, freq, orig_response):
+    def _local_test_inclusion(self, freq, orig_response, debugging_id):
         """
         Check for RFI using a local web server
 
@@ -241,13 +245,24 @@ class rfi(AuditPlugin):
                                           RFIWebHandler)
 
                 # Perform the real work
-                self._test_inclusion(freq, rfi_data, orig_response)
+                self._test_inclusion(freq, rfi_data, orig_response, debugging_id)
+            except socket.error, se:
+                errorcode = se[0]
+                if errorcode == errno.EADDRINUSE:
+                    # We can't use this address because it is already in use
+                    self._listen_address = None
+
+                    # Let the user know
+                    msg = ('Failed to bind to the provided listen address in the audit.'
+                           'rfi plugin. The address is already in use by another process.')
+                    om.out.error(msg)
+
             except Exception, e:
                 msg = 'An error occurred while running local web server for' \
                       ' the remote file inclusion (rfi) plugin: "%s"'
                 om.out.error(msg % e)
 
-    def _w3af_site_test_inclusion(self, freq, orig_response):
+    def _w3af_site_test_inclusion(self, freq, orig_response, debugging_id):
         """
         Check for RFI using the official w3af site.
 
@@ -263,9 +278,9 @@ class rfi(AuditPlugin):
                            rfi_result_part_2, rfi_result)
 
         # Perform the real work
-        self._test_inclusion(freq, rfi_data, orig_response)
+        self._test_inclusion(freq, rfi_data, orig_response, debugging_id)
 
-    def _test_inclusion(self, freq, rfi_data, orig_response):
+    def _test_inclusion(self, freq, rfi_data, orig_response, debugging_id):
         """
         Checks a FuzzableRequest for remote file inclusion bugs.
 
@@ -280,7 +295,8 @@ class rfi(AuditPlugin):
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      analyze_result_par)
+                                      analyze_result_par,
+                                      debugging_id=debugging_id)
 
     def _mutate_rfi_urls(self, orig_url):
         """

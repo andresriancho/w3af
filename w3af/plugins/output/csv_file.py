@@ -67,8 +67,10 @@ class csv_file(OutputPlugin):
             return
 
         try:
-            csv_writer = csv.writer(output_handler, delimiter=',',
-                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(output_handler,
+                                    delimiter=',',
+                                    quotechar='|',
+                                    quoting=csv.QUOTE_MINIMAL)
         except Exception, e:
             msg = ('An exception was raised while trying to open the '
                    ' CSV writer. Exception: "%s"')
@@ -76,7 +78,7 @@ class csv_file(OutputPlugin):
             output_handler.close()
             return
 
-        for info in kb.kb.get_all_findings():
+        for info in kb.kb.get_all_findings_iter():
             try:
                 row = [info.get_severity(),
                        info.get_name(),

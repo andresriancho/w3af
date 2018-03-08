@@ -33,6 +33,7 @@ import w3af.core.data.kb.config as cf
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.threads.threadpool import Pool
 
 
 class request:
@@ -237,27 +238,33 @@ class response:
 # Functions for probing server and collecting characteristics
 
 
-def get_fingerprint(url):
-    basic_get(url)  # TODO: this is redundant with later test...
-    basic_options(url)
-    unknown_method(url)
-    unauthorized_activity(url)
-    nonexistant_object(url)
-    malformed_method_line(url)
-    long_url_ranges(url)
-    long_default_ranges(url)
-    many_header_ranges(url)
-    large_header_ranges(url)
-    unavailable_accept(url)
-    fake_content_length(url)
-    ### TODO some more tests to add:
-    # compare_get_head_header_order  n ## see if body sent back??
-       # also see if get same headers in same order
-    # require_host
-    # unmodified_since  # also with sending bad date
+def get_fingerprint(url, threads):
+    pool = Pool(worker_names='HMap',
+                maxtasksperchild=2,
+                processes=threads,
+                max_queued_tasks=5)
 
-    fingerprint['SYNTACTIC']['HEADER_ORDER'] = winnow_ordered_list(
-        fingerprint['SYNTACTIC']['HEADER_ORDER'])
+    tests = {basic_get,
+             basic_options,
+             unknown_method,
+             unauthorized_activity,
+             nonexistant_object,
+             malformed_method_line,
+             long_url_ranges,
+             long_default_ranges,
+             many_header_ranges,
+             large_header_ranges,
+             unavailable_accept,
+             fake_content_length}
+
+    for test in tests:
+        pool.apply_async(func=test, args=(url,))
+
+    pool.close()
+    pool.join()
+    pool.terminate()
+
+    fingerprint['SYNTACTIC']['HEADER_ORDER'] = winnow_ordered_list(fingerprint['SYNTACTIC']['HEADER_ORDER'])
     return fingerprint
 
 
@@ -914,7 +921,7 @@ PORT = 80
 useSSL = False
 
 
-def testServer(ssl, server, port, matchCount, generateFP):
+def testServer(ssl, server, port, matchCount, generateFP, threads):
     global VERBOSE
     global PORT
     global useSSL
@@ -923,11 +930,11 @@ def testServer(ssl, server, port, matchCount, generateFP):
     useSSL = ssl
 
     MATCH_COUNT = matchCount
-    fingerprintDir = os.path.join(ROOT_PATH, 'plugins', 'infrastructure',
-                                  'oHmap', 'known.servers/')
+    fingerprintDir = os.path.join(ROOT_PATH, 'plugins', 'infrastructure', 'oHmap', 'known.servers/')
+
     # Get the fingerprint
     target_url = server
-    fp = get_fingerprint(target_url)
+    fp = get_fingerprint(target_url, threads)
 
     # Read the fingerprint db
     known_servers = []

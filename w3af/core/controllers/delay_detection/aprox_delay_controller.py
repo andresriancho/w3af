@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.controllers.delay_detection.aprox_delay import AproxDelay
-from w3af.core.controllers.delay_detection.delay_mixin import DelayMixIn
 
 LINEARLY = 1
 EXPONENTIALLY = 2
 
 
-class AproxDelayController(DelayMixIn):
+class AproxDelayController(object):
     """
     Given that more than one vulnerability can be detected using time delays
     which are not 100% exact, just to name a couple: blind SQL injections using
@@ -82,6 +81,13 @@ class AproxDelayController(DelayMixIn):
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
         self.delay_setting = delay_setting
+        self._debugging_id = None
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
+    def get_debugging_id(self):
+        return self._debugging_id
 
     def delay_is_controlled(self):
         """
@@ -100,19 +106,23 @@ class AproxDelayController(DelayMixIn):
         sleep). If we start with the highest maybe we could break something.
         """
         responses = []
-        original_wait_time = self.get_original_time()
+
+        original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
+                                                                  debugging_id=self.get_debugging_id())
 
         # Find a multiplier that delays
-        multiplier = self.find_delay_multiplier(original_wait_time, responses)
+        multiplier = self.find_delay_multiplier(original_rtt, responses)
         if multiplier is None:
             return False, responses
 
         # We want to make sure that the multiplier actually works and
         # that the delay is stable
         for _ in xrange(3):
-            original_wait_time = self.get_original_time()
+            original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
+                                                                      debugging_id=self.get_debugging_id())
             delays, resp = self.multiplier_delays_response(multiplier,
-                                                           original_wait_time)
+                                                           original_rtt,
+                                                           grep=False)
             responses.append(resp)
 
             if not delays:
@@ -123,10 +133,13 @@ class AproxDelayController(DelayMixIn):
 
         return False, responses
     
-    def find_delay_multiplier(self, original_wait_time, responses):
-        for multiplier in self.DELAY_SETTINGS[self.delay_setting]:
-            delays, resp = self.multiplier_delays_response(multiplier,
-                                                           original_wait_time)
+    def find_delay_multiplier(self, original_rtt, responses):
+        for i, multiplier in enumerate(self.DELAY_SETTINGS[self.delay_setting]):
+            # Only grep the first response, this way we let the grep plugins find stuff
+            # but afterwards we get a performance improvement
+            grep = i == 0
+
+            delays, resp = self.multiplier_delays_response(multiplier, original_rtt, grep)
             responses.append(resp)
             if delays:
                 return multiplier
@@ -134,7 +147,7 @@ class AproxDelayController(DelayMixIn):
         # No multiplier was able to make an impact in the delay
         return None
     
-    def multiplier_delays_response(self, multiplier, original_wait_time):
+    def multiplier_delays_response(self, multiplier, original_rtt, grep):
         """
         :return: (True if the multiplier delays the response,
                   The HTTP response)
@@ -145,10 +158,12 @@ class AproxDelayController(DelayMixIn):
         mutant.set_token_value(delay_str)
 
         # Send
-        response = self.uri_opener.send_mutant(mutant, cache=False)
+        response = self.uri_opener.send_mutant(mutant,
+                                               cache=False,
+                                               grep=grep)
 
         # Test
-        if response.get_wait_time() > (original_wait_time * self.DELAY_DIFF_MULT):
+        if response.get_wait_time() > (original_rtt * self.DELAY_DIFF_MULT):
                 return True, response
 
         return False, response

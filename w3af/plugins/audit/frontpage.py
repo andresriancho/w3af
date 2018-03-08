@@ -25,10 +25,10 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.kb.vuln import Vuln
 
@@ -48,42 +48,49 @@ class frontpage(AuditPlugin):
 
         # Internal variables
         self._already_tested = ScalableBloomFilter()
+        self._author_url = None
 
-    def audit(self, freq, orig_response):
+    def _get_author_url(self):
+        if self._author_url is not None:
+            return self._author_url
+
+        for info in kb.kb.get('frontpage_version', 'frontpage_version'):
+            author_url = info.get('FPAuthorScriptUrl', None)
+            if author_url is not None:
+                self._author_url = author_url
+                return self._author_url
+
+        return None
+
+    def audit(self, freq, orig_response, debugging_id):
         """
         Searches for file upload vulns using a POST to author.dll.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
-        domain_path = freq.get_url().get_domain_path()
-
-        if kb.kb.get(self, 'frontpage'):
-            # Nothing to do, I have found vuln(s) and I should stop on first
-            msg = 'Not verifying if I can upload files to: "%s" using'\
-                  ' author.dll. Because I already found a vulnerability.'
-            om.out.debug(msg)
+        # Only run if we have the author URL for this frontpage instance
+        if self._get_author_url() is None:
             return
 
-        # I haven't found any vulns yet, OR i'm trying to find every
-        # directory where I can write a file.
-        if domain_path not in self._already_tested:
-            self._already_tested.add(domain_path)
+        # Only identify one vulnerability of this type
+        if kb.kb.get(self, 'frontpage'):
+            return
 
-            # Find a file that doesn't exist and then try to upload it
-            for _ in xrange(3):
-                rand_file = rand_alpha(5) + '.html'
-                rand_path_file = domain_path.url_join(rand_file)
-                res = self._uri_opener.GET(rand_path_file)
-                if is_404(res):
-                    upload_id = self._upload_file(domain_path, rand_file)
-                    self._verify_upload(domain_path, rand_file, upload_id)
-                    break
-            else:
-                msg = 'frontpage plugin failed to find a 404 page. This is'\
-                      ' mostly because of an error in 404 page detection.'
-                om.out.error(msg)
+        domain_path = freq.get_url().get_domain_path()
 
-    def _upload_file(self, domain_path, rand_file):
+        # Upload only once to each directory
+        if domain_path in self._already_tested:
+            return
+
+        self._already_tested.add(domain_path)
+
+        rand_file = rand_alpha(6) + '.html'
+        upload_id = self._upload_file(domain_path, rand_file, debugging_id)
+        self._verify_upload(domain_path, rand_file, upload_id, debugging_id)
+
+    def _upload_file(self, domain_path, rand_file, debugging_id):
         """
         Upload the file using author.dll
 
@@ -100,27 +107,24 @@ class frontpage(AuditPlugin):
 
         data = POST_BODY % (version, file_path)
         data += rand_file[::-1]
+        data = smart_str_ignore(data)
 
-        # TODO: The _vti_bin and _vti_aut directories should be PARSED from
-        # the _vti_inf file inside the infrastructure.frontpage_version plugin,
-        # and then used here
-        target_url = domain_path.url_join('_vti_bin/_vti_aut/author.dll')
+        target_url = self._get_author_url()
 
         try:
-            res = self._uri_opener.POST(target_url, data=data)
+            res = self._uri_opener.POST(target_url,
+                                        data=data,
+                                        debugging_id=debugging_id)
         except BaseFrameworkException, e:
-            om.out.debug(
-                'Exception while uploading file using author.dll: ' + str(e))
+            om.out.debug('Exception while uploading file using author.dll: %s' % e)
+            return None
         else:
             if res.get_code() in [200]:
-                msg = 'frontpage plugin seems to have successfully uploaded'\
-                      ' a file to the remote server.'
-                om.out.debug(msg)
+                om.out.debug('frontpage plugin seems to have successfully uploaded'
+                             ' a file to the remote server.')
             return res.id
 
-        return 200
-
-    def _verify_upload(self, domain_path, rand_file, upload_id):
+    def _verify_upload(self, domain_path, rand_file, upload_id, debugging_id):
         """
         Verify if the file was uploaded.
 
@@ -131,30 +135,32 @@ class frontpage(AuditPlugin):
         target_url = domain_path.url_join(rand_file)
 
         try:
-            res = self._uri_opener.GET(target_url)
+            res = self._uri_opener.GET(target_url,
+                                       cache=False,
+                                       grep=False,
+                                       debugging_id=debugging_id)
         except BaseFrameworkException, e:
-            msg = 'Exception while verifying if the file that was uploaded'\
-                  'using author.dll was there: %s' % e
-            om.out.debug(msg)
+            om.out.debug('Exception while verifying if the file that was uploaded'
+                         'using author.dll was there: %s' % e)
         else:
             # The file we uploaded has the reversed filename as body
-            if res.get_body() == rand_file[::-1] and not is_404(res):
-                desc = 'An insecure configuration in the frontpage extensions'\
-                       ' allows unauthenticated users to upload files to the'\
-                       ' remote web server.'
-                
-                v = Vuln('Insecure Frontpage extensions configuration', desc,
-                         severity.HIGH, [upload_id, res.id], self.get_name())
+            if rand_file[::-1] not in res.get_body():
+                return
 
-                v.set_url(target_url)
-                v.set_method('POST')
-                
-                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-                self.kb_append(self, 'frontpage', v)
-            else:
-                msg = 'The file that was uploaded using the POST method is'\
-                      ' not present on the remote web server at "%s".'
-                om.out.debug(msg % target_url)
+            desc = ('An insecure configuration in the frontpage extensions'
+                    ' allows unauthenticated users to upload files to the'
+                    ' remote web server.')
+
+            response_ids = [upload_id, res.id] if upload_id is not None else [res.id]
+
+            v = Vuln('Insecure Frontpage extensions configuration', desc,
+                     severity.HIGH, response_ids, self.get_name())
+
+            v.set_url(target_url)
+            v.set_method('POST')
+
+            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+            self.kb_append(self, 'frontpage', v)
 
     def get_plugin_deps(self):
         """

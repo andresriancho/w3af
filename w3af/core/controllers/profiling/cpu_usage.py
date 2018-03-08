@@ -62,8 +62,11 @@ def start_cpu_profiling():
 
 def dump_data():
     import yappi
+
+    # pylint: disable=E1101
     yappi.get_func_stats().save(PROFILING_OUTPUT_FMT % get_filename_fmt(),
                                 type="pstat")
+    # pylint: enable=E1101
 
 
 @should_profile_cpu

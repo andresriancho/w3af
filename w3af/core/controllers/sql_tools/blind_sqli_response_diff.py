@@ -24,9 +24,10 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.utils import rand_number
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
-from w3af.core.controllers.misc.diff import diff
 from w3af.core.controllers.exceptions import HTTPRequestException
+from w3af.core.controllers.misc.diff import chunked_diff
 
 
 class BlindSqliResponseDiff(object):
@@ -51,6 +52,7 @@ class BlindSqliResponseDiff(object):
         # User configured variables
         self._eq_limit = 0.8
         self._uri_opener = uri_opener
+        self._debugging_id = None
 
     def set_eq_limit(self, eq_limit):
         """
@@ -61,52 +63,57 @@ class BlindSqliResponseDiff(object):
         """
         self._eq_limit = eq_limit
 
-    def is_injectable(self, mutant):
+    def get_statement_types(self):
+        return self.STATEMENT_TYPES
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+    
+    def get_debugging_id(self):
+        return self._debugging_id
+
+    def is_injectable(self, mutant, statement_type):
         """
         Check if "parameter" of the fuzzable request object is injectable or not
 
-        @mutant: The mutant object that I have to inject to
-        @param: A string with the parameter name to test
+        :param mutant: The mutant object that I have to inject to
+        :param statement_type: The type of statement (string single, string double, int)
 
         :return: A vulnerability object or None if nothing is found
         """
-        for statement_type in self.STATEMENT_TYPES:
+        #
+        # These confirmation rounds are just to reduce false positives
+        # Note that this has a really low impact on the number of HTTP
+        # requests sent during a scan because it is only run if there
+        # seems to be a blind SQL injection
+        #
+        confirmations = 0
+        for _ in xrange(self.CONFIRMATION_ROUNDS):
 
-            #
-            # These confirmation rounds are just to reduce false positives
-            # Note that this has a really low impact on the number of HTTP
-            # requests sent during a scan because it is only run if there
-            # seems to be a blind SQL injection
-            #
-            confirmations = 0
-            for _ in xrange(self.CONFIRMATION_ROUNDS):
+            # Get fresh statements with new random numbers for each
+            # confirmation round.
+            statements = self._get_statements(mutant)
 
-                # Get fresh statements with new random numbers for each
-                # confirmation round.
-                statements = self._get_statements(mutant)
+            try:
+                vuln = self._find_bsql(mutant,
+                                       statements[statement_type],
+                                       statement_type)
+            except HTTPRequestException:
+                continue
 
-                try:
-                    vuln = self._find_bsql(mutant,
-                                           statements[statement_type],
-                                           statement_type)
-                except HTTPRequestException:
-                    continue
-
-                # One of the confirmation rounds yields "no vuln found"
-                if vuln is None:
-                    msg = 'Confirmation round %s for %s failed.' % (confirmations, statement_type)
-                    self.debug(msg, mutant)
-                    break
-
-                # One confirmation round succeeded
-                msg = 'Confirmation round %s for %s succeeded.' % (confirmations, statement_type)
+            # One of the confirmation rounds yields "no vuln found"
+            if vuln is None:
+                msg = 'Confirmation round %s for %s failed.' % (confirmations, statement_type)
                 self.debug(msg, mutant)
-                confirmations += 1
+                break
 
-                if confirmations == self.CONFIRMATION_ROUNDS:
-                    return vuln
+            # One confirmation round succeeded
+            msg = 'Confirmation round %s for %s succeeded.' % (confirmations, statement_type)
+            self.debug(msg, mutant)
+            confirmations += 1
 
-        return None
+            if confirmations == self.CONFIRMATION_ROUNDS:
+                return vuln
 
     def _get_statements(self, mutant, exclude_numbers=[]):
         """
@@ -165,12 +172,17 @@ class BlindSqliResponseDiff(object):
         true_statement = statement_tuple[0]
         false_statement = statement_tuple[1]
         send_clean = self._uri_opener.send_clean
+        debugging_id = self.get_debugging_id()
 
         mutant.set_token_value(true_statement)
-        _, body_true_response = send_clean(mutant)
+        _, body_true_response = send_clean(mutant,
+                                           debugging_id=debugging_id,
+                                           grep=True)
 
         mutant.set_token_value(false_statement)
-        _, body_false_response = send_clean(mutant)
+        _, body_false_response = send_clean(mutant,
+                                            debugging_id=debugging_id,
+                                            grep=False)
 
         if body_true_response == body_false_response:
             msg = ('There is NO CHANGE between the true and false responses.'
@@ -196,7 +208,9 @@ class BlindSqliResponseDiff(object):
             compare_diff = True
 
         mutant.set_token_value(self.SYNTAX_ERROR)
-        syntax_error_response, body_syntax_error_response = send_clean(mutant)
+        syntax_error_response, body_syntax_error_response = send_clean(mutant,
+                                                                       debugging_id=debugging_id,
+                                                                       grep=False)
 
         self.debug('[%s] Comparing body_true_response and'
                    ' body_syntax_error_response.' % statement_type, mutant)
@@ -208,7 +222,9 @@ class BlindSqliResponseDiff(object):
         # Check if its a search engine before we dig any deeper...
         search_disambiguator = self._remove_all_special_chars(true_statement)
         mutant.set_token_value(search_disambiguator)
-        _, body_search_response = send_clean(mutant)
+        _, body_search_response = send_clean(mutant,
+                                             grep=False,
+                                             debugging_id=debugging_id)
 
         # If they are equal then we have a search engine
         self.debug('[%s] Comparing body_true_response and'
@@ -224,10 +240,14 @@ class BlindSqliResponseDiff(object):
         second_false_stm = statements[statement_type][1]
 
         mutant.set_token_value(second_true_stm)
-        second_true_response, body_second_true_response = send_clean(mutant)
+        second_true_response, body_second_true_response = send_clean(mutant,
+                                                                     grep=False,
+                                                                     debugging_id=debugging_id)
 
         mutant.set_token_value(second_false_stm)
-        second_false_response, body_second_false_response = send_clean(mutant)
+        second_false_response, body_second_false_response = send_clean(mutant,
+                                                                       grep=False,
+                                                                       debugging_id=debugging_id)
 
         self.debug('[%s] Comparing body_second_true_response and'
                    ' body_true_response.' % statement_type, mutant)
@@ -247,9 +267,9 @@ class BlindSqliResponseDiff(object):
             
             desc = 'Blind SQL injection was found at: "%s", using'\
                    ' HTTP method %s. The injectable parameter is: "%s"'
-            desc %= (mutant.get_url(),
-                     mutant.get_method(),
-                     mutant.get_token_name())
+            desc %= (smart_str_ignore(mutant.get_url()),
+                     smart_str_ignore(mutant.get_method()),
+                     smart_str_ignore(mutant.get_token_name()))
             
             v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
                                  severity.HIGH, response_ids, 'blind_sqli',
@@ -266,11 +286,13 @@ class BlindSqliResponseDiff(object):
         return None
 
     def debug(self, msg, mutant=None):
+        did = self._debugging_id
+
         if mutant is None:
-            log_line = '[blind_sqli_debug] %s' % msg
+            log_line = '[blind_sqli_debug] [did: %s] %s' % (did, msg)
         else:
-            args = (id(mutant), mutant.get_token_name(), msg)
-            log_line = '[blind_sqli_debug] [id: %s] [param: %s] %s' % args
+            args = (did, id(mutant), mutant.get_token_name(), msg)
+            log_line = '[blind_sqli_debug] [did: %s] [id: %s] [param: %s] %s' % args
 
         om.out.debug(log_line)
 
@@ -279,7 +301,7 @@ class BlindSqliResponseDiff(object):
         Determines if two pages are equal using a ratio.
         """
         if compare_diff:
-            body1, body2 = diff(body1, body2)
+            body1, body2 = chunked_diff(body1, body2)
 
         cmp_res = relative_distance_boolean(body1, body2, self._eq_limit)
 

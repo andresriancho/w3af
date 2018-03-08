@@ -61,24 +61,26 @@ class TestLevenshtein(unittest.TestCase):
             res1 = relative_distance_boolean(e, d, f)
             res2 = relative_distance(e, d) >= f
             
-            msg = 'relative_distance_boolean and relative_distance returned'\
-                  ' different results for the same parameters:\n'\
-                  '    - %s\n'\
-                  '    - %s\n'\
-                  '    - Threshold: %s\n'\
+            msg = ('relative_distance_boolean and relative_distance returned'
+                   ' different results for the same parameters:\n'
+                   '    - Parameter #1: %s\n'
+                   '    - Parameter #2: %s\n'
+                   '    - Threshold: %s\n'
+                   '    - Result relative_distance_boolean: %s\n'
+                   '    - Result relative_distance: %s\n')
             
-            self.assertEqual(res1, res2, msg % (e, d, f))
+            self.assertEqual(res1, res2, msg % (e, d, f, res1, relative_distance(e, d)))
 
     def test_relative_distance(self):
-        acceptance_tests = []
-        acceptance_tests.append(('a', 'a', 1.0))
-        acceptance_tests.append(('ab ac ad', 'ab ae ad', 0.6))
-        acceptance_tests.append(('ab ac ae', 'ab af ad', 0.3))
-        acceptance_tests.append(('ab ac ad', 'aa ae af', 0.0))
-        acceptance_tests.append(('a', 'b', 0.0))
-        acceptance_tests.append(('aaaa', 'aaab', 0.75))
-        acceptance_tests.append(('a' * 25, 'a', 0.04))
+        acceptance_tests = [('a', 'a', 1.0),
+                            ('ab ac ad', 'ab ae ad', 0.6),
+                            ('ab ac ae', 'ab af ad', 0.3),
+                            ('ab ac ad', 'aa ae af', 0.0),
+                            ('a', 'b', 0.0),
+                            ('a<a"a<a', 'a<a"a<b', 0.75),
+                            ('a' * 25, 'a', 0.00)]
+
         for e, d, f in acceptance_tests:
             res = relative_distance(e, d)
-            msg = "return value:%f, given value:%f" % (res, f)
+            msg = "return value: %f, expected value: %f" % (res, f)
             self.assertTrue(res >= f, msg)

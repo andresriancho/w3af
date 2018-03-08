@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
-import urlparse
 
 import w3af.core.data.constants.severity as severity
 import w3af.core.data.parsers.parser_cache as parser_cache
 
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -36,29 +36,131 @@ class global_redirect(AuditPlugin):
     Find scripts that redirect the browser to any site.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    TEST_URLS = ('http://www.w3af.org/',
-                 '//w3af.org')
+    TEST_DOMAIN = 'w3af.org'
 
-    def __init__(self):
-        AuditPlugin.__init__(self)
+    EXTENDED_PAYLOADS = None
+    BASIC_PAYLOADS = {'http://www.%s/' % TEST_DOMAIN,
+                      '//%s' % TEST_DOMAIN}
 
-        # Internal variables
-        self._script_re = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>',
-                                     re.IGNORECASE | re.DOTALL)
-        self._meta_url_re = re.compile('.*?;URL=(.*)',
-                                       re.IGNORECASE | re.DOTALL)
+    SCRIPT_RE = re.compile('<script.*?>(.*?)</script>', re.IGNORECASE | re.DOTALL)
+    META_URL_RE = re.compile('.*?; *?URL *?= *?(.*)', re.IGNORECASE | re.DOTALL)
 
-    def audit(self, freq, orig_response):
+    JS_REDIR_GENERIC_FMT = ['window\.location.*?=.*?["\'].*?%s.*?["\']',
+                            '(self|top)\.location.*?=.*?["\'].*?%s.*?["\']',
+                            'window\.location\.(replace|assign)\(["\'].*?%s.*?["\']\)']
+    REDIR_TO_TEST_DOMAIN_JS_RE = [re.compile(r % TEST_DOMAIN) for r in JS_REDIR_GENERIC_FMT]
+    JS_REDIR_RE = [re.compile(r % '') for r in JS_REDIR_GENERIC_FMT]
+
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for global redirect vulnerabilities.
 
+        When the original response contained a redirect we send more payloads
+        to increase coverage.
+
+        When the original response doesn't contain a redirect we only send
+        the basic payloads.
+
         :param freq: A FuzzableRequest object
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
-        mutants = create_mutants(freq, self.TEST_URLS)
-        
+        #
+        #   Always send the most basic tests
+        #
+        self._find_open_redirect_with_payloads(freq, self.BASIC_PAYLOADS, debugging_id)
+
+        #
+        #   Send the more complex tests only if the original response was a redirect
+        #
+        if self._response_has_redirect(orig_response):
+            extended_payloads = self._get_extended_payloads(freq)
+            self._find_open_redirect_with_payloads(freq, extended_payloads, debugging_id)
+
+    def _response_has_redirect(self, orig_response):
+        """
+        :param freq: The fuzzable request sent by the core
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :return: True if the response has some type of redirect
+        """
+        #
+        #   Check the response headers
+        #
+        lower_case_headers = orig_response.get_lower_case_headers()
+        for header_name in ('location', 'uri', 'refresh'):
+            if header_name in lower_case_headers:
+                return True
+
+        #
+        #   Check javascript redirects
+        #
+        for statement in self._extract_script_code(orig_response):
+            for js_redir_re in self.JS_REDIR_RE:
+                if js_redir_re.search(statement):
+                    return True
+
+        #
+        #   Check the HTTP response body meta tags
+        #
+        try:
+            dp = parser_cache.dpc.get_document_parser_for(orig_response)
+        except BaseFrameworkException:
+            # Failed to find a suitable parser for the document
+            return False
+        else:
+            # Any redirect will work for us here
+            if dp.get_meta_redir():
+                return True
+
+        return False
+
+    def _find_open_redirect_with_payloads(self, freq, payloads, debugging_id):
+        """
+        Find open redirects in `freq` using `payloads`
+
+        :param freq: The fuzzable request sent by the core
+        :param payloads: The payloads as strings
+        :param debugging_id: A unique identifier for this call to audit()
+        """
+        mutants = create_mutants(freq, payloads)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      debugging_id=debugging_id)
+
+    def _get_extended_payloads(self, freq):
+        """
+        Create payloads based on the fuzzable request
+
+        Note that the payloads will be the same during the whole scan because w3af
+        only scans one domain at the time, and the extended payloads are based on
+        the host header of the fuzzable request.
+
+        :param freq: The fuzzable request sent by the core
+        :return: The extended payloads to send to the remote server
+        """
+        # cache
+        if self.EXTENDED_PAYLOADS:
+            return self.EXTENDED_PAYLOADS
+
+        netloc = freq.get_uri().get_net_location()
+        netloc = netloc.split(':')[0]
+        args = (netloc, self.TEST_DOMAIN)
+
+        extended_payloads = set()
+        extended_payloads.update(['%s.%s' % args,
+                                  '//%s.%s/' % args,
+                                  'http://%s.%s/' % args,
+                                  'https://%s.%s/' % args,
+                                  '%s@%s' % args,
+                                  '//%s@%s' % args,
+                                  'http://%s@%s' % args,
+                                  'https://%s@%s' % args])
+
+        self.EXTENDED_PAYLOADS = extended_payloads
+
+        return extended_payloads
 
     def _analyze_result(self, mutant, response):
         """
@@ -71,6 +173,16 @@ class global_redirect(AuditPlugin):
                                  response.id, self.get_name(), mutant)
 
             self.kb_append_uniq(self, 'global_redirect', v)
+
+    def _domain_equals_test_domain(self, redir_url):
+        """
+        :return: True if we control the domain for the redirect target
+        """
+        try:
+            redir_domain = URL(redir_url).get_domain()
+            return redir_domain.endswith(self.TEST_DOMAIN)
+        except:
+            return False
 
     def _find_redirect(self, response):
         """
@@ -91,46 +203,41 @@ class global_redirect(AuditPlugin):
         return response
 
     def _30x_code_redirect(self, response, lheaders):
-        """Test for 302 header redirects"""
-
+        """
+        Test for 302 header redirects
+        """
         for header_name in ('location', 'uri'):
             if header_name in lheaders:
                 header_value = lheaders[header_name]
-                for test_url in self.TEST_URLS:
-                    if self._domains_are_equal(header_value, test_url):
-                        # The script sent a 302, and w3af followed the
-                        # redirection so the URL is now the test site
-                        return True
+                header_value = header_value.strip()
+
+                if self._domain_equals_test_domain(header_value):
+                    # The script sent a 302 and the header contains the test URL
+                    return True
 
         return False
 
-    def _domains_are_equal(self, redir_url, test_url):
+    def _refresh_redirect(self, response, lheaders):
         """
-        :return: True if the domain name for the redir_url (the one we got
-                 from the web application) and the test_url (the one we sent
-                 to the application) are equal.
+        Check for the *very strange* Refresh HTTP header, which looks like a
+        `<meta refresh>` in the header context!
+
+        The value for the header is: `0;url=my_view_page.php`
+
+        :see: http://stackoverflow.com/questions/283752/refresh-http-header
         """
-        try:
-            redir_domain = urlparse.urlparse(redir_url).netloc
-            test_domain = urlparse.urlparse(test_url).netloc
-            return redir_domain == test_domain
-        except:
+        if 'refresh' not in lheaders:
             return False
 
-    def _refresh_redirect(self, response, lheaders):
-        """Check for the *very strange* Refresh HTTP header, which looks like a
-        <meta refresh> in the header context!
-        http://stackoverflow.com/questions/283752/refresh-http-header
-        """
-        if 'refresh' in lheaders:
-            refresh = lheaders['refresh']
-            # Format is 0;url=my_view_page.php
-            splitted_refresh = refresh.split('=', 1)
-            if len(splitted_refresh) == 2:
-                _, url = splitted_refresh
-                for test_url in self.TEST_URLS:
-                    if self._domains_are_equal(url, test_url):
-                        return True
+        refresh = lheaders['refresh']
+        split_refresh = refresh.split('=', 1)
+
+        if len(split_refresh) != 2:
+            return False
+
+        _, url = split_refresh
+        if self._domain_equals_test_domain(url):
+            return True
 
         return False
 
@@ -145,36 +252,74 @@ class global_redirect(AuditPlugin):
             return False
         else:
             for redir in dp.get_meta_redir():
-                match_url = self._meta_url_re.match(redir)
+                match_url = self.META_URL_RE.match(redir)
                 if match_url:
                     url = match_url.group(1)
-                    for test_url in self.TEST_URLS:
-                        if self._domains_are_equal(url, test_url):
-                            return True
+                    if self._domain_equals_test_domain(url):
+                        return True
 
         return False
 
-    def _javascript_redirect(self, response):
-        """Test for JavaScript redirects, these are some common redirects:
-             location.href = '../htmljavascript.htm';
-             window.location = "http://www.w3af.com/"
-             window.location.href="http://www.w3af.com/";
-             location.replace('http://www.w3af.com/');
-            """
-        res = self._script_re.search(response.get_body())
-        if res:
+    def _extract_script_code(self, response):
+        """
+        This method receives an HTTP response and yields lines of <script> code
 
-            url_group_re = '(%s)' % '|'.join(self.TEST_URLS)
+        For example, if the response contains:
+            <script>
+                var x = 1;
+            </script>
+            <a ...>
+            <script>
+                var y = 1; alert(1);
+            </script>
 
-            for script_code in res.groups():
+        The method will yield three strings:
+            var x = 1;
+            var y = 1;
+            alert(1);
+
+        :return: Lines of javascript code
+        """
+        mo = self.SCRIPT_RE.search(response.get_body())
+
+        if mo is not None:
+
+            for script_code in mo.groups():
                 script_code = script_code.split('\n')
-                code = []
-                for i in script_code:
-                    code.extend(i.split(';'))
 
-                for line in code:
-                    if re.search('(window\.location|location\.).*' + url_group_re, line):
-                        return True
+                for line in script_code:
+                    for statement in line.split(';'):
+                        if statement:
+                            yield statement
+
+    def _javascript_redirect(self, response):
+        """
+        Test for JavaScript redirects, these are some common redirects:
+
+            // These also work without the `window.` at the beginning
+            window.location = "http://www.w3af.org/";
+            window.location.href = "http://www.w3af.org/";
+            window.location.replace("http://www.w3af.org");
+            window.location.assign('http://www.w3af.org');
+
+            self.location = 'http://www.w3af.org';
+            top.location = 'http://www.w3af.org';
+
+            // jQuery
+            $(location).attr('href', 'http://www.w3af.org');
+            $(window).attr('location', 'http://www.w3af.org');
+            $(location).prop('href', 'http://www.w3af.org');
+
+            // Only for old IE
+            window.navigate('http://www.w3af.org');
+        """
+        for statement in self._extract_script_code(response):
+            if self.TEST_DOMAIN not in statement:
+                continue
+
+            for redir_to_test_domain_re in self.REDIR_TO_TEST_DOMAIN_JS_RE:
+                if redir_to_test_domain_re.search(statement):
+                    return True
 
         return False
 

@@ -242,6 +242,29 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(kb.get_all_infos(), [i1, iset])
         self.assertEqual(kb.get_all_findings(), [i1, iset, v1, vset])
 
+    def test_all_of_info_exclude_ids(self):
+        i1 = MockInfo()
+        i2 = MockInfo()
+
+        v1 = MockVuln()
+        v2 = MockVuln()
+
+        iset = InfoSet([i2])
+        vset = InfoSet([v2])
+
+        kb.append('a', 'b', i1)
+        kb.append('w', 'z', iset)
+        kb.append('x', 'y', v1)
+        kb.append('4', '2', vset)
+
+        all_findings = kb.get_all_findings()
+        all_findings_except_v1 = kb.get_all_findings(exclude_ids=(v1.get_uniq_id(),))
+        all_findings_except_v1_v2 = kb.get_all_findings(exclude_ids=(v1.get_uniq_id(), vset.get_uniq_id()))
+
+        self.assertEqual(all_findings, [i1, iset, v1, vset])
+        self.assertEqual(all_findings_except_v1, [i1, iset, vset])
+        self.assertEqual(all_findings_except_v1_v2, [i1, iset])
+
     def test_dump_empty(self):
         empty = kb.dump()
         self.assertEqual(empty, {})
@@ -713,6 +736,33 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertFalse(created)
         self.assertIsInstance(info_set, InfoSet)
         self.assertEqual(len(info_set.infos), 2)
+
+    def test_multiple_append_uniq_group(self):
+        def multi_append():
+            for i in xrange(InfoSet.MAX_INFO_INSTANCES * 2):
+                vuln = MockVuln()
+                kb.append_uniq_group('a', 'b', vuln, group_klass=MockInfoSetTrue)
+
+            info_set_list = kb.get('a', 'b')
+
+            self.assertEqual(len(info_set_list), 1)
+
+            info_set = info_set_list[0]
+            self.assertEqual(len(info_set.infos), InfoSet.MAX_INFO_INSTANCES)
+            return True
+
+        pool = Pool(2)
+
+        r1 = pool.apply_async(multi_append)
+        r2 = pool.apply_async(multi_append)
+        r3 = pool.apply_async(multi_append)
+
+        self.assertTrue(r1.get())
+        self.assertTrue(r2.get())
+        self.assertTrue(r3.get())
+
+        pool.terminate()
+        pool.join()
 
     def test_append_uniq_group_no_match_filter_func(self):
         vuln1 = MockVuln(name='Foos')

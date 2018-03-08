@@ -61,7 +61,7 @@ class FileSeekBloomFilter(GenericBloomFilter):
         
         random.seed(42)
         self.hash_seeds = ([str(random.getrandbits(32)) for _ in 
-                            range(self.num_hashes)])
+                            xrange(self.num_hashes)])
 
     def add(self, key):
         """Add an element to the filter"""

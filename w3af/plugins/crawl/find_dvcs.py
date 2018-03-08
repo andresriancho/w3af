@@ -27,6 +27,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 
@@ -113,8 +114,8 @@ class find_dvcs(CrawlPlugin):
         """
         for repo in self._dvcs.keys():
             repo_url = domain_path.url_join(self._dvcs[repo]['filename'])
-            function = self._dvcs[repo]['function']
-            yield repo_url, function, repo, domain_path
+            _function = self._dvcs[repo]['function']
+            yield repo_url, _function, repo, domain_path
 
     def _clean_filenames(self, filenames):
         """
@@ -124,15 +125,21 @@ class find_dvcs(CrawlPlugin):
         """
         resources = set()
 
-        for line in filenames:
-            if line.startswith('/'):
-                line = line[1:]
-            if line.startswith('./'):
-                line = line[2:]
-            if line.endswith('/'):
-                line = line[:-1]
+        for filename in filenames:
 
-            resources.add(line)
+            # Sometimes we get random bytes from the .git/index because of
+            # git versions we don't fully support, so we ignore any encoding
+            # errors
+            filename = smart_unicode(filename, errors='ignore')
+
+            if filename.startswith('/'):
+                filename = filename[1:]
+            if filename.startswith('./'):
+                filename = filename[2:]
+            if filename.endswith('/'):
+                filename = filename[:-1]
+
+            resources.add(filename)
 
         return resources
 
@@ -142,26 +149,41 @@ class find_dvcs(CrawlPlugin):
 
         :return: None, everything is saved to the self.out_queue.
         """
-        http_response = self.http_get_and_parse(repo_url)
+        http_response = self.http_get_and_parse(repo_url,
+                                                binary_response=True,
+                                                respect_size_limit=False)
 
         if is_404(http_response):
             return
 
-        filenames = repo_get_files(http_response.get_body())
-        parsed_url_set = set()
+        try:
+            filenames = repo_get_files(http_response.get_raw_body())
+        except Exception, e:
+            # We get here when the HTTP response is NOT a 404, but the response
+            # body couldn't be properly parsed. This is usually because of a false
+            # positive in the is_404 function, OR a new version-format of the file
+            # to be parsed.
+            #
+            # Log in order to be able to improve the framework.
+            args = (e, repo_get_files.__name__, repo_url)
+            om.out.debug('Got a "%s" exception while running "%s" on "%s"' % args)
+        else:
+            parsed_url_set = set()
 
-        for filename in self._clean_filenames(filenames):
-            test_url = domain_path.url_join(filename)
-            if test_url not in self._analyzed_filenames:
+            for filename in self._clean_filenames(filenames):
+                test_url = domain_path.url_join(filename)
+                if test_url in self._analyzed_filenames:
+                    continue
+
                 parsed_url_set.add(test_url)
                 self._analyzed_filenames.add(filename)
 
-        self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
+            self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
-        if parsed_url_set:
-            desc = ('A %s was found at: "%s"; this could indicate that'
-                    ' a %s is accessible. You might be able to download'
-                    ' the Web application source code.')
+            # Now we send this finding to the report for manual analysis
+            desc = ('A %s was found at: "%s"; this could indicate that a %s is'
+                    ' accessible. You might be able to download the Web'
+                    ' application source code.')
             desc %= repo, http_response.get_url(), repo
 
             v = Vuln('Source code repository', desc, severity.MEDIUM,
@@ -173,10 +195,10 @@ class find_dvcs(CrawlPlugin):
 
     def git_index(self, body):
         """
-        Analyze the contents of the Git index and extract filenames.
+        Analyze the contents of the Git index and extract file names.
 
         :param body: The contents of the file to analyze.
-        :return: A list of filenames found.
+        :return: A list of file names found.
         """
         filenames = set()
         signature = 'DIRC'
@@ -195,7 +217,7 @@ class find_dvcs(CrawlPlugin):
         else:
             return set()
 
-        for _ in range(0, index_entries):
+        for _ in xrange(index_entries):
             offset += filename_offset - 1
             length, = struct.unpack('>B', body[offset:offset + 1])
             if length > (len(body) - offset):
@@ -243,7 +265,7 @@ class find_dvcs(CrawlPlugin):
 
         body = body.split('\x00')
         found = True
-        for offset in range(0, len(body)):
+        for offset in xrange(len(body)):
             filename = body[offset - 2]
             if body[offset] == 'd':
                 if found:
@@ -321,10 +343,10 @@ class find_dvcs(CrawlPlugin):
     def ignore_file(self, body):
         """
         Analyze the contents of the Git, HG, BZR, SVN and CVS ignore file
-        and extract filenames.
+        and extract file names.
 
         :param body: The contents of the file to analyze.
-        :return: A list of filenames found.
+        :return: A list of file names found.
         """
         filenames = set()
         for line in body.split('\n'):

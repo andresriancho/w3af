@@ -1,0 +1,58 @@
+# Testing delay and timeout handling for w3af using tc and DVWA in a docker
+# container. First we add the fake delay:
+#
+# sudo tc qdisc add dev lo root netem delay 320ms
+#
+# Then we download and start the container:
+#
+# docker pull infoslack/dvwa
+# docker run -d -p 80:80 infoslack/dvwa
+#
+# Test the delay using curl, this should show the delay:
+#
+# time curl localhost
+#
+# Use a browser to login to DVWA and capture the cookies. Save the cookies in a file
+# called `dvwa-headers.txt` in the current directory. The file should look like `Cookie: ...`
+# Now run w3af against the target using this script.
+#
+# ./w3af_console -s scripts/dvwa.w3af
+#
+# Remove the fake delay:
+#
+# sudo tc qdisc del dev lo root netem
+#
+
+plugins
+output console,text_file
+output config text_file
+set output_file output-w3af.txt
+set http_output_file output-http.txt
+set verbose True
+back
+output config console
+set verbose False
+back
+
+audit xss
+
+crawl web_spider
+crawl config web_spider
+set only_forward True
+set ignore_regex .*logout.*
+back
+
+# from plugin config
+back
+
+http-settings
+set headers_file dvwa-headers.txt
+back
+
+target
+set target http://localhost/
+back
+
+start
+
+exit

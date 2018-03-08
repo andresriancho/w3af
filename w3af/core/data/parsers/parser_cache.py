@@ -24,6 +24,8 @@ from __future__ import with_statement, print_function
 import atexit
 import threading
 
+from concurrent.futures import TimeoutError
+
 # pylint: disable=E0401
 from darts.lib.utils.lru import SynchronizedLRUDict
 # pylint: enable=E0401
@@ -34,6 +36,8 @@ from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
 from w3af.core.data.parsers.utils.request_uniq_id import get_request_unique_id
 from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.parsers.utils.cache_stats import CacheStats
+from w3af.core.data.parsers.document_parser import DocumentParser
+from w3af.core.data.db.disk_set import DiskSet
 
 
 class ParserCache(CacheStats):
@@ -50,7 +54,9 @@ class ParserCache(CacheStats):
         super(ParserCache, self).__init__()
         
         self._cache = SynchronizedLRUDict(self.CACHE_SIZE)
+        self._can_parse_cache = SynchronizedLRUDict(self.CACHE_SIZE * 10)
         self._parser_finished_events = {}
+        self._parser_blacklist = DiskSet()
 
     def clear(self):
         """
@@ -66,6 +72,7 @@ class ParserCache(CacheStats):
 
         # We don't need the parsers anymore
         self._cache.clear()
+        self._can_parse_cache.clear()
 
     def should_cache(self, http_response):
         """
@@ -76,15 +83,75 @@ class ParserCache(CacheStats):
         """
         return len(http_response.get_body()) < self.MAX_CACHEABLE_BODY_LEN
 
+    def can_parse(self, http_response):
+        """
+        Check if we can parse an HTTP response
+
+        :param http_response: The HTTP response to verify
+        :return: True if we can parse this HTTP response
+        """
+        cached_can_parse = self._can_parse_cache.get(http_response.get_id(), default=None)
+
+        if cached_can_parse is not None:
+            return cached_can_parse
+
+        #
+        # We need to verify if we can parse this HTTP response
+        #
+        try:
+            can_parse = DocumentParser.can_parse(http_response)
+        except:
+            # We catch all the exceptions here and just return False because
+            # the real parsing procedure will (most likely) fail to parse
+            # this response too.
+            can_parse = False
+
+        self._can_parse_cache[can_parse] = can_parse
+        return can_parse
+
+    def add_to_blacklist(self, hash_string):
+        """
+        Add a hash_string representing an HTTP response to the blacklist,
+        indicating that we won't try to parse this response never again.
+
+        :return: None
+        """
+        self._parser_blacklist.add(hash_string)
+
     def get_document_parser_for(self, http_response, cache=True):
         """
         Get a document parser for http_response using the cache if required
 
         :param http_response: The http response instance
+        :param cache: If the DocumentParser is in the cache, return that one.
         :return: An instance of DocumentParser
         """
+        #
+        # Before doing anything too complex like caching, sending the HTTP
+        # response to a different process for parsing, checking events, etc.
+        # check if we can parse this HTTP response.
+        #
+        # This is a performance improvement that works *only if* the
+        # DocumentParser.can_parse call is *fast*, which means that the
+        # `can_parse` implementations of each parser needs to be fast
+        #
+        # It doesn't matter if we say "yes" here and then parsing exceptions
+        # appear later, that should be a 1 / 10000 calls and we would still
+        # be gaining a lot of performance
+        #
+        if not self.can_parse(http_response):
+            msg = 'There is no parser for "%s".'
+            raise BaseFrameworkException(msg % http_response.get_url())
+
         hash_string = get_request_unique_id(http_response)
 
+        if hash_string in self._parser_blacklist:
+            msg = 'Exceeded timeout while parsing "%s" in the past. Not trying again.'
+            raise BaseFrameworkException(msg % http_response.get_url())
+
+        #
+        # We know that we can parse this document, lets work!
+        #
         parser_finished = self._parser_finished_events.get(hash_string, None)
         if parser_finished is not None:
             # There is one subprocess already processing this http response
@@ -115,6 +182,24 @@ class ParserCache(CacheStats):
 
             try:
                 parser = mp_doc_parser.get_document_parser_for(http_response)
+            except TimeoutError:
+                # We failed to get a parser for this HTTP response, we better
+                # ban this HTTP response so we don't waste more CPU cycles trying
+                # to parse it over and over.
+                self.add_to_blacklist(hash_string)
+
+                # Act just like when there is no parser
+                msg = 'Reached timeout parsing "%s".' % http_response.get_url()
+                raise BaseFrameworkException(msg)
+            except MemoryError:
+                # We failed to get a parser for this HTTP response, we better
+                # ban this HTTP response so we don't waste more CPU cycles or
+                # memory trying to parse it over and over.
+                self.add_to_blacklist(hash_string)
+
+                # Act just like when there is no parser
+                msg = 'Reached memory usage limit parsing "%s".' % http_response.get_url()
+                raise BaseFrameworkException(msg)
             except:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s".' % http_response.get_url()

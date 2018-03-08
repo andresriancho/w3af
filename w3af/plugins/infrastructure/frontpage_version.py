@@ -72,8 +72,8 @@ class frontpage_version(InfrastructurePlugin):
                 response = self._uri_opener.GET(frontpage_info_url,
                                                 cache=True)
             except BaseFrameworkException, w3:
-                fmt = 'Failed to GET Frontpage Server _vti_inf.html file: "%s"'\
-                      '. Exception: "%s".'
+                fmt = ('Failed to GET Frontpage Server _vti_inf.html file: "%s". '
+                       'Exception: "%s".')
                 om.out.debug(fmt % (frontpage_info_url, w3))
             else:
                 # Check if it's a Frontpage Info file
@@ -96,13 +96,12 @@ class frontpage_version(InfrastructurePlugin):
         author_mo = self.AUTHOR_URL_RE.search(response.get_body())
 
         if version_mo and admin_mo and author_mo:
-            #Set the self._exec to false
             self._exec = False
 
-            desc = 'The FrontPage Configuration Information file was found'\
-                   ' at: "%s" and the version of FrontPage Server Extensions'\
-                   ' is: "%s".'
-            desc = desc % (response.get_url(), version_mo.group(1))
+            desc = ('The FrontPage Configuration Information file was found'
+                    ' at: "%s" and the version of FrontPage Server Extensions'
+                    ' is: "%s".')
+            desc %= (response.get_url(), version_mo.group(1))
 
             i = Info('FrontPage configuration information', desc, response.id,
                      self.get_name())
@@ -171,22 +170,22 @@ class frontpage_version(InfrastructurePlugin):
         :param frontpage_author: A regex match object.
         :return: None. All the info is saved to the kb.
         """
-        author_location = response.get_url().get_domain_path().url_join(
-            frontpage_author.group(1))
+        domain_path = response.get_url().get_domain_path()
+        author_location = domain_path.url_join(frontpage_author.group(1))
 
         # Check for anomalies in the location of author.exe
         if frontpage_author.group(1) != '_vti_bin/_vti_aut/author.exe':
             name = 'Customized frontpage configuration'
 
-            desc = 'The FPAuthorScriptUrl is at: "%s" instead of the default'\
-                   ' location: "/_vti_bin/_vti_adm/author.exe". This is very'\
-                   ' uncommon.'
-            desc = desc % author_location
+            desc = ('The FPAuthorScriptUrl is at: "%s" instead of the default'
+                    ' location: "/_vti_bin/_vti_adm/author.exe". This is very'
+                    ' uncommon.')
+            desc %= author_location
         else:
             name = 'FrontPage FPAuthorScriptUrl'
 
             desc = 'The FPAuthorScriptUrl is at: "%s".'
-            desc = desc % author_location
+            desc %= author_location
 
         i = Info(name, desc, response.id, self.get_name())
         i.set_url(author_location)

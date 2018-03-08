@@ -86,7 +86,8 @@ class w3af_core_status(object):
             crawl_fr = self.get_current_fuzzable_request('crawl')
             audit_fr = self.get_current_fuzzable_request('audit')
             
-            if crawl_plugin == audit_plugin == crawl_fr == audit_fr == None:
+            if (crawl_plugin is None and audit_plugin is None and
+               crawl_fr is None and audit_fr is None):
                 return 'Starting scan.'
 
             status_str = ''

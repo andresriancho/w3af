@@ -23,7 +23,9 @@ import time
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.controllers.exceptions import ScanMustStopException
+from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
                                                                         task_decorator)
 
@@ -49,15 +51,40 @@ class audit(BaseConsumer):
                                     max_in_queue_size=max_qsize)
 
     def _teardown(self):
-        # End plugins
+        msg = 'Starting Audit consumer _teardown() with %s plugins.'
+        om.out.debug(msg % len(self._consumer_plugins))
+
         for plugin in self._consumer_plugins:
+            om.out.debug('Calling %s.end().' % plugin.get_name())
+            start_time = time.time()
+
             try:
                 plugin.end()
-            except BaseFrameworkException, e:
-                om.out.error(str(e))
+            except ScanMustStopException:
+                # If we reach this exception here we don't care much
+                # since the scan is ending already. The log message stating
+                # that the scan will end because of this error was already
+                # delivered by the HTTP client.
+                #
+                # We `pass` instead of `break` because some plugins might
+                # still be able to `end()` without sending HTTP requests to
+                # the remote server
+                msg_fmt = ('Spent %.2f seconds running %s.end() until a'
+                           ' scan must stop exception was raised.')
+                self._log_end_took(msg_fmt, start_time, plugin)
+
             except Exception, e:
-                self.handle_exception('audit', plugin.get_name(),
-                                      'plugin.end()', e)
+                msg_fmt = ('Spent %.2f seconds running %s.end() until an'
+                           ' unhandled exception was found.')
+                self._log_end_took(msg_fmt, start_time, plugin)
+
+                self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)
+
+            else:
+                msg_fmt = 'Spent %.2f seconds running %s.end().'
+                self._log_end_took(msg_fmt, start_time, plugin)
+
+        om.out.debug('Finished Audit consumer _teardown().')
 
     def get_original_response(self, fuzzable_request):
         plugin = self._consumer_plugins[0]
@@ -114,7 +141,7 @@ class audit(BaseConsumer):
         """
         try:
             for observer in self._observers:
-                observer.audit(fuzzable_request)
+                observer.audit(self, fuzzable_request)
         except Exception, e:
             self.handle_exception('audit',
                                   'audit._run_observers()',
@@ -135,14 +162,18 @@ class audit(BaseConsumer):
         args = (plugin.get_name(), fuzzable_request.get_uri())
         om.out.debug('%s.audit(%s)' % args)
 
-        start_time = time.time()
+        debugging_id = rand_alnum(8)
+
+        took_line = TookLine(self._w3af_core,
+                             plugin.get_name(),
+                             'audit',
+                             debugging_id=debugging_id,
+                             method_params={'uri': fuzzable_request.get_uri()})
 
         try:
-            plugin.audit_with_copy(fuzzable_request, orig_resp)
+            plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
         except Exception, e:
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
 
-        spent_time = time.time() - start_time
-        args = (plugin.get_name(), fuzzable_request.get_uri(), spent_time)
-        om.out.debug('%s.audit(%s) took %.2f seconds to run' % args)
+        took_line.send()

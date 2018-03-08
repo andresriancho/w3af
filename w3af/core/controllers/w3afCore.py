@@ -34,6 +34,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.get_w3af_version import get_w3af_version_minimal
 from w3af.core.controllers.core_helpers.profiles import CoreProfiles
 from w3af.core.controllers.core_helpers.plugins import CorePlugins
 from w3af.core.controllers.core_helpers.target import CoreTarget
@@ -41,6 +42,8 @@ from w3af.core.controllers.core_helpers.strategy import CoreStrategy
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
 from w3af.core.controllers.core_helpers.strategy_observers.disk_space_observer import DiskSpaceObserver
+from w3af.core.controllers.core_helpers.strategy_observers.thread_count_observer import ThreadCountObserver
+from w3af.core.controllers.core_helpers.strategy_observers.thread_state_observer import ThreadStateObserver
 from w3af.core.controllers.core_helpers.status import (w3af_core_status,
                                                        STOPPED, RUNNING, PAUSED)
 from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
@@ -79,9 +82,19 @@ class w3afCore(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    
-    WORKER_THREADS = 20
-    
+
+    # Note that the number of worker threads might be modified
+    # by the extended url library. When errors appear the worker
+    # thread number is reduced, when no errors are found the
+    # worker thread count is increased to provide more speed.
+    #
+    # This only makes sense as long as the worker threads are
+    # mostly used for sending HTTP requests (which is the case
+    # for the current w3af version).
+    WORKER_THREADS = 30
+    WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 20
+    WORKER_MAX_TASKS = 20
+
     def __init__(self):
         """
         Init some variables and files.
@@ -90,6 +103,11 @@ class w3afCore(object):
         # Make sure we get a fresh new instance of the output manager
         manager = fresh_output_manager_inst()
         log_sink_factory(manager.get_in_queue())
+
+        # FIXME: In the future, when the output_manager is not an awful
+        # singleton anymore, this line should be removed and the output_manager
+        # object should take a w3afCore object as a parameter in its __init__
+        om.manager.set_w3af_core(self)
 
         # This is more than just a debug message, it's a way to force the
         # output manager thread to start it's work. I would start that thread
@@ -118,15 +136,11 @@ class w3afCore(object):
         self.status = w3af_core_status(self)
         self.target = CoreTarget()
         self.strategy = CoreStrategy(self)
-        
-        # FIXME: In the future, when the output_manager is not an awful
-        # singleton anymore, this line should be removed and the output_manager
-        # object should take a w3afCore object as a parameter in its __init__
-        om.manager.set_w3af_core(self)
-        
+
         # Create the URI opener object
         self.uri_opener = ExtendedUrllib()
-        
+        self.uri_opener.set_w3af_core(self)
+
         # Keep track of first scan to call cleanup or not
         self._first_scan = True
 
@@ -165,6 +179,8 @@ class w3afCore(object):
         # one  
         self.strategy = CoreStrategy(self)
         self.strategy.add_observer(DiskSpaceObserver())
+        self.strategy.add_observer(ThreadCountObserver())
+        self.strategy.add_observer(ThreadStateObserver())
 
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)
@@ -199,7 +215,9 @@ class w3afCore(object):
                                        self.plugins.get_all_plugin_options())
 
         self._first_scan = False
-        
+
+        om.out.debug('Starting the scan using w3af version %s' % get_w3af_version_minimal())
+
         try:
             self.strategy.start()
         except MemoryError:
@@ -284,18 +302,20 @@ class w3afCore(object):
         """
         if not hasattr(self, '_worker_pool'):
             # Should get here only on the first call to "worker_pool".
-            self._worker_pool = Pool(self.WORKER_THREADS,
+            self._worker_pool = Pool(processes=self.WORKER_THREADS,
                                      worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_THREADS * 10)
+                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                                     maxtasksperchild=self.WORKER_MAX_TASKS)
 
         if not self._worker_pool.is_running():
             # Clean-up the old worker pool
             self._worker_pool.terminate_join()
 
             # Create a new one
-            self._worker_pool = Pool(self.WORKER_THREADS,
+            self._worker_pool = Pool(processes=self.WORKER_THREADS,
                                      worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_THREADS * 10)
+                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                                     maxtasksperchild=self.WORKER_MAX_TASKS)
 
         return self._worker_pool
 

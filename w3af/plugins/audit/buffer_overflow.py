@@ -29,8 +29,7 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopException)
 from w3af.core.data.fuzzer.fuzzer import create_mutants
-from w3af.core.data.fuzzer.utils import rand_alpha
-from w3af.core.data.esmre.multi_in import multi_in
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 
@@ -52,12 +51,12 @@ class buffer_overflow(AuditPlugin):
         'Internal Server Error</h1>'
     )
 
-    _multi_in = multi_in(OVERFLOW_ERRORS)
+    _multi_in = MultiIn(OVERFLOW_ERRORS)
 
     # TODO: if lengths = [ 65 , 257 , 513 , 1025, 2049, 4097, 8000 ]
     # then i get a BadStatusLine exception from urllib2, is seems to be an
     # internal error. Tested against tomcat 5.5.7
-    BUFFER_TESTS = [rand_alpha(l) for l in [65, 257, 513, 1025, 2049]]
+    BUFFER_TESTS = ['A' * payload_len for payload_len in [65, 257, 513, 1025, 2049]]
 
     def __init__(self):
         """
@@ -99,15 +98,16 @@ class buffer_overflow(AuditPlugin):
         """
         AuditPlugin.__init__(self)
 
-    def audit(self, freq, orig_response):
+    def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for buffer overflow vulnerabilities.
 
         :param freq: A FuzzableRequest
+        :param orig_response: The HTTP response associated with the fuzzable request
+        :param debugging_id: A unique identifier for this call to audit()
         """
-        mutants = create_mutants(freq, self.BUFFER_TESTS,
-                                 orig_resp=orig_response)
-        args = zip(repeat(self._send_request), mutants)
+        mutants = create_mutants(freq, self.BUFFER_TESTS, orig_resp=orig_response)
+        args = zip(repeat(self._send_request), mutants, repeat(debugging_id))
 
         for result in self.worker_pool.imap_unordered(apply_with_return_error, args):
             # re-raise the thread exception in the main thread with this method
@@ -116,18 +116,23 @@ class buffer_overflow(AuditPlugin):
             if isinstance(result, Error):
                 result.reraise()
 
-    def _send_request(self, mutant):
+    def _send_request(self, mutant, debugging_id):
         """
         Sends a mutant to the remote web server. I wrap urllib's _send_mutant
         just to handle errors in a different way.
         """
+        # Only grep the request which sends the larger payload
+        grep = mutant.get_token_value() == self.BUFFER_TESTS[-1]
+
         try:
-            response = self._uri_opener.send_mutant(mutant)
+            response = self._uri_opener.send_mutant(mutant,
+                                                    debugging_id=debugging_id,
+                                                    grep=grep)
         except (BaseFrameworkException, ScanMustStopException):
-            desc = 'A potential (most probably a false positive than a bug)' \
-                   ' buffer-overflow was found when requesting: "%s", using' \
-                   ' HTTP method %s. The data sent was: "%s".'
-            desc = desc % (mutant.get_url(), mutant.get_method(), mutant.get_dc())
+            desc = ('A potential (most probably a false positive than a bug)'
+                    ' buffer-overflow was found when requesting: "%s", using'
+                    ' HTTP method %s. The data sent was: "%s".')
+            desc %= (mutant.get_url(), mutant.get_method(), mutant.get_dc())
 
             i = Info.from_mutant('Potential buffer overflow vulnerability',
                                  desc, [], self.get_name(), mutant)
@@ -141,18 +146,23 @@ class buffer_overflow(AuditPlugin):
         Analyze results of the _send_mutant method.
         """
         for error_str in self._multi_in.query(response.body):
-            # And not in the original response
-            if error_str not in mutant.get_original_response_body() and \
-            self._has_no_bug(mutant):
-                desc = 'A potential buffer overflow (accurate detection is' \
-                       ' hard...) was found at: %s' % mutant.found_at()
-                      
-                v = Vuln.from_mutant('Buffer overflow vulnerability', desc,
-                                     severity.MEDIUM, response.id,
-                                     self.get_name(), mutant)
-                v.add_to_highlight(error_str)
-                
-                self.kb_append_uniq(self, 'buffer_overflow', v)
+
+            if error_str in mutant.get_original_response_body():
+                continue
+
+            if self._has_bug(mutant):
+                continue
+
+            desc = ('A potential buffer overflow (accurate detection is'
+                    ' hard) was found at: %s')
+            desc %= mutant.found_at()
+
+            v = Vuln.from_mutant('Buffer overflow vulnerability', desc,
+                                 severity.MEDIUM, response.id,
+                                 self.get_name(), mutant)
+            v.add_to_highlight(error_str)
+
+            self.kb_append_uniq(self, 'buffer_overflow', v)
 
     def get_plugin_deps(self):
         """

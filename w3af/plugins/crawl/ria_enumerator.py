@@ -78,18 +78,18 @@ class ria_enumerator(CrawlPlugin):
 
         :return: URLs
         """
-        ### Google Gears
+        # Google Gears
         for ext in extensions:
             for word in file(wordlist):
 
                 manifest_url = base_url.url_join(word.strip() + ext)
                 yield manifest_url
 
-        ### CrossDomain.XML
+        # CrossDomain.XML
         cross_domain_url = base_url.url_join('crossdomain.xml')
         yield cross_domain_url
 
-        ### CrossAccessPolicy.XML
+        # CrossAccessPolicy.XML
         client_access_url = base_url.url_join('clientaccesspolicy.xml')
         yield client_access_url
 
@@ -109,19 +109,21 @@ class ria_enumerator(CrawlPlugin):
         self._analyze_crossdomain_clientaccesspolicy(url, response, file_name)
 
     def _analyze_gears_manifest(self, url, response, file_name):
-        if '"entries":' in response:
-            # Save it to the kb!
-            desc = ('A gears manifest file was found at: "%s".'
-                    ' Each file should be manually reviewed for sensitive'
-                    ' information that may get cached on the client.')
-            desc %= url
+        if '"entries":' not in response:
+            return
 
-            i = Info('Gears manifest resource', desc, response.id,
-                     self.get_name())
-            i.set_url(url)
+        # Save it to the kb!
+        desc = ('A gears manifest file was found at: "%s".'
+                ' Each file should be manually reviewed for sensitive'
+                ' information that may get cached on the client.')
+        desc %= url
 
-            kb.kb.append(self, url, i)
-            om.out.information(i.get_desc())
+        i = Info('Gears manifest resource', desc, response.id,
+                 self.get_name())
+        i.set_url(url)
+
+        kb.kb.append(self, url, i)
+        om.out.information(i.get_desc())
 
     def _analyze_crossdomain_clientaccesspolicy(self, url, response, file_name):
 
@@ -188,7 +190,7 @@ class ria_enumerator(CrawlPlugin):
         """
         ol = OptionList()
 
-        d = 'Wordlist to use in the manifest file name bruteforcing process.'
+        d = 'Wordlist to use in the manifest file name brute forcing process.'
         o = opt_factory('wordlist', self._wordlist, d, 'string')
         ol.add(o)
 

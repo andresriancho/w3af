@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
+import copy
 import json
 
 from nose.plugins.attrib import attr
@@ -119,6 +120,14 @@ class TestInfoSet(unittest.TestCase):
         iset1_clone = loads(pickled_iset1)
 
         self.assertEqual(iset1.get_uniq_id(), iset1_clone.get_uniq_id())
+
+    def test_deepcopy(self):
+        i = MockInfo()
+        iset1 = InfoSet([i])
+
+        iset1_copy = copy.deepcopy(iset1)
+
+        self.assertEqual(iset1.get_uniq_id(), iset1_copy.get_uniq_id())
 
     def test_to_json(self):
         i = Info('Blind SQL injection vulnerability', MockInfo.LONG_DESC, 1,

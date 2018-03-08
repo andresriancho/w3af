@@ -133,3 +133,8 @@ class DiskDict(object):
             return default
 
         raise KeyError()
+
+    def pop(self, key):
+        value = self.get(key)
+        del self[key]
+        return value

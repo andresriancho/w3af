@@ -37,7 +37,7 @@ LOG_HTTP = 'log_http'
 
 class RESTAPIOutput(OutputPlugin):
     """
-    Store all log messages on a DiskList
+    Store all log messages on a shelve
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """

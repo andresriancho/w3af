@@ -85,8 +85,8 @@ consumed using a non-browser application:
     ``w3af`` about all the API endpoints and parameters is key to the success
     of the security audit.
 
-Choosing which forms to ignore
-------------------------------
+Ignoring specific forms
+-----------------------
 
 ``w3af`` allows users to configure which forms to ignore using a feature called
 form ID exclusions. This feature was created when users identified limitations in
@@ -155,3 +155,47 @@ containing the form ID of each identified form.
 
     This feature works well together with ``non_targets``.
     ``w3af`` will only send requests to the target if they match both filters.
+
+Variants
+--------
+
+Crawling web applications is a challenging task: some web applications have
+thousands of URLs, some of those with one or more HTML forms. Let's explore a
+common e-commerce site which has one thousand products, each shown in a different
+URL such as:
+
+ * /products/title-product-A
+ * /products/another-product-title
+ * /review-comment?id=6631
+
+When browsing to each of those URLs the HTML contains three forms, one to add the
+product to the cart, another one to favorite the product and finally one to
+ask a question regarding this product. The form action for each form is set to
+the product page.
+
+The main goal of an application security scan is to achieve full test coverage
+(all the application code is tested) with the least amount of HTTP requests.
+
+``w3af`` needs to be able to efficiently crawl sites like this, reducing the
+number of HTTP requests to reach full test coverage. Some assumptions can be
+made:
+
+ * Submitting the form that will favorite one product will run the same server
+ side code to favorite another product in the same e-commerce site.
+
+ * Browsing ``/product/*`` pages will always run the same server side code and
+ show the same three HTML forms.
+
+ * Requesting ``/review-comment?id=*`` will always return a comment.
+
+If we believe those to be true, then we can simply request a few samples instead of all.
+The number of samples to collect can be configured with these ``misc`` settings are for:
+
+ * ``path_max_variants``: Limit how many product pages will be crawled
+ * ``params_max_variants``: Limit how many variants to sample for URLs with the same path and parameter names
+ * ``max_equal_form_variants``: Limit how many forms with the same parameters but different URLs to sample
+
+The default should suit most of the sites, but advanced users might want to modify
+these settings when the scan is taking too much time or, multiple areas of the
+application are not being scanned and the debug log shows many messages containing
+the ``Ignoring ... simply a variant``.
