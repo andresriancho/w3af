@@ -285,6 +285,9 @@ class TestJSONPayloadIsValid(unittest.TestCase):
                     self.assertIn('payload', data['2'], file_name)
                     self.assertIn('offsets', data['2'], file_name)
 
+                    self.assertGreater(len(data['1']['offsets']), 0)
+                    self.assertGreater(len(data['2']['offsets']), 0)
+
                     for delay_len in [1, 2]:
                         for offset in data[str(delay_len)]['offsets']:
                             self.assertIsInstance(offset, int, file_name)
