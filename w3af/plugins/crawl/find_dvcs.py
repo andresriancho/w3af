@@ -180,19 +180,18 @@ class find_dvcs(CrawlPlugin):
 
             self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
-        # Now we send this finding to the report for manual analysis. Even
-        # after a failed parsing, we'll trust the is_404 function result.
-        desc = ('A %s was found at: "%s"; this could indicate that a %s is'
-                ' accessible. You might be able to download the Web application'
-                ' source code.')
-        desc %= repo, http_response.get_url(), repo
+            # Now we send this finding to the report for manual analysis
+            desc = ('A %s was found at: "%s"; this could indicate that a %s is'
+                    ' accessible. You might be able to download the Web'
+                    ' application source code.')
+            desc %= repo, http_response.get_url(), repo
 
-        v = Vuln('Source code repository', desc, severity.MEDIUM,
-                 http_response.id, self.get_name())
-        v.set_url(http_response.get_url())
+            v = Vuln('Source code repository', desc, severity.MEDIUM,
+                     http_response.id, self.get_name())
+            v.set_url(http_response.get_url())
 
-        kb.kb.append(self, repo, v)
-        om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+            kb.kb.append(self, repo, v)
+            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def git_index(self, body):
         """
@@ -344,10 +343,10 @@ class find_dvcs(CrawlPlugin):
     def ignore_file(self, body):
         """
         Analyze the contents of the Git, HG, BZR, SVN and CVS ignore file
-        and extract filenames.
+        and extract file names.
 
         :param body: The contents of the file to analyze.
-        :return: A list of filenames found.
+        :return: A list of file names found.
         """
         filenames = set()
         for line in body.split('\n'):
