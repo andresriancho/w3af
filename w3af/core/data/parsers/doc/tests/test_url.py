@@ -704,6 +704,15 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/foo%20bar/bar.txt?id=1')
         self.assertEqual(u.url_string,
                          u'http://w3af.com/foo%20bar/bar.txt?id=1')
+
+    def test_url_string_non_ascii(self):
+        u = URL('http://w3af.com/foo/á.txt')
+        self.assertEqual(u.url_string, u'http://w3af.com/foo/á.txt')
+
+    def test_url_encode_non_ascii(self):
+        u = URL('http://w3af.com/foo/á.txt')
+        self.assertEqual(u.url_encode(), u'http://w3af.com/foo/%C3%A1.txt')
+
     
     #
     #    has_querystring
@@ -830,23 +839,23 @@ class TestURLParser(unittest.TestCase):
     
     def test_set_filename(self):
         u = URL('https://w3af.com:443/xyz/def.html')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/xyz/abc.pdf')
         self.assertEqual(u.get_file_name(), 'abc.pdf')
 
         u = URL('https://w3af.com/xyz/def.html?id=1')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/xyz/abc.pdf?id=1')
 
         u = URL('https://w3af.com/xyz/def.html?file=/etc/passwd')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/xyz/abc.pdf?file=/etc/passwd')
 
         u = URL('https://w3af.com/')
-        u.set_file_name( 'abc.pdf' )
+        u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/abc.pdf')
     

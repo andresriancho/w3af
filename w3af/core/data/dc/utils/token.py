@@ -104,3 +104,7 @@ class DataToken(object):
 
         # proxy to the wrapped object
         return getattr(self._value, attr)
+
+    def __len__(self):
+        return len(str(self))
+

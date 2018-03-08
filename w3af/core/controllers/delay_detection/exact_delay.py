@@ -38,7 +38,7 @@ class ExactDelay(object):
         Applies :param seconds to self._delay_fmt
 
         >>> d = ExactDelay('sleep(%s)')
-        >>> d.get_string_for_delay( 3 )
+        >>> d.get_string_for_delay(3)
         'sleep(3)'
         """
         res = ((seconds * self._delay_multiplier) + self._delay_delta)
@@ -51,11 +51,11 @@ class ExactDelay(object):
 
         >>> d = ExactDelay('sleep(%s)')
 
-        >>> d.get_string_for_delay( 3 )
+        >>> d.get_string_for_delay(3)
         'sleep(3)'
 
-        >>> d.set_delay_delta( 1 )
-        >>> d.get_string_for_delay( 3 )
+        >>> d.set_delay_delta(1)
+        >>> d.get_string_for_delay(3)
         'sleep(4)'
 
         """
@@ -68,7 +68,7 @@ class ExactDelay(object):
 
         >>> d = ExactDelay('sleep(%s)', mult=1000)
 
-        >>> d.get_string_for_delay( 3 )
+        >>> d.get_string_for_delay(3)
         'sleep(3000)'
 
         """
