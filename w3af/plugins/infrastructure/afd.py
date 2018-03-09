@@ -23,6 +23,7 @@ import urllib
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
+
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
@@ -80,27 +81,28 @@ class afd(InfrastructurePlugin):
         try:
             http_resp = self._uri_opener.GET(original_url, cache=True)
         except BaseFrameworkException, bfe:
-            msg = 'Active filter detection plugin failed to receive a'\
-                  ' response for the first request. The exception was: "%s".' \
-                  ' Can not perform analysis.'
+            msg = ('Active filter detection plugin failed to receive a'
+                   ' response for the first request. The exception was: "%s".'
+                   ' Can not perform analysis.')
             raise BaseFrameworkException(msg % bfe)
-        else:
-            orig_resp_body = http_resp.get_body()
-            orig_resp_body = orig_resp_body.replace(rnd_param, '')
-            orig_resp_body = orig_resp_body.replace(rnd_value, '')
 
-            tests = []
-            for offending_string in self._get_offending_strings():
-                offending_url = fmt % (fuzzable_request.get_url(),
-                                       rnd_param,
-                                       offending_string)
-                offending_url = URL(offending_url)
-                tests.append((offending_string, offending_url,
-                              orig_resp_body, rnd_param))
+        orig_resp_body = http_resp.get_body()
+        orig_resp_body = orig_resp_body.replace(rnd_param, '')
+        orig_resp_body = orig_resp_body.replace(rnd_value, '')
 
-            self.worker_pool.map_multi_args(self._send_and_analyze, tests)
+        tests = []
+        for offending_string in self._get_offending_strings():
+            args = (fuzzable_request.get_url(), rnd_param, offending_string)
+            offending_url = fmt % args
+            offending_url = URL(offending_url)
+            tests.append((offending_string,
+                          offending_url,
+                          orig_resp_body,
+                          rnd_param))
 
-            return self._filtered, self._not_filtered
+        self.worker_pool.map_multi_args(self._send_and_analyze, tests)
+
+        return self._filtered, self._not_filtered
 
     def _send_and_analyze(self, offending_string, offending_url,
                           original_resp_body, rnd_param):
@@ -131,10 +133,10 @@ class afd(InfrastructurePlugin):
         Analyze the test results and save the conclusion to the kb.
         """
         if len(filtered) >= len(self._get_offending_strings()) / 5.0:
-            desc = 'The remote network has an active filter. IMPORTANT: The'\
-                   ' result of all the other plugins will be inaccurate, web'\
-                   ' applications could be vulnerable but "protected" by the'\
-                   ' active filter.'
+            desc = ('The remote network has an active filter. IMPORTANT: The'
+                    ' result of all the other plugins will be inaccurate, web'
+                    ' applications could be vulnerable but "protected" by the'
+                    ' active filter.')
                    
             i = Info('Active filter detected', desc, 1, self.get_name())
             i['filtered'] = filtered
@@ -147,10 +149,14 @@ class afd(InfrastructurePlugin):
                 om.out.information('- ' + i)
 
             if not_filtered:
-                om.out.information(
-                    'The following URLs passed undetected by the filter:')
+                msg = 'The following URLs passed undetected by the filter:'
+                om.out.information(msg)
                 for i in not_filtered:
                     om.out.information('- ' + i)
+
+        # Cleanup some memory
+        self._not_filtered = []
+        self._filtered = []
 
     def _get_offending_strings(self):
         """
@@ -166,7 +172,8 @@ class afd(InfrastructurePlugin):
                '../../../../bin/chgrp nobody /etc/shadow|',
                'SELECT TOP 1 name FROM sysusers',
                'exec master..xp_cmdshell dir',
-               'exec xp_cmdshell dir']
+               'exec xp_cmdshell dir',
+               '<script>alert(1)</script>']
 
         res = [urllib.quote_plus(x) for x in res]
 
@@ -182,11 +189,13 @@ class afd(InfrastructurePlugin):
 
         afd plugin detects both TCP-Connection-reset and HTTP level filters, the
         first one (usually implemented by IPS devices) is easy to verify: if afd
-        requests the custom page and the GET method raises an exception, then
-        its being probably blocked by an active filter. The second one (usually
-        implemented by Web Application Firewalls like mod_security) is a little
-        harder to verify: first afd requests a page without adding any offending
-        parameters, afterwards it requests the same URL but with a faked
-        parameter and customized values; if the response bodies differ, then its
-        safe to say that the remote end has an active filter.
+        requests a specially crafted URL and the connection is closed, then
+        its being probably blocked by an active filter.
+        
+        The second protection type, usually implemented by Web Application
+        Firewalls like mod_security, is a little harder to identify: first afd 
+        requests a page without adding any payloads, afterwards it requests the
+        same URL but with a fake parameter and customized values; if the response
+        bodies differ, then its safe to say that the remote end has an active
+        filter.
         """
