@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import json
 
-from w3af.core.data.dc.factory import dc_from_hdrs_post, dc_from_form_params
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.json_container import JSONContainer
@@ -34,6 +33,10 @@ from w3af.core.data.dc.utils.multipart import multipart_encode
 from w3af.core.data.dc.tests.test_xmlrpc import XML_WITH_FUZZABLE
 from w3af.core.data.dc.tests.test_json_container import COMPLEX_OBJECT
 from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.fuzzer.form_filler import smart_fill_file
+from w3af.core.data.dc.factory import (dc_from_hdrs_post,
+                                       dc_from_form_params,
+                                       dc_from_content_type_and_raw_params)
 
 
 class TestDCFactory(unittest.TestCase):
@@ -141,3 +144,36 @@ class TestDCFactory(unittest.TestCase):
         self.assertIsInstance(urlencode_dc, URLEncodedForm)
         self.assertEqual(urlencode_dc.get_file_vars(), [])
         self.assertEqual(urlencode_dc['a'], ['bcd'])
+
+
+class TestDCFactoryFromRawParams(unittest.TestCase):
+    def test_json_simple(self):
+        params = {'hello': 'world', 'bye': 0}
+        dc = dc_from_content_type_and_raw_params('application/json', params)
+
+        self.assertIsInstance(dc, JSONContainer)
+        self.assertEqual(str(dc), json.dumps(params))
+
+    def test_multipart_no_files(self):
+        params = {'hello': 'world', 'bye': 'bye'}
+        dc = dc_from_content_type_and_raw_params('multipart/form-data', params)
+
+        self.assertIsInstance(dc, MultipartContainer)
+        self.assertEqual(dc['hello'], ['world'])
+        self.assertEqual(dc['bye'], ['bye'])
+
+    def test_multipart_with_files(self):
+        params = {'hello': 'world', 'file': smart_fill_file('image', 'cat.png')}
+        dc = dc_from_content_type_and_raw_params('multipart/form-data', params)
+
+        self.assertIsInstance(dc, MultipartContainer)
+        self.assertEqual(dc['hello'], ['world'])
+        self.assertIn('file', dc.get_file_vars())
+
+    def test_urlencoded_form(self):
+        params = {'hello': 'world', 'bye': 'bye'}
+        dc = dc_from_content_type_and_raw_params('application/x-www-form-urlencoded', params)
+
+        self.assertIsInstance(dc, URLEncodedForm)
+        self.assertEqual(dc['hello'], ['world'])
+        self.assertEqual(dc['bye'], ['bye'])
