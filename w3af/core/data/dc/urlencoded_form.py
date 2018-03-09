@@ -45,7 +45,7 @@ class URLEncodedForm(Form):
                             INPUT_TYPE_SELECT}
 
     @staticmethod
-    def is_urlencoded(headers):
+    def content_type_matches(headers):
         conttype, header_name = headers.iget('content-type', '')
         return URLEncodedForm.ENCODING in conttype.lower()
 
@@ -60,7 +60,7 @@ class URLEncodedForm(Form):
 
     @classmethod
     def from_postdata(cls, headers, post_data):
-        if not URLEncodedForm.is_urlencoded(headers):
+        if not URLEncodedForm.content_type_matches(headers):
             raise ValueError('Request is not %s.' % URLEncodedForm.ENCODING)
 
         if not URLEncodedForm.can_parse(post_data):

@@ -78,6 +78,15 @@ class XmlRpcContainer(KeyValueContainer):
     def is_xmlrpc(post_data):
         return all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS))
 
+    @staticmethod
+    def content_type_matches(headers):
+        """
+        TODO: I need to review the whole XML RPC implementation!
+              Returning false here disables this content-type for at least
+              the REST API scanner.
+        """
+        return False
+
     @classmethod
     def from_postdata(cls, headers, post_data):
         if not XmlRpcContainer.is_xmlrpc(post_data):
