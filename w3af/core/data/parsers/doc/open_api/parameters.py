@@ -249,4 +249,13 @@ class ParameterHandler(object):
         :return: The parameter with a modified default attribute
         """
         #print get_format(self.spec, parameter.param_spec)
+        #
+        # Maybe I can use this code to serialize the model into a JSON string
+        #
+        # https://github.com/Yelp/bravado-core/blob/7c00961d059b4dd8b3aabe044454711bd02b0999/tests/marshal/marshal_schema_object_test.py#L13
+        # https://github.com/Yelp/bravado-core/blob/02dc853f43a664b7767524869d9170f1d95c7fbf/bravado_core/marshal.py#L19
+        #
+        # Then use my existing code to do fuzzing over it to fill the values
+        #
+        # And then parse the whole thing again using unmarshal?!
         return parameter
