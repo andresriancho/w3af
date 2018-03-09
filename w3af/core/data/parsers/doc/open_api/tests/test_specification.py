@@ -29,6 +29,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (NoParams,
                                                                               IntParamQueryString,
+                                                                              IntParamPath,
                                                                               StringParam,
                                                                               ArrayStringItems,
                                                                               ArrayIntItems,
@@ -71,17 +72,67 @@ class TestSpecification(unittest.TestCase):
 
         data = [d for d in handler.get_api_information()]
 
+        # The specification says that this query string parameter is not
+        # required, thus we get two operations, one for the parameter with
+        # a value and another without the parameter
+        self.assertEqual(len(data), 2)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'findPets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        path_param = operation.params.get('limit')
+        self.assertEqual(path_param.param_spec['required'], False)
+        self.assertEqual(path_param.param_spec['in'], 'query')
+        self.assertEqual(path_param.param_spec['type'], 'integer')
+        self.assertEqual(path_param.fill, None)
+
+        # And check the second one too
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[1]
+
+        self.assertEqual(len(operation.params), 1)
+
+        path_param = operation.params.get('limit')
+        self.assertEqual(path_param.param_spec['required'], False)
+        self.assertEqual(path_param.param_spec['in'], 'query')
+        self.assertEqual(path_param.param_spec['type'], 'integer')
+        self.assertEqual(path_param.fill, 42)
+
+    def test_simple_int_param_in_path(self):
+        specification_as_string = IntParamPath().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
         self.assertEqual(len(data), 1)
 
         (spec, api_resource_name, resource,
          operation_name, operation, parameters) = data[0]
 
-        self.assertEqual(api_resource_name, 'random')
-        self.assertEqual(operation_name, 'get_random')
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'get_pets_pet_id')
         self.assertEqual(operation.consumes, [])
         self.assertEqual(operation.produces, [])
-        self.assertEqual(operation.params, {})
-        self.assertEqual(operation.path_name, '/random')
+        self.assertEqual(operation.path_name, '/pets/{pet_id}')
+
+        # And now the real stuff...
+        self.assertEqual(len(operation.params), 1)
+
+        path_param = operation.params.get('pet_id')
+        self.assertEqual(path_param.param_spec['required'], True)
+        self.assertEqual(path_param.param_spec['in'], 'path')
+        self.assertEqual(path_param.param_spec['type'], 'integer')
+        self.assertEqual(path_param.fill, 42)
 
     def test_simple_int_param_in_json_post_data(self):
         raise NotImplementedError

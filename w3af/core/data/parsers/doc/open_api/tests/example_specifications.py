@@ -28,6 +28,77 @@ from marshmallow import Schema, fields
 
 class IntParamQueryString(object):
     def get_specification(self):
+        return '''\
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Query String",
+    "description": "foo"
+  },
+  "host": "w3af.org",
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "description": "Returns all pets from the system that the user has access to",
+        "operationId": "findPets",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "maximum number of results to return",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pet"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Pet": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}
+'''
+
+
+class IntParamPath(object):
+    def get_specification(self):
         spec = APISpec(
             title=self.__class__.__name__,
             version='1.0.0',
@@ -64,11 +135,17 @@ class IntParamQueryString(object):
 
         # Register entities and paths
         spec.definition('Pet', schema=PetSchema)
-        spec.definition('PetParameter', schema=PetParameter)
+        spec.definition('PetParameter', schema=PetParameter, required=True)
         with app.test_request_context():
             spec.add_path(view=get_pet)
 
-        return json.dumps(spec.to_dict(), indent=4)
+        specification_as_string = json.dumps(spec.to_dict(), indent=4)
+
+        # Kludge! I was unable to do this via `apispec`
+        specification_as_string = specification_as_string.replace('"required": false,',
+                                                                  '"required": true,')
+
+        return specification_as_string
 
 
 class StringParam(object):

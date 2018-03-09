@@ -33,8 +33,7 @@ except ImportError:
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.parsers.doc.open_api.parameters import (ParameterHandler,
-                                                            OpenAPIParamResolutionException)
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler
 
 
 class SpecificationHandler(object):
@@ -63,63 +62,35 @@ class SpecificationHandler(object):
 
         for api_resource_name, resource in self.spec.resources.items():
             for operation_name, operation in resource.operations.items():
-                parameters_list = self._get_parameters(api_resource_name,
-                                                       resource,
-                                                       operation_name,
-                                                       operation)
+                operations = self._set_operation_params(operation)
 
-                for parameters in parameters_list:
+                for operation in operations:
                     data = (self.spec,
                             api_resource_name,
                             resource,
                             operation_name,
                             operation,
-                            parameters)
+                            operation.params)
                     yield data
 
-    def _get_parameters(self, api_resource_name, resource, operation_name, operation):
+    def _set_operation_params(self, operation):
         """
-        Takes all of the information associated with an operation and creates
-        a fuzzable request which can be sent by the w3af framework.
+        Takes all of the information associated with an operation and fills the
+        parameters with some values in order to have a non-empty REST API call
+        which will increase our chances of finding vulnerabilities.
 
-        :param api_resource_name: A rest api resource name
-        :param resource: Data associated with the resource
-        :param operation_name: Operation name, eg. 'Delete pet'
         :param operation: Data associated with the operation
-        :return: The parameters to invoke the operation
+        :return: Two instances of the operation instance:
+                    * One only containing values for the required fields
+                    * One containing values for the required and optional fields
         """
-        parameters_list = []
         parameter_handler = ParameterHandler(self.spec, operation)
+        has_optional = parameter_handler.operation_has_optional_params()
 
-        try:
-            optional, required = parameter_handler.get_parameters()
-        except RuntimeError as rte:
-            msg = ('A RuntimeError was raised by the OpenAPI._get_params()'
-                   ' method. This is most likely by a reference loop in'
-                   ' the OpenAPI models. The exception was: "%s"')
-            om.out.debug(msg % rte)
-            return []
-        except OpenAPIParamResolutionException as oae:
-            msg = ('An Open API parameter resolution exception was raised'
-                   ' by OpenAPI._get_params(). The exception was: "%s".')
-            om.out.debug(msg % oae)
-            return []
-
-        #
-        # First we create a REST API call only with required parameters
-        #
-        parameters_list.append(required)
-
-        if optional:
-            #
-            # Now we create a REST API call with all parameters, including
-            # the optional ones. This will yield a higher code coverage for
-            # our scan.
-            #
-            optional.update(required)
-            parameters_list.append(optional)
-
-        return parameters_list
+        for optional in {False, has_optional}:
+            op = parameter_handler.set_operation_params(optional=optional)
+            if op is not None:
+                yield op
 
     def _parse_spec_from_dict(self, spec_dict):
         """

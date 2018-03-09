@@ -22,12 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from bravado.client import construct_request
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.factory import dc_from_content_type_and_raw_params
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
 
 
 class RequestFactory(object):
+
+    DEFAULT_CONTENT_TYPE = JSONContainer.JSON_CONTENT_TYPE
+
     def __init__(self, spec, api_resource_name, resource, operation_name,
                  operation, parameters):
         """
@@ -54,6 +58,9 @@ class RequestFactory(object):
 
         :return: A fuzzable request.
         """
+        marshal_param
+        'https://github.com/Yelp/bravado-core/blob/master/bravado_core/param.py#L95'
+
         method = self.get_method()
         uri = self.get_uri()
         headers = self.get_headers()
@@ -112,6 +119,31 @@ class RequestFactory(object):
         """
         request_dict = self._bravado_construct_request()
         headers = Headers(request_dict['headers'].items())
+
+        content_type, _ = headers.iget('content-type', None)
+        if content_type is None:
+            # The content type is not in the headers, so we try to extract
+            # it from the operation.
+            #
+            # The REST API endpoint might support more than one content-type
+            # for consuming it. We only use the first one since in 99% of the cases
+            # a vulnerability which we find using one content-type will be present
+            # in others. This works the other way around also, there are very few
+            # vulnerabilities which are going to be exploitable with one content-
+            # type.
+            if self.operation.consumes:
+                content_type = self.operation.consumes[0]
+                headers['Content-Type'] = content_type
+            else:
+                # Finally, there are some specification documents where the consumes
+                # section might be empty. This is because the operation doesn't
+                # receive anything or because the specification is wrong.
+                #
+                # If there are parameters then we opt for serializing them as
+                # JSON, which is a safe default
+                if self.parameters:
+                    headers['Content-Type'] = self.DEFAULT_CONTENT_TYPE
+
         return headers
 
     def get_data_container(self, headers):
@@ -131,15 +163,7 @@ class RequestFactory(object):
         if not self.operation.consumes:
             return None
 
-        # The REST API endpoint might support more than one content-type
-        # for consuming it. We only use the first one since in 99% of the cases
-        # a vulnerability which we find using one content-type will be present
-        # in others. This works the other way around also, there are very few
-        # vulnerabilities which are going to be exploitable with one content-
-        # type.
-        content_type = self.operation.consumes[0]
-        headers['Content-Type'] = content_type
-
+        content_type = headers.get('Content-Type')
         dc = dc_from_content_type_and_raw_params(content_type, self.parameters)
 
         return dc

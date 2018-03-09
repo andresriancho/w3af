@@ -20,6 +20,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
+
 from w3af.core.data.fuzzer.form_filler import (smart_fill,
                                                smart_fill_file)
 
@@ -47,42 +49,60 @@ class ParameterHandler(object):
         self.spec = spec
         self.operation = operation
 
-    def get_parameters(self):
+    def set_operation_params(self, optional=False):
         """
         This is the main entry point. We return a set with the required and
         optional parameters for the provided operation / specification.
-        """
-        optional = {}
-        required = {}
 
+        :param optional: Should we set the values for the optional parameters?
+        """
+        operation = copy.deepcopy(self.operation)
+
+        for parameter_name, parameter in operation.params.iteritems():
+            # We make sure that all parameters have a fill attribute
+            parameter.fill = None
+
+            if not parameter.required and not optional:
+                continue
+
+            self._set_param_value(parameter)
+
+        return operation
+
+    def operation_has_optional_params(self):
+        """
+        :param operation: Data associated with the operation
+        :return: True if the operation has optional parameters
+        """
         for parameter_name, parameter in self.operation.params.iteritems():
-            if parameter.required:
-                required[parameter_name] = self._get_param_value(parameter)
-            else:
-                optional[parameter_name] = self._get_param_value(parameter)
+            if not parameter.required:
+                return True
 
-        return optional, required
+        return False
 
-    def _get_param_value(self, parameter):
+    def _set_param_value(self, parameter):
         """
-        If the parameter has a default value, then we return that. If there is
+        If the parameter has a default value, then we use that. If there is
         no value, we try to fill it with something that makes sense based on
         the parameter type and name.
 
-        :param parameter: The parameter to fill
-        :return: The value
+        The value is set to the parameter.fill attribute
+
+        :param parameter: The parameter for which we need to set a value
+        :return: True if we were able to set the parameter value
         """
         #
         #   Easiest case, the parameter already has a default value
         #
         if parameter.default is not None:
-            return parameter.default
+            parameter.fill = parameter.default
+            return True
 
-        value = self._get_param_value_for_primitive(parameter)
-        if value is not None:
-            return value
+        self._set_param_value_for_primitive(parameter)
+        if parameter.fill is not None:
+            return True
 
-        return self._get_param_value_for_model(parameter)
+        return self._set_param_value_for_model(parameter)
 
     def _get_param_value_for_type_and_name(self, parameter_type, parameter_name):
         """
@@ -100,16 +120,16 @@ class ParameterHandler(object):
         if parameter_type == 'file':
             return smart_fill_file(parameter_name, 'cat.png')
 
-    def _get_param_value_for_primitive(self, parameter):
+    def _set_param_value_for_primitive(self, parameter):
         """
-        Helper method for _get_param_value().
+        Handle the cases where the parameter is a primitive: int, string, float, etc.
 
         :param parameter: The parameter which (might or might not) be of a primitive type
-        :return: The value to assign to this parameter in HTTP requests
+        :return: The parameter we just modified
         """
         #
-        #   The parameter has a strong type
-        #   https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
+        # The parameter has a strong type
+        # https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
         #
         try:
             parameter_type = parameter.param_spec['format']
@@ -118,24 +138,26 @@ class ParameterHandler(object):
                 parameter_type = parameter.param_spec['type']
             except KeyError:
                 # This is not a primitive type, most likely a model
-                return None
+                return parameter
 
         value = self._get_param_value_for_type_and_name(parameter_type,
                                                         parameter.name)
         if value is not None:
-            return value
+            parameter.fill = value
+            return parameter
 
         #
-        #   Arrays are difficult to handle since they can contain complex data
+        # Arrays are difficult to handle since they can contain complex data
         #
         value = self._get_param_value_for_array(parameter)
 
         if value is not None:
-            return value
+            parameter.fill = value
+            return parameter
 
-        # We should never reach here!
-        msg = 'Failed to get a value for parameter with type: %s'
-        raise OpenAPIParamResolutionException(msg % parameter_type)
+        # We should never reach here! The parameter.fill value was never
+        # modified!
+        return parameter
 
     def _get_param_value_for_array(self, parameter):
         """
@@ -215,16 +237,16 @@ class ParameterHandler(object):
         #
         raise NotImplementedError
 
-    def _get_param_value_for_model(self, parameter):
+    def _set_param_value_for_model(self, parameter):
         """
-        Each model attribute can be of a primitive type or another model. To
-        resolve this we call _get_param_value() in a recursive way.
+        Each model attribute can be of a primitive type or another model.
 
-        :param spec: The parsed specification
+        We need to dereference the model until we have primitives for each field
+        (as seen in http://bigstickcarpet.com/swagger-parser/www/index.html#)
+        and then fill the value for each primitive.
+
         :param parameter: The parameter object
-        :return: A dict instance representing the model. The keys are the model
-                 attributes and the values are the default / guessed values
-                 defined by _get_param_value().
+        :return: The parameter with a modified default attribute
         """
-        print get_format(self.spec, parameter.param_spec)
-        raise NotImplementedError
+        #print get_format(self.spec, parameter.param_spec)
+        return parameter
