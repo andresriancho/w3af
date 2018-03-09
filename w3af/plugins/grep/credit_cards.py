@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
-import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -82,22 +81,28 @@ class credit_cards(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         """
-        if response.is_text_or_html() and response.get_code() == 200 \
-                and response.get_clear_text_body() is not None:
+        if not response.is_text_or_html():
+            return
 
-            found_cards = self._find_card(response.get_clear_text_body())
+        if not response.get_code() == 200:
+            return
 
-            for card in found_cards:
-                desc = 'The URL: "%s" discloses the credit card number: "%s"'
-                desc = desc % (response.get_url(), card)
-                
-                v = Vuln('Credit card number disclosure', desc,
-                         severity.LOW, response.id, self.get_name())
+        if response.get_clear_text_body() is None:
+            return
 
-                v.set_url(response.get_url())
-                v.add_to_highlight(card)
-                
-                self.kb_append_uniq(self, 'credit_cards', v, 'URL')
+        found_cards = self._find_card(response.get_clear_text_body())
+
+        for card in found_cards:
+            desc = u'The URL: "%s" discloses the credit card number: "%s"'
+            desc %= (response.get_url(), card)
+
+            v = Vuln('Credit card number disclosure', desc,
+                     severity.LOW, response.id, self.get_name())
+
+            v.set_url(response.get_url())
+            v.add_to_highlight(card)
+
+            self.kb_append_uniq(self, 'credit_cards', v, 'URL')
 
     def _find_card(self, body):
         """
