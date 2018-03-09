@@ -1,0 +1,588 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Swagger Petstore",
+    "description": "A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification\n"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "description": "Returns all pets from the petstore",
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "title": "Pet",
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 25
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "cat",
+                      "dog",
+                      "fish",
+                      "bird"
+                    ]
+                  },
+                  "birthdate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "owner": {
+                    "title": "Pet Owner",
+                    "type": "object",
+                    "required": [
+                      "name"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "object",
+                        "required": [
+                          "first",
+                          "last"
+                        ],
+                        "properties": {
+                          "first": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 25
+                          },
+                          "last": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 25
+                          }
+                        }
+                      },
+                      "address": {
+                        "title": "Address",
+                        "type": "object",
+                        "properties": {
+                          "street1": {
+                            "type": "string"
+                          },
+                          "street2": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "postalCode": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "title": "Error Model",
+              "type": "object",
+              "required": [
+                "code",
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "helpURL": {
+                  "type": "string",
+                  "format": "url"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new pet in the store",
+        "parameters": [
+          {
+            "name": "pet",
+            "in": "body",
+            "description": "Pet to add to the store",
+            "required": true,
+            "schema": {
+              "title": "Pet",
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 25
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "cat",
+                    "dog",
+                    "fish",
+                    "bird"
+                  ]
+                },
+                "birthdate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "owner": {
+                  "title": "Pet Owner",
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "object",
+                      "required": [
+                        "first",
+                        "last"
+                      ],
+                      "properties": {
+                        "first": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        },
+                        "last": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        }
+                      }
+                    },
+                    "address": {
+                      "title": "Address",
+                      "type": "object",
+                      "properties": {
+                        "street1": {
+                          "type": "string"
+                        },
+                        "street2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "postalCode": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "title": "Pet",
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 25
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "cat",
+                    "dog",
+                    "fish",
+                    "bird"
+                  ]
+                },
+                "birthdate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "owner": {
+                  "title": "Pet Owner",
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "object",
+                      "required": [
+                        "first",
+                        "last"
+                      ],
+                      "properties": {
+                        "first": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        },
+                        "last": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        }
+                      }
+                    },
+                    "address": {
+                      "title": "Address",
+                      "type": "object",
+                      "properties": {
+                        "street1": {
+                          "type": "string"
+                        },
+                        "street2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "postalCode": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "title": "Error Model",
+              "type": "object",
+              "required": [
+                "code",
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "helpURL": {
+                  "type": "string",
+                  "format": "url"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pets/{name}": {
+      "get": {
+        "description": "Returns a single pet by name",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "Name of the pet to fetch",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "title": "Pet",
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 25
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "cat",
+                    "dog",
+                    "fish",
+                    "bird"
+                  ]
+                },
+                "birthdate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "owner": {
+                  "title": "Pet Owner",
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "object",
+                      "required": [
+                        "first",
+                        "last"
+                      ],
+                      "properties": {
+                        "first": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        },
+                        "last": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        }
+                      }
+                    },
+                    "address": {
+                      "title": "Address",
+                      "type": "object",
+                      "properties": {
+                        "street1": {
+                          "type": "string"
+                        },
+                        "street2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "postalCode": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "unexpected error",
+            "schema": {
+              "title": "Error Model",
+              "type": "object",
+              "required": [
+                "code",
+                "message"
+              ],
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "helpURL": {
+                  "type": "string",
+                  "format": "url"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "pet": {
+      "title": "Pet",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 25
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "cat",
+            "dog",
+            "fish",
+            "bird"
+          ]
+        },
+        "birthdate": {
+          "type": "string",
+          "format": "date"
+        },
+        "owner": {
+          "title": "Pet Owner",
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "object",
+              "required": [
+                "first",
+                "last"
+              ],
+              "properties": {
+                "first": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 25
+                },
+                "last": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 25
+                }
+              }
+            },
+            "address": {
+              "title": "Address",
+              "type": "object",
+              "properties": {
+                "street1": {
+                  "type": "string"
+                },
+                "street2": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "postalCode": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pet-owner": {
+      "title": "Pet Owner",
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "object",
+          "required": [
+            "first",
+            "last"
+          ],
+          "properties": {
+            "first": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 25
+            },
+            "last": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 25
+            }
+          }
+        },
+        "address": {
+          "title": "Address",
+          "type": "object",
+          "properties": {
+            "street1": {
+              "type": "string"
+            },
+            "street2": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "postalCode": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "errorModel": {
+      "title": "Error Model",
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "helpURL": {
+          "type": "string",
+          "format": "url"
+        }
+      }
+    }
+  }
+}

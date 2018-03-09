@@ -20,81 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
+import os
 
 from apispec import APISpec
 from flask import Flask, jsonify
 from marshmallow import Schema, fields
 
+CURRENT_PATH = os.path.split(__file__)[0]
+
 
 class IntParamQueryString(object):
     def get_specification(self):
-        return '''\
-{
-  "swagger": "2.0",
-  "info": {
-    "version": "1.0.0",
-    "title": "Query String",
-    "description": "foo"
-  },
-  "host": "w3af.org",
-  "basePath": "/api",
-  "schemes": [
-    "https"
-  ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
-  "paths": {
-    "/pets": {
-      "get": {
-        "description": "Returns all pets from the system that the user has access to",
-        "operationId": "findPets",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "maximum number of results to return",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "pet response",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Pet"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "definitions": {
-    "Pet": {
-      "type": "object",
-      "required": [
-        "id"
-      ],
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    }
-  }
-}
-'''
+        return file('%s/data/int_param_qs.json' % CURRENT_PATH).read()
+
+
+class StringParamJson(object):
+    def get_specification(self):
+        return file('%s/data/string_param_json.json' % CURRENT_PATH).read()
 
 
 class IntParamPath(object):
@@ -148,8 +90,9 @@ class IntParamPath(object):
         return specification_as_string
 
 
-class StringParam(object):
-    pass
+class StringParamQueryString(object):
+    def get_specification(self):
+        return file('%s/data/string_param_qs.json' % CURRENT_PATH).read()
 
 
 class ArrayStringItems(object):

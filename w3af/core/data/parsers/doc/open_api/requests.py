@@ -59,7 +59,9 @@ class RequestFactory(object):
         :return: A fuzzable request.
         """
         marshal_param
+        'https://github.com/Yelp/bravado-core/blob/master/bravado_core/marshal.py'
         'https://github.com/Yelp/bravado-core/blob/master/bravado_core/param.py#L95'
+        'https://github.com/Yelp/bravado/blob/master/bravado/requests_client.py'
 
         method = self.get_method()
         uri = self.get_uri()

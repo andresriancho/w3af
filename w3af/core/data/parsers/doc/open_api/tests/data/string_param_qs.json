@@ -25,28 +25,29 @@
   ],
   "paths": {
     "/pets": {
-      "post": {
-        "description": "Creates a new pet in the store.",
-        "operationId": "addPet",
+      "get": {
+        "description": "Returns all pets from the system that the user has access to",
+        "operationId": "findPets",
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "pet",
-            "in": "body",
-            "description": "Pet to add to the store",
+            "name": "q",
+            "in": "query",
+            "description": "search",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/Pet"
-            }
+            "type": "string",
           }
         ],
         "responses": {
           "200": {
             "description": "pet response",
             "schema": {
-              "$ref": "#/definitions/Pet"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pet"
+              }
             }
           }
         }
@@ -55,6 +56,25 @@
   },
   "definitions": {
     "Pet": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/NewPet"
+        },
+        {
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      ]
+    },
+    "NewPet": {
       "type": "object",
       "required": [
         "name"

@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 import yaml
-import logging
 
 from yaml import load
 
@@ -33,17 +32,6 @@ except ImportError:
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.open_api.requests import RequestFactory
-
-
-# Silence please.
-SILENCE = ('bravado_core.resource',
-           'bravado_core.spec',
-           'swagger_spec_validator.ref_validators',
-           'bravado_core.model')
-
-for to_silence in SILENCE:
-    logger = logging.getLogger(to_silence)
-    logger.setLevel(logging.ERROR)
 
 
 class OpenAPI(BaseParser):

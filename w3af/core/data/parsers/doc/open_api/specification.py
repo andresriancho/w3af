@@ -22,9 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
 import yaml
+import logging
 
 from yaml import load
 from bravado_core.spec import Spec
+from bravado_core.spec_flattening import flattened_spec
+from jsonschema.exceptions import RefResolutionError
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -34,6 +37,18 @@ except ImportError:
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler
+
+
+# Silence please.
+SILENCE = ('bravado_core.resource',
+           'bravado_core.spec',
+           'swagger_spec_validator.ref_validators',
+           'bravado_core.model',
+           'swagger_spec_validator.validator20')
+
+for to_silence in SILENCE:
+    logger = logging.getLogger(to_silence)
+    logger.setLevel(logging.ERROR)
 
 
 class SpecificationHandler(object):
@@ -103,6 +118,15 @@ class SpecificationHandler(object):
         """
         config = {'use_models': False}
         url_string = self.http_response.get_url().url_string
+
+        try:
+            spec_dict = flattened_spec(spec_dict, spec_url=url_string)
+        except RefResolutionError, e:
+            msg = ('The document at "%s" is not a valid Open API specification.'
+                   ' The following exception was raised while trying to flatten'
+                   ' the specification: "%s".')
+            om.out.debug(msg % (self.http_response.get_url(), e))
+            return None
 
         try:
             self.spec = Spec.from_dict(spec_dict,

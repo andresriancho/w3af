@@ -30,7 +30,8 @@ from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandl
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (NoParams,
                                                                               IntParamQueryString,
                                                                               IntParamPath,
-                                                                              StringParam,
+                                                                              StringParamQueryString,
+                                                                              StringParamJson,
                                                                               ArrayStringItems,
                                                                               ArrayIntItems,
                                                                               ModelParam,
@@ -135,10 +136,51 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(path_param.fill, 42)
 
     def test_simple_int_param_in_json_post_data(self):
+        specification_as_string = StringParamJson().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 55)
+
+    def test_dereferenced_pet_store(self):
+        # See: dereferenced_pet_store.json , which was generated using
+        # http://bigstickcarpet.com/swagger-parser/www/index.html#
         raise NotImplementedError
 
     def test_simple_string_param_in_qs(self):
-        raise NotImplementedError
+        specification_as_string = StringParamQueryString().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'findPets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        path_param = operation.params.get('q')
+        self.assertEqual(path_param.param_spec['required'], True)
+        self.assertEqual(path_param.param_spec['in'], 'query')
+        self.assertEqual(path_param.param_spec['type'], 'string')
+        self.assertEqual(path_param.fill, 'Spam or Eggs?')
 
     def test_array_string_items_param_in_json(self):
         raise NotImplementedError
