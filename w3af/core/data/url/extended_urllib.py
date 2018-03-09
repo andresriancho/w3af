@@ -794,7 +794,7 @@ class ExtendedUrllib(object):
         """
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.POST() must'
-                            ' be of url.URL type.')
+                            ' be of url.URL type. Got %s instead.' % type(uri))
 
         if not isinstance(headers, Headers):
             raise TypeError('The header parameter of ExtendedUrllib.POST() must'
