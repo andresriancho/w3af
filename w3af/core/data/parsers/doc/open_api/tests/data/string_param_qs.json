@@ -37,7 +37,7 @@
             "in": "query",
             "description": "search",
             "required": true,
-            "type": "string",
+            "type": "string"
           }
         ],
         "responses": {
