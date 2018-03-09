@@ -1,0 +1,56 @@
+{
+    "info": {
+        "version": "1.0.0",
+        "title": "IntParamQueryString"
+    },
+    "paths": {
+        "/pets/{pet_id}": {
+            "get": {
+                "description": "Get a random pet",
+                "parameters": [
+                    {
+                        "format": "int32",
+                        "required": false,
+                        "type": "integer",
+                        "name": "pet_id",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A pet to be returned",
+                        "schema": {
+                            "$ref": "#/definitions/Pet"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "parameters": {},
+    "tags": [],
+    "definitions": {
+        "Pet": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "PetParameter": {
+            "type": "object",
+            "properties": {
+                "pet_id": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            }
+        }
+    },
+    "swagger": "2.0"
+}
