@@ -39,6 +39,11 @@ class StringParamJson(object):
         return file('%s/data/string_param_json.json' % CURRENT_PATH).read()
 
 
+class IntParamJson(object):
+    def get_specification(self):
+        return file('%s/data/int_param_json.json' % CURRENT_PATH).read()
+
+
 class IntParamPath(object):
     def get_specification(self):
         spec = APISpec(
