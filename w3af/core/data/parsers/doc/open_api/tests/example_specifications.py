@@ -95,12 +95,14 @@ class StringParamQueryString(object):
         return file('%s/data/string_param_qs.json' % CURRENT_PATH).read()
 
 
-class ArrayStringItems(object):
-    pass
+class ArrayStringItemsQueryString(object):
+    def get_specification(self):
+        return file('%s/data/array_string_items_qs.json' % CURRENT_PATH).read()
 
 
-class ArrayIntItems(object):
-    pass
+class ArrayIntItemsQueryString(object):
+    def get_specification(self):
+        return file('%s/data/array_int_items_qs.json' % CURRENT_PATH).read()
 
 
 class ArrayModelItems(object):

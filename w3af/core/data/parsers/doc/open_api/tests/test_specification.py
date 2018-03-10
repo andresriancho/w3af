@@ -32,8 +32,8 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               IntParamPath,
                                                                               StringParamQueryString,
                                                                               StringParamJson,
-                                                                              ArrayStringItems,
-                                                                              ArrayIntItems,
+                                                                              ArrayStringItemsQueryString,
+                                                                              ArrayIntItemsQueryString,
                                                                               ModelParam,
                                                                               ModelParamNested,
                                                                               ModelParamNestedLoop,
@@ -182,11 +182,65 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(path_param.param_spec['type'], 'string')
         self.assertEqual(path_param.fill, 'Spam or Eggs?')
 
-    def test_array_string_items_param_in_json(self):
-        raise NotImplementedError
+    def test_array_string_items_param_in_qs(self):
+        specification_as_string = ArrayStringItemsQueryString().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
 
-    def test_array_int_items_param_in_json(self):
-        raise NotImplementedError
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'addTags')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        path_param = operation.params.get('tags')
+        self.assertEqual(path_param.param_spec['required'], True)
+        self.assertEqual(path_param.param_spec['in'], 'query')
+        self.assertEqual(path_param.param_spec['type'], 'array')
+        self.assertEqual(path_param.fill, ['7'])
+
+    def test_array_int_items_param_in_qs(self):
+        specification_as_string = ArrayIntItemsQueryString().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'addTags')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        path_param = operation.params.get('tags')
+        self.assertEqual(path_param.param_spec['required'], True)
+        self.assertEqual(path_param.param_spec['in'], 'query')
+        self.assertEqual(path_param.param_spec['type'], 'array')
+        self.assertEqual(path_param.fill, [42])
 
     def test_model_param_in_json(self):
         specification_as_string = ModelParam().get_specification()

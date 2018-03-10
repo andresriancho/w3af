@@ -34,6 +34,7 @@ class ParameterHandler(object):
 
     DEFAULT_VALUES_BY_TYPE = {'int64': 42,
                               'int32': 42,
+                              'integer': 42,
                               'float': 4.2,
                               'double': 4.2,
                               'date': '2017-06-30T23:59:60Z',
@@ -71,7 +72,6 @@ class ParameterHandler(object):
 
     def operation_has_optional_params(self):
         """
-        :param operation: Data associated with the operation
         :return: True if the operation has optional parameters
         """
         for parameter_name, parameter in self.operation.params.iteritems():
@@ -120,17 +120,14 @@ class ParameterHandler(object):
         if parameter_type == 'file':
             return smart_fill_file(parameter_name, 'cat.png')
 
-    def _set_param_value_for_primitive(self, parameter):
+    def _get_parameter_type(self, parameter):
         """
-        Handle the cases where the parameter is a primitive: int, string, float, etc.
+        The parameter has a strong type:
 
-        :param parameter: The parameter which (might or might not) be of a primitive type
-        :return: The parameter we just modified
+            https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
+
+        Fetch it and return.
         """
-        #
-        # The parameter has a strong type
-        # https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md
-        #
         try:
             parameter_type = parameter.param_spec['format']
         except KeyError:
@@ -138,7 +135,20 @@ class ParameterHandler(object):
                 parameter_type = parameter.param_spec['type']
             except KeyError:
                 # This is not a primitive type, most likely a model
-                return parameter
+                return None
+
+        return parameter_type
+
+    def _set_param_value_for_primitive(self, parameter):
+        """
+        Handle the cases where the parameter is a primitive: int, string, float, etc.
+
+        :param parameter: The parameter which (might or might not) be of a primitive type
+        :return: The parameter we just modified
+        """
+        parameter_type = self._get_parameter_type(parameter)
+        if parameter_type is None:
+            return parameter
 
         value = self._get_param_value_for_type_and_name(parameter_type,
                                                         parameter.name)
@@ -158,6 +168,27 @@ class ParameterHandler(object):
         # We should never reach here! The parameter.fill value was never
         # modified!
         return parameter
+
+    def _get_array_item_parameter_type(self, array_parameter):
+        """
+        :param array_parameter: A parameter of type array
+        :return: The data type for the items in this array
+        """
+        if 'items' not in array_parameter.param_spec:
+            return None
+
+        item_param_spec = array_parameter.param_spec['items']
+
+        try:
+            parameter_type = item_param_spec['format']
+        except KeyError:
+            try:
+                parameter_type = item_param_spec['type']
+            except KeyError:
+                # This is not a primitive type, most likely a model
+                return None
+
+        return parameter_type
 
     def _get_param_value_for_array(self, parameter):
         """
@@ -202,23 +233,24 @@ class ParameterHandler(object):
         #
         # And we need to fill the array with one or more tags
         #
-        value = None
-
         # Handle arrays which hold primitive types
-        array_item_type = parameter.param_spec['items'].get('type', None)
+        array_item_type = self._get_array_item_parameter_type(parameter)
         if array_item_type is not None:
             value = self._get_param_value_for_type_and_name(array_item_type,
                                                             parameter.name)
+
+            if value is not None:
+                return [value]
 
         # Handle arrays which hold models
         array_model_ref = parameter.param_spec['items'].get('$ref', None)
         if array_model_ref is not None:
             value = self._get_param_value_for_model_ref(array_model_ref)
 
-        if value is not None:
-            return [value]
-        else:
-            return []
+            if value is not None:
+                return [value]
+
+        return []
 
     def _get_param_value_for_model_ref(self, model_ref):
         """
