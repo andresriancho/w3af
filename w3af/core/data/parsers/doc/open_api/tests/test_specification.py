@@ -135,23 +135,6 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(path_param.param_spec['type'], 'integer')
         self.assertEqual(path_param.fill, 42)
 
-    def test_simple_int_param_in_json_post_data(self):
-        specification_as_string = StringParamJson().get_specification()
-        http_response = self.generate_response(specification_as_string)
-        handler = SpecificationHandler(http_response)
-
-        data = [d for d in handler.get_api_information()]
-
-        # The specification says that this query string parameter is
-        # required and there is only one parameter, so there is no second
-        # operation with the optional parameters filled in.
-        self.assertEqual(len(data), 55)
-
-    def test_dereferenced_pet_store(self):
-        # See: dereferenced_pet_store.json , which was generated using
-        # http://bigstickcarpet.com/swagger-parser/www/index.html#
-        raise NotImplementedError
-
     def test_simple_string_param_in_qs(self):
         specification_as_string = StringParamQueryString().get_specification()
         http_response = self.generate_response(specification_as_string)
@@ -242,23 +225,31 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(path_param.param_spec['type'], 'array')
         self.assertEqual(path_param.fill, [42])
 
-    def test_model_param_in_json(self):
-        specification_as_string = ModelParam().get_specification()
+    def test_model_with_int_param_json(self):
+        specification_as_string = StringParamJson().get_specification()
         http_response = self.generate_response(specification_as_string)
         handler = SpecificationHandler(http_response)
 
-        for data in handler.get_api_information():
-            pass
+        data = [d for d in handler.get_api_information()]
 
-    def test_model_param_nested_in_json(self):
-        specification_as_string = ModelParam().get_specification()
-        http_response = self.generate_response(specification_as_string)
-        handler = SpecificationHandler(http_response)
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 55)
 
-    def test_model_param_nested_loop_in_json(self):
-        specification_as_string = ModelParam().get_specification()
-        http_response = self.generate_response(specification_as_string)
-        handler = SpecificationHandler(http_response)
+    def test_model_with_string_param_json(self):
+        raise NotImplementedError
 
     def test_array_model_items_param_in_json(self):
+        raise NotImplementedError
+
+    def test_model_param_nested_in_json(self):
+        raise NotImplementedError
+
+    def test_model_param_nested_loop_in_json(self):
+        raise NotImplementedError
+
+    def test_dereferenced_pet_store(self):
+        # See: dereferenced_pet_store.json , which was generated using
+        # http://bigstickcarpet.com/swagger-parser/www/index.html#
         raise NotImplementedError
