@@ -239,40 +239,11 @@ class ParameterHandler(object):
 
         item_param_spec = param_spec['items']
 
-        array_item_type = self._get_parameter_type(item_param_spec)
-        if array_item_type is not None:
-            value = self._get_param_value_for_type_and_name(array_item_type,
-                                                            param_spec.get('name', None))
-
-            if value is not None:
-                return [value]
-
-        # Handle arrays which hold models
-        array_model_ref = param_spec['items'].get('$ref', None)
-        if array_model_ref is not None:
-            value = self._get_param_value_for_model_ref(array_model_ref)
-
-            if value is not None:
-                return [value]
+        value = self._get_param_value(item_param_spec)
+        if value is not None:
+            return [value]
 
         return []
-
-    def _get_param_value_for_model_ref(self, model_ref):
-        """
-        Get a valid value for the $ref specified in `model_ref`
-
-        :param model_ref: A reference / pointer to a model defined in another
-                          part of the spec. This is used to define classes which
-                          are then re-used through the document.
-
-        :return: An instance (most likely a dict) containing default values for
-                 all of the values.
-        """
-        #
-        #   The parameter is a Model, this is the hardest case of all,
-        #   we need to fetch the model, process it and then return a value
-        #
-        raise NotImplementedError
 
     def _get_param_value_for_model(self, param_spec):
         """

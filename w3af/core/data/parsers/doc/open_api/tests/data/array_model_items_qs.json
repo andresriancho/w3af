@@ -26,31 +26,29 @@
   "paths": {
     "/pets": {
       "post": {
-        "description": "Add multiple pets at once",
-        "operationId": "addMultiplePets",
+        "description": "Adds tags to a pet",
+        "operationId": "addTags",
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "pets",
-            "in": "body",
-            "description": "",
+            "name": "tags",
+            "in": "query",
+            "description": "tags to filter by",
             "required": true,
             "type": "array",
             "items": {
-              "$ref": "#/definitions/Pet"
-            }
+              "type": "string"
+            },
+            "collectionFormat": "csv"
           }
         ],
         "responses": {
           "200": {
             "description": "pet response",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Pet"
-              }
+              "$ref": "#/definitions/Pet"
             }
           }
         }

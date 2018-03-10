@@ -194,7 +194,7 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['required'], True)
         self.assertEqual(param.param_spec['in'], 'query')
         self.assertEqual(param.param_spec['type'], 'array')
-        self.assertEqual(param.fill, ['7'])
+        self.assertEqual(param.fill, ['56'])
 
     def test_array_int_items_param_in_qs(self):
         specification_as_string = ArrayIntItemsQueryString().get_specification()
