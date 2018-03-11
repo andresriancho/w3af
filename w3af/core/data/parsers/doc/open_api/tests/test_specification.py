@@ -35,6 +35,8 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               IntParamJson,
                                                                               ArrayStringItemsQueryString,
                                                                               ArrayIntItemsQueryString,
+                                                                              IntParamNoModelJson,
+                                                                              ComplexDereferencedNestedModel,
                                                                               ModelParam,
                                                                               ModelParamNested,
                                                                               ModelParamNestedLoop,
@@ -285,6 +287,76 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['in'], 'body')
         self.assertIn('schema', param.param_spec)
         self.assertEqual(param.fill, {u'tag': '7', u'name': 'John'})
+
+    def test_no_model_json_object_with_int_param_in_body(self):
+        specification_as_string = IntParamNoModelJson().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'addPet')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('pet')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'body')
+        self.assertIn('schema', param.param_spec)
+        self.assertEqual(param.fill, {u'age': 42})
+
+    def test_no_model_json_object_complex_nested_in_body(self):
+        specification_as_string = ComplexDereferencedNestedModel().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'post_pets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('pet')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'body')
+        self.assertIn('schema', param.param_spec)
+
+        expected_value = {u'birthdate': '2017-06-30T23:59:60Z',
+                          u'name': 'John',
+                          u'owner': {u'address': {u'city': 'Buenos Aires',
+                                                  u'postalCode': '90210',
+                                                  u'state': 'AK',
+                                                  u'street1': '56',
+                                                  u'street2': '56'},
+                                     u'name': {u'first': '56', u'last': 'Smith'}},
+                          u'type': '7'}
+        self.assertEqual(param.fill, expected_value)
 
     def test_array_model_items_param_in_json(self):
         raise NotImplementedError

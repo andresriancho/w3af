@@ -273,6 +273,27 @@ class ParameterHandler(object):
             if '$ref' in param_spec['schema']:
                 ref = {'$ref': param_spec['schema']['$ref']}
                 return self.spec.deref(ref)
+            else:
+                # The definition is not a reference, the param_spec['schema'] looks like:
+                #
+                # {u'title': u'Pet',
+                #  u'x-model': u'Pet',
+                #  u'type': u'object',
+                #  u'properties': {u'age': {u'type': u'integer', u'format': u'int32'}},
+                #  u'required': [u'name']}
+                return param_spec['schema']
+
+        if 'type' in param_spec:
+            if param_spec['type'] == 'object':
+                # In this case the param_spec holds these values:
+                #
+                # {u'x-model': u'Pet Owner',
+                #  u'name': u'owner',
+                #  u'title': u'Pet Owner',
+                #  u'required': [u'name'],
+                #  u'type': u'object',
+                #  u'properties': '...'}
+                return param_spec
 
         raise NotImplementedError
 

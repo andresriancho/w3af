@@ -44,6 +44,16 @@ class IntParamJson(object):
         return file('%s/data/int_param_json.json' % CURRENT_PATH).read()
 
 
+class IntParamNoModelJson(object):
+    def get_specification(self):
+        return file('%s/data/int_param_no_model_json.json' % CURRENT_PATH).read()
+
+
+class ComplexDereferencedNestedModel(object):
+    def get_specification(self):
+        return file('%s/data/complex_dereferenced_nested_model.json' % CURRENT_PATH).read()
+
+
 class IntParamPath(object):
     def get_specification(self):
         spec = APISpec(
