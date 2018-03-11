@@ -114,6 +114,9 @@ class ParameterHandler(object):
         :param param_spec: The parameter specification
         :return: A valid value, string, int, dict, etc.
         """
+        if 'schema' in param_spec:
+            param_spec = param_spec['schema']
+
         value = self._get_param_value_for_primitive(param_spec)
         if value is not None:
             return value
@@ -233,10 +236,6 @@ class ParameterHandler(object):
         #
         # And we need to fill the array with one or more tags
         #
-        # Handle arrays which hold primitive types
-        if 'items' not in param_spec:
-            return []
-
         item_param_spec = param_spec['items']
 
         value = self._get_param_value(item_param_spec)
@@ -269,6 +268,10 @@ class ParameterHandler(object):
         :param param_spec: The parameter specification instance
         :return: The object definition which needs to be created
         """
+        if '$ref' in param_spec:
+            ref = {'$ref': param_spec['$ref']}
+            return self.spec.deref(ref)
+
         if 'schema' in param_spec:
             if '$ref' in param_spec['schema']:
                 ref = {'$ref': param_spec['schema']['$ref']}

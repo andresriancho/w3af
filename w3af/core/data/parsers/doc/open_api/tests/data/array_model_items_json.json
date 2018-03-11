@@ -26,22 +26,23 @@
   "paths": {
     "/pets": {
       "post": {
-        "description": "Adds tags to a pet",
-        "operationId": "addTags",
+        "description": "Add multiple pets",
+        "operationId": "addMultiplePets",
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "tags",
-            "in": "query",
-            "description": "tags to filter by",
+            "name": "pets",
+            "in": "body",
+            "description": "array with pets to add",
             "required": true,
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "collectionFormat": "csv"
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pet"
+              }
+            }
           }
         ],
         "responses": {

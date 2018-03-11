@@ -121,7 +121,8 @@ class ArrayIntItemsQueryString(object):
 
 
 class ArrayModelItems(object):
-    pass
+    def get_specification(self):
+        return file('%s/data/array_model_items_json.json' % CURRENT_PATH).read()
 
 
 class NoParams(object):

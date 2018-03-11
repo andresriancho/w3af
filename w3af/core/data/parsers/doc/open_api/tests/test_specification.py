@@ -358,8 +358,37 @@ class TestSpecification(unittest.TestCase):
                           u'type': '7'}
         self.assertEqual(param.fill, expected_value)
 
-    def test_array_model_items_param_in_json(self):
-        raise NotImplementedError
+    def test_array_with_model_items_param_in_json(self):
+        specification_as_string = ArrayModelItems().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'addMultiplePets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('pets')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'body')
+        self.assertIn('schema', param.param_spec)
+
+        expected_value = [{u'name': 'John', u'tag': '7'}]
+        self.assertEqual(param.fill, expected_value)
 
     def test_model_param_nested_in_json(self):
         raise NotImplementedError
