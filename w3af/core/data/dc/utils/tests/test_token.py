@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 test_token.py
 
@@ -69,3 +70,9 @@ class TestToken(unittest.TestCase):
 
         encoded_token = smart_unicode(token)
         self.assertEqual(encoded_token, u'\xf3')
+
+    def test_unicodeencodeerror(self):
+        _unicode = u'í'
+        token = DataToken(self.NAME, _unicode, self.PATH)
+
+        self.assertEqual(str(token), 'í')
