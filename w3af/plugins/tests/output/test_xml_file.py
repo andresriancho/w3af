@@ -848,7 +848,7 @@ class TestFinding(XMLNodeGeneratorTest):
         _id = 2
         vuln = MockVuln(_id=_id)
 
-        url = URL(u'https://internetvikings.com/._basebind/node_modules/lodash._basecreate/'
+        url = URL(u'https://w3af.com/._basebind/node_modules/lodash._basecreate/'
                   u'LICENSE.txt^@^@^@^@ZȨ^C^NZȨ^C^N^@^@^A^@+k^@^@^@^@^@^@^@^@^@^@^@^@^D%s=ڞ')
         hdr = Headers([('User-Agent', 'w3af')])
         request = HTTPRequest(url, data='a=1')
@@ -870,12 +870,12 @@ class TestFinding(XMLNodeGeneratorTest):
         finding = Finding(x._get_jinja2_env(), vuln)
         xml = finding.to_string()
 
-        expected = (u'<vulnerability id="[2]" method="GET" name="TestCase" plugin="plugin_name" severity="High" url="https://internetvikings.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt^@^@^@^@Z\u0228^C^NZ\u0228^C^N^@^@^A^@+k^@^@^@^@^@^@^@^@^@^@^@^@^D%s=\u069e" var="None">\n'
+        expected = (u'<vulnerability id="[2]" method="GET" name="TestCase" plugin="plugin_name" severity="High" url="https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt^@^@^@^@Z\u0228^C^NZ\u0228^C^N^@^@^A^@+k^@^@^@^@^@^@^@^@^@^@^@^@^D%s=\u069e" var="None">\n'
                     u'    <description>Foo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggs</description>\n\n\n'
                     u'    <http-transactions>\n'
                     u'            <http-transaction id="2">\n\n'
                     u'    <http-request>\n'
-                    u'        <status>POST https://internetvikings.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt%5E@%5E@%5E@%5E@Z%C8%A8%5EC%5ENZ%C8%A8%5EC%5EN%5E@%5E@%5EA%5E@+k%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5ED%s=%DA%9E HTTP/1.1</status>\n'
+                    u'        <status>POST https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt%5E@%5E@%5E@%5E@Z%C8%A8%5EC%5ENZ%C8%A8%5EC%5EN%5E@%5E@%5EA%5E@+k%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5E@%5ED%s=%DA%9E HTTP/1.1</status>\n'
                     u'        <headers>\n'
                     u'            <header field="User-agent" content="w3af" />\n'
                     u'        </headers>\n'
@@ -891,8 +891,27 @@ class TestFinding(XMLNodeGeneratorTest):
                     u'</http-transaction>\n'
                     u'    </http-transactions>\n'
                     u'</vulnerability>')
-        
+
         self.assertEqual(xml, expected)
+        self.assertValidXML(xml)
+
+    def test_is_generated_xml_valid(self):
+        xml = ('''<vulnerability id="[14787]" method="GET" name="Strange HTTP response code" plugin="strange_http_codes" 
+                   severity="Information" url="https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txtZȨZȨ+k%s=ڞ"
+                   var="None" vulndb_id="29">
+                    - https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt<character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/>ZȨ<character code="0003"/>
+                    <character code="000e"/>ZȨ<character code="0003"/><character code="000e"/><character code="0000"/>
+                    <character code="0000"/><character code="0001"/><character code="0000"/>+k<character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/><character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/><character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/><character code="0004"/>%s=ڞ
+                    
+                    <status>GET https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt%00%00%00%00Z%C8
+                    %A8%03%0EZ%C8%A8%03%0E%00%00%01%00+k%00%00%00%00%00%00%00%00%00%00%00%00%04%s=%DA%9E HTTP/1.1</status>
+                    
+                    </vulnerability>
+                ''')
         self.assertValidXML(xml)
 
 
