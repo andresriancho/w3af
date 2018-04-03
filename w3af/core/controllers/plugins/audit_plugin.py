@@ -122,7 +122,7 @@ class AuditPlugin(Plugin):
 
     def audit_with_copy(self, fuzzable_request, orig_resp, debugging_id):
         """
-        :param freq: A FuzzableRequest
+        :param fuzzable_request: A FuzzableRequest
         :param orig_resp: The HTTP response we get from sending the freq
         :param debugging_id: A unique identifier for this call to audit().
                              See https://github.com/andresriancho/w3af/issues/16220
