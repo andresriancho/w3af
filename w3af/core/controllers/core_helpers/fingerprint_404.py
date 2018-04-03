@@ -146,8 +146,15 @@ class fingerprint_404(object):
 
         test_urls = []
 
-        for extension in handlers:
-            rand_alnum_file = rand_alnum(8) + '.' + extension
+        for handler_ext in handlers:
+            rand_alnum_file = rand_alnum(8) + '.' + handler_ext
+            url404 = domain_path.url_join(rand_alnum_file)
+            test_urls.append(url404)
+
+        # Also keep in mind that in some cases we don't have an extension, so
+        # we need to create a URL with just a filename
+        if not extension:
+            rand_alnum_file = rand_alnum(8)
             url404 = domain_path.url_join(rand_alnum_file)
             test_urls.append(url404)
 
