@@ -28,6 +28,7 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     """
     Indicates if the strings to compare are similar enough. This (optimized)
     function is equivalent to the expression:
+
         relative_distance(x, y) > threshold
 
     :param a_str: A string object
@@ -38,7 +39,8 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     """
     if threshold == 0:
         return True
-    elif threshold == 1.0:
+
+    if threshold == 1.0:
         return a_str == b_str
 
     # First we need b_str to be the longer of both
@@ -51,20 +53,18 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     if blen == 0 or alen == 0:
         return alen == blen
 
-    if blen == alen and a_str == b_str and threshold <= 1.0:
+    if blen == alen and a_str == b_str:
         return True
 
-    if threshold > upper_bound_similarity(a_str, b_str):
+    if threshold > upper_bound_similarity(alen, blen):
         return False
-    else:
-        # Bad, we can't optimize anything here
-        return threshold <= difflib.SequenceMatcher(None,
-                                                    split_by_sep(a_str),
-                                                    split_by_sep(b_str)).quick_ratio()
+
+    # Bad, we can't optimize anything here
+    return relative_distance(a_str, b_str) > threshold
 
 
-def upper_bound_similarity(a, b):
-    return (2.0*len(a))/(len(a)+len(b))
+def upper_bound_similarity(alen, blen):
+    return (2.0 * alen) / (alen + blen)
 
 
 def fuzzy_equal(a_str, b_str, threshold=0.6):
@@ -88,25 +88,15 @@ def relative_distance(a_str, b_str):
     Measures the "similarity" of the strings.
 
     Depends on the algorithm we finally implement, but usually a return value
-    over 0.6 means the strings are close matches.
+    over 0.7 means the strings are close matches.
 
     :param a_str: A string object
     :param b_str: A string object
     :return: A float with the distance
     """
-    set_a = set(a_str.split(' '))
-    set_b = set(b_str.split(' '))
-
-    if min(len(set_a), len(set_b)) in (0, 1):
-        #
-        #   This is a rare case, where the http response body is one long
-        #   non-space separated string.
-        #
-        return difflib.SequenceMatcher(None,
-                                       split_by_sep(a_str),
-                                       split_by_sep(b_str)).quick_ratio()
-
-    return 1.0 * len(set_a.intersection(set_b)) / max(len(set_a), len(set_b))
+    return difflib.SequenceMatcher(None,
+                                   split_by_sep(a_str),
+                                   split_by_sep(b_str)).quick_ratio()
 
 
 if __name__ == "__main__":
