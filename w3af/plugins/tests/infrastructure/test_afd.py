@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
-from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
@@ -38,8 +37,9 @@ class TestFoundAFD(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse(target_url, 'PASS'),
-                      MockResponse(BAD_SIG_URI, 'FAIL')]
+    MOCK_RESPONSES = [MockResponse(target_url, 'Home page'),
+                      MockResponse(BAD_SIG_URI, 'Blocked by WAF'),
+                      MockResponse(re.compile(target_url + '.*'), 'Another page')]
 
     def test_afd_found_http(self):
         cfg = self._run_configs['cfg']
@@ -57,14 +57,17 @@ class TestFoundAFD(PluginTest):
 
 
 class TestFoundHttpsAFD(TestFoundAFD):
+
     target_url = 'https://httpretty/'
 
-    MOCK_RESPONSES = [MockResponse(target_url, 'PASS'),
-                      MockResponse(BAD_SIG_URI, 'FAIL')]
+    MOCK_RESPONSES = [MockResponse(target_url, 'Home page'),
+                      MockResponse(BAD_SIG_URI, 'Blocked by WAF'),
+                      MockResponse(re.compile(target_url + '.*'), 'Another page')]
 
 
 class TestNotFoundAFD(PluginTest):
-    target_url = get_moth_http()
+
+    target_url = 'http://httpretty/'
 
     _run_configs = {
         'cfg': {
@@ -73,10 +76,11 @@ class TestNotFoundAFD(PluginTest):
         }
     }
 
+    MOCK_RESPONSES = [MockResponse(re.compile('.*'), 'Static page')]
+
     def test_afd_not_found_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_url, cfg['plugins'])
 
         infos = self.kb.get('afd', 'afd')
-
         self.assertEqual(len(infos), 0, infos)

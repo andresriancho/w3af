@@ -75,7 +75,8 @@ class afd(InfrastructurePlugin):
         rnd_value = rand_alnum(7)
         fmt = '%s?%s=%s'
         original_url_str = fmt % (fuzzable_request.get_url(),
-                                  rnd_param, rnd_value)
+                                  rnd_param,
+                                  rnd_value)
         original_url = URL(original_url_str)
 
         try:
@@ -123,6 +124,7 @@ class afd(InfrastructurePlugin):
             # that... So I must analyze the response body
             resp_body = resp_body.replace(offending_string, '')
             resp_body = resp_body.replace(rnd_param, '')
+
             if fuzzy_not_equal(resp_body, original_resp_body, 0.15):
                 self._filtered.append(offending_url)
             else:
