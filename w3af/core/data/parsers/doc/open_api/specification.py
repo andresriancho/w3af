@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import json
 import yaml
 import logging
+import warnings
 
 from yaml import load
 from bravado_core.spec import Spec
@@ -119,14 +120,15 @@ class SpecificationHandler(object):
         config = {'use_models': False}
         url_string = self.http_response.get_url().url_string
 
-        try:
-            spec_dict = flattened_spec(spec_dict, spec_url=url_string)
-        except RefResolutionError, e:
-            msg = ('The document at "%s" is not a valid Open API specification.'
-                   ' The following exception was raised while trying to flatten'
-                   ' the specification: "%s".')
-            om.out.debug(msg % (self.http_response.get_url(), e))
-            return None
+        with warnings.catch_warnings(record=True) as w:
+            try:
+                spec_dict = flattened_spec(spec_dict, spec_url=url_string)
+            except RefResolutionError, e:
+                msg = ('The document at "%s" is not a valid Open API specification.'
+                       ' The following exception was raised while trying to flatten'
+                       ' the specification: "%s".')
+                om.out.debug(msg % (self.http_response.get_url(), e))
+                return None
 
         try:
             self.spec = Spec.from_dict(spec_dict,
