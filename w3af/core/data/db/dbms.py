@@ -65,7 +65,10 @@ def verify_started(meth):
     @wraps(meth)
     def inner_verify_started(self, *args, **kwds):
         msg = 'No calls to SQLiteDBMS can be made after stop().'
+
+        assert not self.sql_executor.get_received_poison_pill(), msg
         assert self.sql_executor.is_alive(), msg
+
         return meth(self, *args, **kwds)
     
     return inner_verify_started
@@ -128,7 +131,7 @@ class SQLiteDBMS(object):
         
         self.filename = filename
         self.autocommit = autocommit
-    
+
     @verify_started
     def execute(self, query, parameters=(), commit=False):
         """
@@ -138,7 +141,7 @@ class SQLiteDBMS(object):
         fr = self.sql_executor.query(query, parameters)
         
         if self.autocommit or commit:
-            self.sql_executor.commit()
+            self.commit()
             
         return fr
 
@@ -163,12 +166,24 @@ class SQLiteDBMS(object):
 
     @verify_started
     def commit(self):
-        self.sql_executor.commit()
+        # Send the task and wait for the execution
+        future = self.sql_executor.commit()
+        future.result()
 
     @verify_started
     def close(self):
+        # Commit all pending changes
         self.commit()
-        self.sql_executor.stop()
+
+        # Setting the received poison pill to True will make all calls to
+        # SQLiteDBMS methods fail because of `@verify_started`. The goal is
+        # to prevent other tasks being queued after the poison pill
+        self.sql_executor.set_received_poison_pill(True)
+
+        # And then send the poison pill and wait for it to be processed by
+        # the run() method
+        future = self.sql_executor.stop()
+        future.result()
 
     def get_file_name(self):
         """Return DB filename."""
@@ -217,8 +232,8 @@ class SQLiteDBMS(object):
         return self.execute(query, commit=True)
 
     def table_exists(self, name):
-        query = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"\
-                " LIMIT 1"
+        query = ("SELECT name FROM sqlite_master WHERE type='table'"
+                 " AND name=? LIMIT 1")
         r = self.select(query, (name,))
         return bool(r)        
 
@@ -254,6 +269,13 @@ class SQLiteExecutor(Process):
         self._in_queue = in_queue
         self._last_reported_qsize = None
         self._current_query_num = 0
+        self._poison_pill_received = False
+
+    def get_received_poison_pill(self):
+        return self._poison_pill_received
+
+    def set_received_poison_pill(self, received):
+        self._poison_pill_received = received
 
     def _report_qsize(self):
         """
@@ -364,7 +386,7 @@ class SQLiteExecutor(Process):
         # to reduce (not to zero, but reduce) these issues.
         #
         #self.cursor.execute('PRAGMA synchronous=OFF')
-    
+
     def run(self):
         """
         This is the "main" method for this class, the one that
@@ -398,43 +420,44 @@ class SQLiteExecutor(Process):
                 #print('%s %s %s' % (op_code, args, kwds))
             
             handler = OP_CODES.get(op_code, None)
-            
+
+            if not future.set_running_or_notify_cancel():
+                return
+
             if handler is None:
                 # Invalid OPCODE
+                future.set_result(False)
                 continue
             
-            elif handler == POISON:
+            if handler == POISON:
+                self._poison_pill_received = True
+                future.set_result(True)
                 break
-             
-            else:
-                
-                if not future.set_running_or_notify_cancel():
-                    return
-                                    
-                try:
-                    result = handler(*args, **kwds)
-                except sqlite3.OperationalError, e:
-                    # I don't like this string match, but it seems that the
-                    # exception doesn't have any error code to match
-                    if 'no such table' in str(e):
-                        dbe = NoSuchTableException(str(e))
 
-                    elif 'malformed' in str(e):
-                        print(DB_MALFORMED_ERROR)
-                        dbe = MalformedDBException(DB_MALFORMED_ERROR)
+            try:
+                result = handler(*args, **kwds)
+            except sqlite3.OperationalError, e:
+                # I don't like this string match, but it seems that the
+                # exception doesn't have any error code to match
+                if 'no such table' in str(e):
+                    dbe = NoSuchTableException(str(e))
 
-                    else:
-                        # More specific exceptions to be added here later...
-                        dbe = DBException(str(e))
-
-                    future.set_exception(dbe)
-
-                except Exception, e:
-                    dbe = DBException(str(e))
-                    future.set_exception(dbe)
+                elif 'malformed' in str(e):
+                    print(DB_MALFORMED_ERROR)
+                    dbe = MalformedDBException(DB_MALFORMED_ERROR)
 
                 else:
-                    future.set_result(result)
+                    # More specific exceptions to be added here later...
+                    dbe = DBException(str(e))
+
+                future.set_exception(dbe)
+
+            except Exception, e:
+                dbe = DBException(str(e))
+                future.set_exception(dbe)
+
+            else:
+                future.set_result(result)
 
 
 temp_default_db = None
