@@ -265,17 +265,70 @@ class ParameterHandler(object):
 
     def _get_object_definition(self, param_spec):
         """
+        This method calls `_get_object_definition_impl` until the object
+        definition is completely dereferenced.
+
+        In the most common cases we call `_get_object_definition_impl` only
+        a couple of times to resolve things like `$ref` and `allOf`.
+
+        :param param_spec: The parameter specification instance
+        :return: The object definition which needs to be created
+        """
+        return self._get_object_definition_impl(param_spec)
+
+    def _merge_all_parts(self, all_parts):
+        """
+        https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
+
+        When we receive an allOf we just merge all the properties from the
+        different schemas / definitions / references / models into one big
+        dict and return it.
+
+        The output of this method looks like:
+
+                {u'title': u'Pet',
+                 u'x-model': u'Pet',
+                 u'type': u'object',
+                 u'properties': {u'age': {u'type': u'integer', u'format': u'int32'}},
+                 u'required': [u'name']}
+
+        :param all_parts: A list containing the `allOf`
+        :return: The definition as shown above
+        """
+        merged = {'required': [],
+                  'properties': {},
+                  'type': 'object'}
+
+        for part in all_parts:
+            object_definition = self._get_object_definition_impl(part)
+
+            if 'required' in object_definition:
+                for required in object_definition['required']:
+                    merged['required'].append(required)
+
+            if 'properties' in object_definition:
+                for property_name, property_def in object_definition['properties'].iteritems():
+                    merged['properties'][property_name] = property_def
+
+        return merged
+
+    def _get_object_definition_impl(self, param_spec):
+        """
         :param param_spec: The parameter specification instance
         :return: The object definition which needs to be created
         """
         if '$ref' in param_spec:
             ref = {'$ref': param_spec['$ref']}
-            return self.spec.deref(ref)
+            param_spec = self.spec.deref(ref)
+
+        if 'allOf' in param_spec:
+            all_parts = param_spec['allOf']
+            param_spec = self._merge_all_parts(all_parts)
 
         if 'schema' in param_spec:
             if '$ref' in param_spec['schema']:
                 ref = {'$ref': param_spec['schema']['$ref']}
-                return self.spec.deref(ref)
+                param_spec = self.spec.deref(ref)
             else:
                 # The definition is not a reference, the param_spec['schema'] looks like:
                 #
@@ -284,7 +337,7 @@ class ParameterHandler(object):
                 #  u'type': u'object',
                 #  u'properties': {u'age': {u'type': u'integer', u'format': u'int32'}},
                 #  u'required': [u'name']}
-                return param_spec['schema']
+                param_spec = param_spec['schema']
 
         if 'type' in param_spec:
             if param_spec['type'] == 'object':
@@ -296,9 +349,9 @@ class ParameterHandler(object):
                 #  u'required': [u'name'],
                 #  u'type': u'object',
                 #  u'properties': '...'}
-                return param_spec
+                pass
 
-        raise NotImplementedError
+        return param_spec
 
     def _create_object(self, param_spec):
         """

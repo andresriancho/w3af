@@ -37,9 +37,9 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               ArrayIntItemsQueryString,
                                                                               IntParamNoModelJson,
                                                                               ComplexDereferencedNestedModel,
-                                                                              ModelParam,
-                                                                              ModelParamNested,
-                                                                              ModelParamNestedLoop,
+                                                                              DereferencedPetStore,
+                                                                              NestedModel,
+                                                                              NestedLoopModel,
                                                                               ArrayModelItems)
 
 
@@ -390,13 +390,125 @@ class TestSpecification(unittest.TestCase):
         expected_value = [{u'name': 'John', u'tag': '7'}]
         self.assertEqual(param.fill, expected_value)
 
-    def test_model_param_nested_in_json(self):
-        raise NotImplementedError
+    def test_model_param_nested_allOf_in_json(self):
+        specification_as_string = NestedModel().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        self.assertEqual(len(data), 1)
+
+        #
+        # Assertions on call #1
+        #
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'findPets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json',
+                                              u'application/xml',
+                                              u'text/xml',
+                                              u'text/html'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('pet')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'body')
+        self.assertIn('schema', param.param_spec)
+
+        expected_value = {u'tag': '7', u'name': 'John', u'id': 42}
+        self.assertEqual(param.fill, expected_value)
 
     def test_model_param_nested_loop_in_json(self):
-        raise NotImplementedError
+        specification_as_string = NestedLoopModel().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # `_parse_spec_from_dict` raises max recursion while trying to resolve
+        # references for this (broken) model.
+        self.assertEqual(len(data), 0)
 
     def test_dereferenced_pet_store(self):
         # See: dereferenced_pet_store.json , which was generated using
         # http://bigstickcarpet.com/swagger-parser/www/index.html#
-        raise NotImplementedError
+
+        specification_as_string = DereferencedPetStore().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+        self.assertEqual(len(data), 3)
+
+        #
+        # Assertions on call #1
+        #
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'get_pets_name')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets/{name}')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('name')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'path')
+        self.assertEqual(param.param_spec['type'], 'string')
+
+        expected_value = 'John'
+        self.assertEqual(param.fill, expected_value)
+
+        #
+        # Assertions on call #2
+        #
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[1]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'get_pets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 0)
+
+        #
+        # Assertions on call #3
+        #
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[2]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'post_pets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('pet')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'body')
+        self.assertIn('schema', param.param_spec)
+
+        expected_value = {u'owner': {u'name': {u'last': 'Smith', u'first': '56'},
+                                     u'address': {u'postalCode': '90210', u'street1': '56',
+                                                  u'street2': '56', u'state': 'AK',
+                                                  u'city': 'Buenos Aires'}},
+                          u'type': '7', u'name': 'John', u'birthdate': '2017-06-30T23:59:60Z'}
+        self.assertEqual(param.fill, expected_value)

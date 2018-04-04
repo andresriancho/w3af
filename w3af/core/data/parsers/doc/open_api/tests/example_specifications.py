@@ -54,6 +54,21 @@ class ComplexDereferencedNestedModel(object):
         return file('%s/data/complex_dereferenced_nested_model.json' % CURRENT_PATH).read()
 
 
+class DereferencedPetStore(object):
+    def get_specification(self):
+        return file('%s/data/dereferenced_pet_store.json' % CURRENT_PATH).read()
+
+
+class NestedModel(object):
+    def get_specification(self):
+        return file('%s/data/nested_model.json' % CURRENT_PATH).read()
+
+
+class NestedLoopModel(object):
+    def get_specification(self):
+        return file('%s/data/nested_loop_model.json' % CURRENT_PATH).read()
+
+
 class IntParamPath(object):
     def get_specification(self):
         spec = APISpec(
