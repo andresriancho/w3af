@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 """
-test_open_api.py
+test_main.py
 
-Copyright 2017 Andres Riancho
+Copyright 2018 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -30,9 +30,8 @@ from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
-class TestOpenAPI(unittest.TestCase):
-
-    DATA_PATH = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc', 'tests', 'data')
+class TestOpenAPIMain(unittest.TestCase):
+    DATA_PATH = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc', 'open_api', 'tests', 'data')
 
     SWAGGER_JSON = os.path.join(DATA_PATH, 'swagger.json')
     PETSTORE_SIMPLE = os.path.join(DATA_PATH, 'petstore-simple.json')
@@ -66,16 +65,52 @@ class TestOpenAPI(unittest.TestCase):
     def test_can_parse_content_type_no_keywords(self):
         # JSON content type
         # Does NOT contain keywords
-        raise NotImplementedError
+        http_resp = self.generate_response('{}')
+        self.assertFalse(OpenAPI.can_parse(http_resp))
 
     def test_can_parse_content_type_with_keywords(self):
         # JSON content type
         # Contains keywords
         # Invalid JSON format
-        raise NotImplementedError
+        http_resp = self.generate_response('"')
+        self.assertFalse(OpenAPI.can_parse(http_resp))
 
     def test_can_parse_invalid_yaml_with_keywords(self):
         # Yaml content type
         # Contains keywords
         # Invalid yaml format
-        raise NotImplementedError
+        http_resp = self.generate_response('{}', 'application/yaml')
+        self.assertFalse(OpenAPI.can_parse(http_resp))
+
+    def test_content_type_match_true(self):
+        http_resp = self.generate_response('{}')
+        self.assertTrue(OpenAPI.content_type_match(http_resp))
+
+    def test_content_type_match_false(self):
+        http_resp = self.generate_response('', 'image/jpeg')
+        self.assertFalse(OpenAPI.content_type_match(http_resp))
+
+    def test_matches_any_keyword_true(self):
+        http_resp = self.generate_response('{"consumes": "application/json"}')
+        self.assertTrue(OpenAPI.matches_any_keyword(http_resp))
+
+    def test_matches_any_keyword_false(self):
+        http_resp = self.generate_response('{"none": "fail"}')
+        self.assertFalse(OpenAPI.matches_any_keyword(http_resp))
+
+    def test_is_valid_json_or_yaml_true(self):
+        http_resp = self.generate_response('{}')
+        self.assertTrue(OpenAPI.is_valid_json_or_yaml(http_resp))
+
+        http_resp = self.generate_response('', 'application/yaml')
+        self.assertTrue(OpenAPI.is_valid_json_or_yaml(http_resp))
+
+    def test_is_valid_json_or_yaml_false(self):
+        http_resp = self.generate_response('"', 'image/jpeg')
+        self.assertFalse(OpenAPI.is_valid_json_or_yaml(http_resp))
+
+    def generate_response(self, specification_as_string, content_type='application/json'):
+        url = URL('http://www.w3af.com/swagger.json')
+        headers = Headers([('content-type', content_type)])
+        return HTTPResponse(200, specification_as_string, headers,
+                            url, url, _id=1)
