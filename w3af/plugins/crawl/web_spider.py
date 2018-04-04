@@ -148,23 +148,25 @@ class web_spider(CrawlPlugin):
                 self.output_queue.put(r)
 
     def _handle_first_run(self):
-        if self._first_run:
-            # I have to set some variables, in order to be able to code
-            # the "only_forward" feature
-            self._first_run = False
-            self._target_urls = [i.uri2url() for i in cf.cf.get('targets')]
+        if not self._first_run:
+            return
 
-            # The following line triggered lots of bugs when the "stop" button
-            # was pressed and the core did this: "cf.cf.save('targets', [])"
-            #
-            #self._target_domain = cf.cf.get('targets')[0].get_domain()
-            #
-            #    Changing it to something awful but bug-free.
-            targets = cf.cf.get('targets')
-            if not targets:
-                return
-            else:
-                self._target_domain = targets[0].get_domain()
+        # I have to set some variables, in order to be able to code
+        # the "only_forward" feature
+        self._first_run = False
+        self._target_urls = [i.uri2url() for i in cf.cf.get('targets')]
+
+        # The following line triggered lots of bugs when the "stop" button
+        # was pressed and the core did this: "cf.cf.save('targets', [])"
+        #
+        #self._target_domain = cf.cf.get('targets')[0].get_domain()
+        #
+        #    Changing it to something awful but bug-free.
+        targets = cf.cf.get('targets')
+        if not targets:
+            return
+
+        self._target_domain = targets[0].get_domain()
                 
     def _urls_to_verify_generator(self, resp, fuzzable_req):
         """
@@ -244,14 +246,15 @@ class web_spider(CrawlPlugin):
             return False
 
         # Filter the URL according to the configured regular expressions
-        urlstr = ref.url_string
-        if not self._compiled_follow_re.match(urlstr) or \
-        self._compiled_ignore_re.match(urlstr):
+        if not self._compiled_follow_re.match(ref.url_string):
             return False
 
-        if self._only_forward:
-            if not self._is_forward(ref):
-                return False
+        if self._compiled_ignore_re.match(ref.url_string):
+            return False
+
+        # Implementing only forward
+        if self._only_forward and not self._is_forward(ref):
+            return False
 
         return True
 
@@ -335,39 +338,7 @@ class web_spider(CrawlPlugin):
         resp = self._uri_opener.GET(reference, cache=True, headers=headers,
                                     grep=False)
 
-        if is_404(resp):
-            # Note: I WANT to follow links that are in the 404 page, but
-            # DO NOT return the 404 itself to the core.
-            #
-            # This will parse the 404 response and add the 404-links in the
-            # output queue, so that the core can get them
-            #
-            if be_recursive:
-                #
-                # Only follow one level of links in 404 pages, this limits the
-                # potential issue when this is found:
-                #
-                #   http://foo.com/abc/ => 404
-                #   Body: <a href="def/">link</a>
-                #
-                # Which would lead to this function to perform requests to:
-                #   * http://foo.com/abc/
-                #   * http://foo.com/abc/def/
-                #   * http://foo.com/abc/def/def/
-                #   * http://foo.com/abc/def/def/def/
-                #   * ...
-                #
-
-                # Do not use threads here, it will dead-lock (for unknown
-                # reasons). This is tested in TestDeadLock unittest.
-                for args in self._urls_to_verify_generator(resp, original_request):
-                    self._verify_reference(*args, be_recursive=False)
-
-            # Store the broken links
-            if not possibly_broken and resp.get_code() not in self.UNAUTH_FORBID:
-                t = (resp.get_url(), original_request.get_uri())
-                self._broken_links.add(t)
-        else:
+        if not is_404(resp):
             msg = '[web_spider] Found new link "%s" at "%s"'
             args = (reference, original_response.get_url())
             om.out.debug(msg % args)
@@ -389,6 +360,39 @@ class web_spider(CrawlPlugin):
             fuzz_req.set_cookie(cookie)
 
             self.output_queue.put(fuzz_req)
+            return
+
+        # Note: I WANT to follow links that are in the 404 page, but
+        # DO NOT return the 404 itself to the core.
+        #
+        # This will parse the 404 response and add the 404-links in the
+        # output queue, so that the core can get them
+        #
+        if be_recursive:
+            #
+            # Only follow one level of links in 404 pages, this limits the
+            # potential issue when this is found:
+            #
+            #   http://foo.com/abc/ => 404
+            #   Body: <a href="def/">link</a>
+            #
+            # Which would lead to this function to perform requests to:
+            #   * http://foo.com/abc/
+            #   * http://foo.com/abc/def/
+            #   * http://foo.com/abc/def/def/
+            #   * http://foo.com/abc/def/def/def/
+            #   * ...
+            #
+
+            # Do not use threads here, it will dead-lock (for unknown
+            # reasons). This is tested in TestDeadLock unittest.
+            for args in self._urls_to_verify_generator(resp, original_request):
+                self._verify_reference(*args, be_recursive=False)
+
+        # Store the broken links
+        if not possibly_broken and resp.get_code() not in self.UNAUTH_FORBID:
+            t = (resp.get_url(), original_request.get_uri())
+            self._broken_links.add(t)
 
     def end(self):
         """
@@ -396,8 +400,8 @@ class web_spider(CrawlPlugin):
         """
         if len(self._broken_links):
 
-            om.out.information('The following is a list of broken links that '
-                               'were found by the web_spider plugin:')
+            om.out.information('The following is a list of broken links that'
+                               ' were found by the web_spider plugin:')
             for broken, where in unique_justseen(self._broken_links.ordered_iter()):
                 om.out.information('- %s [ referenced from: %s ]' %
                                    (broken, where))
@@ -423,20 +427,20 @@ class web_spider(CrawlPlugin):
         """
         ol = OptionList()
 
-        d = 'When crawling only follow links to paths inside the one given'\
-            ' as target.'
+        d = ('When crawling only follow links to paths inside the one given'
+             ' as target.')
         o = opt_factory('only_forward', self._only_forward, d, BOOL)
         ol.add(o)
 
-        d = 'When crawling only follow which that match this regular'\
-            ' expression. Please note that ignore_regex has precedence over'\
-            ' follow_regex.'
+        d = ('When crawling only follow which that match this regular'
+             ' expression. Please note that ignore_regex has precedence over'
+             ' follow_regex.')
         o = opt_factory('follow_regex', self._follow_regex, d, REGEX)
         ol.add(o)
 
-        d = 'When crawling, DO NOT follow links that match this regular'\
-            ' expression. Please note that ignore_regex has precedence over'\
-            ' follow_regex.'
+        d = ('When crawling, DO NOT follow links that match this regular'
+             ' expression. Please note that ignore_regex has precedence over'
+             ' follow_regex.')
         o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX)
         ol.add(o)
 

@@ -164,10 +164,11 @@ class TestDBMS(unittest.TestCase):
     def test_close_twice(self):
         db = SQLiteDBMS(get_temp_filename())
         db.close()
-        db.close()
+
+        self.assertRaises(AssertionError, db.close)
 
 
 class TestDefaultDB(unittest.TestCase):
     def test_get_default_temp_db_instance(self):
         self.assertEqual(id(get_default_temp_db_instance()),
-                         id(get_default_temp_db_instance()))    
+                         id(get_default_temp_db_instance()))

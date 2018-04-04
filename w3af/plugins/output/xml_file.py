@@ -44,6 +44,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.misc.encoding import smart_str_ignore, smart_unicode
+from w3af.core.data.misc.dotdict import dotdict
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
@@ -280,7 +281,8 @@ class xml_file(OutputPlugin):
 
         jinja2_env = Environment(**env_config)
         jinja2_env.loader = FileSystemLoader(TEMPLATE_ROOT)
-        jinja2_env.filters['escape_attr_val'] = jinja2_attr_value_escape_filter
+        jinja2_env.filters['escape_attr'] = jinja2_attr_value_escape_filter
+        jinja2_env.filters['escape_text'] = jinja2_text_value_escape_filter
         return jinja2_env
 
     def _write_context_to_file(self, context):
@@ -616,7 +618,7 @@ class Finding(XMLNode):
         context.name = info.get_name()
         context.plugin_name = info.get_plugin_name()
         context.severity = info.get_severity()
-        context.url = info.get_url()
+        context.url = info.get_url().url_string if info.get_url() is not None else None
         context.var = info.get_token_name()
         context.description = info.get_desc(with_id=False)
 
@@ -651,27 +653,6 @@ class Finding(XMLNode):
         return transaction
 
 
-class dotdict(dict):
-    """dot.notation access to dictionary attributes"""
-
-    def __setattr__(self, key, value):
-        """
-        Overriding in order to translate every value to an unicode object
-
-        :param key: The attribute name to set
-        :param value: The value (string, unicode or anything else)
-        :return: None
-        """
-        if isinstance(value, basestring):
-            value = smart_unicode(value)
-
-        self[key] = value
-
-    #__setattr__ = dict.__setitem__
-    __getattr__ = dict.get
-    __delattr__ = dict.__delitem__
-
-
 def is_unicode_escape(i):
     return category(unichr(i)).startswith('C')
 
@@ -687,7 +668,7 @@ ATTR_VALUE_ESCAPES = {
     u'\t': u'    ',
 }
 
-ATTR_VALUE_ESCAPES.update(dict((unichr(i), '<character code="%04x"/>' % i)
+ATTR_VALUE_ESCAPES.update(dict((unichr(i), '&lt;character code=&quot;%04x&quot;/&gt;' % i)
                                for i in xrange(sys.maxunicode)
                                if is_unicode_escape(i)))
 
@@ -695,6 +676,30 @@ ATTR_VALUE_ESCAPES_IGNORE = {'\n', '\r'}
 
 
 def jinja2_attr_value_escape_filter(value):
+    """
+    This method is used to escape attribute values:
+
+        <tag attribute="value">
+
+    The objective is to escape all the special characters which can not be
+    printed in that context.
+
+    We also implement something very specific for special characters. We're
+    replacing the XML invalid characters with:
+
+        <character code="%04x"/>
+
+    The parser should handle that and replace these tags with the real char
+    (if it can be handled by the reader).
+
+    Something to note is that when escaping special characters we print the
+    HTML-encoded (< replaced by &lt; and so on) version of the `character`
+    tag. We do that because it is invalid to print < inside the attribute
+    value.
+
+    :param value: The value to escape
+    :return: The escaped string
+    """
     if not isinstance(value, basestring):
         return value
 
@@ -717,3 +722,62 @@ def jinja2_attr_value_escape_filter(value):
     return jinja2.Markup(retval)
 
 
+TEXT_VALUE_ESCAPES = {
+    u'"': u'&quot;',
+    u'&': u'&amp;',
+    u'<': u'&lt;',
+    u'>': u'&gt;',
+
+    # Note that here we replace tabs with 4-spaces, like in python ;-)
+    # but it makes sense for easy parsing and showing to users
+    u'\t': u'    ',
+}
+
+TEXT_VALUE_ESCAPES.update(dict((unichr(i), '<character code="%04x"/>' % i)
+                               for i in xrange(sys.maxunicode)
+                               if is_unicode_escape(i)))
+
+TEXT_VALUE_ESCAPES_IGNORE = {'\n', '\r'}
+
+
+def jinja2_text_value_escape_filter(value):
+    """
+    This method is used to escape text values:
+
+        <tag>text</tag>
+
+    The objective is to escape all the special characters which can not be
+    printed in that context, and the special characters which might be in
+    the input and we want to escape to avoid "xml injection".
+
+    We also implement something very specific for special characters. We're
+    replacing the XML invalid characters with:
+
+        <character code="%04x"/>
+
+    The parser should handle that and replace these tags with the real char
+    (if it can be handled by the reader).
+
+    :param value: The value to escape
+    :return: The escaped string
+    """
+    if not isinstance(value, basestring):
+        return value
+
+    # Fix some encoding errors which are triggered when the value is not an
+    # unicode string
+    value = smart_unicode(value)
+    retval = u''
+
+    for letter in value:
+        if letter in TEXT_VALUE_ESCAPES_IGNORE:
+            retval += letter
+            continue
+
+        escape = TEXT_VALUE_ESCAPES.get(letter, None)
+        if escape is not None:
+            retval += escape
+        else:
+            retval += letter
+
+    return jinja2.Markup(retval)

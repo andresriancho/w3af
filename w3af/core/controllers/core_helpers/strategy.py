@@ -492,6 +492,7 @@ class CoreStrategy(object):
         #    try/except block.
         #
         from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+        targets_with_404 = []
 
         for url in cf.cf.get('targets'):
             try:
@@ -505,7 +506,7 @@ class CoreStrategy(object):
                 raise ScanMustStopException(msg % args)
 
             try:
-                is_404(response)
+                current_target_is_404 = is_404(response)
             except ScanMustStopByUserRequest:
                 raise
             except Exception, e:
@@ -514,6 +515,20 @@ class CoreStrategy(object):
                        ' (%s).')
                 args = (url, e, e.__class__.__name__)
                 raise ScanMustStopException(msg % args)
+            else:
+                if current_target_is_404:
+                    targets_with_404.append(url)
+
+        if targets_with_404:
+            urls = ' - %s\n'.join(targets_with_404)
+            om.out.information('w3af identified the following user-configured'
+                               ' targets as non-existing pages (404). This could'
+                               ' result in a scan with low coverage: not all'
+                               ' areas of the application are scanned. Please'
+                               ' manually verify that these URLs exist and, if'
+                               ' required, run the scan again.\n'
+                               '\n'
+                               '%s\n' % urls)
 
     def _setup_crawl_infrastructure(self):
         """

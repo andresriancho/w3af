@@ -432,7 +432,7 @@ class TestSpecialCharacterInURL(PluginTest):
 class XMLNodeGeneratorTest(unittest.TestCase):
     def assertValidXML(self, xml):
         etree.fromstring(xml)
-        assert 'escape_attr_val' not in xml
+        assert 'escape_attr' not in xml
 
 
 class TestHTTPTransaction(XMLNodeGeneratorTest):
@@ -840,6 +840,78 @@ class TestFinding(XMLNodeGeneratorTest):
         xml = finding.to_string()
 
         self.assertIn(u'á', xml)
+        self.assertValidXML(xml)
+
+    def test_render_url_special_chars(self):
+        self.maxDiff = None
+
+        _id = 2
+        vuln = MockVuln(_id=_id)
+
+        url = URL(u'https://w3af.com/._basebind/node_modules/lodash._basecreate/'
+                  u'LICENSE.txt\x00=ڞ')
+        hdr = Headers([('User-Agent', 'w3af')])
+        request = HTTPRequest(url, data='a=1')
+        request.set_headers(hdr)
+
+        vuln.set_uri(url)
+
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>', hdr, url, url)
+
+        h1 = HistoryItem()
+        h1.request = request
+        res.set_id(_id)
+        h1.response = res
+        h1.save()
+
+        x = xml_file()
+
+        finding = Finding(x._get_jinja2_env(), vuln)
+        xml = finding.to_string()
+
+        expected = (u'<vulnerability id="[2]" method="GET" name="TestCase" plugin="plugin_name" severity="High" url="https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt&lt;character code=&quot;0000&quot;/&gt;=\u069e" var="None">\n'
+                    u'    <description>Foo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggsFoo bar spam eggs</description>\n\n\n'
+                    u'    <http-transactions>\n'
+                    u'            <http-transaction id="2">\n\n'
+                    u'    <http-request>\n'
+                    u'        <status>POST https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt%00=%DA%9E HTTP/1.1</status>\n'
+                    u'        <headers>\n'
+                    u'            <header field="User-agent" content="w3af" />\n'
+                    u'        </headers>\n'
+                    u'        <body content-encoding="base64">YT0x\n</body>\n'
+                    u'    </http-request>\n\n'
+                    u'    <http-response>\n'
+                    u'        <status>HTTP/1.1 200 OK</status>\n'
+                    u'        <headers>\n'
+                    u'            <header field="Content-Type" content="text/html" />\n'
+                    u'        </headers>\n'
+                    u'        <body content-encoding="base64">PGh0bWw+\n</body>\n'
+                    u'    </http-response>\n\n'
+                    u'</http-transaction>\n'
+                    u'    </http-transactions>\n'
+                    u'</vulnerability>')
+
+        self.assertEqual(xml, expected)
+        self.assertValidXML(xml)
+
+    def test_is_generated_xml_valid(self):
+        xml = ('''<vulnerability id="[14787]" method="GET" name="Strange HTTP response code" plugin="strange_http_codes" 
+                   severity="Information" url="https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txtZȨZȨ+k%s=ڞ"
+                   var="None" vulndb_id="29">
+                    - https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt<character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/>ZȨ<character code="0003"/>
+                    <character code="000e"/>ZȨ<character code="0003"/><character code="000e"/><character code="0000"/>
+                    <character code="0000"/><character code="0001"/><character code="0000"/>+k<character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/><character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/><character code="0000"/>
+                    <character code="0000"/><character code="0000"/><character code="0000"/><character code="0004"/>%s=ڞ
+                    
+                    <status>GET https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txt%00%00%00%00Z%C8
+                    %A8%03%0EZ%C8%A8%03%0E%00%00%01%00+k%00%00%00%00%00%00%00%00%00%00%00%00%04%s=%DA%9E HTTP/1.1</status>
+                    
+                    </vulnerability>
+                ''')
         self.assertValidXML(xml)
 
 

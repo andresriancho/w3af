@@ -27,9 +27,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
-from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.kb.info import Info
-from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class oracle_discovery(CrawlPlugin):
@@ -53,9 +51,6 @@ class oracle_discovery(CrawlPlugin):
 
     ORACLE_DATA = ((url, re.compile(re_str)) for url, re_str in ORACLE_DATA)
 
-    def __init__(self):
-        CrawlPlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """
@@ -67,7 +62,6 @@ class oracle_discovery(CrawlPlugin):
         base_url = fuzzable_request.get_url().base_url()
 
         for url, re_obj in self.ORACLE_DATA:
-
             od_url = base_url.url_join(url)
             self.http_get_and_parse(od_url, re_obj, on_success=self.on_success)
 
@@ -78,18 +72,17 @@ class oracle_discovery(CrawlPlugin):
 
         if mo:
             desc = '"%s" version "%s" was detected at "%s".'
-            desc = desc % (mo.group(1).title(), mo.group(2).title(),
-                           response.get_url())
-            i = Info('Oracle Application Server', desc, response.id,
-                     self.get_name())
+            desc %= (mo.group(1).title(), mo.group(2).title(), response.get_url())
+
+            i = Info('Oracle Application Server', desc, response.id, self.get_name())
             i.set_url(response.get_url())
 
             kb.kb.append(self, 'oracle_discovery', i)
             om.out.information(i.get_desc())
         else:
-            msg = 'oracle_discovery found the URL: "%s" but failed to'\
-                  ' parse it as an Oracle page. The first 50 bytes of'\
-                  ' the response body is: "%s".'
+            msg = ('oracle_discovery found the URL: "%s" but failed to'
+                   ' parse it as an Oracle page. The first 50 bytes of'
+                   ' the response body is: "%s".')
             body_start = response.get_body()[:50]
             om.out.debug(msg % (response.get_url(), body_start))
 

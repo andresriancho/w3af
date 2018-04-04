@@ -52,9 +52,8 @@ class SGMLParser(BaseParser):
     """
     ANY_TAG_MATCH = re.compile('(<.*?>)', re.UNICODE)
 
-    EMAIL_RE = re.compile(
-        '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
-        re.I | re.U)
+    EMAIL_RE = re.compile('([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
+                          re.I | re.U)
 
     META_URL_REDIR_RE = re.compile('.*?URL.*?=(.*)', re.I | re.U)
 
@@ -492,7 +491,6 @@ class SGMLParser(BaseParser):
         """
         return [x[1] for x in self._tag_and_url if x[0] == tag_type]
 
-    ## Methods for tags handling ##
     def _handle_base_tag_start(self, tag, tag_name, attrs):
         # Override base url
         try:
