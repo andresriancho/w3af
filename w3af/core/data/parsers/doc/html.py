@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
-
 from w3af.core.data.parsers.doc.sgml import SGMLParser
 from w3af.core.data.parsers.utils.re_extract import ReExtract
 from w3af.core.data.parsers.utils.form_fields import get_value_by_key
