@@ -12,6 +12,6 @@
     {% endfor %}
 
     {% for message, caller in errors %}
-    <error caller="{{ caller | escape_attr_val }}">{{ message | escape_attr_val }}</error>
+    <error caller="{{ caller | escape_attr }}">{{ message | escape_text }}</error>
     {% endfor %}
 </w3af-run>
