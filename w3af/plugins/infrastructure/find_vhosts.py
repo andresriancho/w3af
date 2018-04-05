@@ -32,6 +32,7 @@ from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePl
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args, one_to_many
+from w3af.core.controllers.misc.is_ip_address import is_ip_address
 
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -216,7 +217,7 @@ class find_vhosts(InfrastructurePlugin):
         non_existent_resp_body = non_existent_response.get_body()
 
         res = []
-        vhosts = self._get_common_virtualhosts(base_url)
+        vhosts = self._get_common_virtual_hosts(base_url)
 
         for vhost, vhost_response in self._send_in_threads(base_url, vhosts):
             vhost_resp_body = vhost_response.get_body()
@@ -254,7 +255,7 @@ class find_vhosts(InfrastructurePlugin):
         non_existent_domain = 'iDoNotExistPleaseGoAwayNowOrDie' + rand_alnum(4)
         return self._http_get_vhost(base_url, non_existent_domain)
 
-    def _get_common_virtualhosts(self, base_url):
+    def _get_common_virtual_hosts(self, base_url):
         """
         Get a list of common virtual hosts based on the target domain
 
@@ -269,6 +270,13 @@ class find_vhosts(InfrastructurePlugin):
         for subdomain in self.COMMON_VHOSTS:
             # intranet
             yield subdomain
+
+            # It doesn't make any sense to create subdomains based no an
+            # IP address, they will look like intranet.192.168.1.2 , and
+            # are invalid domains
+            if is_ip_address(domain):
+                continue
+
             # intranet.www.targetsite.com
             yield subdomain + '.' + domain
             # intranet.targetsite.com
