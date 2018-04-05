@@ -69,6 +69,11 @@ class NestedLoopModel(object):
         return file('%s/data/nested_loop_model.json' % CURRENT_PATH).read()
 
 
+class StringParamHeader(object):
+    def get_specification(self):
+        return file('%s/data/string_param_header.json' % CURRENT_PATH).read()
+
+
 class IntParamPath(object):
     def get_specification(self):
         spec = APISpec(

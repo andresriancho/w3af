@@ -48,11 +48,54 @@ class TestOpenAPIMain(unittest.TestCase):
 
         parser = OpenAPI(response)
         parser.parse()
-        api_calls = parser.get_forms()
+        api_calls = parser.get_api_calls()
 
-        e_api_calls = ['1']
+        json_headers = Headers([('Content-Type', 'application/json')])
+        multipart_headers = Headers([('Content-Type', 'multipart/form-data')])
+        url_encoded_headers = Headers([('Content-Type', 'application/x-www-form-urlencoded')])
+        json_api_headers = Headers([('api_key', 'FrAmE30.'),
+                                    ('Content-Type', 'application/json')])
 
-        self.assertEqual(api_calls, e_api_calls)
+        url_root = 'http://petstore.swagger.io/v2'
+
+        expected_body_1 = ('{"body": {"category": {"id": 42, "name": "John"},'
+                           ' "status": "available", "name": "John",'
+                           ' "tags": [{"id": 42, "name": "John"}],'
+                           ' "photoUrls": ["56"], "id": 42}}')
+
+        e_api_calls = [
+            ('GET',  '/pet/findByStatus?status=available', json_headers, ''),
+            ('POST', '/pet/42/uploadImage', multipart_headers, ''),
+            ('POST', '/pet/42', url_encoded_headers, ''),
+            ('POST', '/pet', json_headers, expected_body_1),
+            ('GET',  '/pet/42', json_headers, ''),
+            ('GET',  '/pet/42', json_api_headers, ''),
+            ('GET',  '/pet/findByTags?tags=56', json_headers, ''),
+            ('PUT',  '/pet', json_headers, expected_body_1),
+            ('PUT',  '/user/John8212', json_headers, ''),
+            ('POST', '/user/createWithList', json_headers, ''),                  # TODO: Why empty body?
+            ('POST', '/user', json_headers, ''),                                 # TODO: Why empty body?
+            ('GET',  '/user/John8212', json_headers, ''),
+            ('GET',  '/user/login?username=John8212&password=FrAmE30.', json_headers, ''),
+            ('GET',  '/user/logout', Headers(), ''),
+            ('POST', '/user/createWithArray', json_headers, ''),                 # TODO: Why empty body?
+            ('GET',  '/store/order/2', json_headers, ''),
+            ('GET',  '/store/inventory', json_headers, ''),
+            ('GET',  '/store/inventory', json_api_headers, ''),
+            ('POST', '/store/order', json_headers, ''),                           # TODO: Why empty body?
+        ]
+
+        for api_call in api_calls:
+            method = api_call.get_method()
+            headers = api_call.get_headers()
+            data = api_call.get_data()
+
+            uri = api_call.get_uri().url_string
+            uri = uri.replace(url_root, '')
+
+            data = (method, uri, headers, data)
+
+            self.assertIn(data, e_api_calls)
 
     def test_open_api_v20(self):
         # https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v2.0/json/petstore-simple.json

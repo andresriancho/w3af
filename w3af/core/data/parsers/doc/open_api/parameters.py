@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import copy
+import random
 import datetime
 
 from w3af.core.data.fuzzer.form_filler import (smart_fill,
@@ -129,7 +130,7 @@ class ParameterHandler(object):
         # A default
         return 42
 
-    def _get_param_value_for_type_and_name(self, parameter_type, parameter_spec):
+    def _get_param_value_for_type_and_spec(self, parameter_type, parameter_spec):
         """
         :param parameter_type: The type of parameter (string, int32, array, etc.)
         :param parameter_spec: The parameter spec
@@ -142,6 +143,27 @@ class ParameterHandler(object):
         if 'enum' in parameter_spec:
             if parameter_spec['enum']:
                 return parameter_spec['enum'][0]
+
+        if parameter_type in ('integer', 'float', 'double', 'int32', 'int64'):
+            _max = None
+            _min = None
+
+            if 'maximum' in parameter_spec:
+                _max = parameter_spec['maximum']
+
+            if 'minimum' in parameter_spec:
+                _min = parameter_spec['minimum']
+
+            # Only do something if max or min are set
+            if _max is not None or _min is not None:
+                _max = _max if _max is not None else 56
+                _min = _min if _min is not None else 0
+
+                # We always want to generate the same number for the same range
+                r = random.Random()
+                r.seed(1)
+
+                return r.randint(_min, _max)
 
         default_value = self.DEFAULT_VALUES_BY_TYPE.get(parameter_type, None)
         if default_value is not None:
@@ -185,7 +207,7 @@ class ParameterHandler(object):
         if parameter_type is None:
             return None
 
-        value = self._get_param_value_for_type_and_name(parameter_type,
+        value = self._get_param_value_for_type_and_spec(parameter_type,
                                                         param_spec)
         if value is not None:
             return value

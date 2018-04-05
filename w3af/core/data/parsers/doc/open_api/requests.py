@@ -20,8 +20,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import datetime
+
 from bravado.client import construct_request
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.factory import dc_from_content_type_and_raw_params
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -51,18 +54,13 @@ class RequestFactory(object):
         self.operation = operation
         self.parameters = parameters
 
-    def forge(self):
+    def get_fuzzable_request(self):
         """
         Creates a fuzzable request by querying different parts of the spec
         parameters, operation, etc.
 
         :return: A fuzzable request.
         """
-        marshal_param
-        'https://github.com/Yelp/bravado-core/blob/master/bravado_core/marshal.py'
-        'https://github.com/Yelp/bravado-core/blob/master/bravado_core/param.py#L95'
-        'https://github.com/Yelp/bravado/blob/master/bravado/requests_client.py'
-
         method = self.get_method()
         uri = self.get_uri()
         headers = self.get_headers()
@@ -93,9 +91,14 @@ class RequestFactory(object):
 
         :return: The dict
         """
+        parameters = self._get_filled_parameters()
+
         return construct_request(self.operation,
                                  request_options={},
-                                 **self.parameters)
+                                 **parameters)
+
+    def _get_filled_parameters(self):
+        return dict((name, value.fill) for (name, value) in self.parameters.iteritems())
 
     def get_method(self):
         """
@@ -111,7 +114,38 @@ class RequestFactory(object):
         """
         request_dict = self._bravado_construct_request()
         url = request_dict['url']
-        return URL(url)
+
+        parameters = self._get_filled_parameters()
+
+        # We only send in the body the parameters that belong there
+        for param_name, param_def in self.operation.params.iteritems():
+            if param_def.location != 'query':
+                parameters.pop(param_name)
+
+        # If the parameter type is an array, we only send the first item
+        # TODO: Handle collectionFormat from the param_spec to know if
+        #       we should send comma separated (csv) or multiple
+        #       parameters with the same name and different values
+        for param_name, param_def in self.operation.params.iteritems():
+            if 'type' not in param_def.param_spec:
+                continue
+
+            if param_def.param_spec['type'] == 'array':
+                parameters[param_name] = parameters[param_name][0]
+
+        if parameters:
+            formatted_params = [(k, [str(v)]) for k, v in parameters.items() if v is not None]
+            query_string = QueryString(formatted_params)
+        else:
+            # If there are no parameters, we create an empty query string, which is
+            # not going to be shown in the HTTP request in any way since it is
+            # serialized to an empty string.
+            query_string = QueryString()
+
+        uri = URL(url)
+        uri.set_querystring(query_string)
+
+        return uri
 
     def get_headers(self):
         """
@@ -166,6 +200,19 @@ class RequestFactory(object):
             return None
 
         content_type = headers.get('Content-Type')
-        dc = dc_from_content_type_and_raw_params(content_type, self.parameters)
+        parameters = self._get_filled_parameters()
+
+        # We only send in the body the parameters that belong there
+        for param_name, param_def in self.operation.params.iteritems():
+            if param_def.location != 'body':
+                parameters.pop(param_name)
+
+        # If there are no parameters, we don't create an empty data container,
+        # we just send an empty string in the HTTP request body
+        if not parameters:
+            return None
+
+        # Create the data container
+        dc = dc_from_content_type_and_raw_params(content_type, parameters)
 
         return dc

@@ -32,6 +32,7 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               IntParamPath,
                                                                               StringParamQueryString,
                                                                               StringParamJson,
+                                                                              StringParamHeader,
                                                                               IntParamJson,
                                                                               ArrayStringItemsQueryString,
                                                                               ArrayIntItemsQueryString,
@@ -167,6 +168,36 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['in'], 'query')
         self.assertEqual(param.param_spec['type'], 'string')
         self.assertEqual(param.fill, 'Spam or Eggs?')
+
+    def test_string_param_header(self):
+        specification_as_string = StringParamHeader().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'findPets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('X-Foo-Header')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'header')
+        self.assertEqual(param.param_spec['type'], 'string')
+        self.assertEqual(param.fill, '56')
 
     def test_array_string_items_param_in_qs(self):
         specification_as_string = ArrayStringItemsQueryString().get_specification()
@@ -347,13 +378,13 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['in'], 'body')
         self.assertIn('schema', param.param_spec)
 
-        expected_value = {u'birthdate': datetime.datetime(2017, 6, 30, 23, 59, 59),
+        expected_value = {u'birthdate': datetime.date(2017, 6, 30),
                           u'name': 'John',
                           u'owner': {u'address': {u'city': 'Buenos Aires',
                                                   u'postalCode': '90210',
                                                   u'state': 'AK',
-                                                  u'street1': '56',
-                                                  u'street2': '56'},
+                                                  u'street1': 'Bonsai Street 123',
+                                                  u'street2': 'Bonsai Street 123'},
                                      u'name': {u'first': '56', u'last': 'Smith'}},
                           u'type': u'cat'}
         self.assertEqual(param.fill, expected_value)
@@ -507,8 +538,10 @@ class TestSpecification(unittest.TestCase):
         self.assertIn('schema', param.param_spec)
 
         expected_value = {u'owner': {u'name': {u'last': 'Smith', u'first': '56'},
-                                     u'address': {u'postalCode': '90210', u'street1': '56',
-                                                  u'street2': '56', u'state': 'AK',
+                                     u'address': {u'postalCode': '90210',
+                                                  u'street1': 'Bonsai Street 123',
+                                                  u'street2': 'Bonsai Street 123',
+                                                  u'state': 'AK',
                                                   u'city': 'Buenos Aires'}},
-                          u'type': 'cat', u'name': 'John', u'birthdate': datetime.datetime(2017, 6, 30, 23, 59, 59)}
+                          u'type': 'cat', u'name': 'John', u'birthdate': datetime.date(2017, 6, 30)}
         self.assertEqual(param.fill, expected_value)

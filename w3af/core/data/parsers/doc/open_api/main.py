@@ -140,7 +140,25 @@ class OpenAPI(BaseParser):
 
         for data in specification_handler.get_api_information():
             request_factory = RequestFactory(*data)
-            self.api_calls.append(request_factory.forge())
+            fuzzable_request = request_factory.get_fuzzable_request()
+
+            if not self._should_audit(fuzzable_request):
+                continue
+
+            self.api_calls.append(fuzzable_request)
+
+    def _should_audit(self, fuzzable_request):
+        """
+        We want to make sure that w3af doesn't delete all the items from the
+        REST API, so we ignore DELETE calls.
+
+        :param fuzzable_request: The fuzzable request with a call to the REST API
+        :return: True if we should scan this fuzzable request
+        """
+        if fuzzable_request.get_method().upper() == 'DELETE':
+            return False
+
+        return True
 
     def get_api_calls(self):
         """
