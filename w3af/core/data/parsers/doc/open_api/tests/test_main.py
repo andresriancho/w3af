@@ -63,6 +63,20 @@ class TestOpenAPIMain(unittest.TestCase):
                            ' "tags": [{"id": 42, "name": "John"}],'
                            ' "photoUrls": ["56"], "id": 42}}')
 
+        expected_body_2 = ('{"body": {"username": "John8212", "firstName": "John",'
+                           ' "lastName": "Smith", "userStatus": 42,'
+                           ' "email": "w3af@email.com", "phone": "55550178",'
+                           ' "password": "FrAmE30.", "id": 42}}')
+
+        expected_body_3 = ('{"body": [{"username": "John8212", "firstName": "John",'
+                           ' "lastName": "Smith", "userStatus": 42,'
+                           ' "email": "w3af@email.com", "phone": "55550178",'
+                           ' "password": "FrAmE30.", "id": 42}]}')
+
+        expected_body_4 = ('{"body": {"status": "placed",'
+                           ' "shipDate": "2017-06-30T23:59:45",'
+                           ' "complete": true, "petId": 42, "id": 42, "quantity": 42}}')
+
         e_api_calls = [
             ('GET',  '/pet/findByStatus?status=available', json_headers, ''),
             ('POST', '/pet/42/uploadImage', multipart_headers, ''),
@@ -72,17 +86,17 @@ class TestOpenAPIMain(unittest.TestCase):
             ('GET',  '/pet/42', json_api_headers, ''),
             ('GET',  '/pet/findByTags?tags=56', json_headers, ''),
             ('PUT',  '/pet', json_headers, expected_body_1),
-            ('PUT',  '/user/John8212', json_headers, ''),
-            ('POST', '/user/createWithList', json_headers, ''),                  # TODO: Why empty body?
-            ('POST', '/user', json_headers, ''),                                 # TODO: Why empty body?
+            ('PUT',  '/user/John8212', json_headers, expected_body_2),
+            ('POST', '/user/createWithList', json_headers, expected_body_3),
+            ('POST', '/user', json_headers, expected_body_2),
             ('GET',  '/user/John8212', json_headers, ''),
             ('GET',  '/user/login?username=John8212&password=FrAmE30.', json_headers, ''),
             ('GET',  '/user/logout', Headers(), ''),
-            ('POST', '/user/createWithArray', json_headers, ''),                 # TODO: Why empty body?
+            ('POST', '/user/createWithArray', json_headers, expected_body_3),
             ('GET',  '/store/order/2', json_headers, ''),
             ('GET',  '/store/inventory', json_headers, ''),
             ('GET',  '/store/inventory', json_api_headers, ''),
-            ('POST', '/store/order', json_headers, ''),                           # TODO: Why empty body?
+            ('POST', '/store/order', json_headers, expected_body_4),
         ]
 
         for api_call in api_calls:
@@ -96,14 +110,6 @@ class TestOpenAPIMain(unittest.TestCase):
             data = (method, uri, headers, data)
 
             self.assertIn(data, e_api_calls)
-
-    def test_open_api_v20(self):
-        # https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v2.0/json/petstore-simple.json
-        raise NotImplementedError
-
-    def test_pet_store_yaml(self):
-        # https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v2.0/yaml/petstore-expanded.yaml
-        raise NotImplementedError
 
     def test_can_parse_content_type_no_keywords(self):
         # JSON content type

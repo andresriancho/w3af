@@ -20,8 +20,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import datetime
-
 from bravado.client import construct_request
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.query_string import QueryString
@@ -194,11 +192,6 @@ class RequestFactory(object):
         :param headers: The open API specified headers
         :return: A string which can be sent in HTTP request body
         """
-        # This means that the operation doesn't consume any post-data, most
-        # likely it is a DELETE or GET request
-        if not self.operation.consumes:
-            return None
-
         content_type = headers.get('Content-Type')
         parameters = self._get_filled_parameters()
 
