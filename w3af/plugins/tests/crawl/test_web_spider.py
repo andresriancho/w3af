@@ -32,7 +32,7 @@ from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wivet import get_wivet_http
-from w3af.core.controllers.misc_settings import EXCLUDE, INCLUDE
+from w3af.core.controllers.misc_settings import EXCLUDE
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.utils.form_id_matcher_list import FormIDMatcherList
 
