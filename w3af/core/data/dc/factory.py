@@ -31,6 +31,8 @@ from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.generic.plain import PlainContainer
 from w3af.core.data.parsers.utils.form_params import FormParameters
+from w3af.core.data.dc.utils.json_encoder import DateTimeJSONEncoder
+
 
 POST_DATA_CONTAINERS = (MultipartContainer,
                         JSONContainer,
@@ -107,7 +109,7 @@ def dc_from_content_type_and_raw_params(content_type, params):
 
 
 def _create_instance_from_json_string(data_container_cls, params):
-    json_string = json.dumps(params)
+    json_string = DateTimeJSONEncoder().encode(params)
     return data_container_cls(json_string)
 
 
