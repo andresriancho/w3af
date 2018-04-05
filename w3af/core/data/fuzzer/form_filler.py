@@ -51,7 +51,7 @@ PARAM_NAME_KNOWLEDGE = {
     'Buenos Aires': ['city', 'ciudad', 'cidade', 'stadt'],
     'Bonsai Street 123': ['addr', 'address', 'residence', u'dirección', 'direccion',
                           'residencia', u'endereço', 'endereco', u'residência',
-                          'addresse', 'wohnsitz', 'wohnort'],
+                          'addresse', 'wohnsitz', 'wohnort', 'street', 'calle'],
 
     'Bonsai': ['company', 'empresa', 'companhia', 'unternehmen'],
     'Manager': ['position', 'jon', 'cargo', u'posição', 'unternehmung', 'position'],
