@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import copy
+import datetime
 
 from w3af.core.data.fuzzer.form_filler import (smart_fill,
                                                smart_fill_file)
@@ -37,8 +38,8 @@ class ParameterHandler(object):
                               'integer': 42,
                               'float': 4.2,
                               'double': 4.2,
-                              'date': '2017-06-30T23:59:60Z',
-                              'date-time': '2017-06-30T23:59:60Z',
+                              'date': datetime.date(2017, 06, 30),
+                              'date-time': datetime.datetime(2017, 06, 30, 23, 59, 45),
                               'boolean': True}
 
     def __init__(self, spec, operation):
@@ -128,12 +129,20 @@ class ParameterHandler(object):
         # A default
         return 42
 
-    def _get_param_value_for_type_and_name(self, parameter_type, parameter_name):
+    def _get_param_value_for_type_and_name(self, parameter_type, parameter_spec):
         """
         :param parameter_type: The type of parameter (string, int32, array, etc.)
-        :param parameter_name: The name of the parameter to fill
+        :param parameter_spec: The parameter spec
         :return: The parameter value
         """
+        parameter_name = parameter_spec.get('name', None)
+
+        # This handles the case where the value is an enum and can only be selected
+        # from a predefined option list
+        if 'enum' in parameter_spec:
+            if parameter_spec['enum']:
+                return parameter_spec['enum'][0]
+
         default_value = self.DEFAULT_VALUES_BY_TYPE.get(parameter_type, None)
         if default_value is not None:
             return default_value
@@ -177,7 +186,7 @@ class ParameterHandler(object):
             return None
 
         value = self._get_param_value_for_type_and_name(parameter_type,
-                                                        param_spec.get('name', None))
+                                                        param_spec)
         if value is not None:
             return value
 

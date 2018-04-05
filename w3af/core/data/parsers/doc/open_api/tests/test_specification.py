@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-
+import datetime
 
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
@@ -347,7 +347,7 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['in'], 'body')
         self.assertIn('schema', param.param_spec)
 
-        expected_value = {u'birthdate': '2017-06-30T23:59:60Z',
+        expected_value = {u'birthdate': datetime.datetime(2017, 6, 30, 23, 59, 59),
                           u'name': 'John',
                           u'owner': {u'address': {u'city': 'Buenos Aires',
                                                   u'postalCode': '90210',
@@ -355,7 +355,7 @@ class TestSpecification(unittest.TestCase):
                                                   u'street1': '56',
                                                   u'street2': '56'},
                                      u'name': {u'first': '56', u'last': 'Smith'}},
-                          u'type': '7'}
+                          u'type': u'cat'}
         self.assertEqual(param.fill, expected_value)
 
     def test_array_with_model_items_param_in_json(self):
@@ -510,5 +510,5 @@ class TestSpecification(unittest.TestCase):
                                      u'address': {u'postalCode': '90210', u'street1': '56',
                                                   u'street2': '56', u'state': 'AK',
                                                   u'city': 'Buenos Aires'}},
-                          u'type': '7', u'name': 'John', u'birthdate': '2017-06-30T23:59:60Z'}
+                          u'type': 'cat', u'name': 'John', u'birthdate': datetime.datetime(2017, 6, 30, 23, 59, 59)}
         self.assertEqual(param.fill, expected_value)
