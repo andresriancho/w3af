@@ -56,6 +56,49 @@ class TestFoundAFD(PluginTest):
         self.assertIn('../../../../etc/passwd', set(values), values)
 
 
+MOD_SECURITY_ANSWER = '''\
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+<p>You don't have permission to access /
+on this server.<br />
+</p>
+</body></html>
+'''
+
+
+class TestAFDShortResponses(PluginTest):
+
+    target_url = 'http://httpretty/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'infrastructure': (PluginConfig('afd'),)}
+        }
+    }
+
+    MOCK_RESPONSES = [MockResponse(target_url, 'hello world'),
+                      MockResponse(BAD_SIG_URI, MOD_SECURITY_ANSWER, status=403),
+                      MockResponse(re.compile(target_url + '\?.*'), 'hello world')]
+
+    def test_afd_found(self):
+        cfg = self._run_configs['cfg']
+        self._scan(self.target_url, cfg['plugins'])
+
+        infos = self.kb.get('afd', 'afd')
+
+        self.assertEqual(len(infos), 1, infos)
+        info = infos[0]
+
+        self.assertEqual(info.get_name(), 'Active filter detected')
+        values = [u.url_string.split('=')[1] for u in info['filtered']]
+
+        self.assertIn('../../../../etc/passwd', set(values), values)
+
+
 class TestFoundHttpsAFD(TestFoundAFD):
 
     target_url = 'https://httpretty/'

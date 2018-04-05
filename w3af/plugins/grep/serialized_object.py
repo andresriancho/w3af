@@ -26,6 +26,7 @@ import itertools
 from collections import deque
 
 import w3af.core.data.constants.severity as severity
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.misc.encoding import smart_str_ignore
@@ -128,7 +129,16 @@ class serialized_object(GrepPlugin):
         :param serialized_object_re: The regular expression to match
         :return: None. We just save the vulnerability to the KB
         """
-        if not serialized_object_re.search(parameter_value):
+        try:
+            match_object = serialized_object_re.search(parameter_value)
+        except Exception, e:
+            args = (e, parameter_value)
+            om.out.debug('An exception was found while trying to find a'
+                         ' serialized object in a parameter value. The exception'
+                         ' is: "%s", and the parameter value is: "%r"' % args)
+            return
+
+        if not match_object:
             return
 
         # We found a match! The parameter value is a serialized object

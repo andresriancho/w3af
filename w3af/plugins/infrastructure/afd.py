@@ -114,8 +114,8 @@ class afd(InfrastructurePlugin):
                  self._not_filtered lists.
         """
         try:
-            resp_body = self._uri_opener.GET(offending_url,
-                                             cache=False).get_body()
+            http_response = self._uri_opener.GET(offending_url, cache=False)
+            resp_body = http_response.get_body()
         except BaseFrameworkException:
             # I get here when the remote end closes the connection
             self._filtered.append(offending_url)

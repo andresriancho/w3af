@@ -32,6 +32,7 @@ from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePl
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args, one_to_many
+from w3af.core.controllers.misc.is_ip_address import is_ip_address
 
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -43,8 +44,16 @@ from w3af.core.data.kb.info import Info
 class find_vhosts(InfrastructurePlugin):
     """
     Modify the HTTP Host header and try to find virtual hosts.
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
+    COMMON_VHOSTS = ['intranet', 'intra', 'extranet', 'extra', 'test',
+                     'test1', 'old', 'new', 'admin', 'adm', 'webmail',
+                     'services', 'console', 'apps', 'mail', 'corporate',
+                     'ws', 'webservice', 'private', 'secure', 'safe',
+                     'hidden', 'public']
+
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -65,15 +74,20 @@ class find_vhosts(InfrastructurePlugin):
 
     def _analyze(self, fuzzable_request):
         vhost_list = []
+
         if self._first_exec:
             self._first_exec = False
             vhost_list.extend(self._generic_vhosts(fuzzable_request))
 
         # I also test for ""dead links"" that the web developer left in the
-        # page. For example, If w3af finds a link to
-        # "http://corporative.intranet.corp/" it will try to resolve the dns
-        # name, if it fails, it will try to request that page from the server
+        # page. For example, if w3af finds a link to:
+        #
+        #   "http://corp.intranet.com/"
+        #
+        # It will try to resolve the dns name, if it fails, it will try
+        # to request that page from the server
         vhost_list.extend(self._get_dead_links(fuzzable_request))
+
         return vhost_list
 
     def _report_results(self, fuzzable_request, analysis_result):
@@ -81,6 +95,7 @@ class find_vhosts(InfrastructurePlugin):
         Report our findings
         """
         reported = set()
+
         for vhost, request_id in analysis_result:
             if vhost in reported:
                 continue
@@ -109,9 +124,9 @@ class find_vhosts(InfrastructurePlugin):
         or something...)
         """
         # Get some responses to compare later
+        original_response = self._uri_opener.GET(fuzzable_request.get_uri(), cache=True)
+
         base_url = fuzzable_request.get_url().base_url()
-        original_response = self._uri_opener.GET(fuzzable_request.get_uri(),
-                                                 cache=True)
         base_response = self._uri_opener.GET(base_url, cache=True)
         base_resp_body = base_response.get_body()
 
@@ -123,7 +138,7 @@ class find_vhosts(InfrastructurePlugin):
 
         # Set the non existent response
         non_existent_response = self._get_non_exist(fuzzable_request)
-        nonexist_resp_body = non_existent_response.get_body()
+        non_existent_resp_body = non_existent_response.get_body()
 
         # Note:
         # - With parsed_references I'm 100% that it's really something in the
@@ -145,7 +160,7 @@ class find_vhosts(InfrastructurePlugin):
             vhost_resp_body = vhost_response.get_body()
 
             if fuzzy_not_equal(vhost_resp_body, base_resp_body, 0.35) and \
-            fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
+            fuzzy_not_equal(vhost_resp_body, non_existent_resp_body, 0.35):
                 res.append((domain, vhost_response.id))
             else:
                 desc = (u'The content of "%s" references a non existent domain:'
@@ -170,19 +185,24 @@ class find_vhosts(InfrastructurePlugin):
         for link in parsed_references:
             domain = link.get_domain()
 
-            if domain not in self._already_queried:
-                self._already_queried.add(domain)
+            if domain in self._already_queried:
+                continue
 
-                try:
-                    socket.gethostbyname(domain)
-                except socket.gaierror, se:
-                    # raises exception when it's not found
-                    if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
-                        yield domain
-                except:
-                    # We get here on other exceptions, an example is when the
-                    # domain contains non-alnum chars
-                    pass
+            self._already_queried.add(domain)
+
+            try:
+                host = socket.gethostbyname(domain)
+            except socket.gaierror, se:
+                # raises exception when it's not found
+                if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
+                    yield domain
+            except:
+                # We get here on other exceptions, an example is when the
+                # domain contains non-alnum chars
+                pass
+            else:
+                if host in ('127.0.0.1',):
+                    yield host
 
     def _generic_vhosts(self, fuzzable_request):
         """
@@ -194,18 +214,22 @@ class find_vhosts(InfrastructurePlugin):
         orig_resp_body = original_response.get_body()
 
         non_existent_response = self._get_non_exist(fuzzable_request)
-        nonexist_resp_body = non_existent_response.get_body()
+        non_existent_resp_body = non_existent_response.get_body()
 
         res = []
-        vhosts = self._get_common_virtualhosts(base_url)
+        vhosts = self._get_common_virtual_hosts(base_url)
 
         for vhost, vhost_response in self._send_in_threads(base_url, vhosts):
             vhost_resp_body = vhost_response.get_body()
 
             # If they are *really* different (not just different by some chars)
-            if fuzzy_not_equal(vhost_resp_body, orig_resp_body, 0.35) and \
-            fuzzy_not_equal(vhost_resp_body, nonexist_resp_body, 0.35):
-                res.append((vhost, vhost_response.id))
+            if not fuzzy_not_equal(vhost_resp_body, orig_resp_body, 0.35):
+                continue
+
+            if not fuzzy_not_equal(vhost_resp_body, non_existent_resp_body, 0.35):
+                continue
+
+            res.append((vhost, vhost_response.id))
 
         return res
 
@@ -231,7 +255,7 @@ class find_vhosts(InfrastructurePlugin):
         non_existent_domain = 'iDoNotExistPleaseGoAwayNowOrDie' + rand_alnum(4)
         return self._http_get_vhost(base_url, non_existent_domain)
 
-    def _get_common_virtualhosts(self, base_url):
+    def _get_common_virtual_hosts(self, base_url):
         """
         Get a list of common virtual hosts based on the target domain
 
@@ -243,15 +267,16 @@ class find_vhosts(InfrastructurePlugin):
         domain = base_url.get_domain()
         root_domain = base_url.get_root_domain()
 
-        common_virtual_hosts = ['intranet', 'intra', 'extranet', 'extra',
-                                'test', 'test1', 'old', 'new', 'admin',
-                                'adm', 'webmail', 'services', 'console',
-                                'apps', 'mail', 'corporate', 'ws', 'webservice',
-                                'private', 'secure', 'safe', 'hidden', 'public']
-
-        for subdomain in common_virtual_hosts:
+        for subdomain in self.COMMON_VHOSTS:
             # intranet
             yield subdomain
+
+            # It doesn't make any sense to create subdomains based no an
+            # IP address, they will look like intranet.192.168.1.2 , and
+            # are invalid domains
+            if is_ip_address(domain):
+                continue
+
             # intranet.www.targetsite.com
             yield subdomain + '.' + domain
             # intranet.targetsite.com
