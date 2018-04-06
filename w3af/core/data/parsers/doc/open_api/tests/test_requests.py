@@ -115,7 +115,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'https://w3af.org/api/pets'
+        e_url = 'http://w3af.org/api/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
 
         self.assertEqual(fuzzable_request.get_method(), 'GET')
@@ -131,7 +131,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'https://w3af.org/api/pets?limit=42'
+        e_url = 'http://w3af.org/api/pets?limit=42'
         e_headers = Headers([('Content-Type', 'application/json')])
 
         self.assertEqual(fuzzable_request.get_method(), 'GET')
@@ -306,7 +306,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://petstore.swagger.io/api/pets'
+        e_url = 'http://w3af.org/api/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = '{"pet": {"tag": "7", "name": "John", "id": 42}}'
 
