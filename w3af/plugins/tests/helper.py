@@ -22,19 +22,21 @@ from __future__ import print_function
 
 import os
 import re
-import unittest
-import urllib2
-import tempfile
-import pprint
+import copy
 import time
-from functools import wraps
-
+import pprint
+import urllib2
+import unittest
+import tempfile
 import httpretty
+
+from functools import wraps
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from w3af.core.controllers.misc.decorators import retry

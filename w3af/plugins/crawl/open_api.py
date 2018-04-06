@@ -78,7 +78,7 @@ class open_api(CrawlPlugin):
         """
         self._enable_file_name_fuzzing()
         self._analyze_common_paths(fuzzable_request)
-        #self._analyze_current_path(fuzzable_request)
+        self._analyze_current_path(fuzzable_request)
 
     def _enable_file_name_fuzzing(self):
         """
@@ -122,13 +122,12 @@ class open_api(CrawlPlugin):
         if not self._first_run:
             return
 
-        for f in self._spec_url_generator_common(fuzzable_request):
-            self._extract_api_calls(f)
+        self._first_run = False
 
-        #self.worker_pool.map(
-        #    self._extract_api_calls,
-        #    self._spec_url_generator_common(fuzzable_request)
-        #)
+        self.worker_pool.map(
+            self._extract_api_calls,
+            self._spec_url_generator_common(fuzzable_request)
+        )
 
     def _extract_api_calls(self, spec_url):
         """
@@ -139,8 +138,6 @@ class open_api(CrawlPlugin):
         :return: None
         """
         http_response = self._uri_opener.GET(spec_url, cache=True)
-
-        print http_response
 
         if is_404(http_response):
             return
@@ -290,13 +287,10 @@ class open_api(CrawlPlugin):
 
         :return: None, we send everything we find to the core.
         """
-        for f in self._spec_url_generator_common(fuzzable_request):
-            self._extract_api_calls(f)
-
-        #self.worker_pool.map(
-        #    self._extract_api_calls,
-        #    self._spec_url_generator_current_path(fuzzable_request)
-        #)
+        self.worker_pool.map(
+            self._extract_api_calls,
+            self._spec_url_generator_current_path(fuzzable_request)
+        )
 
     def get_options(self):
         """
