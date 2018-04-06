@@ -432,6 +432,8 @@ class PluginConfig(object):
     INT = 'integer'
     URL = 'url'
     INPUT_FILE = 'input_file'
+    QUERY_STRING = 'query_string'
+    HEADER = 'header'
 
     def __init__(self, name, *opts):
         self._name = name
