@@ -24,7 +24,6 @@ import urllib
 import socket
 import urllib2
 import httplib
-import hashlib
 import threading
 import traceback
 import functools
@@ -47,7 +46,6 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ScanMustStopByUnknownReasonExc,
                                               ScanMustStopByKnownReasonExc,
                                               ScanMustStopByUserRequest)
-from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.handlers.keepalive import URLTimeoutError
@@ -57,6 +55,7 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
 from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
+from w3af.core.data.url.get_average_rtt import GetAverageRTTForMutant
 from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           MAX_RESPONSE_COLLECT,
                                           SOCKET_ERROR_DELAY,
@@ -78,6 +77,7 @@ class ExtendedUrllib(object):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
         self._w3af_core = None
+        self._average_rtt_mutant = GetAverageRTTForMutant(self)
 
         # In exploit mode we disable some timeout/delay/error handling stuff
         self.exploit_mode = False
@@ -94,11 +94,6 @@ class ExtendedUrllib(object):
 
         # Keep track of sum(rtt) for each debugging_id
         self._rtt_sum_debugging_id = SynchronizedLRUDict(capacity=128)
-
-        # Cache to measure RTT
-        self._rtt_mutant_cache = SynchronizedLRUDict(capacity=128)
-        self._rtt_mutant_lock = threading.RLock()
-        self._specific_rtt_mutant_locks = dict()
 
         # Avoid multiple consecutive calls to reduce the worker pool size
         self._last_call_to_adjust_workers = None
@@ -122,6 +117,9 @@ class ExtendedUrllib(object):
         self._user_paused = False
         self._user_stopped = False
         self._stop_exception = None
+
+    def get_average_rtt_for_mutant(self, *args, **kwargs):
+        return self._average_rtt_mutant.get_average_rtt_for_mutant(*args, **kwargs)
 
     def pause(self, pause_yes_no):
         """
@@ -270,8 +268,8 @@ class ExtendedUrllib(object):
                                                         host)
 
         if num_samples < (TIMEOUT_ADJUST_LIMIT / 2):
-            msg = 'Not enough samples collected (%s) to adjust timeout.' \
-                  ' Keeping the current value of %s seconds'
+            msg = ('Not enough samples collected (%s) to adjust timeout.'
+                   ' Keeping the current value of %s seconds')
             om.out.debug(msg % (num_samples, self.get_timeout(host)))
         else:
             timeout = average_rtt * TIMEOUT_MULT_CONST
@@ -305,89 +303,6 @@ class ExtendedUrllib(object):
         else:
             average_rtt = float(rtt_sum) / add_count
             return average_rtt, add_count
-
-    def get_average_rtt_for_mutant(self, mutant, count=3, debugging_id=None):
-        """
-        Get the average time for the HTTP request represented as a mutant.
-
-        This method caches responses. The cache entries are valid for 5 seconds,
-        after that period of time the entry is removed from the cache, the average RTT
-        is re-calculated and stored again.
-
-        :param mutant: The mutant to send and measure RTT from
-        :param count: Number of checks to perform
-        :param debugging_id: Unique ID used for logging
-        :return: A float representing the seconds it took to get the response
-        """
-        #
-        # Get the cache key for this mutant
-        #
-        method = mutant.get_method()
-        uri = mutant.get_uri()
-        data = mutant.get_data()
-        headers = mutant.get_all_headers()
-
-        cache_key_parts = [method, uri, data, headers]
-        cache_key_str = ''.join([smart_str_ignore(i) for i in cache_key_parts])
-
-        m = hashlib.md5()
-        m.update(cache_key_str)
-        cache_key = m.hexdigest()
-
-        #
-        # Only perform one of these checks at the time, this is useful to prevent
-        # different threads which need the same result from duplicating efforts
-        #
-        with self._rtt_mutant_lock:
-            specific_rtt_mutant_lock = self._get_specific_rtt_mutant_lock(cache_key)
-
-        with specific_rtt_mutant_lock:
-            cached_value = self._rtt_mutant_cache.get(cache_key, default=None)
-
-            #
-            # The cache entry is still valid, return the cached value
-            #
-            if cached_value is not None:
-                timestamp, value = cached_value
-                if time.time() - timestamp <= 5:
-                    msg = 'Returning cached average RTT of %.2f seconds for mutant %s'
-                    om.out.debug(msg % (value, cache_key))
-                    return value
-
-            #
-            # Need to send the HTTP requests and do the average
-            #
-            rtts = []
-
-            for _ in xrange(count):
-                resp = self.send_mutant(mutant,
-                                        cache=False,
-                                        grep=False,
-                                        debugging_id=debugging_id)
-                rtt = resp.get_wait_time()
-                rtts.append(rtt)
-
-            average_rtt = float(sum(rtts)) / len(rtts)
-            self._rtt_mutant_cache[cache_key] = (time.time(), average_rtt)
-
-        with self._rtt_mutant_lock:
-            if cache_key in self._specific_rtt_mutant_locks:
-                self._specific_rtt_mutant_locks.pop(cache_key)
-
-        msg = 'Returning fresh average RTT of %.2f seconds for mutant %s'
-        om.out.debug(msg % (average_rtt, cache_key))
-
-        return average_rtt
-
-    def _get_specific_rtt_mutant_lock(self, cache_key):
-        specific_rtt_mutant_lock = self._specific_rtt_mutant_locks.get(cache_key)
-
-        if specific_rtt_mutant_lock is not None:
-            return specific_rtt_mutant_lock
-
-        specific_rtt_mutant_lock = threading.RLock()
-        self._specific_rtt_mutant_locks[cache_key] = specific_rtt_mutant_lock
-        return specific_rtt_mutant_lock
 
     def _should_auto_adjust_now(self):
         """
