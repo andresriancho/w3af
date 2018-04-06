@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.statistics.utils import drop_outliers
+from w3af.core.data.statistics.utils import drop_outliers, outliers_modified_z_score
 
 
 class TestStatsUtils(unittest.TestCase):
@@ -64,3 +64,33 @@ class TestStatsUtils(unittest.TestCase):
 
         self.assertEqual(data_without_outliers,
                          [0.31, 0.21])
+
+    def test_modified_zscore(self):
+        test_suite = (
+            # The last is outlier
+            ([0.31, 0.21, 2.02], [0.31, 0.21, None]),
+
+            # All are equal
+            ([0.1, 0.1, 0.1], [0.1, 0.1, 0.1]),
+
+            # All are similar
+            ([0.1, 0.2, 0.3], [0.1, 0.2, 0.3]),
+            ([0.31, 0.21, 0.22], [0.31, 0.21, 0.22]),
+            ([10, 11, 12], [10, 11, 12]),
+
+            # Start to increase the first to check bounds
+            ([0.5, 0.2, 0.3], [0.5, 0.2, 0.3]),
+            ([0.7, 0.2, 0.3], [0.7, 0.2, 0.3]),
+            ([1.2, 0.2, 0.3], [1.2, 0.2, 0.3]),
+            ([1.35, 0.2, 0.3], [1.35, 0.2, 0.3]),
+            ([1.5, 0.2, 0.3], [None, 0.2, 0.3]),
+            ([2.2, 0.2, 0.3], [None, 0.2, 0.3]),
+
+            # These samples make no sense...
+            ([0.1, 500, 10000], [0.1, 500, None]),
+            ([0.0, 0.0, 0.0], [0.0, 0.0, 0.0]),
+        )
+
+        for data, expected_result in test_suite:
+            outliers = outliers_modified_z_score(data)
+            self.assertEqual(list(outliers), list(expected_result))
