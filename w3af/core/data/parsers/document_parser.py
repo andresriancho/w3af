@@ -34,7 +34,11 @@ class DocumentParser(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     # WARNING! The order of this list is important. See note below
-    PARSERS = [WMLParser, JavaScriptParser, PDFParser, SWFParser, HTMLParser]
+    PARSERS = [WMLParser,
+               JavaScriptParser,
+               PDFParser,
+               SWFParser,
+               HTMLParser]
 
     def __init__(self, http_resp):
         """

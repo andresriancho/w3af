@@ -1,0 +1,65 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Query String",
+    "description": "foo"
+  },
+  "host": "w3af.org",
+  "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "description": "Returns all pets from the system that the user has access to",
+        "operationId": "findPets",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "maximum number of results to return",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pet"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Pet": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

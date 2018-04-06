@@ -87,6 +87,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      # and acora to match those against the target string
                      PIPDependency('acora', 'acora', '2.1'),
                      PIPDependency('esmre', 'esmre', '0.3.1'),
+
+                     # OpenAPI documentation parser
+                     PIPDependency('bravado', 'bravado', '9.2.2'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

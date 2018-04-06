@@ -52,12 +52,13 @@ class WMLParser(SGMLParser):
         :return: True if the document parameter is a string that contains a
                  WML document.
         """
-        if 'wml' in http_resp.content_type:
+        if 'wml' not in http_resp.content_type:
+            return False
 
-            document = http_resp.get_body().lower()
+        document = http_resp.get_body().lower()
 
-            if WML_HEADER in document:
-                return True
+        if WML_HEADER in document:
+            return True
 
         return False
 

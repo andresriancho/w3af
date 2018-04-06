@@ -28,6 +28,8 @@ from w3af.core.data.options.url_option import URLOption
 from w3af.core.data.options.ipport_option import IPPortOption
 from w3af.core.data.options.ip_option import IPOption
 from w3af.core.data.options.port_option import PortOption
+from w3af.core.data.options.query_string_option import QueryStringOption
+from w3af.core.data.options.header_option import HeaderOption
 from w3af.core.data.options.list_option import ListOption
 from w3af.core.data.options.regex_option import RegexOption
 from w3af.core.data.options.combo_option import ComboOption
@@ -38,7 +40,7 @@ from w3af.core.data.options.form_id_list_option import FormIDListOption
 
 from w3af.core.data.options.option_types import (
     BOOL, INT, POSITIVE_INT, FLOAT, STRING, URL, IPPORT,
-    LIST, REGEX, COMBO, INPUT_FILE,
+    LIST, REGEX, COMBO, INPUT_FILE, QUERY_STRING, HEADER,
     OUTPUT_FILE, PORT, IP, URL_LIST, FORM_ID_LIST)
 
 
@@ -56,6 +58,8 @@ def opt_factory(name, default_value, desc, _type, help='', tabid=''):
         URL: URLOption,
         URL_LIST: URLListOption,
         IPPORT: IPPortOption,
+        QUERY_STRING: QueryStringOption,
+        HEADER: HeaderOption,
         LIST: ListOption,
         REGEX: RegexOption,
         COMBO: ComboOption,

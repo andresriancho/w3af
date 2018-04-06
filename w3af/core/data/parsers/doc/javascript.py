@@ -29,6 +29,10 @@ class JavaScriptParser(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    PARSE_TYPES = ('javascript',
+                   'ecmascript',
+                   'jscript')
+
     def __init__(self, http_response):
         super(JavaScriptParser, self).__init__(http_response)
 
@@ -44,8 +48,8 @@ class JavaScriptParser(BaseParser):
         """
         response_content_type = http_resp.content_type.lower()
 
-        for ct in ('javascript', 'ecmascript', 'jscript'):
-            if ct in response_content_type:
+        for _type in JavaScriptParser.PARSE_TYPES:
+            if _type in response_content_type:
                 return True
 
         return False

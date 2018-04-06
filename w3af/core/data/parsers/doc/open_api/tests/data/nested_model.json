@@ -1,0 +1,97 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Nested model test",
+    "description": "A model that is defined by another model",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "name": "w3af API Team"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "host": "w3af.org",
+  "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/pets": {
+      "get": {
+        "description": "Returns all pets from the system that the user has access to",
+        "operationId": "findPets",
+        "produces": [
+          "application/json",
+          "application/xml",
+          "text/xml",
+          "text/html"
+        ],
+        "parameters": [
+          {
+            "name": "pet",
+            "in": "body",
+            "description": "Pet to add to the store",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Pet"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pet"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Pet": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/NewPet"
+        },
+        {
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      ]
+    },
+    "NewPet": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

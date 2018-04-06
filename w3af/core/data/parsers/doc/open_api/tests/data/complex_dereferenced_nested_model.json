@@ -1,0 +1,186 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Swagger Petstore",
+    "description": "A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification\n"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/pets": {
+      "post": {
+        "description": "Creates a new pet in the store",
+        "parameters": [
+          {
+            "name": "pet",
+            "in": "body",
+            "description": "Pet to add to the store",
+            "required": true,
+            "schema": {
+              "title": "Pet",
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 25
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "cat",
+                    "dog",
+                    "fish",
+                    "bird"
+                  ]
+                },
+                "birthdate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "owner": {
+                  "title": "Pet Owner",
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "object",
+                      "required": [
+                        "first",
+                        "last"
+                      ],
+                      "properties": {
+                        "first": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        },
+                        "last": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        }
+                      }
+                    },
+                    "address": {
+                      "title": "Address",
+                      "type": "object",
+                      "properties": {
+                        "street1": {
+                          "type": "string"
+                        },
+                        "street2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "postalCode": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "pet response",
+            "schema": {
+              "title": "Pet",
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 25
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "cat",
+                    "dog",
+                    "fish",
+                    "bird"
+                  ]
+                },
+                "birthdate": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "owner": {
+                  "title": "Pet Owner",
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "object",
+                      "required": [
+                        "first",
+                        "last"
+                      ],
+                      "properties": {
+                        "first": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        },
+                        "last": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 25
+                        }
+                      }
+                    },
+                    "address": {
+                      "title": "Address",
+                      "type": "object",
+                      "properties": {
+                        "street1": {
+                          "type": "string"
+                        },
+                        "street2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "postalCode": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

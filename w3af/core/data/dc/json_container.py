@@ -65,7 +65,7 @@ class JSONContainer(DataContainer):
         return 'JSON'
 
     @staticmethod
-    def is_json_content_type(headers):
+    def content_type_matches(headers):
         content_type, _ = headers.iget('content-type', '')
         return 'json' in content_type.lower()
 
@@ -98,7 +98,7 @@ class JSONContainer(DataContainer):
 
     @classmethod
     def from_postdata(cls, headers, post_data):
-        if not JSONContainer.is_json_content_type(headers):
+        if not JSONContainer.content_type_matches(headers):
             raise ValueError('Missing json content type.')
 
         return cls(post_data)

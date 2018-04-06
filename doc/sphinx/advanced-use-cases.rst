@@ -57,34 +57,6 @@ sections he wants to audit he navigates to ``http://127.7.7.7/spider_man?termina
 which will stop the proxy and finish the plugin. The ``audit.sqli`` plugin will
 run over the identified HTTP requests.
 
-REST APIs
----------
-
-``w3af`` can be used to identify and exploit vulnerabilities in REST APIs. The
-two most common ways to consume a REST API are:
-
- * JavaScript which is delivered as part of a Web application
- * A program that runs outside the browser
-
-It's important to notice that from ``w3af``'s point of view it's exactly the
-same if the HTTP requests are generated from a browser or any other program,
-thus it is possible to use ``spider_man`` proxy from any REST API client.
-
-Just follow these steps to identify vulnerabilities in a REST API which is
-consumed using a non-browser application:
-
- * Start ``spider_man`` using the steps outlined in the previous section
- * Configure the REST API client to send HTTP requests through ``127.0.0.1:44444`
- * Run the REST API client
- * Stop the ``spider_man`` proxy using ``curl -X GET http://127.7.7.7/spider_man?terminate --proxy http://127.0.0.1:44444``
-
-.. note::
-
-    Since REST APIs can not be crawled ``w3af`` will only audit the HTTP
-    requests captured by the proxy. The manual step(s) where the user teaches
-    ``w3af`` about all the API endpoints and parameters is key to the success
-    of the security audit.
-
 Ignoring specific forms
 -----------------------
 

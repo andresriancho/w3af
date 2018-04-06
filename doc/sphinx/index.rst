@@ -67,6 +67,8 @@ Contents
    advanced-use-cases
    docker
 
+   scan-rest-apis
+
    exploitation
    advanced-exploitation
 

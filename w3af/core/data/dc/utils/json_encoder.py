@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
-option_types.py
+filter_printable.py
 
-Copyright 2008 Andres Riancho
+Copyright 2014 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,30 +20,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-# Numbers
-INT = 'integer'
-POSITIVE_INT = 'positive_integer'
-FLOAT = 'float'
+import json
+import datetime
 
-# Networking
-IP = 'ip'
-PORT = 'port'
-URL = 'url'
-IPPORT = 'ipport'
 
-# HTTP
-QUERY_STRING = 'query_string'
-HEADER = 'header'
+class DateTimeJSONEncoder(json.JSONEncoder):
+    """
+    https://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
 
-# Files
-OUTPUT_FILE = 'output_file'
-INPUT_FILE = 'input_file'
-
-# Misc
-BOOL = 'boolean'
-STRING = 'string'
-LIST = 'list'
-REGEX = 'regex'
-COMBO = 'combo'
-URL_LIST = 'url_list'
-FORM_ID_LIST = 'form_id_list'
+    This small encoder allows us to handle datetime instances when
+    doing "json.dumps()"
+    """
+    def default(self, obj):
+        if isinstance(obj, (datetime.datetime, datetime.date)):
+            return obj.isoformat()
+        else:
+            return super(DateTimeJSONEncoder, self).default(obj)

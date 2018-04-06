@@ -46,20 +46,21 @@ class MultipartContainer(Form):
         return 'Multipart/post'
 
     @staticmethod
-    def is_multipart(headers):
+    def content_type_matches(headers):
         conttype, header_name = headers.iget('content-type', '')
         return conttype.lower().startswith('multipart/form-data')
 
     @classmethod
     def from_postdata(cls, headers, post_data):
-        if not MultipartContainer.is_multipart(headers):
+        if not MultipartContainer.content_type_matches(headers):
             raise ValueError('No multipart content-type header.')
 
         environ = {'REQUEST_METHOD': 'POST'}
 
         try:
             fs = cgi.FieldStorage(fp=StringIO.StringIO(post_data),
-                                  headers=headers.to_dict(), environ=environ)
+                                  headers=headers.to_dict(),
+                                  environ=environ)
         except ValueError:
             raise ValueError('Failed to create MultipartContainer.')
         else:
