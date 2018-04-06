@@ -26,10 +26,10 @@ identify vulnerabilities.
 Using this plugin to scan REST APIs is easy, but here are some tips:
 
  * If you know the Open API specification document URL, include it in ``w3af``'s
- target URLs, this will make sure that the API is found and scanned.
+   target URLs, this will make sure that the API is found and scanned.
 
  * If you have credentials, provide them in ``query_string_auth`` or ``header_auth``,
- this information will be added to all HTTP requests associated with the REST API.
+   this information will be added to all HTTP requests associated with the REST API.
 
 Enabling this plugin even when you don't know if the REST API is documented
 using the Open API specification is also a good idea, since the plugin will
