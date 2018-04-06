@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.data.constants.severity as severity
 
-from nose.plugins.attrib import attr
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.crawl.find_dvcs import find_dvcs
 from w3af.core.controllers.ci.w3af_moth import get_w3af_moth_http
