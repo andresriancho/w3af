@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
@@ -169,16 +168,85 @@ class TestOpenAPINestedModelSpec(PluginTest):
 
 
 class TestOpenAPIRaisesWarningIfNoAuth(PluginTest):
-    pass
+    target_url = 'http://w3af.org/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api'),)}
+        }
+    }
+
+    MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
+                                   NestedModel().get_specification())]
+
+    def test_auth_warning_raised(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        #
+        # Since we configured authentication we should only get one of the Info
+        #
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 2, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
+        info_i = infos[1]
+        self.assertEqual(info_i.get_name(), 'Open API missing credentials')
 
 
 class TestOpenAPIFindsSpecInOtherDirectory(PluginTest):
-    pass
+    target_url = 'http://w3af.org/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api'),)}
+        }
+    }
+
+    MOCK_RESPONSES = [MockResponse('http://w3af.org/api/v2/openapi.json',
+                                   NestedModel().get_specification())]
+
+    def test_auth_warning_raised(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        #
+        # Since we configured authentication we should only get one of the Info
+        #
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 2, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
 
 
-class TestOpenAPIAuthQueryString(PluginTest):
-    pass
+class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
+    target_url = 'http://w3af.org/a/b/c/'
 
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api'),)}
+        }
+    }
 
-class TestOpenAPIAuthHeader(PluginTest):
-    pass
+    MOCK_RESPONSES = [MockResponse('http://w3af.org/a/openapi.json',
+                                   NestedModel().get_specification())]
+
+    def test_auth_warning_raised(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        #
+        # Since we configured authentication we should only get one of the Info
+        #
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 2, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
