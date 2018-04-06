@@ -30,6 +30,7 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.plugins.grep.serialized_object import serialized_object
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
@@ -127,6 +128,20 @@ class TestSerializedObject(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('serialized_object',
                                         'serialized_object')), 0)
 
+    def test_mutated_request(self):
+        # Note that I'm sending the serialized object in reverse string order
+        post_data = 'test=1&obj=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[1])
+        headers = Headers([('Content-Type', 'application/x-www-form-urlencoded')])
+
+        form = URLEncodedForm.from_postdata(headers, post_data)
+        request = FuzzableRequest(self.url, headers=headers, post_data=form)
+        mutants = create_mutants(request, ['x'])
+
+        for mutant in mutants:
+            self.plugin.grep(mutant, self.response)
+
+        self.assertEquals(len(kb.kb.get('serialized_object',
+                                        'serialized_object')), 1)
 
 
 RUN_CONFIGS = {
