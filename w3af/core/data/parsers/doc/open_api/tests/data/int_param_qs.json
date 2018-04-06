@@ -8,7 +8,7 @@
   "host": "w3af.org",
   "basePath": "/api",
   "schemes": [
-    "https"
+    "http"
   ],
   "consumes": [
     "application/json"
