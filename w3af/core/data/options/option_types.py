@@ -30,6 +30,10 @@ PORT = 'port'
 URL = 'url'
 IPPORT = 'ipport'
 
+# HTTP
+QUERY_STRING = 'query_string'
+HEADER = 'header'
+
 # Files
 OUTPUT_FILE = 'output_file'
 INPUT_FILE = 'input_file'
