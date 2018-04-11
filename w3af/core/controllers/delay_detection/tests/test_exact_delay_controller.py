@@ -29,6 +29,7 @@ from w3af.core.controllers.delay_detection.exact_delay import ExactDelay
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
 def generate_delays(wanted_delays, rand_range=(0, 0)):
@@ -44,150 +45,65 @@ def generate_delays(wanted_delays, rand_range=(0, 0)):
 class TestExactDelay(unittest.TestCase):
 
     # Reminder for samples taken at ExactDelayController
-    # DELAY_SECONDS = [12, 8, 15, 20, 4, 4, 4, 6, 3, 8, 4]
+    # DELAY_SECONDS = [8, 4, 9, 5, 14]
 
     TEST_SUITE = [
                   # Basic, very easy to pass
-                  # The three 0.1 are the calls to get_original_time
-                  (True, (0.1, 0.1, 0.1, 12.5,
-                          0.1, 0.1, 0.1, 8.1,
-                          0.1, 0.1, 0.1, 15.1,
-                          0.1, 0.1, 0.1, 20.2,
-                          0.1, 0.1, 0.1, 4.4,
-                          0.1, 0.1, 0.1, 4.2,
-                          0.1, 0.1, 0.1, 4.0,
-                          0.1, 0.1, 0.1, 6.2,
-                          0.1, 0.1, 0.1, 3.3,
-                          0.1, 0.1, 0.1, 8.0,
-                          0.1, 0.1, 0.1, 4.9)),
+                  #
+                  # The three 0.1 are the calls to get_average_rtt_for_mutant
+                  #
+                  # The 0.1 after each delay is the false positive check with
+                  # the reverse payload
+                  (True, (0.1, 0.1, 0.1,
+                          8.1, 0.1,
+                          4.1, 0.1,
+                          9.1, 0.1,
+                          5.1, 0.1,
+                          14.1, 0.1)),
                   
-                  # Basic with a +0.1 delta
-                  (True, (0.1, 0.1, 0.1, 12.1,
-                          0.1, 0.1, 0.1, 8.1,
-                          0.1, 0.1, 0.1, 15.1,
-                          0.1, 0.1, 0.1, 20.1,
-                          0.1, 0.1, 0.1, 4.1,
-                          0.1, 0.1, 0.1, 4.1,
-                          0.1, 0.1, 0.1, 4.1,
-                          0.1, 0.1, 0.1, 6.1,
-                          0.1, 0.1, 0.1, 3.1,
-                          0.1, 0.1, 0.1, 8.1,
-                          0.1, 0.1, 0.1, 4.1)),
+                  # Basic with a +0.0 delta
+                  (True, (0.1, 0.1, 0.1,
+                          8.01, 0.2,
+                          4.01, 0.0,
+                          9.01, 0.3,
+                          5.01, 0.2,
+                          14.01, 0.1)),
                   
                   # Basic without controlled delays
                   (False, [0.1] * 44),
 
                   # Basic with server under heavy load after setup
-                  (False, (0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5,
-                           0, 0, 0, 5)),
+                  # This tests the reverse payload too
+                  (False, (0.1, 0.1, 0.1,
+                           9.01, 9.2,
+                           9.01, 9.0,
+                           9.01, 9.3,
+                           9.01, 9.2,
+                           14.01, 14.1)),
 
-                  # Basic with server under random heavy load after setup
-                  (False, (0, 0, 0, 5,
-                           0, 0, 0, 2,
-                           0, 0, 0, 2,
-                           0, 0, 0, 8,
-                           0, 0, 0, 2,
-                           0, 0, 0, 3,
-                           0, 0, 0, 5,
-                           0, 0, 0, 7,
-                           0, 0, 0, 3,
-                           0, 0, 0, 4,
-                           0, 0, 0, 4)),
+                  # With various delays in get_average_rtt_for_mutant
+                  (True, (3.1, 0.9, 0.1,
+                          8.1, 0.1,
+                          4.1, 0.1,
+                          9.1, 0.1,
+                          5.1, 0.1,
+                          14.1, 0.1)),
 
-                  # Basic with server under random heavy load after setup
-                  (False, (0.1, 0.2, 0.2, 5,
-                           0.1, 0.2, 0.2, 2,
-                           0.1, 0.2, 0.2, 2,
-                           0.1, 0.2, 0.2, 2,
-                           0.1, 0.2, 0.2, 5,
-                           0.1, 0.2, 0.2, 4,
-                           0.1, 0.2, 0.2, 2,
-                           0.1, 0.2, 0.2, 1,
-                           0.1, 0.2, 0.2, 6,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 8)),
-
-                  # Basic with server under random heavy load after setup
-                  (False, (0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7,
-                           0.1, 0.2, 0.2, 7)),
-
-                  # Case explained in this commit:
-                  # https://github.com/andresriancho/w3af/commit/dbef5480db6c09ec3a3493f544c108f61155f75c
-                  (True, (0.1, 0.2, 0.2, 12,
-                          0.1, 0.2, 0.2, 8,
-                          0.1, 0.2, 0.2, 19,
-                          0.1, 0.2, 0.2, 22,
-                          0.1, 0.2, 0.2, 6,
-                          0.1, 0.2, 0.2, 6,
-                          0.1, 0.2, 0.2, 6,
-                          0.1, 0.2, 0.2, 8,
-                          0.1, 0.2, 0.2, 3,
-                          0.1, 0.2, 0.2, 8,
-                          0.1, 0.2, 0.2, 4)),
-
-                  # With various delays in the setup phase
-                  (True, (0, 0.2, 0, 12.8,
-                          0, 0.1, 0.15, 8.1,
-                          0, 0.2, 0, 15.1,
-                          0, 0.2, 0, 20.1,
-                          0, 0.2, 0, 4.1,
-                          0, 0.2, 0, 4.1,
-                          0, 0.2, 0, 4.1,
-                          0, 0.2, 0, 6.1,
-                          0, 0.2, 0, 3.1,
-                          0, 0.2, 0, 8.1,
-                          0, 0.2, 0, 4.1)),
-
-                  (True, (0.1, 0.2, 0.1, 12.9,
-                          0.1, 0.3, 0.1, 8.1,
-                          0.1, 0.2, 0.3, 15.1,
-                          0.15, 0.21, 0, 20.1,
-                          0.5, 0.2, 0, 4.1,
-                          0.5, 0.2, 0, 4.1,
-                          0.3, 0.2, 0.1, 4.1,
-                          0.4, 0.2, 0, 6.1,
-                          0.2, 0.2, 0, 3.1,
-                          0.8, 0.2, 0, 8.1,
-                          0.9, 0.2, 0, 4.1)),
-
-                  (True, (0.2, 0.2, 0.21, 12.3,
-                          0.2, 0.2, 0.22, 8.2,
-                          0.2, 0.2, 0.23, 15.2,
-                          0.2, 0.2, 0.24, 20.2,
-                          0.3, 0.2, 0.24, 4.1,
-                          0.2, 0.2, 0.24, 4.1,
-                          0.2, 0.23, 0.24, 4.1,
-                          0.6, 0.2, 0.28, 6.1,
-                          0.9, 1.2, 0.3, 3.1,
-                          1.0, 0.2, 0.3, 8.1,
-                          1.2, 0.2, 0.4, 4.1))
+                  (True, (3.1, 44.9, 0.1,
+                          8.1, 0.1,
+                          4.1, 0.1,
+                          9.1, 0.1,
+                          5.1, 0.1,
+                          14.1, 0.1)),
     ]
     
     def test_delay_controlled(self):
         
         for expected_result, delays in self.TEST_SUITE:
-            
-            mock_uri_opener = Mock()
+            urllib = ExtendedUrllib()
             side_effect = generate_delays(delays)
-            mock_uri_opener.send_mutant = MagicMock(side_effect=side_effect)
+            urllib.send_mutant = MagicMock(side_effect=side_effect)
+
             delay_obj = ExactDelay('sleep(%s)')
             
             url = URL('http://moth/?id=1')
@@ -196,15 +112,16 @@ class TestExactDelay(unittest.TestCase):
             mutant.set_dc(url.querystring)
             mutant.set_token(('id', 0))
             
-            ed = ExactDelayController(mutant, delay_obj, mock_uri_opener)
+            ed = ExactDelayController(mutant, delay_obj, urllib)
             controlled, responses = ed.delay_is_controlled()
             self.assertEqual(expected_result, controlled, delays)
     
     def test_delay_controlled_random(self):
         for expected_result, delays in self.TEST_SUITE:
-            mock_uri_opener = Mock()
+            urllib = ExtendedUrllib()
             side_effect = generate_delays(delays, rand_range=(0, 2))
-            mock_uri_opener.send_mutant = MagicMock(side_effect=side_effect)
+            urllib.send_mutant = MagicMock(side_effect=side_effect)
+
             delay_obj = ExactDelay('sleep(%s)')
             
             url = URL('http://moth/?id=1')
@@ -213,7 +130,7 @@ class TestExactDelay(unittest.TestCase):
             mutant.set_dc(url.querystring)
             mutant.set_token(('id', 0))
             
-            ed = ExactDelayController(mutant, delay_obj, mock_uri_opener)
+            ed = ExactDelayController(mutant, delay_obj, urllib)
             controlled, responses = ed.delay_is_controlled()
             
             # This is where we change from test_delay_controlled, the basic
