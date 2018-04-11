@@ -148,6 +148,20 @@ class text_file(OutputPlugin):
         if self._http is not None:
             self._http.flush()
 
+    def _clean_string_for_file(self, string_to_clean):
+        """
+        :param string_to_clean: A string that should be cleaned before using
+                                it in a message object.
+        """
+        # https://github.com/andresriancho/w3af/issues/3586
+        if string_to_clean is None:
+            return ''
+
+        # This will escape the string using \x00-style escapes, which is much
+        # better than just printing null bytes (or any other non-printable char)
+        # to the file
+        return repr(string_to_clean)[1:-1]
+
     def write(self, message, log_type, new_line=True, flush=False):
         """
         Method that writes stuff to the text_file.
@@ -160,7 +174,7 @@ class text_file(OutputPlugin):
             self._init()
 
         to_print = str(message)
-        to_print = self._clean_string(to_print)
+        to_print = self._clean_string_for_file(to_print)
 
         if new_line:
             to_print += '\n'
