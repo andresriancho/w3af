@@ -348,6 +348,9 @@ class find_dvcs(CrawlPlugin):
         :param body: The contents of the file to analyze.
         :return: A list of file names found.
         """
+        if body is None:
+            return
+        
         filenames = set()
         for line in body.split('\n'):
 
