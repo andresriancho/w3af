@@ -23,7 +23,6 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestOSCommanding(PluginTest):
-
     target_url = get_moth_http('/audit/os_commanding/')
 
     _run_configs = {
@@ -55,5 +54,5 @@ class TestOSCommanding(PluginTest):
             ('blind_osc.py', 'cmd')
         ]
 
-        self.assertAllVulnNamesEqual("OS commanding vulnerability", vulns)
+        self.assertAllVulnNamesEqual('OS commanding vulnerability', vulns)
         self.assertExpectedVulnsFound(EXPECTED, vulns)
