@@ -38,7 +38,15 @@ DEFAULT_TIMEOUT = 6
 # Max timeout that can be set by the framework's socket timeout auto-adjust
 # feature. This will stop scans that are run on *very* slow applications instead
 # of just trying to scan them at awfully slow speeds
-MAX_TIMEOUT = 120
+MAX_TIMEOUT = 60
+
+# Min timeout that can be set for a socket connection.
+#
+# Anything lower than this will most likely cause unnecessary HTTP timeouts
+# when the server has a temporary performance issue: site always answers in
+# 0.3 seconds but the instance handling our request is running a report in
+# another thread and answered in 2.1 seconds
+MIN_TIMEOUT = 3
 
 # Run the timeout adjustment every N HTTP requests
 TIMEOUT_ADJUST_LIMIT = 50

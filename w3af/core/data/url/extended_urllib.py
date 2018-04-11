@@ -64,7 +64,8 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           TIMEOUT_MIN, DEFAULT_TIMEOUT,
                                           ACCEPTABLE_ERROR_RATE,
                                           ERROR_DELAY_LIMIT,
-                                          MAX_TIMEOUT)
+                                          MAX_TIMEOUT,
+                                          MIN_TIMEOUT)
 
 
 class ExtendedUrllib(object):
@@ -182,6 +183,7 @@ class ExtendedUrllib(object):
         timeout adjust feature in extended_urllib.py
         """
         timeout = min(MAX_TIMEOUT, timeout)
+        timeout = max(MIN_TIMEOUT, timeout)
         msg = 'Updating socket timeout for %s from %.2f to %.2f seconds'
         om.out.debug(msg % (host, self.get_timeout(host), timeout))
 
@@ -1253,7 +1255,7 @@ class ExtendedUrllib(object):
         # requests at the same time. Those requests failed due to the
         # aggressive timeout which lead to multiple sequential failures
         #
-        # When multiple failures are detected w3af tries to check if
+        # When multiple failures are detected, w3af tries to check if
         # the remote site is still up using this method. If we don't
         # increase the timeout like this we'll still use the incorrectly
         # set timeout, which would (one more time) trigger an error.
