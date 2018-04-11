@@ -180,6 +180,7 @@ def show_extended_urllib_error_rate(scan):
 
     if not error_rate:
         print('No error rate information found')
+        print('')
         return
 
     print('Extended URL library error rate')
