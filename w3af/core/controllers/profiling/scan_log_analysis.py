@@ -46,9 +46,9 @@ SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) sec
 
 EXTENDED_URLLIB_ERRORS_RE = re.compile('ExtendedUrllib error rate is at (.*?)%')
 
-GREP_DISK_DICT = re.compile('The current Grep DiskDict size is (\d*).')
-AUDITOR_DISK_DICT = re.compile('The current Auditor DiskDict size is (\d*).')
-CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfra DiskDict size is (\d*).')
+GREP_DISK_DICT = re.compile('The current GrepIn DiskDict size is (\d*).')
+AUDITOR_DISK_DICT = re.compile('The current AuditorIn DiskDict size is (\d*).')
+CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfraIn DiskDict size is (\d*).')
 
 RTT_RE = re.compile('\(.*?rtt=(.*?),.*\)')
 
@@ -328,6 +328,7 @@ def show_parser_errors(scan):
 
     if not memory_errors and not timeout_errors:
         print('No parser errors found')
+        print('')
         return
 
     print('Parser errors')
