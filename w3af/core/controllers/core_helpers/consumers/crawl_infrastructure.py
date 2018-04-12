@@ -128,13 +128,13 @@ class crawl_infrastructure(BaseConsumer):
         """
         End plugins
         """
-        if plugin is None:
-            to_teardown = self._consumer_plugins
-        else:
+        to_teardown = self._consumer_plugins
+
+        if plugin is not None:
             to_teardown = [plugin]
 
-        # When we disable a plugin, we call .end() , so no need to call the
-        # same method twice
+        # When we disable a plugin because it raised a RunOnceException,
+        # we call .end(), so no need to call the same method twice
         to_teardown = set(to_teardown) - self._disabled_plugins
 
         msg = 'Starting CrawlInfra consumer _teardown() with %s plugins.'
@@ -164,10 +164,14 @@ class crawl_infrastructure(BaseConsumer):
                            ' unhandled exception was found.')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-                self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)
+                self.handle_exception('crawl', plugin.get_name(), 'plugin.end()', e)
+
             else:
                 msg_fmt = 'Spent %.2f seconds running %s.end().'
                 self._log_end_took(msg_fmt, start_time, plugin)
+
+            finally:
+                self._disabled_plugins.add(plugin)
 
         om.out.debug('Finished CrawlInfra consumer _teardown().')
 
@@ -367,8 +371,7 @@ class crawl_infrastructure(BaseConsumer):
 
                 # Add it to the list of disabled plugins, and run the end()
                 # method
-                self._disabled_plugins.add(plugin_to_remove)
-                self._teardown(plugin_to_remove)
+                self._teardown(plugin=plugin_to_remove)
 
                 # TODO: unittest that they are really disabled after adding them
                 #       to the disabled_plugins set.
