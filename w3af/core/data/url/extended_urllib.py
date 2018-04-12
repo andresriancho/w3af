@@ -31,6 +31,7 @@ import OpenSSL
 
 from contextlib import contextmanager
 from collections import deque
+from httplib import BadStatusLine
 
 # pylint: disable=E0401
 from darts.lib.utils.lru import SynchronizedLRUDict
@@ -1063,7 +1064,7 @@ class ExtendedUrllib(object):
 
         # Don't make a lot of noise on URLTimeoutError which is pretty common
         # and properly handled by this library
-        no_traceback_for = (URLTimeoutError, ConnectionPoolException)
+        no_traceback_for = (URLTimeoutError, ConnectionPoolException, BadStatusLine)
         if not isinstance(exception, no_traceback_for):
             msg = 'Traceback for this error: %s'
             om.out.debug(msg % traceback.format_exc())
@@ -1264,9 +1265,10 @@ class ExtendedUrllib(object):
         timeout = self.get_timeout(host) * 4
         self.set_timeout(timeout, host)
 
-        req = HTTPRequest(root_url, cookies=True, cache=False,
-                          error_handling=False, method='GET', retries=0,
-                          timeout=timeout)
+        req = HTTPRequest(root_url,
+                          cookies=True, cache=False,
+                          error_handling=False, method='GET',
+                          retries=0, timeout=timeout)
         req = self.add_headers(req)
 
         try:
