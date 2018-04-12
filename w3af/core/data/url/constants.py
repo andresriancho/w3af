@@ -61,9 +61,12 @@ MAX_TIMEOUT = 60
 MIN_TIMEOUT = 3
 
 # Run the timeout adjustment every N HTTP requests
-TIMEOUT_ADJUST_LIMIT = 50
+TIMEOUT_ADJUST_LIMIT = 15
 
 # Used to calculate the timeout based on the average response time from the
-# remote site. timeout = average_response_time * TIMEOUT_MULT_CONST
+# remote site:
+#
+#   timeout = average_response_time * TIMEOUT_MULT_CONST
+#
 # https://github.com/andresriancho/w3af/issues/8698
 TIMEOUT_MULT_CONST = 7.5
