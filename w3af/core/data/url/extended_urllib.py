@@ -62,7 +62,7 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           SOCKET_ERROR_DELAY,
                                           TIMEOUT_MULT_CONST,
                                           TIMEOUT_ADJUST_LIMIT,
-                                          TIMEOUT_MIN, DEFAULT_TIMEOUT,
+                                          DEFAULT_TIMEOUT,
                                           ACCEPTABLE_ERROR_RATE,
                                           ERROR_DELAY_LIMIT,
                                           MAX_TIMEOUT,
@@ -254,7 +254,6 @@ class ExtendedUrllib(object):
             om.out.debug(msg % (num_samples, self.get_timeout(host)))
         else:
             timeout = average_rtt * TIMEOUT_MULT_CONST
-            timeout = max(timeout, TIMEOUT_MIN)
             self.set_timeout(timeout, host)
 
     def get_average_rtt(self, count=TIMEOUT_ADJUST_LIMIT, host=None):
