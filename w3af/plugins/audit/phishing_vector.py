@@ -38,18 +38,15 @@ class phishing_vector(AuditPlugin):
 
     TAGS = ('iframe', 'frame')
 
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
-        # I test this with different URL handlers because the developer may have
-        # blacklisted http:// and https:// but missed ftp://.
-        #
-        # I also use hTtp instead of http because I want to evade some (stupid)
-        # case sensitive filters
-        self._test_urls = ('hTtp://w3af.org/',
-                           'htTps://w3af.org/',
-                           'fTp://w3af.org/',
-                           '//w3af.org')
+    # I test this with different URL handlers because the developer may have
+    # blacklisted http:// and https:// but missed ftp://.
+    #
+    # I also use hTtp instead of http because I want to evade some (stupid)
+    # case sensitive filters
+    TEST_URLS = ('hTtp://w3af.org/',
+                 'htTps://w3af.org/',
+                 'fTp://w3af.org/',
+                 '//w3af.org')
 
     def audit(self, freq, orig_response, debugging_id):
         """
@@ -59,7 +56,7 @@ class phishing_vector(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
-        mutants = create_mutants(freq, self._test_urls)
+        mutants = create_mutants(freq, self.TEST_URLS)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -81,7 +78,7 @@ class phishing_vector(AuditPlugin):
             if src_attr is None:
                 continue
 
-            for url in self._test_urls:
+            for url in self.TEST_URLS:
                 if not src_attr.startswith(url):
                     continue
 
