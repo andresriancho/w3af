@@ -241,7 +241,7 @@ class ExtendedUrllib(object):
         :see: https://github.com/andresriancho/w3af/issues/8698
         :return: None, we adjust the value at the "settings" attribute
         """
-        if not self._should_auto_adjust_now():
+        if not self._should_auto_adjust_timeout_now():
             return
 
         host = request.get_host()
@@ -284,7 +284,7 @@ class ExtendedUrllib(object):
             average_rtt = float(rtt_sum) / add_count
             return average_rtt, add_count
 
-    def _should_auto_adjust_now(self):
+    def _should_auto_adjust_timeout_now(self):
         """
         :return: True if we need to auto adjust the timeout now
         """
