@@ -241,16 +241,30 @@ class BaseConsumer(Process):
         """
         self._tasks_in_progress[function_id] = 1
 
-    def in_queue_put(self, work):
+    def in_queue_put(self, work, force=False):
+        """
+        Add work to the queue
+
+        :param work: Work item
+        :param force: Add to the queue even when the poison pill was already
+                      sent, this should NEVER be used unless you know what
+                      you are doing!
+
+        :return: True if the task was added to the queue
+        """
+        if work is None:
+            return
+
         # Force the queue not to accept anything after POISON_PILL is sent.
-        # If anything is put to the queue after POISON_PILL, a race condition might happens
-        #    and the consumer might never stop
+        #
+        # If anything is put to the queue after POISON_PILL, a race condition
+        # might happen and the consumer might never stop
+        #
         # https://github.com/andresriancho/w3af/pull/16063
-        if self._poison_pill_sent:
+        if self._poison_pill_sent and not force:
             return
         
-        if work is not None:
-            return self.in_queue.put(work)
+        return self.in_queue.put(work)
 
     def in_queue_put_iter(self, work_iter):
         if work_iter is not None:
@@ -264,8 +278,10 @@ class BaseConsumer(Process):
         :return: True if the in_queue_size is != 0 OR if one of the pool workers
                  is still doing something that might impact on out_queue.
         """
-        if self.in_queue_size() > 0 \
-        or self.out_queue.qsize() > 0:
+        if self.in_queue_size() > 0:
+            return True
+
+        if self.out_queue.qsize() > 0:
             return True
 
         if len(self._tasks_in_progress) > 0:
@@ -308,12 +324,12 @@ class BaseConsumer(Process):
             return
 
         if not self._poison_pill_sent:
-            # send the poison pill
-            self.in_queue_put(POISON_PILL)
-
             # https://github.com/andresriancho/w3af/issues/9587
             # let put() know that all new tasks should be ignored
             self._poison_pill_sent = True
+
+            # send the poison pill
+            self.in_queue_put(POISON_PILL, force=True)
 
         self.in_queue.join()
 
