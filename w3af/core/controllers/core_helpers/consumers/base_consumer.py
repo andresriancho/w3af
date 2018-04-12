@@ -169,17 +169,18 @@ class BaseConsumer(Process):
 
             if work_unit == POISON_PILL:
 
-                # Close the pool and wait for everyone to finish
-                self._threadpool.close()
-                self._threadpool.join()
-                self._threadpool = None
+                try:
+                    # Close the pool and wait for everyone to finish
+                    self._threadpool.close()
+                    self._threadpool.join()
+                    self._threadpool = None
 
-                self._teardown()
-
-                # Finish this consumer and everyone consuming the output
-                self._out_queue.put(POISON_PILL)
-                self.in_queue.task_done()
-                break
+                    self._teardown()
+                finally:
+                    # Finish this consumer and everyone consuming the output
+                    self._out_queue.put(POISON_PILL)
+                    self.in_queue.task_done()
+                    break
 
             else:
                 # pylint: disable=E1120

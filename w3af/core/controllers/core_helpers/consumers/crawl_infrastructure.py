@@ -91,34 +91,30 @@ class crawl_infrastructure(BaseConsumer):
                 try:
                     self._route_all_plugin_results()
                 except KeyboardInterrupt:
-                    self.in_queue.task_done()
                     continue
                 # pylint: enable=E1120
             else:
                 if work_unit == POISON_PILL:
 
-                    # Close the pool and wait for everyone to finish
-                    self._threadpool.close()
-                    self._threadpool.join()
-                    self._threadpool = None
+                    try:
+                        # Close the pool and wait for everyone to finish
+                        self._threadpool.close()
+                        self._threadpool.join()
+                        self._threadpool = None
 
-                    self._running = False
-                    self._teardown()
-
-                    # Finish this consumer and everyone consuming the output
-                    self._out_queue.put(POISON_PILL)
-                    self.in_queue.task_done()
-                    break
+                        self._running = False
+                        self._teardown()
+                    finally:
+                        # Finish this consumer and everyone consuming the output
+                        self._out_queue.put(POISON_PILL)
+                        self.in_queue.task_done()
+                        break
 
                 else:
                     # With specific error/success handling just for debugging
                     try:
                         self._consume(work_unit)
-                    except KeyboardInterrupt:
-                        self.in_queue.task_done()
-                    except:
-                        self.in_queue.task_done()
-                    else:
+                    finally:
                         self.in_queue.task_done()
 
                     # Free memory
