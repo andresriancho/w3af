@@ -1148,8 +1148,26 @@ class ExtendedUrllib(object):
         """
         reason = get_exception_reason(error)
         reason = reason or str(error)
-        self._last_responses.append(ResponseMeta(False, reason,
-                                                 host=request.get_host()))
+
+        host = request.get_host()
+
+        # The HTTP request failed, this most likely means that we received a
+        # timeout or some other network / protocol error.
+        #
+        # We want to save the ResponseMeta with some RTT that indicates that
+        # this (potential) timeout happen. Se we get the current timeout and
+        # use it as the RTT parameter
+        #
+        # This is not perfect, BUT is better than not specifying any RTT.
+        #
+        # Specifying the `rtt` here will allow `get_average_rtt` to take these
+        # errors into account when calculating the RTT
+        rtt = self.get_timeout(host)
+
+        self._last_responses.append(ResponseMeta(False,
+                                                 reason,
+                                                 host=host,
+                                                 rtt=rtt))
 
         self._log_error_rate()
 
