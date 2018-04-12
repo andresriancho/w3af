@@ -311,12 +311,21 @@ class BaseConsumer(Process):
     def in_queue_size(self):
         return self.in_queue.qsize()
 
+    def _debug_32(self, message):
+        fmt = '[#32 %s] %s'
+        om.out.debug(fmt % (self._thread_name, message))
+
     def join(self):
         """
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         """
         start_time = time.time()
+
+        # Remove these lines after debugging #32
+        self._debug_32('is_alive: %s' % self.is_alive())
+        self._debug_32('poison_pill_sent: %s' % self._poison_pill_sent)
+        self._debug_32('threadpool: %s' % self._threadpool)
 
         if not self.is_alive():
             # This return has a long history, follow it here:
@@ -331,11 +340,17 @@ class BaseConsumer(Process):
             # send the poison pill
             self.in_queue_put(POISON_PILL, force=True)
 
+        self._debug_32('before self.in_queue.join()')
+
         self.in_queue.join()
+
+        self._debug_32('after self.in_queue.join()')
 
         if self._threadpool is not None:
             self._threadpool.close()
             self._threadpool.join()
+
+        self._debug_32('after self._threadpool.join()')
 
         spent_time = time.time() - start_time
         om.out.debug('%s took %.2f seconds to join()' % (self._thread_name, spent_time))
