@@ -66,7 +66,9 @@ from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
                                           ACCEPTABLE_ERROR_RATE,
                                           ERROR_DELAY_LIMIT,
                                           MAX_TIMEOUT,
-                                          MIN_TIMEOUT)
+                                          MIN_TIMEOUT,
+                                          TIMEOUT_INCREASE_MULT,
+                                          TIMEOUT_UPDATE_ELAPSED_MIN)
 
 
 class ExtendedUrllib(object):
@@ -90,9 +92,11 @@ class ExtendedUrllib(object):
         self._last_responses.extend([ResponseMeta(True, SUCCESS)] * 100)
         self._count_lock = threading.RLock()
 
-        # For rate limiting
+        # For rate limiting and timeouts
         self._rate_limit_last_time_called = 0.0
         self._rate_limit_lock = threading.RLock()
+        self._adjust_timeout_lock = threading.RLock()
+        self._adjust_timeout_last_call = 0.0
 
         # Keep track of sum(rtt) for each debugging_id
         self._rtt_sum_debugging_id = SynchronizedLRUDict(capacity=128)
@@ -183,8 +187,10 @@ class ExtendedUrllib(object):
         Sets the timeout to use in HTTP requests, usually called by the auto
         timeout adjust feature in extended_urllib.py
         """
+        # Set the min and max limits
         timeout = min(MAX_TIMEOUT, timeout)
         timeout = max(MIN_TIMEOUT, timeout)
+
         msg = 'Updating socket timeout for %s from %.2f to %.2f seconds'
         om.out.debug(msg % (host, self.get_timeout(host), timeout))
 
@@ -241,8 +247,9 @@ class ExtendedUrllib(object):
         :see: https://github.com/andresriancho/w3af/issues/8698
         :return: None, we adjust the value at the "settings" attribute
         """
-        if not self._should_auto_adjust_timeout_now():
-            return
+        with self._adjust_timeout_lock:
+            if not self._should_auto_adjust_timeout_now():
+                return
 
         host = request.get_host()
         average_rtt, num_samples = self.get_average_rtt(TIMEOUT_ADJUST_LIMIT,
@@ -255,6 +262,35 @@ class ExtendedUrllib(object):
         else:
             timeout = average_rtt * TIMEOUT_MULT_CONST
             self.set_timeout(timeout, host)
+
+    def _increase_timeout_on_error(self, request, exception):
+        """
+        We get here when the framework found an error like connection reset,
+        socket timeout, etc.
+
+        If we got a connection reset / timeout error, then we know that we
+        have to "slow down". The remote server might be having high loads,
+        the network could be busy, etc.
+
+        We just increase the timeout to give the next connections / requests
+        more time to wait for the response.
+
+        :param request: The HTTP request that triggered the error
+        :param exception: The original exception that lead us here
+        :return: None
+        """
+        # Get current timeout
+        host = request.get_host()
+        timeout = self.get_timeout(host)
+
+        # We increase it without a limit because the limit is set in set_timeout
+        timeout *= TIMEOUT_INCREASE_MULT
+
+        msg = 'Will increase timeout to %.2f seconds after HTTP socket error.'
+        om.out.debug(msg % timeout)
+
+        # Set new timeout
+        self.set_timeout(timeout, host)
 
     def get_average_rtt(self, count=TIMEOUT_ADJUST_LIMIT, host=None):
         """
@@ -295,10 +331,15 @@ class ExtendedUrllib(object):
         if self.get_total_requests() == 0:
             return False
 
-        if self.get_total_requests() % TIMEOUT_ADJUST_LIMIT == 0:
-            return True
+        if self.get_total_requests() % TIMEOUT_ADJUST_LIMIT != 0:
+            return False
 
-        return False
+        elapsed = time.clock() - self._adjust_timeout_last_call
+        if elapsed < TIMEOUT_UPDATE_ELAPSED_MIN:
+            return False
+
+        self._adjust_timeout_last_call = time.clock()
+        return True
 
     def get_total_requests(self):
         """
@@ -900,7 +941,8 @@ class ExtendedUrllib(object):
                 URLTimeoutError,
                 ConnectionPoolException,
                 OpenSSL.SSL.SysCallError,
-                OpenSSL.SSL.ZeroReturnError), e:
+                OpenSSL.SSL.ZeroReturnError,
+                BadStatusLine), e:
             return self._handle_send_socket_error(req, e, grep, original_url)
         
         except (urllib2.URLError, httplib.HTTPException, HTTPRequestException), e:
@@ -1015,6 +1057,8 @@ class ExtendedUrllib(object):
 
         Our strategy for handling these errors is simple
         """
+        self._increase_timeout_on_error(req, exception)
+
         return self._generic_send_error_handler(req, exception, grep,
                                                 original_url)
         
@@ -1035,22 +1079,10 @@ class ExtendedUrllib(object):
             error_str = get_exception_reason(exception) or str(exception)
             raise HTTPRequestException(error_str, request=req)
 
-        # Log the error
-        msg = u'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
-        om.out.debug(msg % (req.get_method(), original_url, exception))
-
-        # Don't make a lot of noise on URLTimeoutError which is pretty common
-        # and properly handled by this library
-        no_traceback_for = (URLTimeoutError, ConnectionPoolException, BadStatusLine)
-        if not isinstance(exception, no_traceback_for):
-            msg = 'Traceback for this error: %s'
-            om.out.debug(msg % traceback.format_exc())
-
         with self._count_lock:
-            self._log_failed_response(exception, req)
+            self._log_failed_response(req, exception, original_url)
 
-            should_stop_scan = self._should_stop_scan(req)
-            if should_stop_scan:
+            if self._should_stop_scan(req):
                 self._handle_error_count_exceeded(exception)
 
         self._handle_worker_pool_size()
@@ -1139,15 +1171,28 @@ class ExtendedUrllib(object):
             error_str = get_exception_reason(url_error) or str(url_error)
             raise HTTPRequestException(error_str, request=req)
 
-    def _log_failed_response(self, error, request):
+    def _log_failed_response(self, request, exception, original_url):
         """
         Add the failed response to the self._last_responses log, and if we got a
         lot of failures raise a "ScanMustStopException" subtype.
 
-        :param error: Exception object.
+        :param exception: Exception object.
         """
-        reason = get_exception_reason(error)
-        reason = reason or str(error)
+        # Log the exception
+        msg = u'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
+        om.out.debug(msg % (request.get_method(), original_url, exception))
+
+        # Don't make a lot of noise on URLTimeoutError which is pretty common
+        # and properly handled by this library
+        no_traceback_for = (URLTimeoutError, ConnectionPoolException, BadStatusLine)
+        if not isinstance(exception, no_traceback_for):
+            msg = 'Traceback for this error: %s'
+            om.out.debug(msg % traceback.format_exc())
+
+        # Now we save the error to self._last_responses for tracking and
+        # statistics
+        reason = get_exception_reason(exception)
+        reason = reason or str(exception)
 
         host = request.get_host()
 

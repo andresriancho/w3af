@@ -21,7 +21,7 @@ USER_AGENT = ('Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1;'
 
 # The error rate is multiplied by SOCKET_ERROR_DELAY to get the real delay time
 # in seconds.
-SOCKET_ERROR_DELAY = 0.15
+SOCKET_ERROR_DELAY = 0.2
 
 # We want to pause on errors in order to allow the remote end to recover if
 # we're flooding it, but some errors are allowed
@@ -70,3 +70,10 @@ TIMEOUT_ADJUST_LIMIT = 15
 #
 # https://github.com/andresriancho/w3af/issues/8698
 TIMEOUT_MULT_CONST = 7.5
+
+# How much to increase the timeout setting after a timeout error has happen
+TIMEOUT_INCREASE_MULT = 1.1
+
+# It doesn't make sense to update the timeout 3 times per second. So we
+# require at least this time to happen between adjustments:
+TIMEOUT_UPDATE_ELAPSED_MIN = 3.0
