@@ -281,10 +281,25 @@ class KeepAliveHandler(object):
 
         return resp
 
+    def _update_socket_timeout(self, conn, request):
+        """
+        If the HttpConnection instance has an active socket connection,
+        then we update the timeout.
+
+        :param conn: The HTTPConnection
+        :param request: The new request to be sent via the connection
+        :return: None, we just update conn
+        """
+        if conn.sock is None:
+            return
+
+        conn.sock.settimeout(request.get_timeout())
+
     def _start_transaction(self, conn, req):
         """
         The real workhorse.
         """
+        self._update_socket_timeout(conn, req)
         try:
             conn.putrequest(req.get_method(), req.get_selector(),
                             skip_host=1, skip_accept_encoding=1)
