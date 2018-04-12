@@ -119,7 +119,10 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def get_timeout(self):
         return self.timeout
-    
+
+    def set_timeout(self, timeout):
+        self.timeout = timeout
+
     def to_dict(self):
         serializable_dict = {}
         sdict = serializable_dict

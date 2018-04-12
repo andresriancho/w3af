@@ -1143,6 +1143,12 @@ class ExtendedUrllib(object):
         if req.retries_left > 0:
             msg = 'Re-sending request "%s" after initial exception: "%s"'
             om.out.debug(msg % (req, url_error))
+
+            # Before sending it again we update the timeout, which could have
+            # changed because of the error we just found
+            host = req.get_uri().get_domain()
+            req.set_timeout(self.get_timeout(host))
+
             return self.send(req, grep=grep)
         
         else:
