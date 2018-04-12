@@ -89,10 +89,10 @@ class seed(Process):
                 msg = 'The target URL: "%s" is unreachable. Exception: "%s".'
                 om.out.error(msg % (url, hre))
             except Exception, e:
-                msg = 'The target URL: "%s" is unreachable because of an' \
-                      ' unhandled exception. Error description: "%s". See' \
-                      ' debug output for more information.\n' \
-                      'Traceback for this error:\n%s'
+                msg = ('The target URL: "%s" is unreachable because of an'
+                       ' unhandled exception. Error description: "%s". See'
+                       ' debug output for more information.\n'
+                       'Traceback for this error:\n%s')
                 om.out.error(msg % (url, e, traceback.format_exc()))
             else:
                 _seed = FuzzableRequest(response.get_uri())
