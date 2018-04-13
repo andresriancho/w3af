@@ -41,7 +41,7 @@ class TestPhishingVector(PluginTest):
         },
     }
 
-    def test_found_redirect(self):
+    def test_found_phishing_vector(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
