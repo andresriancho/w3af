@@ -46,14 +46,26 @@ class robots_txt(CrawlPlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         """
-        dirs = []
-
         base_url = fuzzable_request.get_url().base_url()
         robots_url = base_url.url_join('robots.txt')
         http_response = self._uri_opener.GET(robots_url, cache=True)
 
         if is_404(http_response):
             return
+
+        # Send the robots.txt file to the core, even if we don't find anything
+        # in it, it might be interesting to other plugins
+        self.worker_pool.map(self.http_get_and_parse, [robots_url])
+
+        urls = self._extract_urls(base_url, http_response)
+        if not urls:
+            # This is most likely a is_404() false positive, the file might
+            # exist but is not a valid robots.txt, or it has all comments,
+            # etc.
+            return
+
+        # Send the new knowledge to the core!
+        self.worker_pool.map(self.http_get_and_parse, urls)
 
         # Save it to the kb!
         desc = ('A robots.txt file was found at: "%s", this file might'
@@ -68,27 +80,43 @@ class robots_txt(CrawlPlugin):
         kb.kb.append(self, 'robots.txt', i)
         om.out.information(i.get_desc())
 
-        # Work with it...
-        dirs.append(robots_url)
+    def _extract_urls(self, base_url, http_response):
+        """
+        Extract the entries from the robots.txt response
+
+        :param base_url: URL with the base path
+        :param http_response: HTTP response with robots.txt
+        :return: URLs found in the robots.txt file
+        """
+        dirs = []
+
         for line in http_response.get_body().split('\n'):
 
             line = line.strip()
 
-            if len(line) > 0 and line[0] != '#' and \
-                (line.upper().find('ALLOW') == 0 or
-                 line.upper().find('DISALLOW') == 0):
+            if not len(line):
+                continue
 
-                url = line[line.find(':') + 1:]
-                url = url.strip()
-                try:
-                    url = base_url.url_join(url)
-                except:
-                    # Simply ignore the invalid URL
-                    pass
-                else:
-                    dirs.append(url)
+            if line[0] == '#':
+                continue
 
-        self.worker_pool.map(self.http_get_and_parse, dirs)
+            if 'ALLOW' not in line.upper():
+                continue
+
+            if ':' not in line.upper():
+                continue
+
+            url = line[line.find(':') + 1:]
+            url = url.strip()
+            try:
+                url = base_url.url_join(url)
+            except:
+                # Simply ignore the invalid URL
+                pass
+            else:
+                dirs.append(url)
+
+        return dirs
 
     def get_long_desc(self):
         """
