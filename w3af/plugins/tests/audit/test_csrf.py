@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from nose.plugins.attrib import attr
-
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.audit.csrf import csrf
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -33,11 +31,12 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.controllers.ci.w3af_moth import get_w3af_moth_http
 
 
 class TestCSRF(PluginTest):
 
-    target_url = 'http://moth/w3af/audit/csrf/'
+    target_url = get_w3af_moth_http('/w3af/audit/csrf/')
 
     _run_configs = {
         'cfg': {
@@ -60,14 +59,14 @@ class TestCSRF(PluginTest):
         self.uri_opener = ExtendedUrllib()
         self.csrf_plugin.set_url_opener(self.uri_opener)
 
-    @attr('ci_fails')
     def test_found_csrf(self):
-        EXPECTED = [
-            ('/w3af/audit/csrf/vulnerable/buy.php'),
-            ('/w3af/audit/csrf/vulnerable-rnd/buy.php'),
-            #@see: https://github.com/andresriancho/w3af/issues/120
-            #('/w3af/audit/csrf/vulnerable-token-ignored/buy.php'),
-            ('/w3af/audit/csrf/link-vote/vote.php')
+        expected = [
+            '/w3af/audit/csrf/vulnerable/buy.php',
+            '/w3af/audit/csrf/vulnerable-rnd/buy.php',
+            '/w3af/audit/csrf/link-vote/vote.php',
+
+            # See https://github.com/andresriancho/w3af/issues/120
+            # '/w3af/audit/csrf/vulnerable-token-ignored/buy.php',
         ]
         
         # Run the scan
@@ -77,7 +76,7 @@ class TestCSRF(PluginTest):
         # Assert the general results
         vulns = self.kb.get('csrf', 'csrf')
         
-        self.assertEquals(set(EXPECTED),
+        self.assertEquals(set(expected),
                           set([v.get_url().get_path() for v in vulns]))
         self.assertTrue(
             all(['CSRF vulnerability' == v.get_name() for v in vulns]))
@@ -98,28 +97,31 @@ class TestCSRF(PluginTest):
         r2 = HTTPResponse(200, 'a', headers, url, url)
         self.assertTrue(self.csrf_plugin._is_resp_equal(r1, r2))
 
-    @attr('ci_fails')
     def test_is_suitable(self):
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+
+        res = HTTPResponse(200, 'body', headers, url, url)
+
         # False because no cookie is set and no QS nor post-data
         url = URL('http://moth/')
         req = FuzzableRequest(url, method='GET')
-        suitable = self.csrf_plugin._is_suitable(req)
+        suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertFalse(suitable)
 
         # False because no cookie is set
         url = URL('http://moth/?id=3')
         req = FuzzableRequest(url, method='GET')
-        suitable = self.csrf_plugin._is_suitable(req)
+        suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertFalse(suitable)
 
-        url_sends_cookie = URL(
-            'http://moth/w3af/core/cookie_handler/set-cookie.php')
+        url_sends_cookie = URL(get_w3af_moth_http('/w3af/core/cookie_handler/set-cookie.php'))
         self.uri_opener.GET(url_sends_cookie)
         
         # Still false because it doesn't have any QS or POST data
         url = URL('http://moth/')
         req = FuzzableRequest(url, method='GET')
-        suitable = self.csrf_plugin._is_suitable(req)
+        suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertFalse(suitable)
 
         self.csrf_plugin._strict_mode = True
@@ -127,13 +129,13 @@ class TestCSRF(PluginTest):
         # Still false because of the strict mode
         url = URL('http://moth/?id=3')
         req = FuzzableRequest(url, method='GET')
-        suitable = self.csrf_plugin._is_suitable(req)
+        suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertFalse(suitable)
 
         # False, no items in post-data
         url = URL('http://moth/')
         req = FuzzableRequest(url, method='POST', post_data=URLEncodedForm())
-        suitable = self.csrf_plugin._is_suitable(req)
+        suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertFalse(suitable)
 
         # True, items in DC, POST (passes strict mode) and cookies
@@ -142,7 +144,7 @@ class TestCSRF(PluginTest):
         form_params.add_field_by_attr_items([('name', 'test'), ('type', 'text')])
         form = URLEncodedForm(form_params)
         req = FuzzableRequest(url, method='POST', post_data=form)
-        suitable = self.csrf_plugin._is_suitable(req)
+        suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertTrue(suitable)
         
         self.csrf_plugin._strict_mode = False
@@ -150,12 +152,11 @@ class TestCSRF(PluginTest):
         # True now that we have strict mode off, cookies and QS
         url = URL('http://moth/?id=3')
         req = FuzzableRequest(url, method='GET')
-        suitable = self.csrf_plugin._is_suitable(req)
+        suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertTrue(suitable)
 
-    @attr('ci_fails')
     def test_is_origin_checked_true_case01(self):
-        url = URL('http://moth/w3af/audit/csrf/referer/buy.php?shares=123')
+        url = URL(get_w3af_moth_http('/w3af/audit/csrf/referer/buy.php?shares=123'))
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer/')])
         freq = FuzzableRequest(url, method='GET', headers=headers)
         
@@ -164,9 +165,8 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertTrue(origin_checked)
 
-    @attr('ci_fails')
     def test_is_origin_checked_true_case02(self):
-        url = URL('http://moth/w3af/audit/csrf/referer-rnd/buy.php?shares=123')
+        url = URL(get_w3af_moth_http('/w3af/audit/csrf/referer-rnd/buy.php?shares=123'))
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
         freq = FuzzableRequest(url, method='GET', headers=headers)
         
@@ -175,9 +175,8 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertTrue(origin_checked)
 
-    @attr('ci_fails')
     def test_is_origin_checked_false(self):
-        url = URL('http://moth/w3af/audit/csrf/vulnerable/buy.php?shares=123')
+        url = URL(get_w3af_moth_http('/w3af/audit/csrf/vulnerable/buy.php?shares=123'))
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
         freq = FuzzableRequest(url, method='GET', headers=headers)
         
@@ -186,9 +185,8 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertFalse(origin_checked)
 
-    @attr('ci_fails')
     def test_is_token_checked_true(self):
-        generator = URL('http://moth/w3af/audit/csrf/secure-replay-allowed/')
+        generator = URL(get_w3af_moth_http('/w3af/audit/csrf/secure-replay-allowed/'))
         http_response = self.uri_opener.GET(generator)
 
         # Please note that this freq holds a fresh/valid CSRF token
@@ -206,13 +204,12 @@ class TestCSRF(PluginTest):
                                                      original_response)
         self.assertTrue(checked)
 
-    @attr('ci_fails')
     def test_is_token_checked_false(self):
         """
         This covers the case where there is a token but for some reason it
         is NOT verified by the web application.
         """
-        generator = URL('http://moth/w3af/audit/csrf/vulnerable-token-ignored/')
+        generator = URL(get_w3af_moth_http('/w3af/audit/csrf/vulnerable-token-ignored/'))
         http_response = self.uri_opener.GET(generator)
 
         # Please note that this freq holds a fresh/valid CSRF token

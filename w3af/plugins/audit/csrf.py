@@ -73,7 +73,7 @@ class csrf(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
-        if not self._is_suitable(freq):
+        if not self._is_suitable(freq, orig_response):
             return
 
         # Referer / Origin check
@@ -115,7 +115,7 @@ class csrf(AuditPlugin):
 
         return True
 
-    def _is_suitable(self, freq):
+    def _is_suitable(self, freq, orig_response):
         """
         For CSRF attack we need request with payload and persistent/session
         cookies.
@@ -138,6 +138,11 @@ class csrf(AuditPlugin):
 
         # Strict mode on/off - do we need to audit GET requests? Not always...
         if freq.get_method() == 'GET' and self._strict_mode:
+            return False
+
+        # Ignore potential CSRF in text/css or javascript responses
+        content_type = orig_response.get_headers().get('content-type', None)
+        if content_type in ('text/css', 'application/javascript'):
             return False
 
         # Does the request have a payload?
