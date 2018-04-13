@@ -293,7 +293,8 @@ class KeepAliveHandler(object):
         if conn.sock is None:
             return
 
-        conn.sock.settimeout(request.get_timeout())
+        if isinstance(conn, HTTPConnection):
+            conn.sock.settimeout(request.get_timeout())
 
     def _start_transaction(self, conn, req):
         """
