@@ -52,7 +52,6 @@ class CacheHandler(urllib2.BaseHandler):
         return CacheClass.clear()
 
     def default_open(self, request):
-
         method = request.get_method().upper()
 
         if method in CACHE_METHODS and \
@@ -82,7 +81,6 @@ class CacheHandler(urllib2.BaseHandler):
         return response
 
     https_response = http_response
-
 
 
 # This is the default implementation
