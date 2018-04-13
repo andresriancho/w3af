@@ -166,6 +166,18 @@ class ssi(AuditPlugin):
         debugging_id = rand_alnum(8)
         om.out.debug('Starting stored SSI search (did=%s)' % debugging_id)
 
+        #
+        # TODO
+        #
+        # After identifying the issue we have in these lines, I should change
+        # this code to use:
+        #
+        #   len(self._expected_mutant_dict)
+        #   self._expected_mutant_dict.iterkeys()
+        #
+        # Those two methods are faster and consume less memory than the things
+        # I'm doing below now.
+        #
         expected_strings = self._expected_mutant_dict.keys()
         args = (len(expected_strings), debugging_id)
         om.out.debug('About to create MultiIn with %s keys (did=%s)' % args)
