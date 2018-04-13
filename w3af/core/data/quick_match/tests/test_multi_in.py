@@ -20,10 +20,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import types
+import unittest
+import itertools
 
 from w3af.core.data.quick_match.multi_in import MultiIn
+from w3af.core.data.fuzzer.utils import rand_number
 
 
 class MultiInTest(unittest.TestCase):
@@ -103,6 +105,71 @@ class MultiInTest(unittest.TestCase):
         result = to_list(imi.query('abc\x00def'))
         self.assertEqual(1, len(result))
         self.assertEqual('\x00', result[0])
+
+    def test_very_large_multiin(self):
+
+        # Change this to test larger sizes
+        COUNT = 5000
+
+        def generator(count):
+            for _ in xrange(count):
+                a = rand_number(5)
+                yield a
+
+                a = int(a)
+                b = int(rand_number(5))
+                yield str(a * b)
+
+        fixed_samples = ['123', '456', '789']
+        in_list = itertools.chain(fixed_samples, generator(COUNT))
+
+        imi = MultiIn(in_list)
+
+        result = to_list(imi.query('456'))
+        self.assertEqual(1, len(result))
+        self.assertEqual('456', result[0])
+
+    def test_dup_keys(self):
+
+        def generator(count):
+            for _ in xrange(count):
+                a = rand_number(5)
+                yield a
+
+                a = int(a)
+                b = int(rand_number(5))
+                yield str(a * b)
+
+        fixed_samples_1 = ['123', '456']
+        fixed_samples_2 = ['123', '456', '789']
+        in_list = itertools.chain(fixed_samples_1,
+                                  generator(5000),
+                                  fixed_samples_2)
+
+        imi = MultiIn(in_list)
+
+        result = to_list(imi.query('789'))
+        self.assertEqual(1, len(result))
+        self.assertEqual('789', result[0])
+
+    def test_many_start_similar(self):
+
+        prefix = '0000000'
+
+        def generator(count):
+            for _ in xrange(count):
+                a = rand_number(5)
+                yield prefix + a
+
+        fixed_samples = [prefix + '78912']
+        in_list = itertools.chain(generator(5000),
+                                  fixed_samples)
+
+        imi = MultiIn(in_list)
+
+        result = to_list(imi.query(prefix + '78912'))
+        self.assertEqual(1, len(result))
+        self.assertEqual(prefix + '78912', result[0])
 
 
 def to_list(generator):
