@@ -55,7 +55,7 @@ class audit(BaseConsumer):
         om.out.debug(msg % len(self._consumer_plugins))
 
         for plugin in self._consumer_plugins:
-            om.out.debug('Calling %s.end().' % plugin.get_name())
+            om.out.debug('Calling %s.end()' % plugin.get_name())
             start_time = time.time()
 
             try:
@@ -70,21 +70,21 @@ class audit(BaseConsumer):
                 # still be able to `end()` without sending HTTP requests to
                 # the remote server
                 msg_fmt = ('Spent %.2f seconds running %s.end() until a'
-                           ' scan must stop exception was raised.')
+                           ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
             except Exception, e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
-                           ' unhandled exception was found.')
+                           ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
                 self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)
 
             else:
-                msg_fmt = 'Spent %.2f seconds running %s.end().'
+                msg_fmt = 'Spent %.2f seconds running %s.end()'
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-        om.out.debug('Finished Audit consumer _teardown().')
+        om.out.debug('Finished Audit consumer _teardown()')
 
     def get_original_response(self, fuzzable_request):
         plugin = self._consumer_plugins[0]
