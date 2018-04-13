@@ -110,11 +110,10 @@ class detailed(AuthPlugin):
 
         # check if we're logged in
         if not self.is_logged():
-            msg = "Can't login into web application as %s/%s"
-            raise BaseFrameworkException(msg % (self.username, self.password))
+            msg = "Can't login into web application as %s"
+            raise BaseFrameworkException(msg % self.username)
         else:
-            om.out.debug('Login success for %s/%s' % (self.username,
-                                                      self.password))
+            om.out.debug('Login success for %s' % self.username)
             return True
 
     def _get_data_from_format(self):
