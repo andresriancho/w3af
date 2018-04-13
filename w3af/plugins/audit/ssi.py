@@ -166,7 +166,11 @@ class ssi(AuditPlugin):
         debugging_id = rand_alnum(8)
         om.out.debug('Starting stored SSI search (did=%s)' % debugging_id)
 
-        self._persistent_multi_in = MultiIn(self._expected_mutant_dict.keys())
+        expected_strings = self._expected_mutant_dict.keys()
+        args = (len(expected_strings), debugging_id)
+        om.out.debug('About to create MultiIn with %s keys (did=%s)' % args)
+
+        self._persistent_multi_in = MultiIn(expected_strings)
         om.out.debug('Created stored SSI MultiIn (did=%s)' % debugging_id)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -187,6 +191,9 @@ class ssi(AuditPlugin):
         :param response: The HTTP response
         :return: None, vulns are stored in KB
         """
+        msg = 'Analyzing HTTP response %s to verify if SSI string is found'
+        om.out.debug(msg % response.get_uri())
+
         for matched_expected_result in self._persistent_multi_in.query(response.get_body()):
             # We found one of the expected results, now we search the
             # self._expected_mutant_dict to find which of the mutants sent it
