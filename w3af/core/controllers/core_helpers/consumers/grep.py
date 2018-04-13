@@ -88,6 +88,8 @@ class grep(BaseConsumer):
                 continue
 
             if work_unit == POISON_PILL:
+                self._debug_32('received poison pill')
+
                 try:
                     self._teardown()
                 finally:
@@ -99,6 +101,8 @@ class grep(BaseConsumer):
                     self._consume(work_unit)
                 finally:
                     self.in_queue.task_done()
+
+        self._debug_32('finished run()')
 
     def _teardown(self):
         """

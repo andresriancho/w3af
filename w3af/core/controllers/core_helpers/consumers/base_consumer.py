@@ -169,6 +169,8 @@ class BaseConsumer(Process):
 
             if work_unit == POISON_PILL:
 
+                self._debug_32('received poison pill')
+
                 try:
                     # Close the pool and wait for everyone to finish
                     self._threadpool.close()
@@ -188,6 +190,8 @@ class BaseConsumer(Process):
                     self._consume_wrapper(work_unit)
                 finally:
                     self.in_queue.task_done()
+
+        self._debug_32('finished run()')
 
     def _teardown(self):
         raise NotImplementedError
