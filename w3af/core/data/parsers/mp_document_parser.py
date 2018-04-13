@@ -273,6 +273,11 @@ def process_get_tags_by_filter(http_resp, tags, yield_text, debug):
     for tag in parser.get_tags_by_filter(tags, yield_text=yield_text):
         filtered_tags.append(tag)
 
+    msg = ('Returned %s Tag instances at get_tags_by_filter() for URL %s'
+           ' and tags filter %r')
+    args = (len(filtered_tags), http_resp.get_uri(), tags)
+    om.out.debug(msg % args)
+
     return filtered_tags
 
 

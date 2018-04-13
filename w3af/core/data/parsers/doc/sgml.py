@@ -279,7 +279,7 @@ class SGMLParser(BaseParser):
         # https://github.com/andresriancho/w3af/issues/8695
         if not resp_body:
             # Don't even try to parse this response, it's empty anyways.
-            raise StopIteration
+            return
 
         body_io = StringIO.StringIO(resp_body.encode(DEFAULT_ENCODING))
 
