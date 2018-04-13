@@ -159,10 +159,10 @@ class audit(BaseConsumer):
         Python 3 has an error_callback in the apply_async method, which we could
         use in the future.
         """
-        args = (plugin.get_name(), fuzzable_request.get_uri())
-        om.out.debug('%s.audit(%s)' % args)
-
         debugging_id = rand_alnum(8)
+
+        args = (plugin.get_name(), debugging_id, fuzzable_request.get_uri())
+        om.out.debug('%s.audit(did="%s", uri="%s")' % args)
 
         took_line = TookLine(self._w3af_core,
                              plugin.get_name(),
