@@ -263,13 +263,14 @@ def process_get_tags_by_filter(http_resp, tags, yield_text, debug):
     so we can kill the process if needed.
     """
     document_parser = DocumentParser(http_resp)
+    parser = document_parser.get_parser()
 
     # Not all parsers have tags
-    if not hasattr(document_parser, 'get_tags_by_filter'):
+    if not hasattr(parser, 'get_tags_by_filter'):
         return []
 
     filtered_tags = []
-    for tag in document_parser.get_tags_by_filter(tags, yield_text=yield_text):
+    for tag in parser.get_tags_by_filter(tags, yield_text=yield_text):
         filtered_tags.append(tag)
 
     return filtered_tags

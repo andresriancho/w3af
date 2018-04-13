@@ -148,6 +148,9 @@ class DocumentParser(object):
     def clear(self):
         return self._parser.clear()
 
+    def get_parser(self):
+        return self._parser
+
     def __repr__(self):
         if self._parser:
             klass = self._parser.__class__.__name__
