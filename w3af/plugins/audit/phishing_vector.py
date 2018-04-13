@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement
 
+import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
@@ -62,6 +63,8 @@ class phishing_vector(AuditPlugin):
                                       mutants,
                                       self._analyze_result,
                                       debugging_id=debugging_id)
+
+        om.out.debug('Finished audit.phishing_vector (did=%s)' % debugging_id)
 
     def _analyze_result(self, mutant, response):
         """
