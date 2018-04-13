@@ -66,6 +66,26 @@ class phishing_vector(AuditPlugin):
 
         om.out.debug('Finished audit.phishing_vector (did=%s)' % debugging_id)
 
+    def _contains_payload(self, response):
+        """
+        mp_doc_parser.get_tags_by_filter is CPU-intensive, and we want to prevent
+        calls to it, so we first check if the HTTP response body contains the
+        payloads we sent.
+
+        Also note that mp_doc_parser.get_tags_by_filter calls have no cache!
+
+        :param response: The HTTP response body
+        :return: True if the response body contains at least one of the payloads
+        """
+        body = response.body
+        body = body.lower()
+
+        for test_url in self.TEST_URLS:
+            if test_url.lower() in body:
+                return True
+
+        return False
+
     def _analyze_result(self, mutant, response):
         """
         Analyze results of the _send_mutant method.
@@ -74,6 +94,11 @@ class phishing_vector(AuditPlugin):
             return
 
         if self._has_bug(mutant):
+            return
+
+        # Performance improvement to prevent calling the CPU-expensive
+        # get_tags_by_filter
+        if not self._contains_payload(response):
             return
 
         for tag in mp_doc_parser.get_tags_by_filter(response, self.TAGS):
@@ -95,6 +120,11 @@ class phishing_vector(AuditPlugin):
                 v.add_to_highlight(src_attr)
                 self.kb_append_uniq(self, 'phishing_vector', v)
                 break
+
+        msg = ('Performed HTTP response analysis at audit.phishing_vector URL %s,'
+               ' HTTP response ID %s.')
+        args = (response.get_uri(), response.id)
+        om.out.debug(msg % args)
 
     def get_long_desc(self):
         """
