@@ -194,6 +194,8 @@ class CoreStrategy(object):
         finish the consumers that generate URLs and then the ones that consume
         them.
         """
+        om.out.debug('Joining all consumers (teardown phase)')
+
         self._teardown_crawl_infrastructure()        
         
         self._teardown_audit()
