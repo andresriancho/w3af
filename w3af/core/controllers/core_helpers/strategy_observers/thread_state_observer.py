@@ -129,6 +129,22 @@ class ThreadStateObserver(StrategyObserver):
             inspect_data = pool.inspect_threads()
             self.inspect_data_to_log(pool, inspect_data)
 
+            internal_thread_data = pool.get_internal_thread_state()
+            self.internal_thread_data_to_log(pool, internal_thread_data)
+
+    def internal_thread_data_to_log(self, pool, internal_thread_data):
+        worker_handler = internal_thread_data['worker_handler']
+        task_handler = internal_thread_data['task_handler']
+        result_handler = internal_thread_data['result_handler']
+
+        msg = ('Worker pool internal thread state:'
+               ' (worker: %s, task: %s, result: %s)')
+        args = (worker_handler,
+                task_handler,
+                result_handler)
+
+        self.write_to_log(msg % args)
+
     def inspect_data_to_log(self, pool, inspect_data):
         """
         Print the inspect_threads data to the log files
@@ -161,6 +177,12 @@ class ThreadStateObserver(StrategyObserver):
                 continue
 
             spent = time.time() - worker_state['start_time']
+
+            # Save us some disk space and sanity, only log worker state if it has
+            # been running for at least 10 seconds
+            if spent < 10:
+                continue
+
             args_str = ', '.join(smart_str_ignore(repr(arg)) for arg in worker_state['args'])
             kwargs_str = smart_str_ignore(worker_state['kwargs'])
 

@@ -249,6 +249,24 @@ class Pool(object):
             exitpriority=15
             )
 
+    def get_internal_thread_state(self):
+        worker_is_active = False
+        task_is_active = False
+        result_is_active = False
+
+        if self._worker_handler is not None:
+            worker_is_active = self._worker_handler.is_alive()
+
+        if self._task_handler is not None:
+            task_is_active = self._task_handler.is_alive()
+
+        if self._result_handler is not None:
+            result_is_active = self._result_handler.is_alive()
+
+        return {'worker_handler': worker_is_active,
+                'task_handler': task_is_active,
+                'result_handler': result_is_active}
+
     def _join_exited_workers(self):
         """Cleanup after any worker processes which have exited due to reaching
         their specified lifetime.  Returns True if any workers were cleaned up.
