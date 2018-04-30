@@ -43,6 +43,8 @@ except ImportError:
     print('    sudo pip install --upgrade pip')
     sys.exit(1)
 
+import pkg_resources
+
 from .helper_script import (generate_helper_script,
                             generate_pip_install_non_git,
                             generate_pip_install_git)
@@ -66,10 +68,9 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     #    Check for missing python modules
     #
     failed_deps = []
-    pip_distributions = pip.get_installed_distributions(local_only=False)
-    
+
     for w3af_req in platform.PIP_PACKAGES[dependency_set]:
-        for dist in pip_distributions:
+        for dist in pkg_resources.working_set:
             if w3af_req.package_name.lower() == dist.project_name.lower():
 
                 w3af_req_version = str(Version(w3af_req.package_version))
