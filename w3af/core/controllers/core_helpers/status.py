@@ -308,6 +308,11 @@ class w3af_core_status(object):
         audit_fuzzable_request = self.get_current_fuzzable_request('audit')
         audit_fuzzable_request = serialize_fuzzable_request(audit_fuzzable_request)
 
+        try:
+            rpm = self.get_rpm()
+        except RuntimeError:
+            rpm = 0
+
         data = {
                 'status': self.get_simplified_status(),
                 'is_paused': self.is_paused(),
@@ -337,7 +342,7 @@ class w3af_core_status(object):
                     {'crawl': self.get_crawl_eta(),
                      'audit': self.get_audit_eta()},
 
-                'rpm': self.get_rpm(),
+                'rpm': rpm,
                 }
         return data
 
