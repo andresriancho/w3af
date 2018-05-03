@@ -74,7 +74,7 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
             if w3af_req.package_name.lower() == dist.project_name.lower():
 
                 w3af_req_version = str(Version(w3af_req.package_version))
-                dist_version = str(dist.version)
+                dist_version = str(Version(dist.version))
 
                 if w3af_req_version == dist_version:
                     # It's installed and the version matches!
