@@ -175,7 +175,11 @@ class html_file(OutputPlugin):
             * Send all the data to jinja2 for rendering the template
         """
         target_urls = [t.url_string for t in cf.cf.get('targets')]
-        target_domain = cf.cf.get('target_domains')[0]
+
+        target_domain = 'unknown'
+        if cf.cf.get('target_domains'):
+            target_domain = cf.cf.get('target_domains')[0]
+
         enabled_plugins = self._enabled_plugins
         findings = kb.kb.get_all_findings_iter()
         debug_log = ((t, l, smart_unicode(m)) for (t, l, m) in self._additional_info)
