@@ -30,6 +30,7 @@ import shutil
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from unicodedata import category
 from tempfile import NamedTemporaryFile
+from functools import wraps
 
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
@@ -52,6 +53,33 @@ from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
 
 TEMPLATE_ROOT = os.path.join(ROOT_PATH, 'plugins/output/xml_file/')
+
+
+def took(func):
+    """
+    A decorator that will print how long a function was running
+    to the debug output. This is useful for measuring performance
+    in production.
+    """
+
+    @wraps(func)
+    def func_wrapper(*args, **kwargs):
+        start = time.time()
+
+        result = func(*args, **kwargs)
+
+        spent = time.time() - start
+
+        # Log things which take more than 0.5 seconds
+        if spent > 0.5:
+            msg = '[xml_file.flush()] %s took %.2f seconds to run.'
+            function_name = func.__name__
+            args = (function_name, spent)
+            om.out.debug(msg % args)
+
+        return result
+
+    return func_wrapper
 
 
 class xml_file(OutputPlugin):
@@ -173,18 +201,21 @@ class xml_file(OutputPlugin):
         # Write to file
         self._write_context_to_file(context)
 
+    @took
     def _add_root_info_to_context(self, context):
         context.start_timestamp = self._timestamp
         context.start_time_long = self._long_timestamp
         context.xml_version = self.XML_OUTPUT_VERSION
         context.w3af_version = get_w3af_version.get_w3af_version()
 
+    @took
     def _add_scan_info_to_context(self, context):
         scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
 
         scan_info = ScanInfo(self._jinja2_env, scan_targets, self._plugins_dict, self._options_dict)
         context.scan_info = scan_info.to_string()
 
+    @took
     def _add_scan_status_to_context(self, context):
         status = self.get_w3af_core().status.get_status_as_dict()
         total_urls = len(kb.kb.get_all_known_fuzzable_requests())
@@ -192,6 +223,7 @@ class xml_file(OutputPlugin):
         scan_status = ScanStatus(self._jinja2_env, status, total_urls)
         context.scan_status = scan_status.to_string()
 
+    @took
     def _add_errors_to_context(self, context):
         context.errors = self._errors
 
@@ -248,6 +280,7 @@ class xml_file(OutputPlugin):
             if cached_finding not in processed_uniq_ids:
                 cache.evict_from_cache(cached_finding)
 
+    @took
     def _add_findings_to_context(self, context):
         context.findings = (f for f in self.findings())
 
@@ -271,6 +304,7 @@ class xml_file(OutputPlugin):
         jinja2_env.filters['escape_text'] = jinja2_text_value_escape_filter
         return jinja2_env
 
+    @took
     def _write_context_to_file(self, context):
         """
         Write xml report to the file by rendering the context
