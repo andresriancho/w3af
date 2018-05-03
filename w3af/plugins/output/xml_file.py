@@ -25,9 +25,11 @@ import gzip
 import time
 import base64
 import jinja2
+import shutil
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from unicodedata import category
+from tempfile import NamedTemporaryFile
 
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
@@ -36,7 +38,7 @@ import w3af.core.controllers.output_manager as om
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.misc import get_w3af_version
-from w3af.core.controllers.exceptions import BaseFrameworkException, DBException
+from w3af.core.controllers.exceptions import DBException
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.db.disk_list import DiskList
@@ -64,9 +66,6 @@ class xml_file(OutputPlugin):
     def __init__(self):
         OutputPlugin.__init__(self)
 
-        # These attributes hold the file pointers
-        self._file = None
-
         # User configured parameters
         self._file_name = '~/report.xml'
         self._timestamp = str(int(time.time()))
@@ -82,19 +81,6 @@ class xml_file(OutputPlugin):
 
         # List with additional xml elements
         self._errors = DiskList()
-
-    def _open_file(self):
-        self._file_name = os.path.expanduser(self._file_name)
-        try:
-            self._file = open(self._file_name, 'wb')
-        except IOError, io:
-            msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            args = (os.path.abspath(self._file_name), io.strerror)
-            raise BaseFrameworkException(msg % args)
-        except Exception, e:
-            msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            args = (os.path.abspath(self._file_name), e)
-            raise BaseFrameworkException(msg % args)
 
     def do_nothing(self, *args, **kwds):
         pass
@@ -302,13 +288,35 @@ class xml_file(OutputPlugin):
         report_stream.enable_buffering(3)
         # pylint: enable=E1101
 
-        self._open_file()
+        # Write everything to a temp file, this is useful in two cases:
+        #
+        #   * An external tool will always see a valid XML in the output,
+        #     and not just a partially written XML document.
+        #
+        #   * If w3af is killed in the middle of writing the XML report,
+        #     the report file will still be valid -- if xml_file.flush() was
+        #     run successfully at least once
+        tempfh = NamedTemporaryFile(delete=False,
+                                    prefix='w3af-xml-output',
+                                    suffix='xml')
 
-        # Write each report section to the output file
-        for report_section in report_stream:
-            self._file.write(report_section.encode(DEFAULT_ENCODING))
+        try:
+            # Write each report section to the temp file
+            for report_section in report_stream:
+                tempfh.write(report_section.encode(DEFAULT_ENCODING))
+        except Exception:
+            # No exception handling is done here, we just raise the exception
+            # so that the core can handle it properly
+            raise
+        else:
+            # Close the temp file so all the content is flushed
+            tempfh.close()
 
-        self._file.close()
+            # Copy to the real output file
+            report_file_name = os.path.expanduser(self._file_name)
+            shutil.copy(tempfh.name, report_file_name)
+        finally:
+            os.remove(tempfh.name)
 
     def get_long_desc(self):
         """
