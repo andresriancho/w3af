@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from vulndb import DBVuln
+
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.configurable import Configurable
@@ -99,6 +101,9 @@ class MiscSettings(Configurable):
         # Form exclusion via IDs
         cf.cf.save('form_id_list', FormIDMatcherList('[]'))
         cf.cf.save('form_id_action', EXCLUDE)
+
+        # Language to use when reading from vulndb
+        cf.cf.save('vulndb_language', DBVuln.DEFAULT_LANG)
 
     def get_options(self):
         """
@@ -223,8 +228,8 @@ class MiscSettings(Configurable):
         #
         # Network parameters
         #
-        desc = 'Local interface name to use when sniffing, doing reverse'\
-               ' connections, etc.'
+        desc = ('Local interface name to use when sniffing, doing reverse'
+                ' connections, etc.')
         opt = opt_factory('interface', cf.cf.get('interface'), desc,
                           STRING, tabid='Network settings')
         ol.add(opt)
@@ -277,6 +282,20 @@ class MiscSettings(Configurable):
                           desc, STRING, tabid='Metasploit')
         ol.add(opt)
 
+        #
+        # Language options
+        #
+        d = 'Set the language to use when reading from the vulnerability database'
+        h = ('The vulnerability database stores descriptions, fix guidance, tags,'
+             ' references and much more about each vulnerability the scanner can'
+             ' identify. The database supports translations, so this information'
+             ' can be in many languages. Use this setting to choose the language'
+             ' in which the information will be displayed and stored in reports.')
+        options = DBVuln.get_all_languages()
+        opt = opt_factory('vulndb_language', options, d, COMBO, help=h,
+                          tabid='Language')
+        ol.add(opt)
+
         return ol
 
     def get_desc(self):
@@ -298,7 +317,7 @@ class MiscSettings(Configurable):
                    'msf_location', 'stop_on_first_exception',
                    'non_targets', 'form_id_action', 'form_id_list',
                    'path_max_variants', 'params_max_variants',
-                   'max_equal_form_variants')
+                   'max_equal_form_variants', 'vulndb_language')
 
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())

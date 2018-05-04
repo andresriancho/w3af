@@ -24,6 +24,8 @@ import uuid
 
 from vulndb import DBVuln
 
+import w3af.core.data.kb.config as cf
+
 from w3af.core.data.constants.severity import INFORMATION
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
 from w3af.core.data.fuzzer.mutants.empty_mutant import EmptyMutant
@@ -282,14 +284,21 @@ class Info(dict):
             self._vulndb_id = None
             return
 
-        if not DBVuln.is_valid_id(vulndb_id):
-            all_db_ids = DBVuln.get_all_db_ids()
+        if not DBVuln.is_valid_id(vulndb_id, language=self.get_vulndb_lang()):
+            all_db_ids = DBVuln.get_all_db_ids(language=self.get_vulndb_lang())
             msg = ('Invalid vulnerability DB id %s. There are %s entries in'
                    ' the vulnerability database but none is the specified one.')
             args = (vulndb_id, len(all_db_ids))
             raise ValueError(msg % args)
 
         self._vulndb_id = vulndb_id
+
+    def get_vulndb_lang(self):
+        """
+        :return: The language code (es, en, etc.) to use when reading from
+                 the vulnerability database.
+        """
+        return cf.cf.get('vulndb_language')
 
     def has_db_details(self):
         """
@@ -376,7 +385,8 @@ class Info(dict):
             return self._vulndb
 
         if self._vulndb_id is not None:
-            self._vulndb = DBVuln.from_id(self._vulndb_id)
+            self._vulndb = DBVuln.from_id(self._vulndb_id,
+                                          language=self.get_vulndb_lang())
             return self._vulndb
 
     def _get_desc_impl(self, what, with_id=True):

@@ -147,7 +147,7 @@ class TestVulnsConstants(unittest.TestCase):
             if _id is None:
                 continue
 
-            if not DBVuln.is_valid_id(_id):
+            if not DBVuln.is_valid_id(_id, language=DBVuln.DEFAULT_LANG):
                 invalid.append((vuln_name, _id))
 
         self.assertEqual(invalid, [])
