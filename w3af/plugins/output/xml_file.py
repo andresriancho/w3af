@@ -443,6 +443,7 @@ class FindingsCache(object):
         try:
             node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
         except IOError:
+            om.out.debug('[xml_file.flush()] %s is not in cache.' % filename)
             return None
 
         return node.decode('utf-8')
@@ -504,6 +505,7 @@ class CachedXMLNode(XMLNode):
         try:
             node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
         except IOError:
+            om.out.debug('[xml_file.flush()] %s is not in cache.' % filename)
             return None
 
         return node.decode('utf-8')
