@@ -102,6 +102,7 @@ class xml_file(OutputPlugin):
         # Set defaults for scan metadata
         self._plugins_dict = {}
         self._options_dict = {}
+        self._scan_targets = None
 
         # Keep internal state
         self._is_working = False
@@ -177,6 +178,7 @@ class xml_file(OutputPlugin):
         # Free some memory and disk space
         self._plugins_dict = {}
         self._options_dict = {}
+        self._scan_targets = None
         self._errors.cleanup()
         self._jinja2_env = None
 
@@ -210,9 +212,13 @@ class xml_file(OutputPlugin):
 
     @took
     def _add_scan_info_to_context(self, context):
-        scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
+        if self._scan_targets is None:
+            self._scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
 
-        scan_info = ScanInfo(self._jinja2_env, scan_targets, self._plugins_dict, self._options_dict)
+        scan_info = ScanInfo(self._jinja2_env,
+                             self._scan_targets,
+                             self._plugins_dict,
+                             self._options_dict)
         context.scan_info = scan_info.to_string()
 
     @took
