@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 from w3af import ROOT_PATH
+from w3af.core.controllers.misc.decorators import memoized
 from w3af.core.controllers.auto_update.utils import (is_git_repo, to_short_id,
                                                      get_latest_commit,
                                                      get_latest_commit_date,
@@ -36,8 +37,18 @@ def get_minimalistic_version():
     return file(VERSION_FILE).read().strip()
 
 
+@memoized
 def get_w3af_version_as_dict():
     """
+    This method seems to take considerable time to run when w3af is run from
+    a git installation (.git directory is present). All of the time it takes
+    to solve this function comes from get_w3af_version_as_dict(), which
+    reads the Git meta-data.
+
+    Some plugins, such as xml_file, call get_w3af_version every N seconds to
+    write that information to the output file. I added @memoized in order to
+    reduce the time it takes to run the output plugin.
+
     :return: All the version information in a dict
     """
     commit = to_short_id(get_latest_commit()) if is_git_repo() else 'unknown'
