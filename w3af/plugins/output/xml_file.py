@@ -245,6 +245,9 @@ class xml_file(OutputPlugin):
 
         processed_uniq_ids = []
 
+        om.out.debug('[xml_file.flush()] Starting findings()')
+        start = time.time()
+
         #
         # This for loop is a performance improvement which should yield
         # really good results, taking into account that get_all_uniq_ids_iter
@@ -267,24 +270,52 @@ class xml_file(OutputPlugin):
                 yield cache.get_node_from_cache(uniq_id)
                 processed_uniq_ids.append(uniq_id)
 
+        msg = '[xml_file.flush()] findings() processed %s cached nodes in %.2f seconds'
+        spent = time.time() - start
+        args = (len(processed_uniq_ids), spent)
+        om.out.debug(msg % args)
+
+        start = time.time()
+
         #
         # This for loop is getting all the new findings that w3af has found
         # In this context "new" means that the findings are not in the cache
         #
+        new_findings = 0
+
         for finding in kb.kb.get_all_findings_iter(exclude_ids=cached_nodes):
             uniq_id = finding.get_uniq_id()
             processed_uniq_ids.append(uniq_id)
             node = Finding(self._jinja2_env, finding).to_string()
             cache.save_finding_to_cache(uniq_id, node)
+
+            new_findings += 1
+
             yield node
+
+        msg = '[xml_file.flush()] findings() processed %s new findings in %.2f seconds'
+        spent = time.time() - start
+        args = (new_findings, spent)
+        om.out.debug(msg % args)
+
+        start = time.time()
 
         #
         # Now that we've finished processing all the new findings we can
         # evict the findings that were removed from the KB from the cache
         #
+        evicted_findings = 0
+
         for cached_finding in cached_nodes:
             if cached_finding not in processed_uniq_ids:
                 cache.evict_from_cache(cached_finding)
+
+                evicted_findings += 1
+
+        msg = '[xml_file.flush()] findings() evicted %s findings from cache in %.2f seconds'
+        spent = time.time() - start
+        args = (evicted_findings, spent)
+        om.out.debug(msg % args)
 
     @took
     def _add_findings_to_context(self, context):
