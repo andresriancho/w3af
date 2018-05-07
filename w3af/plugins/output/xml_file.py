@@ -265,10 +265,9 @@ class xml_file(OutputPlugin):
         # which would be incorrect because some items are modified in the
         # KB (which changes their uniq id)
         #
-        for uniq_id in kb.kb.get_all_uniq_ids_iter():
-            if uniq_id in cached_nodes:
-                yield cache.get_node_from_cache(uniq_id)
-                processed_uniq_ids.append(uniq_id)
+        for uniq_id in kb.kb.get_all_uniq_ids_iter(include_ids=cached_nodes):
+            yield cache.get_node_from_cache(uniq_id)
+            processed_uniq_ids.append(uniq_id)
 
         msg = '[xml_file.flush()] findings() processed %s cached nodes in %.2f seconds'
         spent = time.time() - start
@@ -443,7 +442,6 @@ class FindingsCache(object):
         try:
             node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
         except IOError:
-            om.out.debug('[xml_file.flush()] %s is not in cache.' % filename)
             return None
 
         return node.decode('utf-8')
@@ -505,7 +503,6 @@ class CachedXMLNode(XMLNode):
         try:
             node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
         except IOError:
-            om.out.debug('[xml_file.flush()] %s is not in cache.' % filename)
             return None
 
         return node.decode('utf-8')
