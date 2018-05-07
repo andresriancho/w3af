@@ -130,16 +130,17 @@ class ThreadStateObserver(StrategyObserver):
             self.inspect_data_to_log(pool, inspect_data)
 
             internal_thread_data = pool.get_internal_thread_state()
-            self.internal_thread_data_to_log(pool, internal_thread_data)
+            self.internal_thread_data_to_log(pool, name, internal_thread_data)
 
-    def internal_thread_data_to_log(self, pool, internal_thread_data):
+    def internal_thread_data_to_log(self, pool, name, internal_thread_data):
         worker_handler = internal_thread_data['worker_handler']
         task_handler = internal_thread_data['task_handler']
         result_handler = internal_thread_data['result_handler']
 
-        msg = ('Worker pool internal thread state:'
+        msg = ('%s worker pool internal thread state:'
                ' (worker: %s, task: %s, result: %s)')
-        args = (worker_handler,
+        args = (name,
+                worker_handler,
                 task_handler,
                 result_handler)
 
