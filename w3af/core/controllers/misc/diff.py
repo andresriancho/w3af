@@ -19,19 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import difflib
+import diff_match_patch as dmp_module
+
+# 20 seconds it the max time we'll wait for a diff, the good thing
+# about the `diff_match_patch` library is that even when the timeout
+# is reached, a (partial) result is returned
+MAX_DIFF_TIME = 20
 
 
 def diff(a, b):
     """
-    WARNING! WARNING! WARNING! WARNING!
-
-        This code is really slow! Use only if you need a lot of precision
-        in the diff result! Use chunked_diff if precision is not what you
-        aim for.
-
-    WARNING! WARNING! WARNING! WARNING!
-
     :param a: A string
     :param b: A string (similar to a)
     :return: Two strings (a_mod, b_mod) which are basically:
@@ -42,37 +39,29 @@ def diff(a, b):
              Or if you want to see it in another way, the results are the
              parts of the string that make it unique between each other.
     """
-    matching_blocks = difflib.SequenceMatcher(None, a, b).get_matching_blocks()
-    removed_a = 0
-    removed_b = 0
+    dmp = dmp_module.diff_match_patch()
 
-    for block in matching_blocks:
-        a_index, b_index, size = block
-        a = a[:a_index - removed_a] + a[a_index - removed_a + size:]
-        b = b[:b_index - removed_b] + b[b_index - removed_b + size:]
-        removed_a += size
-        removed_b += size
+    changes = dmp.diff_main(a,
+                            b,
+                            checklines=True,
+                            deadline=MAX_DIFF_TIME)
 
-    return a, b
+    dmp.diff_cleanupSemantic(changes)
 
+    a_changes = []
+    b_changes = []
 
-def chunked_diff(a, b):
-    """
-    This is a performance hack around diff() which was required due to the large
-    amount of time diff() took to process some HTTP responses.
+    for op, change in changes:
+        if op == -1:
+            a_changes.append(change)
 
-    This method does the same as diff() but it will cut the string in chunks and
-    process the list of chunks instead of the strings. This makes the whole process
-    faster and more inaccurate.
+        if op == 1:
+            b_changes.append(change)
 
-    :param a: A string
-    :param b: A string (similar to a)
-    :return: See diff()
-    """
-    a_chunks, b_chunks = diff(split_by_sep(a),
-                              split_by_sep(b))
+    a_changes = ''.join(a_changes)
+    b_changes = ''.join(b_changes)
 
-    return ''.join(a_chunks), ''.join(b_chunks)
+    return a_changes, b_changes
 
 
 def split_by_sep(seq):
@@ -113,16 +102,19 @@ def split_by_sep(seq):
     :param seq: A string
     :return: A list of strings (chunks) for the input string
     """
+    chunk = []
     chunks = []
-    chunk = ''
+    append = chunks.append
+    empty_string_join = ''.join
+    separators = {'\n', '\t', '\r', '"', "'", '<'}
 
     for c in seq:
-        if c in '\n\t\r"\'<':
-            chunks.append(chunk)
-            chunk = ''
+        if c in separators:
+            append(empty_string_join(chunk))
+            chunk = []
         else:
-            chunk += c
+            chunk.append(c)
 
-    chunks.append(chunk)
+    append(empty_string_join(chunk))
 
     return chunks

@@ -88,6 +88,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('acora', 'acora', '2.1'),
                      PIPDependency('esmre', 'esmre', '0.3.1'),
 
+                     # String diff by Google
+                     PIPDependency('diff_match_patch', 'diff-match-patch', '20121119'),
+
                      # OpenAPI documentation parser
                      PIPDependency('bravado', 'bravado', '9.2.2'),
                      ]
