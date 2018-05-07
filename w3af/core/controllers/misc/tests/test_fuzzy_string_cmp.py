@@ -25,7 +25,7 @@ import unittest
 from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean, relative_distance
 
 
-class TestLevenshtein(unittest.TestCase):
+class TestFuzzyStringCompare(unittest.TestCase):
 
     def test_all(self):
         acceptance_tests = []
