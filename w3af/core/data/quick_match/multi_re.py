@@ -126,16 +126,6 @@ class MultiRE(object):
             target_str = target_str.encode(DEFAULT_ENCODING)
 
         #
-        #   Match the regular expressions that don't have any keywords
-        #
-        for regex_without_keyword in self._regexes_with_no_keywords:
-            compiled_regex = self._re_cache[regex_without_keyword]
-
-            matchobj = compiled_regex.search(target_str)
-            if matchobj:
-                yield self._create_output(matchobj, regex_without_keyword, compiled_regex)
-
-        #
         #   Match the regular expressions that have keywords and those
         #   keywords are found in the target string by acora
         #
@@ -154,6 +144,16 @@ class MultiRE(object):
                 matchobj = compiled_regex.search(target_str)
                 if matchobj:
                     yield self._create_output(matchobj, regex, compiled_regex)
+
+        #
+        #   Match the regular expressions that don't have any keywords
+        #
+        for regex_without_keyword in self._regexes_with_no_keywords:
+            compiled_regex = self._re_cache[regex_without_keyword]
+
+            matchobj = compiled_regex.search(target_str)
+            if matchobj:
+                yield self._create_output(matchobj, regex_without_keyword, compiled_regex)
 
     def _create_output(self, matchobj, regex, compiled_regex):
         extra_data = self._translator.get(regex, None)
