@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
@@ -353,13 +355,19 @@ class BlindSqliResponseDiff(object):
         """
         Determines if two pages are equal using a ratio.
         """
+        start = time.time()
+
         if compare_diff:
             body1, body2 = chunked_diff(body1, body2)
 
         cmp_res = relative_distance_boolean(body1, body2, self._eq_limit)
 
-        args = (self._eq_limit, cmp_res)
-        self.debug('Are strings similar enough (limit: %s)? %s' % args)
+        are = 'ARE' if cmp_res else 'ARE NOT'
+        args = (are, self._eq_limit)
+        self.debug('Strings %s similar enough (limit: %s)' % args)
+
+        spent = time.time() - start
+        self.debug('Took %.2f seconds to run equal_with_limit' % spent)
 
         return cmp_res
 
