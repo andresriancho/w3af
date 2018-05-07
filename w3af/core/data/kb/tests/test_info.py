@@ -55,7 +55,9 @@ class MockInfo(Info):
     LONG_DESC = 'Foo bar spam eggs' * 10
 
     def __init__(self, ids=1, desc=None):
-        super(MockInfo, self).__init__('TestCase', desc or self.LONG_DESC, ids,
+        super(MockInfo, self).__init__('TestCase',
+                                       desc or self.LONG_DESC,
+                                       ids,
                                        'plugin_name')
 
 
