@@ -139,14 +139,14 @@ class MultiRE(object):
         #   Match the regular expressions that have keywords and those
         #   keywords are found in the target string by acora
         #
-        seen = []
+        seen = set()
         target_str = target_str.lower()
 
         for match, position in self._acora.finditer(target_str):
             if match in seen:
                 continue
 
-            seen.append(match)
+            seen.add(match)
 
             for regex in self._keyword_to_re[match]:
                 compiled_regex = self._re_cache[regex]

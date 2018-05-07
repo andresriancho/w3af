@@ -78,13 +78,13 @@ class MultiIn(object):
         if isinstance(target_str, unicode):
             target_str = target_str.encode(DEFAULT_ENCODING)
 
-        seen = []
+        seen = set()
 
         for match, position in self._acora.finditer(target_str):
             if match in seen:
                 continue
 
-            seen.append(match)
+            seen.add(match)
             extra_data = self._translator.get(match, None)
 
             if extra_data is None:
