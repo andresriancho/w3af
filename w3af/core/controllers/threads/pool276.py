@@ -250,9 +250,9 @@ class Pool(object):
             )
 
     def get_internal_thread_state(self):
-        worker_is_active = False
-        task_is_active = False
-        result_is_active = False
+        worker_is_active = None
+        task_is_active = None
+        result_is_active = None
 
         if self._worker_handler is not None:
             worker_is_active = self._worker_handler.is_alive()
