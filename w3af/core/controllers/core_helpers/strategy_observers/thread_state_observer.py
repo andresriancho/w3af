@@ -19,9 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import threading
-import time
 import re
+import sys
+import time
+import threading
+import traceback
 
 import w3af.core.controllers.output_manager as om
 
@@ -34,6 +36,7 @@ class ThreadStateObserver(StrategyObserver):
     Monitor number jobs which are running in the different threads.
     """
     ANALYZE_EVERY = 30
+    STACK_TRACE_MIN_TIME = 120
     DISCOVER_WORKER_RE = re.compile('<bound method crawl_infrastructure._discover_worker'
                                     ' of <crawl_infrastructure\(CrawlInfraController,'
                                     ' started daemon .*?\)>>')
@@ -127,10 +130,77 @@ class ThreadStateObserver(StrategyObserver):
                 break
 
             inspect_data = pool.inspect_threads()
+            inspect_data = self.add_thread_stack(inspect_data)
             self.inspect_data_to_log(pool, inspect_data)
 
             internal_thread_data = pool.get_internal_thread_state()
             self.internal_thread_data_to_log(pool, name, internal_thread_data)
+
+    def add_thread_stack(self, inspect_data):
+        """
+        When threads have been running for a long time, it is not enough to
+        log the initial function that the worker was told to run, we want to
+        know exactly what function the thread is running *now*, including the
+        whole traceback.
+        """
+        #
+        #   Define which workers we want to inspect
+        #
+        workers_to_inspect = []
+
+        for worker_state in inspect_data:
+            if worker_state['idle']:
+                continue
+
+            spent = time.time() - worker_state['start_time']
+            if spent < self.STACK_TRACE_MIN_TIME:
+                continue
+
+            workers_to_inspect.append(worker_state['worker_id'])
+
+        #
+        #   If there is nothing to do, just return to reduce the performance
+        #   impact of this function
+        #
+        if not workers_to_inspect:
+            return inspect_data
+
+        #
+        #   Find the workers in the thread list
+        #
+        for thread_id, frame in sys._current_frames().items():
+            thread = self.get_thread_from_thread_id(thread_id)
+
+            if thread is None:
+                continue
+
+            if not hasattr(thread, 'get_state'):
+                continue
+
+            state = thread.get_state()
+            worker_id = state['worker_id']
+
+            if worker_id not in workers_to_inspect:
+                continue
+
+            trace = []
+            for filename, lineno, name, line in traceback.extract_stack(frame):
+                trace.append('%s:%s @ %s()' % (filename, lineno, name))
+
+            trace = trace[-10:]
+            trace = ', '.join(trace)
+
+            # Now save the trace to the inspect_data
+            for worker_state in inspect_data:
+                if worker_state['worker_id'] == worker_id:
+                    worker_state['trace'] = trace
+
+        return inspect_data
+
+    def get_thread_from_thread_id(self, thread_id):
+        for thread in threading.enumerate():
+            if thread.ident == thread_id:
+                return thread
 
     def internal_thread_data_to_log(self, pool, name, internal_thread_data):
         worker_handler = internal_thread_data['worker_handler']
@@ -199,6 +269,10 @@ class ThreadStateObserver(StrategyObserver):
                         func_name,
                         args_str,
                         kwargs_str)
+
+            trace = worker_state.get('trace', None)
+            if trace is not None:
+                message += '. Function call tree: %s' % trace
 
             self.write_to_log(message)
 
