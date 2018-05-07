@@ -515,12 +515,22 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         return result
 
     @requires_setup
-    def get_all_uniq_ids_iter(self):
+    def get_all_uniq_ids_iter(self, include_ids=()):
         """
+        :param include_ids: If specified, only include these IDs.
         :yield: All uniq IDs from the KB
         """
-        query = 'SELECT uniq_id FROM %s'
-        result = self.db.select(query % self.table_name)
+        if include_ids:
+            bindings = ['?'] * len(include_ids)
+            bindings = ','.join(bindings)
+            query = 'SELECT uniq_id FROM %s WHERE uniq_id IN (%s)'
+            query %= (self.table_name, bindings)
+
+            result = self.db.select(query, parameters=include_ids)
+
+        else:
+            query = 'SELECT uniq_id FROM %s'
+            result = self.db.select(query % self.table_name)
 
         for uniq_id, in result:
             yield uniq_id

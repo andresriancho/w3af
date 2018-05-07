@@ -223,6 +223,30 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.raw_write('a', 'b', 'abc')
         self.assertEqual(kb.get_all_entries_of_class(str), ['abc'])
 
+    def test_get_all_uniq_ids_iter(self):
+        i1 = MockInfo()
+        kb.append('a', 'b', i1)
+
+        uniq_ids = [u for u in kb.get_all_uniq_ids_iter()]
+
+        self.assertEqual(uniq_ids, [i1.get_uniq_id()])
+
+    def test_get_all_uniq_ids_iter_include_ids(self):
+        i1 = MockInfo()
+        kb.append('a', 'b', i1)
+
+        uniq_ids = [u for u in kb.get_all_uniq_ids_iter(include_ids=[i1.get_uniq_id()])]
+
+        self.assertEqual(uniq_ids, [i1.get_uniq_id()])
+
+    def test_get_all_uniq_ids_iter_include_ids_false(self):
+        i1 = MockInfo()
+        kb.append('a', 'b', i1)
+
+        uniq_ids = [u for u in kb.get_all_uniq_ids_iter(include_ids=[str(uuid.uuid4())])]
+
+        self.assertEqual(uniq_ids, [])
+
     def test_all_of_info_vuln(self):
         i1 = MockInfo()
         i2 = MockInfo()
