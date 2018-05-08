@@ -161,10 +161,31 @@ def extend_escape_table_with_printable_chars(escape_table):
 EXTENDED_TABLE = extend_escape_table_with_uppercase(ESCAPE_TABLE)
 
 
-def apply_multi_escape_table(_input, escape_table=ESCAPE_TABLE):
+def apply_multi_escape_table(_input, escape_table=ESCAPE_TABLE, max_len=None):
+    """
+
+    :param _input: The input string which must be escaped using N ways
+
+    :param escape_table: The escape table which will be used to escape
+                         each special character found in _input
+
+    :param max_len: The max length of the escaped string that can be returned
+                    For example, if max_len is 4, _input is "a&", then
+                    "a&amp;" (len: 6) will NOT be in the output but
+                    "a%26" (len 4) will. This is usually used for performance
+                    improvements.
+
+    :return: Yield escaped versions of _input
+    """
     inner_iter = _multi_escape_table_impl(_input,
                                           escape_table=escape_table)
     for x in unique_everseen(inner_iter):
+
+        # Filter output by max_len
+        if max_len is not None:
+            if len(x) > max_len:
+                continue
+
         yield x
 
 
@@ -248,6 +269,7 @@ def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True):
     :return: The body as a unicode with all strings to replace removed.
     """
     body = response.body
+    body_len = len(body)
     unicodes_to_replace_set = set()
 
     for str_to_repl in strings_to_replace_list:
@@ -273,8 +295,26 @@ def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True):
     if multi_encode:
         # Populate the set with multiple versions of the same set
         for unicode_to_repl in unicodes_to_replace_set:
+
+            # If the unicode_to_repl (in its original version, without applying
+            # the multi escape table) is larger than the response body; and
+            # taking into account that `apply_multi_escape_table` will always
+            # return a string which is equal or larger than the original; we
+            # reduce the CPU-usage of this function by preventing the generation
+            # of strings which will NEVER be replaced in:
+            #
+            #   body = replace(body, to_replace, empty)
+            #
+            # Because to_replace will be larger than body: ergo, it will never
+            # be there.
+            if len(unicode_to_repl) > body_len:
+                continue
+
+            # Note that we also do something similar with the max_len=body_len
+            # parameter we send to apply_multi_escape_table
             for encoded_to_repl in apply_multi_escape_table(unicode_to_repl,
-                                                            EXTENDED_TABLE):
+                                                            EXTENDED_TABLE,
+                                                            max_len=body_len):
                 encoded_payloads.add(encoded_to_repl)
     else:
         # Just leave the the two we have

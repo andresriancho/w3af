@@ -139,3 +139,31 @@ class TestApplyMultiEscapeTable(unittest.TestCase):
                     '%2520%2526']
 
         self.assertEqual(escaped, expected, escaped)
+
+    def test_apply_multi_escape_table_max_len_1(self):
+        escaped = apply_multi_escape_table('a&c', max_len=3)
+        escaped = [i for i in escaped]
+
+        expected = ['a&c']
+        self.assertEqual(escaped, expected, escaped)
+
+    def test_apply_multi_escape_table_max_len_2(self):
+        escaped = apply_multi_escape_table('a&', max_len=4)
+        escaped = [i for i in escaped]
+
+        expected = ['a&', 'a%26']
+        self.assertEqual(escaped, expected, escaped)
+
+    def test_apply_multi_escape_table_max_len_3(self):
+        escaped = apply_multi_escape_table('a&', max_len=5)
+        escaped = [i for i in escaped]
+
+        expected = ['a&', 'a%26']
+        self.assertEqual(escaped, expected, escaped)
+
+    def test_apply_multi_escape_table_max_len_4(self):
+        escaped = apply_multi_escape_table('a&', max_len=6)
+        escaped = [i for i in escaped]
+
+        expected = ['a&', 'a&amp;', 'a&#38;', 'a%26', 'a%2526']
+        self.assertEqual(escaped, expected, escaped)
