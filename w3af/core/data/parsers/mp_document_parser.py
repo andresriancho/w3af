@@ -32,6 +32,7 @@ import multiprocessing
 from concurrent.futures import TimeoutError
 from tblib.decorators import Error
 from pebble import ProcessPool
+from pebble.common import ProcessExpired
 
 import w3af.core.controllers.output_manager as om
 
@@ -167,6 +168,15 @@ class MultiProcessingDocumentParser(object):
                    ' to complete parsing of "%s", killed it!')
             args = (self.PARSER_TIMEOUT, http_response.get_url())
             raise TimeoutError(msg % args)
+        except ProcessExpired:
+            # We reach here when the process died because of an error, we
+            # handle this just like when the parser takes a lot of time and
+            # we're unable to retrieve an answer from it
+            msg = ('One of the parser processes died unexpectedly, this could'
+                   ' be because of a bug, the operating system triggering OOM'
+                   ' kills, etc. The scanner will continue with the next'
+                   ' document, but the scan results might be inconsistent.')
+            raise TimeoutError(msg)
 
         # We still need to perform some error handling here...
         if isinstance(parser_output, Error):
@@ -240,6 +250,9 @@ class MultiProcessingDocumentParser(object):
             filtered_tags = future.result()
         except TimeoutError:
             # We hit a timeout, return an empty list
+            return []
+        except ProcessExpired:
+            # We reach here when the process died because of an error
             return []
 
         # There was an exception in the parser, maybe the HTML was really
