@@ -80,7 +80,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('tldextract', 'tldextract', '1.7.2'),
 
                      # pebble multiprocessing
-                     PIPDependency('pebble', 'pebble', '4.3.6'),
+                     PIPDependency('pebble', 'pebble', '4.3.7'),
 
                      # acora speeds up string search, for regular expressions
                      # we use esmre to extract the string literals from the re
