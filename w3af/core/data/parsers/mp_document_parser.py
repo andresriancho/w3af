@@ -25,6 +25,8 @@ import os
 import psutil
 import signal
 import atexit
+import cPickle
+import tempfile
 import resource
 import threading
 import multiprocessing
@@ -141,8 +143,10 @@ class MultiProcessingDocumentParser(object):
         # Start the worker processes if needed
         self.start_workers()
 
+        filename = write_object_to_temp_file(http_response)
+
         apply_args = (process_document_parser,
-                      http_response,
+                      filename,
                       self.DEBUG)
 
         # Push the task to the workers
@@ -151,6 +155,9 @@ class MultiProcessingDocumentParser(object):
                                          args=(apply_args,),
                                          timeout=self.PARSER_TIMEOUT)
         except RuntimeError, rte:
+            # Remove the temp file used to send data to the process
+            remove_file_if_exists(filename)
+
             # We get here when the pebble pool management thread dies and
             # suddenly starts answering all calls with:
             #
@@ -162,7 +169,7 @@ class MultiProcessingDocumentParser(object):
             raise ScanMustStopException(msg)
 
         try:
-            parser_output = future.result()
+            process_result = future.result()
         except TimeoutError:
             msg = ('[timeout] The parser took more than %s seconds'
                    ' to complete parsing of "%s", killed it!')
@@ -179,8 +186,12 @@ class MultiProcessingDocumentParser(object):
             raise TimeoutError(msg)
 
         # We still need to perform some error handling here...
-        if isinstance(parser_output, Error):
-            if isinstance(parser_output.exc_value, MemoryError):
+        if isinstance(process_result, Error):
+
+            # Remove the temp file used to send data to the process
+            remove_file_if_exists(filename)
+
+            if isinstance(process_result.exc_value, MemoryError):
                 msg = ('The parser exceeded the memory usage limit of %s bytes'
                        ' while trying to parse "%s". The parser was stopped in'
                        ' order to prevent OOM issues.')
@@ -188,7 +199,16 @@ class MultiProcessingDocumentParser(object):
                 om.out.debug(msg % args)
                 raise MemoryError(msg % args)
 
-            parser_output.reraise()
+            process_result.reraise()
+
+        try:
+            parser_output = load_object_from_temp_file(process_result)
+        except Exception, e:
+            msg = 'Failed to deserialize sub-process result. Exception: "%s"'
+            args = (e,)
+            raise Exception(msg % args)
+        finally:
+            remove_file_if_exists(process_result)
 
         # Success!
         return parser_output
@@ -222,8 +242,10 @@ class MultiProcessingDocumentParser(object):
         # Start the worker processes if needed
         self.start_workers()
 
+        filename = write_object_to_temp_file(http_response)
+
         apply_args = (process_get_tags_by_filter,
-                      http_response,
+                      filename,
                       tags,
                       yield_text,
                       self.DEBUG)
@@ -247,18 +269,24 @@ class MultiProcessingDocumentParser(object):
             raise ScanMustStopException(msg)
 
         try:
-            filtered_tags = future.result()
+            process_result = future.result()
         except TimeoutError:
             # We hit a timeout, return an empty list
             return []
         except ProcessExpired:
             # We reach here when the process died because of an error
             return []
+        finally:
+            remove_file_if_exists(filename)
 
         # There was an exception in the parser, maybe the HTML was really
         # broken, or it wasn't an HTML at all.
-        if isinstance(filtered_tags, Error):
-            if isinstance(filtered_tags.exc_value, MemoryError):
+        if isinstance(process_result, Error):
+
+            # Remove the temp file used to send data to the process
+            remove_file_if_exists(filename)
+
+            if isinstance(process_result.exc_value, MemoryError):
                 msg = ('The parser exceeded the memory usage limit of %s bytes'
                        ' while trying to parse "%s". The parser was stopped in'
                        ' order to prevent OOM issues.')
@@ -267,20 +295,31 @@ class MultiProcessingDocumentParser(object):
 
             return []
 
+        try:
+            filtered_tags = load_object_from_temp_file(process_result)
+        except Exception, e:
+            msg = 'Failed to deserialize sub-process result. Exception: "%s"'
+            args = (e,)
+            raise Exception(msg % args)
+        finally:
+            remove_file_if_exists(process_result)
+
         return filtered_tags
 
 
-def process_get_tags_by_filter(http_resp, tags, yield_text, debug):
+def process_get_tags_by_filter(filename, tags, yield_text, debug):
     """
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
+    http_resp = load_object_from_temp_file(filename)
+
     document_parser = DocumentParser(http_resp)
     parser = document_parser.get_parser()
 
     # Not all parsers have tags
     if not hasattr(parser, 'get_tags_by_filter'):
-        return []
+        return write_object_to_temp_file([])
 
     filtered_tags = []
     for tag in parser.get_tags_by_filter(tags, yield_text=yield_text):
@@ -291,14 +330,17 @@ def process_get_tags_by_filter(http_resp, tags, yield_text, debug):
     args = (len(filtered_tags), http_resp.get_uri(), tags)
     om.out.debug(msg % args)
 
-    return filtered_tags
+    result_filename = write_object_to_temp_file(filtered_tags)
+
+    return result_filename
 
 
-def process_document_parser(http_resp, debug):
+def process_document_parser(filename, debug):
     """
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
+    http_resp = load_object_from_temp_file(filename)
     pid = multiprocessing.current_process().pid
 
     if debug:
@@ -323,7 +365,9 @@ def process_document_parser(http_resp, debug):
             args = (pid, http_resp.get_url())
             om.out.debug(msg % args)
 
-    return document_parser
+    result_filename = write_object_to_temp_file(document_parser)
+
+    return result_filename
 
 
 @atexit.register
@@ -398,6 +442,42 @@ def limit_memory_usage(mem_limit):
     limit_mb = (real_memory_limit / 1024 / 1024)
     msg = 'Using RLIMIT_AS memory usage limit %s MB for new pool process'
     om.out.debug(msg % limit_mb)
+
+
+def write_object_to_temp_file(obj):
+    """
+    Write an object to a temp file using cPickle to serialize
+
+    :param obj: The object
+    :return: The name of the file
+    """
+    temp = tempfile.NamedTemporaryFile(prefix='w3af-',
+                                       suffix='.pebble',
+                                       delete=False)
+    cPickle.dump(obj, temp, cPickle.HIGHEST_PROTOCOL)
+    temp.close()
+    return temp.name
+
+
+def load_object_from_temp_file(filename):
+    """
+    Load an object from a temp file
+
+    :param filename: The filename where the cPickle serialized object lives
+    :return: The object instance
+    """
+    return cPickle.load(file(filename, 'rb'))
+
+
+def remove_file_if_exists(filename):
+    """
+    Remove the file if it exists
+
+    :param filename: The file to remove
+    :return: None
+    """
+    if os.path.exists(filename):
+        os.remove(filename)
 
 
 if is_main_process():
