@@ -64,9 +64,9 @@ class grep(BaseConsumer):
 
         super(grep, self).__init__(grep_plugins,
                                    w3af_core,
-                                   create_pool=False,
-                                   #max_pool_queued_tasks=max_pool_queued_tasks,
-                                   #thread_pool_size=thread_pool_size,
+                                   create_pool=True,
+                                   max_pool_queued_tasks=max_pool_queued_tasks,
+                                   thread_pool_size=thread_pool_size,
                                    thread_name='Grep',
                                    max_in_queue_size=max_in_queue_size)
         self._already_analyzed = ScalableBloomFilter()
@@ -187,11 +187,11 @@ class grep(BaseConsumer):
             # memory!
             #
             # This is controlled by max_pool_queued_tasks
-            self._inner_consume(1, plugin, request, response)
-            #self._threadpool.apply_async(self._inner_consume,
-            #                             (plugin, request, response))
+            #self._inner_consume(1, plugin, request, response)
+            self._threadpool.apply_async(self._inner_consume,
+                                         (plugin, request, response))
 
-    #@task_decorator
+    @task_decorator
     def _inner_consume(self, function_id, plugin, request, response):
         """
         Run one plugin against a request/response.
