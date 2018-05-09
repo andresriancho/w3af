@@ -20,16 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import ssl
-import copy
 import socket
 import urllib
 import urllib2
 import httplib
 import OpenSSL
-import string
+import itertools
 
-from collections import OrderedDict
-from w3af.core.controllers.misc.itertools_toolset import unique_everseen
+from w3af.core.controllers.misc.itertools_toolset import unique_everseen_hash
 from errno import (ECONNREFUSED, EHOSTUNREACH, ECONNRESET, ENETDOWN,
                    ENETUNREACH, ETIMEDOUT, ENOSPC)
 
@@ -39,6 +37,11 @@ from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.misc.web_encodings import (URL_ENCODING_FUNCTIONS,
+                                               HTML_ENCODING_FUNCTIONS,
+                                               JSON_ENCODING_FUNCTIONS,
+                                               generate_html_encoding_functions,
+                                               generate_url_encoding_functions)
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 
@@ -66,108 +69,11 @@ def new_no_content_resp(uri, add_id=False):
 
     return no_content_response
 
-#
-# The number of encodings a developer can use is huge, and the frameworks
-# don't help either, since some will (for example) write &#034; and other
-# will write &#34;
-#
-# We want to make a real effort to cleanup all the bodies, so we are compiling
-# A list with all the ways a special character can be written, and then we
-# run all combinations to find the right one used in this page.
-#
-# Warning! The order in this table is not random! The first items are the ones
-# that appear in the escapes of the rest of the characters.
-ESCAPE_TABLE = OrderedDict([
-    ('#',  ['#',                                             '%23', '%2523']),
-    ('&',  ['&', '&amp;',  '&#x26;', '&#38;', '&#038;',      '%26', '%2526']),
-    ('%',  ['%',                                             '%25', '%2525']),
-    ('"',  ['"', '&quot;', '&#x22;', '&#34;', '&#034;',      '%22', '%2522', '\\u0022', '\\"']),
-    ("'",  ["'", '&apos;', '&#x27;', '&#39;', '&#039;',      '%27', '%2527', '\\u0027', "\\'"]),
-    ('>',  ['>', '&gt;',   '&#x3e;', '&#62;', '&#062;',      '%3e', '%253e']),
-    ('=',  ['=', '&eq;',   '&#x3d;', '&#61;', '&#061;',      '%3d', '%253d']),
-    (' ',  [' ', '&nbsp;', '&#x20;', '&#32;', '&#032;', '+', '%20', '%2520']),
-    ('<',  ['<', '&lt;',   '&#x3c;', '&#60;', '&#060;',      '%3c', '%253c']),
-    (';',  [';',                                             '%3b', '%253b']),
-    ('/',  ['/',                                             '%2f', '%252f']),
-    (':',  [':',                                             '%3a', '%253a']),
-    ('@',  ['@',                                             '%40', '%2540']),
-    ('$',  ['$',                                             '%24', '%2524']),
-    (',',  [',',                                             '%2c', '%252c']),
-    ('?',  ['?',                                             '%3f', '%253f']),
-    ('\r', ['\r',                                            '%0d', '%250d']),
-    ('\n', ['\n',                                            '%0a', '%250a']),
-])
 
-
-def extend_escape_table_with_uppercase(escape_table):
-    """
-    Some ugly sites use &AMP; instead of &amp; and browsers support it.
-    Same thing with %3D and %3d
-
-    Since I don't want to make the ESCAPE_TABLE uglier with all the
-    upper case versions, I just extend it with this function.
-
-    :return: An extended table with uppercase
-    """
-    extended_table = copy.deepcopy(escape_table)
-
-    for char, escapes in escape_table.iteritems():
-        for escape in escapes:
-            upper_case_escape = escape.upper()
-
-            # Ignore those X in the HTML escape
-            if escape.startswith('&#x'):
-                upper_case_escape = upper_case_escape.replace('&#X', '&#x')
-
-            if upper_case_escape != escape:
-                extended_table[char].append(upper_case_escape)
-
-    return extended_table
-
-
-def extend_escape_table_with_printable_chars(escape_table):
-    """
-    Some ugly sites will output %41 when we send A, or even A when
-    we send "a"
-
-    Since I don't want to manually write a table with all those
-    characters I'm going to extend the original with string.printable
-
-    :return: An extended table with uppercase
-    """
-    extended_table = copy.deepcopy(escape_table)
-
-    for char in string.printable:
-        if char not in extended_table:
-
-            dec_val = ord(char)
-            hex_val = format(dec_val, 'x')
-
-            char_encodings = ['%' + hex_val,
-                              '%25' + hex_val,
-                              '&#x%s;' % hex_val,
-                              '&#%s;' % dec_val,
-                              '&#0%s;' % dec_val]
-            extended_table[char] = char_encodings
-
-    return extended_table
-
-# TODO: This can NOT be done! If you enable this line and call the
-#       get_clean_body function it will try too many combinations of
-#       encodings and use 100% CPU for a very long time.
-#
-# EXTENDED_TABLE = extend_escape_table_with_printable_chars(ESCAPE_TABLE)
-
-EXTENDED_TABLE = extend_escape_table_with_uppercase(ESCAPE_TABLE)
-
-
-def apply_multi_escape_table(_input, escape_table=ESCAPE_TABLE, max_len=None):
+def apply_multi_escape_table(_input, max_len=None, max_count=None):
     """
 
     :param _input: The input string which must be escaped using N ways
-
-    :param escape_table: The escape table which will be used to escape
-                         each special character found in _input
 
     :param max_len: The max length of the escaped string that can be returned
                     For example, if max_len is 4, _input is "a&", then
@@ -175,56 +81,103 @@ def apply_multi_escape_table(_input, escape_table=ESCAPE_TABLE, max_len=None):
                     "a%26" (len 4) will. This is usually used for performance
                     improvements.
 
+    :param max_count: The max amount of escapes to generate.
+
+                      This limitation was imposed after seeing that in some cases,
+                      like calling get_clean_body() with a mutant that sent a binary
+                      file to the HTTP server, the apply_multi_escape_table took
+                      more than 1800 seconds to run and generated thousands of
+                      escaped strings. Those strings are (most likely) never
+                      going to be found in the response.
+
     :return: Yield escaped versions of _input
     """
-    inner_iter = _multi_escape_table_impl(_input,
-                                          escape_table=escape_table)
-    for x in unique_everseen(inner_iter):
+    returned = 0
+
+    inner_iter = _multi_escape_table_impl(_input)
+
+    for escaped_input in unique_everseen_hash(inner_iter):
 
         # Filter output by max_len
         if max_len is not None:
-            if len(x) > max_len:
+            if len(escaped_input) > max_len:
                 continue
 
-        yield x
+        if max_count is not None:
+            if max_count <= returned:
+                break
+
+        returned += 1
+        yield escaped_input
 
 
-def _multi_escape_table_impl(_input, escape_table=ESCAPE_TABLE):
+def _multi_escape_table_impl(_input):
     """
-    Replace all combinations in the escape table.
+    Apply the following functions to the _input and yield results:
+        URL_ENCODING_FUNCTIONS
+        HTML_ENCODING_FUNCTIONS
+        MODIFICATION_FUNCTIONS
+        JSON_ENCODING_FUNCTIONS
+
+    In some cases we apply N functions to the _input, for example:
+        * Apply one url encoding function
+        * Then apply one HTML encoding function
+        * Finally apply a modification function and return the result
+
+    And in some other cases we might apply a function of the same class twice:
+        * Apply one url encoding function
+        * Apply other url encoding function and return the result
+
+    The most commonly used combinations are yield first, this means that
+    URL-encoded result comes before *double* URL-decoded result.
+
+    The original string is returned as the first result
+
+    This function doesn't care about yielding unique results since
+    apply_multi_escape_table is filtering that for us.
 
     :param _input: The string with special characters
-    :param escape_table: The table used to find the special chars
     :return: A string generator with all special characters replaced
     """
+    if not HTML_ENCODING_FUNCTIONS:
+        generate_html_encoding_functions()
+        generate_url_encoding_functions()
+
     yield _input
 
-    for table_char, escapes in escape_table.iteritems():
+    for encode in itertools.chain(URL_ENCODING_FUNCTIONS,
+                                  HTML_ENCODING_FUNCTIONS,
+                                  JSON_ENCODING_FUNCTIONS):
+        encoded_input = encode(_input)
+        if encoded_input != _input:
+            yield encoded_input
 
-        if table_char in _input:
-            for escape in escapes:
-                modified = _input.replace(table_char, escape)
+    # Double URL-encoding
+    for encode_1 in URL_ENCODING_FUNCTIONS:
+        for encode_2 in URL_ENCODING_FUNCTIONS:
+            encoded_input = encode_1(encode_2(_input))
+            if encoded_input != _input:
+                yield encoded_input
 
-                # On the first call, and based on the way the table was created,
-                # this will yield the unmodified input string
-                yield modified
+    # URL-encoding and HTML-encoding
+    for encode_1 in URL_ENCODING_FUNCTIONS:
+        for encode_2 in HTML_ENCODING_FUNCTIONS:
+            encoded_input = encode_1(encode_2(_input))
+            if encoded_input != _input:
+                yield encoded_input
 
-                # This makes the recursion end
-                new_escape_table = escape_table.copy()
-                new_escape_table.pop(table_char)
+    # HTML-encoding and URL-encoding
+    for encode_1 in URL_ENCODING_FUNCTIONS:
+        for encode_2 in HTML_ENCODING_FUNCTIONS:
+            encoded_input = encode_1(encode_2(_input))
+            if encoded_input != _input:
+                yield encoded_input
 
-                # These lines are here to avoid double and triple encoding
-                for char in escape:
-                    new_escape_table.pop(char, None)
-
-                inner_generator = _multi_escape_table_impl(modified,
-                                                           escape_table=new_escape_table)
-
-                for modified in inner_generator:
-                    yield modified
+    # Double HTML-encoding doesn't make any sense to me
+    # skipping that combination
 
 
-def get_clean_body(mutant, response):
+def get_clean_body(mutant, response, max_escape_count=500):
     """
     @see: Very similar to fingerprint_404.py get_clean_body() bug not quite
           the same maybe in the future I can merge both?
@@ -240,17 +193,32 @@ def get_clean_body(mutant, response):
     All injected values are removed encoded and 'as is'.
 
     :param mutant: The mutant where I can get the value from.
+
     :param response: The HTTPResponse object to clean
+
+    :param max_escape_count: The max number of escapes to try to replace, note
+                             that the default here is 500, which is a little bit
+                             more than the max number of escapes generated in the
+                             worse case I could imagine at test_apply_multi_escape_table_count
+                             which generated ~350.
+
+                             The goal is to make sure that everything is generated
+                             but at the same time control any edge cases which I might
+                             have missed.
+
     :return: A string that represents the 'cleaned' response body.
     """
     if not response.is_text_or_html():
         return response.body
 
     strings_to_replace_list = [mutant.get_token_value()]
-    return _get_clean_body_impl(response, strings_to_replace_list)
+    return _get_clean_body_impl(response,
+                                strings_to_replace_list,
+                                max_escape_count=max_escape_count)
 
 
-def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True):
+def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
+                         max_escape_count=None):
     """
     This is a low level function which allows me to use all the improvements
     I did in the helpers.get_clean_body() in fingerprint_404.get_clean_body().
@@ -269,6 +237,7 @@ def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True):
     :return: The body as a unicode with all strings to replace removed.
     """
     body = response.body
+    body_lower = body.lower()
     body_len = len(body)
     unicodes_to_replace_set = set()
 
@@ -313,8 +282,8 @@ def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True):
             # Note that we also do something similar with the max_len=body_len
             # parameter we send to apply_multi_escape_table
             for encoded_to_repl in apply_multi_escape_table(unicode_to_repl,
-                                                            EXTENDED_TABLE,
-                                                            max_len=body_len):
+                                                            max_len=body_len,
+                                                            max_count=max_escape_count):
                 encoded_payloads.add(encoded_to_repl)
     else:
         # Just leave the the two we have
@@ -324,13 +293,49 @@ def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True):
     encoded_payloads = list(encoded_payloads)
     encoded_payloads.sort(lambda x, y: cmp(len(y), len(x)))
 
-    empty = u''
-    replace = unicode.replace
-
     for to_replace in encoded_payloads:
-        body = replace(body, to_replace, empty)
+        body, body_lower = remove_using_lower_case(body, body_lower, to_replace)
 
     return body
+
+
+def remove_using_lower_case(body, body_lower, to_replace):
+    """
+    Replace `to_replace` (which will always be lower case) in `body`
+    (which is the original string) using `body_lower` as base for the
+    search.
+
+    Example input:
+        body: Hello World World
+        body_lower: hello world world
+        to_replace: world
+
+    Output:
+        body: Hello
+        body_lower: hello
+
+    :param body: The original string
+    :param body_lower: The original string after .lower()
+    :param to_replace: The string to replace
+    :return: A tuple containing:
+                The original string without `to_replace`
+                The string from the first item after .lower()
+    """
+    idx = 0
+    to_replace_len = len(to_replace)
+
+    while idx < len(body):
+        index_l = body_lower.find(to_replace, idx)
+
+        if index_l == -1:
+            return body, body_lower
+
+        body = body[:index_l] + body[index_l + to_replace_len:]
+        body_lower = body.lower()
+
+        idx = index_l + 1
+
+    return body, body_lower
 
 
 def get_socket_exception_reason(error):

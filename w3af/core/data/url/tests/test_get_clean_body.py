@@ -23,10 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib
 
-from w3af.core.data.url.helpers import (get_clean_body,
-                                        apply_multi_escape_table,
-                                        extend_escape_table_with_uppercase,
-                                        ESCAPE_TABLE)
+from w3af.core.data.url.helpers import get_clean_body, apply_multi_escape_table
+from w3af.core.data.misc.web_encodings import SPECIAL_CHARS
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -73,6 +71,28 @@ class TestGetCleanBody(unittest.TestCase):
         self.assertEqual(clean_body, 'abc a= def')
         self.assertIsInstance(clean_body, unicode)
 
+    def test_get_clean_body_encoded_upper_case(self):
+        payload = 'hello/world'
+
+        # uppercase here!
+        body = 'abc %s def' % urllib.urlencode({'a': payload})
+        body = body.replace('%2f', '%2F')
+
+        url = URL('http://w3af.com')
+        headers = Headers([('Content-Type', 'text/html')])
+        response = HTTPResponse(200, body, headers, url, url)
+
+        freq = FuzzableRequest(URL('http://w3af.com/?a=1'))
+        created_mutants = FakeMutant.create_mutants(freq, [payload], [],
+                                                    False, {})
+
+        mutant = created_mutants[0]
+
+        clean_body = get_clean_body(mutant, response)
+
+        self.assertEqual(clean_body, 'abc a= def')
+        self.assertIsInstance(clean_body, unicode)
+
     def test_get_clean_body_double_encoded(self):
         payload = 'hello/world'
 
@@ -92,78 +112,254 @@ class TestGetCleanBody(unittest.TestCase):
         self.assertEqual(clean_body, 'abc  def')
         self.assertIsInstance(clean_body, unicode)
 
+    def test_get_clean_body_encoded_find_special_char_fail(self):
+        for char in SPECIAL_CHARS:
+            payload = 'x%sy' % char
 
-class TestExtendTable(unittest.TestCase):
-    def test_trivial(self):
-        et = extend_escape_table_with_uppercase(ESCAPE_TABLE)
+            body = 'abc %s def' % urllib.quote_plus(payload)
+            url = URL('http://w3af.com')
+            headers = Headers([('Content-Type', 'text/html')])
+            response = HTTPResponse(200, body, headers, url, url, charset='utf-8')
 
-        self.assertEqual(et['"'],
-                         ['"', '&quot;', '&#x22;', '&#34;', '&#034;',
-                          '%22', '%2522', '\\u0022', '\\"', '&QUOT;', '\\U0022'])
+            freq = FuzzableRequest(URL('http://w3af.com/?a=1'))
+            created_mutants = FakeMutant.create_mutants(freq, [payload], [],
+                                                        False, {})
 
-        self.assertEqual(et['='],
-                         ['=', '&eq;', '&#x3d;', '&#61;', '&#061;', '%3d', '%253d',
-                          '&EQ;', '&#x3D;', '%3D', '%253D'])
+            mutant = created_mutants[0]
+
+            clean_body = get_clean_body(mutant, response)
+
+            msg = 'Failed for payload %r and body %r'
+            args = (payload, body)
+            self.assertEqual(clean_body, 'abc  def', msg % args)
+            self.assertIsInstance(clean_body, unicode)
+
+    def test_get_clean_body_max_escape_count(self):
+        # This payload has one of each special char that will be encoded
+        payload = ' '.join(SPECIAL_CHARS)
+
+        body = 'abc %s def' % urllib.quote_plus(payload)
+        url = URL('http://w3af.com')
+        headers = Headers([('Content-Type', 'text/html')])
+        response = HTTPResponse(200, body, headers, url, url)
+
+        freq = FuzzableRequest(URL('http://w3af.com/?a=1'))
+        created_mutants = FakeMutant.create_mutants(freq, [payload], [],
+                                                    False, {})
+
+        mutant = created_mutants[0]
+
+        tests = [(False, 1),
+                 (False, 3),
+                 (True,  1000),
+                 (True,  None)]
+
+        for expected_result, max_escape_count in tests:
+            clean_body = get_clean_body(mutant,
+                                        response,
+                                        max_escape_count=max_escape_count)
+
+            self.assertIsInstance(clean_body, unicode)
+
+            if expected_result:
+                msg = 'Failed in round (%s - %s), clean body is: "%s"'
+                args = (expected_result, max_escape_count, clean_body)
+                self.assertEqual(clean_body, 'abc  def', msg % args)
+            else:
+                msg = 'Failed in round (%s - %s), clean body is: "%s"'
+                args = (expected_result, max_escape_count, clean_body)
+                self.assertEqual(clean_body, body, msg % args)
 
 
 class TestApplyMultiEscapeTable(unittest.TestCase):
+
+    maxDiff = None
+
     def test_apply_multi_escape_table_0(self):
         escaped = apply_multi_escape_table('abc')
         escaped = [i for i in escaped]
 
-        expected = ['abc']
-        self.assertEqual(escaped, expected, escaped)
+        expected = [u'abc',
+                    u'%61%62%63',
+                    u'&#x61;&#x62;&#x63;',
+                    u'&#97;&#98;&#99;',
+                    u'&#097;&#098;&#099;',
+                    u'%2561%2562%2563',
+                    u'%25%36%31%25%36%32%25%36%33',
+                    u'%26#x61%3b%26#x62%3b%26#x63%3b',
+                    u'%26#97%3b%26#98%3b%26#99%3b',
+                    u'%26#097%3b%26#098%3b%26#099%3b',
+                    u'%26%23x61%3b%26%23x62%3b%26%23x63%3b',
+                    u'%26%2397%3b%26%2398%3b%26%2399%3b',
+                    u'%26%23097%3b%26%23098%3b%26%23099%3b',
+                    u'%26%23%78%36%31%3b%26%23%78%36%32%3b%26%23%78%36%33%3b',
+                    u'%26%23%39%37%3b%26%23%39%38%3b%26%23%39%39%3b',
+                    u'%26%23%30%39%37%3b%26%23%30%39%38%3b%26%23%30%39%39%3b']
+
+        self.assertEqual(escaped, expected)
+
+    def test_apply_multi_escape_table_count(self):
+        escaped = apply_multi_escape_table('abc def'.join(SPECIAL_CHARS))
+        escaped = [i for i in escaped]
+
+        self.assertEqual(len(escaped), 346)
 
     def test_apply_multi_escape_table_1(self):
         escaped = apply_multi_escape_table(' ')
         escaped = [i for i in escaped]
 
-        expected = [' ', '&nbsp;', '&#x20;', '&#32;', '&#032;', '+', '%20', '%2520']
-        self.assertEqual(escaped, expected, escaped)
+        expected = [' ',
+                    u'%20',
+                    u'+',
+                    u'&nbsp;',
+                    u'&#x20;',
+                    u'&#32;',
+                    u'&#032;',
+                    u'%2b',
+                    u'%2520',
+                    u'%25%32%30',
+                    u'%26nbsp%3b',
+                    u'%26#x20%3b',
+                    u'%26#32%3b',
+                    u'%26#032%3b',
+                    u'%26%23x20%3b',
+                    u'%26%2332%3b',
+                    u'%26%23032%3b',
+                    u'%26%6e%62%73%70%3b',
+                    u'%26%23%78%32%30%3b',
+                    u'%26%23%33%32%3b',
+                    u'%26%23%30%33%32%3b']
+
+        self.assertEqual(escaped, expected)
 
     def test_apply_multi_escape_table_2(self):
         escaped = apply_multi_escape_table(' &')
         escaped = [i for i in escaped]
 
-        expected = [' &', '&nbsp;&', '&#x20;&', '&#32;&', '&#032;&', '+&', '%20&',
-                    '%2520&', ' &amp;', '&nbsp;&amp;', '&#x20;&amp;', '&#32;&amp;',
-                    '&#032;&amp;', '+&amp;', '%20&amp;', '%2520&amp;', ' &#x26;',
-                    '&nbsp;&#x26;', '&#x20;&#x26;', '&#32;&#x26;', '&#032;&#x26;',
-                    '+&#x26;', '%20&#x26;', '%2520&#x26;', ' &#38;', '&nbsp;&#38;',
-                    '&#x20;&#38;', '&#32;&#38;', '&#032;&#38;', '+&#38;', '%20&#38;',
-                    '%2520&#38;', ' &#038;', '&nbsp;&#038;', '&#x20;&#038;',
-                    '&#32;&#038;', '&#032;&#038;', '+&#038;', '%20&#038;',
-                    '%2520&#038;', ' %26', '&nbsp;%26', '&#x20;%26', '&#32;%26',
-                    '&#032;%26', '+%26', '%20%26', '%2520%26', ' %2526', '&nbsp;%2526',
-                    '&#x20;%2526', '&#32;%2526', '&#032;%2526', '+%2526', '%20%2526',
-                    '%2520%2526']
+        expected = [' &',
+                    u' %26',
+                    u'%20%26',
+                    u'+%26',
+                    u'&nbsp;&amp;',
+                    u' &amp;',
+                    u'&#x20;&#x26;',
+                    u'&#x20;&',
+                    u' &#x26;',
+                    u'&#x20;&amp;',
+                    u'&#32;&#38;',
+                    u'&#32;&',
+                    u' &#38;',
+                    u'&#32;&amp;',
+                    u'&#032;&#038;',
+                    u'&#032;&',
+                    u' &#038;',
+                    u'&#032;&amp;',
+                    u'%2b%26',
+                    u'%20%2526',
+                    u'%2520%2526',
+                    u'%2b%2526',
+                    u'%20%25%32%36',
+                    u'%25%32%30%25%32%36',
+                    u'%2b%25%32%36',
+                    u'+%2526',
+                    u'+%25%32%36',
+                    u'%26nbsp%3b%26amp%3b',
+                    u' %26amp%3b',
+                    u'%26#x20%3b%26#x26%3b',
+                    u'%26#x20%3b%26',
+                    u' %26#x26%3b',
+                    u'%26#x20%3b%26amp%3b',
+                    u'%26#32%3b%26#38%3b',
+                    u'%26#32%3b%26',
+                    u' %26#38%3b',
+                    u'%26#32%3b%26amp%3b',
+                    u'%26#032%3b%26#038%3b',
+                    u'%26#032%3b%26',
+                    u' %26#038%3b',
+                    u'%26#032%3b%26amp%3b',
+                    u'%20%26amp%3b',
+                    u'%26%23x20%3b%26%23x26%3b',
+                    u'%26%23x20%3b%26',
+                    u'%20%26%23x26%3b',
+                    u'%26%23x20%3b%26amp%3b',
+                    u'%26%2332%3b%26%2338%3b',
+                    u'%26%2332%3b%26',
+                    u'%20%26%2338%3b',
+                    u'%26%2332%3b%26amp%3b',
+                    u'%26%23032%3b%26%23038%3b',
+                    u'%26%23032%3b%26',
+                    u'%20%26%23038%3b',
+                    u'%26%23032%3b%26amp%3b',
+                    u'%26%6e%62%73%70%3b%26%61%6d%70%3b',
+                    u'%20%26%61%6d%70%3b',
+                    u'%26%23%78%32%30%3b%26%23%78%32%36%3b',
+                    u'%26%23%78%32%30%3b%26',
+                    u'%20%26%23%78%32%36%3b',
+                    u'%26%23%78%32%30%3b%26%61%6d%70%3b',
+                    u'%26%23%33%32%3b%26%23%33%38%3b',
+                    u'%26%23%33%32%3b%26',
+                    u'%20%26%23%33%38%3b',
+                    u'%26%23%33%32%3b%26%61%6d%70%3b',
+                    u'%26%23%30%33%32%3b%26%23%30%33%38%3b',
+                    u'%26%23%30%33%32%3b%26',
+                    u'%20%26%23%30%33%38%3b',
+                    u'%26%23%30%33%32%3b%26%61%6d%70%3b',
+                    u'+%26amp%3b',
+                    u'+%26%23x26%3b',
+                    u'+%26%2338%3b',
+                    u'+%26%23038%3b',
+                    u'+%26%61%6d%70%3b',
+                    u'+%26%23%78%32%36%3b',
+                    u'+%26%23%33%38%3b',
+                    u'+%26%23%30%33%38%3b']
 
-        self.assertEqual(escaped, expected, escaped)
+        self.assertEqual(escaped, expected)
 
     def test_apply_multi_escape_table_max_len_1(self):
         escaped = apply_multi_escape_table('a&c', max_len=3)
         escaped = [i for i in escaped]
 
         expected = ['a&c']
-        self.assertEqual(escaped, expected, escaped)
+        self.assertEqual(escaped, expected)
 
     def test_apply_multi_escape_table_max_len_2(self):
         escaped = apply_multi_escape_table('a&', max_len=4)
         escaped = [i for i in escaped]
 
         expected = ['a&', 'a%26']
-        self.assertEqual(escaped, expected, escaped)
+        self.assertEqual(escaped, expected)
 
     def test_apply_multi_escape_table_max_len_3(self):
         escaped = apply_multi_escape_table('a&', max_len=5)
         escaped = [i for i in escaped]
 
         expected = ['a&', 'a%26']
-        self.assertEqual(escaped, expected, escaped)
+        self.assertEqual(escaped, expected)
 
     def test_apply_multi_escape_table_max_len_4(self):
         escaped = apply_multi_escape_table('a&', max_len=6)
         escaped = [i for i in escaped]
 
-        expected = ['a&', 'a&amp;', 'a&#38;', 'a%26', 'a%2526']
-        self.assertEqual(escaped, expected, escaped)
+        expected = ['a&', 'a%26', '%61%26', 'a&amp;', 'a&#38;', '&#97;&', 'a%2526']
+        self.assertEqual(escaped, expected)
+
+    def test_apply_multi_escape_table_max_count_1(self):
+        escaped = apply_multi_escape_table('a&', max_count=3)
+        escaped = [i for i in escaped]
+
+        expected = ['a&', 'a%26', '%61%26']
+        self.assertEqual(escaped, expected)
+
+    def test_apply_multi_escape_table_max_count_max_len_1(self):
+        escaped = apply_multi_escape_table('a&', max_count=3, max_len=6)
+        escaped = [i for i in escaped]
+
+        expected = ['a&', 'a%26', '%61%26']
+        self.assertEqual(escaped, expected)
+
+    def test_apply_multi_escape_table_max_count_max_len_2(self):
+        escaped = apply_multi_escape_table('a&', max_count=3, max_len=4)
+        escaped = [i for i in escaped]
+
+        expected = ['a&', 'a%26']
+        self.assertEqual(escaped, expected)
