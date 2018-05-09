@@ -21,11 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import sys
-import gzip
 import time
 import base64
 import jinja2
 import shutil
+
+import lz4.frame
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from unicodedata import category
@@ -440,7 +441,7 @@ class FindingsCache(object):
         filename = self.get_filename_from_uniq_id(uniq_id)
 
         try:
-            node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+            node = lz4.frame.decompress(open(filename, 'rb').read())
         except IOError:
             return None
 
@@ -449,7 +450,7 @@ class FindingsCache(object):
     def save_finding_to_cache(self, uniq_id, node):
         filename = self.get_filename_from_uniq_id(uniq_id)
         node = node.encode('utf-8')
-        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(node)
+        open(filename, 'wb').write(lz4.frame.compress(node))
 
     def evict_from_cache(self, uniq_id):
         filename = self.get_filename_from_uniq_id(uniq_id)
@@ -501,7 +502,7 @@ class CachedXMLNode(XMLNode):
         filename = self.get_filename()
 
         try:
-            node = gzip.open(filename, 'rb', compresslevel=self.COMPRESSION_LEVEL).read()
+            node = lz4.frame.decompress(open(filename, 'rb').read())
         except IOError:
             return None
 
@@ -510,7 +511,7 @@ class CachedXMLNode(XMLNode):
     def save_node_to_cache(self, node):
         filename = self.get_filename()
         node = node.encode('utf-8')
-        gzip.open(filename, 'wb', compresslevel=self.COMPRESSION_LEVEL).write(node)
+        open(filename, 'wb').write(lz4.frame.compress(node))
 
 
 class HTTPTransaction(CachedXMLNode):

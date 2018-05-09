@@ -93,6 +93,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
 
                      # OpenAPI documentation parser
                      PIPDependency('bravado', 'bravado', '9.2.2'),
+
+                     # Fast compression library
+                     PIPDependency('lz4', 'lz4', '1.1.0'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

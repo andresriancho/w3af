@@ -22,10 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import os
-import gzip
 import time
 import threading
 import msgpack
+
+import lz4.frame
 
 from functools import wraps
 from shutil import rmtree
@@ -201,14 +202,13 @@ class HistoryItem(object):
                 continue
 
             # Ok... the file exists, but it might still be being written
-            req_res = gzip.open(fname, 'rb', compresslevel=self.COMPRESSION_LEVEL)
+            req_res = lz4.frame.decompress(open(fname, 'rb').read())
 
             try:
-                data = msgpack.load(req_res, use_list=True)
+                data = msgpack.loads(req_res, use_list=True)
             except ValueError:
                 # ValueError: Extra data. returned when msgpack finds invalid
                 # data in the file
-                req_res.close()
                 time.sleep(WAIT_TIME)
                 continue
 
@@ -217,19 +217,14 @@ class HistoryItem(object):
             except TypeError:
                 # https://github.com/andresriancho/w3af/issues/1101
                 # 'NoneType' object is not iterable
-                req_res.close()
                 time.sleep(WAIT_TIME)
                 continue
 
             if not canary == self._MSGPACK_CANARY:
                 # read failed, most likely because the file write is not
                 # complete but for some reason it was a valid msgpack file
-                req_res.close()
                 time.sleep(WAIT_TIME)
                 continue
-
-            # Success!
-            req_res.close()
 
             request = HTTPRequest.from_dict(request_dict)
             response = HTTPResponse.from_dict(response_dict)
@@ -343,8 +338,7 @@ class HistoryItem(object):
         path_fname = self._get_fname_for_id(self.id)
 
         try:
-            req_res = gzip.open(path_fname, 'wb',
-                                compresslevel=self.COMPRESSION_LEVEL)
+            req_res = open(path_fname, 'wb')
         except IOError:
             # We get here when the path_fname does not exist (for some reason)
             # and want to analyze exactly why to be able to fix the issue in
@@ -372,7 +366,9 @@ class HistoryItem(object):
         data = (self.request.to_dict(),
                 self.response.to_dict(),
                 self._MSGPACK_CANARY)
-        msgpack.dump(data, req_res)
+        msgpack_data = msgpack.dumps(data)
+
+        req_res.write(lz4.frame.compress(msgpack_data))
         req_res.close()
         
         return True
