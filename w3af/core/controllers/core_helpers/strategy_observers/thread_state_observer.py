@@ -49,7 +49,10 @@ class ThreadStateObserver(StrategyObserver):
         self.worker_thread = None
 
         self.should_stop = False
-        self._lock = threading.RLock()
+
+        self._crawl_infra_lock = threading.RLock()
+        self._worker_thread_lock = threading.RLock()
+        self._audit_lock = threading.RLock()
 
     def end(self):
         self.should_stop = True
@@ -71,20 +74,25 @@ class ThreadStateObserver(StrategyObserver):
         :param args: Fuzzable requests that we don't care about
         :return: None, everything is written to disk
         """
-        with self._lock:
-            if self.crawl_infra_thread is None:
-                pool = consumer.get_pool()
-                self.crawl_infra_thread = threading.Thread(target=self.thread_worker,
-                                                           args=(pool, 'CrawlInfraWorker'),
-                                                           name='CrawlInfraPoolStateObserver')
-                self.crawl_infra_thread.start()
+        with self._crawl_infra_lock:
+            if self.crawl_infra_thread is not None:
+                return
 
-            if self.worker_thread is None:
-                pool = consumer._w3af_core.worker_pool
-                self.worker_thread = threading.Thread(target=self.thread_worker,
-                                                      args=(pool, 'Worker'),
-                                                      name='WorkerPoolStateObserver')
-                self.worker_thread.start()
+            pool = consumer.get_pool()
+            self.crawl_infra_thread = threading.Thread(target=self.thread_worker,
+                                                       args=(pool, 'CrawlInfraWorker'),
+                                                       name='CrawlInfraPoolStateObserver')
+            self.crawl_infra_thread.start()
+
+        with self._worker_thread_lock:
+            if self.worker_thread is not None:
+                return
+
+            pool = consumer._w3af_core.worker_pool
+            self.worker_thread = threading.Thread(target=self.thread_worker,
+                                                  args=(pool, 'Worker'),
+                                                  name='WorkerPoolStateObserver')
+            self.worker_thread.start()
 
     def audit(self, consumer, *args):
         """
@@ -94,7 +102,7 @@ class ThreadStateObserver(StrategyObserver):
         :param args: Fuzzable requests that we don't care about
         :return: None, everything is written to disk
         """
-        with self._lock:
+        with self._audit_lock:
             if self.audit_thread is not None:
                 return
 
