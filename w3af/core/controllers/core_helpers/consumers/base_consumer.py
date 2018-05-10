@@ -24,6 +24,7 @@ import time
 import random
 
 from multiprocessing.dummy import Process
+from Queue import Empty
 from functools import wraps
 
 import w3af.core.controllers.output_manager as om
@@ -367,9 +368,28 @@ class BaseConsumer(Process):
         queued work anymore (ie. user clicked stop in the UI).
         """
         while not self.in_queue.empty():
-            self.in_queue.get()
+            try:
+                self.in_queue.get_nowait()
+            except Empty:
+                # We get here in very rare cases where:
+                #
+                #  * Another thread (T1) is running and reading from in_queue
+                #  * Our thread (T2) asks if the queue is empty and gets False
+                #  * T1 reads from in_queue
+                #  * T2 reads from the queue but there are no more tasks there
+                #  * T2 locks for ever (at least that is what happen when self.in_queue.get()
+                #    was used instead of get_nowait()
+                #
+                msg = 'Handled race condition in %s consumer terminate()'
+                args = (self._thread_name,)
+                om.out.debug(msg % args)
+
+                continue
+
             self.in_queue.task_done()
-        
+
+        om.out.debug('No more tasks in %s consumer input queue.' % self._thread_name)
+
         self.join()
 
     def get_result(self, timeout=0.5):

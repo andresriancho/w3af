@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import sys
+import time
 import Queue
 
 from multiprocessing import TimeoutError
@@ -170,6 +171,9 @@ class CoreStrategy(object):
             consumer_inst = getattr(self, '_%s_consumer' % consumer)
 
             if consumer_inst is not None:
+                om.out.debug('Calling terminate() on %s consumer' % consumer)
+                start = time.time()
+
                 # Set it immediately to None to avoid any race conditions where
                 # the terminate() method is called twice (from different
                 # threads) and before the first call finishes
@@ -184,6 +188,10 @@ class CoreStrategy(object):
                 except Exception, e:
                     msg = '%s consumer terminate() raised exception: "%s"'
                     om.out.debug(msg % e)
+                else:
+                    spent = time.time() - start
+                    args = (consumer, spent)
+                    om.out.debug('terminate() on %s consumer took %.2f seconds' % args)
 
         self.set_consumers_to_none()
 
