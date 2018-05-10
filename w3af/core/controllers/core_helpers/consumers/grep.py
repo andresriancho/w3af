@@ -56,7 +56,7 @@ class grep(BaseConsumer):
         max_in_queue_size = 20
 
         # thread_pool_size defines how many threads we'll use to run grep plugins
-        thread_pool_size = 5
+        thread_pool_size = 10
 
         # max_pool_queued_tasks defines how many tasks we'll keep in memory waiting
         # for a worker from the pool to be available
