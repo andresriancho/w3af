@@ -25,9 +25,7 @@ import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.profiling.took_helper import TookLine
-from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
-from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
-                                                                        task_decorator)
+from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.dc.headers import Headers
@@ -70,39 +68,6 @@ class grep(BaseConsumer):
                                    thread_name='Grep',
                                    max_in_queue_size=max_in_queue_size)
         self._already_analyzed = ScalableBloomFilter()
-
-    def run(self):
-        """
-        Consume the queue items
-        """
-        while True:
-
-            try:
-                work_unit = self.in_queue.get()
-            except KeyboardInterrupt:
-                # https://github.com/andresriancho/w3af/issues/9587
-                #
-                # If we don't do this, the thread will die and will never
-                # process the POISON_PILL, which will end up in an endless
-                # wait for .join()
-                continue
-
-            if work_unit == POISON_PILL:
-                self._debug_32('received poison pill')
-
-                try:
-                    self._teardown()
-                finally:
-                    self.in_queue.task_done()
-                    break
-
-            else:
-                try:
-                    self._consume(work_unit)
-                finally:
-                    self.in_queue.task_done()
-
-        self._debug_32('finished run()')
 
     def _teardown(self):
         """
@@ -190,12 +155,10 @@ class grep(BaseConsumer):
             self._threadpool.apply_async(self._inner_consume,
                                          (plugin, request, response))
 
-    @task_decorator
-    def _inner_consume(self, function_id, plugin, request, response):
+    def _inner_consume(self, plugin, request, response):
         """
         Run one plugin against a request/response.
 
-        :param function_id: The function ID added by @task_decorator
         :param plugin: The grep plugin to run
         :param request: The HTTP request
         :param response: The HTTP response
