@@ -23,6 +23,8 @@ import itertools
 import operator
 import hashlib
 
+from w3af.core.data.misc.encoding import smart_str_ignore
+
 #
 #    Source for this code was taken from http://docs.python.org/library/itertools.html
 #
@@ -74,12 +76,14 @@ def unique_everseen_hash(iterable):
     Remember all elements ever seen, storing the hash of the element instead
     of the element itself. This will reduce the memory usage in the case where
     the element is large (an HTTP response body for example).
+
+    Recommendation: The iterable should generate strings / unicode.
     """
     seen = set()
 
     for element in iterable:
         m = hashlib.md5()
-        m.update(element)
+        m.update(smart_str_ignore(element))
         element_hash = m.digest()
 
         if element_hash in seen:
