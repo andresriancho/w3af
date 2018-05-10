@@ -184,7 +184,7 @@ class HTTPResponse(object):
                    msg, charset=charset, time=httplib_time,
                    binary_response=binary_response)
 
-    @classmethod    
+    @classmethod
     def from_dict(cls, unserialized_dict):
         """
         * msgpack is MUCH faster than cPickle,
