@@ -28,6 +28,7 @@ from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 
 
 CacheSettings = namedtuple('CacheSettings', ['type', 'value'])
@@ -63,7 +64,10 @@ class cache_control(GrepPlugin):
         
         elif response.body == '':
             return
-        
+
+        elif is_404(response):
+            return
+
         else:
             self._total_count += 1
     
