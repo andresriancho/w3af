@@ -56,8 +56,8 @@ class content_sniffing(GrepPlugin):
 
         self._reports += 1
 
-        desc = 'The URL "%s" returned an HTTP response without the' \
-               ' recommended HTTP header X-Content-Type-Options'
+        desc = ('The URL "%s" returned an HTTP response without the'
+                ' recommended HTTP header X-Content-Type-Options')
         desc %= response.get_url()
 
         i = Info('Missing X-Content-Type-Options header', desc,
