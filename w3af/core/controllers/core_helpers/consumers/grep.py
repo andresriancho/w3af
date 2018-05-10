@@ -56,7 +56,7 @@ class grep(BaseConsumer):
         max_in_queue_size = 20
 
         # thread_pool_size defines how many threads we'll use to run grep plugins
-        thread_pool_size = 2
+        thread_pool_size = 5
 
         # max_pool_queued_tasks defines how many tasks we'll keep in memory waiting
         # for a worker from the pool to be available
@@ -187,7 +187,6 @@ class grep(BaseConsumer):
             # memory!
             #
             # This is controlled by max_pool_queued_tasks
-            #self._inner_consume(1, plugin, request, response)
             self._threadpool.apply_async(self._inner_consume,
                                          (plugin, request, response))
 
