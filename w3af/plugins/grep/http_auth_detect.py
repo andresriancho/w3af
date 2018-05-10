@@ -76,12 +76,11 @@ class http_auth_detect(GrepPlugin):
         #
         #   Analyze the HTTP URL
         #
-        if ('@' in response.get_uri() and
-                self._auth_uri_regex.match(response.get_uri().url_string)):
+        if self._url_has_auth(response.get_uri()):
             # An authentication URI was found!
-            desc = 'The resource: "%s" has a user and password in' \
-                   ' the URI.'
-            desc = desc % response.get_uri()
+            desc = ('The resource: "%s" has a user and password in'
+                    ' the URI.')
+            desc %= response.get_uri()
             v = Vuln('Basic HTTP credentials', desc, severity.HIGH,
                      response.id, self.get_name())
 
@@ -96,24 +95,22 @@ class http_auth_detect(GrepPlugin):
         #
         url_list = []
         try:
-            DocumentParser = parser_cache.dpc.get_document_parser_for(response)
-        except BaseFrameworkException, w3:
-            msg = 'Failed to find a suitable document parser. ' \
-                'Exception: ' + str(w3)
-            om.out.debug(msg)
+            document_parser = parser_cache.dpc.get_document_parser_for(response)
+        except BaseFrameworkException, e:
+            msg = 'Failed to find a suitable document parser. Exception: "%s"'
+            om.out.debug(msg % e)
         else:
-            parsed_references, re_references = DocumentParser.get_references()
+            parsed_references, re_references = document_parser.get_references()
             url_list.extend(parsed_references)
             url_list.extend(re_references)
 
         for url in url_list:
 
-            if ('@' in url.url_string and
-                    self._auth_uri_regex.match(url.url_string)):
+            if self._url_has_auth(url):
 
-                desc = 'The resource: "%s" has a user and password in the'\
-                       ' body. The offending URL is: "%s".'
-                desc = desc % (response.get_url(), url)
+                desc = ('The resource: "%s" has a user and password in the'
+                        ' body. The offending URL is: "%s".')
+                desc %= (response.get_url(), url)
                 
                 v = Vuln('Basic HTTP credentials', desc,
                          severity.HIGH, response.id, self.get_name())
@@ -123,6 +120,15 @@ class http_auth_detect(GrepPlugin):
 
                 kb.kb.append(self, 'userPassUri', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+
+    def _url_has_auth(self, url):
+        if '@' not in url.url_string:
+            return False
+
+        if not self._auth_uri_regex.match(url.url_string):
+            return False
+
+        return True
 
     def _get_realm(self, response):
         for key in response.get_headers():
@@ -134,10 +140,10 @@ class http_auth_detect(GrepPlugin):
         
     def _report_no_realm(self, response):
         # Report this strange case
-        desc = 'The resource: "%s" requires authentication (HTTP Code'\
-               ' 401) but the www-authenticate header is not present.'\
-               ' This requires human verification.'
-        desc = desc % response.get_url() 
+        desc = ('The resource: "%s" requires authentication (HTTP Code'
+                ' 401) but the www-authenticate header is not present.'
+                ' This requires human verification.')
+        desc %= response.get_url()
         i = Info('Authentication without www-authenticate header', desc,
                  response.id, self.get_name())
         i.set_url(response.get_url())
@@ -161,9 +167,9 @@ class http_auth_detect(GrepPlugin):
         
         desc = 'The resource: "%s" requires HTTP authentication'
         if insecure:
-            desc += ' over a non-encrypted channel, which allows'\
-                    ' potential intruders to sniff traffic and capture'\
-                    ' valid credentials.'
+            desc += (' over a non-encrypted channel, which allows'
+                     ' potential intruders to sniff traffic and capture'
+                     ' valid credentials.')
         else:
             desc += '.'
         

@@ -94,7 +94,7 @@ class get_emails(GrepPlugin):
 
             # Create a new info object, and report it
             desc = 'The mail account: "%s" was found at "%s".'
-            desc = desc % (mail_address, url)
+            desc %= (mail_address, url)
 
             i = Info('Email address disclosure', desc, response.id,
                      self.get_name())
