@@ -184,13 +184,13 @@ class MultiProcessingDocumentParser(object):
                    ' kills, etc. The scanner will continue with the next'
                    ' document, but the scan results might be inconsistent.')
             raise TimeoutError(msg)
+        finally:
+            # Remove the temp file used to send data to the process, we already
+            # have the result, so this file is not needed anymore
+            remove_file_if_exists(filename)
 
         # We still need to perform some error handling here...
         if isinstance(process_result, Error):
-
-            # Remove the temp file used to send data to the process
-            remove_file_if_exists(filename)
-
             if isinstance(process_result.exc_value, MemoryError):
                 msg = ('The parser exceeded the memory usage limit of %s bytes'
                        ' while trying to parse "%s". The parser was stopped in'
@@ -277,15 +277,12 @@ class MultiProcessingDocumentParser(object):
             # We reach here when the process died because of an error
             return []
         finally:
+            # Remove the temp file used to send data to the process
             remove_file_if_exists(filename)
 
         # There was an exception in the parser, maybe the HTML was really
         # broken, or it wasn't an HTML at all.
         if isinstance(process_result, Error):
-
-            # Remove the temp file used to send data to the process
-            remove_file_if_exists(filename)
-
             if isinstance(process_result.exc_value, MemoryError):
                 msg = ('The parser exceeded the memory usage limit of %s bytes'
                        ' while trying to parse "%s". The parser was stopped in'
