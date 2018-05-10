@@ -473,8 +473,10 @@ def remove_file_if_exists(filename):
     :param filename: The file to remove
     :return: None
     """
-    if os.path.exists(filename):
+    try:
         os.remove(filename)
+    except:
+        pass
 
 
 if is_main_process():
