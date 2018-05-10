@@ -74,6 +74,8 @@ PARSER_TIMEOUT = '[timeout] The parser took more than'
 PARSER_MEMORY_LIMIT = 'The parser exceeded the memory usage limit of'
 PARSER_PROCESS_MEMORY_LIMIT = re.compile('Using RLIMIT_AS memory usage limit (.*?) MB for new pool process')
 
+GREP_PLUGIN_RE = re.compile('\] (.*?).grep\(uri=".*"\) took (.*?)s to run')
+
 
 def _num_formatter(val, chars, delta, left=False):
     align = '<' if left else ''
@@ -142,6 +144,10 @@ def show_scan_stats(scan):
     show_queue_size_grep(scan)
     show_queue_size_audit(scan)
     show_queue_size_crawl(scan)
+
+    print('')
+
+    show_grep_plugin_performance(scan)
 
     print('')
 
@@ -856,6 +862,38 @@ def show_queue_size_audit(scan):
     print(fig.show())
     print('')
     print('')
+
+
+def show_grep_plugin_performance(scan):
+    scan.seek(0)
+
+    grep_plugin_times = {}
+
+    for line in scan:
+        match = GREP_PLUGIN_RE.search(line)
+        if match:
+            plugin_name = match.group(1)
+            run_time = float(match.group(2))
+
+            if plugin_name in grep_plugin_times:
+                grep_plugin_times[plugin_name] += run_time
+            else:
+                grep_plugin_times[plugin_name] = run_time
+
+    def sort_by_second(a, b):
+        return cmp(b[1], a[1])
+
+    times = grep_plugin_times.items()
+    times.sort(sort_by_second)
+
+    if not times:
+        print('No grep plugins were run in this scan')
+
+    print('Plugins run time information (in seconds)')
+    print('')
+
+    for plugin_name, total_run_time in times:
+        print('%s: %.2f' % (plugin_name.ljust(25), total_run_time))
 
 
 def show_queue_size_grep(scan):
