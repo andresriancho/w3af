@@ -86,6 +86,12 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
     def _qsize(self, len=len):
         return len(self.memory) + len(self.disk)
 
+    def _get_class_name(self, obj):
+        try:
+            return obj.__class__.__name__
+        except:
+            return type(obj)
+
     def _put(self, item):
         """
         Put a new item in the queue
@@ -99,11 +105,14 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
             #   If you see many messages like this in the scan log, then you
             #   might want to experiment with a larger maxsize for this queue
             #
-            msg = ('CachedQueue.put() will write an item to the %s DiskDict.'
+            msg = ('CachedQueue.put() will write a %r item to the %s DiskDict.'
                    ' This uses more CPU and disk IO than storing in memory'
                    ' but will avoid high memory usage issues. The current'
                    ' %s DiskDict size is %s.')
-            args = (self.get_name(), self.get_name(), len(self.disk))
+            args = (self._get_class_name(item),
+                    self.get_name(),
+                    self.get_name(),
+                    len(self.disk))
             om.out.debug(msg % args)
 
         #
