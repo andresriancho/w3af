@@ -390,26 +390,28 @@ class Info(dict):
             return self._vulndb
 
     def _get_desc_impl(self, what, with_id=True):
-        
-        if self._id is not None and self._id != 0 and with_id:
-            if self._desc[-1] != '\n' and not self._desc.strip().endswith('.'):
-                self._desc += '. '
-
-            # One request OR more than one request
-            desc_to_return = self._desc
-            if len(self._id) > 1:
-                id_range = self._convert_to_range_wrapper(self._id)
-                
-                desc_to_return += 'This %s was found in the requests' % what
-                desc_to_return += ' with ids %s.' % id_range
-
-            elif len(self._id) == 1:
-                desc_to_return += 'This %s was found in the request' % what
-                desc_to_return += ' with id %s.' % self._id[0]
-
-            return desc_to_return
-        else:
+        if not with_id:
             return self._desc
+
+        if not self._id:
+            return self._desc
+
+        if self._desc[-1] != '\n' and not self._desc.strip().endswith('.'):
+            self._desc += '. '
+
+        # One request OR more than one request
+        desc_to_return = self._desc
+        if len(self._id) > 1:
+            id_range = self._convert_to_range_wrapper(self._id)
+
+            desc_to_return += 'This %s was found in the requests' % what
+            desc_to_return += ' with ids %s.' % id_range
+
+        elif len(self._id) == 1:
+            desc_to_return += 'This %s was found in the request' % what
+            desc_to_return += ' with id %s.' % self._id[0]
+
+        return desc_to_return
 
     def set_plugin_name(self, plugin_name):
         self._plugin_name = plugin_name
@@ -447,23 +449,23 @@ class Info(dict):
             is_new_seq = (num != last + 1)
             if is_new_seq:  # End of sequence
                 if dist:  # multi-elems sequence
-                    res.append(_('%s to %s') % (first, last))
+                    res.append('%s to %s' % (first, last))
                 else:  # one-elem sequence
                     res.append(first)
                 if is_last_in_seq(num):
-                    res.append(_('and') + ' %s' % num)
+                    res.append('and' + ' %s' % num)
                     break
                 dist = 0
                 first = num
             else:
                 if is_last_in_seq(num):
-                    res.append(_('%s to %s') % (first, num))
+                    res.append('%s to %s' % (first, num))
                     break
                 dist += 1
             last = num
 
         res_str = ', '.join(str(ele) for ele in res)
-        return res_str.replace(', ' + _('and'), ' and')
+        return res_str.replace(', and', ' and')
 
     def __str__(self):
         return self._desc
