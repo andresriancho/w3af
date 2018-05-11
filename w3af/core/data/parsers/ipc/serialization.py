@@ -27,6 +27,7 @@ import msgpack
 
 
 from w3af.core.data.parsers.doc.sgml import Tag
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
 
 
 def write_http_response_to_temp_file(http_response):
@@ -104,7 +105,8 @@ def get_temp_file(_type):
     """
     temp = tempfile.NamedTemporaryFile(prefix='w3af-%s-' % _type,
                                        suffix='.pebble',
-                                       delete=False)
+                                       delete=False,
+                                       dir=get_temp_dir())
     return temp
 
 
