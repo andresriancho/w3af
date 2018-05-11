@@ -28,12 +28,14 @@ from itertools import imap
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache
+
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.misc.decorators import memoized
 from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
-from w3af.core.controllers.misc.decorators import memoized
+from w3af.core.data.db.disk_item import DiskItem
 
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
@@ -50,7 +52,7 @@ CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
 DEFAULT_WAIT_TIME = 0.2
 
 
-class HTTPResponse(object):
+class HTTPResponse(DiskItem):
 
     DOC_TYPE_TEXT_OR_HTML = 'DOC_TYPE_TEXT_OR_HTML'
     DOC_TYPE_SWF = 'DOC_TYPE_SWF'
@@ -237,6 +239,26 @@ class HTTPResponse(object):
                 'id': self.get_id(),
                 'charset': self.get_charset(),
                 'uri': self.get_uri().url_string}
+
+    def get_eq_attrs(self):
+        return ('_code',
+                '_charset',
+                '_headers',
+                '_body',
+                '_raw_body',
+                '_binary_response',
+                '_content_type',
+                'id',
+                '_from_cache',
+                '_info',
+                '_realurl',
+                '_uri',
+                '_redirected_url',
+                '_redirected_uri',
+                '_msg',
+                '_time',
+                '_alias',
+                '_doc_type')
 
     def __contains__(self, string_to_test):
         """

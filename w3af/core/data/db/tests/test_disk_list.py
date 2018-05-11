@@ -19,10 +19,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import random
-import unittest
 import string
+import unittest
 import threading
 import itertools
+
+import msgpack
 
 from nose.plugins.attrib import attr
 
@@ -32,6 +34,7 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.db.dbms import get_default_temp_db_instance
+from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
 class TestDiskList(unittest.TestCase):
@@ -97,8 +100,8 @@ class TestDiskList(unittest.TestCase):
 
         self.assertEqual(dl[0], URL('http://w3af.org/?id=2'))
         self.assertEqual(dl[1], URL('http://w3af.org/?id=3'))
-        self.assertFalse(URL('http://w3af.org/?id=4') in dl)
-        self.assertTrue(URL('http://w3af.org/?id=2') in dl)
+        self.assertNotIn(URL('http://w3af.org/?id=4'), dl)
+        self.assertIn(URL('http://w3af.org/?id=2'), dl)
 
     def test_fuzzable_request(self):
         dl = DiskList()
@@ -346,3 +349,86 @@ class TestDiskList(unittest.TestCase):
         self.assertIn('1', dl_copy)
         self.assertNotIn('2', dl_copy)
         self.assertNotIn('3', dl_copy)
+
+    def test_no_specific_serializer_with_string(self):
+        #
+        #   This test runs in ~5.1 seconds on my workstation
+        #
+        count = 30000
+        dl = DiskList()
+
+        for i in xrange(0, count):
+            i_str = str(i)
+
+            # This tests the serialization
+            dl.append(i_str)
+
+            # This tests the deserialization
+            _ = dl[i]
+
+    def test_specific_serializer_with_string(self):
+        #
+        #   This test runs in ~5.0 seconds on my workstation
+        #
+        #   It seems that cPickle takes almost no time to serialize
+        #   a simple string.
+        #
+        count = 30000
+        dl = DiskList(load=lambda x: x,
+                      dump=lambda x: x)
+
+        for i in xrange(0, count):
+            i_str = str(i)
+
+            # This tests the serialization
+            dl.append(i_str)
+
+            # This tests the deserialization
+            _ = dl[i]
+
+    def test_no_specific_serializer_with_http_response(self):
+        #
+        #   This test runs in 28.14 seconds on my workstation
+        #
+        body = '<html><a href="http://moth/abc.jsp">test</a></html>'
+        headers = Headers([('Content-Type', 'text/html')])
+        url = URL('http://w3af.com')
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+
+        count = 30000
+        dl = DiskList()
+
+        for i in xrange(0, count):
+            # This tests the serialization
+            dl.append(response)
+
+            # This tests the deserialization
+            _ = dl[i]
+
+    def test_specific_serializer_with_http_response(self):
+        #
+        #   This test runs in 26.42 seconds on my workstation
+        #
+        body = '<html><a href="http://moth/abc.jsp">test</a></html>'
+        headers = Headers([('Content-Type', 'text/html')])
+        url = URL('http://w3af.com')
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+
+        def dump(http_response):
+            return msgpack.dumps(http_response.to_dict(),
+                                 use_bin_type=True)
+
+        def load(serialized_object):
+            data = msgpack.loads(serialized_object, raw=False)
+            return HTTPResponse.from_dict(data)
+
+        count = 30000
+        dl = DiskList(dump=dump, load=load)
+
+        for i in xrange(0, count):
+            # This tests the serialization
+            dl.append(response)
+
+            # This tests the deserialization
+            _ = dl[i]
+

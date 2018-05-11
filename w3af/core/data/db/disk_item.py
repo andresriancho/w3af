@@ -1,5 +1,5 @@
 """
-DiskItem.py
+disk_item.py
 
 Copyright 2012 Andres Riancho
 
@@ -31,7 +31,7 @@ class DiskItem(object):
     def get_eq_attrs(self):
         """
         The DiskList class will use the values associated with the attributes
-        listed in the response ofget_eq_attrs() to calculate an md5, which
+        listed in the response of get_eq_attrs() to calculate an md5, which
         is saved to the DB, indexed, and then used to have a fast(er)
         __contains__ implementation
 

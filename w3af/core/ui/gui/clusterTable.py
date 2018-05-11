@@ -28,7 +28,7 @@ from w3af.core.ui.gui import helpers, entries
 # The clustering stuff
 from cluster import HierarchicalClustering
 
-from w3af.core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
+from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
 class ClusterCellWindow(entries.RememberingWindow):

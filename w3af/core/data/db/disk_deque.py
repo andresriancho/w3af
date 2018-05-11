@@ -46,7 +46,7 @@ class DiskDeque(object):
         return elem
 
     def clear(self):
-        self.data.clear()
+        self.data.cleanup()
         self.left = self.right = 0
 
     def extend(self, iterable):

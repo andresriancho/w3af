@@ -24,6 +24,7 @@ import __builtin__
 
 import hashlib
 import cPickle
+import msgpack
 
 from w3af.core.data.misc.cpickle_dumps import cpickle_dumps
 from w3af.core.data.db.disk_item import DiskItem
@@ -58,11 +59,19 @@ class DiskList(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self, table_prefix=None):
+    def __init__(self, table_prefix=None, dump=None, load=None):
+        """
+        :param table_prefix: The DBMS table prefix, mostly for debugging.
+        :param dump: The function to use to serialize the object
+        :param load: The function to use to deserialize the object
+        """
         self.db = get_default_temp_db_instance()
 
         prefix = '' if table_prefix is None else ('%s_' % table_prefix)
         self.table_name = 'disk_list_' + prefix + rand_alpha(30)
+
+        self.dump = dump
+        self.load = load
 
         # Create table
         # DO NOT add the AUTOINCREMENT flag to the table creation since that
@@ -85,42 +94,79 @@ class DiskList(object):
         self.db.drop_table(self.table_name)
         self._state = CLOSED
 
+    def _dump(self, obj):
+        """
+        Serialize an object, using the dump function provided in __init__
+        or cPickle if None was specified.
+
+        :return: A string containing the object
+        """
+        if self.dump is not None:
+            return self.dump(obj)
+
+        return cpickle_dumps(obj)
+
+    def _load(self, serialized_object):
+        """
+        Load an object instance using the load function provided in __init__
+        or cPickle if None was specified.
+
+        :param serialized_object: The string containing the object
+        :return: An instance
+        """
+        if self.load is not None:
+            return self.load(serialized_object)
+
+        return cPickle.loads(serialized_object)
+
     def _get_eq_attrs_values(self, obj):
         """
         :param obj: The object from which I need a hash.
 
         :return: A hash representing the eq_attrs specified in the DiskItem.
         """
-        concatenated_eq_attrs = self.__internal_get_eq_attrs_values(obj)
+        attr_values = self._get_attr_values_as_builtin(obj)
+        concatenated_eq_attrs = cpickle_dumps(attr_values)
         return hashlib.md5(concatenated_eq_attrs).hexdigest()
 
-    def __internal_get_eq_attrs_values(self, obj):
-        """
-        :param obj: The object from which I need a unique string.
+    def _get_attr_values_as_builtin(self, obj):
+        if self._is_builtin(obj):
+            return obj
 
-        :return: A string with all the values from the get_eq_attrs() method
-                 concatenated. This should represent the object in an unique
-                 way.
-        """
-        if type(obj).__name__ in dir(__builtin__):
-            return cpickle_dumps(obj)
+        result = {}
 
-        elif obj is None:
-            return cpickle_dumps(obj)
+        for attr in obj.get_eq_attrs():
+            value = getattr(obj, attr)
 
-        elif isinstance(obj, DiskItem):
-            result = ''
-            
-            for attr in obj.get_eq_attrs():
-                value = getattr(obj, attr)
-                result += self.__internal_get_eq_attrs_values(value)
+            if not self._can_handle_attr(value):
+                msg = ('Complex classes like %s need to inherit from DiskItem'
+                       ' to be stored.')
+                raise Exception(msg % type(obj))
 
-            return result
-        
-        else:
-            msg = ('Complex classes like %s need to inherit from DiskItem to'
-                   ' be stored.')
-            raise Exception(msg % type(obj))
+            if isinstance(value, DiskItem):
+                value = self._get_attr_values_as_builtin(value)
+
+            result[attr] = value
+
+        return result
+
+    def _is_builtin(self, value):
+        if type(value).__name__ in __builtin__.__dict__:
+            return True
+
+        elif value is None:
+            return True
+
+        return False
+
+    def _can_handle_attr(self, value):
+        if self._is_builtin(value):
+            return True
+
+        elif isinstance(value, DiskItem):
+            return True
+
+        return False
 
     def __contains__(self, value):
         """
@@ -143,7 +189,7 @@ class DiskList(object):
         :param value: The value to append.
         """
         assert self._state == OPEN
-        pickled_obj = cpickle_dumps(value)
+        pickled_obj = self._dump(value)
         eq_attrs = self._get_eq_attrs_values(value)
         t = (eq_attrs, pickled_obj)
         
@@ -174,7 +220,7 @@ class DiskList(object):
         results = self.db.select('SELECT pickle FROM %s' % self.table_name)
 
         for r in results:
-            obj = cPickle.loads(r[0])
+            obj = self._load(r[0])
             objects.append(obj)
         
         for obj in sorted(objects):
@@ -186,7 +232,7 @@ class DiskList(object):
         # TODO: How do I make the __iter__ thread safe?
         results = self.db.select('SELECT pickle FROM %s' % self.table_name)
         for r in results:
-            obj = cPickle.loads(r[0])
+            obj = self._load(r[0])
             yield obj
 
     def __reversed__(self):
@@ -196,7 +242,7 @@ class DiskList(object):
         query = 'SELECT pickle FROM %s ORDER BY index_ DESC'
         results = self.db.select(query % self.table_name)
         for r in results:
-            obj = cPickle.loads(r[0])
+            obj = self._load(r[0])
             yield obj
 
     def __getitem__(self, key):
@@ -218,7 +264,7 @@ class DiskList(object):
         query = 'SELECT pickle FROM %s WHERE index_ = ?' % self.table_name
         try:
             r = self.db.select_one(query, (index_,))
-            obj = cPickle.loads(r[0])
+            obj = self._load(r[0])
         except:
             raise IndexError('list index out of range')
         else:
