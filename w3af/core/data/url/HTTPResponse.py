@@ -81,7 +81,7 @@ class HTTPResponse(object):
 
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
-                 charset=None, binary_response=False):
+                 charset=None, binary_response=False, set_body=False):
         """
         :param code: HTTP code
         :param read: HTTP body text; typically a string
@@ -114,8 +114,18 @@ class HTTPResponse(object):
 
         self._charset = charset
         self._headers = None
-        self._body = None
-        self._raw_body = read
+
+        if set_body and isinstance(read, unicode):
+            # We use this case for deserialization via from_dict()
+            #
+            # The goal is to prevent the body to be analyzed for charset data
+            # once again, since it was already done during to_dict() in the
+            # get_body() call.
+            self._body = self._raw_body = read
+        else:
+            self._body = None
+            self._raw_body = read
+
         self._binary_response = binary_response
         self._content_type = None
         self._dom = None
@@ -194,37 +204,39 @@ class HTTPResponse(object):
         
         :param unserialized_dict: A dict just as returned by to_dict()
         """
-        udict = unserialized_dict
-        
-        code, msg, hdrs = udict['code'], udict['msg'], udict['headers']
-        body, _time, _id = udict['body'], udict['time'], udict['id']
-        
-        headers_inst = Headers(hdrs.items())
-        url = URL(udict['uri'])
-    
-        return cls(code, body, headers_inst, url, url, msg=msg, _id=_id,
-                   time=_time)
+        code = unserialized_dict['code']
+        msg = unserialized_dict['msg']
+        headers = unserialized_dict['headers']
+        body = unserialized_dict['body']
+        charset = unserialized_dict['charset']
+        _time = unserialized_dict['time']
+        _id = unserialized_dict['id']
+        url = URL(unserialized_dict['uri'])
+
+        headers_inst = Headers(headers.items())
+
+        return cls(code, body, headers_inst, url, url,
+                   msg=msg,
+                   _id=_id,
+                   time=_time,
+                   charset=charset,
+                   set_body=True)
 
     def to_dict(self):
         """
         :return: A dict that represents the current object and is serializable
                  by the json or msgpack modules.
         """
-        serializable_dict = {}
-        sdict = serializable_dict
-        
         # Note: The Headers() object can be serialized by msgpack because it
         #       inherits from dict() and doesn't mangle it too much
-        sdict['code'], sdict['msg'], sdict['headers'] = (self.get_code(),
-                                                         self.get_msg(),
-                                                         dict(self.get_headers()))
-        sdict['body'], sdict['time'], sdict['id'] = (self.get_body(),
-                                                     self.get_wait_time(),
-                                                     self.get_id())
-        
-        sdict['uri'] = self.get_uri().url_string
-    
-        return serializable_dict
+        return {'headers': dict(self.get_headers()),
+                'code': self.get_code(),
+                'msg': self.get_msg(),
+                'body': self.get_body(),
+                'time': self.get_wait_time(),
+                'id': self.get_id(),
+                'charset': self.get_charset(),
+                'uri': self.get_uri().url_string}
 
     def __contains__(self, string_to_test):
         """
