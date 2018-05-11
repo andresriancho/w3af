@@ -174,9 +174,10 @@ class BaseConsumer(Process):
 
                 try:
                     # Close the pool and wait for everyone to finish
-                    self._threadpool.close()
-                    self._threadpool.join()
-                    self._threadpool = None
+                    if self._threadpool is not None:
+                        self._threadpool.close()
+                        self._threadpool.join()
+                        self._threadpool = None
 
                     self._teardown()
                 finally:

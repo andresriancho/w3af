@@ -26,7 +26,6 @@ import traceback
 import StringIO
 
 from lxml import etree
-from collections import namedtuple
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
@@ -39,7 +38,24 @@ from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.controllers.exceptions import ParserException
 
 
-Tag = namedtuple('Tag', ('name', 'attrib', 'text'))
+class Tag(object):
+    __slots__ = ('name', 'attrib', 'text')
+
+    def __init__(self, name, attrib, text=None):
+        self.name = name
+        self.attrib = attrib
+        self.text = text
+
+    def to_dict(self):
+        return {'name': self.name,
+                'attrib': self.attrib,
+                'text': self.text}
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data['name'],
+                   data['attrib'],
+                   data['text'])
 
 
 class SGMLParser(BaseParser):

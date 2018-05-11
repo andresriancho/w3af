@@ -21,10 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
-from w3af.plugins.grep.password_profiling_plugins.base_plugin import BasePwdProfilingPlugin
-from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
+import w3af.core.data.parsers.parser_cache as parser_cache
 
-words_split_re = re.compile("[^\w]", re.UNICODE)
+from w3af.plugins.grep.password_profiling_plugins.base_plugin import BasePwdProfilingPlugin
+
+
+WORD_SPLIT_RE = re.compile("[^\w]", re.UNICODE)
 
 
 class html(BasePwdProfilingPlugin):
@@ -49,10 +51,12 @@ class html(BasePwdProfilingPlugin):
             return {}
 
         data = {}
-        split = words_split_re.split
-        filter_by_len = lambda x: len(x) > 3
+        split = WORD_SPLIT_RE.split
 
-        for tag in mp_doc_parser.get_tags_by_filter(response, None, yield_text=True):
+        def filter_by_len(x):
+            return len(x) > 3
+
+        for tag in parser_cache.dpc.get_tags_by_filter(response, None, yield_text=True):
 
             text = tag.text
 

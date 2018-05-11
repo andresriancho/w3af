@@ -25,8 +25,6 @@ import os
 import psutil
 import signal
 import atexit
-import cPickle
-import tempfile
 import resource
 import threading
 import multiprocessing
@@ -49,6 +47,13 @@ from w3af.core.controllers.profiling.memory_usage import user_wants_memory_profi
 from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemalloc
 from w3af.core.controllers.profiling.cpu_usage import user_wants_cpu_profiling
 from w3af.core.data.parsers.document_parser import DocumentParser
+from w3af.core.data.parsers.ipc.serialization import (write_object_to_temp_file,
+                                                      write_http_response_to_temp_file,
+                                                      write_tags_to_temp_file,
+                                                      load_object_from_temp_file,
+                                                      load_http_response_from_temp_file,
+                                                      load_tags_from_temp_file,
+                                                      remove_file_if_exists)
 
 # 128 MB
 DEFAULT_MEMORY_LIMIT = 128 * 1024 * 1024
@@ -143,7 +148,7 @@ class MultiProcessingDocumentParser(object):
         # Start the worker processes if needed
         self.start_workers()
 
-        filename = write_object_to_temp_file(http_response)
+        filename = write_http_response_to_temp_file(http_response)
 
         apply_args = (process_document_parser,
                       filename,
@@ -242,7 +247,7 @@ class MultiProcessingDocumentParser(object):
         # Start the worker processes if needed
         self.start_workers()
 
-        filename = write_object_to_temp_file(http_response)
+        filename = write_http_response_to_temp_file(http_response)
 
         apply_args = (process_get_tags_by_filter,
                       filename,
@@ -258,6 +263,9 @@ class MultiProcessingDocumentParser(object):
                                          args=(apply_args,),
                                          timeout=self.PARSER_TIMEOUT)
         except RuntimeError, rte:
+            # Remove the temp file used to send data to the process
+            remove_file_if_exists(filename)
+
             # We get here when the pebble pool management thread dies and
             # suddenly starts answering all calls with:
             #
@@ -293,7 +301,7 @@ class MultiProcessingDocumentParser(object):
             return []
 
         try:
-            filtered_tags = load_object_from_temp_file(process_result)
+            filtered_tags = load_tags_from_temp_file(process_result)
         except Exception, e:
             msg = 'Failed to deserialize sub-process result. Exception: "%s"'
             args = (e,)
@@ -309,14 +317,14 @@ def process_get_tags_by_filter(filename, tags, yield_text, debug):
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
-    http_resp = load_object_from_temp_file(filename)
+    http_resp = load_http_response_from_temp_file(filename)
 
     document_parser = DocumentParser(http_resp)
     parser = document_parser.get_parser()
 
     # Not all parsers have tags
     if not hasattr(parser, 'get_tags_by_filter'):
-        return write_object_to_temp_file([])
+        return write_tags_to_temp_file([])
 
     filtered_tags = []
     for tag in parser.get_tags_by_filter(tags, yield_text=yield_text):
@@ -327,7 +335,7 @@ def process_get_tags_by_filter(filename, tags, yield_text, debug):
     args = (len(filtered_tags), http_resp.get_uri(), tags)
     om.out.debug(msg % args)
 
-    result_filename = write_object_to_temp_file(filtered_tags)
+    result_filename = write_tags_to_temp_file(filtered_tags)
 
     return result_filename
 
@@ -337,7 +345,7 @@ def process_document_parser(filename, debug):
     Simple wrapper to get the current process id and store it in a shared object
     so we can kill the process if needed.
     """
-    http_resp = load_object_from_temp_file(filename)
+    http_resp = load_http_response_from_temp_file(filename)
     pid = multiprocessing.current_process().pid
 
     if debug:
@@ -439,42 +447,6 @@ def limit_memory_usage(mem_limit):
     limit_mb = (real_memory_limit / 1024 / 1024)
     msg = 'Using RLIMIT_AS memory usage limit %s MB for new pool process'
     om.out.debug(msg % limit_mb)
-
-
-def write_object_to_temp_file(obj):
-    """
-    Write an object to a temp file using cPickle to serialize
-
-    :param obj: The object
-    :return: The name of the file
-    """
-    temp = tempfile.NamedTemporaryFile(prefix='w3af-',
-                                       suffix='.pebble',
-                                       delete=False)
-    cPickle.dump(obj, temp, cPickle.HIGHEST_PROTOCOL)
-    temp.close()
-    return temp.name
-
-
-def load_object_from_temp_file(filename):
-    """
-    Load an object from a temp file
-
-    :param filename: The filename where the cPickle serialized object lives
-    :return: The object instance
-    """
-    return cPickle.load(file(filename, 'rb'))
-
-
-def remove_file_if_exists(filename):
-    """
-    Remove the file if it exists
-
-    :param filename: The file to remove
-    :return: None
-    """
-    if os.path.exists(filename):
-        os.remove(filename)
 
 
 if is_main_process():

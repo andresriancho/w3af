@@ -54,6 +54,7 @@ RTT_RE = re.compile('\(.*?rtt=(.*?),.*\)')
 
 ERRORS_RE = [re.compile('Unhandled exception "(.*?)"'),
              re.compile('traceback', re.IGNORECASE),
+             re.compile('w3af-crash'),
              re.compile('scan was able to continue by ignoring those'),
              re.compile('The scan will stop')]
 

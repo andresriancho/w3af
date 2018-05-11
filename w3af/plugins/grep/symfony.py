@@ -21,10 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
+import w3af.core.data.parsers.parser_cache as parser_cache
+
 from w3af.core.data.kb.info import Info
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
 
@@ -97,7 +98,7 @@ class symfony(GrepPlugin):
         """
         :return: True if there is CSRF protection enabled in this symfony app
         """
-        for tag in mp_doc_parser.get_tags_by_filter(response, ('input',)):
+        for tag in parser_cache.dpc.get_tags_by_filter(response, ('input',)):
             input_id = tag.attrib.get('id', '')
             if self._csrf_token_re.search(input_id):
                 return True
