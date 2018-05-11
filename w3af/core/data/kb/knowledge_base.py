@@ -157,11 +157,15 @@ class BasicKnowledgeBase(object):
                 if info_set.match(info_inst):
                     old_info_set = copy.deepcopy(info_set)
 
-                    # Add the new information to the InfoSet instance and then
-                    # generate a new ID. This is done because now it is not the
-                    # same InfoSet (the attributes changed)
-                    info_set.add(info_inst)
-                    info_set.generate_new_id()
+                    # Add the new information to the InfoSet instance, keep in
+                    # mind that InfoSet.MAX_INFO_INSTANCES will be enforced and
+                    # after it, no more Info instances are added to the InfoSet
+                    added = info_set.add(info_inst)
+
+                    # Only change the ID of the InfoSet instance if a new Info
+                    # has been added
+                    if added:
+                        info_set.generate_new_id()
 
                     # Save to the DB
                     self.update(old_info_set, info_set)

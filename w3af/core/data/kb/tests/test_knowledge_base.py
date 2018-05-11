@@ -788,6 +788,58 @@ class TestKnowledgeBase(unittest.TestCase):
         pool.terminate()
         pool.join()
 
+    def test_info_set_keep_uniq_id(self):
+        #
+        # Create a new InfoSet, load it from the KB, confirm that it has
+        # the same uniq_id
+        #
+        vuln = MockVuln(name='Foos')
+
+        info_set_a, created = kb.append_uniq_group('a', 'b', vuln,
+                                                   group_klass=MockInfoSetNames)
+
+        self.assertTrue(created)
+
+        info_set_b = kb.get('a', 'b')[0]
+
+        self.assertEqual(info_set_a.get_uniq_id(),
+                         info_set_b.get_uniq_id())
+
+        #
+        # Change the InfoSet a little bit by adding a new Info. That should
+        # change the uniq_id
+        #
+        vuln = MockVuln(name='Foos')
+        _, created = kb.append_uniq_group('a', 'b', vuln,
+                                          group_klass=MockInfoSetNames)
+
+        self.assertFalse(created)
+
+        info_set_b = kb.get('a', 'b')[0]
+
+        self.assertNotEqual(info_set_a.get_uniq_id(),
+                            info_set_b.get_uniq_id())
+
+    def test_info_set_keep_uniq_id_after_max_info_instances(self):
+        #
+        # Create one InfoSet, add MAX_INFO_INSTANCES, assert that the ID is not
+        # changed afterwards
+        #
+        vuln = MockVuln(name='Foos')
+
+        for _ in xrange(MockInfoSetNames.MAX_INFO_INSTANCES + 1):
+            kb.append_uniq_group('a', 'b', vuln, group_klass=MockInfoSetNames)
+
+        info_set_before = kb.get('a', 'b')[0]
+
+        # Now some rounds of testing
+        for _ in xrange(5):
+            info_set_after, _ = kb.append_uniq_group('a', 'b', vuln,
+                                                     group_klass=MockInfoSetNames)
+
+            self.assertEqual(info_set_before.get_uniq_id(),
+                             info_set_after.get_uniq_id())
+
     def test_append_uniq_group_no_match_filter_func(self):
         vuln1 = MockVuln(name='Foos')
         vuln2 = MockVuln(name='Bars')
