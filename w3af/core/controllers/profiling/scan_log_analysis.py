@@ -170,7 +170,7 @@ def show_scan_stats(scan):
     show_freeze_locations(scan)
 
     print('')
-    
+
     show_known_problems(scan)
 
 
