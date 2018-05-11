@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import w3af.core.data.parsers.parser_cache as parser_cache
+
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.kb.info import Info
 
 
@@ -49,7 +50,7 @@ class feeds(GrepPlugin):
         """
         uri = response.get_uri()
 
-        for tag in mp_doc_parser.get_tags_by_filter(response, self.TAGS):
+        for tag in parser_cache.dpc.get_tags_by_filter(response, self.TAGS):
 
             feed_tag = tag.name
             feed_type = self._feed_types[feed_tag.lower()]

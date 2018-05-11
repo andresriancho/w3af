@@ -23,8 +23,8 @@ from __future__ import with_statement
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
+import w3af.core.data.parsers.parser_cache as parser_cache
 
-from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.kb.vuln import Vuln
@@ -68,11 +68,9 @@ class phishing_vector(AuditPlugin):
 
     def _contains_payload(self, response):
         """
-        mp_doc_parser.get_tags_by_filter is CPU-intensive, and we want to prevent
-        calls to it, so we first check if the HTTP response body contains the
-        payloads we sent.
-
-        Also note that mp_doc_parser.get_tags_by_filter calls have no cache!
+        get_tags_by_filter is CPU-intensive (but cached whenever possible), and
+        we want to prevent calls to it, so we first check if the HTTP response
+        body contains the payloads we sent.
 
         :param response: The HTTP response body
         :return: True if the response body contains at least one of the payloads
@@ -101,7 +99,7 @@ class phishing_vector(AuditPlugin):
         if not self._contains_payload(response):
             return
 
-        for tag in mp_doc_parser.get_tags_by_filter(response, self.TAGS):
+        for tag in parser_cache.dpc.get_tags_by_filter(response, self.TAGS):
             src_attr = tag.attrib.get('src', None)
             if src_attr is None:
                 continue

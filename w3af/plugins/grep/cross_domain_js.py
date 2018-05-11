@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.data.options.opt_factory import opt_factory
@@ -66,7 +66,7 @@ class cross_domain_js(GrepPlugin):
         if not response.is_text_or_html():
             return
 
-        for tag in mp_doc_parser.get_tags_by_filter(response, ('script',)):
+        for tag in parser_cache.dpc.get_tags_by_filter(response, ('script',)):
             script_src = tag.attrib.get('src', None)
 
             if script_src is None:

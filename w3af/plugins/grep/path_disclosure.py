@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
+import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.quick_match.multi_re import MultiRE
-from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.constants.common_directories import get_common_directories
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.disk_list import DiskList
@@ -208,7 +208,7 @@ class path_disclosure(GrepPlugin):
             response_body = '...<b>Error while checking /home/image.png</b>...'
             return: False
         """
-        for tag in mp_doc_parser.get_tags_by_filter(response, None):
+        for tag in parser_cache.dpc.get_tags_by_filter(response, None):
             for value in tag.attrib.itervalues():
                 if path_disclosure_string in value:
                     return True
