@@ -72,10 +72,10 @@ class strange_headers(GrepPlugin):
             # Create a new info object and save it to the KB
             hvalue = response.get_headers()[header_name]
 
-            desc = 'The remote web server sent the HTTP header: "%s"'\
-                   ' with value: "%s", which is quite uncommon and'\
-                   ' requires manual analysis.'
-            desc = desc % (header_name, hvalue)
+            desc = ('The remote web server sent the HTTP header: "%s"'
+                    ' with value: "%s", which is quite uncommon and'
+                    ' requires manual analysis.')
+            desc %= (header_name, hvalue)
 
             i = Info('Strange header', desc, response.id, self.get_name())
             i.add_to_highlight(hvalue, header_name)
@@ -96,19 +96,24 @@ class strange_headers(GrepPlugin):
         headers = response.get_headers()
         header_value, header_name = headers.iget('content-location')
 
-        if header_value is not None and 300 < response.get_code() < 310:
-            desc = 'The URL: "%s" sent the HTTP header: "content-location"'\
-                   ' with value: "%s" in an HTTP response with code %s which'\
-                   ' is a violation to the RFC.'
-            desc = desc % (response.get_url(),
-                           header_value,
-                           response.get_code())
-            i = Info('Content-Location HTTP header anomaly', desc,
-                     response.id, self.get_name())
-            i.set_url(response.get_url())
-            i.add_to_highlight('content-location')
-            
-            kb.kb.append(self, 'anomaly', i)
+        if header_value is None:
+            return
+
+        if not 300 < response.get_code() < 310:
+            return
+
+        desc = ('The URL: "%s" sent the HTTP header: "content-location"'
+                ' with value: "%s" in an HTTP response with code %s which'
+                ' is a violation to the RFC.')
+        desc %= (response.get_url(),
+                 header_value,
+                 response.get_code())
+        i = Info('Content-Location HTTP header anomaly', desc,
+                 response.id, self.get_name())
+        i.set_url(response.get_url())
+        i.add_to_highlight('content-location')
+
+        kb.kb.append(self, 'anomaly', i)
 
     def get_long_desc(self):
         """
