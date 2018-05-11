@@ -100,8 +100,8 @@ class TestDiskList(unittest.TestCase):
 
         self.assertEqual(dl[0], URL('http://w3af.org/?id=2'))
         self.assertEqual(dl[1], URL('http://w3af.org/?id=3'))
-        self.assertFalse(URL('http://w3af.org/?id=4') in dl)
-        self.assertTrue(URL('http://w3af.org/?id=2') in dl)
+        self.assertNotIn(URL('http://w3af.org/?id=4'), dl)
+        self.assertIn(URL('http://w3af.org/?id=2'), dl)
 
     def test_fuzzable_request(self):
         dl = DiskList()

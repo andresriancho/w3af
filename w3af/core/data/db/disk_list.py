@@ -126,7 +126,7 @@ class DiskList(object):
         :return: A hash representing the eq_attrs specified in the DiskItem.
         """
         attr_values = self._get_attr_values_as_builtin(obj)
-        concatenated_eq_attrs = msgpack.dumps(attr_values)
+        concatenated_eq_attrs = cpickle_dumps(attr_values)
         return hashlib.md5(concatenated_eq_attrs).hexdigest()
 
     def _get_attr_values_as_builtin(self, obj):
