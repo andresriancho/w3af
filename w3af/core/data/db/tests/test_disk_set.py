@@ -33,7 +33,7 @@ from w3af.core.data.db.dbms import get_default_temp_db_instance
 from w3af.core.data.dc.factory import dc_from_form_params
 
 
-class test_DiskSet(unittest.TestCase):
+class TestDiskSet(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
