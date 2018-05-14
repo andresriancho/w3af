@@ -96,8 +96,6 @@ class crawl_infrastructure(BaseConsumer):
             else:
                 if work_unit == POISON_PILL:
 
-                    self._debug_32('received poison pill')
-
                     try:
                         # Close the pool and wait for everyone to finish
                         self._threadpool.close()
@@ -121,8 +119,6 @@ class crawl_infrastructure(BaseConsumer):
 
                     # Free memory
                     work_unit = None
-
-        self._debug_32('finished run()')
 
     def _teardown(self, plugin=None):
         """
