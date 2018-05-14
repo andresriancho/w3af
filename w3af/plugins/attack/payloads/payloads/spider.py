@@ -1,4 +1,9 @@
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
+else:
+    re.set_fallback_notification(re.FALLBACK_WARNING)
 
 from w3af.core.data.constants.common_directories import get_common_directories
 from w3af.core.ui.console.tables import table

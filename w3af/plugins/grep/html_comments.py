@@ -22,7 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement
 
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
+else:
+    re.set_fallback_notification(re.FALLBACK_WARNING)
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache

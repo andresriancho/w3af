@@ -20,7 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import urllib
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
+else:
+    re.set_fallback_notification(re.FALLBACK_WARNING)
 
 from w3af.core.data.search_engines.search_engine import SearchEngine
 from w3af.core.data.parsers.doc.url import URL

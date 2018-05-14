@@ -1,4 +1,9 @@
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
+else:
+    re.set_fallback_notification(re.FALLBACK_WARNING)
 
 import w3af.core.data.kb.knowledge_base as kb
 

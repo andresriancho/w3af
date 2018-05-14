@@ -23,7 +23,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 Utility to HTTP GET from wordpress.org and generate a DB with the archives/md5sums
 """
 import urllib2
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
+else:
+    re.set_fallback_notification(re.FALLBACK_WARNING)
 
 release_re = " \(<a href='https://wordpress.org/wordpress-(.*?).md5'>md5</a>"
 release_md5_fmt = 'https://wordpress.org/wordpress-%s.md5'

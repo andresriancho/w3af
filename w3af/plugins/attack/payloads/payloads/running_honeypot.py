@@ -1,4 +1,9 @@
-import re
+try:
+    import re2 as re
+except ImportError:
+    import re
+else:
+    re.set_fallback_notification(re.FALLBACK_WARNING)
 from w3af.plugins.attack.payloads.base_payload import Payload
 from w3af.core.ui.console.tables import table
 
