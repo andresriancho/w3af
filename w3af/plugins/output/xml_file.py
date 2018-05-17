@@ -442,7 +442,7 @@ class FindingsCache(object):
 
         try:
             node = lz4.frame.decompress(open(filename, 'rb').read())
-        except IOError:
+        except (IOError, RuntimeError):
             return None
 
         return node.decode('utf-8')
@@ -503,7 +503,7 @@ class CachedXMLNode(XMLNode):
 
         try:
             node = lz4.frame.decompress(open(filename, 'rb').read())
-        except IOError:
+        except (IOError, RuntimeError):
             return None
 
         return node.decode('utf-8')
