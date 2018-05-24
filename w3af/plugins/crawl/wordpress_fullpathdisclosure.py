@@ -78,16 +78,17 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         TODO: Will fail if WordPress is running on a Windows server due to
               paths manipulation.
         """
-        theme_paths = []
         wp_root_response = self._uri_opener.GET(domain_path, cache=True)
 
         if is_404(wp_root_response):
-            return
+            return []
 
+        theme_paths = []
         response_body = wp_root_response.get_body()
 
         theme_regexp = '%swp-content/themes/(.*)/style.css' % domain_path
         theme = re.search(theme_regexp, response_body, re.IGNORECASE)
+
         if theme:
             theme_name = theme.group(1)
             for fname in ('header', 'footer'):
