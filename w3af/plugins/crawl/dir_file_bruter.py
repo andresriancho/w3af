@@ -173,8 +173,9 @@ class dir_file_bruter(CrawlPlugin):
         base_path_repeater = repeat(base_path)
         arg_iter = izip(base_path_repeater, dir_name_generator)
 
-        self.worker_pool.map_multi_args(self._send_and_check, arg_iter,
-                                           chunksize=20)
+        self.worker_pool.map_multi_args(self._send_and_check,
+                                        arg_iter,
+                                        chunksize=20)
 
     def end(self):
         self._already_tested.cleanup()
