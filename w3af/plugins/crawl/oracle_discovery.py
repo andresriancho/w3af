@@ -35,21 +35,23 @@ class oracle_discovery(CrawlPlugin):
     Find Oracle applications on the remote web server.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    ORACLE_URL = ('/portal/page',
+                  '/reports/rwservlet/showenv')
 
-    ORACLE_DATA = (
+    ORACLE_RE = (
         # Example string:
         # <html><head><title>PPE is working</title></head><body>
         # PPE version 1.3.4 is working.</body></html>
-        ('/portal/page', '<html><head><title>PPE is working</title></head>' +
-                         '<body>(PPE) version (.*?) is working.</body></html>'),
+        ('<html><head><title>PPE is working</title></head>'
+         '<body>(PPE) version (.*?) is working.</body></html>'),
 
         # Example strings:
         # Reports Servlet Omgevingsvariabelen 9.0.4.2.0
         # Reports Servlet Variables de Entorno 9.0.4.0.33
-        ('/reports/rwservlet/showenv', '(Reports Servlet) [\w ]* ([\d\.]*)'),
+        '(Reports Servlet) [\w ]* ([\d\.]*?)',
     )
 
-    ORACLE_DATA = ((url, re.compile(re_str)) for url, re_str in ORACLE_DATA)
+    ORACLE_RE = [re.compile(regex) for regex in ORACLE_RE]
 
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
@@ -59,26 +61,33 @@ class oracle_discovery(CrawlPlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
+        self.worker_pool.map(self.send_and_check,
+                             self.url_generator(fuzzable_request))
+
+    def url_generator(self, fuzzable_request):
         base_url = fuzzable_request.get_url().base_url()
 
-        for url, re_obj in self.ORACLE_DATA:
-            od_url = base_url.url_join(url)
-            self.http_get_and_parse(od_url, re_obj, on_success=self.on_success)
+        for url in self.ORACLE_URL:
+            yield base_url.url_join(url)
 
-    def on_success(self, response, url, re_obj):
-        # pylint: disable=E1101
-        # E1101: Instance of 'str' has no 'search' member
-        mo = re_obj.search(response.get_body(), re.DOTALL)
+    def send_and_check(self, url):
 
-        if mo:
-            desc = '"%s" version "%s" was detected at "%s".'
-            desc %= (mo.group(1).title(), mo.group(2).title(), response.get_url())
+        response = self.http_get_and_parse(url)
 
-            i = Info('Oracle Application Server', desc, response.id, self.get_name())
-            i.set_url(response.get_url())
+        for regex in self.ORACLE_RE:
+            mo = regex.search(response.get_body(), re.DOTALL)
 
-            kb.kb.append(self, 'oracle_discovery', i)
-            om.out.information(i.get_desc())
+            if mo:
+                desc = '"%s" version "%s" was detected at "%s".'
+                desc %= (mo.group(1).title(), mo.group(2).title(), response.get_url())
+
+                i = Info('Oracle Application Server', desc, response.id, self.get_name())
+                i.set_url(response.get_url())
+
+                kb.kb.append(self, 'oracle_discovery', i)
+                om.out.information(i.get_desc())
+                break
+
         else:
             msg = ('oracle_discovery found the URL: "%s" but failed to'
                    ' parse it as an Oracle page. The first 50 bytes of'
