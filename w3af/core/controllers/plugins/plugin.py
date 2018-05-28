@@ -152,7 +152,9 @@ class Plugin(Configurable):
         """
         kb.kb.append_uniq a vulnerability to the KB
         """
-        added_to_kb = kb.kb.append_uniq(location_a, location_b, info,
+        added_to_kb = kb.kb.append_uniq(location_a,
+                                        location_b,
+                                        info,
                                         filter_by=filter_by)
 
         if added_to_kb:
