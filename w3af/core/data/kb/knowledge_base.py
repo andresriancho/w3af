@@ -109,8 +109,22 @@ class BasicKnowledgeBase(object):
     def filter_var(self, location_a, location_b, info_inst):
         """
         :return: True if there is no other info in (location_a, location_b)
-                 with the same URL, variable, DataContainer.keys() as the
-                 info_inst.
+                 with the same URL, variable as the info_inst.
+
+                 Before I checked the data container parameter names
+                 the problem with that approach was that in some rare
+                 cases the scanner reported vulnerabilities in:
+
+                    http://target.com/?id={here}&tracking1=23
+                    http://target.com/?id={here}&tracking1=23&tracking2=42
+
+                 Where tracking1 and tracking2 were parameters added
+                 for tracking the user navigation through the site.
+
+                 Then I realized that this is the same vulnerability
+                 since the same piece of code is the one generating
+                 them. Thus, no need to report them twice.
+
         """
         saved_vulns = self.get(location_a, location_b)
         if not len(saved_vulns):
@@ -128,9 +142,6 @@ class BasicKnowledgeBase(object):
                 continue
 
             if info_inst.get_dc() is None:
-                continue
-
-            if saved_vuln.get_dc().keys() != info_inst.get_dc().keys():
                 continue
 
             return False

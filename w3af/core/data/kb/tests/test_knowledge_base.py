@@ -211,13 +211,13 @@ class TestKnowledgeBase(unittest.TestCase):
         i1.set_token(('id', 0))
 
         i2 = MockInfo()
-        i2.set_uri(URL('http://moth/def.html?id=3&foo=bar'))
+        i2.set_uri(URL('http://moth/abc.html?id=3&foo=bar'))
         i2.set_dc(QueryString([('id', ['3']), ('foo', ['bar'])]))
         i2.set_token(('id', 0))
 
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
-        self.assertEqual(kb.get('a', 'b'), [i1, i2])
+        self.assertEqual(kb.get('a', 'b'), [i1])
 
     def test_append_uniq_url_uniq(self):
         i1 = MockInfo()
