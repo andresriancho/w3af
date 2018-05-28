@@ -29,7 +29,6 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.controllers.misc.safe_deepcopy import safe_deepcopy
 from w3af.core.controllers.exceptions import FourOhFourDetectionException
-from w3af.core.data.request.variant_identification import are_variants
 from w3af.core.data.fuzzer.utils import rand_alnum
 
 
