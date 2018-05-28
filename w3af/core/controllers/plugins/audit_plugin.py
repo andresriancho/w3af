@@ -184,9 +184,8 @@ class AuditPlugin(Plugin):
             vulns = kb.kb.get(pname, kb_varname)
 
             for vuln in vulns:
-                if vuln.get_token_name() == varname and\
-                mutant.get_dc().keys() == vuln.get_dc().keys() and\
-                are_variants(vuln.get_uri(), mutant.get_uri()):
+                if vuln.get_token_name() == varname and \
+                mutant.get_url() == vuln.get_url():
                     return False
                 
             return True
