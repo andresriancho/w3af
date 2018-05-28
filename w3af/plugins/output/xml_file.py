@@ -90,7 +90,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.2'
+    XML_OUTPUT_VERSION = '2.3'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -665,8 +665,12 @@ class ScanStatus(XMLNode):
         context.audit_input_speed = self._status['queues']['audit']['input_speed']
         context.audit_output_speed = self._status['queues']['audit']['output_speed']
         context.audit_queue_length = self._status['queues']['audit']['length']
+        context.grep_input_speed = self._status['queues']['grep']['input_speed']
+        context.grep_output_speed = self._status['queues']['grep']['output_speed']
+        context.grep_queue_length = self._status['queues']['grep']['length']
         context.crawl_eta = self._status['eta']['crawl']
         context.audit_eta = self._status['eta']['audit']
+        context.grep_eta = self._status['eta']['grep']
         context.rpm = self._status['rpm']
 
         context.total_urls = self._total_urls

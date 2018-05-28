@@ -164,6 +164,15 @@
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
+              <xs:element name="grep">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element type="xs:string" name="input-speed"/>
+                    <xs:element type="xs:string" name="output-speed"/>
+                    <xs:element type="xs:string" name="length"/>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -172,6 +181,7 @@
             <xs:sequence>
               <xs:element type="xs:string" name="crawl"/>
               <xs:element type="xs:string" name="audit"/>
+              <xs:element type="xs:string" name="grep"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>

@@ -25,11 +25,18 @@
             <output-speed>{{ audit_output_speed | escape_text }}</output-speed>
             <length>{{ audit_queue_length | escape_text }}</length>
         </audit>
+
+        <grep>
+            <input-speed>{{ grep_input_speed | escape_text }}</input-speed>
+            <output-speed>{{ grep_output_speed | escape_text }}</output-speed>
+            <length>{{ grep_queue_length | escape_text }}</length>
+        </grep>
     </queues>
 
     <eta>
         <crawl>{{ crawl_eta | escape_text }}</crawl>
-        <audit>{{ audit_eta| escape_text }}</audit>
+        <audit>{{ audit_eta | escape_text }}</audit>
+        <grep>{{ grep_eta | escape_text }}</grep>
     </eta>
 
     <rpm>{{ rpm | escape_text }}</rpm>
