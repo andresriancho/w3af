@@ -83,6 +83,9 @@ class blind_sqli(AuditPlugin):
         :param statement_type: The type of statement (string single, string double, int)
         :return: A vulnerability or None
         """
+        if self._has_sql_injection(mutant):
+            return
+
         if self._has_bug(mutant):
             return
 
@@ -136,6 +139,9 @@ class blind_sqli(AuditPlugin):
         :param delay_obj: The exact delay object
         :return: A vulnerability or None
         """
+        if self._has_sql_injection(mutant):
+            return
+        
         if self._has_bug(mutant):
             return
 
