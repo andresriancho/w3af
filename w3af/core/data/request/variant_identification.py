@@ -25,7 +25,7 @@ from itertools import chain, izip_longest
 def are_variants(uri, other_uri):
     """
     This function analyzes if two URLs are variants. Two requests are
-    variants if the[y|ir]:
+    variants if they:
         - have the same URL
         - have the same method
         - have the same parameters
