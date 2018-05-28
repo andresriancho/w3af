@@ -251,6 +251,35 @@ class BlindSqliResponseDiff(object):
                                  compare_diff):
             return None
 
+        # Now a nice trick from real-life. In some search engines when
+        # searching for `46" OR "46"="46" OR "46"="46` we get only a
+        # couple of results, which I assume is because the search
+        # engine is trying to search for more terms.
+        #
+        # Removing the special characters will make w3af search for
+        # `46  OR  46   46  OR  46   46`, which yields many results in
+        # the application's search engine, which I assume is because the
+        # search engine just needs to match objects with 46 / OR.
+        #
+        # So, this means that the responses ARE different, but they came
+        # from a search engine. The check above is NOT going to catch that
+        # and will yield a false positive.
+        #
+        # If this is not a search engine, or is a search engine with a blind
+        # sql injection, the result with `46" OR "46"="46" OR "46"="46` should
+        # be have a larger HTTP response body: "all results" should be there.
+        #
+        # If it is a search engine, then the result for the search string
+        # without special characters will be larger.
+        if len(body_search_response) * 0.8 > len(body_true_response):
+            msg = 'Search engine detected using response length, stop.'
+            self.debug(msg,
+                       statement_type=statement_type,
+                       mutant=mutant,
+                       response_1=true_response,
+                       response_2=search_response)
+            return None
+
         # Verify the injection!
         statements = self._get_statements(mutant)
         second_true_stm = statements[statement_type][0]
