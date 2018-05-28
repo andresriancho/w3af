@@ -285,32 +285,36 @@ class BlindSqliResponseDiff(object):
                    response_1=false_response,
                    response_2=second_false_response)
 
-        if self.equal_with_limit(body_second_false_response,
-                                 body_false_response,
-                                 compare_diff):
+        if not self.equal_with_limit(body_second_false_response,
+                                     body_false_response,
+                                     compare_diff):
+            return None
             
-            response_ids = [second_false_response.id,
-                            second_true_response.id]
-            
-            desc = ('Blind SQL injection was found at: "%s", using'
-                    ' HTTP method %s. The injectable parameter is: "%s"')
-            desc %= (smart_str_ignore(mutant.get_url()),
-                     smart_str_ignore(mutant.get_method()),
-                     smart_str_ignore(mutant.get_token_name()))
-            
-            v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
-                                 severity.HIGH, response_ids, 'blind_sqli',
-                                 mutant)
-            
-            om.out.debug(v.get_desc())
+        response_ids = [second_false_response.id,
+                        second_true_response.id]
 
-            v['type'] = statement_type
-            v['true_html'] = second_true_response.get_body()
-            v['false_html'] = second_false_response.get_body()
-            v['error_html'] = syntax_error_response.get_body()
-            return v
+        desc = ('Blind SQL injection was found at: "%s", using'
+                ' HTTP method %s. The injectable parameter is: "%s"')
+        desc %= (smart_str_ignore(mutant.get_url()),
+                 smart_str_ignore(mutant.get_method()),
+                 smart_str_ignore(mutant.get_token_name()))
 
-        return None
+        v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
+                             severity.HIGH, response_ids, 'blind_sqli',
+                             mutant)
+
+        om.out.debug(v.get_desc())
+        self.debug(v.get_desc(),
+                   statement_type=statement_type,
+                   mutant=mutant,
+                   response_1=false_response,
+                   response_2=second_false_response)
+
+        v['type'] = statement_type
+        v['true_html'] = second_true_response.get_body()
+        v['false_html'] = second_false_response.get_body()
+        v['error_html'] = syntax_error_response.get_body()
+        return v
 
     def debug(self,
               msg,
