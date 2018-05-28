@@ -25,6 +25,8 @@ import threading
 import cPickle
 import copy
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.data.fuzzer.utils import rand_alpha
 from w3af.core.data.db.dbms import get_default_persistent_db_instance
 from w3af.core.controllers.exceptions import DBException
@@ -133,6 +135,14 @@ class BasicKnowledgeBase(object):
 
             if saved_vuln.get_url() != info_inst.get_url():
                 continue
+
+            msg = ('[filter_var] Is preventing "%s" from being written to the'
+                   ' KB because "%s" has the same token (%s) and URL (%s).')
+            args = (info_inst.get_desc(),
+                    saved_vuln.get_desc(),
+                    info_inst.get_token_name(),
+                    info_inst.get_url())
+            om.out.debug(msg % args)
 
             return False
 
