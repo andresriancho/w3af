@@ -63,6 +63,12 @@ class BasicKnowledgeBase(object):
 
         Does this in a thread-safe manner.
 
+        :param location_a: The A location where to store data
+
+        :param location_b: The B location where to store data
+
+        :param info_inst: An Info instance (or subclasses like Vuln and InfoSet)
+
         :param filter_by: One of 'VAR' of 'URL'. Only append to the kb in
                           (location_a, location_b) if there is NO OTHER info
                           in that location with the same:
@@ -103,23 +109,31 @@ class BasicKnowledgeBase(object):
     def filter_var(self, location_a, location_b, info_inst):
         """
         :return: True if there is no other info in (location_a, location_b)
-                 with the same URL,Variable,DataContainer.keys() as the
+                 with the same URL, variable, DataContainer.keys() as the
                  info_inst.
         """
-        for saved_vuln in self.get(location_a, location_b):
+        saved_vulns = self.get(location_a, location_b)
+        if not len(saved_vulns):
+            return True
 
-            if saved_vuln.get_token_name() == info_inst.get_token_name() and\
-            saved_vuln.get_url() == info_inst.get_url():
+        for saved_vuln in saved_vulns:
 
-                if saved_vuln.get_dc() is None and\
-                info_inst.get_dc() is None:
-                    return False
+            if saved_vuln.get_token_name() != info_inst.get_token_name():
+                continue
 
-                if saved_vuln.get_dc() is not None and\
-                info_inst.get_dc() is not None:
+            if saved_vuln.get_url() != info_inst.get_url():
+                continue
 
-                    if saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
-                        return False
+            if saved_vuln.get_dc() is None:
+                continue
+
+            if info_inst.get_dc() is None:
+                continue
+
+            if saved_vuln.get_dc().keys() != info_inst.get_dc().keys():
+                continue
+
+            return False
 
         return True
 

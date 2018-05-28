@@ -147,7 +147,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, ])
         
-    def test_append_uniq_var_not_uniq(self):
+    def test_append_uniq_var_not_uniq_diff_url(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', ['1'])]))
@@ -156,6 +156,63 @@ class TestKnowledgeBase(unittest.TestCase):
         i2 = MockInfo()
         i2.set_uri(URL('http://moth/def.html?id=3'))
         i2.set_dc(QueryString([('id', ['3'])]))
+        i2.set_token(('id', 0))
+
+        kb.append_uniq('a', 'b', i1)
+        kb.append_uniq('a', 'b', i2)
+        self.assertEqual(kb.get('a', 'b'), [i1, i2])
+
+    def test_append_uniq_var_not_uniq_diff_token_name(self):
+        i1 = MockInfo()
+        i1.set_uri(URL('http://moth/abc.html?id=1&foo=bar'))
+        i1.set_dc(QueryString([('id', ['1']),
+                               ('foo', ['bar'])]))
+        i1.set_token(('id', 0))
+
+        i2 = MockInfo()
+        i2.set_uri(URL('http://moth/abc.html?id=1&foo=bar'))
+        i2.set_dc(QueryString([('id', ['3']),
+                               ('foo', ['bar'])]))
+        i2.set_token(('foo', 0))
+
+        kb.append_uniq('a', 'b', i1)
+        kb.append_uniq('a', 'b', i2)
+        self.assertEqual(kb.get('a', 'b'), [i1, i2])
+
+    def test_append_uniq_var_not_uniq_diff_token_name_three(self):
+        i1 = MockInfo()
+        i1.set_uri(URL('http://moth/abc.html?id=1&foo=bar'))
+        i1.set_dc(QueryString([('id', ['1']),
+                               ('foo', ['bar'])]))
+        i1.set_token(('id', 0))
+
+        i2 = MockInfo()
+        i2.set_uri(URL('http://moth/abc.html?id=1&foo=bar'))
+        i2.set_dc(QueryString([('id', ['3']),
+                               ('foo', ['bar'])]))
+        i2.set_token(('foo', 0))
+
+        # This instance duplicates i2
+        i3 = MockInfo()
+        i3.set_uri(URL('http://moth/abc.html?id=1&foo=bar'))
+        i3.set_dc(QueryString([('id', ['3']),
+                               ('foo', ['bar'])]))
+        i3.set_token(('foo', 0))
+
+        kb.append_uniq('a', 'b', i1)
+        kb.append_uniq('a', 'b', i2)
+        kb.append_uniq('a', 'b', i3)
+        self.assertEqual(kb.get('a', 'b'), [i1, i2])
+
+    def test_append_uniq_var_diff_params(self):
+        i1 = MockInfo()
+        i1.set_uri(URL('http://moth/abc.html?id=1'))
+        i1.set_dc(QueryString([('id', ['1'])]))
+        i1.set_token(('id', 0))
+
+        i2 = MockInfo()
+        i2.set_uri(URL('http://moth/def.html?id=3&foo=bar'))
+        i2.set_dc(QueryString([('id', ['3']), ('foo', ['bar'])]))
         i2.set_token(('id', 0))
 
         kb.append_uniq('a', 'b', i1)
@@ -175,7 +232,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         kb.append_uniq('a', 'b', i1, filter_by='URL')
         kb.append_uniq('a', 'b', i2, filter_by='URL')
-        self.assertEqual(kb.get('a', 'b'), [i1,])
+        self.assertEqual(kb.get('a', 'b'), [i1])
 
     def test_append_uniq_url_different(self):
         i1 = MockInfo()
