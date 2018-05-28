@@ -126,22 +126,12 @@ class BasicKnowledgeBase(object):
                  them. Thus, no need to report them twice.
 
         """
-        saved_vulns = self.get(location_a, location_b)
-        if not len(saved_vulns):
-            return True
-
-        for saved_vuln in saved_vulns:
+        for saved_vuln in self.get(location_a, location_b):
 
             if saved_vuln.get_token_name() != info_inst.get_token_name():
                 continue
 
             if saved_vuln.get_url() != info_inst.get_url():
-                continue
-
-            if saved_vuln.get_dc() is None:
-                continue
-
-            if info_inst.get_dc() is None:
                 continue
 
             return False
