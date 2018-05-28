@@ -83,13 +83,13 @@ class blind_sqli(AuditPlugin):
         :param statement_type: The type of statement (string single, string double, int)
         :return: A vulnerability or None
         """
+        vuln = bsqli_resp_diff.is_injectable(mutant, statement_type)
+
         if self._has_sql_injection(mutant):
             return
 
         if self._has_bug(mutant):
             return
-
-        vuln = bsqli_resp_diff.is_injectable(mutant, statement_type)
 
         if vuln is None:
             return
@@ -139,13 +139,13 @@ class blind_sqli(AuditPlugin):
         :param delay_obj: The exact delay object
         :return: A vulnerability or None
         """
+        vuln = bsqli_time_delay.is_injectable(mutant, delay_obj)
+
         if self._has_sql_injection(mutant):
             return
-        
+
         if self._has_bug(mutant):
             return
-
-        vuln = bsqli_time_delay.is_injectable(mutant, delay_obj)
 
         if vuln is None:
             return
