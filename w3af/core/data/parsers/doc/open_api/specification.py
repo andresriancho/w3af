@@ -23,12 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import json
 import yaml
 import logging
-import warnings
 
 from yaml import load
 from bravado_core.spec import Spec
-from bravado_core.spec_flattening import flattened_spec
-from jsonschema.exceptions import RefResolutionError
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -108,7 +105,7 @@ class SpecificationHandler(object):
             if op is not None:
                 yield op
 
-    def _parse_spec_from_dict(self, spec_dict):
+    def _parse_spec_from_dict(self, spec_dict, retry=True):
         """
         load_spec_dict will load the open api document into a dict. We use this
         function to parse the dict into a bravado Spec instance.
@@ -120,16 +117,6 @@ class SpecificationHandler(object):
         config = {'use_models': False}
         url_string = self.http_response.get_url().url_string
 
-        with warnings.catch_warnings(record=True) as w:
-            try:
-                spec_dict = flattened_spec(spec_dict, spec_url=url_string)
-            except RefResolutionError, e:
-                msg = ('The document at "%s" is not a valid Open API specification.'
-                       ' The following exception was raised while trying to flatten'
-                       ' the specification: "%s".')
-                om.out.debug(msg % (self.http_response.get_url(), e))
-                return None
-
         try:
             self.spec = Spec.from_dict(spec_dict,
                                        origin_url=url_string,
@@ -138,10 +125,28 @@ class SpecificationHandler(object):
             msg = ('The document at "%s" is not a valid Open API specification.'
                    ' The following exception was raised while parsing the dict'
                    ' into a specification object: "%s"')
-            om.out.debug(msg % (self.http_response.get_url(), e))
-            return None
+            args = (self.http_response.get_url(), e)
+            om.out.debug(msg % args)
 
-        return self.spec
+            if not retry:
+                return None
+
+            error_message = str(e)
+
+            if 'version' in error_message and 'is a required property' in error_message:
+                om.out.debug('The Open API specification seems to be missing the'
+                             ' version attribute, forcing version 1.0.0 and trying'
+                             ' again.')
+
+                spec_dict['info'] = {}
+                spec_dict['version'] = '1.0.0'
+
+                return self._parse_spec_from_dict(spec_dict, retry=False)
+
+            return None
+        else:
+            # Everything went well
+            return self.spec
 
     def _load_spec_dict(self):
         """
