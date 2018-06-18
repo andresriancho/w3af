@@ -232,7 +232,8 @@ class SGMLParser(BaseParser):
                                   html=True,
                                   recover=True,
                                   encoding=DEFAULT_ENCODING,
-                                  huge_tree=False)
+                                  huge_tree=False,
+                                  resolve_entities=False)
 
         for event, elem in context:
             try:

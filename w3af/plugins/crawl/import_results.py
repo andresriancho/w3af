@@ -122,7 +122,7 @@ class import_results(CrawlPlugin):
         Read a burp log (XML) and extract the information.
         """
         xp = BurpParser()
-        parser = etree.XMLParser(target=xp)
+        parser = etree.XMLParser(target=xp, resolve_entities=False)
 
         try:
             requests = etree.fromstring(file(burp_file).read(), parser)
