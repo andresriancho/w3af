@@ -363,7 +363,7 @@ class fingerprint_404(object):
                 four_oh_data = FourOhFourResponseFactory(http_response)
                 self._404_responses.append(four_oh_data)
 
-                msg = ('"%s" (id:%s) is a 404 (similarity_index > %s).'
+                msg = ('"%s" (id:%s) is a 404 [similarity_index > %s].'
                        ' Adding new knowledge to the 404_responses database'
                        ' (length=%s).')
                 fmt = (http_response.get_url(), http_response.id,
