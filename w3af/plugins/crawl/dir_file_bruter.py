@@ -74,92 +74,16 @@ class dir_file_bruter(CrawlPlugin):
         """
         if not self._exec:
             raise RunOnce()
-        else:
-            domain_path = fuzzable_request.get_url().get_domain_path()
 
-            # Should I run more than once?
-            if not self._be_recursive:
-                self._exec = False
+        domain_path = fuzzable_request.get_url().get_domain_path()
 
-            if domain_path not in self._already_tested:
-                self._already_tested.add(domain_path)
-                self._bruteforce_directories(domain_path)
+        # Should I run more than once?
+        if not self._be_recursive:
+            self._exec = False
 
-    def _dir_name_generator(self, base_path):
-        """
-        Simple generator that returns the names of the directories and files to
-        test. It extracts the information from the user configured wordlist
-        parameter.
-
-        @yields: (A string with the directory or file name,
-                  a URL object with the dir or file name)
-        """
-        if self._bf_directories:
-            for directory_name in file(self._dir_list):
-                directory_name = directory_name.strip()
-
-                # ignore comments and empty lines
-                if directory_name and not directory_name.startswith('#'):
-                    try:
-                        dir_url = base_path.url_join(directory_name + '/')
-                    except ValueError, ve:
-                        msg = 'The "%s" line at "%s" generated an ' \
-                              'invalid URL: %s'
-                        om.out.debug(msg % (directory_name, self._dir_list, ve))
-                    else:
-                        yield directory_name, dir_url
-
-        if self._bf_files:
-            for file_name in file(self._file_list):
-                file_name = file_name.strip()
-
-                # ignore comments and empty lines
-                if file_name and not file_name.startswith('#'):
-                    try:
-                        dir_url = base_path.url_join(file_name)
-                    except ValueError, ve:
-                        msg = 'The "%s" line at "%s" generated an ' \
-                              'invalid URL: %s'
-                        om.out.debug(msg % (file_name, self._file_list, ve))
-                    else:
-                        yield file_name, dir_url
-
-    def _send_and_check(self, base_path, (directory_name, dir_url)):
-        """
-        Performs a GET and verifies that the response is not a 404.
-
-        :return: None, data is stored in self.output_queue
-        """
-        try:
-            http_response = self._uri_opener.GET(dir_url, cache=False)
-        except:
-            pass
-        else:
-            if is_404(http_response):
-                return
-            #
-            #   Looking good, but lets see if this is a false positive
-            #   or not...
-            #
-            dir_url = base_path.url_join(directory_name + rand_alnum(5) + '/')
-
-            invalid_http_response = self._uri_opener.GET(dir_url,
-                                                         cache=False)
-
-            if is_404(invalid_http_response):
-                #
-                #    Good, the directory_name + rand_alnum(5) return a
-                #    404, the original directory_name is not a false positive.
-                #
-                fr = FuzzableRequest.from_http_response(http_response)
-                self.output_queue.put(fr)
-
-                msg = ('dir_file_brute plugin found "%s" with HTTP response '
-                       'code %s and Content-Length: %s.')
-                
-                om.out.information(msg % (http_response.get_url(),
-                                          http_response.get_code(),
-                                          len(http_response.get_body())))
+        if domain_path not in self._already_tested:
+            self._already_tested.add(domain_path)
+            self._bruteforce_directories(domain_path)
 
     def _bruteforce_directories(self, base_path):
         """
@@ -169,13 +93,99 @@ class dir_file_bruter(CrawlPlugin):
 
         :return: None, the data is stored in self.output_queue
         """
-        dir_name_generator = self._dir_name_generator(base_path)
+        url_generator = self._url_generator(base_path)
         base_path_repeater = repeat(base_path)
-        arg_iter = izip(base_path_repeater, dir_name_generator)
+        arg_iter = izip(base_path_repeater, url_generator)
 
         self.worker_pool.map_multi_args(self._send_and_check,
                                         arg_iter,
                                         chunksize=20)
+
+    def _url_generator(self, base_path):
+        """
+        Simple generator that yields the new URLs to test. It extracts the
+        information from the user-configured wordlists and generates both
+        directories and file names to test.
+
+        :yields: (String with the directory or file name,
+                  URL object with the dir or file name)
+        """
+        if self._bf_directories:
+            is_path = True
+            for line, new_url in self._read_db_file_gen_url(base_path, self._dir_list, is_path):
+                yield line, new_url
+
+        if self._bf_files:
+            is_path = False
+            for line, new_url in self._read_db_file_gen_url(base_path, self._file_list, is_path):
+                yield line, new_url
+
+    def _read_db_file_gen_url(self, base_path, file_name, is_path):
+        """
+        :param base_path: The base URL
+        :param file_name: The wordlist filename to read
+        :param is_path: True if we should generate directories, else generate files
+        :yields: (String with the directory or file name,
+                  URL object with the dir or file name)
+        """
+        for line in file(file_name):
+            line = line.strip()
+
+            # ignore comments and empty lines
+            if not line:
+                continue
+
+            if line.startswith('#'):
+                continue
+
+            if is_path:
+                line = line + '/'
+
+            try:
+                new_url = base_path.url_join(line)
+            except ValueError, ve:
+                msg = 'The "%s" line at "%s" generated an invalid URL: %s'
+                om.out.debug(msg % (line, file_name, ve))
+            else:
+                yield line, new_url
+
+    def _send_and_check(self, base_path, (file_or_path, new_url)):
+        """
+        Performs a GET and verifies that the response is not a 404.
+
+        :return: None, data is stored in self.output_queue
+        """
+        try:
+            http_response = self._uri_opener.GET(new_url, cache=False)
+        except:
+            return
+
+        if is_404(http_response):
+            return
+
+        #
+        # Looking good, but lets see if this is a false positive or not...
+        #
+        dir_url = base_path.url_join(file_or_path + rand_alnum(5) + '/')
+
+        invalid_http_response = self._uri_opener.GET(dir_url, cache=False)
+
+        if not is_404(invalid_http_response):
+            return
+
+        #
+        # Good, the directory_name + rand_alnum(5) return a
+        # 404, the original directory_name is not a false positive.
+        #
+        fr = FuzzableRequest.from_http_response(http_response)
+        self.output_queue.put(fr)
+
+        msg = ('dir_file_brute plugin found "%s" with HTTP response '
+               'code %s and Content-Length: %s.')
+
+        om.out.information(msg % (http_response.get_url(),
+                                  http_response.get_code(),
+                                  len(http_response.get_body())))
 
     def end(self):
         self._already_tested.cleanup()
@@ -186,26 +196,26 @@ class dir_file_bruter(CrawlPlugin):
         """
         ol = OptionList()
 
-        d = 'Wordlist to use in directory bruteforcing process.'
+        d = 'Wordlist to use in directory bruteforcing process'
         o = opt_factory('dir_wordlist', self._dir_list, d, INPUT_FILE)
         ol.add(o)
 
-        d = 'Wordlist to use in file bruteforcing process.'
+        d = 'Wordlist to use in file bruteforcing process'
         o = opt_factory('file_wordlist', self._file_list, d, INPUT_FILE)
         ol.add(o)
 
-        d = 'If set to True, this plugin will bruteforce directories.'
+        d = 'If set to True, this plugin will bruteforce directories'
         o = opt_factory('bf_directories', self._bf_directories, d, BOOL)
         ol.add(o)
 
-        d = 'If set to True, this plugin will bruteforce files.'
+        d = 'If set to True, this plugin will bruteforce files'
         o = opt_factory('bf_files', self._bf_files, d, BOOL)
         ol.add(o)
 
-        d = 'If set to True, this plugin will bruteforce all directories, not'\
-            ' only the root directory.'
-        h = 'WARNING: Enabling this will make the plugin send tens of thousands'\
-            ' of requests.'
+        d = ('If set to True, this plugin will bruteforce all directories, not'
+             ' only the root directory.')
+        h = ('WARNING: Enabling this will make the plugin send tens of thousands'
+             ' of requests.')
         o = opt_factory('be_recursive', self._be_recursive, d, BOOL, help=h)
         ol.add(o)
 
@@ -216,7 +226,7 @@ class dir_file_bruter(CrawlPlugin):
         This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
 
-        :param OptionList: A dictionary with the options for the plugin.
+        :param option_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
         self._dir_list = option_list['dir_wordlist'].get_value()
