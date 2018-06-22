@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean, relative_distance
+from w3af.core.controllers.misc.fuzzy_string_cmp import (relative_distance_boolean,
+                                                         relative_distance,
+                                                         fuzzy_equal)
 
 
 class TestFuzzyStringCompare(unittest.TestCase):
@@ -73,9 +75,9 @@ class TestFuzzyStringCompare(unittest.TestCase):
 
     def test_relative_distance(self):
         acceptance_tests = [('a', 'a', 1.0),
-                            ('ab ac ad', 'ab ae ad', 0.6),
-                            ('ab ac ae', 'ab af ad', 0.3),
-                            ('ab ac ad', 'aa ae af', 0.0),
+                            ('ab\nac\nad', 'ab\nae\nad', 0.6),
+                            ('ab\nac\nae', 'ab\naf\nad', 0.3),
+                            ('ab\nac\nad', 'aa\nae\naf', 0.0),
                             ('a', 'b', 0.0),
                             ('a<a"a<a', 'a<a"a<b', 0.75),
                             ('a' * 25, 'a', 0.00)]
@@ -84,3 +86,17 @@ class TestFuzzyStringCompare(unittest.TestCase):
             res = relative_distance(e, d)
             msg = "return value: %f, expected value: %f" % (res, f)
             self.assertTrue(res >= f, msg)
+
+    def test_17092(self):
+        nginx_404 = ('<html>\n'
+                     '<head><title>404 Not Found</title></head>\n'
+                     '<body bgcolor="white">\n'
+                     '<center><h1>404 Not Found</h1></center>\n'
+                     '<hr><center>nginx</center>\n'
+                     '</body>\n'
+                     '</html>\n')
+
+        itest = 'itest'
+
+        # 0.9 is from fingerprint_404.py
+        self.assertFalse(fuzzy_equal(nginx_404, itest, 0.9))
