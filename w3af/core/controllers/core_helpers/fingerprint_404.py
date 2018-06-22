@@ -394,6 +394,14 @@ class fingerprint_404(object):
                 'a1a2'      ==> 'c3c4"
                 'a1a2.html' ==> 'c3c4.html"
 
+            * There is an edge case which was reported in [0] which affects
+            files like '.ssh' or '.env'. These files (at least from w3af's
+            perspective) don't have a name and have an extension. When we
+            find a file like this we'll just randomize the filename and
+            keep the extension.
+
+        [0] https://github.com/andresriancho/w3af/issues/17092
+
         :param filename: The original filename
         :return: A mutated filename
         """
@@ -403,6 +411,13 @@ class fingerprint_404(object):
         else:
             extension = None
             orig_filename = split_filename[0]
+
+        #
+        #   This handles the case of files which don't have a name,
+        #   such as .env.
+        #
+        if not orig_filename:
+            return u'%s.%s' % (rand_alnum(5), extension)
 
         def grouper(iterable, n, fillvalue=None):
             """
@@ -475,6 +490,7 @@ class fingerprint_404(object):
         """
         response_url = http_response.get_url()
         filename = response_url.get_file_name()
+
         if not filename:
             relative_url = '../%s/' % rand_alnum(8)
             url_404 = response_url.url_join(relative_url)
@@ -493,7 +509,8 @@ class fingerprint_404(object):
             if path_extension not in self._directory_uses_404_codes:
                 self._directory_uses_404_codes.add(path_extension)
 
-        return fuzzy_equal(clean_response_404_body, clean_resp_body,
+        return fuzzy_equal(clean_response_404_body,
+                           clean_resp_body,
                            IS_EQUAL_RATIO)
 
 
