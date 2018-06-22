@@ -166,7 +166,11 @@ class dir_file_bruter(CrawlPlugin):
         #
         # Looking good, but lets see if this is a false positive or not...
         #
-        dir_url = base_path.url_join(file_or_path + rand_alnum(5) + '/')
+        forced_404 = file_or_path + rand_alnum(5)
+        if not new_url.get_file_name():
+            forced_404 += '/'
+
+        dir_url = base_path.url_join(forced_404)
 
         invalid_http_response = self._uri_opener.GET(dir_url, cache=False)
 
