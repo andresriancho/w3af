@@ -9,6 +9,5 @@ from .handler import (KeepAliveHandler,
                       HTTPHandler,
                       URLTimeoutError)
 
-# Max connections allowed per host
-MAX_CONNECTIONS = 50
+
 
