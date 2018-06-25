@@ -1,8 +1,11 @@
+import os
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.tests.running_tests import is_running_tests
 
-DEBUG = False
+
+DEBUG = os.environ.get('DEBUG', '0') == '1'
 
 
 def to_utf8_raw(unicode_or_str):
