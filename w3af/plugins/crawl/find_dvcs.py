@@ -19,7 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import struct
+import sqlite3
+import tempfile
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
@@ -30,6 +33,13 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
+
+
+class DVCSTest(object):
+    def __init__(self, filename, name, method):
+        self.filename = filename
+        self.name = name
+        self.method = method
 
 
 class find_dvcs(CrawlPlugin):
@@ -48,46 +58,17 @@ class find_dvcs(CrawlPlugin):
         self._analyzed_dirs = ScalableBloomFilter()
         self._analyzed_filenames = ScalableBloomFilter()
 
-        self._dvcs = {'git repository': {},
-                      'git ignore': {},
-                      'hg repository': {},
-                      'hg ignore': {},
-                      'bzr repository': {},
-                      'bzr ignore': {},
-                      'svn repository': {},
-                      'svn ignore': {},
-                      'cvs repository': {},
-                      'cvs ignore': {}}
-
-        self._dvcs['git repository']['filename'] = '.git/index'
-        self._dvcs['git repository']['function'] = self.git_index
-
-        self._dvcs['git ignore']['filename'] = '.gitignore'
-        self._dvcs['git ignore']['function'] = self.ignore_file
-
-        self._dvcs['hg repository']['filename'] = '.hg/dirstate'
-        self._dvcs['hg repository']['function'] = self.hg_dirstate
-
-        self._dvcs['hg ignore']['filename'] = '.hgignore'
-        self._dvcs['hg ignore']['function'] = self.ignore_file
-
-        self._dvcs['bzr repository']['filename'] = '.bzr/checkout/dirstate'
-        self._dvcs['bzr repository']['function'] = self.bzr_checkout_dirstate
-
-        self._dvcs['bzr ignore']['filename'] = '.bzrignore'
-        self._dvcs['bzr ignore']['function'] = self.ignore_file
-
-        self._dvcs['svn repository']['filename'] = '.svn/entries'
-        self._dvcs['svn repository']['function'] = self.svn_entries
-
-        self._dvcs['svn ignore']['filename'] = '.svnignore'
-        self._dvcs['svn ignore']['function'] = self.ignore_file
-
-        self._dvcs['cvs repository']['filename'] = 'CVS/Entries'
-        self._dvcs['cvs repository']['function'] = self.cvs_entries
-
-        self._dvcs['cvs ignore']['filename'] = '.cvsignore'
-        self._dvcs['cvs ignore']['function'] = self.ignore_file
+        self._dvcs = [DVCSTest('.git/index', 'git repository', self.git_index),
+                      DVCSTest('.gitignore', 'git ignore', self.ignore_file),
+                      DVCSTest('.hg/dirstate', 'hg repository', self.hg_dirstate),
+                      DVCSTest('.hgignore', 'hg ignore', self.ignore_file),
+                      DVCSTest('.bzr/checkout/dirstate', 'bzr repository', self.bzr_checkout_dirstate),
+                      DVCSTest('.bzrignore', 'bzr ignore', self.ignore_file),
+                      DVCSTest('.svn/entries', 'svn repository', self.svn_entries),
+                      DVCSTest('.svn/wc.db', 'svn repository db', self.svn_wc_db),
+                      DVCSTest('.svnignore', 'svn ignore', self.ignore_file),
+                      DVCSTest('CVS/Entries', 'cvs repository', self.cvs_entries),
+                      DVCSTest('.cvsignore', 'cvs ignore', self.ignore_file)]
 
     def crawl(self, fuzzable_request):
         """
@@ -112,10 +93,12 @@ class find_dvcs(CrawlPlugin):
 
         :return: URLs
         """
-        for repo in self._dvcs.keys():
-            repo_url = domain_path.url_join(self._dvcs[repo]['filename'])
-            _function = self._dvcs[repo]['function']
-            yield repo_url, _function, repo, domain_path
+        for dvcs_test in self._dvcs:
+            repo_url = domain_path.url_join(dvcs_test.filename)
+            yield (repo_url,
+                   dvcs_test.method,
+                   dvcs_test.name,
+                   domain_path)
 
     def _clean_filenames(self, filenames):
         """
@@ -134,8 +117,10 @@ class find_dvcs(CrawlPlugin):
 
             if filename.startswith('/'):
                 filename = filename[1:]
+
             if filename.startswith('./'):
                 filename = filename[2:]
+
             if filename.endswith('/'):
                 filename = filename[:-1]
 
@@ -167,31 +152,32 @@ class find_dvcs(CrawlPlugin):
             # Log in order to be able to improve the framework.
             args = (e, repo_get_files.__name__, repo_url)
             om.out.debug('Got a "%s" exception while running "%s" on "%s"' % args)
-        else:
-            parsed_url_set = set()
+            return
 
-            for filename in self._clean_filenames(filenames):
-                test_url = domain_path.url_join(filename)
-                if test_url in self._analyzed_filenames:
-                    continue
+        parsed_url_set = set()
 
-                parsed_url_set.add(test_url)
-                self._analyzed_filenames.add(filename)
+        for filename in self._clean_filenames(filenames):
+            test_url = domain_path.url_join(filename)
+            if test_url in self._analyzed_filenames:
+                continue
 
-            self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
+            parsed_url_set.add(test_url)
+            self._analyzed_filenames.add(filename)
 
-            # Now we send this finding to the report for manual analysis
-            desc = ('A %s was found at: "%s"; this could indicate that a %s is'
-                    ' accessible. You might be able to download the Web'
-                    ' application source code.')
-            desc %= repo, http_response.get_url(), repo
+        self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
-            v = Vuln('Source code repository', desc, severity.MEDIUM,
-                     http_response.id, self.get_name())
-            v.set_url(http_response.get_url())
+        # Now we send this finding to the report for manual analysis
+        desc = ('A %s was found at: "%s"; this could indicate that a %s is'
+                ' accessible. You might be able to download the Web'
+                ' application source code.')
+        desc %= (repo, http_response.get_url(), repo)
 
-            kb.kb.append(self, repo, v)
-            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+        v = Vuln('Source code repository', desc, severity.MEDIUM,
+                 http_response.id, self.get_name())
+        v.set_url(http_response.get_url())
+
+        kb.kb.append(self, repo, v)
+        om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def git_index(self, body):
         """
@@ -282,9 +268,29 @@ class find_dvcs(CrawlPlugin):
         """
         Analyze the contents of the SVN entries and extract filenames.
 
+        According to [0] the SVN entries file contains XML, but other sources [1]
+        say that the file uses another format. Doing a "svn co" of various
+        repositories and investigating the contents of the file makes me believe
+        it is deprecated. The contents I see now are: "12".
+
+        It seems to me that .svn/entries was deprecated and "12" is just a place-
+        holder to indicate that the svn client should look somewhere else (most
+        likely wc.db) for the data.
+
+        I'm keeping this method because we might just be lucky and find
+        an old repository, but a new SVN repository detection method using wc.db
+        was also added.
+
+        [0] http://svn.gnu.org.ua/svnbook/svn.developer.insidewc.html
+        [1] http://svnbook.red-bean.com/en/1.6/svn.developer.insidewc.html
+
         :param body: The contents of the file to analyze.
         :return: A list of filenames found.
         """
+        # See method documentation to understand why 12
+        if body.strip() == '12':
+            return set()
+
         filenames = set()
         lines = body.split('\n')
         offset = 29
@@ -292,12 +298,61 @@ class find_dvcs(CrawlPlugin):
         while offset < len(lines):
             line = lines[offset].strip()
             filename = lines[offset - 1].strip()
+
             if line == 'file':
                 filenames.add(filename)
                 offset += 34
+
             elif line == 'dir':
                 filenames.add(filename)
                 offset += 3
+
+            else:
+                # This prevents an endless loop when the document being parsed
+                # is not a real SVN entries
+                break
+
+        return filenames
+
+    def svn_wc_db(self, body):
+        """
+        Analyze the contents of the HTTP response body to identify if it is
+        a SVN database (wc.db) and extract filenames.
+
+        :param body: Potentially a wc.db file.
+        :return: Filenames stored in the DB
+        """
+        filenames = set()
+
+        temp_db = tempfile.NamedTemporaryFile(prefix='w3af-find-dvcs-',
+                                              suffix='-wc.db',
+                                              delete=False)
+
+        temp_db_fh = file(temp_db.name, 'w')
+        temp_db_fh.write(body)
+        temp_db_fh.close()
+
+        query = ('SELECT local_relpath, '
+                 ' ".svn/pristine/" || substr(checksum,7,2) || "/" || substr(checksum,7) || ".svn-base" AS svn'
+                 ' FROM NODES WHERE kind="file"')
+
+        try:
+            conn = sqlite3.connect(temp_db.name)
+            cursor = conn.cursor()
+
+            cursor.execute(query)
+            query_result = cursor.fetchall()
+
+            for path, svn_path in query_result:
+                filenames.add(path)
+                filenames.add(svn_path)
+        except Exception, e:
+            msg = 'Failed to extract filenames from wc.db file. The exception was: "%s"'
+            args = (e,)
+            om.out.debug(msg % args)
+        finally:
+            if os.path.exists(temp_db.name):
+                os.remove(temp_db.name)
 
         return filenames
 
@@ -311,11 +366,13 @@ class find_dvcs(CrawlPlugin):
         filenames = set()
 
         for line in body.split('\n'):
-            if '/' in line:
-                slashes = line.split('/')
-                if len(slashes) != 6:
-                    continue
-                filenames.add(slashes[1])
+            if '/' not in line:
+                continue
+
+            slashes = line.split('/')
+            if len(slashes) != 6:
+                continue
+            filenames.add(slashes[1])
 
         return filenames
 
@@ -350,7 +407,7 @@ class find_dvcs(CrawlPlugin):
         """
         if body is None:
             return []
-        
+
         filenames = set()
         for line in body.split('\n'):
 

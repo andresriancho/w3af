@@ -18,11 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import w3af.core.data.constants.severity as severity
+import os
 
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+import w3af.core.data.constants.severity as severity
+import w3af.core.data.kb.knowledge_base as kb
+
+from w3af import ROOT_PATH
 from w3af.plugins.crawl.find_dvcs import find_dvcs
 from w3af.core.controllers.ci.w3af_moth import get_w3af_moth_http
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 class TestFindDVCS(PluginTest):
@@ -88,3 +92,35 @@ class TestFindDVCS(PluginTest):
         files = fdvcs.ignore_file(content)
 
         self.assertEqual(files, {'foo.txt', 'spam.eggs'})
+
+
+class TestSVN(PluginTest):
+
+    WC_DB = file(os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'find_dvcs', 'sample-wc.db')).read()
+
+    SECRET = 'Secret contents here!'
+
+    MOCK_RESPONSES = [MockResponse('http://mock/', 'root'),
+                      MockResponse('http://mock/.svn/wc.db', WC_DB),
+                      MockResponse('http://mock/.svn/pristine/96/96acedb8cc77c893b90d1ce37c7119fd0c0fba00.svn-base', SECRET),
+                      MockResponse('http://mock/seris/changelog.rst', SECRET)]
+
+    target_url = 'http://mock'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('find_dvcs'),
+                                  PluginConfig('web_spider',
+                                               ('only_forward', True, PluginConfig.BOOL)),)}
+        }
+    }
+
+    def test_wc_db(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        url_list = kb.kb.get_all_known_urls()
+
+        self.assertEqual({u.url_string for u in url_list},
+                         {m.url for m in self.MOCK_RESPONSES})
