@@ -14,8 +14,8 @@ MAX_CONNECTIONS = 50
 class ConnectionManager(object):
     """
     The connection manager must be able to:
-        * keep track of all existing HTTPConnections
-        * kill the connections that we're not going to use anymore
+        * Keep track of all existing HTTPConnections
+        * Kill the connections that we're not going to use anymore
         * Create/reuse connections when needed.
         * Control the size of the pool.
     """
@@ -38,7 +38,8 @@ class ConnectionManager(object):
 
         :param conn: Connection to remove
         :param host: The host for to the connection. If passed, the connection
-        will be removed faster.
+                     will be removed faster.
+        :param reason: Why this connection is removed
         """
         # Just make sure we don't leak open connections
         conn.close()
@@ -85,7 +86,7 @@ class ConnectionManager(object):
 
     def replace_connection(self, bad_conn, req, conn_factory):
         """
-        Re-create a mal-functioning connection.
+        Replace a broken connection.
 
         :param bad_conn: The bad connection
         :param req: The request we want to send using the new connection
