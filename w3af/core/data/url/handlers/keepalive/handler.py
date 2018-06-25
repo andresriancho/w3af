@@ -167,6 +167,12 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host, reason='socket error')
             raise
 
+        except Exception, e:
+            # We better discard this connection, we don't even know what happen!
+            reason = 'unexpected exception "%s"' % e
+            self._cm.remove_connection(conn, host, reason=reason)
+            raise
+
         # If not a persistent connection, or the user specified that he wanted
         # a new connection for this specific request, don't try to reuse it
         if resp.will_close or req.new_connection:
@@ -194,6 +200,11 @@ class KeepAliveHandler(object):
             # https://github.com/andresriancho/w3af/issues/2074
             self._cm.remove_connection(conn, host, reason='http connection died')
             raise HTTPRequestException('The HTTP connection died')
+        except Exception, e:
+            # We better discard this connection, we don't even know what happen!
+            reason = 'unexpected exception while reading "%s"' % e
+            self._cm.remove_connection(conn, host, reason=reason)
+            raise
 
         # We measure time here because it's the best place we know of
         elapsed = time.time() - start
@@ -234,6 +245,7 @@ class KeepAliveHandler(object):
             # note: just because we got something back doesn't mean it
             # worked.  We'll check the version below, too.
         except (socket.error, httplib.HTTPException), e:
+            self._cm.remove_connection(conn, host, reason='socket error')
             resp = None
             reason = e
         except OpenSSL.SSL.ZeroReturnError, e:
@@ -249,6 +261,7 @@ class KeepAliveHandler(object):
             #
             # A new connection will be created and the scan should continue without
             # problems
+            self._cm.remove_connection(conn, host, reason='OpenSSL.SSL.SysCallError')
             resp = None
             reason = e
         except Exception, e:
