@@ -300,6 +300,7 @@ class HTTPConnection(_HTTPConnection):
                                  port=port,
                                  strict=strict,
                                  timeout=timeout)
+        self.current_request_start = None
 
 
 class HTTPSConnection(SSLNegotiatorConnection):
@@ -310,4 +311,4 @@ class HTTPSConnection(SSLNegotiatorConnection):
         SSLNegotiatorConnection.__init__(self, host, port, key_file, cert_file,
                                          strict, timeout=timeout)
         self.is_fresh = True
-
+        self.current_request_start = None

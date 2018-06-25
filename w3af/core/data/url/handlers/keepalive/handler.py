@@ -83,13 +83,6 @@ class KeepAliveHandler(object):
         # Map hosts to a `collections.deque` of response status.
         self._hostresp = {}
 
-    def get_open_connections(self):
-        """
-        Return a list of connected hosts and the number of connections
-        to each.  [('foo.com:80', 2), ('bar.org', 1)]
-        """
-        return [(host, len(li)) for (host, li) in self._cm.get_all().items()]
-
     def close_connection(self, host):
         """
         Close connection(s) to <host>
@@ -103,9 +96,8 @@ class KeepAliveHandler(object):
         """
         Close all open connections
         """
-        for conns in self._cm.get_all().values():
-            for conn in conns.copy():
-                self._cm.remove_connection(conn, reason='close all connections')
+        for conn in self._cm.get_all():
+            self._cm.remove_connection(conn, reason='close all connections')
 
     def _request_closed(self, connection):
         """
@@ -173,13 +165,13 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host, reason=reason)
             raise
 
+        # How many requests were sent with this connection?
+        conn.inc_req_count()
+
         # If not a persistent connection, or the user specified that he wanted
         # a new connection for this specific request, don't try to reuse it
         if resp.will_close or req.new_connection:
             self._cm.remove_connection(conn, host, reason='will close')
-
-        # How many requests were sent with this connection?
-        conn.inc_req_count()
 
         # This response seems to be fine
         resp._handler = self
