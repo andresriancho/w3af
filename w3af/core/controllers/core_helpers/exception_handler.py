@@ -40,7 +40,6 @@ from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               ScanMustStopByUnknownReasonExc)
 
 DEBUG = os.environ.get('DEBUG', '0') == '1'
-DEBUG = bool(DEBUG)
 
 
 class ExceptionHandler(object):
