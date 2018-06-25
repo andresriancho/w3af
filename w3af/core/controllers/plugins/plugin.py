@@ -214,6 +214,18 @@ class Plugin(Configurable):
         imap_unordered = self.worker_pool.imap_unordered
         awre = apply_with_return_error
 
+        try:
+            num_tasks = len(iterable)
+        except TypeError:
+            # When the iterable is a python iterator which doesn't implement
+            # the __len__, then we don't know the number of received tasks
+            pass
+        else:
+            debugging_id = kwds.get('debugging_id', 'unknown')
+            msg = 'send_mutants_in_threads will send %s HTTP requests (did:%s)'
+            args = (num_tasks, debugging_id)
+            om.out.debug(msg % args)
+
         # You can use this code to debug issues that happen in threads, by
         # simply not using them:
         #

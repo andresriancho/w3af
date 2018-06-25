@@ -131,8 +131,10 @@ class audit(BaseConsumer):
             # memory!
             #
             # This is controlled by max_pool_queued_tasks
-            self._threadpool.apply_async(self._audit,
-                                         (plugin, fuzzable_request, orig_resp))
+            debugging_id = rand_alnum(8)
+            args = (plugin, fuzzable_request, orig_resp, debugging_id)
+
+            self._threadpool.apply_async(self._audit, args)
 
     def _run_observers(self, fuzzable_request):
         """
@@ -148,7 +150,7 @@ class audit(BaseConsumer):
                                   'audit._run_observers()', e)
 
     @task_decorator
-    def _audit(self, function_id, plugin, fuzzable_request, orig_resp):
+    def _audit(self, function_id, plugin, fuzzable_request, orig_resp, debugging_id):
         """
         Since threadpool's apply_async runs the callback only when the call to
         this method ends without any exceptions, it is *very important* to
@@ -159,8 +161,6 @@ class audit(BaseConsumer):
         Python 3 has an error_callback in the apply_async method, which we could
         use in the future.
         """
-        debugging_id = rand_alnum(8)
-
         args = (plugin.get_name(), debugging_id, fuzzable_request.get_uri())
         om.out.debug('%s.audit(did="%s", uri="%s")' % args)
 
