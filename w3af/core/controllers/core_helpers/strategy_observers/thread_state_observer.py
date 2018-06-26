@@ -262,7 +262,19 @@ class ThreadStateObserver(StrategyObserver):
             if spent < 10:
                 continue
 
-            args_str = ', '.join(smart_str_ignore(repr(arg)) for arg in worker_state['args'])
+            parts = []
+            for arg in worker_state['args']:
+                try:
+                    arg_repr = repr(arg)
+                except UnicodeEncodeError:
+                    arg_str = smart_str_ignore(arg)
+                else:
+                    arg_str = smart_str_ignore(arg_repr)
+
+                parts.append(arg_str)
+
+            args_str = ', '.join(parts)
+
             kwargs_str = smart_str_ignore(worker_state['kwargs'])
 
             func_name = smart_str_ignore(worker_state['func_name'])
