@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_PACKAGES, CORE, GUI
+from ..external.retirejs import retirejs_is_installed
 
 
 class Platform(object):
@@ -44,3 +45,21 @@ class Platform(object):
     @staticmethod
     def after_hook():
         pass
+
+    @staticmethod
+    def get_missing_external_commands():
+        instructions = []
+
+        for handler in Platform.EXTERNAL_COMMAND_HANDLERS:
+            instructions.extend(handler.__func__())
+
+        return instructions
+
+    @staticmethod
+    def retirejs_handler():
+        if retirejs_is_installed():
+            return []
+
+        return ['npm install -g retire']
+
+    EXTERNAL_COMMAND_HANDLERS = [retirejs_handler]

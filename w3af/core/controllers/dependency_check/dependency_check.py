@@ -88,7 +88,19 @@ def get_missing_os_packages(platform, dependency_set):
     return list(set(missing_os_packages))
 
 
-def write_instructions_to_console(platform, failed_deps, os_packages, script_path):
+def get_missing_external_commands(platform):
+    """
+    Check for missing external commands such as "retire" which is used
+    by the retirejs grep plugin.
+
+    :param platform: Current platform
+    :return: A list with commands to be run to install the missing external commands
+    """
+    return platform.get_missing_external_commands()
+
+
+def write_instructions_to_console(platform, failed_deps, os_packages, script_path,
+                                  external_commands):
     #
     #    Report the missing system packages
     #
@@ -136,6 +148,14 @@ def write_instructions_to_console(platform, failed_deps, os_packages, script_pat
 
         print(msg)
 
+    if external_commands:
+        print('External programs used by w3af are not installed or were not found.'
+              'Run these commands to install them on your system:\n')
+        for cmd in external_commands:
+            print('    %s' % cmd)
+
+        print('')
+
     platform.after_hook()
 
     msg = 'A script with these commands has been created for you at %s'
@@ -152,24 +172,27 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     disable_warnings()
 
     platform = get_current_platform()
+
     failed_deps = get_missing_pip_packages(platform, dependency_set)
     os_packages = get_missing_os_packages(platform, dependency_set)
+    external_commands = get_missing_external_commands(platform)
 
-    # All installed?
-    if not failed_deps and not os_packages:
-        enable_warnings()
+    enable_warnings()
 
+    # If everything is installed, just exit
+    if not failed_deps and not os_packages and not external_commands:
         # False means: do not exit()
         return False
 
     generate_requirements_txt(failed_deps)
+
     script_path = generate_helper_script(platform.PKG_MANAGER_CMD, os_packages,
-                                         platform.PIP_CMD, failed_deps)
+                                         platform.PIP_CMD, failed_deps,
+                                         external_commands)
 
-    write_instructions_to_console(platform, failed_deps, os_packages, script_path)
+    write_instructions_to_console(platform, failed_deps, os_packages, script_path,
+                                  external_commands)
     
-    enable_warnings()
-
     if exit_on_failure:
         sys.exit(1)
     else:

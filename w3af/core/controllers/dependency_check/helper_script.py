@@ -28,7 +28,8 @@ from .utils import running_in_virtualenv
 SCRIPT_NAME = 'w3af_dependency_install.sh'
 
 
-def generate_helper_script(pkg_manager_cmd, os_packages, pip_cmd, failed_deps):
+def generate_helper_script(pkg_manager_cmd, os_packages, pip_cmd, failed_deps,
+                           external_commands):
     """
     Generates a helper script to be run by the user to install all the
     dependencies.
@@ -69,6 +70,9 @@ def generate_helper_script(pkg_manager_cmd, os_packages, pip_cmd, failed_deps):
             for missing_git_pkg in git_pkgs:
                 cmd = generate_pip_install_git(pip_cmd, missing_git_pkg)
                 script_file.write('%s\n' % cmd)
+
+    for cmd in external_commands:
+        script_file.write('%s\n' % cmd)
 
     # Make it executable
     os.chmod(script_path, 0755)
