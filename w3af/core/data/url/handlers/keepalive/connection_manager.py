@@ -1,4 +1,5 @@
 import time
+import OpenSSL
 
 import w3af.core.controllers.output_manager as om
 
@@ -47,7 +48,13 @@ class ConnectionManager(object):
         :param reason: Why this connection is removed
         """
         # Just make sure we don't leak open connections
-        conn.close()
+        try:
+            conn.close()
+        except OpenSSL.SSL.SysCallError:
+            # This exception is raised when the remote end closes the connection
+            # before we do. We continue as if nothing happen, because our goal
+            # is to have a closed connection, and we already got that.
+            pass
 
         # Remove it from out internal DB
         for conns in (self._free_conns, self._used_conns):
@@ -235,7 +242,11 @@ class ConnectionManager(object):
         :return: None
         """
         for conn in self._used_conns.copy():
-            time_in_used_state = time.time() - conn.current_request_start
+            current_request_start = conn.current_request_start
+            if current_request_start is None:
+                continue
+
+            time_in_used_state = time.time() - current_request_start
             if time_in_used_state > self.FORCEFULLY_CLOSE_CONN_TIME:
                 reason = ('Connection %s has been in "used_conns" for more than'
                           ' FORCEFULLY_CLOSE_CONN_TIME. Forcefully closing it.')
