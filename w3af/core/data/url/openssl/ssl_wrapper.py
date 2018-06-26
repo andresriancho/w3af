@@ -63,8 +63,12 @@ class SSLSocket(object):
     Connection is not yet a new-style class, so I'm making a proxy instead of
     subclassing. Inspiration for this class comes from certmaster's source code
 
-    :see: https://github.com/andresriancho/w3af/issues/8125
-    :see: https://github.com/mpdehaan/certmaster/blob/master/certmaster/SSLConnection.py
+    Another reason for this wrapper is to implement timeouts for recv() and sendall()
+    which require some ugly calls to select.select() because of pyopenssl limitations [2]
+
+    [0] https://github.com/andresriancho/w3af/issues/8125
+    [1] https://github.com/mpdehaan/certmaster/blob/master/certmaster/SSLConnection.py
+    [2] https://github.com/andresriancho/w3af/issues/7989
     """
     def __init__(self, ssl_connection, sock):
         """
@@ -125,6 +129,36 @@ class SSLSocket(object):
             # connection
             self.ssl_conn.close()
             self.closed = True
+
+    def recv(self, *args, **kwargs):
+        try:
+            data = self.ssl_conn.recv(*args, **kwargs)
+        except OpenSSL.SSL.WantReadError:
+            rd, wd, ed = select.select([self.sock], [], [], self.sock.gettimeout())
+            if not rd:
+                raise socket.timeout('The read operation timed out')
+            else:
+                return self.recv(*args, **kwargs)
+        else:
+            return data
+
+    def settimeout(self, timeout):
+        return self.sock.settimeout(timeout)
+
+    def _send_until_done(self, data):
+        while True:
+            try:
+                return self.ssl_conn.send(data)
+            except OpenSSL.SSL.WantWriteError:
+                _, wlist, _ = select.select([], [self.sock], [], self.sock.gettimeout())
+                if not wlist:
+                    raise socket.timeout()
+                continue
+
+    def sendall(self, data):
+        while len(data):
+            sent = self._send_until_done(data)
+            data = data[sent:]
 
     def getpeercert(self, binary_form=False):
         """
@@ -221,9 +255,15 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
     # SSL connection timeout doesn't work #7989 , so I'm not able to call:
     #   ctx.set_timeout(timeout)
     #
-    # The workaround I found was to use select.select and non-blocking sockets
+    # The workaround I found was to use select.select and non-blocking sockets,
+    # and was implemented in SSLSocket (see above).
     #
-    # https://github.com/andresriancho/w3af/issues/7989
+    # Note that by setting the "sock" instance timeout, I'm also enforcing the
+    # SSL connection timeout because of the fourth parameter sent to
+    # select.select() in recv() and sendall().
+    #
+    # More information at:
+    #    https://github.com/andresriancho/w3af/issues/7989
     sock.setblocking(0)
     sock.settimeout(timeout)
     time_begin = time.time()
@@ -246,5 +286,8 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
             raise ssl.SSLError(e.args)
 
     sock.setblocking(1)
-    return SSLSocket(cnx, sock)
+    ssl_socket = SSLSocket(cnx, sock)
+    ssl_socket.settimeout(timeout)
+    
+    return ssl_socket
 
