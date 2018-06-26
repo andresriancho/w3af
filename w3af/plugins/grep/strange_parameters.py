@@ -90,24 +90,27 @@ class strange_parameters(GrepPlugin):
                         break
 
     def _analyze_strange(self, request, response, ref, token_name, token_value):
-        if self._is_strange(request, token_name, token_value):
-            desc = ('The URI: "%s" has a parameter named: "%s" with value:'
-                    ' "%s", which is very uncommon. and requires manual'
-                    ' verification.')
-            args = (response.get_uri(), token_name, token_value)
-            args = tuple(smart_str_ignore(i) for i in args)
-            desc %= args
+        if not self._is_strange(request, token_name, token_value):
+            return False
 
-            i = Info('Uncommon query string parameter', desc, response.id,
-                     self.get_name())
-            i['parameter_value'] = token_value
-            i.add_to_highlight(token_value)
-            i.set_uri(ref)
+        if request.sent(token_value):
+            return False
 
-            self.kb_append(self, 'strange_parameters', i)
-            return True
+        desc = ('The URI: "%s" has a parameter named: "%s" with value:'
+                ' "%s", which is very uncommon. and requires manual'
+                ' verification.')
+        args = (response.get_uri(), token_name, token_value)
+        args = tuple(smart_str_ignore(i) for i in args)
+        desc %= args
 
-        return False
+        i = Info('Uncommon query string parameter', desc, response.id,
+                 self.get_name())
+        i['parameter_value'] = token_value
+        i.add_to_highlight(token_value)
+        i.set_uri(ref)
+
+        self.kb_append(self, 'strange_parameters', i)
+        return True
 
     def _analyze_SQL(self, request, response, ref, token_name, token_value):
         """
