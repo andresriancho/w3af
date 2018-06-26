@@ -1184,7 +1184,10 @@ class ExtendedUrllib(object):
 
         # Don't make a lot of noise on URLTimeoutError which is pretty common
         # and properly handled by this library
-        no_traceback_for = (URLTimeoutError, ConnectionPoolException, BadStatusLine)
+        no_traceback_for = (URLTimeoutError,
+                            ConnectionPoolException,
+                            BadStatusLine,
+                            socket.error)
         if not isinstance(exception, no_traceback_for):
             msg = 'Traceback for this error: %s'
             om.out.debug(msg % traceback.format_exc())
