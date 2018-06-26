@@ -164,12 +164,13 @@ class ConnectionManager(object):
                         self._used_conns.add(conn)
                         conn.current_request_start = time.time()
 
-                        msg = 'Reusing free %s to use in new request'
-                        debug(msg % conn)
+                        msg = 'Reusing free %s to use in %s'
+                        args = (conn, req)
+                        debug(msg % args)
 
                         return conn
 
-            debug('Forcing the use of a new HTTPConnection')
+            debug('Going to create a new HTTPConnection')
 
             # If the connection pool is not full let's try to create a new conn
             conn_total = self.get_connections_total(host)
@@ -182,8 +183,9 @@ class ConnectionManager(object):
                 self._used_conns.add(conn)
 
                 # Log
-                msg = 'Added %s to pool, current %s pool size: %s'
-                debug(msg % (conn, host, conn_total + 1))
+                msg = 'Added %s to pool to use in %s, current %s pool size: %s'
+                args = (conn, req, host, conn_total + 1)
+                debug(msg % args)
 
                 if waited_time_for_conn > 0:
                     msg = 'Waited %.2fs for a connection to be available in the pool.'
@@ -235,10 +237,10 @@ class ConnectionManager(object):
         for conn in self._used_conns.copy():
             time_in_used_state = time.time() - conn.current_request_start
             if time_in_used_state > self.FORCEFULLY_CLOSE_CONN_TIME:
-                reason = ('Connection has been in "used_conns" for more than'
+                reason = ('Connection %s has been in "used_conns" for more than'
                           ' FORCEFULLY_CLOSE_CONN_TIME. Forcefully closing it.')
 
-                om.out.debug(reason)
+                om.out.debug(reason % conn)
 
                 self.remove_connection(conn,
                                        host=None,
