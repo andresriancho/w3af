@@ -108,7 +108,8 @@ class SSLSocket(object):
             try:
                 self.shutdown()
             except OpenSSL.SSL.Error, ssl_error:
-                if not ssl_error.message:
+                message = getattr(ssl_error, 'message', str(ssl_error))
+                if not message:
                     # We get here when the remote end already closed the
                     # connection. The shutdown() call to the OpenSSLConnection
                     # simply fails with an exception without a message
