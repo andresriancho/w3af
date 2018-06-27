@@ -28,6 +28,14 @@ def chrome_is_installed():
     """
     :return: True if Google Chrome is installed and we were able to parse the version.
     """
+    chrome_path = get_chrome_path()
+    if chrome_path is not None:
+        return True
+
+    return False
+
+
+def get_chrome_path():
     paths_to_chrome = []
     paths_to_chrome.extend(which('google-chrome'))
     paths_to_chrome.extend(which('google-chrome-stable'))
@@ -42,6 +50,6 @@ def chrome_is_installed():
 
         # Google Chrome 67.0.3396.99
         if 'Google Chrome' in version:
-            return True
+            return paths_to_chrome
 
-    return False
+    return None
