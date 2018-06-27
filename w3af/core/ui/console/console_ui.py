@@ -386,7 +386,6 @@ class ConsoleUI(object):
 
     def _onRight(self):
         if self._position < len(self._line):
-#            self._position += 1
             self._moveForward()
         else:
             term.bell()
@@ -484,14 +483,11 @@ class ConsoleUI(object):
         """
             reprint everything that should be after the cursor
         """
-#        term.savePosition()
         strLine = self._getLineStr()
         toWrite = strLine[self._position:]
         term.write(toWrite)
         if retainPosition:
             term.moveBack(len(toWrite))
-
-#        term.restorePosition()
 
     def _random_message(self):
         

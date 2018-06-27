@@ -52,13 +52,8 @@ class menu(object):
         
         self._load_help('common')
         helpMainRepository.load_help('keys', self._keysHelp)
-#        self._keysHelp = {}
 
         self._initHandlers()
-
-#            if cmd not in helpTab:
-                # highlight undocumented items
-#                self._help.add_help_entry(cmd, 'UNDOCUMENTED', 'menu')
 
     def suggest(self, tokens, part, onlyLocalCommands=False):
         """
