@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import re
 import time
+import select
+import threading
 import subprocess
 
 from w3af.core.controllers.misc.homeDir import get_home_dir
@@ -34,17 +36,29 @@ class ChromeProcess(object):
     DEFAULT_FLAGS = [
              '--headless',
              '--disable-gpu',
+             '--window-size=1920,1200',
+             '--homepage=about:blank',
+
+             # Disable some security features
+             '--ignore-certificate-errors',
+             '--reduce-security-for-testing',
+             '--allow-running-insecure-content',
     ]
 
     DEVTOOLS_PORT_RE = re.compile('DevTools listening on ws://127.0.0.1:(\d*?)/devtools/')
+    START_TIMEOUT_SEC = 5.0
 
     def __init__(self):
         self.devtools_port = 0
         self.proxy_host = None
         self.proxy_port = None
         self.data_dir = self.get_default_user_data_dir()
+
         self.stdout = []
         self.stderr = []
+        self.proc = None
+
+        self.thread = None
 
     def get_default_user_data_dir(self):
         return os.path.join(get_home_dir(), 'chrome')
@@ -57,6 +71,9 @@ class ChromeProcess(object):
         :param devtools_port: Port number to bind to
         """
         self.devtools_port = devtools_port
+
+    def get_devtools_port(self):
+        return self.devtools_port
 
     def set_proxy(self, proxy_host, proxy_port):
         self.proxy_host = proxy_host
@@ -77,19 +94,74 @@ class ChromeProcess(object):
         return cmd
 
     def start(self):
-        proc = subprocess.Popen(self.get_cmd(),
-                                shell=True,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT,
-                                close_fds=True)
+        """
+        Create a new thread and use it to run the Chrome process.
 
-        while proc.returncode is None:
-            proc.poll()
-            stdout_data, stderr_data = proc.communicate()
-            self.store_stdout(stdout_data)
-            self.store_stderr(stderr_data)
-            time.sleep(0.5)
+        :return: The method returns right after creating the thread.
+        """
+        self.thread = threading.Thread(name='ChromeThread',
+                                       target=self.run)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def run(self):
+        """
+        Create a new subprocess to run Chrome. This method will block
+        until Chrome is either killed (self.proc.terminate()) or decides
+        to stop.
+
+        If you want a non-blocking version of the same thing, just use
+        start().
+
+        :return: None
+        """
+        (stdout_r, stdout_w) = os.pipe()
+        (stderr_r, stderr_w) = os.pipe()
+
+        self.proc = subprocess.Popen(self.get_cmd(),
+                                     shell=True,
+                                     stdout=stdout_w,
+                                     stderr=stderr_w,
+                                     close_fds=True)
+
+        while self.proc.poll() is None:
+
+            read_ready, write_ready, _ = select.select([stdout_r, stderr_r],
+                                                       [],
+                                                       [],
+                                                       0.2)
+
+            for fd in read_ready:
+                data = os.read(fd, 1024)
+                if fd == stdout_r:
+                    self.store_stdout(data)
+                else:
+                    self.store_stderr(data)
+
+        os.close(stdout_r)
+        os.close(stdout_w)
+        os.close(stderr_r)
+        os.close(stderr_w)
+
+    def wait_for_start(self):
+        tries = 100
+        wait = self.START_TIMEOUT_SEC / tries
+
+        for _ in xrange(tries):
+            if self.get_devtools_port():
+                return True
+
+            time.sleep(wait)
+
+        return False
+
+    def terminate(self):
+        if self.proc is None:
+            return
+
+        self.proc.terminate()
+        self.devtools_port = 0
+        self.thread = None
 
     def store_stdout(self, stdout_data):
         """
@@ -98,18 +170,24 @@ class ChromeProcess(object):
         :param stdout_data: String we read from Chrome's stdout
         :return: None
         """
-        [self.stdout.append(l) for l in stdout_data.split()]
-        [self.extract_data(l) for l in stdout_data.split()]
+        if stdout_data is None:
+            return
+
+        [self.stdout.append(l) for l in stdout_data.split('\n')]
+        [self.extract_data(l) for l in stdout_data.split('\n')]
 
     def store_stderr(self, stderr_data):
         """
         Stores stderr data, and in some cases extracts information from it.
 
-        :param stdout_data: String we read from Chrome's stderr
+        :param stderr_data: String we read from Chrome's stderr
         :return: None
         """
-        [self.stderr.append(l) for l in stderr_data.split()]
-        [self.extract_data(l) for l in stderr_data.split()]
+        if stderr_data is None:
+            return
+
+        [self.stderr.append(l) for l in stderr_data.split('\n')]
+        [self.extract_data(l) for l in stderr_data.split('\n')]
 
     def extract_data(self, line):
         """
