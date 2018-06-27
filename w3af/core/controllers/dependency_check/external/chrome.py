@@ -50,6 +50,6 @@ def get_chrome_path():
 
         # Google Chrome 67.0.3396.99
         if 'Google Chrome' in version:
-            return paths_to_chrome
+            return path_to_chrome
 
     return None
