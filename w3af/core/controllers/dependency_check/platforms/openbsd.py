@@ -44,8 +44,7 @@ class OpenBSD5(Platform):
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}
 
-    @staticmethod
-    def os_package_is_installed(package_name):
+    def os_package_is_installed(self, package_name):
         command = 'pkg_info | grep "^%s"' % package_name
 
         try:
@@ -56,13 +55,11 @@ class OpenBSD5(Platform):
         else:
             return pkg_info_output.startswith(package_name)
 
-    @staticmethod
-    def after_hook():
+    def after_hook(self):
         msg = 'Before running pkg_add remember to specify the package path using:\n'\
               '    export PKG_PATH=ftp://ftp.openbsd.org/pub/OpenBSD/`uname'\
               ' -r`/packages/`machine -a`/'
         print msg
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'openbsd' in platform.system().lower()

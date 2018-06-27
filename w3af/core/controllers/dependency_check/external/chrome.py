@@ -1,7 +1,7 @@
 """
-debian78.py
+chrome.py
 
-Copyright 2013 Andres Riancho
+Copyright 2018 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,14 +19,27 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import platform
+import subprocess
 
-from .ubuntu1204 import Ubuntu1204
+from w3af.core.controllers.misc.which import which
 
 
-class Debian78(Ubuntu1204):
-    SYSTEM_NAME = 'Debian 7.8'
+def chrome_is_installed():
+    """
+    :return: True if retirejs is installed and we were able to parse the version.
+    """
+    paths_to_retire = which('retire')
+    if not paths_to_retire:
+        return False
 
-    def is_current_platform(self):
-        dist_name, dist_version, _ = platform.dist()
-        return 'debian' == dist_name and '7.8' == dist_version
+    path_to_retire = paths_to_retire[0]
+
+    version = subprocess.check_output('%s --version' % path_to_retire, shell=True)
+    version = version.strip()
+    version_split = version.split('.')
+
+    # Just check that the version has the format 1.6.0
+    if len(version_split) != 3:
+        return False
+
+    return True

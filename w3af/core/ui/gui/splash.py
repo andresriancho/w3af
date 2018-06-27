@@ -51,7 +51,7 @@ class Splash(gtk.Window):
 
         # Splash screen doesn't have decoration (at least where supported)
         # https://github.com/andresriancho/w3af/issues/9084
-        if not MacOSX.is_current_platform():
+        if not MacOSX().is_current_platform():
             self.set_decorated(False)
 
         # color and position

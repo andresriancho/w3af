@@ -27,7 +27,6 @@ from .ubuntu1204 import Ubuntu1204
 class Debian76(Ubuntu1204):
     SYSTEM_NAME = 'Debian 7.6'
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         dist_name, dist_version, _ = platform.dist()
         return 'debian' == dist_name and '7.6' == dist_version

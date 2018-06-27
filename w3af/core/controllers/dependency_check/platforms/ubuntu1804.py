@@ -1,7 +1,7 @@
 """
-debian78.py
+ubuntu1804.py
 
-Copyright 2013 Andres Riancho
+Copyright 2018 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -21,12 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import platform
 
-from .ubuntu1204 import Ubuntu1204
+from .ubuntu1604 import Ubuntu1604
 
 
-class Debian78(Ubuntu1204):
-    SYSTEM_NAME = 'Debian 7.8'
+class Ubuntu1804(Ubuntu1604):
+    SYSTEM_NAME = 'Ubuntu 18.04'
+
+    def __init__(self):
+        super(Ubuntu1804, self).__init__()
 
     def is_current_platform(self):
-        dist_name, dist_version, _ = platform.dist()
-        return 'debian' == dist_name and '7.8' == dist_version
+        return 'Ubuntu' in platform.dist() and '18.04' in platform.dist()
+

@@ -42,11 +42,8 @@ cd w3af
 class Kali(Ubuntu1204):
     SYSTEM_NAME = 'Kali'
 
-    @staticmethod
-    def after_hook():
+    def after_hook(self):
         print(KALI_MESSAGE)
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'debian' in platform.dist() and 'kali' in platform.release()
-

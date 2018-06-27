@@ -27,8 +27,5 @@ from .kali import Kali
 class Kali2(Kali):
     SYSTEM_NAME = 'Kali 2.0'
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'Kali' in platform.dist() and '2.0' in platform.dist()
-
-

@@ -27,7 +27,6 @@ from .ubuntu1204 import Ubuntu1204
 class Ubuntu1410(Ubuntu1204):
     SYSTEM_NAME = 'Ubuntu 14.10'
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'Ubuntu' in platform.dist() and '14.10' in platform.dist()
 

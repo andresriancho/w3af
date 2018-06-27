@@ -42,8 +42,7 @@ class Fedora(Platform):
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}
 
-    @staticmethod
-    def os_package_is_installed(package_name):
+    def os_package_is_installed(self, package_name):
         not_installed = 'is not installed'
         installed = 'Status: install ok installed'
 
@@ -63,6 +62,5 @@ class Fedora(Platform):
             else:
                 return None
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'fedora' in platform.dist()

@@ -43,6 +43,5 @@ class CentOS(Fedora):
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'redhat' in platform.dist()
