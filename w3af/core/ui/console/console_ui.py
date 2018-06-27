@@ -149,7 +149,7 @@ class ConsoleUI(object):
             self._lastWasArrow = False
             self._showPrompt()
             self._active = True
-            term.setRawInputMode(True)
+            term.set_raw_input_mode(True)
 
             self._executePending()
 
@@ -160,7 +160,7 @@ class ConsoleUI(object):
                 except Exception, e:
                     om.out.console(str(e))
 
-            term.setRawInputMode(False)
+            term.set_raw_input_mode(False)
         except KeyboardInterrupt:
             pass
 
@@ -271,7 +271,7 @@ class ConsoleUI(object):
         # term.writeln()
 
         line = self._getLineStr()
-        term.setRawInputMode(False)
+        term.set_raw_input_mode(False)
         om.out.console('')
         if len(line) and not line.isspace():
 
@@ -309,7 +309,7 @@ class ConsoleUI(object):
                     self._trace.append(self._context)
                 if menu is not None:
                     self._context = menu
-        term.setRawInputMode(True)
+        term.set_raw_input_mode(True)
 
     def _onEnter(self):
         self._execute()

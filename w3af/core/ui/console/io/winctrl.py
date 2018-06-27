@@ -59,7 +59,7 @@ def read(amt):
     return res
 
 
-def setRawInputMode(raw):
+def set_raw_input_mode(raw):
     """
     Sets the raw input mode, in windows.
     """

@@ -19,12 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-# If this two modules are imported here instead of below
-# we loose windows support.
-#import tty
-#import termios
-
-#from ecma48 import *
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exceptions import BaseFrameworkException

@@ -57,7 +57,7 @@ def read(amt):
 old_settings = None
 
 
-def setRawInputMode(raw):
+def set_raw_input_mode(raw):
     """
     Sets the raw input mode for the linux terminal.
     
@@ -78,7 +78,8 @@ def setRawInputMode(raw):
     
     elif not (raw or old_settings is None):
         try:
-            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN,
+            termios.tcsetattr(sys.stdin.fileno(),
+                              termios.TCSADRAIN,
                               old_settings)
             old_settings = None
         except Exception, e:
