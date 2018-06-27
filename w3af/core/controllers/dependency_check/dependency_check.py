@@ -150,7 +150,7 @@ def write_instructions_to_console(platform, failed_deps, os_packages, script_pat
 
     if external_commands:
         print('External programs used by w3af are not installed or were not found.'
-              'Run these commands to install them on your system:\n')
+              ' Run these commands to install them on your system:\n')
         for cmd in external_commands:
             print('    %s' % cmd)
 
