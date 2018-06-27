@@ -132,14 +132,9 @@ class ProxyHandler(Master):
         :param exception: The exception instance
         :return: A mitmproxy response object ready to send to the flow
         """
-        def replace_new_lines(in_str):
-            return in_str.replace('\n', '<br/>')
-
         context = {'exception_message': str(exception),
-                   'http_request': request.dump()}
-
-        if trace is not None:
-            context['traceback'] = replace_new_lines(trace)
+                   'http_request': request.dump(),
+                   'traceback': trace.replace('\n', '<br/>') if trace else None}
 
         content = render('error.html', context)
 

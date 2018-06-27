@@ -40,35 +40,40 @@ class Proxy(Process):
     plugins.
 
     You should create a proxy instance like this:
-        ws = Proxy('127.0.0.1', 8080, url_opener)
 
-    Or like this, if you want to override the proxy handler (most times you
-    want to do it!):
-        ws = Proxy('127.0.0.1', 8080, url_opener, proxy_handler=ph)
+        proxy = Proxy('127.0.0.1', 8080, url_opener)
+
+    Or like this, if you want to override the proxy handler (required if
+    you want to intercept and modify the traffic in any way):
+
+        proxy = Proxy('127.0.0.1', 8080, url_opener, proxy_handler=ph)
 
     If the IP:Port is already in use, an exception will be raised while
-    creating the ws instance.
+    creating the ws instance. Use port zero to bind to a random unused port.
 
     To start the proxy, and given that this is a Process class, you can do this:
-        ws.start()
+
+        proxy.start()
 
     Or if you don't want a different thread, you can simply call the run method:
-        ws.run()
+
+        proxy.run()
 
     The proxy handler class is the place where you'll perform all the magic
     stuff, like intercepting requests, modifying them, etc. A good idea if you
-    want to code your own proxy handler is to inherit from the proxy handler
-    that is already defined in this file (see: ProxyHandler).
+    want to code your own proxy handler is to inherit ProxyHandler
+    (see handler.py).
 
     What you basically have to do is to inherit from it:
+
         class MyProxyHandler(ProxyHandler):
 
-    And redefine the following methods:
-        def do_ALL(self)
-            Which originally receives a request from the browser, sends it to
-            the remote site, receives the response and returns the response to
-            the browser. This method is called every time the browser sends a
-            new request.
+    And redefine the following method:
+
+        def handle_request(self, flow)
+            Receives a request from the browser, sends it to the remote site,
+            receives the response and returns the response to the browser.
+            This method is called every time the browser sends a new request.
 
     Things that work:
         - http requests like GET, HEAD, POST, CONNECT
@@ -100,7 +105,7 @@ class Proxy(Process):
         :param handler_klass: A class that will know how to handle
                               requests from the browser
         """
-        Process.__init__(self)
+        super(Proxy, self).__init__()
         self.daemon = True
         self.name = name
         
@@ -146,8 +151,8 @@ class Proxy(Process):
         try:
             self._server = ProxyServer(self._config)
         except socket.error, se:
-            raise ProxyException('Socket error while starting proxy: "%s"'
-                                 % se.strerror)
+            msg = 'Socket error while starting proxy: "%s"'
+            raise ProxyException(msg % se.strerror)
         except ProxyServerError, pse:
             raise ProxyException('%s' % pse)
         else:
@@ -192,8 +197,8 @@ class Proxy(Process):
         args = (self._config.host,
                 self._config.port,
                 self._master.__class__.__name__)
-        message = 'Proxy server listening on %s:%s using %s' % args
-        om.out.debug(message)
+        message = 'Proxy server listening on %s:%s using %s'
+        om.out.debug(message % args)
 
         # Start to handle requests
         self._running = True

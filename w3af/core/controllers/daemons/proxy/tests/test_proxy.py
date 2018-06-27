@@ -24,7 +24,6 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from w3af.core.controllers.ci.sqlmap_testenv import get_sqlmap_testenv_http
 from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
@@ -166,11 +165,10 @@ class TestProxy(unittest.TestCase):
         Not doing this will make the browser (or any other http client) fail to
         decode the body (it will try to gunzip it and fail).
         """
-        url = get_sqlmap_testenv_http('/sqlmap/mysql/get_int.php?id=1')
-        resp = self.proxy_opener.open(url)
+        resp = self.proxy_opener.open('http://httpbin.org/gzip')
 
         headers = dict(resp.headers)
         content_encoding = headers.get('content-encoding')
 
-        self.assertIn('luther', resp.read())
+        self.assertIn('"gzipped":true', resp.read())
         self.assertEqual('identity', content_encoding)
