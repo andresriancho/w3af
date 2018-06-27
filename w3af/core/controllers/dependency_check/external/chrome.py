@@ -26,20 +26,22 @@ from w3af.core.controllers.misc.which import which
 
 def chrome_is_installed():
     """
-    :return: True if retirejs is installed and we were able to parse the version.
+    :return: True if Google Chrome is installed and we were able to parse the version.
     """
-    paths_to_retire = which('retire')
-    if not paths_to_retire:
+    paths_to_chrome = []
+    paths_to_chrome.extend(which('google-chrome'))
+    paths_to_chrome.extend(which('google-chrome-stable'))
+
+    if not paths_to_chrome:
         return False
 
-    path_to_retire = paths_to_retire[0]
+    for path_to_chrome in paths_to_chrome:
 
-    version = subprocess.check_output('%s --version' % path_to_retire, shell=True)
-    version = version.strip()
-    version_split = version.split('.')
+        version = subprocess.check_output('%s --version' % path_to_chrome, shell=True)
+        version = version.strip()
 
-    # Just check that the version has the format 1.6.0
-    if len(version_split) != 3:
-        return False
+        # Google Chrome 67.0.3396.99
+        if 'Google Chrome' in version:
+            return True
 
-    return True
+    return False
