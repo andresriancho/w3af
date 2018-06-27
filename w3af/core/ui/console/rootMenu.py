@@ -163,33 +163,19 @@ class rootMenu(menu):
         """
         while self._w3af.status.is_running():
 
-            # Define some variables...
             user_press_enter = False
 
-            # TODO: This if is terrible! I need to remove it!
-            # read from sys.stdin with a 0.5 second timeout
-            if sys.platform != 'win32':
-                # linux
-                try:
-                    rfds, wfds, efds = select.select([sys.stdin], [], [], 0.5)
-                except select.error:
-                    continue
-                else:
-                    if rfds:
-                        if len(sys.stdin.readline()):
-                            user_press_enter = True
+            try:
+                rfds, wfds, efds = select.select([sys.stdin], [], [], 0.5)
+            except select.error:
+                continue
             else:
-                # windows
-                import msvcrt
-                time.sleep(0.3)
-                if msvcrt.kbhit():
-                    if term.read(1) in ['\n', '\r', '\r\n', '\n\r']:
+                if rfds:
+                    if len(sys.stdin.readline()):
                         user_press_enter = True
 
-            # If something was written to sys.stdin, read it
             if user_press_enter:
-
-                # Get the information and print it to the user
+                # Get the information and print it to the console
                 status_information_str = self._w3af.status.get_long_status()
                 t = table([(status_information_str,)])
                 t.draw()
