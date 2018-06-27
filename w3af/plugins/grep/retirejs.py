@@ -25,12 +25,15 @@ import hashlib
 import tempfile
 import subprocess
 
+from threading import Timer
+
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.misc.which import which
 from w3af.core.data.db.disk_set import DiskSet
-from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.vuln import Vuln
 
 
 class retirejs(GrepPlugin):
@@ -42,7 +45,8 @@ class retirejs(GrepPlugin):
 
     METHODS = ('GET',)
     HTTP_CODES = (200,)
-    RETIRE_CMD = 'retire --outputformat json --outputpath %s --jspath %s'
+    RETIRE_CMD = 'retire -j --outputformat json --outputpath %s --jspath %s'
+    RETIRE_TIMEOUT = 5
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -93,14 +97,14 @@ class retirejs(GrepPlugin):
         if self._retirejs_exit_code_was_run:
             return self._retirejs_exit_code_result
 
-        check_file = tempfile.NamedTemporaryFile(suffix='retirejs-check-',
-                                                 prefix='.w3af',
+        check_file = tempfile.NamedTemporaryFile(prefix='retirejs-check-',
+                                                 suffix='.w3af',
                                                  delete=False)
         check_file.write('')
         check_file.close()
 
-        output_file = tempfile.NamedTemporaryFile(suffix='retirejs-output-',
-                                                  prefix='.w3af',
+        output_file = tempfile.NamedTemporaryFile(prefix='retirejs-output-',
+                                                  suffix='.w3af',
                                                   delete=False)
         output_file.close()
 
@@ -110,8 +114,16 @@ class retirejs(GrepPlugin):
         try:
             subprocess.check_output(cmd, shell=True)
         except subprocess.CalledProcessError:
+            msg = ('Unexpected retire.js exit code.'
+                   ' Disabling grep.retirejs plugin.')
+            om.out.error(msg)
+
+            self._retirejs_exit_code_was_run = True
             self._retirejs_exit_code_result = False
         else:
+            om.out.debug('retire.js returned the expected exit code.')
+
+            self._retirejs_exit_code_was_run = True
             self._retirejs_exit_code_result = True
         finally:
             self._remove_file(output_file.name)
@@ -124,6 +136,18 @@ class retirejs(GrepPlugin):
         :param response: HTTP response
         :return: True if we should analyze this HTTP response
         """
+        #
+        # Avoid running this plugin twice on the same URL
+        #
+        url_hash = hashlib.md5(response.get_url().url_string).hexdigest()
+        if url_hash in self._analyzed_hashes:
+            return False
+
+        self._analyzed_hashes.add(url_hash)
+
+        #
+        # Avoid running this plugin twice on the same file content
+        #
         response_hash = hashlib.md5(response.get_body()).hexdigest()
 
         if response_hash in self._analyzed_hashes:
@@ -142,8 +166,10 @@ class retirejs(GrepPlugin):
         self._json_to_kb(response, json_doc)
 
     def _save_response_to_file(self, response):
-        response_file = tempfile.NamedTemporaryFile(suffix='retirejs-response-',
-                                                    prefix='.w3af',
+        # Note: The file needs to have .js extension to force retirejs to
+        #       scan it. Any other extension will be ignored.
+        response_file = tempfile.NamedTemporaryFile(prefix='retirejs-response-',
+                                                    suffix='.w3af.js',
                                                     delete=False)
 
         response_file.write(response.get_body())
@@ -158,29 +184,39 @@ class retirejs(GrepPlugin):
         :param response_file: File holding HTTP response body
         :return: JSON document
         """
-        json_file = tempfile.NamedTemporaryFile(suffix='retirejs-output-',
-                                                prefix='.w3af',
+        json_file = tempfile.NamedTemporaryFile(prefix='retirejs-output-',
+                                                suffix='.w3af',
                                                 delete=False)
         json_file.close()
 
         args = (json_file.name, response_file)
         cmd = self.RETIRE_CMD % args
 
-        try:
-            subprocess.check_output(cmd, shell=True)
-        except subprocess.CalledProcessError:
-            # retirejs will return code != 0 when a vulnerability is found
-            # we use this to decide when we need to parse the output
+        process = subprocess.Popen(cmd, shell=True)
+
+        # This will terminate the retirejs process in case it hangs
+        t = Timer(self.RETIRE_TIMEOUT, kill, [process])
+        t.start()
+
+        # Wait for the retirejs process to complete
+        process.wait()
+
+        # Cancel the timer if it wasn't run
+        t.cancel()
+
+        # retirejs will return code != 0 when a vulnerability is found
+        # we use this to decide when we need to parse the output
+        json_doc = []
+
+        if process.returncode != 0:
             try:
-                return json.loads(json_file.name)
+                json_doc = json.loads(file(json_file.name).read())
             except Exception, e:
                 msg = 'Failed to parse retirejs output. Exception: "%s"'
                 om.out.debug(msg % e)
-                return []
-        else:
-            return []
-        finally:
-            self._remove_file(json_file.name)
+
+        self._remove_file(json_file.name)
+        return json_doc
 
     def _remove_file(self, response_file):
         """
@@ -194,7 +230,75 @@ class retirejs(GrepPlugin):
             pass
 
     def _json_to_kb(self, response, json_doc):
-        raise NotImplementedError
+        """
+        Write the findings which are in JSON retirejs format to the KB.
+
+        :param response: HTTP response
+        :param json_doc: The whole JSON document as returned by retirejs
+        :return: None, everything is written to the KB.
+        """
+        for json_finding in json_doc:
+            self._handle_finding(response, json_finding)
+
+    def _handle_finding(self, response, json_finding):
+        """
+        Write a finding to the KB.
+
+        :param response: HTTP response
+        :param json_finding: A finding from retirejs JSON document
+        :return: None, everything is written to the KB.
+        """
+        results = json_finding.get('results', [])
+        for json_result in results:
+            self._handle_result(response, json_result)
+
+    def _handle_result(self, response, json_result):
+        """
+        Write a result to the KB.
+
+        :param response: HTTP response
+        :param json_result: A finding from retirejs JSON document
+        :return: None, everything is written to the KB.
+        """
+        version = json_result.get('version', None)
+        component = json_result.get('component', None)
+        vulnerabilities = json_result.get('vulnerabilities', [])
+
+        if version is None or component is None:
+            om.out.debug('The retirejs generated JSON document is invalid.'
+                         ' Either the version or the component attribute is'
+                         ' missing. Will ignore this result and continue with'
+                         ' the next.')
+            return
+
+        if not vulnerabilities:
+            om.out.debug('The retirejs generated JSON document is invalid. No'
+                         ' vulnerabilities were found. Will ignore this result'
+                         ' and continue with the next.')
+            return
+
+        message = VulnerabilityMessage(response, component, version)
+
+        for vulnerability in vulnerabilities:
+            vuln_severity = vulnerability.get('severity', 'unknown')
+            summary = vulnerability.get('identifiers', {}).get('summary', 'unknown')
+            info_urls = vulnerability.get('info', [])
+
+            retire_vuln = RetireJSVulnerability(vuln_severity, summary, info_urls)
+            message.add_vulnerability(retire_vuln)
+
+        desc = message.to_string()
+        real_severity = message.get_severity()
+
+        v = Vuln('Vulnerable JavaScript library in use',
+                 desc,
+                 real_severity,
+                 response.get_id(),
+                 self.get_name())
+
+        v.set_uri(response.get_uri())
+
+        self.kb_append_uniq(self, 'js', v, filter_by='URL')
 
     def _get_retirejs_path(self):
         """
@@ -216,3 +320,67 @@ class retirejs(GrepPlugin):
         
         [0] https://github.com/retirejs/retire.js/
         """
+
+
+class VulnerabilityMessage(object):
+    def __init__(self, response, component, version):
+        self.response = response
+        self.component = component
+        self.version = version
+        self.vulnerabilities = []
+
+    def add_vulnerability(self, vulnerability):
+        self.vulnerabilities.append(vulnerability)
+
+    def get_severity(self):
+        """
+        The severity which is shown by retirejs is, IMHO, too high. For example
+        a reDoS vulnerability in a JavaScript library is sometimes tagged as
+        high.
+
+        We reduce the vulnerability associated with the vulnerabilities a
+        little bit here, to match what we find in other plugins.
+
+        :return: severity.MEDIUM if there is at least one high in
+                 self.vulnerabilities, otherwise just return severity.LOW
+        """
+        for vulnerability in self.vulnerabilities:
+            if vulnerability.severity.lower() == 'high':
+                return severity.MEDIUM
+
+        return severity.LOW
+
+    def to_string(self):
+        message = ('A JavaScript library with known vulnerabilities was'
+                   ' identified at %(url)s. The library was identified as'
+                   ' "%(component)s" version %(version)s and has these known'
+                   ' vulnerabilities:\n'
+                   '\n'
+                   '%(summaries)s\n'
+                   '\n'
+                   'Consider updating to the latest stable release of the'
+                   ' affected library.')
+
+        summaries = '\n'.join(' - %s' % vuln.summary for vuln in self.vulnerabilities)
+
+        args = {'url': self.response.get_url(),
+                'component': self.component,
+                'version': self.version,
+                'summaries': summaries}
+
+        return message % args
+
+
+class RetireJSVulnerability(object):
+    def __init__(self, vuln_severity, summary, info_urls):
+        self.severity = vuln_severity
+        self.summary = summary
+        self.info_urls = info_urls
+
+
+def kill(process):
+    try:
+        process.terminate()
+    except OSError:
+        # ignore
+        pass
