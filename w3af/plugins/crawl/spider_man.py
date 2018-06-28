@@ -159,7 +159,7 @@ class LoggingHandler(ProxyHandler):
 
     def handle_request_in_thread(self, flow):
         """
-        This method handles EVERY request that was send by the browser, we
+        This method handles EVERY request that was sent by the browser, we
         receive the request and:
 
             * Check if it's a request to indicate we should finish, if not
