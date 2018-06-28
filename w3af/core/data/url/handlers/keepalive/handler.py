@@ -168,11 +168,6 @@ class KeepAliveHandler(object):
         # How many requests were sent with this connection?
         conn.inc_req_count()
 
-        # If not a persistent connection, or the user specified that he wanted
-        # a new connection for this specific request, don't try to reuse it
-        if resp.will_close or req.new_connection:
-            self._cm.remove_connection(conn, host, reason='will close')
-
         # This response seems to be fine
         resp._handler = self
         resp._host = host
@@ -197,6 +192,11 @@ class KeepAliveHandler(object):
             reason = 'unexpected exception while reading "%s"' % e
             self._cm.remove_connection(conn, host, reason=reason)
             raise
+
+        # If not a persistent connection, or the user specified that he wanted
+        # a new connection for this specific request, don't try to reuse it
+        if resp.will_close or req.new_connection:
+            self._cm.remove_connection(conn, host, reason='will close')
 
         # We measure time here because it's the best place we know of
         elapsed = time.time() - start
