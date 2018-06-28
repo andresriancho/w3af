@@ -46,6 +46,7 @@ class InstrumentedChrome(object):
         self.proxy = self.start_proxy()
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
+        self.set_chrome_settings()
 
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
@@ -75,9 +76,23 @@ class InstrumentedChrome(object):
 
     def connect_to_chrome(self):
         port = self.chrome_process.get_devtools_port()
+
+        # The timeout we specify here is the websocket timeout, which is used
+        # for send() and recv() calls. When we send a command wait_result() is
+        # called, the websocket timeout might be exceeded multiple times while
+        # waiting for the result.
         chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
-                                           port=port)
+                                           port=port,
+                                           timeout=1)
         return chrome_conn
+
+    def set_chrome_settings(self):
+        """
+        Set any configuration settings required for Chrome
+        :return: None
+        """
+        # Disable certificate validation
+        self.chrome_conn.Security.setIgnoreCertificateErrors(ignore=True)
 
     def load_url(self, url):
         """
@@ -87,7 +102,8 @@ class InstrumentedChrome(object):
         :return: This method returns immediately, even if the browser is not
                  able to load the URL and an error was raised.
         """
-        self.chrome_conn.Page.navigate(url=url)
+        self.chrome_conn.Page.navigate(url=url,
+                                       timeout=self.PAGE_LOAD_TIMEOUT)
 
     def wait_for_load(self):
         """

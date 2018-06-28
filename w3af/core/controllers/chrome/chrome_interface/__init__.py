@@ -24,6 +24,7 @@ import json
 import time
 
 from PyChromeDevTools import GenericElement, ChromeInterface
+from websocket import WebSocketTimeoutException
 
 import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.tests.running_tests import is_running_tests
@@ -34,19 +35,21 @@ class DebugGenericElement(GenericElement):
     def __getattr__(self, attr):
         func_name = '{}.{}'.format(self.name, attr)
 
-        def generic_function(**args):
+        def generic_function(**kwargs):
             self.parent.pop_messages()
             self.parent.message_counter += 1
+
+            timeout = kwargs.get('timeout', 20)
 
             message_id = self.parent.message_counter
 
             call_obj = {'id': message_id,
                         'method': func_name,
-                        'params': args}
+                        'params': kwargs}
             call_str = json.dumps(call_obj, indent=4)
 
             self.parent.send(call_str)
-            result, _ = self.parent.wait_result(message_id)
+            result, _ = self.parent.wait_result(message_id, timeout=timeout)
 
             return result
 
@@ -89,6 +92,8 @@ class DebugChromeInterface(ChromeInterface):
 
             try:
                 message = self.recv()
+            except WebSocketTimeoutException:
+                continue
             except Exception, e:
                 msg = 'Unexpected error while reading from Chrome socket: "%s"'
                 raise ChromeInterfaceException(msg % e)
