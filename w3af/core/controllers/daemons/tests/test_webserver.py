@@ -73,9 +73,10 @@ class TestWebserver(unittest.TestCase):
     
     def test_any_free_port(self):
         self._create_file()
-        _, port = start_webserver_any_free_port(self.IP, self.tempdir)
+        _, server, port = start_webserver_any_free_port(self.IP, self.tempdir)
         
         url = 'http://%s:%s/foofile.txt' % (self.IP, port)
         response_body = urllib2.urlopen(url).read()
         
         self.assertEqual(response_body, self.TESTSTRING)
+        server.shutdown()

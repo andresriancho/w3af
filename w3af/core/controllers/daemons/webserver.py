@@ -82,7 +82,9 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
             self.__is_shut_down.set()
 
     def handle_request(self, poll_interval=0.5):
-        """Handle one request, possibly blocking."""
+        """
+        Handle one request, possibly blocking.
+        """
 
         fd_sets = select.select([self], [], [], poll_interval)
         if not fd_sets[0]:
@@ -115,6 +117,16 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
     def wait_for_start(self):
         while self.get_port() is None:
             time.sleep(0.5)
+
+    def shutdown(self):
+        """Stops the serve_forever loop.
+
+        Blocks until the loop has finished. This must be called while
+        serve_forever() is running in another thread, or it will
+        deadlock.
+        """
+        self.__shutdown_request = True
+        self.__is_shut_down.wait()
 
 
 class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -205,4 +217,4 @@ def start_webserver_any_free_port(ip, webroot, handler=WebHandler):
 
     web_server.wait_for_start()
 
-    return server_thread, web_server.get_port()
+    return server_thread, web_server, web_server.get_port()
