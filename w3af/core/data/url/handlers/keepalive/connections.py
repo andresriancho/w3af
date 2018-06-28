@@ -174,10 +174,12 @@ class ProxyHTTPConnection(_HTTPConnection):
 
 
 # https://bugs.kali.org/view.php?id=2160
-proto_names = ('PROTOCOL_SSLv3',
-               'PROTOCOL_TLSv1',
-               'PROTOCOL_SSLv23',
-               'PROTOCOL_SSLv2')
+proto_names = (
+               'PROTOCOL_SSLv3',        # Does not exist in ssl module Python 2.7.15rc1
+               'PROTOCOL_TLSv1',        # ssl.PROTOCOL_TLSv1  == 3
+               'PROTOCOL_SSLv23',       # ssl.PROTOCOL_SSLv23 == 2
+               'PROTOCOL_SSLv2'         # Does not exist in ssl module Python 2.7.15rc1
+               )
 _protocols = filter(None, (getattr(ssl, pn, None) for pn in proto_names))
 
 # Avoid race conditions
