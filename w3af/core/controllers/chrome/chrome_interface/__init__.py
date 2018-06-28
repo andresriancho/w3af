@@ -26,6 +26,7 @@ import time
 from PyChromeDevTools import GenericElement, ChromeInterface
 
 import w3af.core.controllers.output_manager as om
+from w3af.core.controllers.tests.running_tests import is_running_tests
 
 
 class DebugGenericElement(GenericElement):
@@ -118,7 +119,10 @@ class DebugChromeInterface(ChromeInterface):
         if not self.DEBUG:
             return
 
-        print(message)
+        if is_running_tests():
+            print(message)
+        else:
+            om.out.debug(message)
 
     def __getattr__(self, attr):
         generic_element = DebugGenericElement(attr, self)
