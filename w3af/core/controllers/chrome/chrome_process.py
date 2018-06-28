@@ -156,12 +156,19 @@ class ChromeProcess(object):
         return False
 
     def terminate(self):
-        if self.proc is None:
-            return
-
-        self.proc.terminate()
         self.devtools_port = 0
-        self.thread = None
+
+        if self.proc is not None:
+            try:
+                self.proc.terminate()
+            except OSError:
+                # In some cases the process is already dead, calling terminate()
+                # will try to kill a process that doesn't exist anymore
+                pass
+
+        if self.thread is not None:
+            self.thread.join()
+            self.thread = None
 
     def store_stdout(self, stdout_data):
         """

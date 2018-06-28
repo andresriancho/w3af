@@ -19,13 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
-import ssl
 import Queue
 import unittest
 import BaseHTTPServer
 
+from websocket import WebSocketConnectionClosedException
+
 from w3af import ROOT_PATH
-from w3af.core.controllers.chrome.instrumented_chrome import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented_chrome import InstrumentedChrome, InstrumentedChromeException
+from w3af.core.controllers.chrome.chrome_interface import ChromeInterfaceException
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.tests.helpers.ssl_daemon import SSLServer
@@ -40,9 +42,13 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.uri_opener = ExtendedUrllib()
         self.http_traffic_queue = Queue.Queue()
 
-        self.server, self.server_port = start_webserver_any_free_port(self.SERVER_HOST,
-                                                                      webroot=self.SERVER_ROOT_PATH,
-                                                                      handler=InstrumentedChromeHandler)
+        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
+                                                webroot=self.SERVER_ROOT_PATH,
+                                                handler=InstrumentedChromeHandler)
+
+        self.server_thread = t
+        self.server = s
+        self.server_port = p
 
         self.ic = InstrumentedChrome(self.uri_opener, self.http_traffic_queue)
 
@@ -50,6 +56,11 @@ class TestInstrumentedChrome(unittest.TestCase):
         while not self.http_traffic_queue.empty():
             self.http_traffic_queue.get()
 
+        self.ic.terminate()
+        self.server.shutdown()
+        self.server_thread.join()
+
+    def test_terminate(self):
         self.ic.terminate()
 
     def test_start_and_load_http(self):
@@ -96,20 +107,29 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.assertEqual(response.get_body(), InstrumentedChromeHandler.RESPONSE_BODY)
         self.assertIn('Chrome', request.get_headers().get('User-agent'))
 
-    def test_chrome_fails_to_start(self):
-        raise NotImplementedError
-
     def test_initial_connection_to_chrome_fails(self):
-        raise NotImplementedError
+        self.ic.chrome_process.get_devtools_port = lambda: 1
+        self.assertRaises(InstrumentedChromeException, self.ic.connect_to_chrome)
 
     def test_connection_to_chrome_fails_after_page_load(self):
-        raise NotImplementedError
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-    def test_proxy_fails_to_start(self):
-        raise NotImplementedError
+        self.ic.load_url(url)
+        self.ic.wait_for_load()
+
+        # We simulate an error here
+        self.ic.chrome_conn.ws.close()
+
+        # Trigger it here
+        self.assertRaises(WebSocketConnectionClosedException, self.ic.load_url, url)
 
     def test_proxy_dies(self):
-        raise NotImplementedError
+        # We simulate an error here
+        self.ic.proxy.stop()
+
+        # Trigger it here
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+        self.assertRaises(ChromeInterfaceException, self.ic.load_url, url)
 
 
 class InstrumentedChromeHandler(BaseHTTPServer.BaseHTTPRequestHandler):

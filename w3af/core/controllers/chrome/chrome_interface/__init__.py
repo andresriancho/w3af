@@ -22,12 +22,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import json
 import time
+import logging
 
 from PyChromeDevTools import GenericElement, ChromeInterface
 from websocket import WebSocketTimeoutException
 
 import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.tests.running_tests import is_running_tests
+
+#
+# Disable all the annoying logging from the urlli3 and requests libraries
+#
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
 class DebugGenericElement(GenericElement):
@@ -91,7 +98,7 @@ class DebugChromeInterface(ChromeInterface):
                 break
 
             try:
-                message = self.recv()
+                data = self.recv()
             except WebSocketTimeoutException:
                 continue
             except Exception, e:
@@ -99,24 +106,32 @@ class DebugChromeInterface(ChromeInterface):
                 raise ChromeInterfaceException(msg % e)
 
             try:
-                parsed_message = json.loads(message)
+                message = json.loads(data)
             except Exception, e:
                 msg = 'Failed to parse JSON response from Chrome: "%s"'
                 raise ChromeInterfaceException(msg % e)
 
-            messages.append(parsed_message)
+            messages.append(message)
 
-            if 'result' in parsed_message and parsed_message['id'] == result_id:
-                matching_result = parsed_message
+            #
+            # Now we handle the message
+            #
+            error_code = message.get('result', {}).get('errorText', '')
+
+            if error_code == 'net::ERR_PROXY_CONNECTION_FAILED':
+                raise ChromeInterfaceException('Chrome failed to connect to proxy server')
+
+            if 'result' in message and message['id'] == result_id:
+                matching_result = message
                 break
 
-            if 'error' in parsed_message:
-                if 'message' in parsed_message['error']:
-                    message = parsed_message['error']['message']
+            if 'error' in message:
+                if 'message' in message['error']:
+                    message = message['error']['message']
                     raise ChromeInterfaceException(message)
                 else:
                     message = 'Unexpected error received from Chrome: "%s"'
-                    raise ChromeInterfaceException(message % str(parsed_message))
+                    raise ChromeInterfaceException(message % str(message))
 
         return matching_result, messages
 

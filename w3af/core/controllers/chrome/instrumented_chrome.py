@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from requests import ConnectionError
+
 from w3af.core.controllers.chrome.chrome_interface import DebugChromeInterface
 from w3af.core.controllers.chrome.chrome_process import ChromeProcess
 from w3af.core.controllers.chrome.proxy import LoggingProxy
@@ -81,9 +83,14 @@ class InstrumentedChrome(object):
         # for send() and recv() calls. When we send a command wait_result() is
         # called, the websocket timeout might be exceeded multiple times while
         # waiting for the result.
-        chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
-                                           port=port,
-                                           timeout=1)
+        try:
+            chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
+                                               port=port,
+                                               timeout=1)
+        except ConnectionError:
+            msg = 'Failed to connect to Chrome on port %s'
+            raise InstrumentedChromeException(msg % port)
+
         return chrome_conn
 
     def set_chrome_settings(self):
@@ -117,4 +124,10 @@ class InstrumentedChrome(object):
         return result['result']['result']['value']
 
     def terminate(self):
+        self.proxy.stop()
+        self.chrome_conn.close()
         self.chrome_process.terminate()
+
+
+class InstrumentedChromeException(Exception):
+    pass
