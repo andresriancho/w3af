@@ -19,9 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
+from w3af.core.controllers.chrome.chrome_interface import DebugChromeInterface
 from w3af.core.controllers.chrome.chrome_process import ChromeProcess
-from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
+from w3af.core.controllers.chrome.proxy import LoggingProxy
 
 
 class InstrumentedChrome(object):
@@ -34,15 +34,50 @@ class InstrumentedChrome(object):
 
     More features to be implemented later.
     """
-    def __init__(self):
-        self.proxy = self.create_proxy()
-        self.chrome = self.start_chrome_process()
 
-    def create_proxy(self):
-        raise NotImplementedError
+    PROXY_HOST = '127.0.0.1'
+    CHROME_HOST = '127.0.0.1'
+    PAGE_LOAD_TIMEOUT = 20
+
+    def __init__(self, uri_opener, http_traffic_queue):
+        self.uri_opener = uri_opener
+        self.http_traffic_queue = http_traffic_queue
+
+        self.proxy = self.start_proxy()
+        self.chrome_process = self.start_chrome_process()
+        self.chrome_conn = self.connect_to_chrome()
+
+    def start_proxy(self):
+        proxy = LoggingProxy(self.PROXY_HOST,
+                             0,
+                             self.uri_opener,
+                             name='ChromeProxy',
+                             queue=self.http_traffic_queue)
+
+        proxy.start()
+        proxy.wait_for_start()
+
+        return proxy
+
+    def get_proxy_address(self):
+        return self.PROXY_HOST, self.proxy.get_bind_port()
 
     def start_chrome_process(self):
-        raise NotImplementedError
+        chrome_process = ChromeProcess()
+
+        proxy_host, proxy_port = self.get_proxy_address()
+        chrome_process.set_proxy(proxy_host, proxy_port)
+
+        chrome_process.start()
+        chrome_process.wait_for_start()
+
+        return chrome_process
+
+    def connect_to_chrome(self):
+        port = self.chrome_process.get_devtools_port()
+        chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
+                                           port=port)
+        return chrome_conn
 
     def load_url(self, url):
         """
@@ -52,13 +87,18 @@ class InstrumentedChrome(object):
         :return: This method returns immediately, even if the browser is not
                  able to load the URL and an error was raised.
         """
-        raise NotImplementedError
+        self.chrome_conn.Page.navigate(url=url)
 
-    def load_completed(self):
+    def wait_for_load(self):
         """
         :return: True when the page finished loading
         """
-        raise NotImplementedError
+        self.chrome_conn.wait_event("Page.frameStoppedLoading",
+                                    timeout=self.PAGE_LOAD_TIMEOUT)
+
+    def get_dom(self):
+        result = self.chrome_conn.Runtime.evaluate(expression='document.body.outerHTML')
+        return result['result']['result']['value']
 
     def terminate(self):
-        self.chrome.terminate()
+        self.chrome_process.terminate()

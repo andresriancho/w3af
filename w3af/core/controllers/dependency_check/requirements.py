@@ -96,6 +96,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
 
                      # Fast compression library
                      PIPDependency('lz4', 'lz4', '1.1.0'),
+
+                     # Used to communicate with chrome via devtools protocol
+                     PIPDependency('PyChromeDevTools', 'PyChromeDevTools', '0.1'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

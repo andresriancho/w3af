@@ -53,6 +53,15 @@ class DebugGenericElement(GenericElement):
 
 
 class DebugChromeInterface(ChromeInterface):
+    """
+    The devtools protocol is documented at
+
+        https://chromedevtools.github.io/devtools-protocol/
+
+    Everything you can do with Chrome via this class is documented there,
+    and since this class is very generic, it shouldn't require any changes
+    to be able to consume all features.
+    """
     message_counter = 0
 
     DEBUG = os.environ.get('DEBUG', '0') == '1'
