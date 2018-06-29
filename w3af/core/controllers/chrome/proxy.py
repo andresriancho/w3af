@@ -96,3 +96,6 @@ class LoggingProxy(Proxy):
     def set_debugging_id(self, debugging_id):
         self.debugging_id = debugging_id
 
+    def set_traffic_queue(self, http_traffic_queue):
+        self.queue = http_traffic_queue
+

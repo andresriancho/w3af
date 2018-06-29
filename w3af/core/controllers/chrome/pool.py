@@ -201,6 +201,7 @@ class PoolInstrumentedChrome(InstrumentedChrome):
 
     def set_traffic_queue(self, http_traffic_queue):
         self.http_traffic_queue = http_traffic_queue
+        self.proxy.set_traffic_queue(http_traffic_queue)
 
 
 class ChromePoolException(Exception):
