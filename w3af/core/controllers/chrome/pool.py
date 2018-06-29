@@ -186,23 +186,6 @@ class ChromePool(object):
             chrome.terminate()
 
 
-class HTTPTrafficQueue(object):
-    """
-    InstrumentedChrome sends both HTTP request and HTTP response to the queue,
-    but we only need the HTTP request.
-
-    This class is a wrapper that removes the HTTP response in put() calls
-    to the fuzzable request queue.
-    """
-    def __init__(self, fuzzable_request_queue):
-        self.fuzzable_request_queue = fuzzable_request_queue
-        self.count = 0
-
-    def put(self, (http_request, http_response)):
-        self.count += 1
-        return self.fuzzable_request_queue.put(http_request)
-
-
 class PoolInstrumentedChrome(InstrumentedChrome):
     def __init__(self, uri_opener, http_traffic_queue):
         super(PoolInstrumentedChrome, self).__init__(uri_opener, http_traffic_queue)

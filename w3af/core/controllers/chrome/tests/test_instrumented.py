@@ -139,7 +139,9 @@ class InstrumentedChromeHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             self.send_response(200)
-            self.send_header('Content-type', 'text/html')
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('Content-Length', len(self.RESPONSE_BODY))
+            self.send_header('Content-Encoding', 'identity')
             self.end_headers()
             self.wfile.write(self.RESPONSE_BODY)
         except Exception, e:

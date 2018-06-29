@@ -31,6 +31,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.chrome.crawler import ChromeCrawler, ChromeCrawlerException
 
 from w3af.core.data.parsers.utils.header_link_extract import headers_url_generator
 from w3af.core.data.db.variant_db import VariantDB
@@ -66,6 +67,7 @@ class web_spider(CrawlPlugin):
         self._target_domain = None
         self._already_filled_form = ScalableBloomFilter()
         self._variant_db = VariantDB()
+        self._chrome_crawler = ChromeCrawler(self._uri_opener)
 
         # User configured variables
         self._ignore_regex = ''
@@ -112,6 +114,7 @@ class web_spider(CrawlPlugin):
 
         self._extract_html_forms(resp, fuzzable_req)
         self._extract_links_and_verify(resp, fuzzable_req)
+        self._crawl_with_chrome(resp, fuzzable_req)
 
     def _extract_html_forms(self, resp, fuzzable_req):
         """
@@ -304,6 +307,30 @@ class web_spider(CrawlPlugin):
         self.worker_pool.map_multi_args(
             self._verify_reference,
             self._urls_to_verify_generator(resp, fuzzable_req))
+
+    def _crawl_with_chrome(self, response, fuzzable_req):
+        """
+        Crawl the URL using Chrome.
+
+        :param response: The HTTP response for fuzzable_req (retrieved with uri opener)
+        :param fuzzable_req: The HTTP request to use as starting point
+        :return: None, new fuzzable requests are written to the output queue
+        """
+        # TODO: Add support for fuzzable requests with POST
+        if fuzzable_req.get_method() != 'GET':
+            return
+
+        uri = fuzzable_req.get_uri()
+        http_traffic_queue = CrawlFilterQueue(self,
+                                              self._should_verify_extracted_url,
+                                              response)
+
+        try:
+            self._chrome_crawler.crawl(uri, http_traffic_queue)
+        except ChromeCrawlerException, cce:
+            args = (uri, cce)
+            msg = 'Failed to crawl %s using chrome crawler: "%s"'
+            om.out.debug(msg % args)
 
     def _verify_reference(self, reference, original_request,
                           original_response, possibly_broken,
@@ -505,3 +532,27 @@ class web_spider(CrawlPlugin):
         The regular expressions are applied to the URLs that are found using the
         match function.
         """
+
+
+class CrawlFilterQueue(object):
+    def __init__(self, _web_spider, should_analyze, response):
+        self._web_spider = _web_spider
+        self._response = response
+        self._should_analyze = should_analyze
+
+    def put(self, (request, response)):
+        """
+        The chrome crawler adds requests and responses to the queue via
+        this method.
+
+        :return: True if the item was sent to the core.
+        """
+        if response.get_code() in (404, 403, 401):
+            return False
+
+        ref = request.get_uri()
+        if not self._should_analyze(ref, self._response):
+            return False
+
+        self._web_spider.output_queue.put(request)
+        return True

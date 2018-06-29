@@ -25,6 +25,7 @@ from w3af.core.controllers.chrome.crawler import ChromeCrawler
 from w3af.core.controllers.chrome.tests.test_instrumented import InstrumentedChromeHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.data.parsers.doc.url import URL
 
 
 class TestChromeCrawler(unittest.TestCase):
@@ -60,7 +61,54 @@ class TestChromeCrawler(unittest.TestCase):
 
         self.assertEqual(self.http_traffic_queue.qsize(), 1)
 
-        request = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get()
 
         self.assertEqual(request.get_url().url_string, url)
 
+    def test_crawl_xmlhttprequest(self):
+        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
+                                                webroot=self.SERVER_ROOT_PATH,
+                                                handler=XmlHttpRequestHandler)
+
+        self.server_thread = t
+        self.server = s
+        self.server_port = p
+
+        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+        self.crawler.crawl(root_url, self.http_traffic_queue)
+
+        self.assertEqual(self.http_traffic_queue.qsize(), 2)
+
+        # The first request is to load the main page
+        request, _ = self.http_traffic_queue.get()
+        self.assertEqual(request.get_url().url_string, root_url)
+
+        # The second request is the one sent using XMLHttpRequest
+        request, _ = self.http_traffic_queue.get()
+
+        root_url = URL(root_url)
+        server_url = root_url.url_join('/server')
+        data = 'foo=bar&lorem=ipsum'
+
+        self.assertEqual(request.get_uri().url_string, server_url.url_string)
+        self.assertEqual(request.get_data(), data)
+
+
+class XmlHttpRequestHandler(InstrumentedChromeHandler):
+
+    RESPONSE_BODY = '''<html>
+                       <script>
+                           var xhr = new XMLHttpRequest();
+                           xhr.open("POST", '/server', true);
+                        
+                           //Send the proper header information along with the request
+                           xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        
+                           xhr.onreadystatechange = function() {//Call a function when the state changes.
+                               if(this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                                   // Request finished. Do processing here.
+                               }
+                           }
+                           xhr.send("foo=bar&lorem=ipsum"); 
+                       </script>
+                       </html>'''
