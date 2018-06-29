@@ -27,6 +27,10 @@ from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 
 class LoggingHandler(ProxyHandler):
 
+    SECURITY_HEADERS = ['Strict-Transport-Security',
+                        'Public-Key-Pins',
+                        'Content-Security-Policy']
+
     def _send_http_request(self, http_request, grep=True):
         """
         Send a w3af HTTP request to the web server using w3af's HTTP lib,
@@ -42,6 +46,9 @@ class LoggingHandler(ProxyHandler):
         """
         http_response = super(LoggingHandler, self)._send_http_request(http_request, grep=grep)
 
+        # Remove security headers to reduce runtime security
+        self._remove_security_headers(http_response)
+
         # Send the request upstream
         freq = FuzzableRequest.from_http_request(http_request)
         self.parent_process.queue.put((freq, http_response))
@@ -52,6 +59,23 @@ class LoggingHandler(ProxyHandler):
         om.out.debug(msg % args)
 
         return http_response
+
+    def _remove_security_headers(self, http_response):
+        """
+        Remove the security headers which increase the application security on
+        run-time (when run by the browser). These headers are things like HSTS
+        and CSP.
+
+        We remove them in order to prevent CSP errors from blocking our tests,
+        HSTS from breaking mixed content, etc.
+        """
+        headers = http_response.get_headers()
+
+        for security_header in self.SECURITY_HEADERS:
+            _, stored_header_name = headers.iget(security_header)
+
+            if stored_header_name is not None:
+                headers.pop(stored_header_name)
 
 
 class LoggingProxy(Proxy):
