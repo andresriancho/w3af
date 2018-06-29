@@ -61,7 +61,8 @@ class ChromeCrawler(object):
 
         om.out.debug(msg % args)
 
-        crawler_http_traffic_queue = CrawlerHTTPTrafficQueue(http_traffic_queue)
+        crawler_http_traffic_queue = CrawlerHTTPTrafficQueue(http_traffic_queue,
+                                                             debugging_id=debugging_id)
 
         try:
             chrome = self._pool.get(http_traffic_queue=crawler_http_traffic_queue)
@@ -92,8 +93,13 @@ class ChromeCrawler(object):
             raise ChromeCrawlerException('Failed to load %s using %s: "%s"' % args)
 
         try:
-            chrome.wait_for_load()
+            successfully_loaded = chrome.wait_for_load()
         except Exception, e:
+            #
+            # Note: Even if we get here, the InstrumentedChrome might have sent
+            # a few HTTP requests. Those HTTP requests are immediately sent to
+            # the output queue.
+            #
             args = (url, chrome, e, debugging_id)
             msg = ('Exception raised while waiting for page load of %s '
                    'using %s: "%s" (did: %s)')
@@ -108,11 +114,32 @@ class ChromeCrawler(object):
                    'using %s: "%s"')
             raise ChromeCrawlerException(msg % args)
 
+        if not successfully_loaded:
+            #
+            # I need to pause the chrome browser so it doesn't continue loading
+            #
+            msg = 'Chrome did not successfully load %s in the given time (did: %s)'
+            args = (url, debugging_id)
+            om.out.debug(msg % args)
+
+            try:
+                chrome.stop()
+            except Exception, e:
+                msg = 'Failed to stop chrome browser %s: "%s" (did: %s)'
+                args = (chrome, e, debugging_id)
+                om.out.debug(msg % args)
+
+                # Since we got an error we remove this chrome instance from the
+                # pool it might be in an error state
+                self._pool.remove(chrome)
+
+                raise ChromeCrawlerException('Failed to stop chrome browser')
+
         # Success! Return the chrome instance to the pool
         self._pool.free(chrome)
 
-        args = (crawler_http_traffic_queue.count, chrome, debugging_id)
-        msg = 'Extracted %s new HTTP requests using %s (did: %s)'
+        args = (crawler_http_traffic_queue.count, url, chrome, debugging_id)
+        msg = 'Extracted %s new HTTP requests from %s using %s (did: %s)'
         om.out.debug(msg % args)
 
         return True
@@ -123,12 +150,18 @@ class ChromeCrawler(object):
 
 
 class CrawlerHTTPTrafficQueue(object):
-    def __init__(self, http_traffic_queue):
+    def __init__(self, http_traffic_queue, debugging_id):
         self.http_traffic_queue = http_traffic_queue
+        self.debugging_id = debugging_id
         self.count = 0
 
     def put(self, request_response):
         self.count += 1
+
+        msg = 'Received HTTP traffic from chrome in output queue. Count is %s (did: %s)'
+        args = (self.count, self.debugging_id)
+        om.out.debug(msg % args)
+
         return self.http_traffic_queue.put(request_response)
 
 

@@ -152,10 +152,21 @@ class InstrumentedChrome(object):
         ]
 
         for event in events_to_wait_for:
-            event['timeout'] = self.PAGE_LOAD_TIMEOUT / len(events_to_wait_for)
-            self.chrome_conn.wait_event(**event)
+            event['timeout'] = self.PAGE_LOAD_TIMEOUT
+            matching_message, messages = self.chrome_conn.wait_event(**event)
+
+            if matching_message is None:
+                return False
 
         return True
+
+    def stop(self):
+        """
+        Stop loading any page and close.
+
+        :return:
+        """
+        self.chrome_conn.Page.stopLoading()
 
     def get_dom(self):
         result = self.chrome_conn.Runtime.evaluate(expression='document.body.outerHTML')
