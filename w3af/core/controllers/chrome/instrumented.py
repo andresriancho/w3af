@@ -103,6 +103,7 @@ class InstrumentedChrome(object):
     def set_debugging_id(self, debugging_id):
         self.debugging_id = debugging_id
         self.chrome_conn.set_debugging_id(debugging_id)
+        self.proxy.set_debugging_id(debugging_id)
 
     def set_chrome_settings(self):
         """
