@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import re
 import time
+import signal
 import select
 import threading
 import subprocess
@@ -122,7 +123,8 @@ class ChromeProcess(object):
                                      shell=True,
                                      stdout=stdout_w,
                                      stderr=stderr_w,
-                                     close_fds=True)
+                                     close_fds=True,
+                                     preexec_fn=os.setsid)
 
         while self.proc.poll() is None:
 
@@ -160,7 +162,7 @@ class ChromeProcess(object):
 
         if self.proc is not None:
             try:
-                self.proc.terminate()
+                os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
             except OSError:
                 # In some cases the process is already dead, calling terminate()
                 # will try to kill a process that doesn't exist anymore
