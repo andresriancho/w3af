@@ -1,5 +1,5 @@
 """
-test_instrumented_chrome.py
+test_instrumented.py
 
 Copyright 2018 Andres Riancho
 
@@ -26,8 +26,8 @@ import BaseHTTPServer
 from websocket import WebSocketConnectionClosedException
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.chrome.instrumented_chrome import InstrumentedChrome, InstrumentedChromeException
-from w3af.core.controllers.chrome.chrome_interface import ChromeInterfaceException
+from w3af.core.controllers.chrome.instrumented import InstrumentedChrome, InstrumentedChromeException
+from w3af.core.controllers.chrome.devtools import ChromeInterfaceException
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.tests.helpers.ssl_daemon import SSLServer

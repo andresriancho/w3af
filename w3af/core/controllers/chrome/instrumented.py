@@ -1,5 +1,5 @@
 """
-instrumented_chrome.py
+instrumented.py
 
 Copyright 2018 Andres Riancho
 
@@ -21,9 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from requests import ConnectionError
 
-from w3af.core.controllers.chrome.chrome_interface import DebugChromeInterface
-from w3af.core.controllers.chrome.chrome_process import ChromeProcess
+from w3af.core.controllers.chrome.devtools import DebugChromeInterface
+from w3af.core.controllers.chrome.process import ChromeProcess
 from w3af.core.controllers.chrome.proxy import LoggingProxy
+from w3af.core.data.fuzzer.utils import rand_alnum
 
 
 class InstrumentedChrome(object):
@@ -49,6 +50,8 @@ class InstrumentedChrome(object):
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
         self.set_chrome_settings()
+
+        self.id = rand_alnum(8)
 
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
@@ -127,6 +130,9 @@ class InstrumentedChrome(object):
         self.proxy.stop()
         self.chrome_conn.close()
         self.chrome_process.terminate()
+
+    def __str__(self):
+        return '<InstrumentedChrome %s>' % self.id
 
 
 class InstrumentedChromeException(Exception):

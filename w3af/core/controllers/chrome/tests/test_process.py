@@ -1,5 +1,5 @@
 """
-test_chrome_process.py
+test_process.py
 
 Copyright 2018 Andres Riancho
 
@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.controllers.chrome.chrome_process import ChromeProcess
+from w3af.core.controllers.chrome.process import ChromeProcess
 
 
 class TestChromeProcess(unittest.TestCase):
