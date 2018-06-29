@@ -326,8 +326,8 @@ class web_spider(CrawlPlugin):
         if fuzzable_req.get_method() != 'GET':
             return
 
-        # Only crawl responses that make sense
-        if not response.is_text_or_html():
+        # Only crawl responses that will be rendered
+        if 'html' not in response.content_type.lower():
             return
 
         # Only crawl URIs once
