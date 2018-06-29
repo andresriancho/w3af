@@ -67,7 +67,9 @@ class web_spider(CrawlPlugin):
         self._target_domain = None
         self._already_filled_form = ScalableBloomFilter()
         self._variant_db = VariantDB()
-        self._chrome_crawler = ChromeCrawler(self._uri_opener)
+
+        # Chrome crawler
+        self._chrome_crawler = None
         self._crawled_with_chrome = DiskSet(table_prefix='crawled_with_chrome')
 
         # User configured variables
@@ -317,6 +319,9 @@ class web_spider(CrawlPlugin):
         :param fuzzable_req: The HTTP request to use as starting point
         :return: None, new fuzzable requests are written to the output queue
         """
+        if self._chrome_crawler is None:
+            self._chrome_crawler = ChromeCrawler(self._uri_opener)
+
         # TODO: Add support for fuzzable requests with POST
         if fuzzable_req.get_method() != 'GET':
             return
