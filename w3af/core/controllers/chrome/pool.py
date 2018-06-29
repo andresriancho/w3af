@@ -196,8 +196,10 @@ class HTTPTrafficQueue(object):
     """
     def __init__(self, fuzzable_request_queue):
         self.fuzzable_request_queue = fuzzable_request_queue
+        self.count = 0
 
     def put(self, (http_request, http_response)):
+        self.count += 1
         return self.fuzzable_request_queue.put(http_request)
 
 
