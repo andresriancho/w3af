@@ -61,9 +61,10 @@ class InstrumentedChrome(object):
                              name='ChromeProxy',
                              queue=self.http_traffic_queue)
 
+        proxy.set_debugging_id(self.debugging_id)
+
         proxy.start()
         proxy.wait_for_start()
-        proxy.set_debugging_id(self.debugging_id)
 
         return proxy
 
@@ -165,7 +166,11 @@ class InstrumentedChrome(object):
         self.chrome_process.terminate()
 
     def __str__(self):
-        return '<InstrumentedChrome %s>' % self.id
+        proxy_port = self.get_proxy_address()[1]
+        devtools_port = self.chrome_process.get_devtools_port()
+
+        args = (self.id, proxy_port, devtools_port)
+        return '<InstrumentedChrome (id:%s, proxy:%s, devtools:%s)>' % args
 
 
 class InstrumentedChromeException(Exception):

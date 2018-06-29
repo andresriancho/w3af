@@ -53,7 +53,7 @@ class DebugGenericElement(GenericElement):
             call_obj = {'id': message_id,
                         'method': func_name,
                         'params': kwargs}
-            call_str = json.dumps(call_obj, indent=4)
+            call_str = json.dumps(call_obj)
 
             self.parent.send(call_str)
             result, _ = self.parent.wait_result(message_id, timeout=timeout)
