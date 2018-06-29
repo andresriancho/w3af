@@ -142,7 +142,7 @@ class DebugChromeInterface(ChromeInterface):
 
         return matching_result, messages
 
-    def wait_event(self, event, timeout=None):
+    def wait_event(self, event, name=None, timeout=None):
         timeout = timeout if timeout is not None else self.timeout
         start_time = time.time()
         messages = []
@@ -161,7 +161,7 @@ class DebugChromeInterface(ChromeInterface):
                 # Continue on websocket timeout, by default this is triggered
                 # every 1 second
                 continue
-            
+
             try:
                 parsed_message = json.loads(message)
             except ValueError:
@@ -171,7 +171,22 @@ class DebugChromeInterface(ChromeInterface):
 
             messages.append(parsed_message)
 
-            if 'method' in parsed_message and parsed_message['method'] == event:
+            method = parsed_message.get('method', None)
+            if method is None:
+                continue
+
+            if method != event:
+                continue
+
+            if name is None:
+                matching_message = parsed_message
+                break
+
+            received_name = parsed_message.get('params', {}).get('name', None)
+            if received_name is None:
+                continue
+
+            if received_name == name:
                 matching_message = parsed_message
                 break
 

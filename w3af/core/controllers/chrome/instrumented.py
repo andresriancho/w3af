@@ -129,10 +129,31 @@ class InstrumentedChrome(object):
 
     def wait_for_load(self):
         """
-        :return: True when the page finished loading
+        Knowing when a page has completed loading is difficult
+
+        This method will wait for two events:
+            * Page.frameStoppedLoading
+            * Page.lifecycleEvent with name networkIdle
+
+        If they are not received within PAGE_LOAD_TIMEOUT the method gives up
+        and assumes that it is the best thing it can do.
+
+        :return: True when the two events were received
+                 False when one or none of the events were received
         """
-        self.chrome_conn.wait_event("Page.frameStoppedLoading",
-                                    timeout=self.PAGE_LOAD_TIMEOUT)
+        events_to_wait_for = [
+            {'event': 'Page.frameStoppedLoading',
+             'name': None},
+
+            {'event': 'Page.lifecycleEvent',
+             'name': 'networkIdle'}
+        ]
+
+        for event in events_to_wait_for:
+            event['timeout'] = self.PAGE_LOAD_TIMEOUT / len(events_to_wait_for)
+            self.chrome_conn.wait_event(**event)
+
+        return True
 
     def get_dom(self):
         result = self.chrome_conn.Runtime.evaluate(expression='document.body.outerHTML')
