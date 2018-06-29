@@ -77,7 +77,7 @@ class ChromePool(object):
         free = len(self._free)
 
         args = (free, in_use, self.MAX_INSTANCES)
-        msg = '%s chrome pool stats (free:%s / in_use:%s / max:%s)'
+        msg = 'Chrome pool stats (free:%s / in_use:%s / max:%s)'
         om.out.debug(msg % args)
 
         # Chrome in use time stats
@@ -177,6 +177,13 @@ class ChromePool(object):
         self._in_use.discard(chrome)
         self._free.discard(chrome)
         chrome.terminate()
+
+    def terminate(self):
+        for chrome in self._free.copy():
+            chrome.terminate()
+
+        for chrome in self._in_use.copy():
+            chrome.terminate()
 
 
 class HTTPTrafficQueue(object):
