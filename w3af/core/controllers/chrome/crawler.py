@@ -158,9 +158,9 @@ class CrawlerHTTPTrafficQueue(object):
     def put(self, request_response):
         self.count += 1
 
-        msg = 'Received HTTP traffic from chrome in output queue. Count is %s (did: %s)'
-        args = (self.count, self.debugging_id)
-        om.out.debug(msg % args)
+        # msg = 'Received HTTP traffic from chrome in output queue. Count is %s (did: %s)'
+        # args = (self.count, self.debugging_id)
+        # om.out.debug(msg % args)
 
         return self.http_traffic_queue.put(request_response)
 

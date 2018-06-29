@@ -165,6 +165,7 @@ class ChromePool(object):
         chrome.free_count += 1
 
         if chrome.free_count > self.MAX_TASKS:
+            om.out.debug('Removing %s from pool. MAX_TASKS exceeded.' % chrome)
             self.remove(chrome)
             return
 
@@ -181,6 +182,8 @@ class ChromePool(object):
         om.out.debug('Removing %s from pool' % chrome)
 
     def terminate(self):
+        om.out.debug('Calling terminate on all chrome instances')
+        
         for chrome in self._free.copy():
             chrome.terminate()
 

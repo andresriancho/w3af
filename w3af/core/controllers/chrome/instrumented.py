@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from requests import ConnectionError
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.chrome.devtools import DebugChromeInterface
 from w3af.core.controllers.chrome.process import ChromeProcess
 from w3af.core.controllers.chrome.proxy import LoggingProxy
@@ -173,16 +175,32 @@ class InstrumentedChrome(object):
         return result['result']['result']['value']
 
     def terminate(self):
-        self.proxy.stop()
-        self.chrome_conn.close()
-        self.chrome_process.terminate()
+        om.out.debug('Terminating %s (did: %s)' % (self, self.debugging_id))
+
+        try:
+            self.proxy.stop()
+        except Exception, e:
+            om.out.debug('Failed to stop proxy server, exception: "%s"' % e)
+
+        try:
+            self.chrome_conn.close()
+        except Exception, e:
+            om.out.debug('Failed to close chrome connection, exception: "%s"' % e)
+
+        try:
+            self.chrome_process.terminate()
+        except Exception, e:
+            om.out.debug('Failed to terminate chrome process, exception: "%s"' % e)
 
     def __str__(self):
         proxy_port = self.get_proxy_address()[1]
         devtools_port = self.chrome_process.get_devtools_port()
 
-        args = (self.id, proxy_port, devtools_port)
-        return '<InstrumentedChrome (id:%s, proxy:%s, devtools:%s)>' % args
+        pid = self.chrome_process.proc.pid if self.chrome_process.proc is not None else None
+
+        args = (self.id, proxy_port, pid, devtools_port)
+        msg = '<InstrumentedChrome (id:%s, proxy:%s, process_id: %s, devtools:%s)>'
+        return msg % args
 
 
 class InstrumentedChromeException(Exception):
