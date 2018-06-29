@@ -68,6 +68,7 @@ class web_spider(CrawlPlugin):
         self._already_filled_form = ScalableBloomFilter()
         self._variant_db = VariantDB()
         self._chrome_crawler = ChromeCrawler(self._uri_opener)
+        self._crawled_with_chrome = DiskSet(table_prefix='crawled_with_chrome')
 
         # User configured variables
         self._ignore_regex = ''
@@ -320,7 +321,17 @@ class web_spider(CrawlPlugin):
         if fuzzable_req.get_method() != 'GET':
             return
 
+        # Only crawl responses that make sense
+        if not response.is_text_or_html():
+            return
+
+        # Only crawl URIs once
         uri = fuzzable_req.get_uri()
+        if uri in self._crawled_with_chrome:
+            return
+
+        self._crawled_with_chrome.add(uri)
+
         http_traffic_queue = CrawlFilterQueue(self,
                                               self._should_verify_extracted_url,
                                               response)
@@ -425,14 +436,22 @@ class web_spider(CrawlPlugin):
         """
         Called when the process ends, prints out the list of broken links.
         """
-        if len(self._broken_links):
+        self._chrome_crawler.terminate()
+        self._log_broken_links()
 
-            om.out.information('The following is a list of broken links that'
-                               ' were found by the web_spider plugin:')
-            for broken, where in unique_justseen(self._broken_links.ordered_iter()):
-                om.out.information('- %s [ referenced from: %s ]' %
-                                   (broken, where))
-        
+    def _log_broken_links(self):
+        if not len(self._broken_links):
+            return
+
+        msg = ('The following is a list of broken links that were found by'
+               ' the web_spider plugin:')
+        om.out.information(msg)
+
+        for broken, where in unique_justseen(self._broken_links.ordered_iter()):
+            msg = '- %s [ referenced from: %s ]'
+            args = (broken, where)
+            om.out.information(msg % args)
+
         self._broken_links.cleanup()
 
     def _is_forward(self, reference):

@@ -75,6 +75,8 @@ class ChromeCrawler(object):
         args = (chrome, url, debugging_id)
         om.out.debug('Using %s to load %s (did: %s)' % args)
 
+        chrome.set_debugging_id(debugging_id)
+
         try:
             chrome.load_url(url)
         except Exception, e:

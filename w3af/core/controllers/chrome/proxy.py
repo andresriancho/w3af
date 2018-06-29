@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 
@@ -40,9 +42,14 @@ class LoggingHandler(ProxyHandler):
         """
         http_response = super(LoggingHandler, self)._send_http_request(http_request, grep=grep)
 
-        # Send the request to the core
+        # Send the request upstream
         freq = FuzzableRequest.from_http_request(http_request)
         self.parent_process.queue.put((freq, http_response))
+
+        # Logging for better debugging
+        args = (http_request.get_uri(), self.parent_process.debugging_id)
+        msg = 'Chrome proxy received HTTP response for %s (did: %s)'
+        om.out.debug(msg % args)
 
         return http_response
 
@@ -60,3 +67,8 @@ class LoggingProxy(Proxy):
                                            ca_certs=ca_certs,
                                            name=name)
         self.queue = queue
+        self.debugging_id = None
+
+    def set_debugging_id(self, debugging_id):
+        self.debugging_id = debugging_id
+

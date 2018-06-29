@@ -178,6 +178,8 @@ class ChromePool(object):
         self._free.discard(chrome)
         chrome.terminate()
 
+        om.out.debug('Removing %s from pool' % chrome)
+
     def terminate(self):
         for chrome in self._free.copy():
             chrome.terminate()
@@ -198,14 +200,6 @@ class PoolInstrumentedChrome(InstrumentedChrome):
         self.free_count = 0
 
     def set_traffic_queue(self, http_traffic_queue):
-        # First empty the old queue to release any items we might be referencing
-        # This would be done by the gc, but I want to be explicit about it.
-        while self.http_traffic_queue.qsize():
-            try:
-                self.http_traffic_queue.get_nowait()
-            except:
-                pass
-
         self.http_traffic_queue = http_traffic_queue
 
 

@@ -24,7 +24,7 @@ import json
 import time
 import logging
 
-from PyChromeDevTools import GenericElement, ChromeInterface
+from PyChromeDevTools import GenericElement, ChromeInterface, TIMEOUT
 from websocket import WebSocketTimeoutException
 
 import w3af.core.controllers.output_manager as om
@@ -46,7 +46,7 @@ class DebugGenericElement(GenericElement):
             self.parent.pop_messages()
             self.parent.message_counter += 1
 
-            timeout = kwargs.get('timeout', 20)
+            timeout = kwargs.pop('timeout', 20)
 
             message_id = self.parent.message_counter
 
@@ -76,6 +76,13 @@ class DebugChromeInterface(ChromeInterface):
     message_counter = 0
 
     DEBUG = os.environ.get('DEBUG', '0') == '1'
+
+    def __init__(self, host='localhost', port=9222, tab=0, timeout=TIMEOUT, auto_connect=True, debugging_id=None):
+        super(DebugChromeInterface, self).__init__(host=host, port=port, tab=tab, timeout=timeout, auto_connect=auto_connect)
+        self.debugging_id = debugging_id
+
+    def set_debugging_id(self, debugging_id):
+        self.debugging_id = debugging_id
 
     def send(self, data):
         self.debug('Sending message to Chrome: %s' % data)
@@ -135,9 +142,46 @@ class DebugChromeInterface(ChromeInterface):
 
         return matching_result, messages
 
+    def wait_event(self, event, timeout=None):
+        timeout = timeout if timeout is not None else self.timeout
+        start_time = time.time()
+        messages = []
+        matching_message = None
+
+        while True:
+
+            # break on timeout
+            now = time.time()
+            if now-start_time > timeout:
+                break
+
+            try:
+                message = self.recv()
+            except Exception:
+                # Continue on websocket timeout, by default this is triggered
+                # every 1 second
+                continue
+            
+            try:
+                parsed_message = json.loads(message)
+            except ValueError:
+                # If we received an invalid JSON from Chrome, we ignore it and
+                # continue to receive the next one
+                continue
+
+            messages.append(parsed_message)
+
+            if 'method' in parsed_message and parsed_message['method'] == event:
+                matching_message = parsed_message
+                break
+
+        return matching_message, messages
+
     def debug(self, message):
         if not self.DEBUG:
             return
+
+        message = '(did: %s) %s' % (self.debugging_id, message)
 
         if is_running_tests():
             print(message)

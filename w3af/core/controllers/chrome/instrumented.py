@@ -46,12 +46,13 @@ class InstrumentedChrome(object):
         self.uri_opener = uri_opener
         self.http_traffic_queue = http_traffic_queue
 
+        self.id = rand_alnum(8)
+        self.debugging_id = None
+
         self.proxy = self.start_proxy()
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
         self.set_chrome_settings()
-
-        self.id = rand_alnum(8)
 
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
@@ -62,6 +63,7 @@ class InstrumentedChrome(object):
 
         proxy.start()
         proxy.wait_for_start()
+        proxy.set_debugging_id(self.debugging_id)
 
         return proxy
 
@@ -89,12 +91,17 @@ class InstrumentedChrome(object):
         try:
             chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
                                                port=port,
-                                               timeout=1)
+                                               timeout=1,
+                                               debugging_id=self.debugging_id)
         except ConnectionError:
             msg = 'Failed to connect to Chrome on port %s'
             raise InstrumentedChromeException(msg % port)
 
         return chrome_conn
+
+    def set_debugging_id(self, debugging_id):
+        self.debugging_id = debugging_id
+        self.chrome_conn.set_debugging_id(debugging_id)
 
     def set_chrome_settings(self):
         """
@@ -104,6 +111,10 @@ class InstrumentedChrome(object):
         # Disable certificate validation
         self.chrome_conn.Security.setIgnoreCertificateErrors(ignore=True)
 
+        # Enable events
+        self.chrome_conn.Page.enable()
+        self.chrome_conn.Page.setLifecycleEventsEnabled(enabled=True)
+
     def load_url(self, url):
         """
         Load an URL into the browser, start listening for events.
@@ -112,6 +123,7 @@ class InstrumentedChrome(object):
         :return: This method returns immediately, even if the browser is not
                  able to load the URL and an error was raised.
         """
+        url = str(url)
         self.chrome_conn.Page.navigate(url=url,
                                        timeout=self.PAGE_LOAD_TIMEOUT)
 
