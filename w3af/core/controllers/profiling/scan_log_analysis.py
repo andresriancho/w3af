@@ -77,6 +77,9 @@ PARSER_PROCESS_MEMORY_LIMIT = re.compile('Using RLIMIT_AS memory usage limit (.*
 
 GREP_PLUGIN_RE = re.compile('\] (.*?).grep\(uri=".*"\) took (.*?)s to run')
 
+CHROME_POOL_TIMES = re.compile('ChromePool.get\(\) took (.*?) seconds to return an instance')
+CHROME_CRAWL_TIMES = re.compile('Extracted .*? new HTTP requests from .*? in (.*?) seconds using')
+
 
 def _num_formatter(val, chars, delta, left=False):
     align = '<' if left else ''
@@ -149,6 +152,11 @@ def show_scan_stats(scan):
     print('')
 
     show_grep_plugin_performance(scan)
+
+    print('')
+
+    show_chrome_pool_times(scan)
+    show_chrome_crawl_times(scan)
 
     print('')
 
@@ -899,6 +907,96 @@ def show_grep_plugin_performance(scan):
 
     for plugin_name, total_run_time in times:
         print('%s: %.2f' % (plugin_name.ljust(25), total_run_time))
+
+
+def show_chrome_pool_times(scan):
+    scan.seek(0)
+
+    chrome_pool_times = []
+    chrome_pool_timestamps = []
+
+    for line in scan:
+        match = CHROME_POOL_TIMES.search(line)
+        if match:
+            chrome_pool_times.append(float(match.group(1)))
+            chrome_pool_timestamps.append(get_line_epoch(line))
+
+    # Get the last timestamp to use as max in the graphs
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
+    spent_time_epoch = last_timestamp - first_timestamp
+    chrome_pool_timestamps = [ts - first_timestamp for ts in chrome_pool_timestamps]
+
+    if not chrome_pool_times:
+        print('No chrome pool time data found')
+        return
+
+    print('Chrome pool times')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
+    fig.y_label = 'Time to retrieve a Chrome instance'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=spent_time_epoch)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(chrome_pool_timestamps,
+             chrome_pool_times,
+             label='Chrome pool')
+
+    print(fig.show())
+    print('')
+    print('')
+
+
+def show_chrome_crawl_times(scan):
+    scan.seek(0)
+
+    chrome_crawl_times = []
+    chrome_crawl_timestamps = []
+
+    for line in scan:
+        match = CHROME_CRAWL_TIMES.search(line)
+        if match:
+            chrome_crawl_times.append(float(match.group(1)))
+            chrome_crawl_timestamps.append(get_line_epoch(line))
+
+    # Get the last timestamp to use as max in the graphs
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
+    spent_time_epoch = last_timestamp - first_timestamp
+    chrome_crawl_timestamps = [ts - first_timestamp for ts in chrome_crawl_timestamps]
+
+    if not chrome_crawl_times:
+        print('No chrome pool time data found')
+        return
+
+    print('Chrome pool times')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
+    fig.y_label = 'Time to crawl a URL with Chrome'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=spent_time_epoch)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(chrome_crawl_timestamps,
+             chrome_crawl_times,
+             label='Chrome pool')
+
+    print(fig.show())
+    print('')
+    print('')
 
 
 def show_queue_size_grep(scan):
