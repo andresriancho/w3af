@@ -112,6 +112,7 @@ class ChromePool(object):
         """
         self.log_stats()
 
+        start = time.time()
         time_waited = 0
         start_time = time.time()
 
@@ -132,6 +133,10 @@ class ChromePool(object):
 
                     om.out.debug('Found chrome instance in free set: %s' % chrome)
 
+                    spent = time.time() - start
+                    msg = 'ChromePool.get() took %.2f seconds to return an instance'
+                    om.out.debug(msg % spent)
+
                     return chrome
 
             #
@@ -147,6 +152,10 @@ class ChromePool(object):
                 self._in_use.add(chrome)
 
                 om.out.debug('Created new chrome instance: %s' % chrome)
+
+                spent = time.time() - start
+                msg = 'ChromePool.get() took %.2f seconds to return an instance'
+                om.out.debug(msg % spent)
 
                 return chrome
 
@@ -183,7 +192,7 @@ class ChromePool(object):
 
     def terminate(self):
         om.out.debug('Calling terminate on all chrome instances')
-        
+
         for chrome in self._free.copy():
             chrome.terminate()
 

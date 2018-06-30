@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.chrome.pool import ChromePool
@@ -77,6 +79,7 @@ class ChromeCrawler(object):
         om.out.debug('Using %s to load %s (did: %s)' % args)
 
         chrome.set_debugging_id(debugging_id)
+        start = time.time()
 
         try:
             chrome.load_url(url)
@@ -118,8 +121,9 @@ class ChromeCrawler(object):
             #
             # I need to pause the chrome browser so it doesn't continue loading
             #
-            msg = 'Chrome did not successfully load %s in the given time (did: %s)'
-            args = (url, debugging_id)
+            spent = time.time() - start
+            msg = 'Chrome did not successfully load %s in %.2f seconds (did: %s)'
+            args = (url, spent, debugging_id)
             om.out.debug(msg % args)
 
             try:
@@ -138,8 +142,9 @@ class ChromeCrawler(object):
         # Success! Return the chrome instance to the pool
         self._pool.free(chrome)
 
-        args = (crawler_http_traffic_queue.count, url, chrome, debugging_id)
-        msg = 'Extracted %s new HTTP requests from %s using %s (did: %s)'
+        spent = time.time() - start
+        args = (crawler_http_traffic_queue.count, url, spent, chrome, debugging_id)
+        msg = 'Extracted %s new HTTP requests from %s in %.2f seconds using %s (did: %s)'
         om.out.debug(msg % args)
 
         return True
