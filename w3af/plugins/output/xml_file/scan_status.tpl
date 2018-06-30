@@ -18,18 +18,21 @@
             <input-speed>{{ crawl_input_speed | escape_text }}</input-speed>
             <output-speed>{{ crawl_output_speed | escape_text }}</output-speed>
             <length>{{ crawl_queue_length | escape_text }}</length>
+            <processed-tasks>{{ crawl_queue_processed_tasks | escape_text }}</processed-tasks>
         </crawl>
 
         <audit>
             <input-speed>{{ audit_input_speed | escape_text }}</input-speed>
             <output-speed>{{ audit_output_speed | escape_text }}</output-speed>
             <length>{{ audit_queue_length | escape_text }}</length>
+            <processed-tasks>{{ audit_queue_processed_tasks | escape_text }}</processed-tasks>
         </audit>
 
         <grep>
             <input-speed>{{ grep_input_speed | escape_text }}</input-speed>
             <output-speed>{{ grep_output_speed | escape_text }}</output-speed>
             <length>{{ grep_queue_length | escape_text }}</length>
+            <processed-tasks>{{ grep_queue_processed_tasks | escape_text }}</processed-tasks>
         </grep>
     </queues>
 

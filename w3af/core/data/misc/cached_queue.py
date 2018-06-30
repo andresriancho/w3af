@@ -60,6 +60,7 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
     def __init__(self, maxsize=0, name='Unknown'):
         self.name = name
         self.max_in_memory = maxsize
+        self.processed_tasks = 0
 
         QueueSpeedMeasurement.__init__(self)
 
@@ -69,6 +70,9 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
 
     def get_name(self):
         return self.name
+
+    def get_processed_tasks(self):
+        return self.processed_tasks
 
     def next_item_saved_to_memory(self):
         return len(self.memory) < self.max_in_memory
@@ -148,4 +152,5 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
 
         self._item_left_queue()
         self.get_pointer += 1
+        self.processed_tasks += 1
         return item

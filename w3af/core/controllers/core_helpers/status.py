@@ -217,9 +217,17 @@ class w3af_core_status(object):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else dc._out_queue.qsize()
 
+    def get_crawl_processed_tasks(self):
+        dc = self._w3af_core.strategy._discovery_consumer
+        return None if dc is None else dc._out_queue.get_processed_tasks()
+
     def get_crawl_worker_pool_queue_size(self):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else dc._threadpool._inqueue.qsize()
+
+    def get_grep_processed_tasks(self):
+        dc = self._w3af_core.strategy._grep_consumer
+        return None if dc is None else dc.in_queue.get_processed_tasks()
 
     def get_grep_qsize(self):
         dc = self._w3af_core.strategy._grep_consumer
@@ -263,6 +271,10 @@ class w3af_core_status(object):
     def get_audit_qsize(self):
         ac = self._w3af_core.strategy._audit_consumer
         return None if ac is None else ac.in_queue.qsize()
+
+    def get_audit_processed_tasks(self):
+        ac = self._w3af_core.strategy._audit_consumer
+        return None if ac is None else ac.in_queue.get_processed_tasks()
 
     def get_audit_worker_pool_queue_size(self):
         ac = self._w3af_core.strategy._audit_consumer
@@ -391,17 +403,27 @@ class w3af_core_status(object):
 
             'queues':
                 {'crawl':
-                     {'input_speed': self.get_crawl_input_speed(),
-                      'output_speed': self.get_crawl_output_speed(),
-                      'length': self.get_crawl_qsize()},
+                     {
+                         'input_speed': self.get_crawl_input_speed(),
+                         'output_speed': self.get_crawl_output_speed(),
+                         'length': self.get_crawl_qsize(),
+                         'processed_tasks': self.get_crawl_processed_tasks(),
+                     },
                  'audit':
-                     {'input_speed': self.get_audit_input_speed(),
-                      'output_speed': self.get_audit_output_speed(),
-                      'length': self.get_audit_qsize()},
+                     {
+                         'input_speed': self.get_audit_input_speed(),
+                         'output_speed': self.get_audit_output_speed(),
+                         'length': self.get_audit_qsize(),
+                         'processed_tasks': self.get_audit_processed_tasks(),
+                     },
                  'grep':
-                     {'input_speed': self.get_grep_input_speed(),
-                      'output_speed': self.get_grep_output_speed(),
-                      'length': self.get_grep_qsize()}},
+                     {
+                         'input_speed': self.get_grep_input_speed(),
+                         'output_speed': self.get_grep_output_speed(),
+                         'length': self.get_grep_qsize(),
+                         'processed_tasks': self.get_grep_processed_tasks(),
+                     }
+                },
 
             'eta':
                 {'crawl': self.get_crawl_eta(),
