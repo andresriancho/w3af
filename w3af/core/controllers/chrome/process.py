@@ -40,7 +40,12 @@ class ChromeProcess(object):
              '--headless',
              '--disable-gpu',
              '--window-size=1920,1200',
+
+             # Initial page load performance
              '--homepage=about:blank',
+
+             # Do not load image
+             '--blink-settings=imagesEnabled=false',
 
              # Disable some security features
              '--ignore-certificate-errors',
