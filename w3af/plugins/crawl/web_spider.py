@@ -441,7 +441,9 @@ class web_spider(CrawlPlugin):
         """
         Called when the process ends, prints out the list of broken links.
         """
-        self._chrome_crawler.terminate()
+        if self._chrome_crawler is not None:
+            self._chrome_crawler.terminate()
+
         self._log_broken_links()
 
     def _log_broken_links(self):
