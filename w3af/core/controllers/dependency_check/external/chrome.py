@@ -37,6 +37,12 @@ def chrome_is_installed():
 
 def get_chrome_path():
     paths_to_chrome = []
+
+    # Use the open source version
+    paths_to_chrome.extend(which('chromium'))
+    paths_to_chrome.extend(which('chromium-browser'))
+
+    # Fallback to the closed source one
     paths_to_chrome.extend(which('google-chrome'))
     paths_to_chrome.extend(which('google-chrome-stable'))
 
@@ -48,8 +54,27 @@ def get_chrome_path():
         version = subprocess.check_output('%s --version' % path_to_chrome, shell=True)
         version = version.strip()
 
+        # Chromium 66.0.3359.181 Built on Ubuntu , running on Ubuntu 18.04
+        if 'Chromium ' in version:
+            return path_to_chrome
+
         # Google Chrome 67.0.3396.99
         if 'Google Chrome' in version:
             return path_to_chrome
 
     return None
+
+
+def get_chrome_version():
+    chrome_path = get_chrome_path()
+    version = subprocess.check_output('%s --version' % chrome_path, shell=True)
+    version = version.strip()
+
+    for line in version.split('\n'):
+        if line.startswith('Chromium'):
+            return line
+
+        if line.startswith('Google'):
+            return line
+
+    return version

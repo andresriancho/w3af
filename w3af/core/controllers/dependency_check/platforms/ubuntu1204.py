@@ -36,7 +36,7 @@ class Ubuntu1204(Platform):
                             'python-setuptools', 'build-essential',
                             'libsqlite3-dev', 'libssl-dev', 'git',
                             'libxml2-dev', 'libxslt1-dev', 'libyaml-dev',
-                            'libffi-dev']
+                            'libffi-dev', 'chromium-browser']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
     GUI_SYSTEM_PACKAGES.extend(['graphviz', 'python-gtksourceview2',
@@ -44,6 +44,8 @@ class Ubuntu1204(Platform):
 
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}
+
+    EXTERNAL_COMMAND_HANDLERS = ['retirejs_handler']
 
     def __init__(self):
         super(Ubuntu1204, self).__init__()
@@ -73,17 +75,3 @@ class Ubuntu1204(Platform):
 
     def is_current_platform(self):
         return 'Ubuntu' in platform.dist() and '12.04' in platform.dist()
-
-    def chrome_handler(self):
-        if chrome_is_installed():
-            return []
-
-        return [
-            '#',
-            '# Install Google Chrome',
-            '#',
-            'wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -',
-            'sudo sh -c \'echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list\'',
-            'sudo apt-get update',
-            'sudo apt-get install google-chrome-stable'
-        ]

@@ -68,15 +68,19 @@ class Platform(object):
 
         return [
             '#',
-            '# google-chrome binary is missing. Please install Google Chrome:',
+            '# Chromium browser binary is missing. Please install Chromium or',
+            '# Google Chrome.',
             '#',
-            '#      https://www.google.com/chrome/ ',
+            '# w3af works with both Chromium and Google Chrome. You can either',
+            '# install Chromium using your operating system package manager or',
+            '# browse to Google Chrome site and install it manually.',
             '#',
             '# This message is shown because w3af does not know the commands to',
-            '# install Chrome via the command line in your platform. If you know',
+            '# install Chromium via the command line in your platform. If you know',
             '# how to, please submit the steps here:',
             '# ',
             '#      https://github.com/andresriancho/w3af/issues/17099',
             '# ',
-            '# And we will include the commands in the next release to help others.',
+            '# And we will include the commands in the next w3af release.',
+            '#',
         ]

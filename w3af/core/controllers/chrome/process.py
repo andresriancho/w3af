@@ -27,8 +27,10 @@ import select
 import threading
 import subprocess
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.misc.homeDir import get_home_dir
-from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path
+from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path, get_chrome_version
 
 
 class ChromeProcess(object):
@@ -100,6 +102,10 @@ class ChromeProcess(object):
 
         :return: The method returns right after creating the thread.
         """
+        args = (get_chrome_version(),)
+        msg = 'ChromeProcess is using "%s"'
+        om.out.debug(msg % args)
+
         self.thread = threading.Thread(name='ChromeThread',
                                        target=self.run)
         self.thread.daemon = True
