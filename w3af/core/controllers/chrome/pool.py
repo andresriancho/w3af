@@ -193,11 +193,14 @@ class ChromePool(object):
     def terminate(self):
         om.out.debug('Calling terminate on all chrome instances')
 
-        for chrome in self._free.copy():
-            chrome.terminate()
+        while len(self._free) or len(self._in_use):
+            for chrome in self._free.copy():
+                self.remove(chrome)
 
-        for chrome in self._in_use.copy():
-            chrome.terminate()
+            for chrome in self._in_use.copy():
+                self.remove(chrome)
+
+        om.out.debug('All chrome instances have been terminated')
 
 
 class PoolInstrumentedChrome(InstrumentedChrome):
