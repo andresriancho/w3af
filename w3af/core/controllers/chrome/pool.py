@@ -165,7 +165,7 @@ class ChromePool(object):
             #   * A space in the pool
             #
             # om.out.debug('The chrome pool is full. Waiting...')
-            time.sleep(1)
+            time.sleep(0.2)
             time_waited = time.time() - start_time
 
         raise ChromePoolException('Timed out waiting for a chrome instance')
