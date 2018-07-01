@@ -182,6 +182,9 @@ class ChromePool(object):
             self._in_use.discard(chrome)
             self._free.add(chrome)
             chrome.current_task_start = None
+        else:
+            om.out.debug('Chrome pool bug! Called free() on an instance that'
+                         ' is not marked as in-use by the pool internals.')
 
     def remove(self, chrome):
         self._in_use.discard(chrome)
