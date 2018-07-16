@@ -69,7 +69,7 @@ class w3af_core_status(object):
     def pause(self, pause_yes_no):
         self._paused = pause_yes_no
         self._is_running = not pause_yes_no
-        om.out.debug('The user paused/unpaused the scan.')
+        om.out.debug('The user paused / unpaused the scan.')
 
     def start(self):
         self._is_running = True
@@ -461,17 +461,17 @@ class w3af_core_status(object):
 
         status_str = '%(status)s\n'
 
-        status_str += 'Crawl phase: In (%(cin)s URLs/min)' \
-                      ' Out (%(cout)s URLs/min) Pending (%(clen)s URLs)' \
-                      ' ETA (%(ceta)s)\n'
+        status_str += ('Crawl phase: In (%(cin)s URLs/min)'
+                       ' Out (%(cout)s URLs/min) Pending (%(clen)s URLs)'
+                       ' ETA (%(ceta)s)\n')
 
-        status_str += 'Audit phase: In (%(ain)s URLs/min)' \
-                      ' Out (%(aout)s URLs/min) Pending (%(alen)s URLs)' \
-                      ' ETA (%(aeta)s)\n'
+        status_str += ('Audit phase: In (%(ain)s URLs/min)'
+                       ' Out (%(aout)s URLs/min) Pending (%(alen)s URLs)'
+                       ' ETA (%(aeta)s)\n')
 
-        status_str += 'Grep phase: In (%(gin)s URLs/min)'\
-                      ' Out (%(gout)s URLs/min) Pending (%(glen)s URLs)' \
-                      ' ETA (%(geta)s)\n'
+        status_str += ('Grep phase: In (%(gin)s URLs/min)'
+                       ' Out (%(gout)s URLs/min) Pending (%(glen)s URLs)'
+                       ' ETA (%(geta)s)\n')
 
         status_str += 'Requests per minute: %(rpm)s'
 

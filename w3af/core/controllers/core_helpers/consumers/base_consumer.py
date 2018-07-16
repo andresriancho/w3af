@@ -399,8 +399,7 @@ class BaseConsumer(Process):
         status.set_running_plugin(phase, plugin_name, log=False)
         status.set_current_fuzzable_request(phase, fuzzable_request)
 
-        exception_data = ExceptionData(status, _exception, tb,
-                                       enabled_plugins)
+        exception_data = ExceptionData(status, _exception, tb, enabled_plugins)
         self._out_queue.put(exception_data)
 
     def add_observer(self, observer):

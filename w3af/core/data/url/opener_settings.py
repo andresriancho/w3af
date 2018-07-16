@@ -180,6 +180,7 @@ class OpenerSettings(Configurable):
             return
 
         cj = cookielib.MozillaCookieJar()
+
         try:
             cj.load(cookiejar_file)
         except cookielib.LoadError, cle:
