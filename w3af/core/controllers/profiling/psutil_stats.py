@@ -102,9 +102,15 @@ def dump_psutil():
     # Get the memory usage from ps_mem
     pids_to_show = []
     for pid, pinfo in process_info.iteritems():
-        exe = str(pinfo['exe'])
-        if 'python' in exe and 'w3af' in exe:
+        cmd = ' '.join(pinfo['cmdline'])
+
+        if 'python' in cmd and 'w3af' in cmd:
             pids_to_show.append(pid)
+            continue
+
+        if 'headless' in cmd and 'chrom' in cmd:
+            pids_to_show.append(pid)
+            continue
 
     ps_mem_data = ps_mem_to_json(*get_memory_usage(pids_to_show, True))
 
@@ -150,13 +156,13 @@ def get_threads_cpu_percent(interval=0.1):
 
     # pylint: disable=E1123
     # https://circleci.com/gh/andresriancho/w3af/1927
-    total_percent = proc.get_cpu_percent(interval=interval)
+    total_percent = proc.cpu_percent(interval=interval)
     # pylint: enable=E1101
 
     total_time = sum(proc.cpu_times())
 
     result = {}
-    for thread in proc.get_threads():
+    for thread in proc.threads():
         thread_time = thread.system_time + thread.user_time
         thread_percent = total_percent * (thread_time/total_time)
         result[thread.id] = {'Thread total time': thread_time,
