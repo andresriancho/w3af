@@ -152,6 +152,7 @@ class CoreStrategy(object):
             self._teardown_observers()
 
     def stop(self):
+        om.out.debug('Called strategy.stop()')
         self.terminate()
         
     def pause(self, pause_yes_no):
@@ -164,6 +165,8 @@ class CoreStrategy(object):
         Consume (without processing) all queues with data which are in
         the consumers and then send a poison-pill to that queue.
         """
+        om.out.debug('Called strategy.terminate()')
+
         consumers = {'discovery', 'audit', 'auth', 'bruteforce', 'grep'}
 
         for consumer in consumers:

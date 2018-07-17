@@ -469,6 +469,8 @@ class w3afCore(object):
         """
         This method is called when the process ends normally or by an error.
         """
+        om.out.debug('Called w3afCore.scan_end_hook()')
+
         # The scan has ended, and we've already joined() the consumer threads
         # from strategy (in a nice way, waiting for them to finish before
         # returning from strategy.start call), so this terminate and join call
