@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import sys
 import time
+import select
 
 from multiprocessing.dummy import Process
 
@@ -170,6 +171,15 @@ class rootMenu(menu):
 
         try:
             while self._w3af.status.is_running() or self._w3af.status.is_paused():
+
+                try:
+                    read_ready, _, _ = select.select([sys.stdin], [], [], 0.5)
+                except select.error:
+                    continue
+
+                if not read_ready:
+                    continue
+
                 pressed_key = sys.stdin.read(1)
                 handler = handlers.get(pressed_key, self._default_during_scan_handler)
                 handler()
