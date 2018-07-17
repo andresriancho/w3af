@@ -295,6 +295,8 @@ class w3afCore(object):
             # https://github.com/andresriancho/w3af/issues/1487
             self.status.scan_finished()
 
+            om.out.debug('Finished w3afCore.start()')
+
     @property
     def worker_pool(self):
         """
