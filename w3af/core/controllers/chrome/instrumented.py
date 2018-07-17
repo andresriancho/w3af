@@ -23,6 +23,7 @@ from requests import ConnectionError
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.profiling.utils.ps_mem import get_memory_usage
 from w3af.core.controllers.chrome.devtools import DebugChromeInterface
 from w3af.core.controllers.chrome.process import ChromeProcess
 from w3af.core.controllers.chrome.proxy import LoggingProxy
@@ -131,6 +132,9 @@ class InstrumentedChrome(object):
         self.chrome_conn.Page.navigate(url=url,
                                        timeout=self.PAGE_LOAD_TIMEOUT)
 
+    def load_about_blank(self):
+        self.load_url('about:blank')
+
     def wait_for_load(self):
         """
         Knowing when a page has completed loading is difficult
@@ -203,11 +207,20 @@ class InstrumentedChrome(object):
             args = (e, self.debugging_id)
             om.out.debug(msg % args)
 
+    def get_pid(self):
+        return self.chrome_process.proc.pid if self.chrome_process.proc is not None else None
+
+    def get_memory_usage(self):
+        """
+        :return: The memory usage for the chrome process
+        """
+        private, shared, count, total = get_memory_usage([self.get_pid()], True)
+        return private[0][1], shared.items()[0][1]
+
     def __str__(self):
         proxy_port = self.get_proxy_address()[1]
         devtools_port = self.chrome_process.get_devtools_port()
-
-        pid = self.chrome_process.proc.pid if self.chrome_process.proc is not None else None
+        pid = self.get_pid()
 
         args = (self.id, proxy_port, pid, devtools_port)
         msg = '<InstrumentedChrome (id:%s, proxy:%s, process_id: %s, devtools:%s)>'

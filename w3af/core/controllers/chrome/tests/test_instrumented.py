@@ -67,6 +67,19 @@ class TestInstrumentedChrome(unittest.TestCase):
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
         self.start_and_load(url)
 
+    def test_load_about_blank(self):
+        self.ic.load_about_blank()
+        self.assertEqual(self.http_traffic_queue.qsize(), 0)
+
+    def test_get_pid(self):
+        pid = self.ic.get_pid()
+        self.assertIsInstance(pid, int)
+
+    def test_get_memory_usage(self):
+        private, shared = self.ic.get_memory_usage()
+        self.assertIsInstance(private, float)
+        self.assertIsInstance(shared, float)
+
     def test_start_and_load_https_self_signed(self):
         # Define the HTTP response
         http_response = ('HTTP/1.1 200 Ok\r\n'
