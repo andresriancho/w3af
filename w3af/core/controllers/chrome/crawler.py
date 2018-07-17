@@ -128,18 +128,40 @@ class ChromeCrawler(object):
             args = (url, spent, debugging_id)
             om.out.debug(msg % args)
 
-            try:
-                chrome.stop()
-            except Exception, e:
-                msg = 'Failed to stop chrome browser %s: "%s" (did: %s)'
-                args = (chrome, e, debugging_id)
-                om.out.debug(msg % args)
+        #
+        # Even if the page has successfully loaded (which is a very subjective
+        # term) we click on the stop button to prevent any further requests,
+        # changes, etc.
+        #
+        try:
+            chrome.stop()
+        except Exception, e:
+            msg = 'Failed to stop chrome browser %s: "%s" (did: %s)'
+            args = (chrome, e, debugging_id)
+            om.out.debug(msg % args)
 
-                # Since we got an error we remove this chrome instance from the
-                # pool it might be in an error state
-                self._pool.remove(chrome)
+            # Since we got an error we remove this chrome instance from the
+            # pool it might be in an error state
+            self._pool.remove(chrome)
 
-                raise ChromeCrawlerException('Failed to stop chrome browser')
+            raise ChromeCrawlerException('Failed to stop chrome browser')
+
+        #
+        # In order to remove all the DOM from the chrome instance and clear
+        # some memory we load the about:blank page
+        #
+        try:
+            chrome.load_about_blank()
+        except Exception, e:
+            msg = 'Failed to load about:blank page in chrome browser %s: "%s" (did: %s)'
+            args = (chrome, e, debugging_id)
+            om.out.debug(msg % args)
+
+            # Since we got an error we remove this chrome instance from the
+            # pool it might be in an error state
+            self._pool.remove(chrome)
+
+            raise ChromeCrawlerException('Failed to load about:blank in chrome browser')
 
         # Success! Return the chrome instance to the pool
         self._pool.free(chrome)
