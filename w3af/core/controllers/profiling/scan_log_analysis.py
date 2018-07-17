@@ -80,6 +80,7 @@ GREP_PLUGIN_RE = re.compile('\] (.*?).grep\(uri=".*"\) took (.*?)s to run')
 CHROME_POOL_SIZE = re.compile('Chrome pool stats \(free:(.*?) / in_use:(.*?) / max:(.*?)\)')
 CHROME_POOL_TIMES = re.compile('ChromePool.get\(\) took (.*?) seconds to return an instance')
 CHROME_CRAWL_TIMES = re.compile('Extracted .*? new HTTP requests from .*? in (.*?) seconds using')
+CHROME_MEMORY_USAGE = re.compile('Total chrome memory usage \(private memory\): (.*?)')
 
 
 def _num_formatter(val, chars, delta, left=False):
@@ -158,6 +159,7 @@ def show_scan_stats(scan):
 
     show_chrome_pool_times(scan)
     show_chrome_pool_size(scan)
+    show_chrome_memory_usage(scan)
     show_chrome_crawl_times(scan)
 
     print('')
@@ -1006,6 +1008,51 @@ def show_chrome_pool_size(scan):
     fig.plot(chrome_pool_timestamps,
              chrome_pool_used,
              label='Used chrome instances')
+
+    print(fig.show(legend=True))
+    print('')
+    print('')
+
+
+def show_chrome_memory_usage(scan):
+    scan.seek(0)
+
+    chrome_memory_usage = []
+    chrome_memory_usage_timestamps = []
+
+    for line in scan:
+        match = CHROME_MEMORY_USAGE.search(line)
+        if match:
+            chrome_memory_usage.append(int(match.group(1)))
+            chrome_memory_usage_timestamps.append(get_line_epoch(line))
+
+    # Get the last timestamp to use as max in the graphs
+    first_timestamp = get_first_timestamp(scan)
+    last_timestamp = get_last_timestamp(scan)
+    spent_time_epoch = last_timestamp - first_timestamp
+    chrome_memory_usage_timestamps = [ts - first_timestamp for ts in chrome_memory_usage_timestamps]
+
+    if not chrome_memory_usage_timestamps:
+        print('No chrome pool memory usage data found')
+        return
+
+    print('Chrome pool memory usage')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
+    fig.y_label = 'Total private memory used by chrome pool (kb)'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=spent_time_epoch)
+    fig.set_y_limits(min_=0, max_=None)
+
+    fig.plot(chrome_memory_usage_timestamps,
+             chrome_memory_usage,
+             label='Chrome memory usage')
 
     print(fig.show(legend=True))
     print('')

@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import time
+import itertools
 
 import w3af.core.controllers.output_manager as om
 
@@ -73,7 +74,9 @@ class ChromePool(object):
         if (self.log_counter % self.LOG_STATS_EVERY != 0) and not force:
             return
 
-        # General stats
+        #
+        # Instance use stats
+        #
         in_use = len(self._in_use)
         free = len(self._free)
 
@@ -81,7 +84,36 @@ class ChromePool(object):
         msg = 'Chrome pool stats (free:%s / in_use:%s / max:%s)'
         om.out.debug(msg % args)
 
+        #
+        # Instance memory usage stats
+        #
+        total_private = 0
+        memory_usage = []
+
+        for chrome in itertools.chain(self._in_use.copy(), self._free.copy()):
+            try:
+                private, shared = chrome.get_memory_usage()
+            except Exception, e:
+                om.out.debug('Failed to retrieve the chrome instance memory usage: "%s"' % e)
+                continue
+
+            total_private += private
+            memory_usage.append((chrome.id, private))
+
+        if memory_usage:
+            om.out.debug('Total chrome memory usage (private memory): %s' % total_private)
+
+            def sort_by_usage(a, b):
+                return cmp(b[1], a[1])
+
+            memory_usage.sort(sort_by_usage)
+
+            data = ' '.join('(%s, %s)' % (_id, mem) for (_id, mem) in memory_usage)
+            om.out.debug('Chrome memory usage details: %s' % data)
+
+        #
         # Chrome in use time stats
+        #
         def sort_by_time(c1, c2):
             return cmp(c1.current_task_start, c2.current_task_start)
 
