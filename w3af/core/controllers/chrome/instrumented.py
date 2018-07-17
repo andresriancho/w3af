@@ -151,7 +151,7 @@ class InstrumentedChrome(object):
              'timeout': self.PAGE_LOAD_TIMEOUT},
 
             {'event': 'Page.lifecycleEvent',
-             'name': 'networkIdle',
+             'name': 'networkAlmostIdle',
              'timeout': self.PAGE_LOAD_TIMEOUT}
         ]
 
