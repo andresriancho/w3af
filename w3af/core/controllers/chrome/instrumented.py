@@ -147,18 +147,23 @@ class InstrumentedChrome(object):
         """
         events_to_wait_for = [
             {'event': 'Page.frameStoppedLoading',
-             'name': None},
+             'name': None,
+             'timeout': self.PAGE_LOAD_TIMEOUT},
 
             {'event': 'Page.lifecycleEvent',
-             'name': 'networkIdle'}
+             'name': 'networkIdle',
+             'timeout': self.PAGE_LOAD_TIMEOUT}
         ]
 
         for event in events_to_wait_for:
-            event['timeout'] = self.PAGE_LOAD_TIMEOUT
             matching_message, messages = self.chrome_conn.wait_event(**event)
 
             if matching_message is None:
                 return False
+
+            msg = 'Received %s from Chrome while waiting for page load (did: %s)'
+            args = (event['event'], self.debugging_id)
+            om.out.debug(msg % args)
 
         return True
 
@@ -180,17 +185,23 @@ class InstrumentedChrome(object):
         try:
             self.proxy.stop()
         except Exception, e:
-            om.out.debug('Failed to stop proxy server, exception: "%s"' % e)
+            msg = 'Failed to stop proxy server, exception: "%s" (did: %s)'
+            args = (e, self.debugging_id)
+            om.out.debug(msg % args)
 
         try:
             self.chrome_conn.close()
         except Exception, e:
-            om.out.debug('Failed to close chrome connection, exception: "%s"' % e)
+            msg = 'Failed to close chrome connection, exception: "%s" (did: %s)'
+            args = (e, self.debugging_id)
+            om.out.debug(msg % args)
 
         try:
             self.chrome_process.terminate()
         except Exception, e:
-            om.out.debug('Failed to terminate chrome process, exception: "%s"' % e)
+            msg = 'Failed to terminate chrome process, exception: "%s" (did: %s)'
+            args = (e, self.debugging_id)
+            om.out.debug(msg % args)
 
     def __str__(self):
         proxy_port = self.get_proxy_address()[1]
