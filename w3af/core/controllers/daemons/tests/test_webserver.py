@@ -24,9 +24,9 @@ import unittest
 import tempfile
 import os
 
-from w3af.core.controllers.daemons.webserver import (start_webserver,
-                                                start_webserver_any_free_port)
 from w3af.core.data.constants.ports import REMOTEFILEINCLUDE
+from w3af.core.controllers.daemons.webserver import (start_webserver,
+                                                     start_webserver_any_free_port)
 
 
 class TestWebserver(unittest.TestCase):

@@ -85,7 +85,6 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
         """
         Handle one request, possibly blocking.
         """
-
         fd_sets = select.select([self], [], [], poll_interval)
         if not fd_sets[0]:
             self.server_close()
@@ -119,7 +118,8 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
             time.sleep(0.5)
 
     def shutdown(self):
-        """Stops the serve_forever loop.
+        """
+        Stops the serve_forever loop.
 
         Blocks until the loop has finished. This must be called while
         serve_forever() is running in another thread, or it will
@@ -201,7 +201,8 @@ def start_webserver(ip, port, webroot, handler=WebHandler):
 
 
 def start_webserver_any_free_port(ip, webroot, handler=WebHandler):
-    """Create a http server daemon in any free port available.
+    """
+    Create an http server daemon in any free port.
 
     :param ip: IP address where to bind
     :param webroot: web server's root directory
