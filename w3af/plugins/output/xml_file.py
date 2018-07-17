@@ -90,7 +90,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.3'
+    XML_OUTPUT_VERSION = '2.4'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -662,12 +662,15 @@ class ScanStatus(XMLNode):
         context.crawl_input_speed = self._status['queues']['crawl']['input_speed']
         context.crawl_output_speed = self._status['queues']['crawl']['output_speed']
         context.crawl_queue_length = self._status['queues']['crawl']['length']
+        context.crawl_queue_processed_tasks = self._status['queues']['crawl']['processed_tasks']
         context.audit_input_speed = self._status['queues']['audit']['input_speed']
         context.audit_output_speed = self._status['queues']['audit']['output_speed']
         context.audit_queue_length = self._status['queues']['audit']['length']
+        context.audit_queue_processed_tasks = self._status['queues']['audit']['processed_tasks']
         context.grep_input_speed = self._status['queues']['grep']['input_speed']
         context.grep_output_speed = self._status['queues']['grep']['output_speed']
         context.grep_queue_length = self._status['queues']['grep']['length']
+        context.grep_queue_processed_tasks = self._status['queues']['grep']['processed_tasks']
         context.crawl_eta = self._status['eta']['crawl']
         context.audit_eta = self._status['eta']['audit']
         context.grep_eta = self._status['eta']['grep']

@@ -69,7 +69,7 @@ class w3af_core_status(object):
     def pause(self, pause_yes_no):
         self._paused = pause_yes_no
         self._is_running = not pause_yes_no
-        om.out.debug('The user paused/unpaused the scan.')
+        om.out.debug('The user paused / unpaused the scan.')
 
     def start(self):
         self._is_running = True
@@ -217,9 +217,17 @@ class w3af_core_status(object):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else dc._out_queue.qsize()
 
+    def get_crawl_processed_tasks(self):
+        dc = self._w3af_core.strategy._discovery_consumer
+        return None if dc is None else dc._out_queue.get_processed_tasks()
+
     def get_crawl_worker_pool_queue_size(self):
         dc = self._w3af_core.strategy._discovery_consumer
         return None if dc is None else dc._threadpool._inqueue.qsize()
+
+    def get_grep_processed_tasks(self):
+        dc = self._w3af_core.strategy._grep_consumer
+        return None if dc is None else dc.in_queue.get_processed_tasks()
 
     def get_grep_qsize(self):
         dc = self._w3af_core.strategy._grep_consumer
@@ -263,6 +271,10 @@ class w3af_core_status(object):
     def get_audit_qsize(self):
         ac = self._w3af_core.strategy._audit_consumer
         return None if ac is None else ac.in_queue.qsize()
+
+    def get_audit_processed_tasks(self):
+        ac = self._w3af_core.strategy._audit_consumer
+        return None if ac is None else ac.in_queue.get_processed_tasks()
 
     def get_audit_worker_pool_queue_size(self):
         ac = self._w3af_core.strategy._audit_consumer
@@ -391,17 +403,27 @@ class w3af_core_status(object):
 
             'queues':
                 {'crawl':
-                     {'input_speed': self.get_crawl_input_speed(),
-                      'output_speed': self.get_crawl_output_speed(),
-                      'length': self.get_crawl_qsize()},
+                     {
+                         'input_speed': self.get_crawl_input_speed(),
+                         'output_speed': self.get_crawl_output_speed(),
+                         'length': self.get_crawl_qsize(),
+                         'processed_tasks': self.get_crawl_processed_tasks(),
+                     },
                  'audit':
-                     {'input_speed': self.get_audit_input_speed(),
-                      'output_speed': self.get_audit_output_speed(),
-                      'length': self.get_audit_qsize()},
+                     {
+                         'input_speed': self.get_audit_input_speed(),
+                         'output_speed': self.get_audit_output_speed(),
+                         'length': self.get_audit_qsize(),
+                         'processed_tasks': self.get_audit_processed_tasks(),
+                     },
                  'grep':
-                     {'input_speed': self.get_grep_input_speed(),
-                      'output_speed': self.get_grep_output_speed(),
-                      'length': self.get_grep_qsize()}},
+                     {
+                         'input_speed': self.get_grep_input_speed(),
+                         'output_speed': self.get_grep_output_speed(),
+                         'length': self.get_grep_qsize(),
+                         'processed_tasks': self.get_grep_processed_tasks(),
+                     }
+                },
 
             'eta':
                 {'crawl': self.get_crawl_eta(),
@@ -439,17 +461,17 @@ class w3af_core_status(object):
 
         status_str = '%(status)s\n'
 
-        status_str += 'Crawl phase: In (%(cin)s URLs/min)' \
-                      ' Out (%(cout)s URLs/min) Pending (%(clen)s URLs)' \
-                      ' ETA (%(ceta)s)\n'
+        status_str += ('Crawl phase: In (%(cin)s URLs/min)'
+                       ' Out (%(cout)s URLs/min) Pending (%(clen)s URLs)'
+                       ' ETA (%(ceta)s)\n')
 
-        status_str += 'Audit phase: In (%(ain)s URLs/min)' \
-                      ' Out (%(aout)s URLs/min) Pending (%(alen)s URLs)' \
-                      ' ETA (%(aeta)s)\n'
+        status_str += ('Audit phase: In (%(ain)s URLs/min)'
+                       ' Out (%(aout)s URLs/min) Pending (%(alen)s URLs)'
+                       ' ETA (%(aeta)s)\n')
 
-        status_str += 'Grep phase: In (%(gin)s URLs/min)'\
-                      ' Out (%(gout)s URLs/min) Pending (%(glen)s URLs)' \
-                      ' ETA (%(geta)s)\n'
+        status_str += ('Grep phase: In (%(gin)s URLs/min)'
+                       ' Out (%(gout)s URLs/min) Pending (%(glen)s URLs)'
+                       ' ETA (%(geta)s)\n')
 
         status_str += 'Requests per minute: %(rpm)s'
 

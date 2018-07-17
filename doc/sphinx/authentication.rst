@@ -126,7 +126,7 @@ using a text editor, replacing the example values:
 .. code-block:: none
 
     # Netscape HTTP Cookie File
-    .netscape.com     TRUE   /  FALSE  946684799   NETSCAPE_ID  100103
+    .netscape.com   TRUE    /   FALSE   946684799   NETSCAPE_ID 100103
 
 Once the file is created set the ``cookie_jar_file`` setting in the ``http-settings``
 menu to point to it.
@@ -134,6 +134,10 @@ menu to point to it.
 .. warning::
     Make sure the file you've created follows the specification, Python's cookie
     parser is really strict and won't load cookies if any errors are found.
+
+    The most common errors are to omit the dot at the beginning of the domain name
+    (see .netscape.com) and to use spaces instead of tabs as a field separator
+    (the example above uses tabs but the HTML renderer might replace it with spaces).
 
 .. warning::
     Configure the ``crawl.web_spider`` plugin to ignore the logout link. This is

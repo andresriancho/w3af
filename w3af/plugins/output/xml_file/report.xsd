@@ -152,6 +152,7 @@
                     <xs:element type="xs:string" name="input-speed"/>
                     <xs:element type="xs:string" name="output-speed"/>
                     <xs:element type="xs:string" name="length"/>
+                    <xs:element type="xs:string" name="processed-tasks"/>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
@@ -161,6 +162,7 @@
                     <xs:element type="xs:string" name="input-speed"/>
                     <xs:element type="xs:string" name="output-speed"/>
                     <xs:element type="xs:string" name="length"/>
+                    <xs:element type="xs:string" name="processed-tasks"/>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
@@ -170,6 +172,7 @@
                     <xs:element type="xs:string" name="input-speed"/>
                     <xs:element type="xs:string" name="output-speed"/>
                     <xs:element type="xs:string" name="length"/>
+                    <xs:element type="xs:string" name="processed-tasks"/>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
