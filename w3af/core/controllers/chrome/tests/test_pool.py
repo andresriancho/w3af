@@ -31,8 +31,8 @@ class TestChromePool(unittest.TestCase):
         self.uri_opener = ExtendedUrllib()
         self.http_traffic_queue = Queue.Queue()
 
-        self.pool = ChromePool(self.uri_opener)
-        self.pool.MAX_INSTANCES = 2
+        self.pool = ChromePool(self.uri_opener,
+                               max_instances=2)
 
     def tearDown(self):
         self.pool.terminate()
