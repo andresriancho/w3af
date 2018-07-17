@@ -562,9 +562,14 @@ def show_consumer_pool_size(scan):
         return
 
     print('Idle thread pool workers over time')
-    print('    Latest idle audit workers %s%%' % consumer_pool_perc_audit[-1])
-    print('    Latest idle crawl-infra workers %s%%' % consumer_pool_perc_crawl[-1])
     print('    Latest idle core workers %s%%' % worker_pool_perc[-1])
+
+    if consumer_pool_perc_audit:
+        print('    Latest idle audit workers %s%%' % consumer_pool_perc_audit[-1])
+
+    if consumer_pool_perc_crawl:
+        print('    Latest idle crawl-infra workers %s%%' % consumer_pool_perc_crawl[-1])
+
     print('')
 
     fig = plotille.Figure()
