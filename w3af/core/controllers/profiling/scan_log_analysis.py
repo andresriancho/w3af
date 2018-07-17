@@ -981,7 +981,7 @@ def show_chrome_crawl_times(scan):
         print('No chrome pool time data found')
         return
 
-    print('Chrome pool times')
+    print('Chrome crawl times')
     print('')
 
     fig = plotille.Figure()
