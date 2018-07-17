@@ -397,7 +397,8 @@ def get_memory_usage(pids_to_show, split_args, include_self=False, only_self=Fal
         try:
             private, shared, mem_id = getMemStats(pid)
         except (RuntimeError, OSError):
-            continue #process gone
+            # process gone
+            continue
         if shareds.get(cmd):
             if have_pss: #add shared portion of PSS together
                 shareds[cmd] += shared
