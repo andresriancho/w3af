@@ -39,8 +39,8 @@ def get_chrome_path():
     paths_to_chrome = []
 
     # Use the open source version
-    paths_to_chrome.extend(which('chromium'))
-    paths_to_chrome.extend(which('chromium-browser'))
+    #paths_to_chrome.extend(which('chromium'))
+    #paths_to_chrome.extend(which('chromium-browser'))
 
     # Fallback to the closed source one
     paths_to_chrome.extend(which('google-chrome'))
