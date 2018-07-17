@@ -30,6 +30,7 @@ class TestChromePool(unittest.TestCase):
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
         self.http_traffic_queue = Queue.Queue()
+        self.http_traffic_queue.debugging_id = 'abcd1234'
 
         self.pool = ChromePool(self.uri_opener,
                                max_instances=2)

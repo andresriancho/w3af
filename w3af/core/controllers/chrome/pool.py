@@ -62,7 +62,7 @@ class ChromePool(object):
         self.log_counter = 0
         self.max_instances_configured = max_instances or self.MAX_INSTANCES
 
-    def log_stats(self):
+    def log_stats(self, force=False):
         """
         Log stats every N requests for a chrome instance
 
@@ -70,7 +70,7 @@ class ChromePool(object):
         """
         # Log this information only once every N requests
         self.log_counter += 1
-        if self.log_counter % self.LOG_STATS_EVERY != 0:
+        if (self.log_counter % self.LOG_STATS_EVERY != 0) and not force:
             return
 
         # General stats
@@ -113,9 +113,9 @@ class ChromePool(object):
         """
         self.log_stats()
 
-        start = time.time()
         time_waited = 0
         start_time = time.time()
+        debugging_id = http_traffic_queue.debugging_id
 
         while time_waited < timeout:
             #
@@ -132,11 +132,14 @@ class ChromePool(object):
                     chrome.current_task_start = time.time()
                     chrome.set_traffic_queue(http_traffic_queue)
 
-                    om.out.debug('Found chrome instance in free set: %s' % chrome)
+                    msg = 'Found chrome instance in free set: %s (did: %s)'
+                    args = (chrome, debugging_id)
+                    om.out.debug(msg % args)
 
-                    spent = time.time() - start
-                    msg = 'ChromePool.get() took %.2f seconds to return an instance'
-                    om.out.debug(msg % spent)
+                    msg = 'ChromePool.get() took %.2f seconds to return an instance (did: %s)'
+                    spent = time.time() - start_time
+                    args = (spent, debugging_id)
+                    om.out.debug(msg % args)
 
                     return chrome
 
@@ -146,17 +149,21 @@ class ChromePool(object):
             #
             chrome_instances = len(self._free) + len(self._in_use)
             if chrome_instances < self.max_instances_configured:
+                om.out.debug('Creating new chrome instance (did: %s)' % debugging_id)
+
                 chrome = PoolInstrumentedChrome(self._uri_opener,
                                                 http_traffic_queue)
                 chrome.current_task_start = time.time()
 
                 self._in_use.add(chrome)
 
-                om.out.debug('Created new chrome instance: %s' % chrome)
+                args = (chrome, debugging_id)
+                om.out.debug('Created new chrome instance: %s (did: %s)' % args)
 
-                spent = time.time() - start
-                msg = 'ChromePool.get() took %.2f seconds to return an instance'
-                om.out.debug(msg % spent)
+                spent = time.time() - start_time
+                args = (spent, debugging_id)
+                msg = 'ChromePool.get() took %.2f seconds to return an instance (did: %s)'
+                om.out.debug(msg % args)
 
                 return chrome
 
@@ -169,6 +176,7 @@ class ChromePool(object):
             time.sleep(0.2)
             time_waited = time.time() - start_time
 
+        self.log_stats(force=True)
         raise ChromePoolException('Timed out waiting for a chrome instance')
 
     def free(self, chrome):
