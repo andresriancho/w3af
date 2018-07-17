@@ -38,14 +38,16 @@ class ChromeCrawler(object):
         * Send the HTTP requests to the caller
     """
 
-    def __init__(self, uri_opener):
+    def __init__(self, uri_opener, max_instances=None):
         """
 
         :param uri_opener: The uri opener required by the InstrumentedChrome
                            instances to open URLs via the HTTP proxy daemon.
+        :param max_instances: Max number of Chrome processes to spawn. Use None
+                              to let the pool decide what is the max.
         """
         self._uri_opener = uri_opener
-        self._pool = ChromePool(self._uri_opener)
+        self._pool = ChromePool(self._uri_opener, max_instances=max_instances)
 
     def crawl(self, url, http_traffic_queue):
         """

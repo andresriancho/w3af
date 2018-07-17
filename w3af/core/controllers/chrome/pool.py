@@ -51,7 +51,7 @@ class ChromePool(object):
     # Log statistics every N requests
     LOG_STATS_EVERY = 20
 
-    def __init__(self, uri_opener):
+    def __init__(self, uri_opener, max_instances=None):
         # Store for InstrumentedChrome instances
         self._in_use = set()
         self._free = set()
@@ -60,6 +60,7 @@ class ChromePool(object):
         self._uri_opener = uri_opener
 
         self.log_counter = 0
+        self.max_instances_configured = max_instances or self.MAX_INSTANCES
 
     def log_stats(self):
         """
@@ -76,7 +77,7 @@ class ChromePool(object):
         in_use = len(self._in_use)
         free = len(self._free)
 
-        args = (free, in_use, self.MAX_INSTANCES)
+        args = (free, in_use, self.max_instances_configured)
         msg = 'Chrome pool stats (free:%s / in_use:%s / max:%s)'
         om.out.debug(msg % args)
 
@@ -144,7 +145,7 @@ class ChromePool(object):
             # is enough space in the pool)
             #
             chrome_instances = len(self._free) + len(self._in_use)
-            if chrome_instances < self.MAX_INSTANCES:
+            if chrome_instances < self.max_instances_configured:
                 chrome = PoolInstrumentedChrome(self._uri_opener,
                                                 http_traffic_queue)
                 chrome.current_task_start = time.time()

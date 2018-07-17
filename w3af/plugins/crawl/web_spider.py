@@ -32,6 +32,7 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.chrome.crawler import ChromeCrawler, ChromeCrawlerException
+from w3af.core.controllers.chrome.pool import ChromePool
 
 from w3af.core.data.parsers.utils.header_link_extract import headers_url_generator
 from w3af.core.data.db.variant_db import VariantDB
@@ -42,7 +43,7 @@ from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_types import BOOL, REGEX
+from w3af.core.data.options.option_types import BOOL, REGEX, INT
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
@@ -75,8 +76,12 @@ class web_spider(CrawlPlugin):
         # User configured variables
         self._ignore_regex = ''
         self._follow_regex = '.*'
-        self._only_forward = False
         self._compile_re()
+
+        self._only_forward = False
+
+        self._enable_js_crawler = True
+        self._chrome_processes = ChromePool.MAX_INSTANCES
 
     def crawl(self, fuzzable_req):
         """
@@ -319,8 +324,12 @@ class web_spider(CrawlPlugin):
         :param fuzzable_req: The HTTP request to use as starting point
         :return: None, new fuzzable requests are written to the output queue
         """
+        if not self._enable_js_crawler:
+            return
+
         if self._chrome_crawler is None:
-            self._chrome_crawler = ChromeCrawler(self._uri_opener)
+            self._chrome_crawler = ChromeCrawler(self._uri_opener,
+                                                 max_instances=self._chrome_processes)
 
         # TODO: Add support for fuzzable requests with POST
         if fuzzable_req.get_method() != 'GET':
@@ -497,6 +506,16 @@ class web_spider(CrawlPlugin):
         o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX)
         ol.add(o)
 
+        d = 'Enable / disable the JavaScript crawler'
+        o = opt_factory('enable_js_crawler', self._enable_js_crawler, d, BOOL)
+        ol.add(o)
+
+        d = 'Control the number of concurrent Chrome (or Chromium) processes'
+        h = ('More Chrome processes will increase the crawling speed, but will'
+             ' also consume more resources (mainly memory).')
+        o = opt_factory('chrome_processes', self._chrome_processes, d, INT, help=h)
+        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -508,9 +527,13 @@ class web_spider(CrawlPlugin):
         :return: No value is returned.
         """
         self._only_forward = options_list['only_forward'].get_value()
+
         self._ignore_regex = options_list['ignore_regex'].get_value()
         self._follow_regex = options_list['follow_regex'].get_value()
         self._compile_re()
+
+        self._enable_js_crawler = options_list['enable_js_crawler'].get_value()
+        self._chrome_processes = options_list['chrome_processes'].get_value()
 
     def _compile_re(self):
         """
@@ -540,7 +563,7 @@ class web_spider(CrawlPlugin):
         This plugin is a classic web spider, it will request a URL and extract
         all links and forms from the response.
 
-        Three configurable parameter exist:
+        These configurable parameters control the crawler:
             - only_forward
             - ignore_regex
             - follow_regex
@@ -557,6 +580,19 @@ class web_spider(CrawlPlugin):
 
         The regular expressions are applied to the URLs that are found using the
         match function.
+        
+        These parameters control the JavaScript crawler:
+            - enable_js_crawler
+            - chrome_processes
+        
+        enable_js_crawler enables and disables the JavaScript crawler. By default
+        the crawler is enabled and allows the scanner to identify more resources
+        in the target web application.
+        
+        chrome_processes controls the number of concurrent Chrome (or Chromium)
+        processes that the scanner will use to crawl the site. More processes
+        will increase the crawl speed, but also consume more resources (mainly
+        memory usage).
         """
 
 
