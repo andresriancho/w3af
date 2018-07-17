@@ -316,6 +316,36 @@ class web_spider(CrawlPlugin):
             self._verify_reference,
             self._urls_to_verify_generator(resp, fuzzable_req))
 
+    def _should_crawl_with_chrome(self, response, fuzzable_req):
+        """
+        :return: True if we should crawl this fuzzable request with Chrome
+        """
+        if not self._enable_js_crawler:
+            return False
+
+        # TODO: Add support for fuzzable requests with POST
+        if fuzzable_req.get_method() != 'GET':
+            return False
+
+        # Only crawl responses that will be rendered
+        if 'html' not in response.content_type.lower():
+            return False
+
+        # Only crawl URIs once
+        uri = fuzzable_req.get_uri()
+        if uri in self._crawled_with_chrome:
+            return False
+
+        self._crawled_with_chrome.add(uri)
+        return True
+
+    def _get_chrome_crawler(self):
+        if self._chrome_crawler is None:
+            self._chrome_crawler = ChromeCrawler(self._uri_opener,
+                                                 max_instances=self._chrome_processes)
+
+        return self._chrome_crawler
+
     def _crawl_with_chrome(self, response, fuzzable_req):
         """
         Crawl the URL using Chrome.
@@ -324,34 +354,18 @@ class web_spider(CrawlPlugin):
         :param fuzzable_req: The HTTP request to use as starting point
         :return: None, new fuzzable requests are written to the output queue
         """
-        if not self._enable_js_crawler:
+        if not self._should_crawl_with_chrome(response, fuzzable_req):
             return
 
-        if self._chrome_crawler is None:
-            self._chrome_crawler = ChromeCrawler(self._uri_opener,
-                                                 max_instances=self._chrome_processes)
-
-        # TODO: Add support for fuzzable requests with POST
-        if fuzzable_req.get_method() != 'GET':
-            return
-
-        # Only crawl responses that will be rendered
-        if 'html' not in response.content_type.lower():
-            return
-
-        # Only crawl URIs once
+        chrome_crawler = self._get_chrome_crawler()
         uri = fuzzable_req.get_uri()
-        if uri in self._crawled_with_chrome:
-            return
-
-        self._crawled_with_chrome.add(uri)
 
         http_traffic_queue = CrawlFilterQueue(self,
                                               self._should_verify_extracted_url,
                                               response)
 
         try:
-            self._chrome_crawler.crawl(uri, http_traffic_queue)
+            chrome_crawler.crawl(uri, http_traffic_queue)
         except ChromeCrawlerException, cce:
             args = (uri, cce)
             msg = 'Failed to crawl %s using chrome crawler: "%s"'
