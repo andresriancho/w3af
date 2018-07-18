@@ -115,7 +115,7 @@ class credit_cards(GrepPlugin):
         for match_set in match_list:
             possible_cc = match_set[0]
             possible_cc = possible_cc.strip()
-            
+
             if luhnCheck(possible_cc):
                 res.append(possible_cc)
 
