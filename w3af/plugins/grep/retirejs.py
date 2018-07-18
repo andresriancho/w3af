@@ -32,6 +32,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.misc.which import which
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.kb.vuln import Vuln
 
@@ -148,7 +149,8 @@ class retirejs(GrepPlugin):
         #
         # Avoid running this plugin twice on the same file content
         #
-        response_hash = hashlib.md5(response.get_body()).hexdigest()
+        body = smart_str_ignore(response.get_body())
+        response_hash = hashlib.md5(body).hexdigest()
 
         if response_hash in self._analyzed_hashes:
             return False
