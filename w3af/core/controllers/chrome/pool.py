@@ -112,7 +112,7 @@ class ChromePool(object):
             memory_usage.sort(sort_by_usage)
 
             data = ' '.join('(%s, %s)' % (_id, mem) for (_id, mem) in memory_usage)
-            om.out.debug('Chrome memory usage details: %s' % data)
+            om.out.debug('Chrome memory usage details (id, kb): %s' % data)
 
         #
         # Chrome in use time stats

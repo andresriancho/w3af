@@ -360,7 +360,7 @@ class web_spider(CrawlPlugin):
         chrome_crawler = self._get_chrome_crawler()
         uri = fuzzable_req.get_uri()
 
-        http_traffic_queue = CrawlFilterQueue(self,
+        http_traffic_queue = CrawlFilterQueue(self.output_queue,
                                               self._should_verify_extracted_url,
                                               response)
 
@@ -611,10 +611,10 @@ class web_spider(CrawlPlugin):
 
 
 class CrawlFilterQueue(object):
-    def __init__(self, _web_spider, should_analyze, response):
-        self._web_spider = _web_spider
-        self._response = response
+    def __init__(self, output_queue, should_analyze, response):
+        self._output_queue = output_queue
         self._should_analyze = should_analyze
+        self._response = response
 
     def put(self, (request, response)):
         """
@@ -630,5 +630,5 @@ class CrawlFilterQueue(object):
         if not self._should_analyze(ref, self._response):
             return False
 
-        self._web_spider.output_queue.put(request)
+        self._output_queue.put(request)
         return True
