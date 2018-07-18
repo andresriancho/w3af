@@ -38,10 +38,15 @@ def get_chrome_path():
     paths_to_chrome = []
 
     chrome_binaries = [
+        # We prefer Google Chrome (if installed)
+        'google-chrome',
+        'google-chrome-stable',
+
+        # For some reason I had no time to debug the open source chrome
+        # is slower than the closed source version (for running the test
+        # suite, not seeing this in real scans).
         'chromium',
         'chromium-browser',
-        'google-chrome',
-        'google-chrome-stable'
     ]
 
     for chrome_binary in chrome_binaries:
@@ -71,6 +76,13 @@ def get_chrome_path():
             return path_to_chrome
 
     return None
+
+
+def is_chromium(path):
+    if path is None:
+        return False
+
+    return 'chromium' in path.lower()
 
 
 def get_chrome_version():
