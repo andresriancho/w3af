@@ -93,6 +93,10 @@ class DebugChromeInterface(ChromeInterface):
         self.debug('Received message from Chrome: %s' % data)
         return data
 
+    def close(self):
+        super(DebugChromeInterface, self).close()
+        self.ws = None
+
     def wait_result(self, result_id, timeout=None):
         timeout = timeout if timeout is not None else self.timeout
         start_time = time.time()

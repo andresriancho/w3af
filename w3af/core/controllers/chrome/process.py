@@ -180,10 +180,15 @@ class ChromeProcess(object):
                 # In some cases the process is already dead, calling terminate()
                 # will try to kill a process that doesn't exist anymore
                 pass
+            finally:
+                self.proc = None
 
         if self.thread is not None:
             self.thread.join()
             self.thread = None
+
+        self.stdout = []
+        self.stderr = []
 
     def store_stdout(self, stdout_data):
         """

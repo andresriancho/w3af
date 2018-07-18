@@ -99,3 +99,7 @@ class LoggingProxy(Proxy):
     def set_traffic_queue(self, http_traffic_queue):
         self.queue = http_traffic_queue
 
+    def stop(self):
+        super(LoggingProxy, self).stop()
+        self.set_traffic_queue(None)
+        self.set_debugging_id(None)

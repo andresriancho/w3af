@@ -207,6 +207,10 @@ class InstrumentedChrome(object):
             args = (e, self.debugging_id)
             om.out.debug(msg % args)
 
+        self.proxy = None
+        self.chrome_process = None
+        self.chrome_conn = None
+
     def get_pid(self):
         return self.chrome_process.get_parent_pid() if self.chrome_process is not None else None
 
