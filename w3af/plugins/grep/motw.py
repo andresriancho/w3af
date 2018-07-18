@@ -34,16 +34,13 @@ class motw(GrepPlugin):
     Identify whether the page is compliant to mark of the web.
     :author: Sharad Ganapathy sharadgana |at| gmail.com
     """
+
+    STRING_MATCH = 'saved from url='
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        # The following regex matches a valid url as well as the text
-        # about:internet. Also it validates the number in the parenthesis.
-        # It should be a 4 digit number and must tell about the length of the
-        # URL that follows
-        regex = r"""<!--\s*saved from url=\(([\d]{4})\)(https?://([-\w\.]+)"""
-        regex += r"""+(:\d+)?(/([\w/_\.]*(\?\S+)?)?)?|about:internet)\s{1}\-\->"""
-        self._motw_re = re.compile(regex)
+        self._motw_re = re.compile('<!--\s*saved from url=\((\d\d\d\d)\)(.*?)\s*-->')
 
     def grep(self, request, response):
         """
@@ -58,8 +55,14 @@ class motw(GrepPlugin):
         
         if is_404(response):
             return
+
+        body = response.get_body()
+        body = body[:2048]
         
-        motw_match = self._motw_re.search(response.get_body())
+        if self.STRING_MATCH not in body:
+            return
+
+        motw_match = self._motw_re.search(body)
 
         if not motw_match:
             return
@@ -117,15 +120,10 @@ class motw(GrepPlugin):
         return """
         This plugin will specify whether the page is compliant against the MOTW
         standard. The standard is explained in:
+        
             - http://msdn2.microsoft.com/en-us/library/ms537628.aspx
 
         This plugin tests if the length of the URL specified by "(XYZW)" is
         lower, equal or greater than the length of the URL; and also reports the
         existence of this tag in the body of all analyzed pages.
-
-        One configurable parameter exists:
-            - withoutMOTW
-
-        If "withoutMOTW" is enabled, the plugin will show all URLs that don't
-        contain a MOTW.
         """
