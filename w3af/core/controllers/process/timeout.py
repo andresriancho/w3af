@@ -64,6 +64,11 @@ class SubProcessWithTimeout(object):
         if thread.is_alive():
             if self.process is not None:
                 self.process.terminate()
-            thread.join()
+
+            # The timeout here gives the subprocess time to finish, and
+            # protects me from race conditions in thread.is_alive() which might
+            # lead to an endless loop waiting for a thread that already finished
+            # to join().
+            thread.join(timeout=1)
 
         return self.returncode, self.stdout, self.stderr
