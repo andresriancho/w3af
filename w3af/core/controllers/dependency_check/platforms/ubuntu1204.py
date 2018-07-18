@@ -24,7 +24,6 @@ import platform
 
 from .base_platform import Platform
 from ..requirements import CORE, GUI
-from ..external.chrome import chrome_is_installed
 
 
 class Ubuntu1204(Platform):
