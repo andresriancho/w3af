@@ -37,7 +37,9 @@ from w3af.core.controllers.dependency_check.external.chrome import get_chrome_pa
 
 class ChromeProcess(object):
 
-    CHROME_PATH = get_chrome_path()
+    CHROME_PATH = None
+    CHROME_VERSION = None
+
     DEFAULT_FLAGS = [
              '--headless',
              '--disable-gpu',
@@ -98,7 +100,19 @@ class ChromeProcess(object):
         if self.proxy_port and self.proxy_host:
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
 
-        return self.CHROME_PATH, flags
+        return self.get_chrome_path(), flags
+
+    def get_chrome_path(self):
+        if self.CHROME_PATH is None:
+            self.CHROME_PATH = get_chrome_path()
+
+        return self.CHROME_PATH
+
+    def get_chrome_version(self):
+        if self.CHROME_VERSION is None:
+            self.CHROME_VERSION = get_chrome_version()
+
+        return self.CHROME_VERSION
 
     def start(self):
         """
@@ -106,7 +120,7 @@ class ChromeProcess(object):
 
         :return: The method returns right after creating the thread.
         """
-        args = (get_chrome_version(),)
+        args = (self.get_chrome_version(),)
         msg = 'ChromeProcess is using "%s"'
         om.out.debug(msg % args)
 

@@ -19,9 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import subprocess
-
 from w3af.core.controllers.misc.which import which
+from w3af.core.controllers.process.timeout import SubProcessWithTimeout
 
 
 def chrome_is_installed():
@@ -52,20 +51,21 @@ def get_chrome_path():
     for path_to_chrome in paths_to_chrome:
 
         cmd = [path_to_chrome, '--version']
+        timeout_process = SubProcessWithTimeout(cmd)
 
-        try:
-            version = subprocess.check_output(cmd)
-        except subprocess.CalledProcessError:
+        timeout_process.run(timeout=2)
+        if timeout_process.returncode != 0:
             continue
 
-        version = version.strip()
+        output = timeout_process.stdout
+        output = output.strip()
 
         # Chromium 66.0.3359.181 Built on Ubuntu , running on Ubuntu 18.04
-        if 'Chromium ' in version:
+        if 'Chromium ' in output:
             return path_to_chrome
 
         # Google Chrome 67.0.3396.99
-        if 'Google Chrome' in version:
+        if 'Google Chrome' in output:
             return path_to_chrome
 
     return None
@@ -74,12 +74,13 @@ def get_chrome_path():
 def get_chrome_version():
     path_to_chrome = get_chrome_path()
     cmd = [path_to_chrome, '--version']
+    timeout_process = SubProcessWithTimeout(cmd)
 
-    try:
-        version = subprocess.check_output(cmd)
-    except subprocess.CalledProcessError:
+    timeout_process.run(timeout=2)
+    if timeout_process.returncode != 0:
         return None
-    
+
+    version = timeout_process.stdout
     version = version.strip()
 
     for line in version.split('\n'):
