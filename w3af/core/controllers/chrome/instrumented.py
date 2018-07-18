@@ -116,6 +116,9 @@ class InstrumentedChrome(object):
         # Disable certificate validation
         self.chrome_conn.Security.setIgnoreCertificateErrors(ignore=True)
 
+        # Disable CSP
+        self.chrome_conn.Page.setBypassCSP(enabled=False)
+
         # Enable events
         self.chrome_conn.Page.enable()
         self.chrome_conn.Page.setLifecycleEventsEnabled(enabled=True)
