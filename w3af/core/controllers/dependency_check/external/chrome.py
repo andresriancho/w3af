@@ -51,7 +51,13 @@ def get_chrome_path():
 
     for path_to_chrome in paths_to_chrome:
 
-        version = subprocess.check_output('%s --version' % path_to_chrome, shell=True)
+        cmd = [path_to_chrome, '--version']
+
+        try:
+            version = subprocess.check_output(cmd)
+        except subprocess.CalledProcessError:
+            continue
+
         version = version.strip()
 
         # Chromium 66.0.3359.181 Built on Ubuntu , running on Ubuntu 18.04
@@ -66,8 +72,14 @@ def get_chrome_path():
 
 
 def get_chrome_version():
-    chrome_path = get_chrome_path()
-    version = subprocess.check_output('%s --version' % chrome_path, shell=True)
+    path_to_chrome = get_chrome_path()
+    cmd = [path_to_chrome, '--version']
+
+    try:
+        version = subprocess.check_output(cmd)
+    except subprocess.CalledProcessError:
+        return None
+    
     version = version.strip()
 
     for line in version.split('\n'):
