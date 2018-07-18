@@ -23,8 +23,9 @@ import os
 import sys
 import json
 
-from .utils.ps_mem import get_memory_usage, cmd_with_count
-from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
+from w3af.core.controllers.profiling.utils.ps_mem import get_memory_usage, cmd_with_count
+from w3af.core.controllers.profiling.utils import get_filename_fmt, dump_data_every_thread, cancel_thread
+from w3af.core.controllers.threads.is_main_process import is_main_process
 
 
 PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.psutil'
@@ -129,7 +130,8 @@ def dump_psutil():
                    'ps_mem': ps_mem_data,
                    'Disk IO counters': psutil.disk_io_counters(),
                    'Disk usage': disk_usage,
-                   'Thread CPU usage': get_threads_cpu_percent()}
+                   'Thread CPU usage': get_threads_cpu_percent(),
+                   'Main Process': is_main_process()}
     
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
 
