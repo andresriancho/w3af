@@ -27,6 +27,8 @@ import select
 import threading
 import subprocess
 
+import psutil
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.homeDir import get_home_dir
@@ -96,10 +98,7 @@ class ChromeProcess(object):
         if self.proxy_port and self.proxy_host:
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
 
-        flags = ' '.join(flags)
-
-        cmd = '%s %s' % (self.CHROME_PATH, flags)
-        return cmd
+        return self.CHROME_PATH, flags
 
     def start(self):
         """
@@ -130,8 +129,11 @@ class ChromeProcess(object):
         (stdout_r, stdout_w) = os.pipe()
         (stderr_r, stderr_w) = os.pipe()
 
-        self.proc = subprocess.Popen(self.get_cmd(),
-                                     shell=True,
+        cmd, flags = self.get_cmd()
+        cmd = [cmd]
+        cmd.extend(flags)
+
+        self.proc = subprocess.Popen(cmd,
                                      stdout=stdout_w,
                                      stderr=stderr_w,
                                      close_fds=True,
@@ -232,3 +234,22 @@ class ChromeProcess(object):
 
         devtools_port = match_object.group(1)
         self.devtools_port = int(devtools_port)
+
+    def get_parent_pid(self):
+        return self.proc.pid if self.proc is not None else None
+
+    def get_children_pids(self):
+        parent_pid = self.get_parent_pid()
+
+        if not parent_pid:
+            # The process might have died
+            return []
+
+        try:
+            parent = psutil.Process(parent_pid)
+        except psutil.NoSuchProcess:
+            # The process might have died
+            return []
+
+        children = parent.children(recursive=True)
+        return [c.pid for c in children]

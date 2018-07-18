@@ -208,14 +208,31 @@ class InstrumentedChrome(object):
             om.out.debug(msg % args)
 
     def get_pid(self):
-        return self.chrome_process.proc.pid if self.chrome_process.proc is not None else None
+        return self.chrome_process.get_parent_pid() if self.chrome_process is not None else None
 
     def get_memory_usage(self):
         """
-        :return: The memory usage for the chrome process
+        :return: The memory usage for the chrome process (parent) and all its
+                 children (chrome uses various processes for rendering HTML)
         """
-        private, shared, count, total = get_memory_usage([self.get_pid()], True)
-        return private[0][1], shared.items()[0][1]
+        parent = self.chrome_process.get_parent_pid()
+        children = self.chrome_process.get_children_pids()
+
+        if parent is None:
+            return None, None
+
+        _all = [parent]
+        _all.extend(children)
+
+        private, shared, count, total = get_memory_usage(_all, True)
+
+        private = sum(p[1] for p in private)
+        private = int(private)
+
+        shared = sum(s[1] for s in shared.items())
+        shared = int(shared)
+
+        return private, shared
 
     def __str__(self):
         proxy_port = self.get_proxy_address()[1]

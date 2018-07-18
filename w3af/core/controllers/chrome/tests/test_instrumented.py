@@ -77,8 +77,8 @@ class TestInstrumentedChrome(unittest.TestCase):
 
     def test_get_memory_usage(self):
         private, shared = self.ic.get_memory_usage()
-        self.assertIsInstance(private, float)
-        self.assertIsInstance(shared, float)
+        self.assertIsInstance(private, int)
+        self.assertIsInstance(shared, int)
 
     def test_start_and_load_https_self_signed(self):
         # Define the HTTP response

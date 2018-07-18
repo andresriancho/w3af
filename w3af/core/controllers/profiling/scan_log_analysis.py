@@ -80,7 +80,7 @@ GREP_PLUGIN_RE = re.compile('\] (.*?).grep\(uri=".*"\) took (.*?)s to run')
 CHROME_POOL_SIZE = re.compile('Chrome pool stats \(free:(.*?) / in_use:(.*?) / max:(.*?)\)')
 CHROME_POOL_TIMES = re.compile('ChromePool.get\(\) took (.*?) seconds to return an instance')
 CHROME_CRAWL_TIMES = re.compile('Extracted .*? new HTTP requests from .*? in (.*?) seconds using')
-CHROME_MEMORY_USAGE = re.compile('Total chrome memory usage \(private memory\): (.*)')
+CHROME_MEMORY_USAGE = re.compile('Total chrome memory usage \(private memory\): (.*) kb')
 
 
 def _num_formatter(val, chars, delta, left=False):

@@ -97,11 +97,14 @@ class ChromePool(object):
                 om.out.debug('Failed to retrieve the chrome instance memory usage: "%s"' % e)
                 continue
 
+            if private is None:
+                continue
+
             total_private += private
             memory_usage.append((chrome.id, private))
 
         if memory_usage:
-            om.out.debug('Total chrome memory usage (private memory): %s' % total_private)
+            om.out.debug('Total chrome memory usage (private memory): %s kb' % total_private)
 
             def sort_by_usage(a, b):
                 return cmp(b[1], a[1])
