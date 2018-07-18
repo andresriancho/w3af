@@ -37,16 +37,18 @@ def chrome_is_installed():
 def get_chrome_path():
     paths_to_chrome = []
 
-    # Use the open source version
-    #paths_to_chrome.extend(which('chromium'))
-    #paths_to_chrome.extend(which('chromium-browser'))
+    chrome_binaries = [
+        'chromium',
+        'chromium-browser',
+        'google-chrome',
+        'google-chrome-stable'
+    ]
 
-    # Fallback to the closed source one
-    paths_to_chrome.extend(which('google-chrome'))
-    paths_to_chrome.extend(which('google-chrome-stable'))
+    for chrome_binary in chrome_binaries:
+        paths_to_chrome.extend(which(chrome_binary))
 
     if not paths_to_chrome:
-        return False
+        return None
 
     for path_to_chrome in paths_to_chrome:
 
