@@ -46,8 +46,10 @@ class export_request(entries.RememberingWindow):
     :author: Andres Riancho < andres.riancho | gmail.com >
     """
     def __init__(self, w3af, initial_request=None):
-        super(export_request, self).__init__(
-            w3af, "exportreq", "w3af - Export Requests", "Export_Requests")
+        super(export_request, self).__init__(w3af,
+                                             "exportreq",
+                                             "w3af - Export Requests",
+                                             "Export_Requests")
         self.w3af = w3af
 
         # different ways of exporting data
