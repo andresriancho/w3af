@@ -239,8 +239,15 @@ class InstrumentedChrome(object):
         return private, shared
 
     def __str__(self):
-        proxy_port = self.get_proxy_address()[1]
-        devtools_port = self.chrome_process.get_devtools_port()
+        proxy_port = None
+        devtools_port = None
+
+        if self.proxy is not None:
+            proxy_port = self.get_proxy_address()[1]
+
+        if self.chrome_process is not None:
+            devtools_port = self.chrome_process.get_devtools_port()
+
         pid = self.get_pid()
 
         args = (self.id, proxy_port, pid, devtools_port)

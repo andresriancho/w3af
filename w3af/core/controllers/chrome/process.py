@@ -139,7 +139,7 @@ class ChromeProcess(object):
                                      close_fds=True,
                                      preexec_fn=os.setsid)
 
-        while self.proc.poll() is None:
+        while self.proc is not None and self.proc.poll() is None:
 
             read_ready, write_ready, _ = select.select([stdout_r, stderr_r],
                                                        [],
