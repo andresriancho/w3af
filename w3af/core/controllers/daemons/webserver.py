@@ -52,10 +52,6 @@ def _get_inst(ip, port):
 
 
 class HTTPServer(BaseHTTPServer.HTTPServer):
-    """
-    Most of the behavior added here is included in
-    """
-
     def __init__(self, server_address, webroot, RequestHandlerClass):
         BaseHTTPServer.HTTPServer.__init__(self, server_address,
                                            RequestHandlerClass)
@@ -67,7 +63,8 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
         return self.__is_shut_down.is_set()
 
     def serve_forever(self, poll_interval=0.5):
-        """Handle one request at a time until shutdown.
+        """
+        Handle one request at a time until shutdown.
 
         Polls for shutdown every poll_interval seconds. Ignores
         self.timeout. If you need to do periodic tasks, do them in
@@ -78,6 +75,7 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
             while not self.__shutdown_request:
                 self.handle_request(poll_interval=poll_interval)
         finally:
+            self.server_close()
             self.__shutdown_request = False
             self.__is_shut_down.set()
 
@@ -85,10 +83,9 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
         """
         Handle one request, possibly blocking.
         """
-        fd_sets = select.select([self], [], [], poll_interval)
-        if not fd_sets[0]:
-            self.server_close()
-            self.__shutdown_request = True
+        read, write, error = select.select([self], [], [], poll_interval)
+
+        if not read:
             return
 
         try:
