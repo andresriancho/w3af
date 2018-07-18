@@ -174,7 +174,8 @@ class retirejs(GrepPlugin):
                                                     suffix='.w3af.js',
                                                     delete=False)
 
-        response_file.write(response.get_body())
+        body = smart_str_ignore(response.get_body())
+        response_file.write(body)
         response_file.close()
 
         return response_file.name
