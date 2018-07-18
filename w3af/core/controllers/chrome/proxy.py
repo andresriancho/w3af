@@ -29,7 +29,8 @@ class LoggingHandler(ProxyHandler):
 
     SECURITY_HEADERS = ['Strict-Transport-Security',
                         'Public-Key-Pins',
-                        'Content-Security-Policy']
+                        'Content-Security-Policy',
+                        'Upgrade-Insecure-Requests']
 
     def _send_http_request(self, http_request, grep=True):
         """
