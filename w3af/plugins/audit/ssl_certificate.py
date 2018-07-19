@@ -34,7 +34,7 @@ import w3af.core.data.constants.severity as severity
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_types import INPUT_FILE
+from w3af.core.data.options.option_types import INPUT_FILE, STRING
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
@@ -55,6 +55,7 @@ class ssl_certificate(AuditPlugin):
         self._min_expire_days = 30
         self._ca_file = os.path.join(ROOT_PATH, 'plugins', 'audit',
                                      'ssl_certificate', 'ca.pem')
+        self._sni_hostname = None
 
     def audit(self, freq, orig_response, debugging_id):
         """
@@ -114,10 +115,10 @@ class ssl_certificate(AuditPlugin):
     def _is_trusted_cert(self, url, domain):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            ssl_sock = ssl.wrap_socket(s,
-                                       ca_certs=self._ca_file,
-                                       cert_reqs=ssl.CERT_REQUIRED,
-                                       ssl_version=ssl.PROTOCOL_SSLv23)
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+            ssl_context.verify_mode = ssl.CERT_REQUIRED
+            ssl_context.load_verify_locations(cafile=self._ca_file)
+            ssl_sock = ssl_context.wrap_socket(s, server_hostname=self._sni_hostname)
             ssl_sock.connect((domain, url.get_port()))
             match_hostname(ssl_sock.getpeercert(), domain)
         except (ssl.SSLError, CertificateError), e:
@@ -325,6 +326,10 @@ class ssl_certificate(AuditPlugin):
         o = opt_factory('caFileName', self._ca_file, d, INPUT_FILE)
         ol.add(o)
 
+        d = 'Hostname to use for Server Name Indication (SNI)'
+        o = opt_factory('sniHostname', self._sni_hostname, d, STRING)
+        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -337,6 +342,7 @@ class ssl_certificate(AuditPlugin):
         """
         self._min_expire_days = options_list['minExpireDays'].get_value()
         self._ca_file = options_list['caFileName'].get_value()
+        self._sni_hostname = options_list['sniHostname'].get_value()
 
     def get_long_desc(self):
         """
@@ -345,9 +351,10 @@ class ssl_certificate(AuditPlugin):
         return """
         This plugin audits SSL certificate parameters.
 
-        One configurable parameter exists:
+        Three configurable parameters exist:
             - minExpireDays
-            - CA PEM file path
+            - caFileName
+            - sniHostname
 
         Note: It's only useful when testing HTTPS sites.
         """
