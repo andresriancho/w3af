@@ -90,10 +90,10 @@ class cross_domain_js(GrepPlugin):
         """
         Checks if the domain is the same, or if it's considered secure.
         """
-        url = response.get_url()
+        response_url = response.get_url()
         script_domain = script_full_url.get_domain()
 
-        if script_domain == response.get_url().get_domain():
+        if script_domain == response_url.get_domain():
             return
 
         for _ in self._secure_domain_multi_in.query(script_domain):
@@ -109,12 +109,12 @@ class cross_domain_js(GrepPlugin):
                 ' to a third party site ("%s"). This practice is not'
                 ' recommended, the security of the current site is being'
                 ' delegated to the external entity.')
-        desc %= (smart_str_ignore(url),
+        desc %= (smart_str_ignore(response_url),
                  smart_str_ignore(script_domain))
 
         i = Info('Cross-domain javascript source', desc,
                  response.id, self.get_name())
-        i.set_url(url)
+        i.set_url(response_url)
         i.add_to_highlight(to_highlight)
         i[CrossDomainInfoSet.ITAG] = script_domain
 

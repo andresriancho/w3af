@@ -42,8 +42,6 @@ class file_upload(GrepPlugin):
         if not response.is_text_or_html():
             return
         
-        url = response.get_url()
-
         for tag in parser_cache.dpc.get_tags_by_filter(response, ('input',)):
             input_type = tag.attrib.get('type', None)
 
@@ -53,6 +51,8 @@ class file_upload(GrepPlugin):
             if input_type.lower() != 'file':
                 continue
 
+            url = response.get_url()
+
             msg = 'A form which allows file uploads was found at "%s"'
             msg %= url
 
@@ -60,6 +60,7 @@ class file_upload(GrepPlugin):
             i.set_url(url)
 
             self.kb_append_uniq(self, 'file_upload', i, 'URL')
+            break
 
     def get_long_desc(self):
         """

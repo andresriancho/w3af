@@ -105,12 +105,13 @@ class strange_headers(GrepPlugin):
         self._content_location_not_300(request, response)
 
         # Check header names
-        response_header_names = response.get_headers().keys()
+        headers = response.get_headers()
+        response_header_names = headers.keys()
         strange_header_list = filter(is_strange, response_header_names)
 
         # Create a new info object and save it to the KB
         for header_name in strange_header_list:
-            hvalue = response.get_headers()[header_name]
+            hvalue = headers[header_name]
 
             desc = ('The remote web server sent the HTTP header: "%s"'
                     ' with value: "%s", which is quite uncommon and'
