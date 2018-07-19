@@ -235,11 +235,35 @@ class ParserCache(CacheStats):
         Get specific tags from http_response using the cache if possible
 
         :param http_response: The http response instance
-        :param tags: List of tags to get
+        :param tags: List of tags to get, or None if all tags should be returned
         :param yield_text: Include the tag text (<a>text</a>)
         :param cache: True if the document parser should be saved to the cache
         :return: An instance of DocumentParser
         """
+        #
+        # This is a performance hack that should reduce the time consumed by
+        # this method without impacting its results. Note that in HTML this is
+        # valid:
+        #
+        #   <script
+        #
+        # And this is invalid:
+        #
+        #   < script
+        #
+        # We use that in order to speed-up this function
+        #
+        if tags is not None:
+            body_lower = http_response.get_body().lower()
+
+            for tag in tags:
+                lt_tag = '<%s' % tag
+                if lt_tag in body_lower:
+                    break
+            else:
+                # No tag was found in the HTML
+                return []
+
         #
         # Before doing anything too complex like caching, sending the HTTP
         # response to a different process for parsing, checking events, etc.
