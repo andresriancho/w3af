@@ -55,7 +55,7 @@ class blank_body(GrepPlugin):
 
             desc = 'The URL: "%s" returned an empty body, this could indicate'\
                    ' an application error.'
-            desc = desc % response.get_url()
+            desc %= response.get_url()
 
             i = Info('Blank http response body', desc, response.id,
                      self.get_name())
