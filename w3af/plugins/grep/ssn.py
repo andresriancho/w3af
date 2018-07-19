@@ -36,8 +36,8 @@ class ssn(GrepPlugin):
     :author: dliz <dliz !at! users.sourceforge.net>
     """
     # match numbers of the form: 'nnn-nn-nnnn' with some extra restrictions
-    regex = '(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012]))'\
-            ' ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])'
+    regex = ('(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012]))'
+             ' ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])')
     ssn_regex = re.compile(regex)
 
     def __init__(self):
@@ -51,23 +51,32 @@ class ssn(GrepPlugin):
         :param response: The HTTP response object
         :return: None.
         """
-        if not response.is_text_or_html() or response.get_code() != 200 \
-        or response.get_clear_text_body() is None:
+        if response.get_code() != 200:
             return
 
-        found_ssn, validated_ssn = self._find_SSN(response.get_clear_text_body())
-        
-        if validated_ssn:
-            uri = response.get_uri()
-            desc = 'The URL: "%s" possibly discloses a US Social Security'\
-                   ' Number: "%s".'
-            desc = desc % (uri, validated_ssn)
-            v = Vuln('US Social Security Number disclosure', desc,
-                     severity.LOW, response.id, self.get_name())
-            v.set_uri(uri)
+        if not response.is_text_or_html():
+            return
 
-            v.add_to_highlight(found_ssn)
-            self.kb_append_uniq(self, 'ssn', v, 'URL')
+        clear_text_body = response.get_clear_text_body()
+
+        if clear_text_body is None:
+            return
+
+        found_ssn, validated_ssn = self._find_SSN(clear_text_body)
+        
+        if not validated_ssn:
+            return
+            
+        uri = response.get_uri()
+        desc = ('The URL: "%s" possibly discloses US Social Security'
+                ' Number: "%s".')
+        desc %= (uri, validated_ssn)
+        v = Vuln('US Social Security Number disclosure', desc,
+                 severity.LOW, response.id, self.get_name())
+        v.set_uri(uri)
+
+        v.add_to_highlight(found_ssn)
+        self.kb_append_uniq(self, 'ssn', v, 'URL')
 
     def _find_SSN(self, body_without_tags):
         """
@@ -76,6 +85,7 @@ class ssn(GrepPlugin):
         """
         validated_ssn = None
         ssn = None
+        
         for match in self.ssn_regex.finditer(body_without_tags):
             validated_ssn = self._validate_SSN(match)
             if validated_ssn:
@@ -90,12 +100,13 @@ class ssn(GrepPlugin):
         This method is called to validate the digits of the 9-digit number
         found, to confirm that it is a valid SSN. All the publicly available SSN
         checks are performed. The number is an SSN if:
-        1. the first three digits <= 772
-        2. the number does not have all zeros in any digit group 3+2+4 i.e. 000-xx-####,
-        ###-00-#### or ###-xx-0000 are not allowed
-        3. the number does not start from 666-xx-####. 666 for area code is not allowed
-        4. the number is not between 987-65-4320 to 987-65-4329. These are reserved for advts
-        5. the number is not equal to 078-05-1120
+
+            1. the first three digits <= 772
+            2. the number does not have all zeros in any digit group 3+2+4 i.e. 000-xx-####,
+            ###-00-#### or ###-xx-0000 are not allowed
+            3. the number does not start from 666-xx-####. 666 for area code is not allowed
+            4. the number is not between 987-65-4320 to 987-65-4329. These are reserved for advts
+            5. the number is not equal to 078-05-1120
 
         Source of information: wikipedia and socialsecurity.gov
         """
@@ -120,32 +131,32 @@ class ssn(GrepPlugin):
         even_three = xrange(2, 10, 2)
         odd_four = xrange(11, 100, 2)  # (11-99 odd only)
         le_group = lambda x: x <= group
-        isSSN = False
+        is_ssn = False
 
         # For little odds (odds between 1 and 9)
         if group in odd_one:
             if group_number <= group:
-                isSSN = True
+                is_ssn = True
 
         # For big evens (evens between 10 and 98)
         elif group in even_two:
             if group_number in itertools.chain(odd_one,
                                                filter(le_group, even_two)):
-                isSSN = True
+                is_ssn = True
 
         # For little evens (evens between 2 and 8)
         elif group in even_three:
             if group_number in itertools.chain(odd_one, even_two,
                                                filter(le_group, even_three)):
-                isSSN = True
+                is_ssn = True
 
         # For big odds (odds between 11 and 99)
         elif group in odd_four:
             if group_number in itertools.chain(odd_one, even_two, even_three,
                                                filter(le_group, odd_four)):
-                isSSN = True
+                is_ssn = True
 
-        if isSSN:
+        if is_ssn:
             return '%s-%s-%s' % (area_number, group_number, serial_number)
 
         return None
