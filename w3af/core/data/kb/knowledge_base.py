@@ -102,7 +102,7 @@ class BasicKnowledgeBase(object):
         :return: True if there is no other info in (location_a, location_b)
                  with the same URL as the info_inst.
         """
-        for saved_vuln in self.get(location_a, location_b):
+        for saved_vuln in self.get_iter(location_a, location_b):
             if saved_vuln.get_url() == info_inst.get_url():
                 return False
 
@@ -128,7 +128,7 @@ class BasicKnowledgeBase(object):
                  them. Thus, no need to report them twice.
 
         """
-        for saved_vuln in self.get(location_a, location_b):
+        for saved_vuln in self.get_iter(location_a, location_b):
 
             if saved_vuln.get_token_name() != info_inst.get_token_name():
                 continue
@@ -175,16 +175,26 @@ class BasicKnowledgeBase(object):
                             ' as parameter.')
 
         with self._kb_lock:
-            for info_set in self.get(location_a, location_b):
+            for info_set in self.get_iter(location_a, location_b):
                 if not isinstance(info_set, InfoSet):
                     continue
 
                 if info_set.match(info_inst):
+                    # InfoSet will only store a MAX_INFO_INSTANCES inside, after
+                    # that any calls to add() will not modify InfoSet.infos
+                    if info_set.has_reached_max_info_instances():
+
+                        # The info set instance was not modified, so we just return
+                        return info_set, False
+
+                    # Since MAX_INFO_INSTANCES has not been reached, we need to
+                    # copy the info set, add the info instance, and update the DB
                     old_info_set = copy.deepcopy(info_set)
 
-                    # Add the new information to the InfoSet instance, keep in
-                    # mind that InfoSet.MAX_INFO_INSTANCES will be enforced and
-                    # after it, no more Info instances are added to the InfoSet
+                    # Add the new information to the InfoSet instance, if we reach
+                    # this point, and because we checked against has_reached_max_info_instances,
+                    # we are sure that `added` will be True and the info instance
+                    # will be added to the InfoSet
                     added = info_set.add(info_inst)
 
                     # Only change the ID of the InfoSet instance if a new Info
@@ -293,6 +303,13 @@ class BasicKnowledgeBase(object):
                                  by the plugin_name is returned.
 
         :return: Returns the data that was saved by another plugin.
+        """
+        raise NotImplementedError
+
+    def get_iter(self, plugin_name, location_b, check_types=True):
+        """
+        Same as get() but yields items one by one instead of returning
+        a list with all the items.
         """
         raise NotImplementedError
 
@@ -507,6 +524,19 @@ class DBKnowledgeBase(BasicKnowledgeBase):
 
         :return: Returns the data that was saved by another plugin.
         """
+        result_lst = []
+
+        for obj in self.get_iter(location_a, location_b, check_types=check_types):
+            result_lst.append(obj)
+
+        return result_lst
+
+    @requires_setup
+    def get_iter(self, location_a, location_b, check_types=True):
+        """
+        Same as get() but yields items one by one instead of returning
+        a list with all the items.
+        """
         location_a = self._get_real_name(location_a)
 
         if location_b is None:
@@ -517,19 +547,14 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                                            ' and location_b = ?'
             params = (location_a, location_b)
 
-        result_lst = []
-
-        results = self.db.select(query % self.table_name, params)
-        for r in results:
+        for r in self.db.select(query % self.table_name, params):
             obj = cPickle.loads(r[0])
 
             if check_types and not isinstance(obj, (Info, InfoSet, Shell)):
                 raise TypeError('Use raw_write and raw_read to query the'
                                 ' knowledge base for non-Info objects')
 
-            result_lst.append(obj)
-
-        return result_lst
+            yield obj
 
     @requires_setup
     def get_by_uniq_id(self, uniq_id):

@@ -126,11 +126,11 @@ class DiskDict(object):
         return r[0]
 
     def get(self, key, default=-456):
-        if key in self:
+        try:
             return self[key]
-
-        if default is not -456:
-            return default
+        except KeyError:
+            if default is not -456:
+                return default
 
         raise KeyError()
 

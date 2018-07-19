@@ -52,28 +52,24 @@ class get_emails(GrepPlugin):
         :param request: The HTTP response
         :return: None
         """
-        self._grep_worker(request, response, 'emails',
-                          response.get_url().get_root_domain())
-
-        if not self._only_target_domain:
-            self._grep_worker(request, response, 'external_emails')
-
-    def _grep_worker(self, request, response, kb_key, domain=None):
-        """
-        Helper method for using in self.grep()
-
-        :param request: The HTTP request
-        :param response: The HTTP response
-        :param kb_key: Knowledge base dict key
-        :param domain: Target domain for get_emails filter
-        :return: None
-        """
         try:
-            dp = parser_cache.dpc.get_document_parser_for(response)
+            document_parser = parser_cache.dpc.get_document_parser_for(response)
         except BaseFrameworkException:
             return
 
-        emails = set(dp.get_emails(domain))
+        analysis_data = []
+        root_domain = response.get_url().get_root_domain()
+
+        analysis_data.append(('emails', root_domain))
+
+        if not self._only_target_domain:
+            analysis_data.append(('external_emails', None))
+
+        for kb_key, domain in analysis_data:
+            self._grep_worker(request, response, document_parser, kb_key, domain)
+
+    def _grep_worker(self, request, response, document_parser, kb_key, domain):
+        emails = set(document_parser.get_emails(domain))
 
         for mail_address in emails:
             # Reduce false positives
@@ -88,7 +84,7 @@ class get_emails(GrepPlugin):
             if uniq_key in self._already_reported:
                 continue
 
-            # Avoid dups
+            # Avoid duplicates
             self._already_reported.add(uniq_key)
 
             # Create a new info object, and report it

@@ -64,29 +64,30 @@ class password_profiling(GrepPlugin):
         :param response: The HTTP response object
         :return: None.
         """
+        # I added the 404 code here to avoid doing some is_404 lookups
+        if response.get_code() in self.BANNED_STATUS:
+            return
+
+        if request.get_method() not in self.ALLOWED_METHODS:
+            return
+
         if not self.got_lang():
             return
 
-        # I added the 404 code here to avoid doing some is_404 lookups
-        if response.get_code() not in self.BANNED_STATUS \
-        and not is_404(response) \
-        and request.get_method() in self.ALLOWED_METHODS:
+        if is_404(response):
+            return
 
-            old_data = kb.kb.raw_read(self.get_name(), self.get_name())
-            if not isinstance(old_data, dict):
-                return
+        # Run the password profiling plugins
+        data = self._run_plugins(response)
 
-            # Run the plugins
-            data = self._run_plugins(response)
+        with self._plugin_lock:
+            old_data = kb.kb.raw_read(self, self.get_name())
 
-            with self._plugin_lock:
-                new_data = self.merge_maps(old_data, data, request,
-                                           self.captured_lang)
+            new_data = self.merge_maps(old_data, data, request, self.captured_lang)
+            new_data = self._trim_data(new_data)
 
-                new_data = self._trim_data(new_data)
-
-                # save the updated map
-                kb.kb.raw_write(self, self.get_name(), new_data)
+            # save the updated map
+            kb.kb.raw_write(self, self.get_name(), new_data)
 
     def got_lang(self):
         """
@@ -110,8 +111,9 @@ class password_profiling(GrepPlugin):
     
     def _trim_data(self, data):
         """
-        If the dict grows a lot, I want to trim it. Basically, if it grows to a
-        length of more than 2000 keys, I'll trim it to 1000 keys.
+        If the password profiling information dict grows too large, we want to
+        trim it. Basically, if it grows to a length of more than N keys, trim it
+        to M keys.
         """
         if len(data) < 2000:
             return data
@@ -123,6 +125,7 @@ class password_profiling(GrepPlugin):
         items = items[:1000]
 
         new_data = {}
+
         for key, value in items:
             new_data[key] = value
 
@@ -134,32 +137,50 @@ class password_profiling(GrepPlugin):
             * Key:   word
             * Value: number of repetitions
         """
-        msg = 'The "%s" parameter must be a dict, got "%s" instead.'
+        for word in data:
 
-        if not isinstance(old_data, dict):
-            raise TypeError(msg % ('old_data', old_data.__class__.__name__))
+            if self._should_ignore_word(word, lang, request):
+                continue
 
-        if not isinstance(data, dict):
-            raise TypeError(msg % ('data', old_data.__class__.__name__))
-
-        if lang not in self.COMMON_WORDS.keys():
-            lang = 'unknown'
-            
-        for d in data:
-
-            if len(d) >= 4 and d.isalnum() and \
-            not d.isdigit() and \
-            d.lower() not in self.BANNED_WORDS and \
-            d.lower() not in self.COMMON_WORDS[lang] and \
-            not request.sent(d):
-
-                if d in old_data:
-                    old_data[d] += data[d]
-                else:
-                    old_data[d] = data[d]
+            if word in old_data:
+                old_data[word] += data[word]
+            else:
+                old_data[word] = data[word]
         
         return old_data
-    
+
+    def _should_ignore_word(self, word, lang, request):
+        """
+        Some common, short, etc. words should be ignored.
+
+        :param word: The work to query
+        :return: True if it should be ignored
+        """
+        if len(word) < 4:
+            return True
+
+        if not word.isalnum():
+            return True
+
+        if word.isdigit():
+            return True
+
+        lower_word = word.lower()
+
+        if lower_word in self.BANNED_WORDS:
+            return True
+
+        if lang not in self.COMMON_WORDS:
+            lang = 'unknown'
+
+        if lower_word in self.COMMON_WORDS[lang]:
+            return True
+
+        if request.sent(word):
+            return True
+
+        return False
+
     def _run_plugins(self, response):
         """
         Runs password profiling plugins to collect data from HTML, TXT,
@@ -176,12 +197,13 @@ class password_profiling(GrepPlugin):
                 self._plugins.append(plugin_instance)
 
         res = {}
+
         for plugin in self._plugins:
             word_map = plugin.get_words(response)
             if word_map is not None:
                 # If a plugin returned something that's not None, then we are
-                # done. These plugins only return a something different of None
-                # of they found something
+                # done. These plugins only return a something different from
+                # None if they found something
                 res = word_map
                 break
 
@@ -191,31 +213,22 @@ class password_profiling(GrepPlugin):
         """
         This method is called when the plugin wont be used anymore.
         """
-        profiling_data = kb.kb.raw_read(self.get_name(), self.get_name())
+        profiling_data = kb.kb.raw_read(self, self.get_name())
 
-        # This fixes a very strange bug where for some reason the kb doesn't
-        # have a dict anymore (threading issue most likely) Seen here:
-        # https://sourceforge.net/apps/trac/w3af/ticket/171745
-        if isinstance(profiling_data, dict):
-            
-            # pylint: disable=E1103
-            items = profiling_data.items()
-            if len(items) != 0:
+        if not profiling_data:
+            return
 
-                items.sort(sort_func)
-                om.out.information('Password profiling TOP 100:')
+        # pylint: disable=E1103
+        items = profiling_data.items()
+        items.sort(sort_func)
+        items = items[:100]
 
-                list_length = len(items)
-                if list_length > 100:
-                    x_len = 100
-                else:
-                    x_len = list_length
+        om.out.information('Password profiling TOP 100:')
 
-                for i in xrange(x_len):
-                    msg = '- [' + str(i + 1) + '] ' + items[
-                        i][0] + ' with ' + str(items[i][1])
-                    msg += ' repetitions.'
-                    om.out.information(msg)
+        for i, (password, repetitions) in enumerate(items):
+            msg = ' - [%s] %s with %s repetitions'
+            args = (i + 1, password, repetitions)
+            om.out.information(msg % args)
 
     def get_plugin_deps(self):
         """

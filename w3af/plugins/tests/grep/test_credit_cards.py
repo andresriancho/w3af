@@ -19,9 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
+
+from w3af import ROOT_PATH
 from w3af.plugins.grep.credit_cards import credit_cards
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -29,7 +32,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
 
 
-class test_credit_cards(unittest.TestCase):
+class TestCreditCards(unittest.TestCase):
 
     def setUp(self):
         self.plugin = credit_cards()
@@ -94,3 +97,20 @@ class test_credit_cards(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 0)
+
+    def test_find_credit_card_performance_true(self):
+        credit_card = '3566 0020 2036 0505'
+
+        html_file = os.path.join(ROOT_PATH, 'plugins/tests/grep/data/test-3.html')
+        html = file(html_file).read()
+        html = html[:len(html) / 2] + ' ' + credit_card + ' ' + html[len(html) / 2:]
+
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+        response = HTTPResponse(200, html, headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+
+        for _ in xrange(5000):
+            self.plugin.grep(request, response)
+
+        self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)

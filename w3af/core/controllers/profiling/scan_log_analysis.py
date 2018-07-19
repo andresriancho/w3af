@@ -908,8 +908,14 @@ def show_grep_plugin_performance(scan):
     times = grep_plugin_times.items()
     times.sort(sort_by_second)
 
+    times_top_10 = times[:10]
+    times_top_10 = sum(total_run_time for plugin_name, total_run_time in times_top_10)
+
     if not times:
         print('No grep plugins were run in this scan')
+
+    print('Top10 most time consuming plugins took %s seconds to run' % times_top_10)
+    print('')
 
     print('Plugins run time information (in seconds)')
     print('')

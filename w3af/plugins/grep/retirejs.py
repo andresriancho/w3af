@@ -32,7 +32,8 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.misc.which import which
-from w3af.core.data.db.disk_set import DiskSet
+from w3af.core.data.misc.encoding import smart_str_ignore
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -51,7 +52,7 @@ class retirejs(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._analyzed_hashes = DiskSet(table_prefix='retirejs')
+        self._analyzed_hashes = ScalableBloomFilter()
         self._retirejs_path = self._get_retirejs_path()
         self._retirejs_exit_code_result = None
         self._retirejs_exit_code_was_run = False
@@ -82,9 +83,6 @@ class retirejs(GrepPlugin):
             return
 
         self._analyze_response(response)
-
-    def end(self):
-        self._analyzed_hashes.cleanup()
 
     def _retirejs_exit_code(self):
         """
@@ -148,7 +146,8 @@ class retirejs(GrepPlugin):
         #
         # Avoid running this plugin twice on the same file content
         #
-        response_hash = hashlib.md5(response.get_body()).hexdigest()
+        body = smart_str_ignore(response.get_body())
+        response_hash = hashlib.md5(body).hexdigest()
 
         if response_hash in self._analyzed_hashes:
             return False
@@ -172,7 +171,8 @@ class retirejs(GrepPlugin):
                                                     suffix='.w3af.js',
                                                     delete=False)
 
-        response_file.write(response.get_body())
+        body = smart_str_ignore(response.get_body())
+        response_file.write(body)
         response_file.close()
 
         return response_file.name

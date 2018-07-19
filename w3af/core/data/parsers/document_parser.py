@@ -108,7 +108,8 @@ class DocumentParser(object):
     def get_emails(self, domain=None):
         """
         :param domain: Indicates what email addresses I want to retrieve:
-                       "*@domain".
+                       "*@domain". If domain is None then all email addresses
+                       are returned.
         :return: A list of email accounts that are inside the document.
         """
         return self._parser.get_emails(domain)

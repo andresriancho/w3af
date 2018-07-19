@@ -27,10 +27,14 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.vuln import Vuln
 
 
-def luhnCheck(value):
+def passes_luhn_check(value):
     """
     The Luhn check against the value which can be an array of digits,
     numeric string or a positive integer.
+    
+    Example credit card numbers can be found here:
+
+    https://www.paypal.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
 
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     """
@@ -87,10 +91,12 @@ class credit_cards(GrepPlugin):
         if not response.get_code() == 200:
             return
 
-        if response.get_clear_text_body() is None:
+        clear_text_body = response.get_clear_text_body()
+
+        if clear_text_body is None:
             return
 
-        found_cards = self._find_card(response.get_clear_text_body())
+        found_cards = self._find_card(clear_text_body)
 
         for card in found_cards:
             desc = u'The URL: "%s" discloses the credit card number: "%s"'
@@ -114,7 +120,9 @@ class credit_cards(GrepPlugin):
 
         for match_set in match_list:
             possible_cc = match_set[0]
-            if luhnCheck(possible_cc):
+            possible_cc = possible_cc.strip()
+
+            if passes_luhn_check(possible_cc):
                 res.append(possible_cc)
 
         return res
@@ -125,7 +133,5 @@ class credit_cards(GrepPlugin):
         """
         return """
         This plugins scans every response page to find the strings that are
-        likely to be credit card numbers. It can be tested against the following
-        URL:
-            - https://www.paypal.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
+        likely to be credit card numbers.
         """

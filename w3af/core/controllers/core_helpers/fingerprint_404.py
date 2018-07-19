@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import with_statement
 
+import copy
 import thread
 import string
 
@@ -104,9 +105,9 @@ class fingerprint_404(object):
         self._lock = thread.allocate_lock()
         self._directory_uses_404_codes = ScalableBloomFilter()
 
-        # It is OK to store 200 here, I'm only storing path+filename as the key,
+        # It is OK to store 1000 here, I'm only storing path+filename as the key,
         # and bool as the value.
-        self.is_404_LRU = SynchronizedLRUDict(250)
+        self.is_404_LRU = SynchronizedLRUDict(1000)
 
     def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
@@ -257,7 +258,8 @@ class fingerprint_404(object):
         #
         if domain_path in cf.cf.get('always_404'):
             return True
-        elif domain_path in cf.cf.get('never_404'):
+
+        if domain_path in cf.cf.get('never_404'):
             return False
 
         #
@@ -305,77 +307,76 @@ class fingerprint_404(object):
         max_similarity_with_404 = 0.0
         resp_path_in_db = False
 
-        with self._lock:
-            #
-            #   Compare this response to all the 404's I have in my DB
-            #
-            for resp_404 in self._404_responses:
+        #
+        #   Compare this response to all the 404's I have in my DB
+        #
+        for resp_404 in copy.copy(self._404_responses):
 
-                # Since the fuzzy_equal function is CPU-intensive we want to
-                # avoid calling it for cases where we know it won't match, for
-                # example in comparing an image and an html
-                if resp_content_type != resp_404.doc_type:
-                    continue
+            # Since the fuzzy_equal function is CPU-intensive we want to
+            # avoid calling it for cases where we know it won't match, for
+            # example in comparing an image and an html
+            if resp_content_type != resp_404.doc_type:
+                continue
 
-                if fuzzy_equal(resp_404.body, resp_body, IS_EQUAL_RATIO):
-                    msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
-                    fmt = (http_response.get_url(),
-                           http_response.id,
-                           IS_EQUAL_RATIO)
-                    om.out.debug(msg % fmt)
-                    return True
-                else:
-                    # I could calculate this before and avoid the call to
-                    # fuzzy_equal, but I believe it's going to be faster this
-                    # way
-                    current_ratio = relative_distance(resp_404.body, resp_body)
-                    max_similarity_with_404 = max(max_similarity_with_404,
-                                                  current_ratio)
-
-                # Track if the response path is in the DB
-                if not resp_path_in_db and resp_path == resp_404.path:
-                    resp_path_in_db = True
-
-            #
-            # I get here when the for ends and no body_404_db matched with
-            # the resp_body that was sent as a parameter by the user. This
-            # means one of two things:
-            #     * There is not enough knowledge in self._404_responses, or
-            #     * The answer is NOT a 404.
-            #
-            # Because we want to reduce the amount of "false positives" that
-            # this method returns, we'll perform some extra checks before
-            # saying that this is NOT a 404.
-            #
-            if resp_path_in_db and max_similarity_with_404 < MUST_VERIFY_RATIO:
-                msg = ('"%s" (id:%s) is NOT a 404 [similarity_index < %s'
-                       ' with sample path in 404 DB].')
-                args = (http_response.get_url(),
-                        http_response.id,
-                        MUST_VERIFY_RATIO)
-                om.out.debug(msg % args)
-                return False
-
-            if self._is_404_with_extra_request(http_response, resp_body):
-                #
-                #   Aha! It actually was a 404!
-                #
-                four_oh_data = FourOhFourResponseFactory(http_response)
-                self._404_responses.append(four_oh_data)
-
-                msg = ('"%s" (id:%s) is a 404 [similarity_index > %s].'
-                       ' Adding new knowledge to the 404_responses database'
-                       ' (length=%s).')
-                fmt = (http_response.get_url(), http_response.id,
-                       IS_EQUAL_RATIO, len(self._404_responses))
+            if fuzzy_equal(resp_404.body, resp_body, IS_EQUAL_RATIO):
+                msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
+                fmt = (http_response.get_url(),
+                       http_response.id,
+                       IS_EQUAL_RATIO)
                 om.out.debug(msg % fmt)
                 return True
+            else:
+                # I could calculate this before and avoid the call to
+                # fuzzy_equal, but I believe it's going to be faster this
+                # way
+                current_ratio = relative_distance(resp_404.body, resp_body)
+                max_similarity_with_404 = max(max_similarity_with_404,
+                                              current_ratio)
 
-            msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
-            args = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
+            # Track if the response path is in the DB
+            if not resp_path_in_db and resp_path == resp_404.path:
+                resp_path_in_db = True
+
+        #
+        # I get here when the for ends and no body_404_db matched with
+        # the resp_body that was sent as a parameter by the user. This
+        # means one of two things:
+        #     * There is not enough knowledge in self._404_responses, or
+        #     * The answer is NOT a 404.
+        #
+        # Because we want to reduce the amount of "false positives" that
+        # this method returns, we'll perform some extra checks before
+        # saying that this is NOT a 404.
+        #
+        if resp_path_in_db and max_similarity_with_404 < MUST_VERIFY_RATIO:
+            msg = ('"%s" (id:%s) is NOT a 404 [similarity_index < %s'
+                   ' with sample path in 404 DB].')
+            args = (http_response.get_url(),
+                    http_response.id,
+                    MUST_VERIFY_RATIO)
             om.out.debug(msg % args)
-
             return False
+
+        if self._is_404_with_extra_request(http_response, resp_body):
+            #
+            #   Aha! It actually was a 404!
+            #
+            four_oh_data = FourOhFourResponseFactory(http_response)
+            self._404_responses.append(four_oh_data)
+
+            msg = ('"%s" (id:%s) is a 404 [similarity_index > %s].'
+                   ' Adding new knowledge to the 404_responses database'
+                   ' (length=%s).')
+            fmt = (http_response.get_url(), http_response.id,
+                   IS_EQUAL_RATIO, len(self._404_responses))
+            om.out.debug(msg % fmt)
+            return True
+
+        msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
+        args = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
+        om.out.debug(msg % args)
+
+        return False
 
     def _generate_404_filename(self, filename):
         """

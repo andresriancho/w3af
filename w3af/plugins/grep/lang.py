@@ -29,6 +29,8 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 
+UNKNOWN = 'unknown'
+
 
 class lang(GrepPlugin):
     """
@@ -51,25 +53,29 @@ class lang(GrepPlugin):
         :param request: The HTTP request object.
         :param response: The HTTP response object
         """
+        if not self._exec:
+            return
+
+        if not response.is_text_or_html():
+            return
+
+        if is_404(response):
+            return
+
+        body = response.get_clear_text_body()
+        if body is None:
+            return
+
+        body = body.lower()
+
+        try:
+            guessed_lang = guess_language.guessLanguage(body)
+        except IndexError:
+            # I don't care about exception handling of the external lib
+            guessed_lang = UNKNOWN
+
         with self._plugin_lock:
-            if not self._exec:
-                return
-
-            if not response.is_text_or_html():
-                return
-
-            if is_404(response):
-                return
-
-            body = response.get_clear_text_body().lower()
-
-            try:
-                guessed_lang = guess_language.guessLanguage(body)
-            except IndexError:
-                # I don't care about exception handling of the external lib
-                guessed_lang = 'UNKNOWN'
-
-            if guessed_lang == 'UNKNOWN':
+            if guessed_lang == UNKNOWN:
                 # None means "I'm still trying"
                 kb.kb.raw_write(self, 'lang', None)
 

@@ -36,6 +36,7 @@ class http_in_body(GrepPlugin):
     HTTP = (
         # GET / HTTP/1.0
         ('[a-zA-Z]{3,6} .*? HTTP/1.[01]', 'REQUEST'),
+
         # HTTP/1.1 200 OK
         ('HTTP/1.[01] [0-9][0-9][0-9] [a-zA-Z]*', 'RESPONSE')
     )
@@ -101,7 +102,7 @@ class http_in_body(GrepPlugin):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
-        return """\
+        return """
         This plugin searches for HTTP responses that contain other HTTP
         request/responses in their response body. This situation is mostly seen
         when programmers enable some kind of debugging for the web application,

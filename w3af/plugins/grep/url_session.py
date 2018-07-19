@@ -92,8 +92,7 @@ class url_session(GrepPlugin):
                     
                     self.kb_append(self, 'url_session', i)
                     break
-    
-    
+
     def analyze_uri(self, request, response):
         """
         Find session IDs in the URI and store them in the KB.
@@ -105,9 +104,9 @@ class url_session(GrepPlugin):
                 self._already_reported.add(response.get_url())
                 
                 desc = 'The URL "%s" contains a session id which could be'\
-                      ' leaked to third party domains through the referrer'\
-                      ' header.'
-                desc = desc % request_uri
+                       ' leaked to third party domains through the referrer'\
+                       ' header.'
+                desc %= request_uri
                 
                 #   append the info object to the KB.
                 i = Info('Session ID in URL', desc, response.id,

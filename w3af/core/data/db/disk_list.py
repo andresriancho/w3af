@@ -24,7 +24,6 @@ import __builtin__
 
 import hashlib
 import cPickle
-import msgpack
 
 from w3af.core.data.misc.cpickle_dumps import cpickle_dumps
 from w3af.core.data.db.disk_item import DiskItem

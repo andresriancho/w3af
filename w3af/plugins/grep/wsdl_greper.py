@@ -58,7 +58,7 @@ class wsdl_greper(GrepPlugin):
             desc = ('The URL: "%s" is a Web Services Description Language'
                     ' page. This requires manual analysis to determine the'
                     ' security of the web service.')
-            desc = desc % response.get_url()
+            desc %= response.get_url()
             
             i = Info('WSDL resource', desc, response.id,
                      self.get_name())
@@ -71,9 +71,9 @@ class wsdl_greper(GrepPlugin):
     def analyze_disco(self, request, response):
         for disco_string in self._disco_strings:
             if disco_string in response:
-                desc = 'The URL: "%s" is a DISCO file that contains references'\
-                       ' to WSDL URLs.'
-                desc = desc % response.get_url()
+                desc = ('The URL: "%s" is a DISCO file that contains'
+                        ' references to WSDL URLs.')
+                desc %= response.get_url()
                 i = Info('DISCO resource', desc, response.id,
                          self.get_name())
                 i.set_url(response.get_url())

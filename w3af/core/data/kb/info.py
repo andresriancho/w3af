@@ -404,11 +404,11 @@ class Info(dict):
         if len(self._id) > 1:
             id_range = self._convert_to_range_wrapper(self._id)
 
-            desc_to_return += 'This %s was found in the requests' % what
+            desc_to_return += ' This %s was found in the requests' % what
             desc_to_return += ' with ids %s.' % id_range
 
         elif len(self._id) == 1:
-            desc_to_return += 'This %s was found in the request' % what
+            desc_to_return += ' This %s was found in the request' % what
             desc_to_return += ' with id %s.' % self._id[0]
 
         return desc_to_return

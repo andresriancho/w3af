@@ -26,32 +26,72 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.info_set import InfoSet
 
 
+# Remember that this headers are only the ones SENT BY THE SERVER TO THE
+# CLIENT. Headers must be uppercase in order to compare them
+COMMON_HEADERS = {'ACCEPT-RANGES',
+                  'AGE',
+                  'ALLOW',
+                  'CONNECTION',
+                  'CONTENT-DISPOSITION',
+                  'CONTENT-ENCODING',
+                  'CONTENT-LENGTH',
+                  'CONTENT-TYPE',
+                  'CONTENT-SCRIPT-TYPE',
+                  'CONTENT-STYLE-TYPE',
+                  'CONTENT-SECURITY-POLICY',
+                  'CONTENT-SECURITY-POLICY-REPORT-ONLY',
+                  'CONTENT-LANGUAGE',
+                  'CONTENT-LOCATION',
+                  'CACHE-CONTROL',
+                  'DATE',
+                  'EXPIRES',
+                  'ETAG',
+                  'FRAME-OPTIONS',
+                  'KEEP-ALIVE',
+                  'LAST-MODIFIED',
+                  'LOCATION',
+                  'P3P',
+                  'PUBLIC',
+                  'PUBLIC-KEY-PINS',
+                  'PUBLIC-KEY-PINS-REPORT-ONLY',
+                  'PRAGMA',
+                  'PROXY-CONNECTION',
+                  'SET-COOKIE',
+                  'SERVER',
+                  'STRICT-TRANSPORT-SECURITY',
+                  'TRANSFER-ENCODING',
+                  'VIA',
+                  'VARY',
+                  'WWW-AUTHENTICATE',
+                  'X-FRAME-OPTIONS',
+                  'X-CONTENT-TYPE-OPTIONS',
+                  'X-POWERED-BY',
+                  'X-ASPNET-VERSION',
+                  'X-CACHE',
+                  'X-UA-COMPATIBLE',
+                  'X-PAD',
+                  'X-XSS-PROTECTION',
+                  'ACCESS-CONTROL-ALLOW-ORIGIN',
+                  'ACCESS-CONTROL-ALLOW-METHODS',
+                  'ACCESS-CONTROL-ALLOW-HEADERS',
+                  'ACCESS-CONTROL-MAX-AGE'}
+
+
+def is_strange(header_name):
+    """
+    :param header_name: The header name we want to check
+    :return: True if the header name is strange
+    """
+    header_name = header_name.upper()
+    return header_name not in COMMON_HEADERS
+
+
 class strange_headers(GrepPlugin):
     """
     Grep headers for uncommon headers sent in HTTP responses.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # Remember that this headers are only the ones SENT BY THE SERVER TO THE
-    # CLIENT. Headers must be uppercase in order to compare them
-    COMMON_HEADERS = {'ACCEPT-RANGES', 'AGE', 'ALLOW', 'CONNECTION',
-                      'CONTENT-DISPOSITION', 'CONTENT-ENCODING',
-                      'CONTENT-LENGTH', 'CONTENT-TYPE', 'CONTENT-SCRIPT-TYPE',
-                      'CONTENT-STYLE-TYPE', 'CONTENT-SECURITY-POLICY',
-                      'CONTENT-SECURITY-POLICY-REPORT-ONLY', 'CONTENT-LANGUAGE',
-                      'CONTENT-LOCATION', 'CACHE-CONTROL', 'DATE', 'EXPIRES',
-                      'ETAG', 'FRAME-OPTIONS', 'KEEP-ALIVE', 'LAST-MODIFIED',
-                      'LOCATION', 'P3P', 'PUBLIC', 'PUBLIC-KEY-PINS',
-                      'PUBLIC-KEY-PINS-REPORT-ONLY', 'PRAGMA',
-                      'PROXY-CONNECTION', 'SET-COOKIE', 'SERVER',
-                      'STRICT-TRANSPORT-SECURITY', 'TRANSFER-ENCODING', 'VIA',
-                      'VARY', 'WWW-AUTHENTICATE', 'X-FRAME-OPTIONS',
-                      'X-CONTENT-TYPE-OPTIONS', 'X-POWERED-BY',
-                      'X-ASPNET-VERSION', 'X-CACHE', 'X-UA-COMPATIBLE', 'X-PAD',
-                      'X-XSS-PROTECTION', 'ACCESS-CONTROL-ALLOW-ORIGIN',
-                      'ACCESS-CONTROL-ALLOW-METHODS',
-                      'ACCESS-CONTROL-ALLOW-HEADERS',
-                      'ACCESS-CONTROL-MAX-AGE'}
 
     def grep(self, request, response):
         """
@@ -65,12 +105,13 @@ class strange_headers(GrepPlugin):
         self._content_location_not_300(request, response)
 
         # Check header names
-        for header_name in response.get_headers().keys():
-            if header_name.upper() in self.COMMON_HEADERS:
-                continue
+        headers = response.get_headers()
+        response_header_names = headers.keys()
+        strange_header_list = filter(is_strange, response_header_names)
 
-            # Create a new info object and save it to the KB
-            hvalue = response.get_headers()[header_name]
+        # Create a new info object and save it to the KB
+        for header_name in strange_header_list:
+            hvalue = headers[header_name]
 
             desc = ('The remote web server sent the HTTP header: "%s"'
                     ' with value: "%s", which is quite uncommon and'
@@ -93,13 +134,13 @@ class strange_headers(GrepPlugin):
 
         :return: None, all results are saved in the kb.
         """
+        if not 300 < response.get_code() < 310:
+            return
+
         headers = response.get_headers()
         header_value, header_name = headers.iget('content-location')
 
         if header_value is None:
-            return
-
-        if not 300 < response.get_code() < 310:
             return
 
         desc = ('The URL: "%s" sent the HTTP header: "content-location"'
