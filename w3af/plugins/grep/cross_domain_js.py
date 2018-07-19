@@ -32,6 +32,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.misc.encoding import smart_str_ignore
+from w3af.core.data.quick_match.multi_in import MultiIn
 
 
 class cross_domain_js(GrepPlugin):
@@ -51,7 +52,7 @@ class cross_domain_js(GrepPlugin):
                                             'secure-js-sources.txt')
 
         # Internal variables
-        self._secure_js_domains = []
+        self._secure_domain_multi_in = None
         self._load_secure_js_file(self._secure_js_file)
 
     def grep(self, request, response):
@@ -63,6 +64,9 @@ class cross_domain_js(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         """
+        if self._secure_domain_multi_in is None:
+            return
+
         if not response.is_text_or_html():
             return
 
@@ -92,16 +96,13 @@ class cross_domain_js(GrepPlugin):
         if script_domain == response.get_url().get_domain():
             return
 
-        for secure_domain in self._secure_js_domains:
-            # We do a "in" because the secure js domains list contains
-            # entries such as ".google." which should be match. This is to
-            # take into account things like ".google.com.br" without having
-            # to list all of them.
+        for _ in self._secure_domain_multi_in.query(script_domain):
+            # Query the multi in to check if any if the domains we loaded
+            # previously match against the script domain we found in the
+            # HTML.
             #
-            # Not the best, could raise some false negatives, but... bleh!
-            if secure_domain in script_domain:
-                # It's a third party that we trust
-                return
+            # It's a third party that we trust
+            return
 
         to_highlight = script_tag.attrib.get('src')
         desc = ('The URL: "%s" has a script tag with a source that points'
@@ -132,17 +133,19 @@ class cross_domain_js(GrepPlugin):
         """
         Loads the configuration file containing the domains
         """
-        if secure_js_file and not secure_js_file == 'None':
-            # Always zero the configured domains before we start
-            self._secure_js_domains = []
-            self._secure_js_file = secure_js_file
+        if not secure_js_file:
+            return
 
-            secure_js_fh = file(secure_js_file)
-            for domain in secure_js_fh:
-                self._secure_js_domains.append(domain.strip())
+        if secure_js_file == 'None':
+            return
 
-            # Remove any duplicates
-            self._secure_js_domains = list(set(self._secure_js_domains))
+        secure_js_domains = set()
+        secure_js_domains_fh = file(secure_js_file)
+
+        for domain in secure_js_domains_fh:
+            secure_js_domains.add(domain.strip())
+
+        self._secure_domain_multi_in = MultiIn(secure_js_domains)
 
     def get_options(self):
         """
