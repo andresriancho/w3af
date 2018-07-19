@@ -18,21 +18,36 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from nose.plugins.attrib import attr
+import unittest
 
-from w3af.core.controllers.ci.moth import get_moth_http
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+import w3af.core.data.kb.knowledge_base as kb
+
+from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.dc.headers import Headers
+from w3af.core.controllers.misc.temp_dir import create_temp_dir
+from w3af.plugins.grep.html_comments import html_comments
+
+from nose.plugins.attrib import attr
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 @attr('smoke')
 @attr('ci_ready')
-class TestHTMLComments(PluginTest):
+class TestHTMLCommentsIntegration(PluginTest):
 
-    html_comments_url = get_moth_http('/grep/html_comments/')
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body=('<!-- secret password123 -->'
+                                         '<!-- <a href="/x"></a> -->'),
+                                   method='GET',
+                                   status=200)]
 
     _run_configs = {
         'cfg1': {
-            'target': html_comments_url,
+            'target': target_url,
             'plugins': {
                 'grep': (PluginConfig('html_comments'),),
                 'crawl': (
@@ -60,3 +75,37 @@ class TestHTMLComments(PluginTest):
 
         self.assertEqual(interesting_info.get_name(), 'Interesting HTML comment')
         self.assertEqual(html_info.get_name(), 'HTML comment contains HTML code')
+
+
+class TestHTMLCommentsUnit(unittest.TestCase):
+
+    def setUp(self):
+        create_temp_dir()
+        kb.kb.cleanup()
+        self.plugin = html_comments()
+
+    def tearDown(self):
+        self.plugin.end()
+
+    def test_html_comment(self):
+        body = '<!-- secret password123 -->'
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+        request = FuzzableRequest(url, method='GET')
+
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+        self.plugin.grep(request, response)
+
+        info_sets = kb.kb.get('html_comments', 'interesting_comments')
+        self.assertEquals(len(info_sets), 1)
+
+    def test_html_comment_profiling(self):
+        body = '<!-- secret password123 -->'
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+        request = FuzzableRequest(url, method='GET')
+
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
+
+        for _ in xrange(500):
+            self.plugin.grep(request, response)
