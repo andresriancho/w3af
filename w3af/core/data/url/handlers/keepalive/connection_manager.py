@@ -127,10 +127,14 @@ class ConnectionManager(object):
         connection_info = []
 
         for conn in top_offenders:
-            if conn.current_request_start is None:
+            try:
+                spent = time.time() - conn.current_request_start
+            except TypeError:
+                # This is a race condition where conn.current_request_start is
+                # None, thus the - raises TypeError
                 continue
 
-            args = (conn.id, time.time() - conn.current_request_start)
+            args = (conn.id, spent)
             connection_info.append('(%s, %.2f sec)' % args)
 
         connection_info = ' '.join(connection_info)
