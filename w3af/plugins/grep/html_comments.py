@@ -44,7 +44,17 @@ class html_comments(GrepPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    HTML_RE = re.compile('</[a-zA-Z]+>')
+    HTML_RE = re.compile('<[a-zA-Z]+ .*?>.*?</[a-zA-Z]+>')
+
+    HTML_FALSE_POSITIVES = {
+        '[if IE]',
+        '[if !IE]',
+        '[if IE 7 ]',
+        '[if IE 8 ]',
+        '[if IE 9]',
+        '[if lte IE 8]',
+        '[if lte IE 9]',
+    }
 
     INTERESTING_WORDS = (
         # In English
@@ -130,6 +140,10 @@ class html_comments(GrepPlugin):
         if html_in_comment is None:
             return
 
+        for false_positive_string in self.HTML_FALSE_POSITIVES:
+            if false_positive_string in comment:
+                return
+
         comment_data = (comment, response.get_url())
 
         if comment_data in self._already_reported:
@@ -143,7 +157,7 @@ class html_comments(GrepPlugin):
         comment = comment.replace('\r', '')
         comment = comment[:40]
 
-        desc = ('A comment with the string "%s" was found in: "%s".'
+        desc = ('A comment containing HTML code "%s" was found in: "%s".'
                 ' This could be interesting.')
         desc %= (comment, response.get_url())
 
