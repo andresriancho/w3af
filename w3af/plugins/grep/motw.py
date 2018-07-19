@@ -53,13 +53,13 @@ class motw(GrepPlugin):
         if not response.is_text_or_html():
             return
         
-        if is_404(response):
-            return
-
         body = response.get_body()
         body = body[:2048]
         
         if self.STRING_MATCH not in body:
+            return
+
+        if is_404(response):
             return
 
         motw_match = self._motw_re.search(body)
