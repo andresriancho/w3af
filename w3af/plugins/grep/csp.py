@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.db.disk_item import DiskItem
 from w3af.core.data.kb.vuln import Vuln
@@ -40,7 +41,7 @@ class csp(GrepPlugin):
 
         self._total_count = 0
         self._vulns = DiskList(table_prefix='csp')
-        self._urls = DiskList(table_prefix='csp')
+        self._urls = ScalableBloomFilter()
                 
     def get_long_desc(self):
         return """
@@ -65,7 +66,7 @@ class csp(GrepPlugin):
         if response_url in self._urls:
             return        
 
-        self._urls.append(response_url)
+        self._urls.add(response_url)
                 
         # Search issues using dedicated module
         csp_vulns = find_vulns(response)

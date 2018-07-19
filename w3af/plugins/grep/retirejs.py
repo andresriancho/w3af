@@ -33,7 +33,7 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.misc.which import which
 from w3af.core.data.misc.encoding import smart_str_ignore
-from w3af.core.data.db.disk_set import DiskSet
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -52,7 +52,7 @@ class retirejs(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._analyzed_hashes = DiskSet(table_prefix='retirejs')
+        self._analyzed_hashes = ScalableBloomFilter()
         self._retirejs_path = self._get_retirejs_path()
         self._retirejs_exit_code_result = None
         self._retirejs_exit_code_was_run = False
@@ -83,9 +83,6 @@ class retirejs(GrepPlugin):
             return
 
         self._analyze_response(response)
-
-    def end(self):
-        self._analyzed_hashes.cleanup()
 
     def _retirejs_exit_code(self):
         """
