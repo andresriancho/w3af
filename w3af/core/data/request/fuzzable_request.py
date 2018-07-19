@@ -287,10 +287,11 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         # Filter the short haystacks
         haystacks = {h for h in haystacks if len(h) >= 3}
 
+        haystack = '--'.join(haystacks)
+
         for needle in needles:
-            for haystack in haystacks:
-                if needle in haystack:
-                    return True
+            if needle in haystack:
+                return True
 
         # I didn't send the needle in any way
         return False
