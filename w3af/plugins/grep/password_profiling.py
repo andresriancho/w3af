@@ -202,8 +202,8 @@ class password_profiling(GrepPlugin):
             word_map = plugin.get_words(response)
             if word_map is not None:
                 # If a plugin returned something that's not None, then we are
-                # done. These plugins only return a something different of None
-                # of they found something
+                # done. These plugins only return a something different from
+                # None if they found something
                 res = word_map
                 break
 
