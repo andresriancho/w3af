@@ -46,7 +46,7 @@ SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) sec
 
 EXTENDED_URLLIB_ERRORS_RE = re.compile('ExtendedUrllib error rate is at (.*?)%')
 
-GREP_DISK_DICT = re.compile('The current GrepIn DiskDict size is (\d*).')
+GREP_DISK_DICT = re.compile('The current GrepIn DiskDict size is (\d*)\.')
 AUDITOR_DISK_DICT = re.compile('The current AuditorIn DiskDict size is (\d*).')
 CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfraIn DiskDict size is (\d*).')
 
