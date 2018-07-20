@@ -31,7 +31,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exception_handling.helpers import pprint_plugins
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
-from w3af.core.controllers.core_helpers.status import w3af_core_status
+from w3af.core.controllers.core_helpers.status import CoreStatus
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.data.misc.cached_queue import CachedQueue
@@ -395,7 +395,7 @@ class BaseConsumer(Process):
         except_type, except_class, tb = sys.exc_info()
         enabled_plugins = pprint_plugins(self._w3af_core)
 
-        status = w3af_core_status(self._w3af_core)
+        status = CoreStatus(self._w3af_core)
         status.set_running_plugin(phase, plugin_name, log=False)
         status.set_current_fuzzable_request(phase, fuzzable_request)
 

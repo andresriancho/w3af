@@ -35,7 +35,7 @@ CRAWL = 'crawl'
 GREP = 'grep'
 
 
-class w3af_core_status(object):
+class CoreStatus(object):
     """
     This class maintains the status of the w3afCore. During scan the different
     phases of the process will change the status (set) and the UI will be
