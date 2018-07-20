@@ -87,8 +87,8 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
         self.get_pointer = 0
         self.put_pointer = 0
 
-    def _qsize(self, len=len):
-        return len(self.memory) + len(self.disk)
+    def _qsize(self, _len=len):
+        return _len(self.memory) + _len(self.disk)
 
     def _get_class_name(self, obj):
         try:
