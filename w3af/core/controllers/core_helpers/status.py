@@ -431,8 +431,15 @@ class w3af_core_status(object):
                  'grep': self.get_grep_eta()},
 
             'rpm': rpm,
+            'sent_request_count': self.get_sent_request_count()
         }
         return data
+
+    def get_sent_request_count(self):
+        """
+        :return: The number of HTTP requests that have been sent
+        """
+        return consecutive_number_generator.get()
 
     def get_long_status(self):
         if not self.is_running():

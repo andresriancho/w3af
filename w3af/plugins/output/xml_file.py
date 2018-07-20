@@ -90,7 +90,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.4'
+    XML_OUTPUT_VERSION = '2.5'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -236,8 +236,8 @@ class xml_file(OutputPlugin):
 
     def findings(self):
         """
-        A small generator that queries the findings cache and yields all the findings
-        so they get written to the XML.
+        A small generator that queries the findings cache and yields all the
+        findings so they get written to the XML.
 
         :yield: Strings representing the findings as XML
         """
@@ -267,8 +267,14 @@ class xml_file(OutputPlugin):
         # KB (which changes their uniq id)
         #
         for uniq_id in kb.kb.get_all_uniq_ids_iter(include_ids=cached_nodes):
-            yield cache.get_node_from_cache(uniq_id)
-            processed_uniq_ids.append(uniq_id)
+            node = cache.get_node_from_cache(uniq_id)
+
+            # cached_nodes can be (), this means that get_all_uniq_ids_iter()
+            # will return *all* findings, some might not be in the cache. When
+            # that happens, the cache returns None
+            if node is not None:
+                yield node
+                processed_uniq_ids.append(uniq_id)
 
         msg = '[xml_file.flush()] findings() processed %s cached nodes in %.2f seconds'
         spent = time.time() - start
@@ -675,6 +681,7 @@ class ScanStatus(XMLNode):
         context.audit_eta = self._status['eta']['audit']
         context.grep_eta = self._status['eta']['grep']
         context.rpm = self._status['rpm']
+        context.sent_request_count = self._status['sent_request_count']
 
         context.total_urls = self._total_urls
 

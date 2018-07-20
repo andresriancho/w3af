@@ -4,9 +4,9 @@
   <xs:element name="w3af-run">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="w3af-version" minOccurs="1" maxOccurs="1" type="xs:string" />
-        <xs:element ref="scan-info" minOccurs="1" maxOccurs="1"/>
-        <xs:element ref="scan-status" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="w3af-version" type="xs:string" />
+        <xs:element ref="scan-info" />
+        <xs:element ref="scan-status" />
         <xs:element ref="vulnerability" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="error" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
@@ -20,7 +20,7 @@
     <xs:simpleType>
       <xs:restriction base="xs:decimal">
         <!-- Current version defined in xml_file.py XML_OUTPUT_VERSION -->
-        <xs:enumeration value="2.2"/>
+        <xs:enumeration value="2.5"/>
       </xs:restriction>
     </xs:simpleType>
   </xs:attribute>
@@ -189,6 +189,7 @@
           </xs:complexType>
         </xs:element>
         <xs:element type="xs:short" name="rpm"/>
+        <xs:element type="xs:short" name="sent-request-count"/>
         <xs:element type="xs:short" name="total-urls"/>
       </xs:sequence>
     </xs:complexType>

@@ -43,6 +43,7 @@
     </eta>
 
     <rpm>{{ rpm | escape_text }}</rpm>
+    <sent-request-count>{{ sent_request_count | escape_text }}</sent-request-count>
 
     <total-urls>{{ total_urls | escape_text }}</total-urls>
 </scan-status>
