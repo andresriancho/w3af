@@ -72,6 +72,7 @@ class auth(BaseConsumer):
                         self._end_plugins()
                     finally:
                         self.in_queue.task_done()
+                        self._has_finished = True
                         break
 
                 elif action == FORCE_LOGIN:

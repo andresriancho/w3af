@@ -140,6 +140,7 @@ class BaseConsumer(Process):
 
         self._tasks_in_progress = {}
         self._poison_pill_sent = False
+        self._has_finished = False
 
         self._threadpool = None
 
@@ -182,6 +183,7 @@ class BaseConsumer(Process):
                     # Finish this consumer and everyone consuming the output
                     self._out_queue.put(POISON_PILL)
                     self.in_queue.task_done()
+                    self._has_finished = True
                     break
 
             else:
@@ -196,6 +198,9 @@ class BaseConsumer(Process):
 
     def _consume(self, work_unit):
         raise NotImplementedError
+
+    def has_finished(self):
+        return self._has_finished
 
     @task_decorator
     def _consume_wrapper(self, function_id, work_unit):

@@ -108,6 +108,7 @@ class crawl_infrastructure(BaseConsumer):
                         # Finish this consumer and everyone consuming the output
                         self._out_queue.put(POISON_PILL)
                         self.in_queue.task_done()
+                        self._has_finished = True
                         break
 
                 else:
