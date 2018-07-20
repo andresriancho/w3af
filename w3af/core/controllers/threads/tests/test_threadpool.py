@@ -135,7 +135,7 @@ class TestWorkerPool(unittest.TestCase):
 
         # Got it?
         self.assertFalse(worker_pool._pool[0].worker.is_idle())
-        self.assertEqual(worker_pool._pool[0].worker.func_name, 'sleep')
+        self.assertEqual(worker_pool._pool[0].worker.get_real_func_name(), 'sleep')
         self.assertEqual(worker_pool._pool[0].worker.args, args)
         self.assertEqual(worker_pool._pool[0].worker.kwargs, kwds)
         self.assertGreater(worker_pool._pool[0].worker.job, 1)
