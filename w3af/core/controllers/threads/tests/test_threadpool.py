@@ -162,3 +162,26 @@ class TestWorkerPool(unittest.TestCase):
         self.assertEqual(worker_state['args'], args)
         self.assertEqual(worker_state['kwargs'], kwds)
         self.assertEqual(worker_state['idle'], False)
+
+    def test_max_queued_tasks(self):
+        worker_pool = Pool(processes=1, max_queued_tasks=2)
+
+        # These tasks should be queued very fast
+        worker_pool.apply_async(func=time.sleep, args=(2,))
+        worker_pool.apply_async(func=time.sleep, args=(2,))
+        worker_pool.apply_async(func=time.sleep, args=(2,))
+        worker_pool.apply_async(func=time.sleep, args=(2,))
+
+        # Now the pool is full and we need to wait in the main
+        # thread to get the task queued
+        start = time.time()
+
+        worker_pool.apply_async(func=time.sleep, args=(2,))
+
+        spent = time.time() - start
+
+        worker_pool.close()
+        worker_pool.join()
+
+        self.assertLess(spent, 2.1)
+        self.assertGreater(spent, 1.9)

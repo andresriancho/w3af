@@ -226,8 +226,39 @@ class Pool(ThreadPool):
         self.Process = partial(DaemonProcess, name=worker_names)
 
         self.worker_names = worker_names
-        self._setup_queues(max_queued_tasks)
-        self._taskqueue = Queue.Queue()
+
+        # Setting the max number of queued tasks for the ThreadPool is not
+        # as simple as it looks.
+        #
+        # First I tried to limit the max size of self._inqueue (defined
+        # in _setup_queues), that didn't work.
+        #
+        # Then I tried to limit the size for self._taskqueue, that didn't
+        # work either.
+        #
+        # I had to set the maxsize of self._taskqueue to 1 and use the
+        # max_queued_tasks parameter to limit the size of self._inqueue
+        # This is required due to the ThreadPool internals, see the
+        # definition of the _handle_tasks method in pool276.py where
+        # the function is reading from self._taskqueue and writing to
+        # self._inqueue.
+        #
+        # Not setting the limit in self._taskqueue allows the main thread
+        # to enqueue an infinite number of tasks.
+        #
+        # Only setting the limit in self._taskqueue will not work, since
+        # the _handle_tasks method is always reading from that queue
+        # (which decreases its size) and writing to self._inqueue. Because
+        # of those reads to self._taskqueue, the queue never reaches the
+        # limit.
+        #
+
+        if max_queued_tasks != 0:
+            assert max_queued_tasks - 1 > 0, 'max_queued_tasks needs to be at least 2'
+
+        self._setup_queues(max_queued_tasks - 1)
+        self._taskqueue = Queue.Queue(maxsize=1)
+
         self._cache = {}
         self._state = RUN
         self._maxtasksperchild = maxtasksperchild
@@ -332,7 +363,6 @@ class Pool(ThreadPool):
         self._repopulate_pool()
 
     def _setup_queues(self, max_queued_tasks):
-        #self._inqueue = SmartQueue(maxsize=max_queued_tasks, name=self.worker_names)
         self._inqueue = Queue.Queue(maxsize=max_queued_tasks)
         self._outqueue = Queue.Queue()
         self._quick_put = self._inqueue.put
