@@ -30,8 +30,10 @@ from threading import Timer
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.misc.which import which
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
@@ -47,7 +49,9 @@ class retirejs(GrepPlugin):
     METHODS = ('GET',)
     HTTP_CODES = (200,)
     RETIRE_CMD = 'retire -j --outputformat json --outputpath %s --jspath %s'
+    RETIRE_CMD_JSREPO = RETIRE_CMD + ' --jsrepo %s'
     RETIRE_TIMEOUT = 5
+    RETIRE_DB_URL = URL('https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -56,6 +60,7 @@ class retirejs(GrepPlugin):
         self._retirejs_path = self._get_retirejs_path()
         self._retirejs_exit_code_result = None
         self._retirejs_exit_code_was_run = False
+        self._retire_db_filename = None
 
     def grep(self, request, response):
         """
@@ -67,7 +72,7 @@ class retirejs(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         """
-        if not self._retirejs_exit_code():
+        if not self._retirejs_is_installed():
             return
 
         if request.get_method() not in self.METHODS:
@@ -82,9 +87,59 @@ class retirejs(GrepPlugin):
         if not self._should_analyze(response):
             return
 
+        self._download_retire_db()
+
+        if self._retire_db_filename is None:
+            return
+
         self._analyze_response(response)
 
-    def _retirejs_exit_code(self):
+    def _download_retire_db(self):
+        """
+        Downloads RETIRE_DB_URL, saves it to the w3af temp directory and
+        saves the full path to the DB in self._retire_db_filename
+
+        :return: None
+        """
+        # Only download once (even when threads are used)
+        with self._plugin_lock:
+
+            if self._retire_db_filename is not None:
+                return
+
+            # w3af grep plugins shouldn't (by definition) perform HTTP requests
+            # But in this case we're breaking that general rule to retrieve the
+            # DB at the beginning of the scan
+            try:
+                http_response = self._uri_opener.GET(self.RETIRE_DB_URL,
+                                                     binary_response=True,
+                                                     respect_size_limit=False)
+            except Exception, e:
+                msg = 'Failed to download the retirejs database: "%s"'
+                om.out.error(msg % e)
+                return
+
+            if http_response.get_code() != 200:
+                msg = ('Failed to download the retirejs database, unexpected'
+                       ' HTTP response code %s')
+                om.out.error(msg % http_response.get_code())
+                return
+
+            om.out.debug('Successfully downloaded the latest retirejs DB')
+
+            db = tempfile.NamedTemporaryFile(dir=get_temp_dir(),
+                                             prefix='retirejs-db-',
+                                             suffix='.json',
+                                             delete=False,
+                                             mode='wb')
+
+            json_db = http_response.get_raw_body()
+            db.write(json_db)
+            db.close()
+
+            self._retire_db_filename = db.name
+
+    def _retirejs_is_installed(self):
         """
         Runs retirejs on an empty file to check that the return code is 0, this
         is just a safety check to make sure everything is working. It is only
@@ -96,13 +151,13 @@ class retirejs(GrepPlugin):
             return self._retirejs_exit_code_result
 
         check_file = tempfile.NamedTemporaryFile(prefix='retirejs-check-',
-                                                 suffix='.w3af',
+                                                 suffix='.js',
                                                  delete=False)
         check_file.write('')
         check_file.close()
 
         output_file = tempfile.NamedTemporaryFile(prefix='retirejs-output-',
-                                                  suffix='.w3af',
+                                                  suffix='.json',
                                                   delete=False)
         output_file.close()
 
@@ -189,8 +244,8 @@ class retirejs(GrepPlugin):
                                                 delete=False)
         json_file.close()
 
-        args = (json_file.name, response_file)
-        cmd = self.RETIRE_CMD % args
+        args = (json_file.name, response_file, self._retire_db_filename)
+        cmd = self.RETIRE_CMD_JSREPO % args
 
         process = subprocess.Popen(cmd, shell=True)
 
