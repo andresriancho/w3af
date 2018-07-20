@@ -77,6 +77,8 @@ PARSER_PROCESS_MEMORY_LIMIT = re.compile('Using RLIMIT_AS memory usage limit (.*
 
 GREP_PLUGIN_RE = re.compile('\] (.*?).grep\(uri=".*"\) took (.*?)s to run')
 
+SCAN_PROGRESS = re.compile('The scan will finish in .*? \((.*?)% done\)')
+
 
 def _num_formatter(val, chars, delta, left=False):
     align = '<' if left else ''
@@ -145,6 +147,10 @@ def show_scan_stats(scan):
     show_queue_size_grep(scan)
     show_queue_size_audit(scan)
     show_queue_size_crawl(scan)
+
+    print('')
+
+    show_progress_delta(scan)
 
     print('')
 
@@ -777,6 +783,74 @@ def show_rtt_histo(scan):
     print('RTT Histogram')
     print('')
     print(plotille.hist(rtts, bins=25))
+    print('')
+    print('')
+
+
+def show_progress_delta(scan):
+    scan.seek(0)
+
+    progress = []
+    progress_timestamps = []
+
+    for line in scan:
+        match = SCAN_PROGRESS.search(line)
+        if match:
+            progress.append(int(match.group(1)))
+            progress_timestamps.append(get_line_epoch(line))
+
+    # Get the last timestamp to use as max in the graphs
+    first_timestamp = get_first_timestamp(scan)
+    progress_timestamps = [ts - first_timestamp for ts in progress_timestamps]
+
+    if not progress:
+        print('No progress data to calculate deltas')
+        return
+
+    scan.seek(0)
+
+    first_timestamp = get_first_timestamp(scan)
+    finished_timestamp = None
+
+    for line in scan:
+        match = SCAN_FINISHED_IN.search(line)
+        if match:
+            finished_timestamp = get_line_epoch(line)
+
+    if finished_timestamp is None:
+        print('The scan did not finish. Can not show progress delta.')
+        return
+
+    spent_time_epoch = finished_timestamp - first_timestamp
+
+    print('Progress delta (estimated vs. real)')
+    print('')
+
+    fig = plotille.Figure()
+    fig.width = 90
+    fig.height = 20
+    fig.register_label_formatter(float, _num_formatter)
+    fig.register_label_formatter(int, _num_formatter)
+    fig.y_label = 'Progress'
+    fig.x_label = 'Time'
+    fig.color_mode = 'byte'
+    fig.set_x_limits(min_=0, max_=spent_time_epoch)
+    fig.set_y_limits(min_=0, max_=100)
+
+    fig.plot(progress_timestamps,
+             progress,
+             label='Estimated')
+
+    real_progress = []
+    for ts in progress_timestamps:
+        real_progress_i = ts / float(spent_time_epoch) * 100
+        real_progress.append(real_progress_i)
+
+    fig.plot(progress_timestamps,
+             real_progress,
+             label='Real')
+
+    print(fig.show(legend=True))
     print('')
     print('')
 
