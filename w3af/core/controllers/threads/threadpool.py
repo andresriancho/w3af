@@ -252,7 +252,6 @@ class Pool(ThreadPool):
         # of those reads to self._taskqueue, the queue never reaches the
         # limit.
         #
-
         if max_queued_tasks != 0:
             assert max_queued_tasks - 1 > 0, 'max_queued_tasks needs to be at least 2'
 
@@ -311,6 +310,9 @@ class Pool(ThreadPool):
                   self._worker_handler, self._task_handler,
                   self._result_handler, self._cache),
             exitpriority=15)
+
+    def get_inqueue(self):
+        return self._inqueue
 
     def _repopulate_pool(self):
         """
