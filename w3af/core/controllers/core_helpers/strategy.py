@@ -79,7 +79,19 @@ class CoreStrategy(object):
 
         # Also use this method to clear observers
         self._observers = []
-        
+
+    def get_grep_consumer(self):
+        return self._grep_consumer
+
+    def get_audit_consumer(self):
+        return self._audit_consumer
+
+    def get_discovery_consumer(self):
+        return self._discovery_consumer
+
+    def get_bruteforce_consumer(self):
+        return self._bruteforce_consumer
+
     def set_consumers_to_none(self):
         # Consumer threads
         self._grep_consumer = None
