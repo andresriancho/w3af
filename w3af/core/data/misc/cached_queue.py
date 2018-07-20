@@ -123,18 +123,21 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
         #   And now we just save the item to memory (if there is space) or
         #   disk (if it doesn't fit on memory)
         #
+        self.put_pointer += 1
+
         if len(self.memory) < self.max_in_memory:
             self.memory[self.put_pointer] = item
         else:
             self.disk[self.put_pointer] = item
 
-        self.put_pointer += 1
         self._item_added_to_queue()
 
     def _get(self):
         """
         Get an item from the queue
         """
+        self.get_pointer += 1
+
         try:
             item = self.memory.pop(self.get_pointer)
         except KeyError:
@@ -151,6 +154,5 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
                 om.out.debug(msg % args)
 
         self._item_left_queue()
-        self.get_pointer += 1
         self.processed_tasks += 1
         return item
