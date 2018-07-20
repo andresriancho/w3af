@@ -529,10 +529,9 @@ class CoreStatus(object):
         :return: Scan ETA in seconds.
         """
         # We're most likely never going to reach this case, but just in case
-        # I'm adding it. Just return the current time, meaning: we're finishing
-        # now.
+        # I'm adding it. Just zero, meaning: we're finishing now
         if self.has_finished_grep():
-            return time.time()
+            return 0
 
         # The easiest case is when we're not sending any more HTTP requests,
         # we just need to run the grep plugins (if enabled) on the HTTP requests
