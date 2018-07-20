@@ -103,7 +103,7 @@ class CoreStatus(object):
             status_str = ''
             if crawl_plugin is not None and crawl_fr is not None:
                 status_str += 'Crawling %s using %s.%s'
-                status_str = status_str % (crawl_fr, 'crawl', crawl_plugin)
+                status_str %= (crawl_fr, 'crawl', crawl_plugin)
 
             if audit_plugin is not None and audit_fr is not None:
                 if status_str:
@@ -202,91 +202,131 @@ class CoreStatus(object):
         self._current_fuzzable_request[plugin_type] = fuzzable_request
 
     def get_crawl_input_speed(self):
-        dc = self._w3af_core.strategy._discovery_consumer
+        dc = self._w3af_core.strategy.get_discovery_consumer()
         return None if dc is None else round_or_None(dc.in_queue.get_input_rpm())
 
     def get_crawl_output_speed(self):
-        dc = self._w3af_core.strategy._discovery_consumer
+        dc = self._w3af_core.strategy.get_discovery_consumer()
         return None if dc is None else round_or_None(dc.in_queue.get_output_rpm())
 
     def get_crawl_qsize(self):
-        dc = self._w3af_core.strategy._discovery_consumer
+        dc = self._w3af_core.strategy.get_discovery_consumer()
         return None if dc is None else dc.in_queue.qsize()
 
     def get_crawl_output_qsize(self):
-        dc = self._w3af_core.strategy._discovery_consumer
-        return None if dc is None else dc._out_queue.qsize()
+        dc = self._w3af_core.strategy.get_discovery_consumer()
+        return None if dc is None else dc.out_queue.qsize()
 
     def get_crawl_processed_tasks(self):
-        dc = self._w3af_core.strategy._discovery_consumer
-        return None if dc is None else dc._out_queue.get_processed_tasks()
+        dc = self._w3af_core.strategy.get_discovery_consumer()
+        return None if dc is None else dc.out_queue.get_processed_tasks()
 
     def get_crawl_worker_pool_queue_size(self):
-        dc = self._w3af_core.strategy._discovery_consumer
-        return None if dc is None else dc._threadpool._inqueue.qsize()
+        dc = self._w3af_core.strategy.get_discovery_consumer()
+        return None if dc is None else dc.get_pool().get_inqueue().qsize()
 
-    def get_grep_processed_tasks(self):
-        dc = self._w3af_core.strategy._grep_consumer
-        return None if dc is None else dc.in_queue.get_processed_tasks()
+    def has_finished_crawl(self):
+        dc = self._w3af_core.strategy.get_discovery_consumer()
 
-    def get_grep_qsize(self):
-        dc = self._w3af_core.strategy._grep_consumer
-        return None if dc is None else dc.in_queue.qsize()
+        # The user never enabled crawl plugins or the scan has already finished
+        # and no crawl plugins will be run
+        if dc is None:
+            return True
+
+        return dc.has_finished()
 
     def get_crawl_current_fr(self):
         return self.get_current_fuzzable_request('crawl')
 
-    def get_crawl_eta(self):
+    def get_crawl_eta(self, adjustment_ratio=2.0):
         return self.calculate_eta(self.get_crawl_input_speed(),
                                   self.get_crawl_output_speed(),
                                   self.get_crawl_qsize(),
-                                  CRAWL)
+                                  CRAWL,
+                                  adjustment_ratio=adjustment_ratio)
+
+    def get_grep_processed_tasks(self):
+        gc = self._w3af_core.strategy.get_grep_consumer()
+        return None if gc is None else gc.in_queue.get_processed_tasks()
+
+    def get_grep_qsize(self):
+        gc = self._w3af_core.strategy.get_grep_consumer()
+        return None if gc is None else gc.in_queue.qsize()
+
+    def has_finished_grep(self):
+        gc = self._w3af_core.strategy.get_grep_consumer()
+
+        # The user never enabled grep plugins or the scan has already finished
+        # and no grep plugins will be run
+        if gc is None:
+            return True
+
+        return gc.has_finished()
 
     def get_grep_input_speed(self):
-        gc = self._w3af_core.strategy._grep_consumer
+        gc = self._w3af_core.strategy.get_grep_consumer()
         return None if gc is None else round_or_None(gc.in_queue.get_input_rpm())
 
     def get_grep_output_speed(self):
-        gc = self._w3af_core.strategy._grep_consumer
+        gc = self._w3af_core.strategy.get_grep_consumer()
         return None if gc is None else round_or_None(gc.in_queue.get_output_rpm())
 
     def get_grep_qsize(self):
-        gc = self._w3af_core.strategy._grep_consumer
+        gc = self._w3af_core.strategy.get_grep_consumer()
         return None if gc is None else gc.in_queue.qsize()
 
-    def get_grep_eta(self):
+    def get_grep_eta(self, adjustment_ratio=2.0):
         return self.calculate_eta(self.get_grep_input_speed(),
                                   self.get_grep_output_speed(),
                                   self.get_grep_qsize(),
-                                  GREP)
+                                  GREP,
+                                  adjustment_ratio=adjustment_ratio)
 
     def get_audit_input_speed(self):
-        ac = self._w3af_core.strategy._audit_consumer
+        ac = self._w3af_core.strategy.get_audit_consumer()
         return None if ac is None else round_or_None(ac.in_queue.get_input_rpm())
 
     def get_audit_output_speed(self):
-        ac = self._w3af_core.strategy._audit_consumer
+        ac = self._w3af_core.strategy.get_audit_consumer()
         return None if ac is None else round_or_None(ac.in_queue.get_output_rpm())
 
     def get_audit_qsize(self):
-        ac = self._w3af_core.strategy._audit_consumer
+        ac = self._w3af_core.strategy.get_audit_consumer()
         return None if ac is None else ac.in_queue.qsize()
 
     def get_audit_processed_tasks(self):
-        ac = self._w3af_core.strategy._audit_consumer
+        ac = self._w3af_core.strategy.get_audit_consumer()
         return None if ac is None else ac.in_queue.get_processed_tasks()
 
     def get_audit_worker_pool_queue_size(self):
-        ac = self._w3af_core.strategy._audit_consumer
-        return None if ac is None else ac._threadpool._inqueue.qsize()
-
-    def get_core_worker_pool_queue_size(self):
-        return self._w3af_core.worker_pool._inqueue.qsize()
+        ac = self._w3af_core.strategy.get_audit_consumer()
+        return None if ac is None else ac.get_pool().get_inqueue().qsize()
 
     def get_audit_current_fr(self):
         return self.get_current_fuzzable_request('audit')
 
-    def calculate_eta(self, input_speed, output_speed, queue_size, _type):
+    def has_finished_audit(self):
+        ac = self._w3af_core.strategy.get_audit_consumer()
+
+        # The user never enabled audit plugins or the scan has already finished
+        # and no audit plugins will be run
+        if ac is None:
+            return True
+
+        return ac.has_finished()
+
+    def get_audit_eta(self, adjustment_ratio=2.0):
+        return self.calculate_eta(self.get_audit_input_speed(),
+                                  self.get_audit_output_speed(),
+                                  self.get_audit_qsize(),
+                                  AUDIT,
+                                  adjustment_ratio=adjustment_ratio)
+
+    def get_core_worker_pool_queue_size(self):
+        return self._w3af_core.worker_pool.in_queue.qsize()
+
+    def calculate_eta(self, input_speed, output_speed, queue_size, _type,
+                      adjustment_ratio=2.0):
         """
         Do our best effort to calculate the ETA for a specific queue
         for which we have the input speed, output speed and current
@@ -296,9 +336,21 @@ class CoreStatus(object):
         :param output_speed: The speed at which items are read from the queue
         :param queue_size: The current queue size
         :param _type: The type of ETA we're calculating
-        :return: A string with an ETA, None if one of the parameters is None.
+        :param adjustment_ratio: The ratio to use to adjust the ETA when the input
+                                 speed is greater than the output speed.
+        :return: ETA in epoch format, None if one of the parameters is None.
         """
         if input_speed is None or output_speed is None:
+            msg = ('Calculated %s ETA: None seconds. (input speed:%s,'
+                   ' output speed:%s, queue size: %s, adjustment ratio: %s)')
+            args = (_type,
+                    input_speed,
+                    output_speed,
+                    queue_size,
+                    adjustment_ratio)
+
+            om.out.debug(msg % args)
+
             return None
 
         if input_speed >= output_speed:
@@ -313,20 +365,25 @@ class CoreStatus(object):
             #
             # The ETA will be calculated like:
             #
-            #   ETA = T(queued) + T(new) * 2
+            #   ETA = T(queued) + T(new) * adjustment_ratio
             #
             # Where:
             #
             #   * T(queued) is the time it will take to consume the
             #     already queued items.
             #
-            #   * T(new) is te time it will take to consume the new items
+            #   * T(new) is the time it will take to consume the new items
             #     that will appear in the queue while we solve T(queued)
             #
-            #   * 2 is our way of saying: we're not sure how much time this
-            #     will take, go have a coffee and come back later.
+            #   * `adjustment_ratio` is our way of saying: we're not sure how
+            #     much time this will take, go have a coffee and come back later.
+            #     This ratio changes for crawl, audit and grep queues and should
+            #     be changed based on real scans. The best way to adjust these
+            #     values is to run scans and use scan_log_analysis.py to check
+            #     (see: show_progress_delta).
+            #
             t_queued = queue_size / output_speed
-            t_new = input_speed * t_queued / output_speed * 2
+            t_new = input_speed * t_queued / output_speed * adjustment_ratio
             eta_minutes = t_queued + t_new
         else:
             # This case is easier, we have an output speed which is
@@ -345,13 +402,17 @@ class CoreStatus(object):
         eta_seconds_avg = (eta_seconds + self._eta_smooth[_type]) / 2.0
         self._eta_smooth[_type] = eta_seconds
 
-        return epoch_to_string(time.time() - eta_seconds_avg)
+        msg = ('Calculated %s ETA: %.2f seconds. (input speed:%s,'
+               ' output speed:%s, queue size: %s, adjustment ratio: %s)')
+        args = (_type,
+                eta_seconds_avg,
+                input_speed,
+                output_speed,
+                queue_size,
+                adjustment_ratio)
+        om.out.debug(msg % args)
 
-    def get_audit_eta(self):
-        return self.calculate_eta(self.get_audit_input_speed(),
-                                  self.get_audit_output_speed(),
-                                  self.get_audit_qsize(),
-                                  AUDIT)
+        return eta_seconds_avg
 
     def get_simplified_status(self):
         """
@@ -364,6 +425,12 @@ class CoreStatus(object):
             return STOPPED
 
         return RUNNING
+
+    def epoch_eta_to_string(self, eta):
+        if eta is None:
+            return None
+
+        return epoch_to_string(time.time() - eta)
 
     def get_status_as_dict(self):
         """
@@ -382,6 +449,11 @@ class CoreStatus(object):
 
         audit_fuzzable_request = self.get_current_fuzzable_request('audit')
         audit_fuzzable_request = serialize_fuzzable_request(audit_fuzzable_request)
+
+        eta = self.epoch_eta_to_string(self.get_eta())
+        progress = self.get_progress_percentage()
+
+        om.out.debug('The scan will finish in %s (%s%% done)' % (eta, progress))
 
         try:
             rpm = self.get_rpm()
@@ -426,14 +498,76 @@ class CoreStatus(object):
                 },
 
             'eta':
-                {'crawl': self.get_crawl_eta(),
-                 'audit': self.get_audit_eta(),
-                 'grep': self.get_grep_eta()},
+                {'crawl': self.epoch_eta_to_string(self.get_crawl_eta()),
+                 'audit': self.epoch_eta_to_string(self.get_audit_eta()),
+                 'grep': self.epoch_eta_to_string(self.get_grep_eta()),
+                 'all': eta},
 
             'rpm': rpm,
-            'sent_request_count': self.get_sent_request_count()
+            'sent_request_count': self.get_sent_request_count(),
+            'progress': progress,
         }
+
         return data
+
+    def get_progress_percentage(self):
+        """
+        :return: A % of scan progress as an integer
+        """
+        scan_start_time = self._start_time_epoch
+        current_time = time.time()
+        eta = self.get_eta()
+
+        spent_time = float(current_time - scan_start_time)
+        estimated_end_time = spent_time + eta
+
+        return int(spent_time / estimated_end_time) * 100
+
+    def get_eta(self):
+        """
+        Calculate the estimated number of seconds to complete the scan
+        :return: Scan ETA in seconds.
+        """
+        # We're most likely never going to reach this case, but just in case
+        # I'm adding it. Just return the current time, meaning: we're finishing
+        # now.
+        if self.has_finished_grep():
+            return time.time()
+
+        # The easiest case is when we're not sending any more HTTP requests,
+        # we just need to run the grep plugins (if enabled) on the HTTP requests
+        # and responses that were captured before
+        if self.has_finished_crawl() and self.has_finished_audit():
+            return self.get_grep_eta()
+
+        # The crawling phase has finished, but we're running audit (if enabled)
+        # and grep (if enabled). Grep and audit plugins will run in different
+        # threads. In most cases audit plugins will finish and grep plugins
+        # will continue to run for (at least) a couple of minutes.
+        if self.has_finished_crawl() and not self.has_finished_audit():
+            grep_eta = self.get_grep_eta()
+            audit_eta = self.get_audit_eta()
+
+            after_audit = 0.0
+            if grep_eta >= audit_eta:
+                after_audit = grep_eta - audit_eta
+
+            return audit_eta + after_audit
+
+        # The crawling, audit and grep (all if they were enabled) are running.
+        # Estimating ETA here is difficult!
+        grep_eta = self.get_grep_eta()
+        audit_eta = self.get_audit_eta()
+        crawl_eta = self.get_crawl_eta()
+
+        after_crawl_audit = 0.0
+        if grep_eta >= audit_eta:
+            after_crawl_audit += grep_eta - audit_eta
+
+        if grep_eta >= crawl_eta:
+            after_crawl_audit += grep_eta - crawl_eta
+
+        return crawl_eta + audit_eta + after_crawl_audit
 
     def get_sent_request_count(self):
         """
@@ -451,17 +585,20 @@ class CoreStatus(object):
             'cin': self.get_crawl_input_speed(),
             'cout': self.get_crawl_output_speed(),
             'clen': self.get_crawl_qsize(),
-            'ceta': self.get_crawl_eta(),
+            'ceta': self.epoch_eta_to_string(self.get_crawl_eta()),
 
             'ain': self.get_audit_input_speed(),
             'aout': self.get_audit_output_speed(),
             'alen': self.get_audit_qsize(),
-            'aeta': self.get_audit_eta(),
+            'aeta': self.epoch_eta_to_string(self.get_audit_eta()),
 
             'gin': self.get_grep_input_speed(),
             'gout': self.get_grep_output_speed(),
             'glen': self.get_grep_qsize(),
-            'geta': self.get_grep_eta(),
+            'geta': self.epoch_eta_to_string(self.get_grep_eta()),
+
+            'perc': self.get_progress_percentage(),
+            'eta': self.epoch_eta_to_string(self.get_eta()),
 
             'rpm': self.get_rpm()
         }
@@ -480,7 +617,10 @@ class CoreStatus(object):
                        ' Out (%(gout)s URLs/min) Pending (%(glen)s URLs)'
                        ' ETA (%(geta)s)\n')
 
-        status_str += 'Requests per minute: %(rpm)s'
+        status_str += 'Requests per minute: %(rpm)s\n\n'
+
+        status_str += 'Overall scan progress: %(perc)s\n'
+        status_str += 'Time to complete scan: %(eta)s\n'
 
         return status_str % data
 
