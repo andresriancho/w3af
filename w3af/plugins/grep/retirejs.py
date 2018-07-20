@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import json
+import shlex
 import hashlib
 import tempfile
 import subprocess
@@ -49,9 +50,10 @@ class retirejs(GrepPlugin):
     METHODS = ('GET',)
     HTTP_CODES = (200,)
     RETIRE_CMD = 'retire -j --outputformat json --outputpath %s --jspath %s'
-    RETIRE_CMD_JSREPO = RETIRE_CMD + ' --jsrepo %s'
+    RETIRE_CMD_JSREPO = 'retire -j --outputformat json --outputpath %s --jsrepo %s --jspath %s'
     RETIRE_TIMEOUT = 5
     RETIRE_DB_URL = URL('https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
+    BATCH_SIZE = 20
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -61,6 +63,8 @@ class retirejs(GrepPlugin):
         self._retirejs_exit_code_result = None
         self._retirejs_exit_code_was_run = False
         self._retire_db_filename = None
+        self._batch = []
+        self._js_temp_directory = None
 
     def grep(self, request, response):
         """
@@ -92,7 +96,54 @@ class retirejs(GrepPlugin):
         if self._retire_db_filename is None:
             return
 
-        self._analyze_response(response)
+        with self._plugin_lock:
+            batch = self._add_response_to_batch(response)
+
+            if self._should_analyze_batch(batch):
+                self._analyze_batch(batch)
+                self._remove_batch(batch)
+
+    def _remove_batch(self, batch):
+        for url, response_id, filename in batch:
+            self._remove_file(filename)
+
+    def _should_analyze_batch(self, batch):
+        return len(batch) == self.BATCH_SIZE
+
+    def _add_response_to_batch(self, response):
+        """
+        Save the HTTP response body to a file and save (url, filename) to the
+        batch.
+
+        :param response: HTTP response body
+        :return: A copy of the batch
+        """
+        response_filename = self._save_response_to_file(response)
+        data = (response.get_uri(), response.get_id(), response_filename)
+        self._batch.append(data)
+        return self._batch[:]
+
+    def _analyze_batch(self, batch):
+        """
+        1. Run retirejs on all the files in the batch
+        2. Parse the JSON file and associate files with URLs
+
+        :param batch: The batch to run on
+        :return: None, any vulnerabilities are saved to the KB.
+        """
+        json_doc = self._run_retire_on_batch(batch)
+        self._json_to_kb(batch, json_doc)
+
+    def end(self):
+        """
+        There might be some pending tasks to analyze in the batch, analyze
+        them and then clear the batch.
+
+        :return: None
+        """
+        self._analyze_batch(self._batch)
+        self._remove_batch(self._batch)
+        self._batch = []
 
     def _download_retire_db(self):
         """
@@ -152,20 +203,22 @@ class retirejs(GrepPlugin):
 
         check_file = tempfile.NamedTemporaryFile(prefix='retirejs-check-',
                                                  suffix='.js',
-                                                 delete=False)
+                                                 delete=False,
+                                                 dir=get_temp_dir())
         check_file.write('')
         check_file.close()
 
         output_file = tempfile.NamedTemporaryFile(prefix='retirejs-output-',
                                                   suffix='.json',
-                                                  delete=False)
+                                                  delete=False,
+                                                  dir=get_temp_dir())
         output_file.close()
 
         args = (output_file.name, check_file.name)
         cmd = self.RETIRE_CMD % args
 
         try:
-            subprocess.check_output(cmd, shell=True)
+            subprocess.check_output(shlex.split(cmd))
         except subprocess.CalledProcessError:
             msg = ('Unexpected retire.js exit code.'
                    ' Disabling grep.retirejs plugin.')
@@ -210,21 +263,19 @@ class retirejs(GrepPlugin):
         self._analyzed_hashes.add(response_hash)
         return True
 
-    def _analyze_response(self, response):
-        """
-        :return: None, save the findings to the KB.
-        """
-        response_file = self._save_response_to_file(response)
-        json_doc = self._analyze_file(response_file)
-        self._remove_file(response_file)
-        self._json_to_kb(response, json_doc)
+    def _get_js_temp_directory(self):
+        if self._js_temp_directory is None:
+            self._js_temp_directory = tempfile.mkdtemp(dir=get_temp_dir())
+
+        return self._js_temp_directory
 
     def _save_response_to_file(self, response):
         # Note: The file needs to have .js extension to force retirejs to
         #       scan it. Any other extension will be ignored.
         response_file = tempfile.NamedTemporaryFile(prefix='retirejs-response-',
                                                     suffix='.w3af.js',
-                                                    delete=False)
+                                                    delete=False,
+                                                    dir=self._get_js_temp_directory())
 
         body = smart_str_ignore(response.get_body())
         response_file.write(body)
@@ -232,22 +283,25 @@ class retirejs(GrepPlugin):
 
         return response_file.name
 
-    def _analyze_file(self, response_file):
+    def _run_retire_on_batch(self, batch):
         """
-        Analyze a file and return the result as JSON
+        Analyze a set of files and return the result as JSON
 
-        :param response_file: File holding HTTP response body
+        :param batch: The batch of file to analyze (url, filename)
         :return: JSON document
         """
         json_file = tempfile.NamedTemporaryFile(prefix='retirejs-output-',
-                                                suffix='.w3af',
-                                                delete=False)
+                                                suffix='.json',
+                                                delete=False,
+                                                dir=get_temp_dir())
         json_file.close()
 
-        args = (json_file.name, response_file, self._retire_db_filename)
+        args = (json_file.name,
+                self._retire_db_filename,
+                self._get_js_temp_directory())
         cmd = self.RETIRE_CMD_JSREPO % args
 
-        process = subprocess.Popen(cmd, shell=True)
+        process = subprocess.Popen(shlex.split(cmd))
 
         # This will terminate the retirejs process in case it hangs
         t = Timer(self.RETIRE_TIMEOUT, kill, [process])
@@ -284,34 +338,50 @@ class retirejs(GrepPlugin):
         except:
             pass
 
-    def _json_to_kb(self, response, json_doc):
+    def _json_to_kb(self, batch, json_doc):
         """
         Write the findings which are in JSON retirejs format to the KB.
 
-        :param response: HTTP response
+        :param batch: Batch of (url, filename) that was analyzed and generated
+                      the JSON document passed in json_doc
         :param json_doc: The whole JSON document as returned by retirejs
         :return: None, everything is written to the KB.
         """
         for json_finding in json_doc:
-            self._handle_finding(response, json_finding)
+            self._handle_finding(batch, json_finding)
 
-    def _handle_finding(self, response, json_finding):
+    def _handle_finding(self, batch, json_finding):
         """
         Write a finding to the KB.
 
-        :param response: HTTP response
+        :param batch: Batch of (url, filename) that was analyzed and generated
+                      the JSON document passed in json_doc
         :param json_finding: A finding from retirejs JSON document
         :return: None, everything is written to the KB.
         """
         results = json_finding.get('results', [])
-        for json_result in results:
-            self._handle_result(response, json_result)
 
-    def _handle_result(self, response, json_result):
+        # Find the URL that triggered this vulnerability
+        finding_file = json_finding.get('file')
+        url = None
+        response_id = None
+
+        for url, response_id, batch_filename in batch:
+            if batch_filename == finding_file:
+                break
+
+        if url is None:
+            om.out.debug('Batch filename mismatch in retirejs.')
+            return
+
+        for json_result in results:
+            self._handle_result(url, response_id, json_result)
+
+    def _handle_result(self, url, response_id, json_result):
         """
         Write a result to the KB.
 
-        :param response: HTTP response
+        :param url: The URL associated with this result
         :param json_result: A finding from retirejs JSON document
         :return: None, everything is written to the KB.
         """
@@ -332,7 +402,7 @@ class retirejs(GrepPlugin):
                          ' and continue with the next.')
             return
 
-        message = VulnerabilityMessage(response, component, version)
+        message = VulnerabilityMessage(url, component, version)
 
         for vulnerability in vulnerabilities:
             vuln_severity = vulnerability.get('severity', 'unknown')
@@ -348,10 +418,10 @@ class retirejs(GrepPlugin):
         v = Vuln('Vulnerable JavaScript library in use',
                  desc,
                  real_severity,
-                 response.get_id(),
+                 response_id,
                  self.get_name())
 
-        v.set_uri(response.get_uri())
+        v.set_uri(url)
 
         self.kb_append_uniq(self, 'js', v, filter_by='URL')
 
@@ -378,8 +448,8 @@ class retirejs(GrepPlugin):
 
 
 class VulnerabilityMessage(object):
-    def __init__(self, response, component, version):
-        self.response = response
+    def __init__(self, url, component, version):
+        self.url = url
         self.component = component
         self.version = version
         self.vulnerabilities = []
@@ -418,7 +488,7 @@ class VulnerabilityMessage(object):
 
         summaries = '\n'.join(' - %s' % vuln.summary for vuln in self.vulnerabilities)
 
-        args = {'url': self.response.get_url(),
+        args = {'url': self.url,
                 'component': self.component,
                 'version': self.version,
                 'summaries': summaries}
