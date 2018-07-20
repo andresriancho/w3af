@@ -450,10 +450,9 @@ class CoreStatus(object):
         audit_fuzzable_request = self.get_current_fuzzable_request('audit')
         audit_fuzzable_request = serialize_fuzzable_request(audit_fuzzable_request)
 
-        eta = self.epoch_eta_to_string(self.get_eta())
-        progress = self.get_progress_percentage()
-
-        om.out.debug('The scan will finish in %s (%s%% done)' % (eta, progress))
+        eta_seconds = self.get_eta()
+        eta = self.epoch_eta_to_string(eta_seconds)
+        progress = self.get_progress_percentage(eta=eta_seconds)
 
         try:
             rpm = self.get_rpm()
@@ -510,18 +509,24 @@ class CoreStatus(object):
 
         return data
 
-    def get_progress_percentage(self):
+    def get_progress_percentage(self, eta=None):
         """
         :return: A % of scan progress as an integer
         """
         scan_start_time = self._start_time_epoch
         current_time = time.time()
-        eta = self.get_eta()
+
+        if eta is None:
+            eta = self.get_eta()
 
         spent_time = float(current_time - scan_start_time)
         estimated_end_time = spent_time + eta
 
-        return int(spent_time / estimated_end_time) * 100
+        progress = int(spent_time / estimated_end_time) * 100
+
+        om.out.debug('The scan will finish in %s (%s%% done)' % (eta, progress))
+
+        return progress
 
     def get_eta(self):
         """
@@ -578,6 +583,8 @@ class CoreStatus(object):
         if not self.is_running():
             return self.get_status()
 
+        eta_seconds = self.get_eta()
+
         data = {
             'status': self.get_status(),
 
@@ -596,8 +603,8 @@ class CoreStatus(object):
             'glen': self.get_grep_qsize(),
             'geta': self.epoch_eta_to_string(self.get_grep_eta()),
 
-            'perc': self.get_progress_percentage(),
-            'eta': self.epoch_eta_to_string(self.get_eta()),
+            'perc': self.get_progress_percentage(eta=eta_seconds),
+            'eta': self.epoch_eta_to_string(eta_seconds),
 
             'rpm': self.get_rpm()
         }
