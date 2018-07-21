@@ -34,6 +34,10 @@ AUDIT = 'audit'
 CRAWL = 'crawl'
 GREP = 'grep'
 
+GREP_DEFAULT_ADJUSTMENT_RATIO = 2.0
+AUDIT_DEFAULT_ADJUSTMENT_RATIO = 2.5
+CRAWL_DEFAULT_ADJUSTMENT_RATIO = 1.75
+
 
 class CoreStatus(object):
     """
@@ -156,15 +160,21 @@ class CoreStatus(object):
         if self._start_time_epoch is None:
             raise RuntimeError('Can NOT call get_run_time before start().')
 
-        now = time.time()
-        diff = now - self._start_time_epoch
-        run_time = diff / 60
-        return run_time
+        diff = time.time() - self._start_time_epoch
+        return diff / 60
+
+    def get_run_time_seconds(self):
+        """
+        :return: The time (in seconds) between now and the call to start().
+        """
+        if self._start_time_epoch is None:
+            raise RuntimeError('Can NOT call get_run_time before start().')
+
+        return time.time() - self._start_time_epoch
 
     def get_scan_time(self):
         """
-        :return: The scan time in a format similar to:
-                        3h 25m 32s
+        :return: The scan time in a format similar to: "3h 25m 32s"
         """
         return epoch_to_string(self._start_time_epoch)
 
@@ -238,7 +248,7 @@ class CoreStatus(object):
     def get_crawl_current_fr(self):
         return self.get_current_fuzzable_request('crawl')
 
-    def get_crawl_eta(self, adjustment_ratio=2.0):
+    def get_crawl_eta(self, adjustment_ratio=CRAWL_DEFAULT_ADJUSTMENT_RATIO):
         return self.calculate_eta(self.get_crawl_input_speed(),
                                   self.get_crawl_output_speed(),
                                   self.get_crawl_qsize(),
@@ -275,7 +285,7 @@ class CoreStatus(object):
         gc = self._w3af_core.strategy.get_grep_consumer()
         return None if gc is None else gc.in_queue.qsize()
 
-    def get_grep_eta(self, adjustment_ratio=2.0):
+    def get_grep_eta(self, adjustment_ratio=GREP_DEFAULT_ADJUSTMENT_RATIO):
         return self.calculate_eta(self.get_grep_input_speed(),
                                   self.get_grep_output_speed(),
                                   self.get_grep_qsize(),
@@ -315,7 +325,7 @@ class CoreStatus(object):
 
         return ac.has_finished()
 
-    def get_audit_eta(self, adjustment_ratio=2.0):
+    def get_audit_eta(self, adjustment_ratio=AUDIT_DEFAULT_ADJUSTMENT_RATIO):
         return self.calculate_eta(self.get_audit_input_speed(),
                                   self.get_audit_output_speed(),
                                   self.get_audit_qsize(),
@@ -513,20 +523,129 @@ class CoreStatus(object):
         """
         :return: A % of scan progress as an integer
         """
-        scan_start_time = self._start_time_epoch
-        current_time = time.time()
+        eta = self.get_eta() if eta is None else eta
 
-        if eta is None:
-            eta = self.get_eta()
+        run_time = self.get_run_time_seconds()
+        estimated_end_time = run_time + eta
 
-        spent_time = float(current_time - scan_start_time)
-        estimated_end_time = spent_time + eta
+        progress = int(run_time / estimated_end_time * 100)
 
-        progress = int(spent_time / estimated_end_time) * 100
-
-        om.out.debug('The scan will finish in %s (%s%% done)' % (eta, progress))
+        om.out.debug('The scan will finish in %.2f seconds (%s%% done)' % (eta, progress))
 
         return progress
+
+    def get_crawl_adjustment_ratio(self):
+        """
+        During the first minutes of the scan the ETA calculations are usually
+        very inaccurate, indicating the the scan will finish way sooner than
+        reality.
+
+        In order to fix this issue provide a set of specific adjustment
+        ratios for the ETA calculation (see how these are used in calculate_eta)
+        which should be used during the first minutes of the scan.
+
+        Also provide specific adjustment ratios for different scan phases, such
+        as "crawl, audit and grep running", "crawl finished, audit and grep running",
+        etc.
+
+        :return: The crawl adjustment ratio to use in this run
+        """
+        run_time = self.get_run_time_seconds()
+
+        #
+        # During the early phases of the scan it is easy to believe that the
+        # scan will finish soon (not many items in the queue). To prevent
+        # this we set a big adjustment ratio
+        #
+        if run_time < 30:
+            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 20
+
+        if run_time < 60:
+            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 15
+
+        if run_time < 120:
+            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 7.5
+
+        if run_time < 180:
+            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 3.5
+
+        return CRAWL_DEFAULT_ADJUSTMENT_RATIO
+
+    def get_audit_adjustment_ratio(self):
+        """
+        :see: Documentation for get_crawl_adjustment_ratio
+        """
+        run_time = self.get_run_time_seconds()
+
+        #
+        # We know that the crawl plugin has finished, no new items will be added
+        # to the audit queue. We can set audit adjustment ratio to zero
+        #
+        if self.has_finished_crawl():
+            return 0.0
+
+        #
+        # During the early phases of the scan it is easy to believe that the
+        # scan will finish soon (not many items in the queue). To prevent
+        # this we set a big adjustment ratio
+        #
+        if run_time < 30:
+            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 20.0
+
+        if run_time < 60:
+            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 10.0
+
+        if run_time < 120:
+            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 7.5
+
+        if run_time < 180:
+            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 3.5
+
+        return AUDIT_DEFAULT_ADJUSTMENT_RATIO
+
+    def get_grep_adjustment_ratio(self):
+        """
+        :see: Documentation for get_crawl_adjustment_ratio
+        """
+        run_time = self.get_run_time_seconds()
+
+        #
+        # When the audit and crawl plugins have finished the grep plugins need
+        # to consume the queue. No more new items will be added to the queue,
+        # so we can safely use an adjustment ratio of zero for the grep ETA
+        # because no "uncertain amount of tasks" will be added to the queue
+        #
+        if self.has_finished_crawl() and self.has_finished_audit():
+            return 0.0
+
+        #
+        # When both crawl and audit are running the amount of HTTP requests is
+        # higher, thus it is harder to calculate the ETA.
+        #
+        if not self.has_finished_crawl() and not self.has_finished_audit():
+            return GREP_DEFAULT_ADJUSTMENT_RATIO * 1.5
+
+        #
+        # During the early phases of the scan it is easy to believe that the
+        # scan will finish soon (not many items in the queue). To prevent
+        # this we set a big adjustment ratio
+        #
+        if run_time < 30:
+            return GREP_DEFAULT_ADJUSTMENT_RATIO * 20
+
+        if run_time < 60:
+            return GREP_DEFAULT_ADJUSTMENT_RATIO * 10
+
+        if run_time < 120:
+            return GREP_DEFAULT_ADJUSTMENT_RATIO * 7.5
+
+        if run_time < 180:
+            return GREP_DEFAULT_ADJUSTMENT_RATIO * 3.5
+
+        return GREP_DEFAULT_ADJUSTMENT_RATIO
+
+    def log_eta(self, msg):
+        om.out.debug('[get_eta] %s' % msg)
 
     def get_eta(self):
         """
@@ -536,33 +655,42 @@ class CoreStatus(object):
         # We're most likely never going to reach this case, but just in case
         # I'm adding it. Just zero, meaning: we're finishing now
         if self.has_finished_grep():
+            self.log_eta('ETA is 0. Grep consumer has already finished.')
             return 0
+
+        crawl_adj = self.get_crawl_adjustment_ratio()
+        audit_adj = self.get_audit_adjustment_ratio()
+        grep_adj = self.get_grep_adjustment_ratio()
 
         # The easiest case is when we're not sending any more HTTP requests,
         # we just need to run the grep plugins (if enabled) on the HTTP requests
         # and responses that were captured before
         if self.has_finished_crawl() and self.has_finished_audit():
-            return self.get_grep_eta()
+            self.log_eta('Crawl and audit consumers have finished,'
+                         ' ETA calculated using grep ETA.')
+            return self.get_grep_eta(adjustment_ratio=grep_adj)
 
         # The crawling phase has finished, but we're running audit (if enabled)
         # and grep (if enabled). Grep and audit plugins will run in different
         # threads. In most cases audit plugins will finish and grep plugins
         # will continue to run for (at least) a couple of minutes.
         if self.has_finished_crawl() and not self.has_finished_audit():
-            grep_eta = self.get_grep_eta()
-            audit_eta = self.get_audit_eta()
+            grep_eta = self.get_grep_eta(adjustment_ratio=grep_adj)
+            audit_eta = self.get_audit_eta(adjustment_ratio=audit_adj)
 
             after_audit = 0.0
             if grep_eta >= audit_eta:
                 after_audit = grep_eta - audit_eta
 
+            self.log_eta('Crawl has finished. Using audit and grep ETAs'
+                         ' to calculate overall ETA.')
             return audit_eta + after_audit
 
         # The crawling, audit and grep (all if they were enabled) are running.
         # Estimating ETA here is difficult!
-        grep_eta = self.get_grep_eta()
-        audit_eta = self.get_audit_eta()
-        crawl_eta = self.get_crawl_eta()
+        grep_eta = self.get_grep_eta(adjustment_ratio=grep_adj)
+        audit_eta = self.get_audit_eta(adjustment_ratio=audit_adj)
+        crawl_eta = self.get_crawl_eta(adjustment_ratio=crawl_adj)
 
         after_crawl_audit = 0.0
         if grep_eta >= audit_eta:
@@ -571,6 +699,8 @@ class CoreStatus(object):
         if grep_eta >= crawl_eta:
             after_crawl_audit += grep_eta - crawl_eta
 
+        self.log_eta('Crawl, audit and grep are running.'
+                     ' Using all ETAs to calculate overall ETA.')
         return crawl_eta + audit_eta + after_crawl_audit
 
     def get_sent_request_count(self):
