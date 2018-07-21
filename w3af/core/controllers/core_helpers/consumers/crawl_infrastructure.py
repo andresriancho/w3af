@@ -57,7 +57,7 @@ class crawl_infrastructure(BaseConsumer):
         """
         super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
                                                    w3af_core,
-                                                   thread_name='CrawlInfra',
+                                                   thread_name=self.get_name(),
                                                    max_pool_queued_tasks=100)
         self._max_discovery_time = int(max_discovery_time)
 
@@ -68,6 +68,9 @@ class crawl_infrastructure(BaseConsumer):
         self._running = True
         self._report_max_time = True
         self._reported_found_urls = ScalableBloomFilter()
+
+    def get_name(self):
+        return 'CrawlInfra'
 
     def run(self):
         """

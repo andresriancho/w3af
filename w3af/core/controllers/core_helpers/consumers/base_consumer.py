@@ -152,6 +152,9 @@ class BaseConsumer(Process):
     def get_pool(self):
         return self._threadpool
 
+    def get_name(self):
+        raise NotImplementedError
+
     def run(self):
         """
         Consume the queue items, sending them to the plugins which are then

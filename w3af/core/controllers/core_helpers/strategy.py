@@ -314,11 +314,13 @@ class CoreStrategy(object):
                     # This consumer is saying that it doesn't have any
                     # pending or in progress work
                     finished.add(url_producer)
+                    om.out.debug('Producer %s has finished' % url_producer.get_name())
             else:
                 if result_item == POISON_PILL:
                     # This consumer is saying that it has finished, so we
                     # remove it from the list.
                     consumer_forced_end.add(url_producer)
+                    om.out.debug('Producer %s has finished' % url_producer.get_name())
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
                 else:
@@ -329,8 +331,8 @@ class CoreStrategy(object):
                     # don't want to do anything with this data
                     fmt = ('%s is returning objects of class %s instead of'
                            ' FuzzableRequest.')
-                    assert isinstance(fuzzable_request_inst, FuzzableRequest),\
-                           fmt % (url_producer, type(fuzzable_request_inst))
+                    msg = fmt % (url_producer, type(fuzzable_request_inst))
+                    assert isinstance(fuzzable_request_inst, FuzzableRequest), msg
 
                     for url_consumer in output:
                         url_consumer.in_queue_put(fuzzable_request_inst)
