@@ -34,14 +34,6 @@ AUDIT = 'audit'
 CRAWL = 'crawl'
 GREP = 'grep'
 
-GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO = 2.0
-AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO = 2.5
-CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO = 1.75
-
-GREP_DEFAULT_ADJUSTMENT_RATIO = 2.0
-AUDIT_DEFAULT_ADJUSTMENT_RATIO = 2.5
-CRAWL_DEFAULT_ADJUSTMENT_RATIO = 1.75
-
 
 class CoreStatus(object):
     """
@@ -606,18 +598,12 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 25)
+            return Adjustment(known=0.6, unknown=30)
 
         if run_time < 60:
-            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 10)
+            return Adjustment(known=0.6, unknown=7)
 
-        if run_time < 120:
-            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 5)
-
-        if run_time < 180:
-            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 1.5)
-
-        return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO)
+        return Adjustment(known=0.4, unknown=1.75)
 
     def get_audit_adjustment_ratio(self):
         """
@@ -630,7 +616,7 @@ class CoreStatus(object):
         # to the audit queue. We can set audit adjustment ratio to zero
         #
         if self.has_finished_crawl():
-            return Adjustment(unknown=0)
+            return Adjustment(known=1, unknown=0)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -638,18 +624,12 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 10.0)
+            return Adjustment(known=1, unknown=5)
 
         if run_time < 60:
-            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 7.5)
+            return Adjustment(known=1, unknown=3)
 
-        if run_time < 120:
-            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 2.5)
-
-        if run_time < 180:
-            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 1.5)
-
-        return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO)
+        return Adjustment(known=0.9, unknown=2.5)
 
     def get_grep_adjustment_ratio(self):
         """
@@ -667,30 +647,30 @@ class CoreStatus(object):
             return Adjustment(unknown=0)
 
         #
-        # When both crawl and audit are running the amount of HTTP requests is
-        # higher, thus it is harder to calculate the ETA.
-        #
-        if not self.has_finished_crawl() and not self.has_finished_audit():
-            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 1.5)
-
-        #
         # During the early phases of the scan it is easy to believe that the
         # scan will finish soon (not many items in the queue). To prevent
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 20)
+            return Adjustment(known=1, unknown=50)
 
         if run_time < 60:
-            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 10)
+            return Adjustment(known=1, unknown=35)
 
         if run_time < 120:
-            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 7.5)
+            return Adjustment(known=1, unknown=20)
 
         if run_time < 180:
-            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 3.5)
+            return Adjustment(known=1, unknown=10)
 
-        return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO)
+        #
+        # When both crawl and audit are running the amount of HTTP requests is
+        # higher, thus it is harder to calculate the ETA.
+        #
+        if not self.has_finished_crawl() and not self.has_finished_audit():
+            return Adjustment(known=1, unknown=1)
+
+        return Adjustment(known=1.0, unknown=1.0)
 
     def log_eta(self, msg):
         om.out.debug('[get_eta] %s' % msg)
@@ -745,7 +725,10 @@ class CoreStatus(object):
 
         self.log_eta('Crawl, audit and grep are running.'
                      ' Using all ETAs to calculate overall ETA.')
-        return crawl_eta + audit_eta + after_crawl_audit
+
+        average_1 = (crawl_eta + audit_eta) / 2.0
+        average_2 = after_crawl_audit / 2.0
+        return average_1 + average_2
 
     def get_sent_request_count(self):
         """
@@ -807,5 +790,26 @@ class CoreStatus(object):
 
 class Adjustment(object):
     def __init__(self, known=1.0, unknown=1.0):
+        """
+        Used to adjust the ETA calculations for two cases:
+
+            * known: The measured input speed is less than the measured
+                     output speed. We "know" when the scan will consume
+                     the queue and can calculated the ETA.
+
+            * unknown: The measured input speed is greater than the measured
+                       output speed. The ETA is an estimate, if we calculate
+                       as-is it would take for ever to consume the task.
+
+        :param known:
+            * Higher values of known INCREASE the ETA
+            * Higher values of known REDUCE estimated % (as shown in the
+              scan log analysis output)
+
+        :param unknown:
+            * Higher values of known INCREASE the ETA
+            * Higher values of known REDUCE estimated % (as shown in the
+              scan log analysis output)
+        """
         self.known = known
         self.unknown = unknown
