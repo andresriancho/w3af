@@ -34,6 +34,10 @@ AUDIT = 'audit'
 CRAWL = 'crawl'
 GREP = 'grep'
 
+GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO = 2.0
+AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO = 2.5
+CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO = 1.75
+
 GREP_DEFAULT_ADJUSTMENT_RATIO = 2.0
 AUDIT_DEFAULT_ADJUSTMENT_RATIO = 2.5
 CRAWL_DEFAULT_ADJUSTMENT_RATIO = 1.75
@@ -213,27 +217,27 @@ class CoreStatus(object):
 
     def get_crawl_input_speed(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
-        return None if dc is None else round_or_None(dc.in_queue.get_input_rpm())
+        return 0 if dc is None else dc.in_queue.get_input_rpm()
 
     def get_crawl_output_speed(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
-        return None if dc is None else round_or_None(dc.in_queue.get_output_rpm())
+        return 0 if dc is None else dc.in_queue.get_output_rpm()
 
     def get_crawl_qsize(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
-        return None if dc is None else dc.in_queue.qsize()
+        return 0 if dc is None else dc.in_queue.qsize()
 
     def get_crawl_output_qsize(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
-        return None if dc is None else dc.out_queue.qsize()
+        return 0 if dc is None else dc.out_queue.qsize()
 
     def get_crawl_processed_tasks(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
-        return None if dc is None else dc.out_queue.get_processed_tasks()
+        return 0 if dc is None else dc.out_queue.get_processed_tasks()
 
     def get_crawl_worker_pool_queue_size(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
-        return None if dc is None else dc.get_pool().get_inqueue().qsize()
+        return 0 if dc is None else dc.get_pool().get_inqueue().qsize()
 
     def has_finished_crawl(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
@@ -248,12 +252,14 @@ class CoreStatus(object):
     def get_crawl_current_fr(self):
         return self.get_current_fuzzable_request('crawl')
 
-    def get_crawl_eta(self, adjustment_ratio=CRAWL_DEFAULT_ADJUSTMENT_RATIO):
+    def get_crawl_eta(self):
+        adjustment = self.get_crawl_adjustment_ratio()
+
         return self.calculate_eta(self.get_crawl_input_speed(),
                                   self.get_crawl_output_speed(),
                                   self.get_crawl_qsize(),
                                   CRAWL,
-                                  adjustment_ratio=adjustment_ratio)
+                                  adjustment=adjustment)
 
     def get_grep_processed_tasks(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
@@ -275,42 +281,44 @@ class CoreStatus(object):
 
     def get_grep_input_speed(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
-        return None if gc is None else round_or_None(gc.in_queue.get_input_rpm())
+        return 0 if gc is None else gc.in_queue.get_input_rpm()
 
     def get_grep_output_speed(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
-        return None if gc is None else round_or_None(gc.in_queue.get_output_rpm())
+        return 0 if gc is None else gc.in_queue.get_output_rpm()
 
     def get_grep_qsize(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
-        return None if gc is None else gc.in_queue.qsize()
+        return 0 if gc is None else gc.in_queue.qsize()
 
-    def get_grep_eta(self, adjustment_ratio=GREP_DEFAULT_ADJUSTMENT_RATIO):
+    def get_grep_eta(self):
+        adjustment = self.get_grep_adjustment_ratio()
+
         return self.calculate_eta(self.get_grep_input_speed(),
                                   self.get_grep_output_speed(),
                                   self.get_grep_qsize(),
                                   GREP,
-                                  adjustment_ratio=adjustment_ratio)
+                                  adjustment=adjustment)
 
     def get_audit_input_speed(self):
         ac = self._w3af_core.strategy.get_audit_consumer()
-        return None if ac is None else round_or_None(ac.in_queue.get_input_rpm())
+        return 0 if ac is None else ac.in_queue.get_input_rpm()
 
     def get_audit_output_speed(self):
         ac = self._w3af_core.strategy.get_audit_consumer()
-        return None if ac is None else round_or_None(ac.in_queue.get_output_rpm())
+        return 0 if ac is None else ac.in_queue.get_output_rpm()
 
     def get_audit_qsize(self):
         ac = self._w3af_core.strategy.get_audit_consumer()
-        return None if ac is None else ac.in_queue.qsize()
+        return 0 if ac is None else ac.in_queue.qsize()
 
     def get_audit_processed_tasks(self):
         ac = self._w3af_core.strategy.get_audit_consumer()
-        return None if ac is None else ac.in_queue.get_processed_tasks()
+        return 0 if ac is None else ac.in_queue.get_processed_tasks()
 
     def get_audit_worker_pool_queue_size(self):
         ac = self._w3af_core.strategy.get_audit_consumer()
-        return None if ac is None else ac.get_pool().get_inqueue().qsize()
+        return 0 if ac is None else ac.get_pool().get_inqueue().qsize()
 
     def get_audit_current_fr(self):
         return self.get_current_fuzzable_request('audit')
@@ -325,18 +333,40 @@ class CoreStatus(object):
 
         return ac.has_finished()
 
-    def get_audit_eta(self, adjustment_ratio=AUDIT_DEFAULT_ADJUSTMENT_RATIO):
+    def get_audit_eta(self):
+        adjustment = self.get_audit_adjustment_ratio()
+
         return self.calculate_eta(self.get_audit_input_speed(),
                                   self.get_audit_output_speed(),
                                   self.get_audit_qsize(),
                                   AUDIT,
-                                  adjustment_ratio=adjustment_ratio)
+                                  adjustment=adjustment)
 
     def get_core_worker_pool_queue_size(self):
         return self._w3af_core.worker_pool.in_queue.qsize()
 
+    def log_calculate_eta(self, eta, input_speed, output_speed, queue_size,
+                          _type, adjustment, average):
+        """
+        :return: None, a log line is added.
+        """
+        msg = ('Calculated %s ETA: %.2f seconds. (input speed:%.2f,'
+               ' output speed:%.2f, queue size: %i, adjustment known: %.2f,'
+               ' adjustment unknown: %.2f, average: %s)')
+        args = (_type,
+                eta,
+                input_speed,
+                output_speed,
+                queue_size,
+                adjustment.known,
+                adjustment.unknown,
+                average)
+
+        om.out.debug(msg % args)
+
     def calculate_eta(self, input_speed, output_speed, queue_size, _type,
-                      adjustment_ratio=2.0):
+                      adjustment=None,
+                      average=True):
         """
         Do our best effort to calculate the ETA for a specific queue
         for which we have the input speed, output speed and current
@@ -346,22 +376,44 @@ class CoreStatus(object):
         :param output_speed: The speed at which items are read from the queue
         :param queue_size: The current queue size
         :param _type: The type of ETA we're calculating
-        :param adjustment_ratio: The ratio to use to adjust the ETA when the input
-                                 speed is greater than the output speed.
+        :param adjustment: Adjustment instance which indicates how to adjust the
+                           ETA for this calculation. The adjustment data is just
+                           two ratios which multiply the result. There is one
+                           ratio for the case where input speed > output speed
+                           and another for the case where output speed > input
+                           speed.
+        :param average: True if the result of this calculation should be averaged
+                        with the previous result. This has the effect of removing
+                        spikes from the ETA results
         :return: ETA in epoch format, None if one of the parameters is None.
         """
-        if input_speed is None or output_speed is None:
-            msg = ('Calculated %s ETA: None seconds. (input speed:%s,'
-                   ' output speed:%s, queue size: %s, adjustment ratio: %s)')
-            args = (_type,
-                    input_speed,
-                    output_speed,
-                    queue_size,
-                    adjustment_ratio)
+        if adjustment is None:
+            adjustment = Adjustment(known=1.0, unknown=1.0)
 
-            om.out.debug(msg % args)
+        if output_speed == 0 and input_speed == 0:
+            # The consumer has finished
+            eta = 0.0
 
-            return None
+            self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
+                                   _type, adjustment, average)
+
+            return eta
+
+        if output_speed == 0 and input_speed != 0:
+            # The output speed is zero, this is a very strange case... it will
+            # be impossible to calculate the ETA, just remove "I'll be there
+            # in 5 minutes" (just like the pizza delivery when you call them
+            # because you're hungry)
+            #
+            # The next time the code calls calculate_eta() the output_speed
+            # will (most likely) be different from zero and it will be possible
+            # to calculate a real ETA
+            eta = 5 * 60.0
+
+            self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
+                                   _type, adjustment, average)
+
+            return eta
 
         if input_speed >= output_speed:
             # This is a tricky case. The input speed is greater than
@@ -393,7 +445,7 @@ class CoreStatus(object):
             #     (see: show_progress_delta).
             #
             t_queued = queue_size / output_speed
-            t_new = input_speed * t_queued / output_speed * adjustment_ratio
+            t_new = input_speed * t_queued / output_speed * adjustment.unknown
             eta_minutes = t_queued + t_new
         else:
             # This case is easier, we have an output speed which is
@@ -406,23 +458,19 @@ class CoreStatus(object):
             t_queued = queue_size / output_speed
             t_new = input_speed * t_queued / output_speed
             eta_minutes = t_queued + t_new
+            eta_minutes = eta_minutes * adjustment.known
 
         # Smooth with average to avoid ugly spikes in the ETAs
-        eta_seconds = eta_minutes * 60
-        eta_seconds_avg = (eta_seconds + self._eta_smooth[_type]) / 2.0
-        self._eta_smooth[_type] = eta_seconds
+        eta = eta_minutes * 60
 
-        msg = ('Calculated %s ETA: %.2f seconds. (input speed:%s,'
-               ' output speed:%s, queue size: %s, adjustment ratio: %s)')
-        args = (_type,
-                eta_seconds_avg,
-                input_speed,
-                output_speed,
-                queue_size,
-                adjustment_ratio)
-        om.out.debug(msg % args)
+        if average:
+            eta = (eta + self._eta_smooth[_type]) / 2.0
+            self._eta_smooth[_type] = eta
 
-        return eta_seconds_avg
+        self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
+                               _type, adjustment, average)
+
+        return eta
 
     def get_simplified_status(self):
         """
@@ -558,18 +606,18 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 20
+            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 25)
 
         if run_time < 60:
-            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 15
+            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 10)
 
         if run_time < 120:
-            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 7.5
+            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 5)
 
         if run_time < 180:
-            return CRAWL_DEFAULT_ADJUSTMENT_RATIO * 3.5
+            return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 1.5)
 
-        return CRAWL_DEFAULT_ADJUSTMENT_RATIO
+        return Adjustment(unknown=CRAWL_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO)
 
     def get_audit_adjustment_ratio(self):
         """
@@ -582,7 +630,7 @@ class CoreStatus(object):
         # to the audit queue. We can set audit adjustment ratio to zero
         #
         if self.has_finished_crawl():
-            return 0.0
+            return Adjustment(unknown=0)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -590,18 +638,18 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 20.0
+            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 10.0)
 
         if run_time < 60:
-            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 10.0
+            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 7.5)
 
         if run_time < 120:
-            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 7.5
+            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 2.5)
 
         if run_time < 180:
-            return AUDIT_DEFAULT_ADJUSTMENT_RATIO * 3.5
+            return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 1.5)
 
-        return AUDIT_DEFAULT_ADJUSTMENT_RATIO
+        return Adjustment(unknown=AUDIT_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO)
 
     def get_grep_adjustment_ratio(self):
         """
@@ -616,14 +664,14 @@ class CoreStatus(object):
         # because no "uncertain amount of tasks" will be added to the queue
         #
         if self.has_finished_crawl() and self.has_finished_audit():
-            return 0.0
+            return Adjustment(unknown=0)
 
         #
         # When both crawl and audit are running the amount of HTTP requests is
         # higher, thus it is harder to calculate the ETA.
         #
         if not self.has_finished_crawl() and not self.has_finished_audit():
-            return GREP_DEFAULT_ADJUSTMENT_RATIO * 1.5
+            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 1.5)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -631,18 +679,18 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return GREP_DEFAULT_ADJUSTMENT_RATIO * 20
+            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 20)
 
         if run_time < 60:
-            return GREP_DEFAULT_ADJUSTMENT_RATIO * 10
+            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 10)
 
         if run_time < 120:
-            return GREP_DEFAULT_ADJUSTMENT_RATIO * 7.5
+            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 7.5)
 
         if run_time < 180:
-            return GREP_DEFAULT_ADJUSTMENT_RATIO * 3.5
+            return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO * 3.5)
 
-        return GREP_DEFAULT_ADJUSTMENT_RATIO
+        return Adjustment(unknown=GREP_DEFAULT_UNKNOWN_ADJUSTMENT_RATIO)
 
     def log_eta(self, msg):
         om.out.debug('[get_eta] %s' % msg)
@@ -658,25 +706,21 @@ class CoreStatus(object):
             self.log_eta('ETA is 0. Grep consumer has already finished.')
             return 0
 
-        crawl_adj = self.get_crawl_adjustment_ratio()
-        audit_adj = self.get_audit_adjustment_ratio()
-        grep_adj = self.get_grep_adjustment_ratio()
-
         # The easiest case is when we're not sending any more HTTP requests,
         # we just need to run the grep plugins (if enabled) on the HTTP requests
         # and responses that were captured before
         if self.has_finished_crawl() and self.has_finished_audit():
             self.log_eta('Crawl and audit consumers have finished,'
                          ' ETA calculated using grep ETA.')
-            return self.get_grep_eta(adjustment_ratio=grep_adj)
+            return self.get_grep_eta()
 
         # The crawling phase has finished, but we're running audit (if enabled)
         # and grep (if enabled). Grep and audit plugins will run in different
         # threads. In most cases audit plugins will finish and grep plugins
         # will continue to run for (at least) a couple of minutes.
         if self.has_finished_crawl() and not self.has_finished_audit():
-            grep_eta = self.get_grep_eta(adjustment_ratio=grep_adj)
-            audit_eta = self.get_audit_eta(adjustment_ratio=audit_adj)
+            grep_eta = self.get_grep_eta()
+            audit_eta = self.get_audit_eta()
 
             after_audit = 0.0
             if grep_eta >= audit_eta:
@@ -688,9 +732,9 @@ class CoreStatus(object):
 
         # The crawling, audit and grep (all if they were enabled) are running.
         # Estimating ETA here is difficult!
-        grep_eta = self.get_grep_eta(adjustment_ratio=grep_adj)
-        audit_eta = self.get_audit_eta(adjustment_ratio=audit_adj)
-        crawl_eta = self.get_crawl_eta(adjustment_ratio=crawl_adj)
+        grep_eta = self.get_grep_eta()
+        audit_eta = self.get_audit_eta()
+        crawl_eta = self.get_crawl_eta()
 
         after_crawl_audit = 0.0
         if grep_eta >= audit_eta:
@@ -761,8 +805,7 @@ class CoreStatus(object):
         return status_str % data
 
 
-def round_or_None(float_or_none):
-    if float_or_none is None:
-        return None
-    else:
-        return round(float_or_none, 2)
+class Adjustment(object):
+    def __init__(self, known=1.0, unknown=1.0):
+        self.known = known
+        self.unknown = unknown

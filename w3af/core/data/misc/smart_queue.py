@@ -25,8 +25,8 @@ import Queue
 
 class QueueSpeedMeasurement(object):
 
-    MAX_SIZE = 100
-    MAX_SECONDS_IN_THE_PAST = 60
+    MAX_SIZE = 200
+    MAX_SECONDS_IN_THE_PAST = 120
 
     def __init__(self):
         self._output_timestamps = []
@@ -65,7 +65,7 @@ class QueueSpeedMeasurement(object):
 
         if len(data) == 1:
             # The last 30 seconds only had one read / write action
-            return 2.0
+            return 60.0 / self.MAX_SECONDS_IN_THE_PAST
 
         #
         # We have at least two read / write actions in the last 30 seconds
@@ -84,7 +84,7 @@ class QueueSpeedMeasurement(object):
         # Protect against cases in which the two items were added "at the same
         # time" such as https://github.com/andresriancho/w3af/issues/342
         if time_delta == 0:
-            return None
+            time_delta = 0.01
 
         # Calculate RPM and return it
         return 60.0 * all_items / time_delta
