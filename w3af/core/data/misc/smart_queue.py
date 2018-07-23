@@ -55,7 +55,7 @@ class QueueSpeedMeasurement(object):
             data.pop(0)
 
     def _calculate_rpm(self, data):
-        # We're only going to analyze the last 30 seconds
+        # We're only going to analyze the last MAX_SECONDS_IN_THE_PAST seconds
         max_past_time = time.time() - self.MAX_SECONDS_IN_THE_PAST
         data = [ts for ts in data if ts > max_past_time]
 
