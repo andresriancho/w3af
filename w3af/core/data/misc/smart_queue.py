@@ -25,8 +25,8 @@ import Queue
 
 class QueueSpeedMeasurement(object):
 
-    MAX_SIZE = 200
-    MAX_SECONDS_IN_THE_PAST = 120
+    MAX_SIZE = 20000
+    MAX_SECONDS_IN_THE_PAST = 600
 
     def __init__(self):
         self._output_timestamps = []
