@@ -155,6 +155,10 @@ class BaseConsumer(Process):
     def get_name(self):
         raise NotImplementedError
 
+    def set_has_finished(self):
+        self._has_finished = True
+        self._w3af_core.strategy.clear_queue_speed_data()
+
     def run(self):
         """
         Consume the queue items, sending them to the plugins which are then
@@ -186,7 +190,7 @@ class BaseConsumer(Process):
                     # Finish this consumer and everyone consuming the output
                     self._out_queue.put(POISON_PILL)
                     self.in_queue.task_done()
-                    self._has_finished = True
+                    self.set_has_finished()
                     break
 
             else:
