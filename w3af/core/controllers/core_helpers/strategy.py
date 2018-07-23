@@ -224,6 +224,28 @@ class CoreStrategy(object):
         self._teardown_auth()
         self._teardown_grep()
 
+    def clear_queue_speed_data(self):
+        """
+        When one of the consumers finishes its work the speed of all queues is
+        heavily impacted. A few examples:
+            * Crawl finishes: The audit input queue speed goes to zero
+            * Crawl and audit finish: The grep input queue speed goes to zero
+
+        In order to quickly clear the previous state of the queue and reflect
+        the new speed, it is important to clear the old (now useless data) which
+        is used to calculate the input / output speeds and is now useless since
+        the number of consumers has changed.
+        """
+        consumers = [
+            self.get_grep_consumer(),
+            self.get_audit_consumer(),
+            self.get_discovery_consumer(),
+            self.get_bruteforce_consumer()
+        ]
+
+        consumers = [c for c in consumers if c is not None]
+        [c.in_queue.clear() for c in consumers]
+
     def add_observer(self, observer):
         self._observers.append(observer)
 

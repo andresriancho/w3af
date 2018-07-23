@@ -342,9 +342,11 @@ class CoreStatus(object):
         """
         :return: None, a log line is added.
         """
+        run_time = self.get_run_time_seconds()
+
         msg = ('Calculated %s ETA: %.2f seconds. (input speed:%.2f,'
                ' output speed:%.2f, queue size: %i, adjustment known: %.2f,'
-               ' adjustment unknown: %.2f, average: %s)')
+               ' adjustment unknown: %.2f, average: %s, scan: %.2f)')
         args = (_type,
                 eta,
                 input_speed,
@@ -352,7 +354,8 @@ class CoreStatus(object):
                 queue_size,
                 adjustment.known,
                 adjustment.unknown,
-                average)
+                average,
+                run_time)
 
         om.out.debug(msg % args)
 
@@ -436,7 +439,7 @@ class CoreStatus(object):
             #     values is to run scans and use scan_log_analysis.py to check
             #     (see: show_progress_delta).
             #
-            t_queued = queue_size / output_speed
+            t_queued = queue_size / output_speed * adjustment.known
             t_new = input_speed * t_queued / output_speed * adjustment.unknown
             eta_minutes = t_queued + t_new
         else:
@@ -598,12 +601,12 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(known=0.6, unknown=30)
+            return Adjustment(known=4, unknown=25)
 
         if run_time < 60:
-            return Adjustment(known=0.6, unknown=7)
+            return Adjustment(known=2, unknown=5)
 
-        return Adjustment(known=0.4, unknown=1.75)
+        return Adjustment(known=0.25, unknown=1.5)
 
     def get_audit_adjustment_ratio(self):
         """
@@ -615,8 +618,14 @@ class CoreStatus(object):
         # We know that the crawl plugin has finished, no new items will be added
         # to the audit queue. We can set audit adjustment ratio to zero
         #
+        # In theory the queue's input speed should drop to zero quickly and
+        # the rate at which an unknown number of items is added to the queue
+        # should also drop. In reality this doesn't happen for at least
+        # QueueSpeedMeasurement.MAX_SECONDS_IN_THE_PAST seconds, so forcing
+        # this to zero is a really good idea
+        #
         if self.has_finished_crawl():
-            return Adjustment(known=1, unknown=0)
+            return Adjustment(known=1.1, unknown=0)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -624,12 +633,12 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(known=1, unknown=5)
+            return Adjustment(known=1, unknown=2)
 
         if run_time < 60:
-            return Adjustment(known=1, unknown=3)
+            return Adjustment(known=1, unknown=1.5)
 
-        return Adjustment(known=0.9, unknown=2.5)
+        return Adjustment(known=1.75, unknown=1.25)
 
     def get_grep_adjustment_ratio(self):
         """
@@ -643,8 +652,14 @@ class CoreStatus(object):
         # so we can safely use an adjustment ratio of zero for the grep ETA
         # because no "uncertain amount of tasks" will be added to the queue
         #
+        # In theory the queue's input speed should drop to zero quickly and
+        # the rate at which an unknown number of items is added to the queue
+        # should also drop. In reality this doesn't happen for at least
+        # QueueSpeedMeasurement.MAX_SECONDS_IN_THE_PAST seconds, so forcing
+        # this to zero is a really good idea
+        #
         if self.has_finished_crawl() and self.has_finished_audit():
-            return Adjustment(unknown=0)
+            return Adjustment(known=0.5, unknown=0)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -652,25 +667,24 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(known=1, unknown=50)
+            return Adjustment(known=1, unknown=40)
 
         if run_time < 60:
-            return Adjustment(known=1, unknown=35)
-
-        if run_time < 120:
             return Adjustment(known=1, unknown=20)
 
-        if run_time < 180:
+        if run_time < 120:
             return Adjustment(known=1, unknown=10)
 
-        #
-        # When both crawl and audit are running the amount of HTTP requests is
-        # higher, thus it is harder to calculate the ETA.
-        #
-        if not self.has_finished_crawl() and not self.has_finished_audit():
-            return Adjustment(known=1, unknown=1)
+        if run_time < 180:
+            return Adjustment(known=1, unknown=7.5)
 
-        return Adjustment(known=1.0, unknown=1.0)
+        #
+        # Cases that fall into this adjustment rate:
+        #   * Crawl is running / Audit is not
+        #   * Audit is running / Crawl is not
+        #   * Crawl is running / Audit is running
+        #
+        return Adjustment(known=1.0, unknown=2.5)
 
     def log_eta(self, msg):
         om.out.debug('[get_eta] %s' % msg)
@@ -705,6 +719,7 @@ class CoreStatus(object):
             after_audit = 0.0
             if grep_eta >= audit_eta:
                 after_audit = grep_eta - audit_eta
+                after_audit = after_audit * 0.9
 
             self.log_eta('Crawl has finished. Using audit and grep ETAs'
                          ' to calculate overall ETA.')
@@ -802,13 +817,13 @@ class Adjustment(object):
                        as-is it would take for ever to consume the task.
 
         :param known:
-            * Higher values of known INCREASE the ETA
-            * Higher values of known REDUCE estimated % (as shown in the
+            * Higher values of `known` INCREASE the ETA
+            * Higher values of `known` REDUCE estimated % (as shown in the
               scan log analysis output)
 
         :param unknown:
-            * Higher values of known INCREASE the ETA
-            * Higher values of known REDUCE estimated % (as shown in the
+            * Higher values of `known` INCREASE the ETA
+            * Higher values of `known` REDUCE estimated % (as shown in the
               scan log analysis output)
         """
         self.known = known
