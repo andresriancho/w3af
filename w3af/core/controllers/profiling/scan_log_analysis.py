@@ -875,10 +875,6 @@ def show_progress_delta(scan):
     # Get the last timestamp to use as max in the graphs
     progress_timestamps = [ts - first_timestamp for ts in progress_timestamps]
 
-    if not progress:
-        print('No progress data to calculate deltas')
-        return
-
     scan.seek(0)
 
     first_timestamp = get_first_timestamp(scan)
@@ -889,16 +885,13 @@ def show_progress_delta(scan):
         if match:
             finished_timestamp = get_line_epoch(line)
 
-    if finished_timestamp is None:
-        print('The scan did not finish. Can not show progress delta.')
-        return
-
+    finished_timestamp = finished_timestamp or get_last_timestamp(scan)
     spent_time_epoch = finished_timestamp - first_timestamp
 
     print('Progress delta (estimated vs. real)')
     print('')
 
-    if crawl_progress:
+    if crawl_progress and crawl_end_timestamp is not None:
         fig = plotille.Figure()
         fig.width = 90
         fig.height = 20
@@ -933,7 +926,7 @@ def show_progress_delta(scan):
         print('')
         print('')
 
-    if audit_progress:
+    if audit_progress and audit_end_timestamp is not None:
         fig = plotille.Figure()
         fig.width = 90
         fig.height = 20
@@ -968,7 +961,7 @@ def show_progress_delta(scan):
         print('')
         print('')
 
-    if grep_progress:
+    if grep_progress and grep_end_timestamp is not None:
         fig = plotille.Figure()
         fig.width = 90
         fig.height = 20
@@ -1002,6 +995,14 @@ def show_progress_delta(scan):
         print(fig.show(legend=True))
         print('')
         print('')
+
+    if not progress:
+        print('No progress data to calculate deltas')
+        return
+
+    if finished_timestamp is None:
+        print('The scan did not finish. Can not show progress delta.')
+        return
 
     fig = plotille.Figure()
     fig.width = 90
@@ -1515,6 +1516,7 @@ def watch(scan, function_name):
         except KeyboardInterrupt:
             sys.exit(0)
         except Exception, e:
+            raise
             print('Exception: %s' % e)
             sys.exit(1)
 
