@@ -20,7 +20,7 @@
     <xs:simpleType>
       <xs:restriction base="xs:decimal">
         <!-- Current version defined in xml_file.py XML_OUTPUT_VERSION -->
-        <xs:enumeration value="2.5"/>
+        <xs:enumeration value="2.6"/>
       </xs:restriction>
     </xs:simpleType>
   </xs:attribute>
@@ -185,11 +185,13 @@
               <xs:element type="xs:string" name="crawl"/>
               <xs:element type="xs:string" name="audit"/>
               <xs:element type="xs:string" name="grep"/>
+              <xs:element type="xs:string" name="all"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
         <xs:element type="xs:short" name="rpm"/>
         <xs:element type="xs:short" name="sent-request-count"/>
+        <xs:element type="xs:short" name="progress"/>
         <xs:element type="xs:short" name="total-urls"/>
       </xs:sequence>
     </xs:complexType>

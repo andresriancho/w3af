@@ -90,7 +90,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.5'
+    XML_OUTPUT_VERSION = '2.6'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -680,8 +680,10 @@ class ScanStatus(XMLNode):
         context.crawl_eta = self._status['eta']['crawl']
         context.audit_eta = self._status['eta']['audit']
         context.grep_eta = self._status['eta']['grep']
+        context.all_eta = self._status['eta']['all']
         context.rpm = self._status['rpm']
         context.sent_request_count = self._status['sent_request_count']
+        context.progress = self._status['progress']
 
         context.total_urls = self._total_urls
 
