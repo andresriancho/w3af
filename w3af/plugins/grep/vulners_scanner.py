@@ -30,6 +30,8 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import STRING
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.kb.info_set import InfoSet
+
 
 # Additional modules imports
 import vulners
@@ -80,7 +82,7 @@ class vulners_scanner(GrepPlugin):
         ol = OptionList()
 
         d = ('Vulners API key for extended scanning rate limits.'
-             'You can obtain one for free at https://vulners.com')
+             ' Obtain a free API key for free at https://vulners.com/')
         o = opt_factory('vulners_api_key', self._vulners_api_key, d, STRING)
         ol.add(o)
         return ol
@@ -94,18 +96,17 @@ class vulners_scanner(GrepPlugin):
         """
         self._vulners_api_key = options_list['vulners_api_key'].get_value()
 
-
     def update_vulners_rules(self):
         # Get fresh rules from Vulners.
         try:
             self.rules_table = self.get_vulners_api().rules()
             # Adapt it for MultiRe structure [(regex,alias)] removing regex duplicated
-            regexAliases = collections.defaultdict(list)
-            for softwareName in self.rules_table:
-                regexAliases[self.rules_table[softwareName].get('regex')] += [softwareName]
+            regex_aliases = collections.defaultdict(list)
+            for software_name in self.rules_table:
+                regex_aliases[self.rules_table[software_name].get('regex')] += [software_name]
             # Now create fast RE filter
             # Using re.IGNORECASE because w3af is modifying headers when making RAW dump. Why so? Raw must be raw!
-            self._multi_re = MultiRE(((regex, regexAliases.get(regex)) for regex in regexAliases), re.IGNORECASE)
+            self._multi_re = MultiRE(((regex, regex_aliases.get(regex)) for regex in regex_aliases), re.IGNORECASE)
         except Exception as e:
             self.rules_table = None
             error_message = 'Vulners plugin failed to init with error: %s'
@@ -156,9 +157,10 @@ class vulners_scanner(GrepPlugin):
 
         """
         # Lazy update rules if it's first start of the plugin
-        if not self.rules_updated:
-            self.update_vulners_rules()
-            self.rules_updated = True
+        with self._plugin_lock:
+            if not self.rules_updated:
+                self.update_vulners_rules()
+                self.rules_updated = True
 
         # Check if we have downloaded rules well.
         # If there is no rules - something went wrong, time to exit.
@@ -201,19 +203,30 @@ class vulners_scanner(GrepPlugin):
 
             v.set_url(response.get_url())
 
-            self.kb_append_uniq(location_a = self,
-                                location_b = 'vulners',
-                                info = v,
-                                filter_by = 'URL')
+            v[VulnerableSoftwareInfoSet.ITAG] = bulletin['id']
 
-
+            self.kb_append_uniq_group(location_a = self,
+                                      location_b = 'HTML',
+                                      info = v,
+                                      group_klass = VulnerableSoftwareInfoSet)
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin greps every software banner and checks vulnerabilities online at vulners.com database.
-        By default it's using anonymous Vulners API entry point. 
-        If you will get 418 errors (rate limit fired) you can obtain API key for free at https://vulners.com.
-        Then configure it at vulners_scanner as vulners_api_key variable.
+        This plugin greps software banners and checks vulnerabilities online at vulners.com database.
+        By default the grep plugin uses anonymous Vulners API entry point (rate-limited to ~10 rps), it is possible to get a free API key at https://vulners.com/ to avoid rate limits.
+        Configure the API key using the vulners_api_key user-configured parameter.
         """
+
+class VulnerableSoftwareInfoSet(InfoSet):
+    ITAG = 'vulnerability_id'
+    TEMPLATE = (
+        'Vulners plugin detected outdated software with known vulnerabilities'
+        ' by application response. The first ten'
+        ' matching URLs are:\n'
+        ''
+        '{% for url in uris[:10] %}'
+        ' - {{ url }}\n'
+        '{% endfor %}'
+    )
