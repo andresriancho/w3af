@@ -31,8 +31,6 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import STRING
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.kb.info_set import InfoSet
-
-
 # Additional modules imports
 import vulners
 import collections
