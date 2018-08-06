@@ -1,5 +1,5 @@
 """
-crawl_infrastructure.py
+CrawlInfrastructure.py
 
 Copyright 2012 Andres Riancho
 
@@ -38,7 +38,7 @@ from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseCons
                                                                         task_decorator)
 
 
-class crawl_infrastructure(BaseConsumer):
+class CrawlInfrastructure(BaseConsumer):
     """
     Consumer thread that takes fuzzable requests from the input Queue that is
     seeded by the core, sends each fr to all crawl and infrastructure plugins,
@@ -49,16 +49,16 @@ class crawl_infrastructure(BaseConsumer):
     def __init__(self, crawl_infrastructure_plugins, w3af_core,
                  max_discovery_time):
         """
-        :param crawl_infrastructure_plugins: Instances of crawl_infrastructure
+        :param crawl_infrastructure_plugins: Instances of CrawlInfrastructure
                                              plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         :param max_discovery_time: The max time (in seconds) to use for the
                                    discovery phase
         """
-        super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
-                                                   w3af_core,
-                                                   thread_name=self.get_name(),
-                                                   max_pool_queued_tasks=100)
+        super(CrawlInfrastructure, self).__init__(crawl_infrastructure_plugins,
+                                                  w3af_core,
+                                                  thread_name=self.get_name(),
+                                                  max_pool_queued_tasks=100)
         self._max_discovery_time = int(max_discovery_time)
 
         # For filtering fuzzable requests found by plugins:
@@ -206,9 +206,9 @@ class crawl_infrastructure(BaseConsumer):
             for observer in self._observers:
                 observer.crawl(self, fuzzable_request)
         except Exception, e:
-            self.handle_exception('crawl_infrastructure',
-                                  'crawl_infrastructure._run_observers()',
-                                  'crawl_infrastructure._run_observers()', e)
+            self.handle_exception('CrawlInfrastructure',
+                                  'CrawlInfrastructure._run_observers()',
+                                  'CrawlInfrastructure._run_observers()', e)
 
     @task_decorator
     def _plugin_finished_cb(self,
@@ -309,7 +309,7 @@ class crawl_infrastructure(BaseConsumer):
         self.out_queue.put(POISON_PILL)
 
     def join(self):
-        super(crawl_infrastructure, self).join()
+        super(CrawlInfrastructure, self).join()
         self.cleanup()
         self.show_summary()
 

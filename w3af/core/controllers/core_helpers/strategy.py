@@ -39,7 +39,7 @@ from w3af.core.controllers.core_helpers.consumers.auth import auth
 from w3af.core.controllers.core_helpers.consumers.audit import audit
 from w3af.core.controllers.core_helpers.consumers.bruteforce import bruteforce
 from w3af.core.controllers.core_helpers.consumers.seed import seed
-from w3af.core.controllers.core_helpers.consumers.crawl_infrastructure import crawl_infrastructure
+from w3af.core.controllers.core_helpers.consumers.crawl_infrastructure import CrawlInfrastructure
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
 
@@ -589,9 +589,9 @@ class CoreStrategy(object):
             discovery_plugins = infrastructure_plugins
             discovery_plugins.extend(crawl_plugins)
 
-            self._discovery_consumer = crawl_infrastructure(discovery_plugins,
-                                                            self._w3af_core,
-                                                            cf.cf.get('max_discovery_time'))
+            self._discovery_consumer = CrawlInfrastructure(discovery_plugins,
+                                                           self._w3af_core,
+                                                           cf.cf.get('max_discovery_time'))
             self._discovery_consumer.start()
 
     def _setup_grep(self):
@@ -641,7 +641,7 @@ class CoreStrategy(object):
     def _seed_discovery(self):
         """
         Create the first fuzzable request objects based on the targets and put
-        them in the crawl_infrastructure consumer Queue.
+        them in the CrawlInfrastructure consumer Queue.
 
         This will start the whole discovery process, since plugins are going
         to consume from that Queue and then put their results in it again in
