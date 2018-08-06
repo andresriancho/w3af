@@ -22,8 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.controllers.misc.fuzzy_string_cmp import (relative_distance_boolean,
-                                                         relative_distance,
+from w3af.core.controllers.misc.fuzzy_string_cmp import (relative_distance,
                                                          fuzzy_equal)
 
 
@@ -60,15 +59,15 @@ class TestFuzzyStringCompare(unittest.TestCase):
         acceptance_tests.append(('a', 'a', 0.0))
 
         for e, d, f in acceptance_tests:
-            res1 = relative_distance_boolean(e, d, f)
+            res1 = fuzzy_equal(e, d, f)
             res2 = relative_distance(e, d) >= f
             
-            msg = ('relative_distance_boolean and relative_distance returned'
+            msg = ('fuzzy_equal and relative_distance returned'
                    ' different results for the same parameters:\n'
                    '    - Parameter #1: %s\n'
                    '    - Parameter #2: %s\n'
                    '    - Threshold: %s\n'
-                   '    - Result relative_distance_boolean: %s\n'
+                   '    - Result fuzzy_equal: %s\n'
                    '    - Result relative_distance: %s\n')
             
             self.assertEqual(res1, res2, msg % (e, d, f, res1, relative_distance(e, d)))

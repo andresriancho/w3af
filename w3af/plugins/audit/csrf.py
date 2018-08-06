@@ -28,7 +28,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from w3af.core.data.misc.encoding import smart_str_ignore
@@ -109,8 +109,7 @@ class csrf(AuditPlugin):
         if res1.get_code() != res2.get_code():
             return False
 
-        if not relative_distance_boolean(res1.body, res2.body,
-                                         self._equal_limit):
+        if not fuzzy_equal(res1.body, res2.body, self._equal_limit):
             return False
 
         return True
