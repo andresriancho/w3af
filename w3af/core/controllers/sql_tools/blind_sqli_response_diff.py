@@ -27,7 +27,7 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.fuzzer.utils import rand_number
 from w3af.core.data.misc.encoding import smart_str_ignore
-from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.controllers.misc.diff import diff
 
@@ -393,7 +393,7 @@ class BlindSqliResponseDiff(object):
         if compare_diff:
             body1, body2 = diff(body1, body2)
 
-        cmp_res = relative_distance_boolean(body1, body2, self._eq_limit)
+        cmp_res = fuzzy_equal(body1, body2, self._eq_limit)
 
         are = 'ARE' if cmp_res else 'ARE NOT'
         args = (are, self._eq_limit)

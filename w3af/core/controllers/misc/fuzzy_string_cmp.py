@@ -24,18 +24,67 @@ import difflib
 from w3af.core.controllers.misc.diff import split_by_sep
 
 
-def relative_distance_boolean(a_str, b_str, threshold=0.6):
+def fuzzy_equal(a_str, b_str, threshold=0.6):
     """
     Indicates if the strings to compare are similar enough. This (optimized)
     function is equivalent to the expression:
 
         relative_distance(x, y) > threshold
 
+    :param a_str: A string instance
+    :param b_str: A string instance
+    :param threshold: Float value indicating the expected "similarity". Must be
+                      0 <= threshold <= 1.0
+    :return: A boolean value
+    """
+    optimization_result = _get_optimized_fuzzy_equal(a_str, b_str, threshold=threshold)
+
+    if optimization_result is not None:
+        return optimization_result
+
+    # Bad, we can't optimize anything better, just calculate the relative distance
+    distance = relative_distance(a_str, b_str)
+    return distance > threshold
+
+
+def fuzzy_equal_return_distance(a_str, b_str, threshold=0.6):
+    """
+    Similar to fuzzy_equal() but returns the distance between the strings
+
+    :param a_str: A string instance
+    :param b_str: A string instance
+    :param threshold: Float value indicating the expected "similarity". Must be
+                      0 <= threshold <= 1.0
+    :return: A tuple containing:
+                - A boolean indicating the fuzzy_equal result
+                - The distance between the two strings, if it was calculated
+    """
+    optimization_result = _get_optimized_fuzzy_equal(a_str, b_str, threshold=threshold)
+
+    if optimization_result is not None:
+        return optimization_result, None
+
+    # Bad, we can't optimize anything better, just calculate the relative distance
+    distance = relative_distance(a_str, b_str)
+    return distance > threshold, distance
+
+
+def _get_optimized_fuzzy_equal(a_str, b_str, threshold=0.6):
+    """
+    Indicates if the strings to compare are similar enough. This (optimized)
+    function is equivalent to the expression:
+
+        relative_distance(x, y) > threshold
+
+    The function shouldn't get called directly, only use it via fuzzy_equal.
+
     :param a_str: A string object
     :param b_str: A string object
     :param threshold: Float value indicating the expected "similarity". Must be
                       0 <= threshold <= 1.0
-    :return: A boolean value
+    :return: True means that both strings are fuzzy equal
+             False means that both strings are NOT fuzzy equal
+             None means the algorithm is unable to know
     """
     if threshold == 0:
         return True
@@ -59,20 +108,11 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     if threshold > upper_bound_similarity(alen, blen):
         return False
 
-    # Bad, we can't optimize anything here
-    return relative_distance(a_str, b_str) > threshold
+    return None
 
 
 def upper_bound_similarity(alen, blen):
     return (2.0 * alen) / (alen + blen)
-
-
-def fuzzy_equal(a_str, b_str, threshold=0.6):
-    """
-    Indicates if the 'similarity' index between strings
-    is *greater equal* than 'threshold'. See 'relative_distance_boolean'.
-    """
-    return relative_distance_boolean(a_str, b_str, threshold)
 
 
 def fuzzy_not_equal(a_str, b_str, threshold=0.6):
@@ -80,15 +120,15 @@ def fuzzy_not_equal(a_str, b_str, threshold=0.6):
     Indicates if the 'similarity' index between strings
     is *less than* 'threshold'
     """
-    return not relative_distance_boolean(a_str, b_str, threshold)
+    return not fuzzy_equal(a_str, b_str, threshold)
 
 
 def relative_distance(a_str, b_str):
     """
-    Measures the "similarity" of the strings.
+    Measures the "similarity" of two strings.
 
     Depends on the algorithm we finally implement, but usually a return value
-    over 0.7 means the strings are close matches.
+    over 0.7 means the strings are very similar.
 
     :param a_str: A string object
     :param b_str: A string object
@@ -97,110 +137,4 @@ def relative_distance(a_str, b_str):
     return difflib.SequenceMatcher(None,
                                    split_by_sep(a_str),
                                    split_by_sep(b_str)).quick_ratio()
-
-
-if __name__ == "__main__":
-    # These tests should be reallocated in a test module.
-    """import time
-    import urllib2
-
-    performance_tests = []
-
-    #performance_tests.append(('a'*25000,'a'*25000,0.999 ))
-    #performance_tests.append(('a'*12000, 'a'*25000, 0.9999))
-    #performance_tests.append(('a'*20000, 'a'*25000, 0.1))
-
-    google = urllib2.urlopen("http://www.google.com").read()
-    google2 = urllib2.urlopen("http://www.google.co.uk/").read()
-
-    yahoo = urllib2.urlopen("http://www.yahoo.com/").read()
-    yahoo2 = urllib2.urlopen("http://uk.yahoo.com/").read()
-
-    bing = urllib2.urlopen("http://www.bing.com/").read()
-    bing2 = urllib2.urlopen("http://www.bing.com/?cc=gb").read()
-
-
-    #True
-    performance_tests.append((google, google, 0.99999999))
-    performance_tests.append((google2, google2, 0.99999999))
-    performance_tests.append((yahoo, yahoo, 0.99999999))
-    performance_tests.append((yahoo2, yahoo2, 0.99999999))
-    performance_tests.append((bing, bing, 0.99999999))
-    performance_tests.append((bing2, bing2, 0.99999999))
-
-    #False
-    performance_tests.append((bing, google, 0.99999999))
-    performance_tests.append((bing, yahoo, 0.99999999))
-    performance_tests.append((yahoo, google, 0.99999999))
-    performance_tests.append((yahoo2, google, 0.99999999))
-    performance_tests.append((bing2, google, 0.99999999))
-    performance_tests.append((yahoo, google2, 0.99999999))
-
-    #True
-    performance_tests.append((google, google, 0.1))
-    performance_tests.append((google2, google2, 0.1))
-    performance_tests.append((yahoo, yahoo, 0.1))
-    performance_tests.append((yahoo2, yahoo2, 0.1))
-    performance_tests.append((bing, bing, 0.1))
-    performance_tests.append((bing2, bing2, 0.1))
-
-    #False
-    performance_tests.append((bing, google, 0.6))
-    performance_tests.append((bing, yahoo, 0.6))
-    performance_tests.append((yahoo, google, 0.6))
-    performance_tests.append((yahoo2, google, 0.6))
-    performance_tests.append((bing2, google, 0.6))
-    performance_tests.append((yahoo, google2, 0.6))
-
-    start = time.time()
-    relative_distance_boolean('a', 'a', 1.0)
-    needed = time.time() - start
-    print "Setup of bounds took " + str(needed)
-
-    #performance tests
-    numOfTests = 20
-    numOfOverallTests = 4
-
-    boolean_time_sum = 0
-    original_time_sum = 0
-
-    for i in range(0, numOfOverallTests):
-
-        boolean_win_count = 0
-        original_win_count = 0
-
-        for e, d, f in performance_tests:
-            print e[:40]
-            print d[:40]
-            k = '?'
-            start = time.time()
-            for i in range(0, numOfTests):
-                relative_distance_boolean(e, d, f)
-            end = time.time()
-            k = relative_distance_boolean(e, d, f)
-            boolean_time = end - start
-            boolean_time_sum += boolean_time
-            print "   boolean (" + str(k) + ") :", boolean_time
-
-            k = '?'
-            start = time.time()
-            for i in range(0, numOfTests):
-                relative_distance(e, d) >= f
-            end = time.time()
-            k = relative_distance(e, d) >= f
-            original_time = end - start
-            original_time_sum += original_time
-            print "   original (" + str(k) + ") :", original_time
-
-            if original_time > boolean_time:
-                boolean_win_count += 1
-            else:
-                original_win_count += 1
-
-        print 'boolean win: ' + str(boolean_win_count) + ', original win: ' + str(original_win_count)
-
-    print '-----------'
-    print 'Boolean:', boolean_time_sum / numOfOverallTests
-    print 'Original:', original_time_sum / numOfOverallTests
-    """
 
