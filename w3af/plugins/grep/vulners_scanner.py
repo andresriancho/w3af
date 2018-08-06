@@ -31,10 +31,12 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import STRING
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.kb.info_set import InfoSet
+from w3af.core.data.parsers.doc.url import URL
 # Additional modules imports
 import vulners
 import collections
 import re
+import json
 
 class vulners_scanner(GrepPlugin):
     """
@@ -63,6 +65,8 @@ class vulners_scanner(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
+        # Vulners Rules JSON url
+        self._vulners_rules_url = URL('https://raw.githubusercontent.com/vulnersCom/detect-rules/master/rules.json')
 
         # Vulners shared objects
         self._vulners_api = None
@@ -95,20 +99,37 @@ class vulners_scanner(GrepPlugin):
         self._vulners_api_key = options_list['vulners_api_key'].get_value()
 
     def update_vulners_rules(self):
-        # Get fresh rules from Vulners.
+        # Get fresh rules from Vulners Github.
+        # Paranoid? Check gitlog and regexes.
+        # w3af grep plugins shouldn't (by definition) perform HTTP requests
+        # But in this case we're breaking that general rule to retrieve the
+        # DB at the beginning of the scan
+        # One more time after Retire.JS :)
         try:
-            self.rules_table = self.get_vulners_api().rules()
-            # Adapt it for MultiRe structure [(regex,alias)] removing regex duplicated
-            regex_aliases = collections.defaultdict(list)
-            for software_name in self.rules_table:
-                regex_aliases[self.rules_table[software_name].get('regex')] += [software_name]
-            # Now create fast RE filter
-            # Using re.IGNORECASE because w3af is modifying headers when making RAW dump. Why so? Raw must be raw!
-            self._multi_re = MultiRE(((regex, regex_aliases.get(regex)) for regex in regex_aliases), re.IGNORECASE)
+            http_response = self._uri_opener.GET(self._vulners_rules_url,
+                                                 binary_response=True,
+                                                 respect_size_limit=False)
         except Exception as e:
-            self.rules_table = None
-            error_message = 'Vulners plugin failed to init with error: %s'
-            om.out.error(error_message % e)
+            msg = 'Failed to download Vulners regex rules table: "%s"'
+            om.out.error(msg % e)
+            return
+
+        if http_response.get_code() != 200:
+            msg = ('Failed to download the Vulners regex rules table, unexpected'
+                   ' HTTP response code %s')
+            om.out.error(msg % http_response.get_code())
+            return
+
+        json_table = http_response.get_raw_body()
+        self.rules_table = json.loads(json_table)
+
+        # Adapt it for MultiRe structure [(regex,alias)] removing regex duplicated
+        regex_aliases = collections.defaultdict(list)
+        for software_name in self.rules_table:
+            regex_aliases[self.rules_table[software_name].get('regex')] += [software_name]
+        # Now create fast RE filter
+        # Using re.IGNORECASE because w3af is modifying headers when making RAW dump. Why so? Raw must be raw!
+        self._multi_re = MultiRE(((regex, regex_aliases.get(regex)) for regex in regex_aliases), re.IGNORECASE)
 
     def get_vulners_api(self):
         # Lazy import. Just not to make it in the __init__
