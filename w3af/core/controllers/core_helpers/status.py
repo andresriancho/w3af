@@ -797,7 +797,7 @@ class CoreStatus(object):
 
         status_str += 'Requests per minute: %(rpm)s\n\n'
 
-        status_str += 'Overall scan progress: %(perc)s\n'
+        status_str += 'Overall scan progress: %(perc)s%%\n'
         status_str += 'Time to complete scan: %(eta)s\n'
 
         return status_str % data
