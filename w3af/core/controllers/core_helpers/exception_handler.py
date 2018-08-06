@@ -32,7 +32,7 @@ import w3af.core.controllers.output_manager as om
 from os.path import basename
 
 from w3af.core.data.fuzzer.utils import rand_alnum
-from w3af.core.controllers.core_helpers.status import w3af_core_status
+from w3af.core.controllers.core_helpers.status import CoreStatus
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               ScanMustStopByUserRequest,
@@ -262,7 +262,7 @@ class ExceptionHandler(object):
 class ExceptionData(object):
     def __init__(self, current_status, e, tb, enabled_plugins):
         assert isinstance(e, Exception)
-        assert isinstance(current_status, w3af_core_status)
+        assert isinstance(current_status, CoreStatus)
 
         self.exception = e
         self.traceback = tb

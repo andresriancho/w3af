@@ -31,7 +31,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.exception_handling.helpers import pprint_plugins
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
-from w3af.core.controllers.core_helpers.status import w3af_core_status
+from w3af.core.controllers.core_helpers.status import CoreStatus
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.data.misc.cached_queue import CachedQueue
@@ -140,6 +140,7 @@ class BaseConsumer(Process):
 
         self._tasks_in_progress = {}
         self._poison_pill_sent = False
+        self._has_finished = False
 
         self._threadpool = None
 
@@ -150,6 +151,13 @@ class BaseConsumer(Process):
 
     def get_pool(self):
         return self._threadpool
+
+    def get_name(self):
+        raise NotImplementedError
+
+    def set_has_finished(self):
+        self._has_finished = True
+        self._w3af_core.strategy.clear_queue_speed_data()
 
     def run(self):
         """
@@ -182,6 +190,7 @@ class BaseConsumer(Process):
                     # Finish this consumer and everyone consuming the output
                     self._out_queue.put(POISON_PILL)
                     self.in_queue.task_done()
+                    self.set_has_finished()
                     break
 
             else:
@@ -196,6 +205,9 @@ class BaseConsumer(Process):
 
     def _consume(self, work_unit):
         raise NotImplementedError
+
+    def has_finished(self):
+        return self._has_finished
 
     @task_decorator
     def _consume_wrapper(self, function_id, work_unit):
@@ -395,7 +407,7 @@ class BaseConsumer(Process):
         except_type, except_class, tb = sys.exc_info()
         enabled_plugins = pprint_plugins(self._w3af_core)
 
-        status = w3af_core_status(self._w3af_core)
+        status = CoreStatus(self._w3af_core)
         status.set_running_plugin(phase, plugin_name, log=False)
         status.set_current_fuzzable_request(phase, fuzzable_request)
 

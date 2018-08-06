@@ -81,6 +81,16 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
+    def test_github_ssl(self):
+        url = URL('https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
+
+        http_response = self.uri_opener.GET(url, cache=False, binary_response=True, respect_size_limit=False)
+
+        self.assertIn('jquery', http_response.body)
+
+        self.assertGreaterEqual(http_response.id, 1)
+        self.assertNotEqual(http_response.id, None)
+
     def test_cache(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url)

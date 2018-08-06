@@ -273,12 +273,12 @@ class OutputManager(Process):
         # FIXME: I need to import this here because of the awful
         #        singletons I use all over the framework. If imported
         #        at the top, they will generate circular import errors
-        from w3af.core.controllers.core_helpers.status import w3af_core_status
+        from w3af.core.controllers.core_helpers.status import CoreStatus
 
-        class fake_status(w3af_core_status):
+        class FakeStatus(CoreStatus):
             pass
 
-        status = fake_status(self._w3af_core)
+        status = FakeStatus(self._w3af_core)
         status.set_current_fuzzable_request('output', 'n/a')
         status.set_running_plugin('output', o_plugin.get_name(),
                                   log=False)

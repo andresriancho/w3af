@@ -43,13 +43,15 @@ class seed(Process):
         """
         :param w3af_core: The w3af core that we'll use for status reporting
         """
-        super(seed, self).__init__(name='SeedController')
-        self.name = 'Seed'
+        super(seed, self).__init__(name='%sController' % self.get_name())
 
         self._w3af_core = w3af_core
 
         # See documentation in the property below
         self._out_queue = Queue()
+
+    def get_name(self):
+        return 'Seed'
 
     def get_result(self, timeout=0.5):
         return self._out_queue.get_nowait()

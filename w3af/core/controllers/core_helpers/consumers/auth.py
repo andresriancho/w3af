@@ -40,10 +40,13 @@ class auth(BaseConsumer):
         :param timeout: The time to wait between each login check
         """
         super(auth, self).__init__(auth_plugins, w3af_core,
-                                   thread_name='Authenticator',
+                                   thread_name=self.get_name(),
                                    create_pool=False)
 
         self._timeout = timeout
+
+    def get_name(self):
+        return 'Authenticator'
 
     def run(self):
         """
@@ -72,6 +75,7 @@ class auth(BaseConsumer):
                         self._end_plugins()
                     finally:
                         self.in_queue.task_done()
+                        self.set_has_finished()
                         break
 
                 elif action == FORCE_LOGIN:

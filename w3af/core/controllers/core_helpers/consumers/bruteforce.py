@@ -42,7 +42,10 @@ class bruteforce(BaseConsumer):
         :param w3af_core: The w3af core that we'll use for status reporting
         """
         super(bruteforce, self).__init__(bruteforce_plugins, w3af_core,
-                                         thread_name='Bruteforcer')
+                                         thread_name=self.get_name())
+
+    def get_name(self):
+        return 'Bruteforcer'
 
     def _teardown(self):
         msg = 'Starting Bruteforce consumer _teardown() with %s plugins.'

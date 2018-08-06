@@ -31,8 +31,8 @@ class TestSmarterQueue(unittest.TestCase):
     def test_simple(self):
         q = SmartQueue()
         
-        self.assertEqual(None, q.get_input_rpm())
-        self.assertEqual(None, q.get_output_rpm())
+        self.assertEqual(0.0, q.get_input_rpm())
+        self.assertEqual(0.0, q.get_output_rpm())
         
         for i in xrange(4):
             q.put(i)
@@ -42,45 +42,45 @@ class TestSmarterQueue(unittest.TestCase):
         self.assertEqual(q.qsize(), 4)
         
         self.assertGreater(q.get_input_rpm(), 19)
-        self.assertLess(q.get_input_rpm(), 20)
+        self.assertLess(q.get_input_rpm(), 28)
 
         for i in xrange(4):
             q.get()
             # 60 RPM
             time.sleep(1)
                         
-        self.assertGreater(q.get_output_rpm(), 59)
-        self.assertLess(q.get_output_rpm(), 60)
+        self.assertGreater(q.get_output_rpm(), 69)
+        self.assertLess(q.get_output_rpm(), 80)
         self.assertEqual(q.qsize(), 0)
 
     def test_no_data(self):
         q = SmartQueue()
         
         for _ in xrange(10):
-            self.assertEqual(None, q.get_input_rpm())
-            self.assertEqual(None, q.get_output_rpm())
+            self.assertEqual(0.0, q.get_input_rpm())
+            self.assertEqual(0.0, q.get_output_rpm())
     
     def test_many_items(self):
         q = SmartQueue()
 
-        self.assertEqual(len(q._input_data), 0)
+        self.assertEqual(len(q._input_timestamps), 0)
         
         for _ in xrange(q.MAX_SIZE * 2):
             q.put(None)
         
-        self.assertEqual(len(q._input_data), q.MAX_SIZE - 1)
-        self.assertEqual(len(q._output_data), 0)
+        self.assertEqual(len(q._input_timestamps), q.MAX_SIZE - 1)
+        self.assertEqual(len(q._output_timestamps), 0)
         
         for _ in xrange(q.MAX_SIZE * 2):
             q.get()
 
-        self.assertEqual(len(q._output_data), q.MAX_SIZE - 1)
+        self.assertEqual(len(q._output_timestamps), q.MAX_SIZE - 1)
     
     def test_exceptions(self):
         q = SmartQueue(4)
         
-        self.assertEqual(None, q.get_input_rpm())
-        self.assertEqual(None, q.get_output_rpm())
+        self.assertEqual(0.0, q.get_input_rpm())
+        self.assertEqual(0.0, q.get_output_rpm())
         
         for i in xrange(4):
             q.put(i)
@@ -93,7 +93,7 @@ class TestSmarterQueue(unittest.TestCase):
         self.assertEqual(q.qsize(), 4)
         
         self.assertGreater(q.get_input_rpm(), 19)
-        self.assertLess(q.get_input_rpm(), 20)
+        self.assertLess(q.get_input_rpm(), 28)
 
         for i in xrange(4):
             q.get()
@@ -103,8 +103,8 @@ class TestSmarterQueue(unittest.TestCase):
         for _ in xrange(10):
             self.assertRaises(Queue.Empty, q.get_nowait)
         
-        self.assertGreater(q.get_output_rpm(), 59)
-        self.assertLess(q.get_output_rpm(), 60)
+        self.assertGreater(q.get_output_rpm(), 69)
+        self.assertLess(q.get_output_rpm(), 80)
         self.assertEqual(q.qsize(), 0)
     
     def test_wrapper(self):

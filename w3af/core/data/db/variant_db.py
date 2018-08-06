@@ -23,6 +23,7 @@ import threading
 
 import w3af.core.data.kb.config as cf
 
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
                                         clean_fuzzable_request_form)
@@ -92,9 +93,14 @@ class VariantDB(object):
     requests in order to be able to answer "False" to a call for
     need_more_variants in a situation like this:
 
-        need_more_variants('http://foo.com/abc?id=32')      --> True
-        append('http://foo.com/abc?id=32')
-        need_more_variants('http://foo.com/abc?id=32')      --> False
+        >> need_more_variants('http://foo.com/abc?id=32')
+        True
+
+        >> append('http://foo.com/abc?id=32')
+        True
+
+        >> need_more_variants('http://foo.com/abc?id=32')
+        False
 
     """
     HASH_IGNORE_HEADERS = ('referer',)
@@ -102,7 +108,7 @@ class VariantDB(object):
 
     def __init__(self):
         self._variants = DiskDict(table_prefix='variant_db')
-        self._variants_eq = DiskDict(table_prefix='variant_db_eq')
+        self._variants_eq = ScalableBloomFilter()
         self._variants_form = DiskDict(table_prefix='variant_db_form')
 
         self.params_max_variants = cf.cf.get('params_max_variants')
@@ -112,7 +118,6 @@ class VariantDB(object):
         self._db_lock = threading.RLock()
 
     def cleanup(self):
-        self._variants_eq.cleanup()
         self._variants.cleanup()
         self._variants_form.cleanup()
 
@@ -123,20 +128,20 @@ class VariantDB(object):
                  request.
         """
         with self._db_lock:
-            if self.seen_exactly_the_same(fuzzable_request):
+            if self._seen_exactly_the_same(fuzzable_request):
                 return False
 
-            if self.has_form(fuzzable_request):
-                if not self.need_more_variants_for_form(fuzzable_request):
+            if self._has_form(fuzzable_request):
+                if not self._need_more_variants_for_form(fuzzable_request):
                     return False
 
-            if not self.need_more_variants_for_uri(fuzzable_request):
+            if not self._need_more_variants_for_uri(fuzzable_request):
                 return False
 
             # Yes, please give me more variants of fuzzable_request
             return True
 
-    def need_more_variants_for_uri(self, fuzzable_request):
+    def _need_more_variants_for_uri(self, fuzzable_request):
         #
         # Do we need more variants for the fuzzable request? (similar match)
         # PARAMS_MAX_VARIANTS and PATH_MAX_VARIANTS
@@ -164,27 +169,26 @@ class VariantDB(object):
         self._variants[clean_dict_key] = count + 1
         return True
 
-    def seen_exactly_the_same(self, fuzzable_request):
+    def _seen_exactly_the_same(self, fuzzable_request):
         #
         # Is the fuzzable request already known to us? (exactly the same)
         #
         request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
-        already_seen = self._variants_eq.get(request_hash, False)
-        if already_seen:
+        if request_hash in self._variants_eq:
             return True
 
         # Store it to avoid duplicated fuzzable requests in our framework
-        self._variants_eq[request_hash] = True
+        self._variants_eq.add(request_hash)
         return False
 
-    def has_form(self, fuzzable_request):
+    def _has_form(self, fuzzable_request):
         raw_data = fuzzable_request.get_raw_data()
         if raw_data and len(raw_data.get_param_names()) >= 2:
             return True
 
         return False
 
-    def need_more_variants_for_form(self, fuzzable_request):
+    def _need_more_variants_for_form(self, fuzzable_request):
         #
         # Do we need more variants for this form? (similar match)
         # MAX_EQUAL_FORM_VARIANTS
@@ -201,3 +205,4 @@ class VariantDB(object):
 
         self._variants_form[clean_dict_key_form] = count + 1
         return True
+

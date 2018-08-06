@@ -65,9 +65,12 @@ class grep(BaseConsumer):
                                    create_pool=True,
                                    max_pool_queued_tasks=max_pool_queued_tasks,
                                    thread_pool_size=thread_pool_size,
-                                   thread_name='Grep',
+                                   thread_name=self.get_name(),
                                    max_in_queue_size=max_in_queue_size)
         self._already_analyzed = ScalableBloomFilter()
+
+    def get_name(self):
+        return 'Grep'
 
     def _teardown(self):
         """

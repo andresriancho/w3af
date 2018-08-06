@@ -40,9 +40,25 @@
         <crawl>{{ crawl_eta | escape_text }}</crawl>
         <audit>{{ audit_eta | escape_text }}</audit>
         <grep>{{ grep_eta | escape_text }}</grep>
+        <all>{{ all_eta | escape_text }}</all>
     </eta>
 
     <rpm>{{ rpm | escape_text }}</rpm>
+    <sent-request-count>{{ sent_request_count | escape_text }}</sent-request-count>
+    <progress>{{ progress | escape_text }}</progress>
 
     <total-urls>{{ total_urls | escape_text }}</total-urls>
+    <known-urls>
+
+        {%- for path, children in known_urls.iteritems() recursive %}
+            {%- if children -%}
+                {{ "\n"|indent(loop.depth * 4, True, True) }}<node url="{{ path | escape_attr }}">
+                {{ loop(children.iteritems()) }}
+                {{ "\n"|indent(loop.depth * 4, True, True) }}</node>
+            {%- else %}
+                {{ "\n"|indent(loop.depth * 4, True, True) }}<node url="{{ path | escape_attr }}" />
+            {%- endif %}
+        {%- endfor %}
+
+    </known-urls>
 </scan-status>

@@ -25,6 +25,7 @@ import base64
 import tempfile
 
 from w3af import ROOT_PATH
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import INPUT_FILE
@@ -187,7 +188,8 @@ class InputFileOption(BaseOption):
         _file = tempfile.NamedTemporaryFile(mode='w+b',
                                             suffix=self.DATA_SUFFIX,
                                             prefix=self.DATA_PREFIX,
-                                            delete=False)
+                                            delete=False,
+                                            dir=get_temp_dir())
 
         data = self.decode_b64_data(encoded_data)
 
