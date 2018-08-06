@@ -23,6 +23,7 @@ import threading
 
 import w3af.core.data.kb.config as cf
 
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
                                         clean_fuzzable_request_form)
@@ -92,9 +93,14 @@ class VariantDB(object):
     requests in order to be able to answer "False" to a call for
     need_more_variants in a situation like this:
 
-        need_more_variants('http://foo.com/abc?id=32')      --> True
-        append('http://foo.com/abc?id=32')
-        need_more_variants('http://foo.com/abc?id=32')      --> False
+        >> need_more_variants('http://foo.com/abc?id=32')
+        True
+
+        >> append('http://foo.com/abc?id=32')
+        True
+
+        >> need_more_variants('http://foo.com/abc?id=32')
+        False
 
     """
     HASH_IGNORE_HEADERS = ('referer',)
@@ -102,7 +108,7 @@ class VariantDB(object):
 
     def __init__(self):
         self._variants = DiskDict(table_prefix='variant_db')
-        self._variants_eq = DiskDict(table_prefix='variant_db_eq')
+        self._variants_eq = ScalableBloomFilter()
         self._variants_form = DiskDict(table_prefix='variant_db_form')
 
         self.params_max_variants = cf.cf.get('params_max_variants')
@@ -112,7 +118,6 @@ class VariantDB(object):
         self._db_lock = threading.RLock()
 
     def cleanup(self):
-        self._variants_eq.cleanup()
         self._variants.cleanup()
         self._variants_form.cleanup()
 
@@ -169,12 +174,11 @@ class VariantDB(object):
         # Is the fuzzable request already known to us? (exactly the same)
         #
         request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
-        already_seen = self._variants_eq.get(request_hash, False)
-        if already_seen:
+        if request_hash in self._variants_eq:
             return True
 
         # Store it to avoid duplicated fuzzable requests in our framework
-        self._variants_eq[request_hash] = True
+        self._variants_eq.add(request_hash)
         return False
 
     def has_form(self, fuzzable_request):
