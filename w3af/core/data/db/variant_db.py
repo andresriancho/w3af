@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 
 import w3af.core.data.kb.config as cf
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.disk_dict import DiskDict
@@ -129,17 +130,25 @@ class VariantDB(object):
         """
         with self._db_lock:
             if self._seen_exactly_the_same(fuzzable_request):
+                self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
                 return False
 
             if self._has_form(fuzzable_request):
                 if not self._need_more_variants_for_form(fuzzable_request):
+                    self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
                     return False
 
             if not self._need_more_variants_for_uri(fuzzable_request):
+                self._log_return_false(fuzzable_request, 'need_more_variants_for_uri')
                 return False
 
             # Yes, please give me more variants of fuzzable_request
             return True
+
+    def _log_return_false(self, fuzzable_request, reason):
+        args = (reason, fuzzable_request)
+        msg = 'VariantDB is returning False because of "%s" for "%s"'
+        om.out.debug(msg % args)
 
     def _need_more_variants_for_uri(self, fuzzable_request):
         #
