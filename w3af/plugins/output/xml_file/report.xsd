@@ -20,7 +20,7 @@
     <xs:simpleType>
       <xs:restriction base="xs:decimal">
         <!-- Current version defined in xml_file.py XML_OUTPUT_VERSION -->
-        <xs:enumeration value="2.6"/>
+        <xs:enumeration value="2.7"/>
       </xs:restriction>
     </xs:simpleType>
   </xs:attribute>
@@ -121,6 +121,15 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="node">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="node"/>
+      </xs:sequence>
+      <xs:attribute name="url" use="required" type="xs:anyURI"/>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="scan-status">
     <xs:complexType>
       <xs:sequence>
@@ -193,6 +202,15 @@
         <xs:element type="xs:short" name="sent-request-count"/>
         <xs:element type="xs:short" name="progress"/>
         <xs:element type="xs:short" name="total-urls"/>
+
+        <xs:element name="known-urls">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="node"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -200,12 +218,12 @@
   <xs:element name="vulnerability">
     <xs:complexType mixed="true">
       <xs:sequence>
-        <xs:element name="description" minOccurs="1" maxOccurs="1" type="xs:string"/>
-        <xs:element name="long-description" minOccurs="0" maxOccurs="1" type="xs:string"/>
-        <xs:element name="fix-guidance" minOccurs="0" maxOccurs="1" type="xs:string"/>
-        <xs:element name="fix-effort" minOccurs="0" maxOccurs="1" type="xs:integer"/>
-        <xs:element name="references" minOccurs="0" maxOccurs="1" type="references"/>
-        <xs:element name="http-transactions" minOccurs="0" maxOccurs="1" type="http-transactions"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="long-description" minOccurs="0" type="xs:string"/>
+        <xs:element name="fix-guidance" minOccurs="0" type="xs:string"/>
+        <xs:element name="fix-effort" minOccurs="0" type="xs:integer"/>
+        <xs:element name="references" minOccurs="0" type="references"/>
+        <xs:element name="http-transactions" minOccurs="0" type="http-transactions"/>
       </xs:sequence>
       <xs:attribute name="id" use="optional"/>
       <xs:attribute name="method" use="required" type="xs:NCName"/>
