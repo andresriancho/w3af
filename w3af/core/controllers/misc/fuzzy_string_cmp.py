@@ -128,7 +128,7 @@ def relative_distance(a_str, b_str):
     Measures the "similarity" of two strings.
 
     Depends on the algorithm we finally implement, but usually a return value
-    over 0.7 means the strings are very similar.
+    greater than 0.75 means the strings are very similar.
 
     :param a_str: A string object
     :param b_str: A string object

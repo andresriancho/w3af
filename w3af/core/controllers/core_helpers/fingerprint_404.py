@@ -441,58 +441,59 @@ class Fingerprint404(object):
                                                                    IS_EQUAL_RATIO)
 
             if is_fuzzy_equal:
-                msg = '"%s" (id:%s) is a 404 [similarity_index > %s with 404 DB entry]'
-                fmt = (http_response.get_url(),
-                       http_response.id,
-                       IS_EQUAL_RATIO)
-                om.out.debug(msg % fmt)
+                msg = ('"%s" (id:%s, code:%s, len:%s) is a 404'
+                       ' [similarity_index > %s with 404 DB entry]')
+                args = (http_response.get_url(),
+                        http_response.id,
+                        http_response.get_code(),
+                        len(http_response.get_body()),
+                        IS_EQUAL_RATIO)
+                om.out.debug(msg % args)
                 return True
-            else:
-                current_ratio = 0.0
 
-                if distance is None:
-                    # In some cases the distance is None, because the
-                    # fuzzy_equal didn't have to calculate it to produce the result
-                    # (because of the optimizations)
-                    #
-                    # Also, we can calculate the upper_bound_similarity which
-                    # indicates how much (in the best case) two strings can look
-                    # alike based on their lengths
-                    #
-                    # This allows us to calculate the distance between two strings
-                    # only if we know that the distance could be large enough
-                    ups = upper_bound_similarity(len(resp_404.body), len(resp_body))
+            if distance is None:
+                distance = 0.0
 
-                    if ups > max_similarity_with_404:
-                        current_ratio = relative_distance(resp_404.body, resp_body)
-                else:
-                    current_ratio = distance
+                # In some cases the distance is None, because the
+                # fuzzy_equal didn't have to calculate it to produce the result
+                # (because of the optimizations)
+                #
+                # Also, we can calculate the upper_bound_similarity which
+                # indicates how much (in the best case) two strings can look
+                # alike based on their lengths
+                #
+                # This allows us to calculate the distance between two strings
+                # only if we know that the distance could be large enough
+                ups = upper_bound_similarity(len(resp_404.body), len(resp_body))
 
-                max_similarity_with_404 = max(max_similarity_with_404,
-                                              current_ratio)
+                if ups > max_similarity_with_404:
+                    distance = relative_distance(resp_404.body, resp_body)
+
+            max_similarity_with_404 = max(max_similarity_with_404, distance)
 
             # Track if the response path is in the DB
             if not resp_path_in_db and resp_path == resp_404.path:
                 resp_path_in_db = True
 
         #
-        # I get here when the for ends and no body_404_db matched with
-        # the resp_body that was sent as a parameter by the user. This
-        # means one of two things:
+        # I get here when the for ends and no 404 body matched with
+        # the resp_body that was sent as a parameter. This means one of two things:
         #
-        #     * There is not enough knowledge in self._404_responses, or
+        #     * There is not enough knowledge in get_404_responses(), or
         #
         #     * The answer is NOT a 404.
         #
-        # Because we want to reduce the amount of "false positives" that
+        # Because we want to reduce the amount of false positives that
         # this method returns, we'll perform some extra checks before
         # saying that this is NOT a 404.
         #
         if resp_path_in_db and max_similarity_with_404 < MUST_VERIFY_RATIO:
-            msg = ('"%s" (id:%s) is NOT a 404 [similarity_index < %s'
-                   ' with sample path in 404 DB].')
+            msg = ('"%s" (id:%s, code:%s, len:%s) is NOT a 404'
+                   ' [similarity_index < %s with sample path in 404 DB]')
             args = (http_response.get_url(),
                     http_response.id,
+                    http_response.get_code(),
+                    len(http_response.get_body()),
                     MUST_VERIFY_RATIO)
             om.out.debug(msg % args)
             return False
@@ -501,14 +502,21 @@ class Fingerprint404(object):
             #
             #   Aha! It is a 404!
             #
-            msg = ('"%s" (id:%s) is a 404, used extra request'
-                   ' [similarity_index > %s with extra request].')
-            fmt = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
-            om.out.debug(msg % fmt)
+            msg = ('"%s" (id:%s, code:%s, len:%s) is a 404, used extra request'
+                   ' [similarity_index > %s with extra request]')
+            args = (http_response.get_url(),
+                    http_response.id,
+                    http_response.get_code(),
+                    len(http_response.get_body()),
+                    IS_EQUAL_RATIO)
+            om.out.debug(msg % args)
             return True
 
-        msg = '"%s" (id:%s) is NOT a 404 [default to False].'
-        args = (http_response.get_url(), http_response.id)
+        msg = '"%s" (id:%s, code:%s, len:%s) is NOT a 404 [default to False]'
+        args = (http_response.get_url(),
+                http_response.get_code(),
+                len(http_response.get_body()),
+                http_response.id)
         om.out.debug(msg % args)
 
         return False
