@@ -639,6 +639,10 @@ class Fingerprint404(object):
         Use with care, this method will yield a lot of false positives and
         should only be used as part of the decision making process.
 
+        Want to improve this method? Maybe use machine learning!
+
+            https://github.com/andresriancho/w3af/issues/17171
+
         :param four_oh_data: FourOhFourResponse instance which we want to know
                              if it looks like a 404 or not.
         :return: Boolean indicating if the response looks like a 404
