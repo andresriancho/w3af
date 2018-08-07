@@ -54,6 +54,16 @@ IS_EQUAL_RATIO = 0.90
 MUST_VERIFY_RATIO = 0.75
 MAX_404_RESPONSES = 50
 CLEAN_DB_EVERY = 10
+MIN_SCORE_FOR_404 = 2
+
+COMMON_404_WORDS = [
+    'not found',
+    'not find',
+    'no encontrada',
+    'error',
+    '404',
+    'error 404',
+]
 
 
 class FourOhFourResponse(object):
@@ -584,9 +594,63 @@ class Fingerprint404(object):
         #       using some kind of URL rewrite rule which completely ignores
         #       the last part of the URL (filename or path)
         #
-        return fuzzy_equal(four_oh_data.body,
-                           clean_resp_body,
-                           IS_EQUAL_RATIO)
+        is_fuzzy_equal = fuzzy_equal(four_oh_data.body,
+                                     clean_resp_body,
+                                     IS_EQUAL_RATIO)
+
+        #
+        #   Not equal! This means that the URL we generated really triggered
+        #   a 404, and that our response is different (not a 404)
+        #
+        if not is_fuzzy_equal:
+            return False
+
+        #
+        #   The responses are equal, both can be 404, or both can be the result
+        #   of the application ignoring the last part of the URL
+        #
+        if self._looks_like_404_page(four_oh_data):
+            return True
+
+        #
+        #   This is the worse scenario. The responses are equal, none of the
+        #   responses look like a 404. We get here when:
+        #
+        #       * _looks_like_404_page() has a false negative (the page is a 404,
+        #         but the method returns False, this is very common, since the
+        #         word database is very small)
+        #
+        #       * The site is ignoring the last part of the URL (the filename or
+        #         the last path). So requesting /abc/def and /abc/foo will both
+        #         yield the same result.
+        #
+        #   There is no good answer here... I prefer to return False, which
+        #   might add a false positive finding to the KB, instead of returning
+        #   True (saying that the response is a 404) and having a false negative
+        #
+        return False
+
+    def _looks_like_404_page(self, four_oh_data):
+        """
+        Match some very common 404 strings against the response, each matching
+        string increases the score. If the score is greater than MIN_SCORE_FOR_404
+        then this method returns True.
+
+        Use with care, this method will yield a lot of false positives and
+        should only be used as part of the decision making process.
+
+        :param four_oh_data: FourOhFourResponse instance which we want to know
+                             if it looks like a 404 or not.
+        :return: Boolean indicating if the response looks like a 404
+        """
+        score = 0
+        lower_404_body = four_oh_data.body.lower()
+
+        for word in COMMON_404_WORDS:
+            if word in lower_404_body:
+                score += 1
+
+        return score >= MIN_SCORE_FOR_404
 
 
 def fingerprint_404_singleton(cleanup=False):
