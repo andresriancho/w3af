@@ -76,6 +76,7 @@ class vulners_scanner(GrepPlugin):
 
         self._already_visited = ScalableBloomFilter()
         self._vulnerability_cache = {}
+        self._multi_re = None
 
     def get_options(self):
         """
@@ -131,13 +132,15 @@ class vulners_scanner(GrepPlugin):
         # Using re.IGNORECASE because w3af is modifying headers when making RAW dump. Why so? Raw must be raw!
         self._multi_re = MultiRE(((regex, regex_aliases.get(regex)) for regex in regex_aliases), re.IGNORECASE)
 
-    def get_vulners_api(self):
-        # Lazy import. Just not to make it in the __init__
-        # Other way API will try to communicate Vulners right at the w3af startup
-        if not self._vulners_api:
-            # Don't forget to setup Vulners API key if you have one
+    def setup_vulners_api(self):
+        # Setting up Vulners API
+        # If API key is wrong or API key is not a string it will raise exception
+        try:
             self._vulners_api = vulners.Vulners(api_key= self._vulners_api_key)
-        return self._vulners_api
+        except Exception as e:
+            msg = 'Failed to initialize Vulners API: "%s"'
+            om.out.error(msg % e)
+            return
 
     def check_vulners(self, software_name, software_version, check_type):
         vulnerabilities = {}
@@ -145,11 +148,20 @@ class vulners_scanner(GrepPlugin):
         if cached_result:
             return cached_result
         # Ask Vulners about vulnerabilities
-        if check_type == 'software':
-            vulnerabilities = self.get_vulners_api().softwareVulnerabilities(software_name, software_version)
-        elif check_type == 'cpe':
-            cpe_string = "%s:%s" % (software_name, software_version)
-            vulnerabilities = self.get_vulners_api().cpeVulnerabilities(cpe_string.encode())
+        # We will do it in try-except mode to work properly with potential network connectivity problem. Or in case Vulners is down.
+        try:
+            if check_type == 'software':
+                vulnerabilities = self._vulners_api.softwareVulnerabilities(software_name, software_version)
+            elif check_type == 'cpe':
+                cpe_string = "%s:%s" % (software_name, software_version)
+                vulnerabilities = self._vulners_api.cpeVulnerabilities(cpe_string.encode())
+        except Exception as e:
+            msg = 'Failed to make Vulners API request: "%s"'
+            om.out.error(msg % e)
+            # Return empty dict not to stop here.
+            # Maybe next time API will answer correctly.
+            return {}
+        # If call was OK cache the data and return results
         self._vulnerability_cache[(software_name, software_version, check_type)] = vulnerabilities
         return vulnerabilities
 
@@ -175,15 +187,19 @@ class vulners_scanner(GrepPlugin):
         :return: None
 
         """
-        # Lazy update rules if it's first start of the plugin
+        # Lock and init rules and API wrapper
         with self._plugin_lock:
             if not self.rules_updated:
+                # Updating rules
                 self.update_vulners_rules()
                 self.rules_updated = True
+                # Trying to init Vulners API
+                self.setup_vulners_api()
 
         # Check if we have downloaded rules well.
         # If there is no rules - something went wrong, time to exit.
-        if not self.rules_table:
+        # If there is no API instance - same story. We cant go further.
+        if not self.rules_table or not self._vulners_api:
             return
         # We do not parse non-text output
         if not response.is_text_or_html():
