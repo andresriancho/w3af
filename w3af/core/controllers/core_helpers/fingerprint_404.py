@@ -23,11 +23,10 @@ from __future__ import with_statement
 
 import copy
 import thread
-import string
+import itertools
 
-from collections import deque
 from functools import wraps
-from itertools import izip_longest
+from collections import deque
 
 # pylint: disable=E0401
 from darts.lib.utils.lru import SynchronizedLRUDict
@@ -38,8 +37,9 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
-from w3af.core.data.url.helpers import _get_clean_body_impl
+from w3af.core.data.url.helpers import get_clean_body_impl
 
+from w3af.core.controllers.misc.generate_404_filename import generate_404_filename
 from w3af.core.controllers.misc.decorators import retry
 from w3af.core.controllers.misc.fuzzy_string_cmp import (fuzzy_equal,
                                                          fuzzy_equal_return_distance,
@@ -52,6 +52,7 @@ from w3af.core.controllers.exceptions import (HTTPRequestException,
 IS_EQUAL_RATIO = 0.90
 MUST_VERIFY_RATIO = 0.75
 MAX_404_RESPONSES = 50
+CLEAN_DB_EVERY = 10
 
 
 class FourOhFourResponse(object):
@@ -81,7 +82,7 @@ def lru_404_cache(wrapped_method):
     return inner
 
 
-class fingerprint_404(object):
+class Fingerprint404(object):
     """
     Read the 404 page(s) returned by the server.
 
@@ -102,9 +103,18 @@ class fingerprint_404(object):
         #   Internal variables
         #
         self._already_analyzed = False
-        self._404_responses = deque(maxlen=MAX_404_RESPONSES)
         self._lock = thread.allocate_lock()
         self._directory_uses_404_codes = ScalableBloomFilter()
+        self._clean_404_response_db_calls = 0
+
+        #
+        #   There are two different 404 response databases, the base one is
+        #   created during the scan initialization and will not be modified
+        #   during the scan. The extended 404 DB is used during the scan to
+        #   store new knowledge about the 404 responses which are captured.
+        #
+        self._base_404_responses = deque(maxlen=MAX_404_RESPONSES)
+        self._extended_404_responses = deque(maxlen=MAX_404_RESPONSES)
 
         # It is OK to store 1000 here, I'm only storing path+filename as the key,
         # and bool as the value.
@@ -178,8 +188,9 @@ class fingerprint_404(object):
                 path_extension = (url_404.get_domain_path(),
                                   url_404.get_extension())
 
-                if path_extension not in self._directory_uses_404_codes:
-                    self._directory_uses_404_codes.add(path_extension)
+                # No need to check if the ScalableBloomFilter contains the key
+                # It is a "set", adding duplicates is a no-op.
+                self._directory_uses_404_codes.add(path_extension)
 
         #
         # Sort the HTTP responses by length to try to have the same DB on
@@ -201,34 +212,97 @@ class fingerprint_404(object):
         #
         if len(not_exist_resp_lst):
             four_oh_data = not_exist_resp_lst[0]
-            self._append_to_404_responses(four_oh_data)
+            self._append_to_base_404_responses(four_oh_data)
 
         # And now add the unique responses
         for i in not_exist_resp_lst:
-            for j in self._404_responses:
+            for j in self._base_404_responses:
 
                 if i is j:
                     break
 
                 if fuzzy_equal(i.body, j.body, IS_EQUAL_RATIO):
                     # i (or something really similar) already exists in the
-                    # self._404_responses, no need to compare any further
+                    # self._base_404_responses, no need to compare any further
                     break
             else:
                 # None of the 404_responses match the item from not_exist_resp_lst
                 # This means that this item is new and we should store it in the
                 # 404_responses db
-                self._append_to_404_responses(i)
+                self._append_to_base_404_responses(i)
 
-    def _append_to_404_responses(self, data):
-        self._404_responses.append(data)
+    def _append_to_base_404_responses(self, data):
+        self._base_404_responses.append(data)
 
-        if len(self._404_responses) >= MAX_404_RESPONSES:
-            msg_fmt = 'The 404 body result database has reached MAX_404_RESPONSES!'
+        if len(self._base_404_responses) >= MAX_404_RESPONSES:
+            msg_fmt = 'The base 404 body result database has reached MAX_404_RESPONSES!'
             om.out.debug(msg_fmt)
         else:
-            msg_fmt = 'The 404 body result database has a length of %s.'
-            om.out.debug(msg_fmt % len(self._404_responses))
+            msg_fmt = 'The base 404 body result database has a length of %s.'
+            om.out.debug(msg_fmt % len(self._base_404_responses))
+
+    def _append_to_extended_404_responses(self, data):
+        self._extended_404_responses.append(data)
+
+        if len(self._extended_404_responses) >= MAX_404_RESPONSES:
+            msg_fmt = 'The extended 404 body result database has reached MAX_404_RESPONSES!'
+            om.out.debug(msg_fmt)
+        else:
+            msg_fmt = 'The extended 404 body result database has a length of %s.'
+            om.out.debug(msg_fmt % len(self._extended_404_responses))
+
+        self.clean_404_response_db()
+
+    def get_404_responses(self):
+        all_404 = itertools.chain(copy.copy(self._base_404_responses),
+                                  copy.copy(self._extended_404_responses))
+
+        for resp_404 in all_404:
+            yield resp_404
+
+    def clean_404_response_db(self):
+        """
+        During the scan, and because I chose to remove the very broad 404
+        database lock, the 404 response database might become untidy: the same
+        HTTP response might be appended to the DB multiple times.
+
+        An untidy DB triggers more comparisons between HTTP responses, which
+        is CPU-intensive.
+
+        This method cleans the DB every N calls to reduce any duplicates.
+
+        :return: None. The extended DB is modified.
+        """
+        self._clean_404_response_db_calls += 1
+
+        if self._clean_404_response_db_calls % CLEAN_DB_EVERY != 0:
+            return
+
+        items_to_remove = []
+        extended_404_response_copy = copy.copy(self._extended_404_responses)
+
+        for i in extended_404_response_copy:
+            for j in extended_404_response_copy:
+
+                if i is j:
+                    continue
+
+                if fuzzy_equal(i.body, j.body, IS_EQUAL_RATIO):
+                    # i (or something really similar) already exists in the
+                    # self._extended_404_responses, no need to compare any further
+                    items_to_remove.append(i)
+                    break
+
+        for i in items_to_remove:
+            try:
+                self._extended_404_responses.remove(i)
+            except ValueError:
+                # The 404 response DB might have been changed by another thread
+                continue
+
+        msg = 'Called clean 404 response DB. Removed %s duplicates from DB.'
+        args = (len(items_to_remove),)
+        om.out.debug(msg % args)
 
     @retry(tries=2, delay=0.5, backoff=2)
     def _send_404(self, url404):
@@ -331,7 +405,7 @@ class fingerprint_404(object):
         #
         #   Compare this response to all the 404's I have in my DB
         #
-        for resp_404 in copy.copy(self._404_responses):
+        for resp_404 in self.get_404_responses():
 
             # Since the fuzzy_equal function is CPU-intensive we want to
             # avoid calling it for cases where we know it won't match, for
@@ -402,11 +476,8 @@ class fingerprint_404(object):
 
         if self._is_404_with_extra_request(http_response, resp_body):
             #
-            #   Aha! It actually was a 404!
+            #   Aha! It is a 404!
             #
-            four_oh_data = FourOhFourResponse(http_response)
-            self._append_to_404_responses(four_oh_data)
-
             msg = '"%s" (id:%s) is a 404, used extra request [similarity_index > %s].'
             fmt = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
             om.out.debug(msg % fmt)
@@ -417,102 +488,6 @@ class fingerprint_404(object):
         om.out.debug(msg % args)
 
         return False
-
-    def _generate_404_filename(self, filename):
-        """
-        Some web applications are really picky about the URL format, or have
-        different 404 handling for the URL format. So we're going to apply these
-        rules for generating a filename that doesn't exist:
-
-            * Flip the characters of the same type (digit, letter), ignoring
-            the file extension (if any):
-                'ab-23'      ==> 'ba-32'
-                'abc-12'     ==> 'bac-12'
-                'ab-23.html' ==> 'ba-32.html'
-
-            * If after the character flipping the filename is equal to the
-            original one, +2 to each char:
-                'a1a2'      ==> 'c3c4"
-                'a1a2.html' ==> 'c3c4.html"
-
-            * There is an edge case which was reported in [0] which affects
-            files like '.ssh' or '.env'. These files (at least from w3af's
-            perspective) don't have a name and have an extension. When we
-            find a file like this we'll just randomize the filename and
-            keep the extension.
-
-        [0] https://github.com/andresriancho/w3af/issues/17092
-
-        :param filename: The original filename
-        :return: A mutated filename
-        """
-        split_filename = filename.rsplit(u'.', 1)
-        if len(split_filename) == 2:
-            orig_filename, extension = split_filename
-        else:
-            extension = None
-            orig_filename = split_filename[0]
-
-        #
-        #   This handles the case of files which don't have a name,
-        #   such as .env.
-        #
-        if not orig_filename:
-            return u'%s.%s' % (rand_alnum(5), extension)
-
-        def grouper(iterable, n, fillvalue=None):
-            """
-            Collect data into fixed-length chunks or blocks
-            """
-            # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
-            args = [iter(iterable)] * n
-            return izip_longest(fillvalue=fillvalue, *args)
-
-        mod_filename = ''
-
-        for x, y in grouper(orig_filename, 2):
-
-            # Handle the last iteration
-            if y is None:
-                mod_filename += x
-                break
-
-            if x.isdigit() and y.isdigit():
-                mod_filename += y + x
-            elif x in string.letters and y in string.letters:
-                mod_filename += y + x
-            else:
-                # Don't flip chars
-                mod_filename += x + y
-
-        if mod_filename == orig_filename:
-            # Damn!
-            plus_three_filename = u''
-            letters = string.letters
-            digits = string.digits
-            lletters = len(letters)
-            ldigits = len(digits)
-
-            for c in mod_filename:
-                indexl = letters.find(c)
-                if indexl != -1:
-                    new_index = (indexl + 3) % lletters
-                    plus_three_filename += letters[new_index]
-                else:
-                    indexd = digits.find(c)
-                    if indexd != -1:
-                        new_index = (indexd + 3) % ldigits
-                        plus_three_filename += digits[new_index]
-                    else:
-                        plus_three_filename += c
-
-            mod_filename = plus_three_filename
-
-        final_result = mod_filename
-        if extension is not None:
-            final_result += u'.%s' % extension
-
-        return final_result
 
     def _is_404_with_extra_request(self, http_response, clean_resp_body):
         """
@@ -529,6 +504,9 @@ class fingerprint_404(object):
 
         :return: True if the original response was a 404 !
         """
+        #
+        #   Generate a request that will trigger a 404
+        #
         response_url = http_response.get_url()
         filename = response_url.get_file_name()
 
@@ -536,30 +514,50 @@ class fingerprint_404(object):
             relative_url = '../%s/' % rand_alnum(8)
             url_404 = response_url.url_join(relative_url)
         else:
-            relative_url = self._generate_404_filename(filename)
+            relative_url = generate_404_filename(filename)
             url_404 = response_url.copy()
             url_404.set_file_name(relative_url)
 
+        #
+        #   Send the 404 request
+        #
         response_404 = self._send_404(url_404)
-        clean_response_404_body = get_clean_body(response_404)
 
+        #
+        #   Update _directory_uses_404_codes
+        #
         if response_404.get_code() == 404:
             path_extension = (url_404.get_domain_path(),
                               url_404.get_extension())
 
-            if path_extension not in self._directory_uses_404_codes:
-                self._directory_uses_404_codes.add(path_extension)
+            self._directory_uses_404_codes.add(path_extension)
 
-        return fuzzy_equal(clean_response_404_body,
+            if http_response.get_code() != 404:
+                # Not a 404! We know because of the new knowledge that this path
+                # and extension uses 404
+                return False
+
+        #
+        #   Compare the "response that MUST BE (*) a 404" with the one
+        #   received as parameter.
+        #
+        #   (*) This works in 95% of the cases, where the application is not
+        #       using some kind of URL rewrite rule which completely ignores
+        #       the last part of the URL (filename or path)
+        #
+        four_oh_data = FourOhFourResponse(response_404)
+        self._append_to_extended_404_responses(four_oh_data)
+
+        return fuzzy_equal(four_oh_data.body,
                            clean_resp_body,
                            IS_EQUAL_RATIO)
 
 
 def fingerprint_404_singleton(cleanup=False):
-    if fingerprint_404._instance is None or cleanup:
-        fingerprint_404._instance = fingerprint_404()
+    if Fingerprint404._instance is None or cleanup:
+        Fingerprint404._instance = Fingerprint404()
 
-    return fingerprint_404._instance
+    return Fingerprint404._instance
 
 
 #
@@ -614,4 +612,5 @@ def get_clean_body(response):
     to_replace = [trs for trs in to_replace if len(trs) > 6]
     to_replace = list(set(to_replace))
 
-    return _get_clean_body_impl(response, to_replace, multi_encode=False)
+    return get_clean_body_impl(response, to_replace, multi_encode=False)
+

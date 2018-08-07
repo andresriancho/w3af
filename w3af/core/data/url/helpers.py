@@ -212,13 +212,13 @@ def get_clean_body(mutant, response, max_escape_count=500):
         return response.body
 
     strings_to_replace_list = [mutant.get_token_value()]
-    return _get_clean_body_impl(response,
-                                strings_to_replace_list,
-                                max_escape_count=max_escape_count)
+    return get_clean_body_impl(response,
+                               strings_to_replace_list,
+                               max_escape_count=max_escape_count)
 
 
-def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
-                         max_escape_count=None):
+def get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
+                        max_escape_count=None):
     """
     This is a low level function which allows me to use all the improvements
     I did in the helpers.get_clean_body() in fingerprint_404.get_clean_body().
@@ -234,6 +234,15 @@ def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
     :param multi_encode: Apply the multiple encodings before replacing, setting
                          this to True with many strings to replace in the list
                          will consume considerable CPU time.
+    :param max_escape_count: The max number of escapes to try to replace, note
+                             that the default here is 500, which is a little bit
+                             more than the max number of escapes generated in the
+                             worse case I could imagine at test_apply_multi_escape_table_count
+                             which generated ~350.
+
+                             The goal is to make sure that everything is generated
+                             but at the same time control any edge cases which I might
+                             have missed.
     :return: The body as a unicode with all strings to replace removed.
     """
     body = response.body

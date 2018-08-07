@@ -31,7 +31,7 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.controllers.w3afCore import w3afCore
-from w3af.core.controllers.core_helpers.fingerprint_404 import (fingerprint_404,
+from w3af.core.controllers.core_helpers.fingerprint_404 import (Fingerprint404,
                                                                 fingerprint_404_singleton)
 
 
@@ -47,7 +47,7 @@ class TestGenerate404Filename(unittest.TestCase):
                  ('r57_Mohajer22.php', 'r57_oMahejr22.php'),
                  ]
 
-        f404 = fingerprint_404()
+        f404 = Fingerprint404()
         for fname, modfname in TESTS:
             self.assertEqual(f404._generate_404_filename(fname), modfname)
 
