@@ -210,7 +210,7 @@ class xml_file(OutputPlugin):
         self._add_scan_info_to_context(context)
         self._add_findings_to_context(context)
         self._add_errors_to_context(context)
-        
+
         # Write to file
         self._write_context_to_file(context)
 

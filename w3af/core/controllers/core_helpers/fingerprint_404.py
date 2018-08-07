@@ -35,9 +35,9 @@ from darts.lib.utils.lru import SynchronizedLRUDict
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.url.helpers import get_clean_body_impl
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 from w3af.core.controllers.misc.generate_404_filename import generate_404_filename
 from w3af.core.controllers.misc.decorators import retry
@@ -418,7 +418,7 @@ class Fingerprint404(object):
                                                                    IS_EQUAL_RATIO)
 
             if is_fuzzy_equal:
-                msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
+                msg = '"%s" (id:%s) is a 404 [similarity_index > %s with 404 DB entry]'
                 fmt = (http_response.get_url(),
                        http_response.id,
                        IS_EQUAL_RATIO)
@@ -478,13 +478,14 @@ class Fingerprint404(object):
             #
             #   Aha! It is a 404!
             #
-            msg = '"%s" (id:%s) is a 404, used extra request [similarity_index > %s].'
+            msg = ('"%s" (id:%s) is a 404, used extra request'
+                   ' [similarity_index > %s with extra request].')
             fmt = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
             om.out.debug(msg % fmt)
             return True
 
-        msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
-        args = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
+        msg = '"%s" (id:%s) is NOT a 404 [default to False].'
+        args = (http_response.get_url(), http_response.id)
         om.out.debug(msg % args)
 
         return False
@@ -538,6 +539,13 @@ class Fingerprint404(object):
                 return False
 
         #
+        #   Save the new 404 page to the DB. This might prevent us from doing
+        #   extra HTTP requests in the future
+        #
+        four_oh_data = FourOhFourResponse(response_404)
+        self._append_to_extended_404_responses(four_oh_data)
+
+        #
         #   Compare the "response that MUST BE (*) a 404" with the one
         #   received as parameter.
         #
@@ -545,9 +553,6 @@ class Fingerprint404(object):
         #       using some kind of URL rewrite rule which completely ignores
         #       the last part of the URL (filename or path)
         #
-        four_oh_data = FourOhFourResponse(response_404)
-        self._append_to_extended_404_responses(four_oh_data)
-
         return fuzzy_equal(four_oh_data.body,
                            clean_resp_body,
                            IS_EQUAL_RATIO)
