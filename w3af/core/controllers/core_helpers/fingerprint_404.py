@@ -35,8 +35,9 @@ from darts.lib.utils.lru import SynchronizedLRUDict
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.dc.headers import Headers
 from w3af.core.data.fuzzer.utils import rand_alnum
-from w3af.core.data.url.helpers import get_clean_body_impl
+from w3af.core.data.url.helpers import get_clean_body_impl, NO_CONTENT_MSG
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 from w3af.core.controllers.misc.generate_404_filename import generate_404_filename
@@ -235,7 +236,7 @@ class Fingerprint404(object):
         self._base_404_responses.append(data)
 
         if len(self._base_404_responses) >= MAX_404_RESPONSES:
-            msg_fmt = 'The base 404 body result database has reached MAX_404_RESPONSES!'
+            msg_fmt = 'The base 404 body result database has reached MAX_404_RESPONSES'
             om.out.debug(msg_fmt)
         else:
             msg_fmt = 'The base 404 body result database has a length of %s.'
@@ -245,7 +246,7 @@ class Fingerprint404(object):
         self._extended_404_responses.append(data)
 
         if len(self._extended_404_responses) >= MAX_404_RESPONSES:
-            msg_fmt = 'The extended 404 body result database has reached MAX_404_RESPONSES!'
+            msg_fmt = 'The extended 404 body result database has reached MAX_404_RESPONSES'
             om.out.debug(msg_fmt)
         else:
             msg_fmt = 'The extended 404 body result database has a length of %s.'
@@ -317,6 +318,7 @@ class Fingerprint404(object):
             response = self._uri_opener.GET(url404, cache=False, grep=False)
         except HTTPRequestException, hre:
             message = 'Exception found while detecting 404: "%s"'
+            om.out.debug(message % hre)
             raise FourOhFourDetectionException(message % hre)
 
         return response
@@ -370,6 +372,27 @@ class Fingerprint404(object):
         #
         if http_response.get_code() == 404:
             return True
+
+        #
+        #   This is an edge case. Let me explain...
+        #
+        #   Doing try/except in all plugins that send HTTP requests was hard (tm)
+        #   so plugins don't use ExtendedUrllib directly, instead they use the
+        #   UrlOpenerProxy (defined in plugin.py). This proxy catches any
+        #   exceptions and returns a 204 response.
+        #
+        #   In most cases that works perfectly, because it will allow the plugin
+        #   to keep working without caring much about the exceptions. In some
+        #   edge cases someone will call is_404(204_response_generated_by_w3af)
+        #   and that will most likely return False, because the 204 response we
+        #   generate doesn't look like anything w3af has in the 404 DB.
+        #
+        #   The following iff fixes the race condition
+        #
+        if http_response.get_code() == 204:
+            if http_response.get_msg() == NO_CONTENT_MSG:
+                if http_response.get_headers() == Headers():
+                    return True
 
         #
         #   Lets start with the rather complex code...
