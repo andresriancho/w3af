@@ -70,8 +70,12 @@ def new_no_content_resp(uri, add_id=False):
     #
     # [0] https://github.com/andresriancho/w3af/commit/682bc2e4ad7d075bbdc469bc5d24a28e6d2e7804
     #
-    no_content_response = HTTPResponse(NO_CONTENT, '', Headers(), uri,
-                                       uri, msg=NO_CONTENT_MSG)
+    no_content_response = HTTPResponse(code=NO_CONTENT,
+                                       read='',
+                                       headers=Headers(),
+                                       geturl=uri,
+                                       original_url=uri,
+                                       msg=NO_CONTENT_MSG)
 
     if add_id:
         no_content_response.id = consecutive_number_generator.inc()
