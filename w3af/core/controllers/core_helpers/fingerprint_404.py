@@ -514,9 +514,9 @@ class Fingerprint404(object):
 
         msg = '"%s" (id:%s, code:%s, len:%s) is NOT a 404 [default to False]'
         args = (http_response.get_url(),
+                http_response.id,
                 http_response.get_code(),
-                len(http_response.get_body()),
-                http_response.id)
+                len(http_response.get_body()))
         om.out.debug(msg % args)
 
         return False
