@@ -33,6 +33,8 @@ HTML_DOC = u"""
 META_REFRESH = u"""<meta http-equiv="refresh" content="600">"""
 META_REFRESH_WITH_URL = u"""
 <meta http-equiv="refresh" content="2;url=http://crawler.w3af.com/">"""
+META_REFRESH_WITH_URL_AND_QUOTES = u"""
+<meta http-equiv="refresh" content="2;url='http://crawler.w3af.com/'">"""
 
 # Other templates
 BASE_TAG = u"""
