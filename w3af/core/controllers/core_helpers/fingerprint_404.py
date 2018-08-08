@@ -69,12 +69,16 @@ COMMON_404_WORDS = [
 class FourOhFourResponse(object):
     __slots__ = ('body',
                  'doc_type',
-                 'path')
+                 'path',
+                 'url',
+                 'id')
 
     def __init__(self, http_response):
         self.body = get_clean_body(http_response)
         self.doc_type = http_response.doc_type
         self.path = http_response.get_url().get_domain_path().url_string
+        self.url = http_response.get_url().url_string
+        self.id = http_response.id
 
 
 def lru_404_cache(wrapped_method):
@@ -245,22 +249,16 @@ class Fingerprint404(object):
     def _append_to_base_404_responses(self, data):
         self._base_404_responses.append(data)
 
-        if len(self._base_404_responses) >= MAX_404_RESPONSES:
-            msg_fmt = 'The base 404 body result database has reached MAX_404_RESPONSES'
-            om.out.debug(msg_fmt)
-        else:
-            msg_fmt = 'The base 404 body result database has a length of %s.'
-            om.out.debug(msg_fmt % len(self._base_404_responses))
+        msg = 'Added 404 data for "%s" (id:%s) to the base 404 result database (size: %s/%s)'
+        args = (data.url, data.id, len(self._extended_404_responses), MAX_404_RESPONSES)
+        om.out.debug(msg % args)
 
     def _append_to_extended_404_responses(self, data):
         self._extended_404_responses.append(data)
 
-        if len(self._extended_404_responses) >= MAX_404_RESPONSES:
-            msg_fmt = 'The extended 404 body result database has reached MAX_404_RESPONSES'
-            om.out.debug(msg_fmt)
-        else:
-            msg_fmt = 'The extended 404 body result database has a length of %s.'
-            om.out.debug(msg_fmt % len(self._extended_404_responses))
+        msg = 'Added 404 data for "%s" (id:%s) to the extended 404 result database (size: %s/%s)'
+        args = (data.url, data.id, len(self._extended_404_responses), MAX_404_RESPONSES)
+        om.out.debug(msg % args)
 
         self.clean_404_response_db()
 
@@ -310,13 +308,16 @@ class Fingerprint404(object):
             except ValueError:
                 # The 404 response DB might have been changed by another thread
                 continue
+            else:
+                msg = 'Removed 404 response for path %s from the 404 DB.'
+                om.out.debug(msg % i.path)
 
         msg = 'Called clean 404 response DB. Removed %s duplicates from DB.'
         args = (len(items_to_remove),)
         om.out.debug(msg % args)
 
     @retry(tries=2, delay=0.5, backoff=2)
-    def _send_404(self, url404):
+    def _send_404(self, url404, debugging_id=None):
         """
         Sends a GET request to url404.
 
@@ -325,7 +326,10 @@ class Fingerprint404(object):
         # I don't use the cache, because the URLs are random and the only thing
         # that cache does is to fill up disk space
         try:
-            response = self._uri_opener.GET(url404, cache=False, grep=False)
+            response = self._uri_opener.GET(url404,
+                                            cache=False,
+                                            grep=False,
+                                            debugging_id=debugging_id)
         except HTTPRequestException, hre:
             message = 'Exception found while detecting 404: "%s"'
             om.out.debug(message % hre)
@@ -452,12 +456,13 @@ class Fingerprint404(object):
 
             if is_fuzzy_equal:
                 msg = ('"%s" (id:%s, code:%s, len:%s) is a 404'
-                       ' [similarity_index > %s with 404 DB entry]')
+                       ' [similarity_index > %s with 404 DB entry with ID %s]')
                 args = (http_response.get_url(),
                         http_response.id,
                         http_response.get_code(),
                         len(http_response.get_body()),
-                        IS_EQUAL_RATIO)
+                        IS_EQUAL_RATIO,
+                        resp_404.id)
                 om.out.debug(msg % args)
                 return True
 
@@ -508,16 +513,19 @@ class Fingerprint404(object):
             om.out.debug(msg % args)
             return False
 
-        if self._is_404_with_extra_request(http_response, resp_body):
+        debugging_id = rand_alnum(8)
+
+        if self._is_404_with_extra_request(http_response, resp_body, debugging_id):
             #
             #   Aha! It is a 404!
             #
-            msg = ('"%s" (id:%s, code:%s, len:%s) is a 404, used extra request'
+            msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is a 404'
                    ' [similarity_index > %s with extra request]')
             args = (http_response.get_url(),
                     http_response.id,
                     http_response.get_code(),
                     len(http_response.get_body()),
+                    debugging_id,
                     IS_EQUAL_RATIO)
             om.out.debug(msg % args)
             return True
@@ -531,7 +539,7 @@ class Fingerprint404(object):
 
         return False
 
-    def _is_404_with_extra_request(self, http_response, clean_resp_body):
+    def _is_404_with_extra_request(self, http_response, clean_resp_body, debugging_id):
         """
         Performs a very simple check to verify if this response is a 404 or not.
 
@@ -563,7 +571,7 @@ class Fingerprint404(object):
         #
         #   Send the 404 request
         #
-        response_404 = self._send_404(url_404)
+        response_404 = self._send_404(url_404, debugging_id=debugging_id)
 
         #
         #   Update _directory_uses_404_codes
@@ -577,6 +585,13 @@ class Fingerprint404(object):
             if http_response.get_code() != 404:
                 # Not a 404! We know because of the new knowledge that this path
                 # and extension uses 404
+                msg = ('The generated HTTP response for %s has a 404 code,'
+                       ' which is different from code %s used by the HTTP'
+                       ' response passed as parameter (did:%s)')
+                args = (url_404,
+                        http_response.get_code(),
+                        debugging_id)
+                om.out.debug(msg % args)
                 return False
 
         #
@@ -603,6 +618,10 @@ class Fingerprint404(object):
         #   a 404, and that our response is different (not a 404)
         #
         if not is_fuzzy_equal:
+            msg = ('The generated HTTP response for %s is different from'
+                   ' the HTTP response body passed as parameter (did:%s)')
+            args = (url_404, debugging_id)
+            om.out.debug(msg % args)
             return False
 
         #
@@ -610,6 +629,11 @@ class Fingerprint404(object):
         #   of the application ignoring the last part of the URL
         #
         if self._looks_like_404_page(four_oh_data):
+            msg = ('The generated HTTP response for %s looks like a 404'
+                   ' response AND is similar to the HTTP response body passed'
+                   ' as parameter (did:%s)')
+            args = (url_404, debugging_id)
+            om.out.debug(msg % args)
             return True
 
         #
@@ -628,6 +652,11 @@ class Fingerprint404(object):
         #   might add a false positive finding to the KB, instead of returning
         #   True (saying that the response is a 404) and having a false negative
         #
+        msg = ('The generated HTTP response for %s is very similar to the HTTP'
+               ' response body passed as parameter, and the generated response'
+               ' does NOT look like a 404 (did:%s)')
+        args = (url_404, debugging_id)
+        om.out.debug(msg % args)
         return False
 
     def _looks_like_404_page(self, four_oh_data):
