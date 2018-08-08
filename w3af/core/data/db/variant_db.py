@@ -47,7 +47,7 @@ from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
 # In this case we'll collect at most PATH_MAX_VARIANTS URLs with different
 # paths inside the "abc" path.
 #
-PATH_MAX_VARIANTS = 50
+PATH_MAX_VARIANTS = 75
 
 #
 # Limits the max number of variants we'll allow for URLs with the same path
@@ -59,7 +59,7 @@ PATH_MAX_VARIANTS = 50
 # For URLs which have the same path (/abc/def) and parameters
 # (id=number&abc=string) we'll collect at most PARAMS_MAX_VARIANTS of those
 #
-PARAMS_MAX_VARIANTS = 10
+PARAMS_MAX_VARIANTS = 25
 
 #
 # Limits the number variants for "the same form". A good example to understand this
@@ -84,7 +84,7 @@ PARAMS_MAX_VARIANTS = 10
 #
 # https://github.com/andresriancho/w3af/issues/15970
 #
-MAX_EQUAL_FORM_VARIANTS = 5
+MAX_EQUAL_FORM_VARIANTS = 10
 
 
 class VariantDB(object):
@@ -130,16 +130,13 @@ class VariantDB(object):
         """
         with self._db_lock:
             if self._seen_exactly_the_same(fuzzable_request):
-                self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
                 return False
 
             if self._has_form(fuzzable_request):
                 if not self._need_more_variants_for_form(fuzzable_request):
-                    self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
                     return False
 
             if not self._need_more_variants_for_uri(fuzzable_request):
-                self._log_return_false(fuzzable_request, 'need_more_variants_for_uri')
                 return False
 
             # Yes, please give me more variants of fuzzable_request
@@ -169,10 +166,14 @@ class VariantDB(object):
         # Choose which max_variants to use
         if has_params:
             max_variants = self.params_max_variants
+            max_variants_type = 'params'
         else:
             max_variants = self.path_max_variants
+            max_variants_type = 'path'
 
         if count >= max_variants:
+            _type = 'need_more_variants_for_uri(%s)' % max_variants_type
+            self._log_return_false(fuzzable_request, _type)
             return False
 
         self._variants[clean_dict_key] = count + 1
@@ -188,6 +189,8 @@ class VariantDB(object):
 
         # Store it to avoid duplicated fuzzable requests in our framework
         self._variants_eq.add(request_hash)
+
+        self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
         return False
 
     def _has_form(self, fuzzable_request):
@@ -210,6 +213,7 @@ class VariantDB(object):
             return True
 
         if count >= self.max_equal_form_variants:
+            self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
             return False
 
         self._variants_form[clean_dict_key_form] = count + 1
