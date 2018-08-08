@@ -96,8 +96,8 @@ class TestCachedQueue(unittest.TestCase):
     def test_simple_rpm_speed(self):
         q = CachedQueue()
 
-        self.assertEqual(None, q.get_input_rpm())
-        self.assertEqual(None, q.get_output_rpm())
+        self.assertEqual(0.0, q.get_input_rpm())
+        self.assertEqual(0.0, q.get_output_rpm())
 
         for i in xrange(4):
             q.put(i)
