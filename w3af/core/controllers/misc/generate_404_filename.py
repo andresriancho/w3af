@@ -67,13 +67,14 @@ def generate_404_filename(filename):
     if not orig_filename:
         return u'%s.%s' % (rand_alnum(5), extension)
 
-    def grouper(iterable, n, fillvalue=None):
-        """
-        Collect data into fixed-length chunks or blocks
-        """
-        # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
-        args = [iter(iterable)] * n
-        return itertools.izip_longest(fillvalue=fillvalue, *args)
+    #
+    #   This handles the case of files which have really short names
+    #   such as "a.html" or "ac.rb". When trying to modify those short
+    #   names it is likely that we'll end up with either the same one
+    #   or another one that also exists in the path
+    #
+    if len(orig_filename) in (1, 2):
+        orig_filename = u'%s%s' % (rand_alnum(4), orig_filename)
 
     mod_filename = ''
 
@@ -120,3 +121,12 @@ def generate_404_filename(filename):
         final_result += u'.%s' % extension
 
     return final_result
+
+
+def grouper(iterable, n, fillvalue=None):
+    """
+    Collect data into fixed-length chunks or blocks
+    """
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
+    args = [iter(iterable)] * n
+    return itertools.izip_longest(fillvalue=fillvalue, *args)
