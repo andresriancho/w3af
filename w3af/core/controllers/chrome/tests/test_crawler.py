@@ -152,7 +152,6 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
         self.pool.join()
 
     def test_parse_dom(self):
-        return
         t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
                                                 webroot=self.SERVER_ROOT_PATH,
                                                 handler=CreateLinksWithJS)
