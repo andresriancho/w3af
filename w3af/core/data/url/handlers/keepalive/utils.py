@@ -21,7 +21,8 @@ def debug(msg):
         om.out.debug(msg)
 
         if is_running_tests():
-            print(msg)
+            # print(msg)
+            pass
 
 
 def error(msg):
@@ -30,4 +31,5 @@ def error(msg):
         om.out.error(msg)
 
         if is_running_tests():
-            print(msg)
+            # print(msg)
+            pass
