@@ -179,8 +179,6 @@ class phpinfo(CrawlPlugin):
         php_info_url = domain_path.url_join(php_info_filename)
 
         response = self._uri_opener.GET(php_info_url, cache=True)
-        if 'phpinfo.php' in response.get_url().url_string:
-            pass
 
         if is_404(response):
             return
