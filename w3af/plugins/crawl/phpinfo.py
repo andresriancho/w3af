@@ -183,10 +183,6 @@ class phpinfo(CrawlPlugin):
         if is_404(response):
             return
 
-        # Create the fuzzable request and send it to the core
-        fr = FuzzableRequest.from_http_response(response)
-        self.output_queue.put(fr)
-
         # Check if it is a phpinfo file
         php_version = self.PHP_VERSION_RE.search(response.get_body(), re.I)
         sysinfo = self.SYSTEM_RE.search(response.get_body(), re.I)
@@ -196,6 +192,10 @@ class phpinfo(CrawlPlugin):
 
         if not sysinfo:
             return
+
+        # Create the fuzzable request and send it to the core
+        fr = FuzzableRequest.from_http_response(response)
+        self.output_queue.put(fr)
 
         desc = ('The phpinfo() file was found at: %s. The version'
                 ' of PHP is: "%s" and the system information is:'
