@@ -74,6 +74,12 @@ class InstrumentedChrome(object):
     def get_proxy_address(self):
         return self.PROXY_HOST, self.proxy.get_bind_port()
 
+    def get_first_response(self):
+        return self.proxy.get_first_response()
+
+    def get_first_request(self):
+        return self.proxy.get_first_request()
+
     def start_chrome_process(self):
         chrome_process = ChromeProcess()
 

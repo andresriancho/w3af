@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import threading
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -51,8 +53,10 @@ class LoggingHandler(ProxyHandler):
         self._remove_security_headers(http_response)
 
         # Send the request upstream
-        freq = FuzzableRequest.from_http_request(http_request)
-        self.parent_process.queue.put((freq, http_response))
+        fuzzable_request = FuzzableRequest.from_http_request(http_request)
+        self.parent_process.queue.put((fuzzable_request, http_response))
+
+        self.parent_process.set_first_request_response(fuzzable_request, http_response)
 
         # Logging for better debugging
         args = (http_request.get_uri(), self.parent_process.debugging_id)
@@ -94,13 +98,35 @@ class LoggingProxy(Proxy):
         self.queue = queue
         self.debugging_id = None
 
+        self.first_http_response = None
+        self.first_http_request = None
+        self.first_lock = threading.RLock()
+
+    def set_first_request_response(self, fuzzable_request, http_response):
+        with self.first_lock:
+            if self.first_http_response is None:
+                self.first_http_response = http_response
+                self.first_http_request = fuzzable_request
+
+    def get_first_response(self):
+        return self.first_http_response
+
+    def get_first_request(self):
+        return self.first_http_request
+
     def set_debugging_id(self, debugging_id):
         self.debugging_id = debugging_id
+        self.first_http_request = None
+        self.first_http_response = None
 
     def set_traffic_queue(self, http_traffic_queue):
         self.queue = http_traffic_queue
+        self.first_http_request = None
+        self.first_http_response = None
 
     def stop(self):
         super(LoggingProxy, self).stop()
         self.set_traffic_queue(None)
         self.set_debugging_id(None)
+        self.first_http_request = None
+        self.first_http_response = None

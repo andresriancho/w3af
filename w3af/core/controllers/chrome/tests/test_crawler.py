@@ -20,12 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import Queue
 import unittest
+import BaseHTTPServer
 
+from urlparse import urlparse
+
+import w3af.core.data.kb.config as cf
+
+from w3af.core.controllers.output_manager import manager
+from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.chrome.crawler import ChromeCrawler
 from w3af.core.controllers.chrome.tests.test_instrumented import InstrumentedChromeHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
+from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.data.db.variant_db import PATH_MAX_VARIANTS
 from w3af.core.data.parsers.doc.url import URL
+from w3af.plugins.crawl.web_spider import web_spider
 
 
 class TestChromeCrawler(unittest.TestCase):
@@ -94,6 +104,91 @@ class TestChromeCrawler(unittest.TestCase):
         self.assertEqual(request.get_data(), data)
 
 
+class TestChromeCrawlerWithWebSpider(unittest.TestCase):
+
+    SERVER_HOST = '127.0.0.1'
+    SERVER_ROOT_PATH = '/tmp/'
+
+    def setUp(self):
+        self.uri_opener = ExtendedUrllib()
+        self.http_traffic_queue = Queue.Queue()
+
+        self.pool = Pool(processes=2,
+                         worker_names='WorkerThread',
+                         max_queued_tasks=2,
+                         maxtasksperchild=20)
+
+        self.web_spider = web_spider()
+        self.web_spider.set_url_opener(self.uri_opener)
+        self.web_spider.set_worker_pool(self.pool)
+
+        fp_404_db = fingerprint_404_singleton(cleanup=True)
+        fp_404_db.set_url_opener(self.uri_opener)
+        fp_404_db.set_worker_pool(self.pool)
+
+        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
+                                                webroot=self.SERVER_ROOT_PATH,
+                                                handler=InstrumentedChromeHandler)
+
+        self.server_thread = t
+        self.server = s
+        self.server_port = p
+
+        self.crawler = ChromeCrawler(self.uri_opener, web_spider=self.web_spider)
+
+    def tearDown(self):
+        while not self.http_traffic_queue.empty():
+            self.http_traffic_queue.get()
+
+        self.crawler.terminate()
+        self.server.shutdown()
+        self.server_thread.join()
+        self.web_spider.end()
+
+        manager.terminate()
+
+        self.pool.close()
+        self.pool.terminate()
+        self.pool.join()
+
+    def test_parse_dom(self):
+        return
+        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
+                                                webroot=self.SERVER_ROOT_PATH,
+                                                handler=CreateLinksWithJS)
+
+        self.server_thread = t
+        self.server = s
+        self.server_port = p
+
+        target_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        target_url = URL(target_url)
+        cf.cf.save('targets', [target_url, ])
+        self.web_spider._handle_first_run()
+
+        self.crawler.crawl(target_url, self.http_traffic_queue)
+
+        # There is only one request in the traffic queue: Load the main page
+        self.assertEqual(self.http_traffic_queue.qsize(), 1)
+
+        request, _ = self.http_traffic_queue.get()
+        self.assertEqual(request.get_url(), target_url)
+
+        # But the links to the dynamically generated <a> tags should be in
+        # the web_spider output queue
+        expected_urls = set()
+        for i in xrange(1000):
+            expected_urls.add(target_url.url_join('/js-%s' % i))
+
+        captured_urls = set()
+        while self.web_spider.output_queue.qsize():
+            captured_urls.add(self.web_spider.output_queue.get().get_url())
+
+        intersect = expected_urls.intersection(captured_urls)
+        self.assertEqual(len(intersect), PATH_MAX_VARIANTS)
+
+
 class XmlHttpRequestHandler(InstrumentedChromeHandler):
 
     RESPONSE_BODY = '''<html>
@@ -112,3 +207,74 @@ class XmlHttpRequestHandler(InstrumentedChromeHandler):
                            xhr.send("foo=bar&lorem=ipsum"); 
                        </script>
                        </html>'''
+
+
+class CreateLinksWithJS(BaseHTTPServer.BaseHTTPRequestHandler):
+
+    INDEX_BODY = '''
+        <html>
+            <body>
+            <script>
+
+                var i;
+
+                for (i = 0; i < 1000; i++) { 
+                    var a = document.createElement('a');
+                    var linkText = document.createTextNode("my title text");
+                    a.appendChild(linkText);
+                    a.title = "my title text" + i;
+                    a.href = "/js-" + i;
+                    document.body.appendChild(a);
+                }
+
+            </script>
+            </body>
+        </html>
+    '''
+
+    JS_BODY = 'Magic!'
+
+    NOT_FOUND_BODY = '404'
+
+    def do_GET(self):
+        code, body = self.get_code_body()
+        self.send_response_to_client(code, body)
+
+    def send_response_to_client(self, code, body):
+        try:
+            self.send_response(code)
+            self.send_header('Content-Type', 'text/html')
+            self.send_header('Content-Length', len(body))
+            self.send_header('Content-Encoding', 'identity')
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception, e:
+            print('Exception: "%s".' % e)
+        finally:
+            # Clean up
+            self.close_connection = 1
+            self.rfile.close()
+            self.wfile.close()
+            return
+
+    def get_code_body(self):
+        request_path = urlparse(self.path).path
+
+        if 'js-' in request_path:
+            return 200, self.JS_BODY
+
+        if request_path.endswith('/'):
+            return 200, self.INDEX_BODY
+
+        return 404, self.NOT_FOUND_BODY
+
+    def log_message(self, fmt, *args):
+        """
+        I dont want messages to be written to stderr, please ignore them.
+
+        If I don't override this method I end up with messages like:
+        eulogia.local - - [19/Oct/2012 10:12:33] "GET /GGC8s1dk HTTP/1.0" 200 -
+
+        being printed to the console.
+        """
+        pass

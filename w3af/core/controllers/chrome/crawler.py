@@ -38,16 +38,23 @@ class ChromeCrawler(object):
         * Send the HTTP requests to the caller
     """
 
-    def __init__(self, uri_opener, max_instances=None):
+    RENDERED_VS_RAW_RATIO = 0.1
+
+    def __init__(self, uri_opener, max_instances=None, web_spider=None):
         """
 
         :param uri_opener: The uri opener required by the InstrumentedChrome
                            instances to open URLs via the HTTP proxy daemon.
+
         :param max_instances: Max number of Chrome processes to spawn. Use None
                               to let the pool decide what is the max.
+
+        :param web_spider: A web_spider instance which is used (if provided) to
+                           parse the DOM rendered by Chrome instances.
         """
         self._uri_opener = uri_opener
         self._pool = ChromePool(self._uri_opener, max_instances=max_instances)
+        self._web_spider = web_spider
 
     def crawl(self, url, http_traffic_queue):
         """
@@ -147,6 +154,14 @@ class ChromeCrawler(object):
             raise ChromeCrawlerException('Failed to stop chrome browser')
 
         #
+        # Extract links and forms from the rendered HTML. In some cases the
+        # rendered DOM / HTML and then HTML received in the HTTP response are
+        # very different, so we send the rendered DOM to the DocumentParser to
+        # extract new information
+        #
+        self._parse_dom(chrome, debugging_id)
+
+        #
         # In order to remove all the DOM from the chrome instance and clear
         # some memory we load the about:blank page
         #
@@ -172,6 +187,73 @@ class ChromeCrawler(object):
         om.out.debug(msg % args)
 
         return True
+
+    def _parse_dom(self, chrome, debugging_id):
+        """
+        Parses the DOM that is loaded into Chrome using DocumentParser.
+
+        :param chrome: An InstrumentedChrome instance
+        :return: None, the new URLs and forms are sent to the chrome instance
+                 http_traffic_queue.
+        """
+        # In some cases (mostly unittests) we don't have a web spider instance,
+        # so we can't parse the DOM. Just ignore all this method.
+        if self._web_spider is None:
+            return
+
+        try:
+            dom = chrome.get_dom()
+        except Exception, e:
+            msg = 'Failed to get the DOM from chrome browser %s: "%s" (did: %s)'
+            args = (chrome, e, debugging_id)
+            om.out.debug(msg % args)
+
+            # Since we got an error we remove this chrome instance from the
+            # pool, it might be in an error state
+            self._pool.remove(chrome)
+
+            raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
+
+        first_http_response = chrome.get_first_response()
+        if first_http_response is None:
+            msg = 'The %s browser first HTTP response is None (did: %s)'
+            args = (chrome, debugging_id)
+            om.out.debug(msg % args)
+            return
+
+        if not self._should_parse_dom(dom, first_http_response.get_body()):
+            msg = 'Decided not to parse the DOM (did: %s)'
+            args = (debugging_id,)
+            om.out.debug(msg % args)
+            return
+
+        first_http_request = chrome.get_first_request()
+
+        dom_http_response = first_http_response.copy()
+        dom_http_response.set_body(dom)
+
+        web_spider = self._web_spider
+        web_spider.extract_html_forms(dom_http_response, first_http_request)
+        web_spider.extract_links_and_verify(dom_http_response, first_http_request)
+
+    def _should_parse_dom(self, dom, raw_body):
+        """
+        Call the DocumentParser (which is an expensive process) only if the
+        rendered response shows significant changes. Just measure the size,
+        any increase / decrease will make it.
+
+        :return: True if we should parse the DOM
+        """
+        raw_body_len = len(raw_body)
+        rendered_len = len(dom)
+
+        if rendered_len > raw_body_len * (1 + self.RENDERED_VS_RAW_RATIO):
+            return True
+
+        if rendered_len < raw_body_len * (1 - self.RENDERED_VS_RAW_RATIO):
+            return True
+
+        return False
 
     def terminate(self):
         self._pool.terminate()

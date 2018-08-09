@@ -315,6 +315,16 @@ class OutputManager(Process):
         # Now call end() on all plugins
         self.__end_output_plugins_impl()
 
+    def terminate(self):
+        while self.in_queue.qsize():
+            try:
+                self.in_queue.get_nowait()
+            except:
+                continue
+
+        self._worker_pool.close()
+        self._worker_pool.terminate()
+
     @start_thread_on_demand
     def process_all_messages(self):
         """
