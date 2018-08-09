@@ -92,27 +92,27 @@ def _get_optimized_fuzzy_equal(a_str, b_str, threshold=0.6):
     if threshold == 1.0:
         return a_str == b_str
 
-    # First we need b_str to be the longer of both
-    if len(b_str) < len(a_str):
-        a_str, b_str = b_str, a_str
+    a_len = len(a_str)
+    b_len = len(b_str)
 
-    alen = len(a_str)
-    blen = len(b_str)
+    if b_len == 0 or a_len == 0:
+        return a_len == b_len
 
-    if blen == 0 or alen == 0:
-        return alen == blen
-
-    if blen == alen and a_str == b_str:
+    if b_len == a_len and a_str == b_str:
         return True
 
-    if threshold > upper_bound_similarity(alen, blen):
+    if threshold > upper_bound_similarity(a_len, b_len):
         return False
 
     return None
 
 
-def upper_bound_similarity(alen, blen):
-    return (2.0 * alen) / (alen + blen)
+def upper_bound_similarity(a_len, b_len):
+    # First we need b_len to be the larger of both
+    if b_len < a_len:
+        a_len, b_len = b_len, a_len
+
+    return (2.0 * a_len) / (a_len + b_len)
 
 
 def fuzzy_not_equal(a_str, b_str, threshold=0.6):
@@ -128,7 +128,7 @@ def relative_distance(a_str, b_str):
     Measures the "similarity" of two strings.
 
     Depends on the algorithm we finally implement, but usually a return value
-    over 0.7 means the strings are very similar.
+    greater than 0.75 means the strings are very similar.
 
     :param a_str: A string object
     :param b_str: A string object

@@ -91,11 +91,23 @@ class DocumentParser(object):
             * URL objects extracted through parsing,
             * URL objects extracted through RE matching
 
+        The URL lists are ordered alphabetically, this small improvement tries
+        to improve issues with different w3af scans finding different number of
+        URLs. The root cause for the issue is w3af's threaded architecture
+        which makes everything run in an unpredictable order. Ordering the
+        output alphabetically tries to impose an order in which things should
+        be processed.
+
         Returned in two separate lists because the first ones
         are much more accurate and they might deserve a different
         treatment.
         """
-        return self._parser.get_references()
+        parsed_refs, re_refs = self._parser.get_references()
+
+        parsed_refs.sort(sort_by_url)
+        re_refs.sort(sort_by_url)
+
+        return parsed_refs, re_refs
 
     def get_references_of_tag(self, tag):
         """
@@ -165,3 +177,7 @@ class DocumentParser(object):
 
 def document_parser_factory(http_resp):
     return DocumentParser(http_resp)
+
+
+def sort_by_url(url_a, url_b):
+    return cmp(url_a.url_string, url_b.url_string)

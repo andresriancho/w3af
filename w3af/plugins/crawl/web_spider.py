@@ -226,7 +226,6 @@ class web_spider(CrawlPlugin):
             #
             # - The re_refs are the result of regular expressions,
             # which in some cases are just false positives.
-
             parsed_refs, re_refs = doc_parser.get_references()
 
             # I also want to analyze all directories, if the URL I just

@@ -99,6 +99,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
 
                      # Used to communicate with chrome via devtools protocol
                      PIPDependency('PyChromeDevTools', 'PyChromeDevTools', '0.1'),
+
+                     # Vulners API plugin needs this lib
+                     PIPDependency('vulners', 'vulners', '1.3.0')
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

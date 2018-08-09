@@ -195,12 +195,10 @@ class global_redirect(AuditPlugin):
         """
         lheaders = response.get_lower_case_headers()
 
-        response = self._30x_code_redirect(response, lheaders) or \
-                   self._refresh_redirect(response, lheaders) or \
-                   self._meta_redirect(response) or \
-                   self._javascript_redirect(response)
-
-        return response
+        return self._30x_code_redirect(response, lheaders) or \
+               self._refresh_redirect(response, lheaders) or \
+               self._meta_redirect(response) or \
+               self._javascript_redirect(response)
 
     def _30x_code_redirect(self, response, lheaders):
         """

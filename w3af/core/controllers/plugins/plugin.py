@@ -263,10 +263,18 @@ class Plugin(Configurable):
             * result: The result to be returned to the caller. This only makes
                       sense if re_raise is False.
         """
-        msg = 'The %s plugin got an error while requesting "%s". Reason: "%s"'
-        args = (self.get_name(), uri, http_exception)
+        no_content_resp = new_no_content_resp(uri, add_id=True)
+        
+        msg = ('The %s plugin got an error while requesting "%s".'
+               ' Exception: "%s".'
+               ' Generated 204 "No Content" response (id:%s)')
+        args = (self.get_name(),
+                uri,
+                http_exception,
+                no_content_resp.id)
         om.out.error(msg % args)
-        return False, new_no_content_resp(uri, add_id=True)
+
+        return False, no_content_resp
 
 
 class UrlOpenerProxy(object):

@@ -35,19 +35,21 @@ class MultiRE(object):
         :param hint_len: Use only hints larger than hint_len to speed-up the search.
 
         :param regexes_or_assoc: A list with all the regular expressions that
-        we want to match against one or more strings using the "query" function.
+                                 we want to match against one or more strings
+                                 using the "query" function.
 
-        This list might look like:
-            [re_str_1, re_str_2 ... , re_str_N]
+                                This list might look like:
+                                    [re_str_1, re_str_2 ... , re_str_N]
 
-        Or something like:
-            [(re_str_1, obj1), ..., (re_str_N, objN)].
+                                Or something like:
+                                    [(re_str_1, obj1), ..., (re_str_N, objN)].
 
-        In the first case, if a match is found this class will return:
-            [(match_obj, re_str_N, compiled_regex),]
+                                In the first case, if a match is found this class
+                                will return:
+                                    [(match_obj, re_str_N, compiled_regex),]
 
-        In the second case we'll return:
-            [(match_obj, re_str_N, compiled_regex, objN),]
+                                In the second case we'll return:
+                                    [(match_obj, re_str_N, compiled_regex, objN),]
         """
         self._regexes_or_assoc = regexes_or_assoc
         self._re_compile_flags = re_compile_flags

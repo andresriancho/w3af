@@ -24,10 +24,10 @@ import w3af.core.data.constants.severity as severity
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.quick_match.multi_re import MultiRE
-from w3af.core.data.constants.common_directories import get_common_directories
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.disk_list import DiskList
+from w3af.core.data.quick_match.multi_re import MultiRE
+from w3af.core.data.constants.common_directories import get_common_directories
 
 
 class path_disclosure(GrepPlugin):
@@ -53,9 +53,9 @@ class path_disclosure(GrepPlugin):
 
         all_signatures = []
 
-        for path_disclosure_string in get_common_directories():
-            regex_string = '(%s.*?)[^A-Za-z0-9\._\-\\/\+~]'
-            regex_string = regex_string % path_disclosure_string
+        for common_directory in get_common_directories():
+            regex_string = '[^A-Za-z0-9\._\-\\/\+~](%s.*?)[^A-Za-z0-9\._\-\\/\+~]'
+            regex_string = regex_string % common_directory
             all_signatures.append(regex_string)
             
         self._signature_re = MultiRE(all_signatures, hint_len=1)
@@ -88,7 +88,7 @@ class path_disclosure(GrepPlugin):
             match_list.append(match.group(1))
 
         # Sort by the longest match, this is needed for filtering out
-        # some false positives please read the note below.
+        # some false positives. Please read the note below.
         match_list.sort(longest_cmp)
 
         for match in match_list:
@@ -103,8 +103,7 @@ class path_disclosure(GrepPlugin):
             # Found!
             self._reported.append((real_url, match))
 
-            desc = ('The URL: "%s" has a path disclosure vulnerability which'
-                    ' discloses "%s".')
+            desc = 'The URL: "%s" has a path disclosure vulnerability which discloses "%s".'
             desc %= (response.get_url(), match)
 
             v = Vuln('Path disclosure vulnerability', desc, severity.LOW,
@@ -171,7 +170,7 @@ class path_disclosure(GrepPlugin):
 
             * Before calling the document parser check at least it looks like
               the path_disclosure_string is part of an attribute value using
-              a regular expression such as:
+              a regular expression such as [1]:
 
                 </?\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)/?>
 
@@ -288,9 +287,4 @@ class path_disclosure(GrepPlugin):
 
 
 def longest_cmp(a, b):
-    """
-    :param a: A string.
-    :param a: Another string.
-    :return: The longest string.
-    """
-    return cmp(len(a), len(b))
+    return cmp(len(b), len(a))

@@ -22,18 +22,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 import Queue
 
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.db.variant_db import VariantDB
-from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.misc.ordered_cached_queue import OrderedCachedQueue
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 from w3af.core.controllers.profiling.took_helper import TookLine
+from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce, ScanMustStopException
-from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
                                                                         task_decorator)
 
@@ -68,6 +69,14 @@ class CrawlInfrastructure(BaseConsumer):
         self._running = True
         self._report_max_time = True
         self._reported_found_urls = ScalableBloomFilter()
+
+        # Override BaseConsumer.in_queue in order to have an ordered queue for
+        # our crawling process.
+        #
+        # Read OrderedCachedQueue's documentation to understand why order is
+        # important
+        self.in_queue = OrderedCachedQueue(maxsize=10,
+                                           name=self.get_name() + 'In')
 
     def get_name(self):
         return 'CrawlInfra'

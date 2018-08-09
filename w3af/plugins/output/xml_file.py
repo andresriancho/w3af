@@ -196,9 +196,18 @@ class xml_file(OutputPlugin):
         # Create the context
         context = dotdict({})
 
+        try:
+            self._add_scan_status_to_context(context)
+        except RuntimeError:
+            # In some very strange scenarios we get this error:
+            #
+            #   Can NOT call get_run_time before start()
+            #
+            # Just "ignore" this call to flush and write the XML on the next one
+            return
+
         self._add_root_info_to_context(context)
         self._add_scan_info_to_context(context)
-        self._add_scan_status_to_context(context)
         self._add_findings_to_context(context)
         self._add_errors_to_context(context)
 
