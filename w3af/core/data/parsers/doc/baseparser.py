@@ -25,8 +25,8 @@ import urllib
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.misc.encoding import is_known_encoding
 
-NOT_IMPLEMENTED_FMT = 'You should create your own parser class ' \
-                      'and implement the %s() method.'
+NOT_IMPLEMENTED_FMT = ('You should create your own parser class '
+                       'and implement the %s() method.')
 
 
 class BaseParser(object):
@@ -43,11 +43,7 @@ class BaseParser(object):
         if not is_known_encoding(encoding):
             raise ValueError('Unknown encoding: %s' % encoding)
 
-        # "set_base_url"
         url = http_response.get_url()
-        redir_url = http_response.get_redir_url()
-        if redir_url:
-            url = redir_url
 
         self._base_url = url
         self._base_domain = url.get_domain()

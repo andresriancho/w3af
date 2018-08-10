@@ -104,9 +104,16 @@ class LoggingProxy(Proxy):
 
     def set_first_request_response(self, fuzzable_request, http_response):
         with self.first_lock:
-            if self.first_http_response is None:
-                self.first_http_response = http_response
-                self.first_http_request = fuzzable_request
+            if self.first_http_response is not None:
+                return
+
+            # I don't want to save redirects, that would mess-up the parsing
+            # with DocumentParser because the base URL would be incorrect
+            if http_response.get_code() in range(300, 400):
+                return
+
+            self.first_http_response = http_response
+            self.first_http_request = fuzzable_request
 
     def get_first_response(self):
         return self.first_http_response
