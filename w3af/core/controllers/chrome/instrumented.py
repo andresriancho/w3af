@@ -128,6 +128,9 @@ class InstrumentedChrome(object):
         # Disable CSP
         self.chrome_conn.Page.setBypassCSP(enabled=False)
 
+        # Disable downloads
+        self.chrome_conn.Page.setDownloadBehavior(behavior='deny')
+
         # Enable events
         self.chrome_conn.Page.enable()
         self.chrome_conn.Page.setLifecycleEventsEnabled(enabled=True)
