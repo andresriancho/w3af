@@ -203,6 +203,7 @@ class ChromeCrawler(object):
 
         try:
             dom = chrome.get_dom()
+            assert dom is not None, 'DOM was None'
         except Exception, e:
             msg = 'Failed to get the DOM from chrome browser %s: "%s" (did: %s)'
             args = (chrome, e, debugging_id)
