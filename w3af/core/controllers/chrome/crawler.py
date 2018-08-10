@@ -53,8 +53,8 @@ class ChromeCrawler(object):
                            parse the DOM rendered by Chrome instances.
         """
         self._uri_opener = uri_opener
-        self._pool = ChromePool(self._uri_opener, max_instances=max_instances)
         self._web_spider = web_spider
+        self._pool = ChromePool(self._uri_opener, max_instances=max_instances)
 
     def crawl(self, url, http_traffic_queue):
         """
@@ -258,6 +258,7 @@ class ChromeCrawler(object):
     def terminate(self):
         self._pool.terminate()
         self._uri_opener = None
+        self._web_spider = None
 
 
 class CrawlerHTTPTrafficQueue(object):
