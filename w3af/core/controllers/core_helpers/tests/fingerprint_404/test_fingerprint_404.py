@@ -46,13 +46,15 @@ class TestGenerate404Filename(unittest.TestCase):
             ('ab-23.html', 'ba-23.html'),
             ('a1a2', 'd4d5'),
             ('a1a2.html', 'd4d5.html'),
-            ('Z', 'c'), # overflow handling
             ('hello.html', 'ehllo.html'),
             ('r57_Mohajer22.php', 'r57_oMahejr22.php'),
         ]
 
         for fname, modfname in tests:
             self.assertEqual(generate_404_filename(fname), modfname)
+
+    def test_404_short_name_handling(self):
+        self.assertEqual(len(generate_404_filename('Z')), 5)
 
 
 class Test404Detection(unittest.TestCase):
@@ -110,7 +112,7 @@ class Test404FalseNegative(unittest.TestCase):
         urllib = ExtendedUrllib()
         worker_pool = Pool(processes=2,
                            worker_names='WorkerThread',
-                           max_queued_tasks=2,
+                           max_queued_tasks=20,
                            maxtasksperchild=20)
 
         fingerprint_404 = Fingerprint404()
@@ -122,5 +124,5 @@ class Test404FalseNegative(unittest.TestCase):
 
         fingerprint_404.cleanup()
         urllib.clear()
-        #worker_pool.terminate_join()
+        worker_pool.terminate_join()
 
