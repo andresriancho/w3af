@@ -22,9 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.config as cf
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
+from w3af.core.controllers.misc.is_private_site import is_private_site
 
 
 class LoggingHandler(ProxyHandler):
@@ -33,6 +35,26 @@ class LoggingHandler(ProxyHandler):
                         'Public-Key-Pins',
                         'Content-Security-Policy',
                         'Upgrade-Insecure-Requests']
+
+    def _target_is_private_site(self):
+        """
+        :return: True if the target site w3af is scanning is a private site
+                 This means that w3af is scanning:
+
+                    http://127.0.0.1/
+                    http://10.1.2.3/
+
+                 Or a domain which resolves to a private IP address.
+
+                 If the target is not set (this should happen only during
+                 unittests) the function will return True.
+        """
+        targets = cf.cf.get('targets')
+        if not targets:
+            return True
+
+        domain = targets[0].get_domain()
+        return is_private_site(domain)
 
     def _send_http_request(self, http_request, grep=True):
         """
@@ -47,6 +69,19 @@ class LoggingHandler(ProxyHandler):
         :param http_request: The request to send
         :return: The response
         """
+        domain = http_request.get_domain()
+        if is_private_site(domain) and not self._target_is_private_site():
+            msg = ('The target site (which is in a public IP address range) is'
+                   ' trying to load a resource from a private IP address range.'
+                   ' For example, http://public.com/ is trying to load JavaScript,'
+                   ' images or CSS from http://127.0.0.1/.\n'
+                   '\n'
+                   'The scanner is preventing this request to protect itself'
+                   ' from SSRF attacks which might be triggered when scanning'
+                   ' specially crafted sites.')
+            om.out.debug(msg)
+            return self._create_error_response(http_request, None, msg)
+
         http_response = super(LoggingHandler, self)._send_http_request(http_request, grep=grep)
 
         # Remove security headers to reduce runtime security
