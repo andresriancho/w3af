@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import Queue
 import unittest
-import BaseHTTPServer
 
 from websocket import WebSocketConnectionClosedException
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.chrome.instrumented import InstrumentedChrome, InstrumentedChromeException
 from w3af.core.controllers.chrome.devtools import ChromeInterfaceException
+from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.tests.helpers.ssl_daemon import SSLServer
@@ -44,7 +44,7 @@ class TestInstrumentedChrome(unittest.TestCase):
 
         t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
                                                 webroot=self.SERVER_ROOT_PATH,
-                                                handler=InstrumentedChromeHandler)
+                                                handler=ExtendedHttpRequestHandler)
 
         self.server_thread = t
         self.server = s
@@ -87,7 +87,7 @@ class TestInstrumentedChrome(unittest.TestCase):
                          'Content-Type: text/html\r\n'
                          'Content-Length: %s\r\n\r\n%s')
 
-        body = InstrumentedChromeHandler.RESPONSE_BODY
+        body = ExtendedHttpRequestHandler.RESPONSE_BODY
         http_response %= (len(body), body)
 
         # Start the HTTPS server
@@ -109,7 +109,7 @@ class TestInstrumentedChrome(unittest.TestCase):
 
         self.ic.wait_for_load()
 
-        self.assertEqual(self.ic.get_dom(), InstrumentedChromeHandler.RESPONSE_BODY)
+        self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
         self.assertEqual(self.http_traffic_queue.qsize(), 1)
 
         request, response = self.http_traffic_queue.get()
@@ -117,7 +117,7 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.assertEqual(request.get_url().url_string, url)
         self.assertEqual(response.get_url().url_string, url)
 
-        self.assertEqual(response.get_body(), InstrumentedChromeHandler.RESPONSE_BODY)
+        self.assertEqual(response.get_body(), ExtendedHttpRequestHandler.RESPONSE_BODY)
         self.assertIn('Chrome', request.get_headers().get('User-agent'))
 
     def test_initial_connection_to_chrome_fails(self):
@@ -145,34 +145,52 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.assertRaises(ChromeInterfaceException, self.ic.load_url, url)
 
 
-class InstrumentedChromeHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class TestInstrumentedChromeWithDialogDismiss(unittest.TestCase):
 
-    RESPONSE_BODY = '<body>Hello world</body>'
+    SERVER_HOST = '127.0.0.1'
+    SERVER_ROOT_PATH = '/tmp/'
 
-    def do_GET(self):
-        try:
-            self.send_response(200)
-            self.send_header('Content-Type', 'text/html')
-            self.send_header('Content-Length', len(self.RESPONSE_BODY))
-            self.send_header('Content-Encoding', 'identity')
-            self.end_headers()
-            self.wfile.write(self.RESPONSE_BODY)
-        except Exception, e:
-            print('[InstrumentedChromeHandler] Exception: "%s".' % e)
-        finally:
-            # Clean up
-            self.close_connection = 1
-            self.rfile.close()
-            self.wfile.close()
-            return
+    def setUp(self):
+        self.uri_opener = ExtendedUrllib()
+        self.http_traffic_queue = Queue.Queue()
 
-    def log_message(self, fmt, *args):
-        """
-        I dont want messages to be written to stderr, please ignore them.
+        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
+                                                webroot=self.SERVER_ROOT_PATH,
+                                                handler=CreateAlertHandler)
 
-        If I don't override this method I end up with messages like:
-        eulogia.local - - [19/Oct/2012 10:12:33] "GET /GGC8s1dk HTTP/1.0" 200 -
+        self.server_thread = t
+        self.server = s
+        self.server_port = p
 
-        being printed to the console.
-        """
-        pass
+        self.ic = InstrumentedChrome(self.uri_opener, self.http_traffic_queue)
+
+    def tearDown(self):
+        while not self.http_traffic_queue.empty():
+            self.http_traffic_queue.get()
+
+        self.ic.terminate()
+        self.server.shutdown()
+        self.server_thread.join()
+
+    def test_load_page_with_alert(self):
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        self.ic.load_url(url)
+
+        self.ic.wait_for_load()
+
+        self.assertEqual(self.ic.get_dom(), u'<body></body>')
+        self.assertEqual(self.http_traffic_queue.qsize(), 1)
+
+        request, response = self.http_traffic_queue.get()
+
+        self.assertEqual(request.get_url().url_string, url)
+        self.assertEqual(response.get_url().url_string, url)
+
+        self.assertEqual(response.get_body(), CreateAlertHandler.RESPONSE_BODY)
+        self.assertIn('Chrome', request.get_headers().get('User-agent'))
+
+
+class CreateAlertHandler(ExtendedHttpRequestHandler):
+
+    RESPONSE_BODY = '<script>alert(1);</script>'

@@ -37,6 +37,29 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
+# This is the default dialog handler, it is used to dismiss alert, prompt, etc.
+# which might appear during crawling.
+def dialog_handler(_type, message):
+    """
+    Handles Page.javascriptDialogOpening event [0] which freezes the browser
+    until it is dismissed.
+
+    [0] https://chromedevtools.github.io/devtools-protocol/tot/Page#event-javascriptDialogOpening
+
+    :param _type: One of alert, prompt, etc.
+    :param message: The message shown in the aler / prompt
+    :return: A tuple containing:
+                * True if we want to dismiss the alert / prompt or False if we
+                  want to cancel it.
+
+                * The message to enter in the prompt (if this is a prompt).
+    """
+    return True, 'Bye!'
+
+
+DEFAULT_DIALOG_HANDLER = dialog_handler
+
+
 class DebugGenericElement(GenericElement):
 
     def __getattr__(self, attr):
@@ -77,12 +100,27 @@ class DebugChromeInterface(ChromeInterface):
 
     DEBUG = os.environ.get('DEBUG', '0') == '1'
 
-    def __init__(self, host='localhost', port=9222, tab=0, timeout=TIMEOUT, auto_connect=True, debugging_id=None):
-        super(DebugChromeInterface, self).__init__(host=host, port=port, tab=tab, timeout=timeout, auto_connect=auto_connect)
+    def __init__(self,
+                 host='localhost',
+                 port=9222,
+                 tab=0,
+                 timeout=TIMEOUT,
+                 auto_connect=True,
+                 debugging_id=None,
+                 dialog_handler=DEFAULT_DIALOG_HANDLER):
+        super(DebugChromeInterface, self).__init__(host=host,
+                                                   port=port,
+                                                   tab=tab,
+                                                   timeout=timeout,
+                                                   auto_connect=auto_connect)
         self.debugging_id = debugging_id
+        self.dialog_handler = dialog_handler
 
     def set_debugging_id(self, debugging_id):
         self.debugging_id = debugging_id
+
+    def set_dialog_handler(self, dialog_handler):
+        self.dialog_handler = dialog_handler
 
     def send(self, data):
         self.debug('Sending message to Chrome: %s' % data)
@@ -124,25 +162,11 @@ class DebugChromeInterface(ChromeInterface):
 
             messages.append(message)
 
-            #
-            # Now we handle the message
-            #
-            error_code = message.get('result', {}).get('errorText', '')
-
-            if error_code == 'net::ERR_PROXY_CONNECTION_FAILED':
-                raise ChromeInterfaceException('Chrome failed to connect to proxy server')
+            self._handle_received_message(message)
 
             if 'result' in message and message['id'] == result_id:
                 matching_result = message
                 break
-
-            if 'error' in message:
-                if 'message' in message['error']:
-                    message = message['error']['message']
-                    raise ChromeInterfaceException(message)
-                else:
-                    message = 'Unexpected error received from Chrome: "%s"'
-                    raise ChromeInterfaceException(message % str(message))
 
         return matching_result, messages
 
@@ -175,6 +199,8 @@ class DebugChromeInterface(ChromeInterface):
 
             messages.append(parsed_message)
 
+            self._handle_received_message(parsed_message)
+
             method = parsed_message.get('method', None)
             if method is None:
                 continue
@@ -195,6 +221,47 @@ class DebugChromeInterface(ChromeInterface):
                 break
 
         return matching_message, messages
+
+    def _handle_received_message(self, message):
+        """
+        This method handles the messages we receive from Chrome in both:
+            - wait_event
+            - wait_result
+
+        The main goal of the method is to capture any errors Chrome might
+        have returned and handle them by raising exceptions, increasing
+        timeouts, etc.
+
+        :param message: A dict containing the message received from Chrome
+        :return: None
+        """
+        error_code = message.get('result', {}).get('errorText', '')
+
+        if error_code == 'net::ERR_PROXY_CONNECTION_FAILED':
+            raise ChromeInterfaceException('Chrome failed to connect to proxy server')
+
+        if 'method' in message:
+            # Handle alert, prompt, etc.
+            if message['method'] == 'Page.javascriptDialogOpening':
+                params = message['params']
+
+                message = params['message']
+                _type = params['type']
+
+                # Get the action to take (accept or cancel) and the message to
+                # type in the prompt() - if any - from the dialog handler and
+                # send it to Chrome
+                dismiss, response_message = self.dialog_handler(_type, message)
+                self.Page.handleJavaScriptDialog(accept=dismiss,
+                                                 promptText=response_message)
+
+        if 'error' in message:
+            if 'message' in message['error']:
+                message = message['error']['message']
+                raise ChromeInterfaceException(message)
+            else:
+                message = 'Unexpected error received from Chrome: "%s"'
+                raise ChromeInterfaceException(message % str(message))
 
     def debug(self, message):
         if not self.DEBUG:

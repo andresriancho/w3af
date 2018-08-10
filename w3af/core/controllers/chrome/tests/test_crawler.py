@@ -20,16 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import Queue
 import unittest
-import BaseHTTPServer
-
-from urlparse import urlparse
 
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.output_manager import manager
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.chrome.crawler import ChromeCrawler
-from w3af.core.controllers.chrome.tests.test_instrumented import InstrumentedChromeHandler
+from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -49,7 +46,7 @@ class TestChromeCrawler(unittest.TestCase):
 
         t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
                                                 webroot=self.SERVER_ROOT_PATH,
-                                                handler=InstrumentedChromeHandler)
+                                                handler=ExtendedHttpRequestHandler)
 
         self.server_thread = t
         self.server = s
@@ -128,7 +125,7 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
 
         t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
                                                 webroot=self.SERVER_ROOT_PATH,
-                                                handler=InstrumentedChromeHandler)
+                                                handler=ExtendedHttpRequestHandler)
 
         self.server_thread = t
         self.server = s
@@ -188,7 +185,7 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
         self.assertEqual(len(intersect), PATH_MAX_VARIANTS)
 
 
-class XmlHttpRequestHandler(InstrumentedChromeHandler):
+class XmlHttpRequestHandler(ExtendedHttpRequestHandler):
 
     RESPONSE_BODY = '''<html>
                        <script>
@@ -208,7 +205,7 @@ class XmlHttpRequestHandler(InstrumentedChromeHandler):
                        </html>'''
 
 
-class CreateLinksWithJS(BaseHTTPServer.BaseHTTPRequestHandler):
+class CreateLinksWithJS(ExtendedHttpRequestHandler):
 
     INDEX_BODY = '''
         <html>
@@ -235,30 +232,7 @@ class CreateLinksWithJS(BaseHTTPServer.BaseHTTPRequestHandler):
 
     NOT_FOUND_BODY = '404'
 
-    def do_GET(self):
-        code, body = self.get_code_body()
-        self.send_response_to_client(code, body)
-
-    def send_response_to_client(self, code, body):
-        try:
-            self.send_response(code)
-            self.send_header('Content-Type', 'text/html')
-            self.send_header('Content-Length', len(body))
-            self.send_header('Content-Encoding', 'identity')
-            self.end_headers()
-            self.wfile.write(body)
-        except Exception, e:
-            print('Exception: "%s".' % e)
-        finally:
-            # Clean up
-            self.close_connection = 1
-            self.rfile.close()
-            self.wfile.close()
-            return
-
-    def get_code_body(self):
-        request_path = urlparse(self.path).path
-
+    def get_code_body(self, request_path):
         if 'js-' in request_path:
             return 200, self.JS_BODY
 
@@ -266,14 +240,3 @@ class CreateLinksWithJS(BaseHTTPServer.BaseHTTPRequestHandler):
             return 200, self.INDEX_BODY
 
         return 404, self.NOT_FOUND_BODY
-
-    def log_message(self, fmt, *args):
-        """
-        I dont want messages to be written to stderr, please ignore them.
-
-        If I don't override this method I end up with messages like:
-        eulogia.local - - [19/Oct/2012 10:12:33] "GET /GGC8s1dk HTTP/1.0" 200 -
-
-        being printed to the console.
-        """
-        pass
