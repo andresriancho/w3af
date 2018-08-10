@@ -112,7 +112,7 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
 
         self.pool = Pool(processes=2,
                          worker_names='WorkerThread',
-                         max_queued_tasks=2,
+                         max_queued_tasks=20,
                          maxtasksperchild=20)
 
         self.web_spider = web_spider()

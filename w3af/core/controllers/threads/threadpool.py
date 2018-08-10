@@ -253,7 +253,8 @@ class Pool(ThreadPool):
         # limit.
         #
         if max_queued_tasks != 0:
-            assert max_queued_tasks - 1 > 0, 'max_queued_tasks needs to be at least 2'
+            msg = 'max_queued_tasks needs to be greater than processes'
+            assert max_queued_tasks > processes, msg
 
         self._setup_queues(max_queued_tasks - 1)
         self._taskqueue = Queue.Queue(maxsize=1)
