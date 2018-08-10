@@ -69,7 +69,7 @@ class LoggingHandler(ProxyHandler):
         :param http_request: The request to send
         :return: The response
         """
-        domain = http_request.get_domain()
+        domain = http_request.get_uri().get_domain()
         if is_private_site(domain) and not self._target_is_private_site():
             msg = ('The target site (which is in a public IP address range) is'
                    ' trying to load a resource from a private IP address range.'
