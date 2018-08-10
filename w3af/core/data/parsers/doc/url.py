@@ -871,6 +871,9 @@ class URL(DiskItem):
         s = smart_unicode(s)
         return s in self.url_string
 
+    def __cmp__(self, other):
+        return cmp(self.url_string, other.url_string)
+
     def __add__(self, other):
         """
         :return: This URL concatenated with the "other" string.
