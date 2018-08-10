@@ -27,6 +27,7 @@ TEN_X = re.compile('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
 ONE_SEVEN_TWO = re.compile('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
 ONE_NINE_TWO = re.compile('(192\.168\.\d?\d?\d?\.\d?\d?\d?)')
 ONE_TWO_SEVEN = re.compile('(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
+ONE_SIX_NINE = re.compile('(169\.254\.\d?\d?\d?\.\d?\d?\d?)')
 
 
 def is_private_site(domain_or_ip_address):
@@ -62,6 +63,9 @@ def matches_private_ip(ip_address):
         return True
 
     if ONE_TWO_SEVEN.match(ip_address):
+        return True
+
+    if ONE_SIX_NINE.match(ip_address):
         return True
 
     return False
