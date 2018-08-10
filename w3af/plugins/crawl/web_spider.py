@@ -469,18 +469,25 @@ class web_spider(CrawlPlugin):
         """
         if self._chrome_crawler is not None:
             self._chrome_crawler.terminate()
+            self._chrome_crawler = None
 
         self._log_broken_links()
 
     def _log_broken_links(self):
-        if not len(self._broken_links):
+        if not self._broken_links:
             return
 
         msg = ('The following is a list of broken links that were found by'
                ' the web_spider plugin:')
         om.out.information(msg)
 
-        for broken, where in unique_justseen(self._broken_links.ordered_iter()):
+        def sort_by_first(a, b):
+            return cmp(a[0], b[0])
+
+        broken_links = [i for i in self._broken_links]
+        broken_links.sort(sort_by_first)
+
+        for broken, where in broken_links:
             msg = '- %s [ referenced from: %s ]'
             args = (broken, where)
             om.out.information(msg % args)
