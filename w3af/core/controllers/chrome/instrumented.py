@@ -237,6 +237,13 @@ class InstrumentedChrome(object):
 
         return result['result']['result']['value']
 
+    def get_event_listeners(self):
+        #self.chrome_conn.DOM.getDocument(depth=1, pierce=False)
+        #self.chrome_conn.DOM.querySelectorAll(nodeId=3, selector='*')
+        self.chrome_conn.DOM.resolveNode(backendNodeId=4)
+
+        return self.chrome_conn.DOMDebugger.getEventListeners()
+
     def terminate(self):
         om.out.debug('Terminating %s (did: %s)' % (self, self.debugging_id))
 
