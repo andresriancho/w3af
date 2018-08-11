@@ -25,7 +25,7 @@ import unittest
 from w3af.plugins.grep.hash_analysis import hash_analysis
 
 
-class test_hash_analysis(unittest.TestCase):
+class TestHashAnalysis(unittest.TestCase):
 
     def test_hash_analysis(self):
         p = hash_analysis()
