@@ -35,8 +35,8 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('tblib', 'tblib', '0.2.0'),
                      PIPDependency('pdfminer', 'pdfminer', '20140328'),
                      PIPDependency('concurrent.futures', 'futures', '3.2.0'),
-                     PIPDependency('OpenSSL', 'pyOpenSSL', '17.4.0'),
-                     PIPDependency('ndg', 'ndg-httpsclient', '0.3.3'),
+                     PIPDependency('OpenSSL', 'pyOpenSSL', '18.0.0'),
+                     PIPDependency('ndg', 'ndg-httpsclient', '0.4.0'),
 
                      # We need 0.1.8 because of mitmproxy
                      PIPDependency('pyasn1', 'pyasn1', '0.4.2'),
@@ -96,6 +96,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
 
                      # Fast compression library
                      PIPDependency('lz4', 'lz4', '1.1.0'),
+
+                     # Vulners API plugin needs this lib
+                     PIPDependency('vulners', 'vulners', '1.3.0')
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

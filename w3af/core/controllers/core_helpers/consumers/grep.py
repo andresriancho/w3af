@@ -62,12 +62,15 @@ class grep(BaseConsumer):
 
         super(grep, self).__init__(grep_plugins,
                                    w3af_core,
-                                   create_pool=False,
-                                   #max_pool_queued_tasks=max_pool_queued_tasks,
-                                   #thread_pool_size=thread_pool_size,
-                                   thread_name='Grep',
+                                   create_pool=True,
+                                   max_pool_queued_tasks=max_pool_queued_tasks,
+                                   thread_pool_size=thread_pool_size,
+                                   thread_name=self.get_name(),
                                    max_in_queue_size=max_in_queue_size)
         self._already_analyzed = ScalableBloomFilter()
+
+    def get_name(self):
+        return 'Grep'
 
     def _teardown(self):
         """
@@ -141,43 +144,36 @@ class grep(BaseConsumer):
 
         self._run_observers(request, response)
 
-        # Note that I'm NOT processing the grep plugin data in different
-        # threads. This is because it makes no sense (these are all CPU
-        # bound).
-        for plugin in self._consumer_plugins:
+        # Note that if we don't limit the input queue size for the thread
+        # pool we might end up with a lot of queued calls here! The calls
+        # contain an HTTP response body, so they really use a lot of
+        # memory!
+        #
+        # This is controlled by max_pool_queued_tasks
+        self._threadpool.apply_async(self._inner_consume, (request, response))
 
-            # Note that if we don't limit the input queue size for the thread
-            # pool we might end up with a lot of queued calls here! The calls
-            # contain an HTTP response body, so they really use a lot of
-            # memory!
-            #
-            # This is controlled by max_pool_queued_tasks
-            self._inner_consume(1, plugin, request, response)
-            #self._threadpool.apply_async(self._inner_consume,
-            #                             (plugin, request, response))
-
-    def _inner_consume(self, function_id, plugin, request, response):
+    def _inner_consume(self, request, response):
         """
         Run one plugin against a request/response.
 
-        :param function_id: The function ID added by @task_decorator
-        :param plugin: The grep plugin to run
         :param request: The HTTP request
         :param response: The HTTP response
         :return: None, results are saved to KB
         """
-        took_line = TookLine(self._w3af_core,
-                             plugin.get_name(),
-                             'grep',
-                             debugging_id=None,
-                             method_params={'uri': request.get_uri()})
+        for plugin in self._consumer_plugins:
 
-        try:
-            plugin.grep_wrapper(request, response)
-        except Exception, e:
-            self.handle_exception('grep', plugin.get_name(), request, e)
-        else:
-            took_line.send()
+            took_line = TookLine(self._w3af_core,
+                                 plugin.get_name(),
+                                 'grep',
+                                 debugging_id=None,
+                                 method_params={'uri': request.get_uri()})
+
+            try:
+                plugin.grep_wrapper(request, response)
+            except Exception, e:
+                self.handle_exception('grep', plugin.get_name(), request, e)
+            else:
+                took_line.send()
 
     def _run_observers(self, request, response):
         """

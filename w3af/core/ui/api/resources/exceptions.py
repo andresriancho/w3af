@@ -27,7 +27,7 @@ from w3af.core.ui.api import app
 from w3af.core.ui.api.utils.error import abort
 from w3af.core.ui.api.utils.auth import requires_auth
 from w3af.core.ui.api.utils.scans import get_scan_info_from_id
-from w3af.core.controllers.core_helpers.status import w3af_core_status
+from w3af.core.controllers.core_helpers.status import CoreStatus
 
 
 @app.route('/scans/<int:scan_id>/exceptions/', methods=['GET'])
@@ -132,5 +132,5 @@ def exception_creator(scan_id):
     return jsonify({'code': 201}), 201
 
 
-class FakeStatus(w3af_core_status):
+class FakeStatus(CoreStatus):
     pass

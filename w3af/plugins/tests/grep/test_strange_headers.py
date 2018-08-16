@@ -19,9 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
+
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
@@ -54,14 +56,31 @@ class TestStrangeHeaders(unittest.TestCase):
         self.assertEquals(len(info_sets), 1)
 
         info = info_sets[0]
-        expected_desc = u'The remote web server sent 1 HTTP responses with' \
-                        u' the uncommon response header "hello-world", one' \
-                        u' of the received header values is "yes!". The' \
-                        u' first ten URLs which sent the uncommon header' \
-                        u' are:\n - http://www.w3af.com/\n'
+        expected_desc = (u'The remote web server sent 1 HTTP responses with'
+                         u' the uncommon response header "hello-world", one'
+                         u' of the received header values is "yes!". The'
+                         u' first ten URLs which sent the uncommon header'
+                         u' are:\n - http://www.w3af.com/\n')
         self.assertEqual(info.get_name(), 'Strange header')
         self.assertEqual(info.get_url(), url)
         self.assertEqual(info.get_desc(), expected_desc)
+
+    def test_strange_headers_timing(self):
+        body = 'Hello world'
+        url = URL('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html'),
+                           ('hello-world', 'yes!')])
+        request = FuzzableRequest(url, method='GET')
+
+        resp_positive = HTTPResponse(200, body, headers, url, url, _id=1)
+
+        start = time.time()
+
+        for _ in xrange(5):
+            self.plugin.grep(request, resp_positive)
+
+        spent = time.time() - start
+        # print('Profiling run in %s seconds' % spent)
 
     def test_strange_headers_no_group(self):
         body = 'Hello world'

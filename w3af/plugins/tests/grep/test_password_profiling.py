@@ -60,9 +60,9 @@ class TestPasswordProfiling(PluginTest):
         # pylint: enable=E1103
         collected_passwords.sort(sortfunc)
 
-        self.assertIn('Password', collected_passwords)
-        self.assertIn('w3af', collected_passwords)
-        self.assertIn('repeat', collected_passwords)
+        self.assertIn('Moth', collected_passwords)
+        self.assertIn('application', collected_passwords)
+        self.assertIn('creators', collected_passwords)
 
     def test_merge_password_profiling(self):
         pp = password_profiling()
@@ -76,7 +76,8 @@ class TestPasswordProfiling(PluginTest):
         
         merged_map = pp.merge_maps(old_data, data, request, lang)
         
-        self.assertEqual(merged_map, {'foobar': 1, 'spameggs': 3,
+        self.assertEqual(merged_map, {'foobar': 1,
+                                      'spameggs': 3,
                                       'charlotte': 3})
 
     def test_merge_password_profiling_unknown_lang(self):
@@ -91,6 +92,7 @@ class TestPasswordProfiling(PluginTest):
         
         merged_map = pp.merge_maps(old_data, data, request, lang)
         
-        self.assertEqual(merged_map, {'foobar': 1, 'spameggs': 3,
+        self.assertEqual(merged_map, {'foobar': 1,
+                                      'spameggs': 3,
                                       'charlotte': 3})
 

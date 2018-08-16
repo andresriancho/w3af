@@ -54,15 +54,28 @@ KNOWN_SOCKET_ERRORS = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH, ECONNRESET,
                        ENETDOWN, ENETUNREACH, EINVHOSTNAME, ETIMEDOUT,
                        ENOSPC, EUNEXPECTEDEOF)
 
+NO_CONTENT_MSG = 'No Content'
+
 
 def new_no_content_resp(uri, add_id=False):
     """
     Return a new NO_CONTENT HTTPResponse object.
     
     :param uri: URI string or request object
+    :param add_id: Add ID to the HTTP response
     """
-    no_content_response = HTTPResponse(NO_CONTENT, '', Headers(), uri,
-                                       uri, msg='No Content')
+    #
+    # WARNING: You are about to change this code? Please read the related
+    #          race condition in this commit [0]
+    #
+    # [0] https://github.com/andresriancho/w3af/commit/682bc2e4ad7d075bbdc469bc5d24a28e6d2e7804
+    #
+    no_content_response = HTTPResponse(code=NO_CONTENT,
+                                       read='',
+                                       headers=Headers(),
+                                       geturl=uri,
+                                       original_url=uri,
+                                       msg=NO_CONTENT_MSG)
 
     if add_id:
         no_content_response.id = consecutive_number_generator.inc()
@@ -212,13 +225,13 @@ def get_clean_body(mutant, response, max_escape_count=500):
         return response.body
 
     strings_to_replace_list = [mutant.get_token_value()]
-    return _get_clean_body_impl(response,
-                                strings_to_replace_list,
-                                max_escape_count=max_escape_count)
+    return get_clean_body_impl(response,
+                               strings_to_replace_list,
+                               max_escape_count=max_escape_count)
 
 
-def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
-                         max_escape_count=None):
+def get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
+                        max_escape_count=None):
     """
     This is a low level function which allows me to use all the improvements
     I did in the helpers.get_clean_body() in fingerprint_404.get_clean_body().
@@ -234,6 +247,15 @@ def _get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
     :param multi_encode: Apply the multiple encodings before replacing, setting
                          this to True with many strings to replace in the list
                          will consume considerable CPU time.
+    :param max_escape_count: The max number of escapes to try to replace, note
+                             that the default here is 500, which is a little bit
+                             more than the max number of escapes generated in the
+                             worse case I could imagine at test_apply_multi_escape_table_count
+                             which generated ~350.
+
+                             The goal is to make sure that everything is generated
+                             but at the same time control any edge cases which I might
+                             have missed.
     :return: The body as a unicode with all strings to replace removed.
     """
     body = response.body

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from threading import Lock
 
 
-class number_generator(object):
+class NumberGenerator(object):
     """
     The simplest class that returns a sequence of consecutive numbers.
 
@@ -57,4 +57,5 @@ class number_generator(object):
         with self._lock:
             self._id = 0
 
-consecutive_number_generator = number_generator()
+
+consecutive_number_generator = NumberGenerator()

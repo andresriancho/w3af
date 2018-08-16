@@ -73,8 +73,10 @@ class clamav(GrepPlugin):
         if not self._is_properly_configured():
             return
         
-        if request.get_method() not in self.METHODS or \
-        response.get_code() not in self.HTTP_CODES:
+        if request.get_method() not in self.METHODS:
+            return
+
+        if response.get_code() not in self.HTTP_CODES:
             return
         
         args = (request, response)
@@ -231,5 +233,6 @@ class clamav(GrepPlugin):
        
         This plugin was sponsored by http://scoresecure.com/ .
         """
+
 
 ScanResult = namedtuple('ScanResult', ['found', 'signature'])

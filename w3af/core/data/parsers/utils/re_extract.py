@@ -123,10 +123,16 @@ class ReExtract(BaseParser):
     def _filter_false_urls(self, potential_url_mo):
         potential_url = potential_url_mo.group(0)
 
-        if potential_url.startswith('//') or \
-        potential_url.startswith('://') or \
-        potential_url.startswith('HTTP/') or \
-        self.PHP_VERSION_RE.match(potential_url):
+        if potential_url.startswith('//'):
+            return False
+
+        if potential_url.startswith('://'):
+            return False
+
+        if potential_url.startswith('HTTP/'):
+            return False
+
+        if self.PHP_VERSION_RE.match(potential_url):
             return False
 
         return True

@@ -116,7 +116,8 @@ class DiskDict(object):
         r = self.db.select(query, (cpickle_dumps(key),))
         
         if not r:
-            raise KeyError('%s not in DiskDict.' % key)
+            args = (key, self.table_name)
+            raise KeyError('%s not in %s.' % args)
 
         return cPickle.loads(r[0][0])
 
@@ -126,11 +127,11 @@ class DiskDict(object):
         return r[0]
 
     def get(self, key, default=-456):
-        if key in self:
+        try:
             return self[key]
-
-        if default is not -456:
-            return default
+        except KeyError:
+            if default is not -456:
+                return default
 
         raise KeyError()
 

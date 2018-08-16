@@ -46,9 +46,12 @@ class audit(BaseConsumer):
 
         super(audit, self).__init__(audit_plugins,
                                     w3af_core,
-                                    thread_name='Auditor',
+                                    thread_name=self.get_name(),
                                     max_pool_queued_tasks=max_qsize,
                                     max_in_queue_size=max_qsize)
+
+    def get_name(self):
+        return 'Auditor'
 
     def _teardown(self):
         msg = 'Starting Audit consumer _teardown() with %s plugins.'

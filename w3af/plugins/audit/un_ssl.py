@@ -25,7 +25,7 @@ import w3af.core.data.constants.severity as severity
 
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.misc.fuzzy_string_cmp import relative_distance_boolean
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.exceptions import (ScanMustStopException,
                                               HTTPRequestException)
 
@@ -107,9 +107,9 @@ class un_ssl(AuditPlugin):
                 return
 
             if insecure_response.get_code() == secure_response.get_code()\
-            and relative_distance_boolean(insecure_response.get_body(),
-                                          secure_response.get_body(),
-                                          0.95):
+            and fuzzy_equal(insecure_response.get_body(),
+                            secure_response.get_body(),
+                            0.95):
 
                 desc = ('Secure content can be accessed using the insecure'
                         ' HTTP protocol. The vulnerable URLs used to verify'

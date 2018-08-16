@@ -25,64 +25,69 @@ import Queue
 
 class QueueSpeedMeasurement(object):
 
-    MAX_SIZE = 100
+    MAX_SIZE = 20000
+    MAX_SECONDS_IN_THE_PAST = 600
 
     def __init__(self):
-        self._output_data = []
-        self._input_data = []
+        self._output_timestamps = []
+        self._input_timestamps = []
 
     def clear(self):
-        self._output_data = []
-        self._input_data = []
+        self._output_timestamps = []
+        self._input_timestamps = []
 
-    def _add(self, true_false, data):
-        data.append((true_false, time.time()))
+    def get_input_rpm(self):
+        return self._calculate_rpm(self._input_timestamps)
+
+    def get_output_rpm(self):
+        return self._calculate_rpm(self._output_timestamps)
+
+    def _item_left_queue(self):
+        self._add(self._output_timestamps)
+
+    def _item_added_to_queue(self):
+        self._add(self._input_timestamps)
+
+    def _add(self, data):
+        data.append(time.time())
 
         while len(data) >= self.MAX_SIZE:
             data.pop(0)
 
-    def _item_left_queue(self):
-        self._add(True, self._output_data)
-
-    def _item_added_to_queue(self):
-        self._add(True, self._input_data)
-
     def _calculate_rpm(self, data):
-        # Verify that I have everything I need to make the calculations
-        if len([True for (added, _) in data if added]) < 1:
-            return None
+        # We're only going to analyze the last MAX_SECONDS_IN_THE_PAST seconds
+        max_past_time = time.time() - self.MAX_SECONDS_IN_THE_PAST
+        data = [ts for ts in data if ts > max_past_time]
 
-        if len(data) < 2:
-            return None
+        if len(data) == 0:
+            # The last 30 seconds had no activity, the RPM is zero!
+            return 0.0
 
-        # Get the first logged item time, only a real item not a check made
-        # by get_input_rpm / get_output_rpm
-        first_item_time = [data_time for (added, data_time) in data if added][0]
+        if len(data) == 1:
+            # The last 30 seconds only had one read / write action
+            return 60.0 / self.MAX_SECONDS_IN_THE_PAST
+
+        #
+        # We have at least two read / write actions in the last 30 seconds
+        # calculate the RPM!
+        #
+        first_item = data[0]
 
         # Get the last logged item time
-        last_item_time = data[-1][1]
+        last_item = data[-1]
 
-        # Count all items that were logged
-        all_items = len([True for (added, _) in data if added])
+        # Count all items that were logged in the last MAX_SECONDS_IN_THE_PAST
+        all_items = len(data)
 
-        time_delta = last_item_time - first_item_time
+        time_delta = last_item - first_item
 
+        # Protect against cases in which the two items were added "at the same
+        # time" such as https://github.com/andresriancho/w3af/issues/342
         if time_delta == 0:
-            # https://github.com/andresriancho/w3af/issues/342
-            return None
+            time_delta = 0.01
 
         # Calculate RPM and return it
         return 60.0 * all_items / time_delta
-
-    def get_input_rpm(self):
-        self._add(False, self._input_data)
-
-        return self._calculate_rpm(self._input_data)
-
-    def get_output_rpm(self):
-        self._add(False, self._output_data)
-
-        return self._calculate_rpm(self._output_data)
 
 
 class SmartQueue(QueueSpeedMeasurement):
@@ -99,8 +104,6 @@ class SmartQueue(QueueSpeedMeasurement):
         self.q = Queue.Queue(maxsize=maxsize)
 
         self._name = name
-        self._output_data = [] 
-        self._input_data = []
 
     def get_name(self):
         return self._name

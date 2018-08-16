@@ -27,7 +27,7 @@ import sys
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
-from w3af.core.controllers.core_helpers.status import w3af_core_status
+from w3af.core.controllers.core_helpers.status import CoreStatus
 
 
 class TestExceptionHandler(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.exception_handler = ExceptionHandler()
         self.exception_handler.clear()
 
-        self.status = fake_status(None)
+        self.status = FakeStatus(None)
         self.status.set_running_plugin('phase', 'plugin')
         self.status.set_current_fuzzable_request('phase',
                                                  'http://www.w3af.org/')
@@ -189,5 +189,5 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.lineno, 167)
 
 
-class fake_status(w3af_core_status):
+class FakeStatus(CoreStatus):
     pass

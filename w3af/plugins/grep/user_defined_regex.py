@@ -95,7 +95,7 @@ class user_defined_regex(GrepPlugin):
                             
                         desc = 'User defined regular expression "%s" matched a' \
                                ' response. The matched string is: "%s".'
-                        desc = desc % (regex.pattern, str_match)
+                        desc %= (regex.pattern, str_match)
                         
                         info_inst = Info('User defined regular expression match',
                                          desc, response.id, self.get_name())

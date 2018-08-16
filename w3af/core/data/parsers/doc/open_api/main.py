@@ -59,9 +59,10 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response):
+    def __init__(self, http_response, no_validation=False):
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
+        self.no_validation = no_validation
 
     @staticmethod
     def content_type_match(http_resp):
@@ -136,7 +137,8 @@ class OpenAPI(BaseParser):
         """
         Extract all the API endpoints using the bravado Open API parser
         """
-        specification_handler = SpecificationHandler(self.get_http_response())
+        specification_handler = SpecificationHandler(self.get_http_response(),
+                                                     self.no_validation)
 
         for data in specification_handler.get_api_information():
             request_factory = RequestFactory(*data)

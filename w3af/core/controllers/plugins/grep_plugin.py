@@ -71,8 +71,5 @@ class GrepPlugin(Plugin):
         raise NotImplementedError('Plugin "%s" must not implement required '
                                   'method grep' % self.__class__.__name__)
 
-    def set_url_opener(self, *args, **kwargs):
-        pass
-
     def get_type(self):
         return 'grep'

@@ -137,16 +137,30 @@ class TestSGMLParser(unittest.TestCase):
         self.assertEquals(URL('http://www.w3afbase.com/'), p._base_url)
 
     def test_meta_tags(self):
-        body = HTML_DOC % \
-            {'head': META_REFRESH + META_REFRESH_WITH_URL,
-             'body': ''}
+        body = HTML_DOC % {'head': META_REFRESH + META_REFRESH_WITH_URL,
+                           'body': ''}
         resp = build_http_response(self.url, body)
+
         p = SGMLParser(resp)
         p.parse()
-        self.assertTrue(2, len(p.meta_redirs))
-        self.assertTrue("2;url=http://crawler.w3af.com/" in p.meta_redirs)
-        self.assertTrue("600" in p.meta_redirs)
-        self.assertEquals([URL('http://crawler.w3af.com/')], p.references[0])
+
+        self.assertEqual(2, len(p.meta_redirs))
+        self.assertIn("2;url=http://crawler.w3af.com/", p.meta_redirs)
+        self.assertIn("600", p.meta_redirs)
+        self.assertEqual([URL('http://crawler.w3af.com/')], p.references[0])
+
+    def test_meta_tags_with_single_quotes(self):
+        body = HTML_DOC % {'head': META_REFRESH + META_REFRESH_WITH_URL_AND_QUOTES,
+                           'body': ''}
+        resp = build_http_response(self.url, body)
+
+        p = SGMLParser(resp)
+        p.parse()
+
+        self.assertEqual(2, len(p.meta_redirs))
+        self.assertIn("2;url='http://crawler.w3af.com/'", p.meta_redirs)
+        self.assertIn("600", p.meta_redirs)
+        self.assertEqual([URL('http://crawler.w3af.com/')], p.references[0])
 
     def test_case_sensitivity(self):
         """
@@ -299,7 +313,7 @@ class TestTagsByFilter(unittest.TestCase):
         tags = p.get_tags_by_filter(('a',), yield_text=True)
         tags = list(tags)
 
-        self.assertEqual([Tag('a', {'href': '/abc'}, 'foo')], tags)
+        self.assertEqual(tags, [Tag('a', {'href': '/abc'}, 'foo')])
 
     def test_two(self):
         body = '<html><a href="/abc">foo</a><b>bar</b></html>'

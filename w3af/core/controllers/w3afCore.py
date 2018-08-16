@@ -44,7 +44,7 @@ from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandle
 from w3af.core.controllers.core_helpers.strategy_observers.disk_space_observer import DiskSpaceObserver
 from w3af.core.controllers.core_helpers.strategy_observers.thread_count_observer import ThreadCountObserver
 from w3af.core.controllers.core_helpers.strategy_observers.thread_state_observer import ThreadStateObserver
-from w3af.core.controllers.core_helpers.status import (w3af_core_status,
+from w3af.core.controllers.core_helpers.status import (CoreStatus,
                                                        STOPPED, RUNNING, PAUSED)
 from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
                                                   log_sink_factory)
@@ -133,7 +133,7 @@ class w3afCore(object):
         # scan.
         self.profiles = CoreProfiles(self)
         self.plugins = CorePlugins(self)
-        self.status = w3af_core_status(self)
+        self.status = CoreStatus(self)
         self.target = CoreTarget()
         self.strategy = CoreStrategy(self)
 
@@ -154,7 +154,7 @@ class w3afCore(object):
         """
         # Create this again just to clear the internal states
         scans_completed = self.status.scans_completed
-        self.status = w3af_core_status(self, scans_completed=scans_completed)
+        self.status = CoreStatus(self, scans_completed=scans_completed)
         self.status.start()
 
         start_profiling(self)

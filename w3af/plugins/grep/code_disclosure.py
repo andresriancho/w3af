@@ -53,10 +53,12 @@ class code_disclosure(GrepPlugin):
         if not response.is_text_or_html():
             return
 
+        response_is_404 = is_404(response)
+
         # This is a performance improvement to prevent the plugin from
         # applying contains_source_code to a 404 response that will be
         # discarded even if it matches
-        if is_404(response) and not self._report_404_match:
+        if response_is_404 and not self._report_404_match:
             return
 
         match, lang = contains_source_code(response)
@@ -65,7 +67,7 @@ class code_disclosure(GrepPlugin):
             return
 
         # Only report 404 findings once
-        if is_404(response) and self._report_404_match:
+        if response_is_404 and self._report_404_match:
             self._report_404_match = False
 
             desc = (u'The URL: "%s" has a %s code disclosure'

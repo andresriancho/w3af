@@ -111,6 +111,9 @@ class InfoSet(object):
     def generate_new_id(self):
         self._uniq_id = str(uuid.uuid4())
 
+    def has_reached_max_info_instances(self):
+        return len(self.infos) == self.MAX_INFO_INSTANCES
+
     def add(self, info):
         if len(self.infos) == self.MAX_INFO_INSTANCES:
             return False

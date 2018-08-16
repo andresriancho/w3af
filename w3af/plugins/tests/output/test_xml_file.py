@@ -40,6 +40,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.kb.tests.test_vuln import MockVuln
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.history import HistoryItem
+from w3af.core.data.db.url_tree import URLTree
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -622,11 +623,19 @@ class TestScanStatus(XMLNodeGeneratorTest):
         w3af_core.status.start()
         w3af_core.status.set_running_plugin('crawl', 'web_spider')
         status = w3af_core.status.get_status_as_dict()
+
+        known_urls = URLTree()
+        known_urls.add_url(URL('http://w3af.org/'))
+        known_urls.add_url(URL('http://w3af.org/foo/'))
+        known_urls.add_url(URL('http://w3af.org/foo/abc.html'))
+        known_urls.add_url(URL('http://w3af.org/foo/bar/'))
+        known_urls.add_url(URL('http://w3af.org/123.txt'))
+
         total_urls = 150
 
         x = xml_file()
 
-        scan_status = ScanStatus(x._get_jinja2_env(), status, total_urls)
+        scan_status = ScanStatus(x._get_jinja2_env(), status, total_urls, known_urls)
         xml = scan_status.to_string()
         self.maxDiff = None
         expected = (u'<scan-status>\n'
@@ -646,33 +655,52 @@ class TestScanStatus(XMLNodeGeneratorTest):
                     u'\n'
                     u'    <queues>\n'
                     u'        <crawl>\n'
-                    u'            <input-speed>None</input-speed>\n'
-                    u'            <output-speed>None</output-speed>\n'
-                    u'            <length>None</length>\n'
+                    u'            <input-speed>0</input-speed>\n'
+                    u'            <output-speed>0</output-speed>\n'
+                    u'            <length>0</length>\n'
+                    u'            <processed-tasks>0</processed-tasks>\n'
                     u'        </crawl>\n'
                     u'\n'
                     u'        <audit>\n'
-                    u'            <input-speed>None</input-speed>\n'
-                    u'            <output-speed>None</output-speed>\n'
-                    u'            <length>None</length>\n'
+                    u'            <input-speed>0</input-speed>\n'
+                    u'            <output-speed>0</output-speed>\n'
+                    u'            <length>0</length>\n'
+                    u'            <processed-tasks>0</processed-tasks>\n'
                     u'        </audit>\n'
                     u'\n'
                     u'        <grep>\n'
-                    u'            <input-speed>None</input-speed>\n'
-                    u'            <output-speed>None</output-speed>\n'
-                    u'            <length>None</length>\n'
+                    u'            <input-speed>0</input-speed>\n'
+                    u'            <output-speed>0</output-speed>\n'
+                    u'            <length>0</length>\n'
+                    u'            <processed-tasks>None</processed-tasks>\n'
                     u'        </grep>\n'
                     u'    </queues>\n'
                     u'\n'
                     u'    <eta>\n'
-                    u'        <crawl>None</crawl>\n'
-                    u'        <audit>None</audit>\n'
-                    u'        <grep>None</grep>\n'
+                    u'        <crawl>0 seconds.</crawl>\n'
+                    u'        <audit>0 seconds.</audit>\n'
+                    u'        <grep>0 seconds.</grep>\n'
+                    u'        <all>0 seconds.</all>\n'
                     u'    </eta>\n'
                     u'\n'
                     u'    <rpm>0</rpm>\n'
+                    u'    <sent-request-count>0</sent-request-count>\n'
+                    u'    <progress>100</progress>\n'
                     u'\n'
                     u'    <total-urls>150</total-urls>\n'
+                    u'    <known-urls>    \n'   
+                    u'    <node url="http://w3af.org">\n'
+                    u'                        \n'
+                    u'        <node url="foo">\n'
+                    u'                                            \n'
+                    u'            <node url="bar" />                            \n'
+                    u'            <node url="abc.html" />\n'
+                    u'                        \n'
+                    u'        </node>                        \n'
+                    u'        <node url="123.txt" />\n'
+                    u'                    \n'
+                    u'    </node>\n'
+                    u'    </known-urls>\n'
                     u'</scan-status>')
 
         self.assertEqual(xml, expected)

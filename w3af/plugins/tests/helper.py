@@ -103,8 +103,8 @@ class PluginTest(unittest.TestCase):
     def _register_httpretty_uri(self, proto, domain, port):
         assert isinstance(port, int), 'Port needs to be an integer'
 
-        if (port == 80 and proto == 'http') or\
-        (port == 443 and proto == 'https'):
+        if (port == 80 and proto == 'http') or \
+           (port == 443 and proto == 'https'):
             re_str = "%s://%s/(.*)" % (proto, domain)
         else:
             re_str = "%s://%s:%s/(.*)" % (proto, domain, port)

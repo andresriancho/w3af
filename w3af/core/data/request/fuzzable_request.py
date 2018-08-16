@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import string
 import base64
+import hashlib
 
 from itertools import chain
 from urllib import unquote, quote, quote_plus
@@ -287,13 +288,18 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         # Filter the short haystacks
         haystacks = {h for h in haystacks if len(h) >= 3}
 
+        haystack = '--'.join(haystacks)
+
         for needle in needles:
-            for haystack in haystacks:
-                if needle in haystack:
-                    return True
+            if needle in haystack:
+                return True
 
         # I didn't send the needle in any way
         return False
+
+    def get_hash(self):
+        raw_http_request = self.dump()
+        return hashlib.md5(raw_http_request).hexdigest()
 
     def __hash__(self):
         return hash(str(self.get_uri()) + self.get_data())

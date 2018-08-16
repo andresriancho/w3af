@@ -36,8 +36,9 @@ class error_500(GrepPlugin):
     """
 
     IGNORE_CODES = (404, 403, 401, 405, 400, 501)
-    FALSE_POSITIVE_STRINGS = ('<h1>Bad Request (Invalid URL)</h1>',
-                              )
+    FALSE_POSITIVE_STRINGS = (
+        '<h1>Bad Request (Invalid URL)</h1>',
+    )
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -52,11 +53,19 @@ class error_500(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         """
-        if response.is_text_or_html() \
-        and 400 < response.get_code() < 600 \
-        and response.get_code() not in self.IGNORE_CODES\
-        and not self._is_false_positive(response):
-            self._error_500_responses.add((request, response.id))
+        if not 400 < response.get_code() < 600:
+            return
+
+        if response.get_code() in self.IGNORE_CODES:
+            return
+
+        if not response.is_text_or_html():
+            return
+
+        if self._is_false_positive(response):
+            return
+
+        self._error_500_responses.add((request, response.id))
 
     def _is_false_positive(self, response):
         """

@@ -42,6 +42,7 @@ from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.misc import get_w3af_version
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
+from w3af.core.data.db.url_tree import URLTree
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
@@ -90,7 +91,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.4'
+    XML_OUTPUT_VERSION = '2.7'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -195,9 +196,18 @@ class xml_file(OutputPlugin):
         # Create the context
         context = dotdict({})
 
+        try:
+            self._add_scan_status_to_context(context)
+        except RuntimeError:
+            # In some very strange scenarios we get this error:
+            #
+            #   Can NOT call get_run_time before start()
+            #
+            # Just "ignore" this call to flush and write the XML on the next one
+            return
+
         self._add_root_info_to_context(context)
         self._add_scan_info_to_context(context)
-        self._add_scan_status_to_context(context)
         self._add_findings_to_context(context)
         self._add_errors_to_context(context)
 
@@ -225,10 +235,26 @@ class xml_file(OutputPlugin):
     @took
     def _add_scan_status_to_context(self, context):
         status = self.get_w3af_core().status.get_status_as_dict()
-        total_urls = len(kb.kb.get_all_known_fuzzable_requests())
+        total_urls = len(kb.kb.get_all_known_urls())
+        known_urls = self._get_known_urls()
 
-        scan_status = ScanStatus(self._jinja2_env, status, total_urls)
+        scan_status = ScanStatus(self._jinja2_env, status, total_urls, known_urls)
         context.scan_status = scan_status.to_string()
+
+    def _get_known_urls(self):
+        """
+        This method calls kb.get_all_known_urls() to retrieve the URLs,
+        then it structures them into a tree which has some helper methods
+        to allow us to easily print them using jinja2 templates.
+
+        :return:
+        """
+        url_tree = URLTree()
+
+        for url in kb.kb.get_all_known_urls():
+            url_tree.add_url(url)
+
+        return url_tree
 
     @took
     def _add_errors_to_context(self, context):
@@ -236,8 +262,8 @@ class xml_file(OutputPlugin):
 
     def findings(self):
         """
-        A small generator that queries the findings cache and yields all the findings
-        so they get written to the XML.
+        A small generator that queries the findings cache and yields all the
+        findings so they get written to the XML.
 
         :yield: Strings representing the findings as XML
         """
@@ -267,8 +293,14 @@ class xml_file(OutputPlugin):
         # KB (which changes their uniq id)
         #
         for uniq_id in kb.kb.get_all_uniq_ids_iter(include_ids=cached_nodes):
-            yield cache.get_node_from_cache(uniq_id)
-            processed_uniq_ids.append(uniq_id)
+            node = cache.get_node_from_cache(uniq_id)
+
+            # cached_nodes can be (), this means that get_all_uniq_ids_iter()
+            # will return *all* findings, some might not be in the cache. When
+            # that happens, the cache returns None
+            if node is not None:
+                yield node
+                processed_uniq_ids.append(uniq_id)
 
         msg = '[xml_file.flush()] findings() processed %s cached nodes in %.2f seconds'
         spent = time.time() - start
@@ -638,7 +670,7 @@ class ScanInfo(CachedXMLNode):
 class ScanStatus(XMLNode):
     TEMPLATE = 'scan_status.tpl'
 
-    def __init__(self, jinja2_env, status, total_urls):
+    def __init__(self, jinja2_env, status, total_urls, known_urls):
         """
         Represents the current w3af scan status
 
@@ -648,6 +680,7 @@ class ScanStatus(XMLNode):
         super(ScanStatus, self).__init__(jinja2_env)
         self._status = status
         self._total_urls = total_urls
+        self._known_urls = known_urls
 
     def to_string(self):
         context = dotdict({})
@@ -674,9 +707,13 @@ class ScanStatus(XMLNode):
         context.crawl_eta = self._status['eta']['crawl']
         context.audit_eta = self._status['eta']['audit']
         context.grep_eta = self._status['eta']['grep']
+        context.all_eta = self._status['eta']['all']
         context.rpm = self._status['rpm']
+        context.sent_request_count = self._status['sent_request_count']
+        context.progress = self._status['progress']
 
         context.total_urls = self._total_urls
+        context.known_urls = self._known_urls
 
         template = self.get_template(self.TEMPLATE)
         transaction = template.render(context)

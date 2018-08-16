@@ -57,6 +57,16 @@ class Tag(object):
                    data['attrib'],
                    data['text'])
 
+    def __eq__(self, other):
+        return self.name == other.name and \
+               self.attrib == other.attrib and \
+               self.text == other.text
+
+    def __str__(self):
+        return '<Tag (name:%s, attrib:%s, text:%s)' % (self.name, self.attrib, self.text)
+
+    __repr__ = __str__
+
 
 class SGMLParser(BaseParser):
     """
@@ -71,7 +81,7 @@ class SGMLParser(BaseParser):
     EMAIL_RE = re.compile('([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
                           re.I | re.U)
 
-    META_URL_REDIR_RE = re.compile('.*?URL.*?=(.*)', re.I | re.U)
+    META_URL_REDIR_RE = re.compile(r".*?URL.*?='?\"?([^'\"]*)'?\"?", re.I | re.U)
 
     TAGS_WITH_URLS = {
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
@@ -518,22 +528,30 @@ class SGMLParser(BaseParser):
     def _handle_meta_tag_start(self, tag, tag_name, attrs):
         self._meta_tags.append(attrs)
 
-        has_HTTP_EQUIV = attrs.get('http-equiv', '') == 'refresh'
+        has_http_equiv = attrs.get('http-equiv', '') == 'refresh'
         content = attrs.get('content', None)
 
-        if content is not None and has_HTTP_EQUIV:
-            self._meta_redirs.append(content)
+        if content is None:
+            return
 
-            # Finally add the URL to the list of urls found in the document.
-            # The content variables may look like:
-            #   "4;URL=http://www.f00.us/"
-            #   "2; URL=http://www.f00.us/"
-            #   "6  ; URL=http://www.f00.us/"
-            for urlstr in self.META_URL_REDIR_RE.findall(content):
-                urlstr = self._decode_url(urlstr.strip())
-                url = unicode(self._base_url.url_join(urlstr))
-                url = URL(url, encoding=self._encoding)
-                self._tag_and_url.add(('meta', url))
+        if not has_http_equiv:
+            return
+
+        self._meta_redirs.append(content)
+
+        #
+        # Finally add the URL to the list of urls found in the document.
+        # The content variables may look like:
+        #
+        #       "4;URL=http://www.f00.us/"
+        #       "2; URL=http://www.f00.us/"
+        #       "6  ; URL=http://www.f00.us/"
+        #
+        for urlstr in self.META_URL_REDIR_RE.findall(content):
+            urlstr = self._decode_url(urlstr.strip())
+            url = unicode(self._base_url.url_join(urlstr))
+            url = URL(url, encoding=self._encoding)
+            self._tag_and_url.add(('meta', url))
 
     def _handle_form_tag_start(self, tag, tag_name, attrs):
         self._inside_form = True

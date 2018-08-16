@@ -917,6 +917,7 @@ class ExtendedUrllib(object):
         Actually send the request object.
 
         :param req: The HTTPRequest object that represents the request.
+        :param grep: Should grep the HTTP request / response
         :return: An HTTPResponse object.
         """
         # This is the place where I hook the pause and stop feature

@@ -44,7 +44,17 @@ class html_comments(GrepPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    HTML_RE = re.compile('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>')
+    HTML_RE = re.compile('<[a-zA-Z]+ .*?>.*?</[a-zA-Z]+>')
+
+    HTML_FALSE_POSITIVES = {
+        '[if IE]',
+        '[if !IE]',
+        '[if IE 7 ]',
+        '[if IE 8 ]',
+        '[if IE 9]',
+        '[if lte IE 8]',
+        '[if lte IE 9]',
+    }
 
     INTERESTING_WORDS = (
         # In English
@@ -56,7 +66,7 @@ class html_comments(GrepPlugin):
         'tonto', 'porqueria', 'cuidado', 'usuario', u'contraseña',
         'puta', 'email', 'security', 'captcha', 'pinga', 'cojones',
         
-        # some in Portuguese
+        # In Portuguese
         'banco', 'bradesco', 'itau', 'visa', 'bancoreal', u'transfêrencia',
         u'depósito', u'cartão', u'crédito', 'dados pessoais'
     )
@@ -88,13 +98,7 @@ class html_comments(GrepPlugin):
             return
         
         for comment in dp.get_comments():
-            # These next two lines fix this issue:
-            # audit.ssi + grep.html_comments + web app with XSS = false positive
-            if request.sent(comment):
-                continue
-
             if self._is_new(comment, response):
-
                 self._interesting_word(comment, request, response)
                 self._html_in_comment(comment, request, response)
 
@@ -102,11 +106,19 @@ class html_comments(GrepPlugin):
         """
         Find interesting words in HTML comments
         """
-        comment = comment.lower()
+        lower_comment = comment.lower()
 
-        for word in self._multi_in.query(comment):
+        for word in self._multi_in.query(lower_comment):
             if (word, response.get_url()) in self._already_reported:
                 continue
+
+            # These next two lines fix a false positive which appears when
+            # audit.ssi sends a payload to a site which has XSS, and
+            # grep.html_comments sees that comment and reports it.
+            if request.sent(comment):
+                continue
+
+            self._already_reported.add((word, response.get_url()))
 
             desc = ('A comment with the string "%s" was found in: "%s".'
                     ' This could be interesting.')
@@ -118,8 +130,6 @@ class html_comments(GrepPlugin):
 
             kb.kb.append(self, 'interesting_comments', i)
             om.out.information(i.get_desc())
-                
-            self._already_reported.add((word, response.get_url()))
 
     def _html_in_comment(self, comment, request, response):
         """
@@ -130,8 +140,16 @@ class html_comments(GrepPlugin):
         if html_in_comment is None:
             return
 
-        if (comment, response.get_url()) in self._already_reported:
+        for false_positive_string in self.HTML_FALSE_POSITIVES:
+            if false_positive_string in comment:
+                return
+
+        comment_data = (comment, response.get_url())
+
+        if comment_data in self._already_reported:
             return
+
+        self._already_reported.add(comment_data)
 
         # There is HTML code in the comment.
         comment = comment.strip()
@@ -139,7 +157,7 @@ class html_comments(GrepPlugin):
         comment = comment.replace('\r', '')
         comment = comment[:40]
 
-        desc = ('A comment with the string "%s" was found in: "%s".'
+        desc = ('A comment containing HTML code "%s" was found in: "%s".'
                 ' This could be interesting.')
         desc %= (comment, response.get_url())
 
@@ -150,7 +168,6 @@ class html_comments(GrepPlugin):
 
         kb.kb.append(self, 'html_comment_hides_html', i)
         om.out.information(i.get_desc())
-        self._already_reported.add((comment, response.get_url()))
 
     def _handle_no_such_table(self, comment, response, nste):
         """
@@ -178,35 +195,38 @@ class html_comments(GrepPlugin):
                 response.get_id(),
                 comment,
                 nste)
+
         raise NoSuchTableException(msg % args)
 
     def _is_new(self, comment, response):
         """
-        Make sure that we perform a thread safe check on the self._comments
-        dict, in order to avoid duplicates.
+        Avoid duplicates by checking self._comments
         """
-        with self._plugin_lock:
-            
-            #pylint: disable=E1103
-            try:
-                comment_data = self._comments.get(comment, None)
-            except NoSuchTableException, nste:
-                self._handle_no_such_table(comment, response, nste)
+        # pylint: disable=E1103
+        try:
+            comment_data = self._comments.get(comment, None)
+        except NoSuchTableException, nste:
+            self._handle_no_such_table(comment, response, nste)
+            return
 
-            response_url = response.get_url()
+        response_url = response.get_url()
 
-            if comment_data is None:
-                self._comments[comment] = [(response_url, response.id)]
-                return True
-            else:
-                for saved_url, response_id in comment_data:
-                    if response_url == saved_url:
-                        return False
-                else:
-                    comment_data.append((response_url, response.id))
-                    self._comments[comment] = comment_data
-                    return True
-            #pylint: enable=E1103
+        # The comment was never seen before
+        if comment_data is None:
+            self._comments[comment] = [(response_url, response.id)]
+            return True
+
+        # The comment was seen before, maybe on a different URL
+        for saved_url, response_id in comment_data:
+            if response_url == saved_url:
+                return False
+
+        # The comment was never seen before on this URL, store this knowledge
+        comment_data.append((response_url, response.id))
+        self._comments[comment] = comment_data
+
+        return True
+        # pylint: enable=E1103
 
     def end(self):
         """

@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 
 import w3af.core.data.kb.config as cf
+import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
                                         clean_fuzzable_request_form)
@@ -45,7 +47,7 @@ from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
 # In this case we'll collect at most PATH_MAX_VARIANTS URLs with different
 # paths inside the "abc" path.
 #
-PATH_MAX_VARIANTS = 50
+PATH_MAX_VARIANTS = 75
 
 #
 # Limits the max number of variants we'll allow for URLs with the same path
@@ -57,7 +59,7 @@ PATH_MAX_VARIANTS = 50
 # For URLs which have the same path (/abc/def) and parameters
 # (id=number&abc=string) we'll collect at most PARAMS_MAX_VARIANTS of those
 #
-PARAMS_MAX_VARIANTS = 10
+PARAMS_MAX_VARIANTS = 25
 
 #
 # Limits the number variants for "the same form". A good example to understand this
@@ -82,7 +84,7 @@ PARAMS_MAX_VARIANTS = 10
 #
 # https://github.com/andresriancho/w3af/issues/15970
 #
-MAX_EQUAL_FORM_VARIANTS = 5
+MAX_EQUAL_FORM_VARIANTS = 10
 
 
 class VariantDB(object):
@@ -92,9 +94,14 @@ class VariantDB(object):
     requests in order to be able to answer "False" to a call for
     need_more_variants in a situation like this:
 
-        need_more_variants('http://foo.com/abc?id=32')      --> True
-        append('http://foo.com/abc?id=32')
-        need_more_variants('http://foo.com/abc?id=32')      --> False
+        >> need_more_variants('http://foo.com/abc?id=32')
+        True
+
+        >> append('http://foo.com/abc?id=32')
+        True
+
+        >> need_more_variants('http://foo.com/abc?id=32')
+        False
 
     """
     HASH_IGNORE_HEADERS = ('referer',)
@@ -102,7 +109,7 @@ class VariantDB(object):
 
     def __init__(self):
         self._variants = DiskDict(table_prefix='variant_db')
-        self._variants_eq = DiskDict(table_prefix='variant_db_eq')
+        self._variants_eq = ScalableBloomFilter()
         self._variants_form = DiskDict(table_prefix='variant_db_form')
 
         self.params_max_variants = cf.cf.get('params_max_variants')
@@ -112,7 +119,6 @@ class VariantDB(object):
         self._db_lock = threading.RLock()
 
     def cleanup(self):
-        self._variants_eq.cleanup()
         self._variants.cleanup()
         self._variants_form.cleanup()
 
@@ -123,20 +129,25 @@ class VariantDB(object):
                  request.
         """
         with self._db_lock:
-            if self.seen_exactly_the_same(fuzzable_request):
+            if self._seen_exactly_the_same(fuzzable_request):
                 return False
 
-            if self.has_form(fuzzable_request):
-                if not self.need_more_variants_for_form(fuzzable_request):
+            if self._has_form(fuzzable_request):
+                if not self._need_more_variants_for_form(fuzzable_request):
                     return False
 
-            if not self.need_more_variants_for_uri(fuzzable_request):
+            if not self._need_more_variants_for_uri(fuzzable_request):
                 return False
 
             # Yes, please give me more variants of fuzzable_request
             return True
 
-    def need_more_variants_for_uri(self, fuzzable_request):
+    def _log_return_false(self, fuzzable_request, reason):
+        args = (reason, fuzzable_request)
+        msg = 'VariantDB is returning False because of "%s" for "%s"'
+        om.out.debug(msg % args)
+
+    def _need_more_variants_for_uri(self, fuzzable_request):
         #
         # Do we need more variants for the fuzzable request? (similar match)
         # PARAMS_MAX_VARIANTS and PATH_MAX_VARIANTS
@@ -155,36 +166,41 @@ class VariantDB(object):
         # Choose which max_variants to use
         if has_params:
             max_variants = self.params_max_variants
+            max_variants_type = 'params'
         else:
             max_variants = self.path_max_variants
+            max_variants_type = 'path'
 
         if count >= max_variants:
+            _type = 'need_more_variants_for_uri(%s)' % max_variants_type
+            self._log_return_false(fuzzable_request, _type)
             return False
 
         self._variants[clean_dict_key] = count + 1
         return True
 
-    def seen_exactly_the_same(self, fuzzable_request):
+    def _seen_exactly_the_same(self, fuzzable_request):
         #
         # Is the fuzzable request already known to us? (exactly the same)
         #
         request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
-        already_seen = self._variants_eq.get(request_hash, False)
-        if already_seen:
+        if request_hash in self._variants_eq:
             return True
 
         # Store it to avoid duplicated fuzzable requests in our framework
-        self._variants_eq[request_hash] = True
+        self._variants_eq.add(request_hash)
+
+        self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
         return False
 
-    def has_form(self, fuzzable_request):
+    def _has_form(self, fuzzable_request):
         raw_data = fuzzable_request.get_raw_data()
         if raw_data and len(raw_data.get_param_names()) >= 2:
             return True
 
         return False
 
-    def need_more_variants_for_form(self, fuzzable_request):
+    def _need_more_variants_for_form(self, fuzzable_request):
         #
         # Do we need more variants for this form? (similar match)
         # MAX_EQUAL_FORM_VARIANTS
@@ -197,7 +213,9 @@ class VariantDB(object):
             return True
 
         if count >= self.max_equal_form_variants:
+            self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
             return False
 
         self._variants_form[clean_dict_key_form] = count + 1
         return True
+

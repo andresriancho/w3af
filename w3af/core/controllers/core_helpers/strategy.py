@@ -39,7 +39,7 @@ from w3af.core.controllers.core_helpers.consumers.auth import auth
 from w3af.core.controllers.core_helpers.consumers.audit import audit
 from w3af.core.controllers.core_helpers.consumers.bruteforce import bruteforce
 from w3af.core.controllers.core_helpers.consumers.seed import seed
-from w3af.core.controllers.core_helpers.consumers.crawl_infrastructure import crawl_infrastructure
+from w3af.core.controllers.core_helpers.consumers.crawl_infrastructure import CrawlInfrastructure
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.core_helpers.exception_handler import ExceptionData
 
@@ -79,7 +79,19 @@ class CoreStrategy(object):
 
         # Also use this method to clear observers
         self._observers = []
-        
+
+    def get_grep_consumer(self):
+        return self._grep_consumer
+
+    def get_audit_consumer(self):
+        return self._audit_consumer
+
+    def get_discovery_consumer(self):
+        return self._discovery_consumer
+
+    def get_bruteforce_consumer(self):
+        return self._bruteforce_consumer
+
     def set_consumers_to_none(self):
         # Consumer threads
         self._grep_consumer = None
@@ -212,6 +224,28 @@ class CoreStrategy(object):
         self._teardown_auth()
         self._teardown_grep()
 
+    def clear_queue_speed_data(self):
+        """
+        When one of the consumers finishes its work the speed of all queues is
+        heavily impacted. A few examples:
+            * Crawl finishes: The audit input queue speed goes to zero
+            * Crawl and audit finish: The grep input queue speed goes to zero
+
+        In order to quickly clear the previous state of the queue and reflect
+        the new speed, it is important to clear the old (now useless data) which
+        is used to calculate the input / output speeds and is now useless since
+        the number of consumers has changed.
+        """
+        consumers = [
+            self.get_grep_consumer(),
+            self.get_audit_consumer(),
+            self.get_discovery_consumer(),
+            self.get_bruteforce_consumer()
+        ]
+
+        consumers = [c for c in consumers if c is not None]
+        [c.in_queue.clear() for c in consumers]
+
     def add_observer(self, observer):
         self._observers.append(observer)
 
@@ -302,11 +336,13 @@ class CoreStrategy(object):
                     # This consumer is saying that it doesn't have any
                     # pending or in progress work
                     finished.add(url_producer)
+                    om.out.debug('Producer %s has finished' % url_producer.get_name())
             else:
                 if result_item == POISON_PILL:
                     # This consumer is saying that it has finished, so we
                     # remove it from the list.
                     consumer_forced_end.add(url_producer)
+                    om.out.debug('Producer %s has finished' % url_producer.get_name())
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
                 else:
@@ -317,8 +353,8 @@ class CoreStrategy(object):
                     # don't want to do anything with this data
                     fmt = ('%s is returning objects of class %s instead of'
                            ' FuzzableRequest.')
-                    assert isinstance(fuzzable_request_inst, FuzzableRequest),\
-                           fmt % (url_producer, type(fuzzable_request_inst))
+                    msg = fmt % (url_producer, type(fuzzable_request_inst))
+                    assert isinstance(fuzzable_request_inst, FuzzableRequest), msg
 
                     for url_consumer in output:
                         url_consumer.in_queue_put(fuzzable_request_inst)
@@ -553,9 +589,9 @@ class CoreStrategy(object):
             discovery_plugins = infrastructure_plugins
             discovery_plugins.extend(crawl_plugins)
 
-            self._discovery_consumer = crawl_infrastructure(discovery_plugins,
-                                                            self._w3af_core,
-                                                            cf.cf.get('max_discovery_time'))
+            self._discovery_consumer = CrawlInfrastructure(discovery_plugins,
+                                                           self._w3af_core,
+                                                           cf.cf.get('max_discovery_time'))
             self._discovery_consumer.start()
 
     def _setup_grep(self):
@@ -605,7 +641,7 @@ class CoreStrategy(object):
     def _seed_discovery(self):
         """
         Create the first fuzzable request objects based on the targets and put
-        them in the crawl_infrastructure consumer Queue.
+        them in the CrawlInfrastructure consumer Queue.
 
         This will start the whole discovery process, since plugins are going
         to consume from that Queue and then put their results in it again in

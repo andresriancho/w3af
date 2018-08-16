@@ -56,23 +56,22 @@ class cache_control(GrepPlugin):
         if response.is_image() or response.is_swf():
             return
 
-        elif response.get_url().get_protocol() == 'http':
+        if response.get_url().get_protocol() == 'http':
             return
 
-        elif 300 < response.get_code() < 310:
+        if 300 < response.get_code() < 310:
             return
         
-        elif response.body == '':
+        if response.body == '':
             return
 
-        elif is_404(response):
+        if is_404(response):
             return
 
-        else:
-            self._total_count += 1
-    
-            cache_control_settings = self._get_cache_control(response)
-            self._analyze_cache_control(cache_control_settings, response)
+        self._total_count += 1
+
+        cache_control_settings = self._get_cache_control(response)
+        self._analyze_cache_control(cache_control_settings, response)
     
     def _get_cache_control(self, response):
         """
@@ -164,7 +163,7 @@ class cache_control(GrepPlugin):
         self._ids.cleanup()
 
     def get_long_desc(self):
-        return """\
+        return """
         This plugin analyzes every HTTPS response and reports instances of
         incorrect cache control which might lead the user's browser to cache
         sensitive contents on their system.

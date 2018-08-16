@@ -29,6 +29,7 @@ import Halberd.ScanTask as halberd_scan_task
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
@@ -72,7 +73,10 @@ class halberd(InfrastructurePlugin):
         scantask.cluefile = ''
         scantask.save = ''
 
-        temp_output = tempfile.NamedTemporaryFile(delete=False)
+        temp_output = tempfile.NamedTemporaryFile(delete=False,
+                                                  dir=get_temp_dir(),
+                                                  prefix='w3af-halberd-',
+                                                  suffix='.output')
         scantask.out = temp_output.name
 
         halberd_logger.setError()
