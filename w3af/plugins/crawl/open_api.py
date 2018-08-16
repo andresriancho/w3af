@@ -371,10 +371,10 @@ class open_api(CrawlPlugin):
         o = opt_factory('no_spec_validation', self._no_spec_validation, d, BOOL, help=h)
         ol.add(o)
 
-        d = 'URL or path to Open API specification'
+        d = 'Path to Open API specification'
         h = ('By default, the plugin looks for the API specification on the target,',
              ' but sometimes applications do not provide an API specification. ',
-             ' Set this parameter to specify an URL or a local path to the API specification.')
+             ' Set this parameter to specify a local path to the API specification.')
         o = opt_factory('custom_spec_location', self._custom_spec_location, d, STRING, help=h)
         ol.add(o)
 
