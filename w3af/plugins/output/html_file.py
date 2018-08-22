@@ -177,8 +177,10 @@ class html_file(OutputPlugin):
         target_urls = [t.url_string for t in cf.cf.get('targets')]
 
         target_domain = 'unknown'
-        if cf.cf.get('target_domains'):
-            target_domain = cf.cf.get('target_domains')[0]
+
+        target_domains = cf.cf.get('target_domains')
+        if target_domains and len(target_domains) > 0:
+            target_domain = target_domains[0]
 
         enabled_plugins = self._enabled_plugins
         findings = kb.kb.get_all_findings_iter()
