@@ -336,10 +336,16 @@ class open_api(CrawlPlugin):
 
         url = URL('file://%s' % os.path.abspath(self._custom_spec_location))
 
+        ext = os.path.splitext(self._custom_spec_location)[1][1:].lower()
+        if ext not in ('yaml', 'json'):
+            om.out.error('Skip loading custom API spec '
+                         'because of unknown file extension: %s' % ext)
+            return
+
         with open(self._custom_spec_location, 'r') as f:
             custom_spec_as_string = f.read()
 
-        headers = Headers([('content-type', 'application/json')])
+        headers = Headers([('content-type', 'application/%s' % ext)])
         http_response = HTTPResponse(200, custom_spec_as_string, headers, url, url, _id=1)
 
         self._extract_api_calls_from_response(url, http_response)
@@ -373,8 +379,9 @@ class open_api(CrawlPlugin):
 
         d = 'Path to Open API specification'
         h = ('By default, the plugin looks for the API specification on the target,',
-             ' but sometimes applications do not provide an API specification. ',
-             ' Set this parameter to specify a local path to the API specification.')
+             ' but sometimes applications do not provide an API specification.',
+             ' Set this parameter to specify a local path to the API specification.'
+             ' The file must have .json or .yaml extension.')
         o = opt_factory('custom_spec_location', self._custom_spec_location, d, INPUT_FILE, help=h)
         ol.add(o)
 

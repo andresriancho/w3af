@@ -112,10 +112,9 @@ class OpenAPI(BaseParser):
     def can_parse(http_resp):
         """
         :param http_resp: A http response object that contains a document of
-                          type HTML / PDF / WML / etc.
+                          type JSON or YAML.
 
-        :return: True if the document parameter is a string that contains a PDF
-                 document.
+        :return: True if it seems that the HTTP response contains an Open API spec
         """
         # Only parse JSON and YAML
         if not OpenAPI.content_type_match(http_resp):
