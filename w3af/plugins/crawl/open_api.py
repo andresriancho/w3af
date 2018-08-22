@@ -26,7 +26,7 @@ import w3af.core.data.kb.config as cf
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.options.option_types import QUERY_STRING, HEADER, BOOL, STRING
+from w3af.core.data.options.option_types import QUERY_STRING, HEADER, BOOL, INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.db.disk_set import DiskSet
@@ -375,7 +375,7 @@ class open_api(CrawlPlugin):
         h = ('By default, the plugin looks for the API specification on the target,',
              ' but sometimes applications do not provide an API specification. ',
              ' Set this parameter to specify a local path to the API specification.')
-        o = opt_factory('custom_spec_location', self._custom_spec_location, d, STRING, help=h)
+        o = opt_factory('custom_spec_location', self._custom_spec_location, d, INPUT_FILE, help=h)
         ol.add(o)
 
         return ol
