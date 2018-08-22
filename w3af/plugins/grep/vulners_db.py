@@ -71,7 +71,7 @@ class vulners_db(GrepPlugin):
 
         # Vulners shared objects
         self._vulners_api = None
-        self._vulners_api_key = None
+        self._vulners_api_key = ''
         self.rules_table = None
         self.rules_updated = False
 
@@ -120,13 +120,15 @@ class vulners_db(GrepPlugin):
         vulnerabilities_summary = {}
 
         for match, _, regex_comp, software_list in self._multi_re.query(raw_response):
-            # If RE matched we have
             detected_version = match.group(1)
+
             for software_name in software_list:
                 matched_rule = self.rules_table[software_name]
+
                 vulnerabilities_map = self.check_vulners(software_name=matched_rule['alias'].encode(),
                                                          software_version=detected_version,
                                                          check_type=matched_rule['type'].encode())
+
                 flattened_vulnerability_list = [item for sublist in vulnerabilities_map.values() for item in sublist]
                 for bulletin in flattened_vulnerability_list:
                     if bulletin['id'] not in vulnerabilities_summary:
@@ -194,7 +196,7 @@ class vulners_db(GrepPlugin):
 
     def setup_vulners_api(self):
         try:
-            self._vulners_api = vulners.Vulners(api_key= self._vulners_api_key)
+            self._vulners_api = vulners.Vulners(api_key=self._vulners_api_key or None)
         except Exception as e:
             # If API key is wrong or API key is not a string it will raise exception
             msg = 'Failed to initialize Vulners API: "%s"'
@@ -202,11 +204,20 @@ class vulners_db(GrepPlugin):
             return
 
     def check_vulners(self, software_name, software_version, check_type):
-        vulnerabilities = {}
+        if not software_name:
+            return {}
+
+        if not software_version:
+            return {}
 
         cached_result = self._vulnerability_cache.get((software_name, software_version, check_type))
         if cached_result:
             return cached_result
+
+        args = (software_name, software_version, check_type)
+        om.out.debug('Detected %s version %s (check type: %s)' % args)
+
+        vulnerabilities = {}
 
         # Ask Vulners about vulnerabilities
         #
@@ -270,7 +281,9 @@ class vulners_db(GrepPlugin):
 class VulnerableSoftwareInfoSet(InfoSet):
     ITAG = 'vulnerability_id'
     TEMPLATE = (
-        'Vulners plugin detected outdated software with known vulnerabilities.'
+        'Vulners plugin detected software with known vulnerabilities.'
+        ' The identified vulnerability is "{{ name }}".\n'
+        '\n'
         ' The first ten URLs where vulnerable software was detected are:\n'
         ''
         '{% for url in uris[:10] %}'
