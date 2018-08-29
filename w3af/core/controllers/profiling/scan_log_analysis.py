@@ -997,7 +997,7 @@ def show_progress_delta(scan):
         print('')
 
     if not progress:
-        print('No progress data to calculate deltas')
+        print('No progress data to calculate deltas (requirement: enable xml_file plugin)')
         return
 
     if finished_timestamp is None:
