@@ -83,6 +83,9 @@ class DaemonProcess(Process):
         state['name'] = self.name
         return state
 
+    def is_idle(self):
+        return self.worker.is_idle()
+
     def start(self):
         """
         This is a race condition in DaemonProcess.start() which was found
@@ -339,7 +342,7 @@ class Pool(ThreadPool):
                              args=(self._inqueue, self._outqueue,
                                    self._initializer,
                                    self._initargs, self._maxtasksperchild)
-                            )
+                             )
             self._pool.append(w)
             w.name = w.name.replace('Process', 'PoolWorker')
             w.daemon = True
