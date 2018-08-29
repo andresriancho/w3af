@@ -341,7 +341,7 @@ class CoreStatus(object):
         return self._w3af_core.worker_pool.in_queue.qsize()
 
     def log_calculate_eta(self, eta, input_speed, output_speed, queue_size,
-                          _type, adjustment, average):
+                          _type, adjustment):
         """
         :return: None, a log line is added.
         """
@@ -357,14 +357,13 @@ class CoreStatus(object):
                 queue_size,
                 adjustment.known,
                 adjustment.unknown,
-                average,
+                adjustment.average,
                 run_time)
 
         om.out.debug(msg % args)
 
     def calculate_eta(self, input_speed, output_speed, queue_size, _type,
-                      adjustment=None,
-                      average=True):
+                      adjustment=None):
         """
         Do our best effort to calculate the ETA for a specific queue
         for which we have the input speed, output speed and current
@@ -380,9 +379,6 @@ class CoreStatus(object):
                            ratio for the case where input speed > output speed
                            and another for the case where output speed > input
                            speed.
-        :param average: True if the result of this calculation should be averaged
-                        with the previous result. This has the effect of removing
-                        spikes from the ETA results
         :return: ETA in epoch format, None if one of the parameters is None.
         """
         if adjustment is None:
@@ -393,7 +389,7 @@ class CoreStatus(object):
             eta = 0.0
 
             self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
-                                   _type, adjustment, average)
+                                   _type, adjustment)
 
             return eta
 
@@ -409,7 +405,7 @@ class CoreStatus(object):
             eta = 5 * 60.0
 
             self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
-                                   _type, adjustment, average)
+                                   _type, adjustment)
 
             return eta
 
@@ -461,12 +457,12 @@ class CoreStatus(object):
         # Smooth with average to avoid ugly spikes in the ETAs
         eta = eta_minutes * 60
 
-        if average:
+        if adjustment.average:
             eta = (eta + self._eta_smooth[_type]) / 2.0
             self._eta_smooth[_type] = eta
 
         self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
-                               _type, adjustment, average)
+                               _type, adjustment)
 
         return eta
 
@@ -609,7 +605,7 @@ class CoreStatus(object):
         if run_time < 60:
             return Adjustment(known=2, unknown=5)
 
-        return Adjustment(known=0.25, unknown=1.5)
+        return Adjustment(known=0.25, unknown=0.75)
 
     def get_audit_adjustment_ratio(self):
         """
@@ -641,7 +637,7 @@ class CoreStatus(object):
         if run_time < 60:
             return Adjustment(known=1, unknown=1.5)
 
-        return Adjustment(known=1.75, unknown=1.25)
+        return Adjustment(known=2.25, unknown=1.75)
 
     def get_grep_adjustment_ratio(self):
         """
@@ -662,7 +658,7 @@ class CoreStatus(object):
         # this to zero is a really good idea
         #
         if self.has_finished_crawl() and self.has_finished_audit():
-            return Adjustment(known=0.5, unknown=0)
+            return Adjustment(known=0.5, unknown=0, average=False)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -687,7 +683,7 @@ class CoreStatus(object):
         #   * Audit is running / Crawl is not
         #   * Crawl is running / Audit is running
         #
-        return Adjustment(known=1.0, unknown=2.5)
+        return Adjustment(known=0.5, unknown=0.75)
 
     def log_eta(self, msg):
         om.out.debug('[get_eta] %s' % msg)
@@ -745,7 +741,7 @@ class CoreStatus(object):
                      ' Using all ETAs to calculate overall ETA.')
 
         average_1 = (crawl_eta + audit_eta) / 2.0
-        average_2 = after_crawl_audit / 2.0
+        average_2 = after_crawl_audit / 7.5
         return average_1 + average_2
 
     def get_sent_request_count(self):
@@ -807,7 +803,7 @@ class CoreStatus(object):
 
 
 class Adjustment(object):
-    def __init__(self, known=1.0, unknown=1.0):
+    def __init__(self, known=1.0, unknown=1.0, average=True):
         """
         Used to adjust the ETA calculations for two cases:
 
@@ -828,6 +824,11 @@ class Adjustment(object):
             * Higher values of `known` INCREASE the ETA
             * Higher values of `known` REDUCE estimated % (as shown in the
               scan log analysis output)
+
+        :param average: True if the result of this calculation should be averaged
+                        with the previous result. This has the effect of removing
+                        spikes from the ETA results
         """
         self.known = known
         self.unknown = unknown
+        self.average = average
