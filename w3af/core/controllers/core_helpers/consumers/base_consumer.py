@@ -200,6 +200,16 @@ class BaseConsumer(Process):
                 finally:
                     self.in_queue.task_done()
 
+    def get_running_task_count(self):
+        """
+        :return: The number of tasks which are currently running in the
+                 threadpool. This is commonly used for measuring ETA.
+        """
+        if self._threadpool is None:
+            return 0
+
+        return self._threadpool.get_running_task_count()
+
     def _teardown(self):
         raise NotImplementedError
 

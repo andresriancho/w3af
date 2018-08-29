@@ -217,7 +217,12 @@ class CoreStatus(object):
 
     def get_crawl_qsize(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
-        return 0 if dc is None else dc.in_queue.qsize()
+        if dc is None:
+            return 0
+
+        running_tasks = dc.get_running_task_count()
+        queued_tasks = dc.in_queue.qsize()
+        return running_tasks + queued_tasks
 
     def get_crawl_output_qsize(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
@@ -226,10 +231,6 @@ class CoreStatus(object):
     def get_crawl_processed_tasks(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
         return 0 if dc is None else dc.out_queue.get_processed_tasks()
-
-    def get_crawl_worker_pool_queue_size(self):
-        dc = self._w3af_core.strategy.get_discovery_consumer()
-        return 0 if dc is None else dc.get_pool().get_inqueue().qsize()
 
     def has_finished_crawl(self):
         dc = self._w3af_core.strategy.get_discovery_consumer()
@@ -259,7 +260,12 @@ class CoreStatus(object):
 
     def get_grep_qsize(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
-        return None if gc is None else gc.in_queue.qsize()
+        if gc is None:
+            return 0
+
+        running_tasks = gc.get_running_task_count()
+        queued_tasks = gc.in_queue.qsize()
+        return running_tasks + queued_tasks
 
     def has_finished_grep(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
@@ -278,10 +284,6 @@ class CoreStatus(object):
     def get_grep_output_speed(self):
         gc = self._w3af_core.strategy.get_grep_consumer()
         return 0 if gc is None else gc.in_queue.get_output_rpm()
-
-    def get_grep_qsize(self):
-        gc = self._w3af_core.strategy.get_grep_consumer()
-        return 0 if gc is None else gc.in_queue.qsize()
 
     def get_grep_eta(self):
         adjustment = self.get_grep_adjustment_ratio()
@@ -302,15 +304,16 @@ class CoreStatus(object):
 
     def get_audit_qsize(self):
         ac = self._w3af_core.strategy.get_audit_consumer()
-        return 0 if ac is None else ac.in_queue.qsize()
+        if ac is None:
+            return 0
+
+        running_tasks = ac.get_running_task_count()
+        queued_tasks = ac.in_queue.qsize()
+        return running_tasks + queued_tasks
 
     def get_audit_processed_tasks(self):
         ac = self._w3af_core.strategy.get_audit_consumer()
         return 0 if ac is None else ac.in_queue.get_processed_tasks()
-
-    def get_audit_worker_pool_queue_size(self):
-        ac = self._w3af_core.strategy.get_audit_consumer()
-        return 0 if ac is None else ac.get_pool().get_inqueue().qsize()
 
     def get_audit_current_fr(self):
         return self.get_current_fuzzable_request('audit')
@@ -346,7 +349,7 @@ class CoreStatus(object):
 
         msg = ('Calculated %s ETA: %.2f seconds. (input speed:%.2f,'
                ' output speed:%.2f, queue size: %i, adjustment known: %.2f,'
-               ' adjustment unknown: %.2f, average: %s, scan: %.2f)')
+               ' adjustment unknown: %.2f, average: %s, run time: %.2f)')
         args = (_type,
                 eta,
                 input_speed,

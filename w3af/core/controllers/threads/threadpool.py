@@ -314,6 +314,17 @@ class Pool(ThreadPool):
     def get_inqueue(self):
         return self._inqueue
 
+    def get_running_task_count(self):
+        # Cheating here a little bit because the task queued in _inqueue will
+        # eventually be run by the pool, but is not yet in the pool
+        running_tasks = self._inqueue.qsize()
+
+        for process in self._pool[:]:
+            if not process.is_idle():
+                running_tasks += 1
+
+        return running_tasks
+
     def _repopulate_pool(self):
         """
         Bring the number of pool processes up to the specified number,
