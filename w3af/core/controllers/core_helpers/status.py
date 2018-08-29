@@ -786,16 +786,16 @@ class CoreStatus(object):
 
         status_str = '%(status)s\n'
 
-        status_str += ('Crawl phase: In (%(cin)s URLs/min)'
-                       ' Out (%(cout)s URLs/min) Pending (%(clen)s URLs)'
+        status_str += ('Crawl phase: In (%(cin).2f URLs/min)'
+                       ' Out (%(cout).2f URLs/min) Pending (%(clen)i URLs)'
                        ' ETA (%(ceta)s)\n')
 
-        status_str += ('Audit phase: In (%(ain)s URLs/min)'
-                       ' Out (%(aout)s URLs/min) Pending (%(alen)s URLs)'
+        status_str += ('Audit phase: In (%(ain).2f URLs/min)'
+                       ' Out (%(aout).2f URLs/min) Pending (%(alen)i URLs)'
                        ' ETA (%(aeta)s)\n')
 
-        status_str += ('Grep phase: In (%(gin)s URLs/min)'
-                       ' Out (%(gout)s URLs/min) Pending (%(glen)s URLs)'
+        status_str += ('Grep phase: In (%(gin).2f URLs/min)'
+                       ' Out (%(gout).2f URLs/min) Pending (%(glen)i URLs)'
                        ' ETA (%(geta)s)\n')
 
         status_str += 'Requests per minute: %(rpm)s\n\n'
