@@ -276,8 +276,14 @@ class ExceptionData(object):
         self.traceback_str = cleanup_bug_report(self.traceback_str)
 
         self.phase, self.plugin = current_status.latest_running_plugin()
-        self.status = current_status
         self.enabled_plugins = enabled_plugins
+
+        #
+        # Do not save the CoreStatus instance here, it will break serialization
+        # since the CoreStatus instances have a w3afCore instance, which points
+        # to a Pool instance which is NOT serializable.
+        #
+        # self.status = current_status
 
         self.fuzzable_request = current_status.get_current_fuzzable_request(self.phase)
         self.fuzzable_request = cleanup_bug_report(str(self.fuzzable_request))
