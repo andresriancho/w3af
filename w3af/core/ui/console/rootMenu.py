@@ -162,12 +162,18 @@ class rootMenu(menu):
         """
         When the user hits enter, show the progress
         """
-        # if run with detached terminal mode
+        #
+        # if run with detached terminal mode (like cron)
+        # https://github.com/andresriancho/w3af/pull/17235
+        #
         if not os.isatty(sys.stdin.fileno()):
             while self._w3af.status.is_running() or self._w3af.status.is_paused():
                 time.sleep(0.1)
             return
 
+        #
+        # if run in a real terminal
+        #
         term.set_raw_input_mode(True)
 
         handlers = {'P': self._pause_scan,
