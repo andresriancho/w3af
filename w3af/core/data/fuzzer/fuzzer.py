@@ -104,6 +104,7 @@ def create_mutants(freq, mutant_str_list, append=False, fuzzable_param_list=[],
 
 
 CONF_KEYS = [('fuzzable_headers', []),
+             ('fuzzable_openapi_headers', []),
              ('fuzz_cookies', False),
              ('fuzz_url_filenames', False),
              ('fuzzed_files_extension', 'gif'),

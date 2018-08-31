@@ -33,6 +33,7 @@ from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.open_api.requests import RequestFactory
 
+import w3af.core.data.kb.config as cf
 
 class OpenAPI(BaseParser):
     """
@@ -147,6 +148,8 @@ class OpenAPI(BaseParser):
                 continue
 
             self.api_calls.append(fuzzable_request)
+
+        cf.cf['fuzzable_openapi_headers'] = specification_handler.get_parameter_headers()
 
     def _should_audit(self, fuzzable_request):
         """
