@@ -88,6 +88,11 @@ class SpecificationHandler(object):
                     yield data
 
     def get_parameter_headers(self):
+        """
+        Looks for all parameters which are passed to endpoints via headers.
+
+        :return: A list of unique header names.
+        """
         spec_dict = self._load_spec_dict()
 
         if not spec_dict or not spec_dict['paths']:

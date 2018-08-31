@@ -135,7 +135,10 @@ class OpenAPI(BaseParser):
 
     def parse(self):
         """
-        Extract all the API endpoints using the bravado Open API parser
+        Extract all the API endpoints using the bravado Open API parser.
+
+        The method also looks for all parameters which are passed to endpoints via headers,
+        and stores them to `fuzzable_openapi_headers` field in the global config.
         """
         specification_handler = SpecificationHandler(self.get_http_response(),
                                                      self.no_validation)
