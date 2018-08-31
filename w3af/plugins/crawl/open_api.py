@@ -75,6 +75,7 @@ class open_api(CrawlPlugin):
         self._header_auth = ''
         self._no_spec_validation = False
         self._custom_spec_location = ''
+        self._discover_fuzzable_headers = True
 
     def crawl(self, fuzzable_request):
         """
@@ -165,7 +166,7 @@ class open_api(CrawlPlugin):
         :param http_response: An HTTP response
         :return: None
         """
-        parser = OpenAPI(http_response, self._no_spec_validation)
+        parser = OpenAPI(http_response, self._no_spec_validation, self._discover_fuzzable_headers)
         parser.parse()
 
         self._report_to_kb_if_needed(http_response, parser)
@@ -385,6 +386,14 @@ class open_api(CrawlPlugin):
         o = opt_factory('custom_spec_location', self._custom_spec_location, d, INPUT_FILE, help=h)
         ol.add(o)
 
+        d = 'Automatic HTTP header discovery for further testing'
+        h = ('By default, the plugin looks for parameters which are passed to endpoints via HTTP headers,'
+             ' and enables them for further testing.'
+             ' Set this options to False if you would like to disable this feature.'
+             ' You can also set `misc-settings.fuzzable_headers` option to test only specific headers.')
+        o = opt_factory('discover_fuzzable_headers', self._discover_fuzzable_headers, d, BOOL, help=h)
+        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -399,6 +408,7 @@ class open_api(CrawlPlugin):
         self._header_auth = options_list['header_auth'].get_value()
         self._no_spec_validation = options_list['no_spec_validation'].get_value()
         self._custom_spec_location = options_list['custom_spec_location'].get_value()
+        self._discover_fuzzable_headers = options_list['discover_fuzzable_headers'].get_value()
 
     def get_long_desc(self):
         """
@@ -427,4 +437,8 @@ class open_api(CrawlPlugin):
 
         By default, the plugin validates Open API specification.
         The validation may be disabled by 'no_spec_validation' configuration parameter.
+
+        During parsing an Open API specification, the plugin looks for parameters
+        which are passed to endpoints via HTTP headers, and enables them for further testing.
+        This behavior may be disabled by setting 'discover_fuzzable_headers' configuration parameter to False.
         """

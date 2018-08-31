@@ -60,10 +60,11 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response, no_validation=False):
+    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True):
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
         self.no_validation = no_validation
+        self.discover_fuzzable_headers = discover_fuzzable_headers
 
     @staticmethod
     def content_type_match(http_resp):
@@ -152,7 +153,8 @@ class OpenAPI(BaseParser):
 
             self.api_calls.append(fuzzable_request)
 
-        cf.cf['fuzzable_openapi_headers'] = specification_handler.get_parameter_headers()
+        if self.discover_fuzzable_headers:
+            cf.cf['fuzzable_openapi_headers'] = specification_handler.get_parameter_headers()
 
     def _should_audit(self, fuzzable_request):
         """
