@@ -74,6 +74,11 @@ class StringParamHeader(object):
         return file('%s/data/string_param_header.json' % CURRENT_PATH).read()
 
 
+class MultiplePathsAndHeaders(object):
+    def get_specification(self):
+        return file('%s/data/multiple_paths_and_headers.json' % CURRENT_PATH).read()
+
+
 class IntParamPath(object):
     def get_specification(self):
         spec = APISpec(

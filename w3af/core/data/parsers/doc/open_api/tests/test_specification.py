@@ -41,7 +41,8 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               DereferencedPetStore,
                                                                               NestedModel,
                                                                               NestedLoopModel,
-                                                                              ArrayModelItems)
+                                                                              ArrayModelItems,
+                                                                              MultiplePathsAndHeaders)
 
 
 class TestSpecification(unittest.TestCase):
@@ -198,6 +199,21 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['in'], 'header')
         self.assertEqual(param.param_spec['type'], 'string')
         self.assertEqual(param.fill, '56')
+
+        headers = handler.get_parameter_headers()
+        self.assertEqual(len(headers), 1)
+        self.assertIn('X-Foo-Header', headers)
+
+    def test_header_discovery(self):
+        specification_as_string = MultiplePathsAndHeaders().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        headers = handler.get_parameter_headers()
+        self.assertEqual(len(headers), 3)
+        self.assertIn('X-Foo-Header', headers)
+        self.assertIn('X-Bar-Header', headers)
+        self.assertIn('X-Awesome-Header', headers)
 
     def test_array_string_items_param_in_qs(self):
         specification_as_string = ArrayStringItemsQueryString().get_specification()
