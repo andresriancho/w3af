@@ -33,7 +33,6 @@ from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.open_api.requests import RequestFactory
 
-import w3af.core.data.kb.config as cf
 
 class OpenAPI(BaseParser):
     """
@@ -139,10 +138,13 @@ class OpenAPI(BaseParser):
         Extract all the API endpoints using the bravado Open API parser.
 
         The method also looks for all parameters which are passed to endpoints via headers,
-        and stores them to `fuzzable_openapi_headers` field in the global config.
+        and stores them in to the fuzzable request
         """
         specification_handler = SpecificationHandler(self.get_http_response(),
                                                      self.no_validation)
+
+        if self.discover_fuzzable_headers:
+            fuzzable_openapi_headers = specification_handler.get_parameter_headers()
 
         for data in specification_handler.get_api_information():
             request_factory = RequestFactory(*data)
@@ -151,10 +153,10 @@ class OpenAPI(BaseParser):
             if not self._should_audit(fuzzable_request):
                 continue
 
-            self.api_calls.append(fuzzable_request)
+            if self.discover_fuzzable_headers:
+                fuzzable_request.set_force_fuzzing_headers(fuzzable_openapi_headers)
 
-        if self.discover_fuzzable_headers:
-            cf.cf['fuzzable_openapi_headers'] = specification_handler.get_parameter_headers()
+            self.api_calls.append(fuzzable_request)
 
     def _should_audit(self, fuzzable_request):
         """

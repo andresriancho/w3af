@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import string
 import base64
 import hashlib
+import collections
 
 from itertools import chain
 from urllib import unquote, quote, quote_plus
@@ -81,7 +82,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                  '_headers',
                  '_uri',
                  '_url',
-                 '_sent_info_comp')
+                 '_sent_info_comp',
+                 '_force_fuzzing_headers')
 
     def __init__(self, uri, method='GET', headers=None, cookie=None,
                  post_data=None):
@@ -112,6 +114,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Set the internal variables
         self._sent_info_comp = None
+
+        # Set the headers which we want to fuzz explicitly (empty by default)
+        self._force_fuzzing_headers = set()
 
     def __getstate__(self):
         state = {k: getattr(self, k) for k in self.__slots__}
@@ -428,6 +433,29 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             headers[k] = v
 
         self._headers = headers
+
+    def set_force_fuzzing_headers(self, headers):
+        """
+        TODO
+        :param headers:
+        :return:
+        """
+        if headers is None:
+            raise TypeError('headers should not be null')
+
+        if not isinstance(headers, collections.Iterable):
+            raise TypeError(TYPE_ERROR % ('_force_fuzzing_headers', 'iterable'))
+
+        self._force_fuzzing_headers = set()
+        for header in headers:
+            self._force_fuzzing_headers.add(header)
+
+    def get_force_fuzzing_headers(self):
+        """
+        TODO
+        :return:
+        """
+        return list(self._force_fuzzing_headers)
 
     def set_referer(self, referer):
         self._headers['Referer'] = str(referer)
