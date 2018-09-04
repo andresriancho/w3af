@@ -42,7 +42,9 @@ def clean_data_container(data_container):
 
     for key, value, path, setter in data_container.iter_setters():
 
-        if value.isdigit():
+        if isinstance(value, (int, float)):
+            _type = 'number'
+        elif value.isdigit():
             _type = 'number'
         else:
             _type = 'string'
