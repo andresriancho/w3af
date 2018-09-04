@@ -436,9 +436,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
     def set_force_fuzzing_headers(self, headers):
         """
-        TODO
-        :param headers:
-        :return:
+        Sets a list of headers which should be fuzzed.
+        :param headers: A list of header names.
         """
         if headers is None:
             raise TypeError('headers should not be null')
@@ -446,14 +445,12 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         if not isinstance(headers, collections.Iterable):
             raise TypeError(TYPE_ERROR % ('_force_fuzzing_headers', 'iterable'))
 
-        self._force_fuzzing_headers = set()
-        for header in headers:
-            self._force_fuzzing_headers.add(header)
+        self._force_fuzzing_headers = set(headers)
 
     def get_force_fuzzing_headers(self):
         """
-        TODO
-        :return:
+        Returns a list of headers which should be fuzzed.
+        :return: A list of header names.
         """
         return list(self._force_fuzzing_headers)
 
