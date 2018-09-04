@@ -29,11 +29,6 @@ import traceback
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af import ROOT_PATH
 
-# https://github.com/andresriancho/w3af/issues/10705
-warnings.filterwarnings('ignore',
-                        message='Not importing directory .*',
-                        module='w3af.*')
-
 
 def factory(module_name, *args):
     """
@@ -59,6 +54,11 @@ def factory(module_name, *args):
         raise BaseFrameworkException(msg % module_name)
 
     try:
+        # https://github.com/andresriancho/w3af/issues/10705
+        warnings.filterwarnings('ignore',
+                                message='Not importing directory .*',
+                                module='w3af.*')
+
         __import__(module_name)
     except SyntaxError:
         # Useful for development
