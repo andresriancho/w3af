@@ -10,7 +10,6 @@ import base64
 
 # Check if I have all needed dependencies
 from w3af.core.controllers.dependency_check.dependency_check import dependency_check
-dependency_check()
 
 from w3af.core.ui.console.console_ui import ConsoleUI
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
@@ -161,6 +160,9 @@ def main():
     
     if not skip_disclaimer and not console.accept_disclaimer():
         return -4
+
+    if not console.skip_dependencies_check():
+        dependency_check()
 
     return console.sh()
 
