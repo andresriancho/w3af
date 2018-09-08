@@ -185,9 +185,9 @@ def create_detailed_pickling_error(exception, instance):
 # Class representing a process pool
 #
 class Pool(object):
-    '''
+    """
     Class which supports an async version of the `apply()` builtin
-    '''
+    """
     Process = Process
 
     def __init__(self, processes=None, initializer=None, initargs=(),
@@ -312,23 +312,23 @@ class Pool(object):
         self._quick_get = self._outqueue._reader.recv
 
     def apply(self, func, args=(), kwds={}):
-        '''
+        """
         Equivalent of `apply()` builtin
-        '''
+        """
         assert self._state == RUN
         return self.apply_async(func, args, kwds).get()
 
     def map(self, func, iterable, chunksize=None):
-        '''
+        """
         Equivalent of `map()` builtin
-        '''
+        """
         assert self._state == RUN
         return self.map_async(func, iterable, chunksize).get()
 
     def imap(self, func, iterable, chunksize=1):
-        '''
+        """
         Equivalent of `itertools.imap()` -- can be MUCH slower than `Pool.map()`
-        '''
+        """
         assert self._state == RUN
         if chunksize == 1:
             result = IMapIterator(self._cache)
@@ -344,9 +344,9 @@ class Pool(object):
             return (item for chunk in result for item in chunk)
 
     def imap_unordered(self, func, iterable, chunksize=1):
-        '''
+        """
         Like `imap()` method but ordering of results is arbitrary
-        '''
+        """
         assert self._state == RUN
         if chunksize == 1:
             result = IMapUnorderedIterator(self._cache)
@@ -362,18 +362,18 @@ class Pool(object):
             return (item for chunk in result for item in chunk)
 
     def apply_async(self, func, args=(), kwds={}, callback=None):
-        '''
+        """
         Asynchronous equivalent of `apply()` builtin
-        '''
+        """
         assert self._state == RUN
         result = ApplyResult(self._cache, callback)
         self._taskqueue.put(([(result._job, None, func, args, kwds)], None))
         return result
 
     def map_async(self, func, iterable, chunksize=None, callback=None):
-        '''
+        """
         Asynchronous equivalent of `map()` builtin
-        '''
+        """
         assert self._state == RUN
         if not hasattr(iterable, '__len__'):
             iterable = list(iterable)
