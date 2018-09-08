@@ -20,7 +20,7 @@
     <xs:simpleType>
       <xs:restriction base="xs:decimal">
         <!-- Current version defined in xml_file.py XML_OUTPUT_VERSION -->
-        <xs:enumeration value="2.7"/>
+        <xs:enumeration value="2.8"/>
       </xs:restriction>
     </xs:simpleType>
   </xs:attribute>
@@ -127,6 +127,7 @@
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="node"/>
       </xs:sequence>
       <xs:attribute name="url" use="required" type="xs:anyURI"/>
+      <xs:attribute name="exists" use="required" type="xs:anyURI"/>
     </xs:complexType>
   </xs:element>
 

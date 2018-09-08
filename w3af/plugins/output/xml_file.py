@@ -91,7 +91,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.7'
+    XML_OUTPUT_VERSION = '2.8'
 
     def __init__(self):
         OutputPlugin.__init__(self)
