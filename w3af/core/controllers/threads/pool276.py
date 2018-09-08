@@ -100,6 +100,10 @@ class DetailedMaybeEncodingError(MaybeEncodingError):
 
 
 def worker(inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
+    """
+    WARNING: w3af doesn't use this worker anymore!
+             See the worker class in threadpool.py
+    """
     assert maxtasks is None or (type(maxtasks) == int and maxtasks > 0)
     put = outqueue.put
     get = inqueue.get
@@ -181,11 +185,10 @@ def create_detailed_pickling_error(exception, instance):
     return wrapped
 
 
-#
-# Class representing a process pool
-#
 class Pool(object):
     """
+    Class representing a process pool
+
     Class which supports an async version of the `apply()` builtin
     """
     Process = Process
@@ -601,11 +604,11 @@ class Pool(object):
                     debug('cleaning up worker %d' % p.pid)
                     p.join()
 
-#
-# Class whose instances are returned by `Pool.apply_async()`
-#
 
 class ApplyResult(object):
+    #
+    # Class whose instances are returned by `Pool.apply_async()`
+    #
 
     def __init__(self, cache, callback):
         self._cond = threading.Condition(threading.Lock())
@@ -651,13 +654,15 @@ class ApplyResult(object):
             self._cond.release()
         del self._cache[self._job]
 
-AsyncResult = ApplyResult       # create alias -- see #17805
 
-#
-# Class whose instances are returned by `Pool.map_async()`
-#
+# create alias -- see #17805
+AsyncResult = ApplyResult
+
 
 class MapResult(ApplyResult):
+    #
+    # Class whose instances are returned by `Pool.map_async()`
+    #
 
     def __init__(self, cache, chunksize, length, callback):
         ApplyResult.__init__(self, cache, callback)
@@ -698,11 +703,11 @@ class MapResult(ApplyResult):
             finally:
                 self._cond.release()
 
-#
-# Class whose instances are returned by `Pool.imap()`
-#
 
 class IMapIterator(object):
+    #
+    # Class whose instances are returned by `Pool.imap()`
+    #
 
     def __init__(self, cache):
         self._cond = threading.Condition(threading.Lock())
@@ -771,11 +776,11 @@ class IMapIterator(object):
         finally:
             self._cond.release()
 
-#
-# Class whose instances are returned by `Pool.imap_unordered()`
-#
 
 class IMapUnorderedIterator(IMapIterator):
+    #
+    # Class whose instances are returned by `Pool.imap_unordered()`
+    #
 
     def _set(self, i, obj):
         self._cond.acquire()
@@ -788,9 +793,6 @@ class IMapUnorderedIterator(IMapIterator):
         finally:
             self._cond.release()
 
-#
-#
-#
 
 class ThreadPool(Pool):
 
