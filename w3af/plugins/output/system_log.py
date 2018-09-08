@@ -73,6 +73,10 @@ class system_log(OutputPlugin):
         message = self._create_message(message)
         syslog.syslog(syslog.LOG_ERR, message)
 
+    def log_crash(self, message):
+        message = self._create_message(message)
+        syslog.syslog(syslog.LOG_CRIT, message)
+
     @catch_ioerror
     def console(self, message, new_line=True, severity=None):
         message = self._create_message(message)

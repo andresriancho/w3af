@@ -132,6 +132,9 @@ class ExceptionHandler(object):
         args = (edata.get_exception_class(), filename)
         om.out.debug('Logged "%s" to "%s"' % args)
 
+        # Also send to the output plugins so they can store it the right way
+        om.out.log_crash(edata.get_details())
+
     def write_crash_file(self, edata):
         """
         Writes the exception data to a random file in /tmp/ right after the
