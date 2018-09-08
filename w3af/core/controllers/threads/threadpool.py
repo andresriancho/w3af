@@ -19,9 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import threading
-import Queue
+import sys
 import time
+import Queue
+import threading
+import traceback
 
 from functools import partial
 
@@ -108,6 +110,82 @@ class DaemonProcess(Process):
 
         self._start_called = True
         threading.Thread.start(self)
+
+
+def add_traceback_string(_exception):
+    """
+    Add the traceback string as a new attribute to the exception raised
+    by the target function defined by the developer.
+
+    Adding this original traceback allows us to better understand the
+    root cause for exceptions that happen in functions which are run inside
+    the Pool (most).
+
+    For example, this is an exception stored in a /tmp/w3af-crash file before
+    this patch:
+
+        A "TypeError" exception was found while running crawl.phpinfo on "Method: GET | http://domain/".
+        The exception was: "unsupported operand type(s) for -: 'float' and 'NoneType'" at pool276.py:get():643.
+        The full traceback is:
+
+          File "/home/user/tools/w3af/w3af/core/controllers/core_helpers/consumers/crawl_infrastructure.py", line 533, in _discover_worker
+            result = plugin.discover_wrapper(fuzzable_request)
+          File "/home/user/tools/w3af/w3af/core/controllers/plugins/crawl_plugin.py", line 53, in crawl_wrapper
+            return self.crawl(fuzzable_request_copy)
+          File "/home/user/tools/w3af/w3af/plugins/crawl/phpinfo.py", line 148, in crawl
+            self.worker_pool.map_multi_args(self._check_and_analyze, args)
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/threadpool.py", line 430, in map_multi_args
+            return self.map_async(one_to_many(func), iterable, chunksize).get()
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/pool276.py", line 643, in get
+            raise self._value
+
+    And after adding the original traceback and using it in exception_handler.py:
+
+        A "TypeError" exception was found while running crawl.phpinfo on "Method: GET | http://domain/".
+        The exception was: "unsupported operand type(s) for -: 'float' and 'NoneType'" at pool276.py:get():643.
+        The full traceback is:
+
+        Traceback (most recent call last):
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/threadpool.py", line 238, in __call__
+            result = (True, func(*args, **kwds))
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/pool276.py", line 67, in mapstar
+            return map(*args)
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/threadpool.py", line 55, in __call__
+            return self.func_orig(*args)
+          File "/home/user/tools/w3af/w3af/plugins/crawl/phpinfo.py", line 180, in _check_and_analyze
+            1.0 - None
+        TypeError: unsupported operand type(s) for -: 'float' and 'NoneType'
+
+    The exact line where the exception is raised is shown!
+
+    Adding new attributes to instances is not something I like, but in
+    this case I had no choice...
+
+    Creating a new Exception type and wrapping all exceptions generated
+    by the pool with that one wouldn't work: we lose the exception type
+    and can't do:
+
+        try:
+            ...
+        except TypeError:
+            ...
+
+    The code for the whole framework would need to be changed to something
+    like:
+
+        try:
+            ...
+        except PoolException, pe:
+            if isinstance(pe.original_exception, TypeError):
+                ...
+
+    :param _exception: The exception instance where to add the new attribute
+    :return: None
+    """
+    except_type, except_class, tb = sys.exc_info()
+
+    tb = traceback.format_exception(type(_exception), _exception, tb)
+    _exception.original_traceback_string = ''.join(tb)
 
 
 class Worker(object):
@@ -198,6 +276,7 @@ class Worker(object):
             try:
                 result = (True, func(*args, **kwds))
             except Exception, e:
+                add_traceback_string(e)
                 result = (False, e)
 
             # Tracking

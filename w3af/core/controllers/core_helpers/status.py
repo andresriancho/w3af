@@ -66,6 +66,9 @@ class CoreStatus(object):
                             GREP: 0,
                             CRAWL: 0}
 
+    def set_w3af_core(self, w3af_core):
+        self._w3af_core = w3af_core
+
     def pause(self, pause_yes_no):
         self._paused = pause_yes_no
         self._is_running = not pause_yes_no
