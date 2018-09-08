@@ -128,8 +128,9 @@ class ExceptionHandler(object):
                 om.out.error(msg)
 
         filename = self.write_crash_file(edata)
-        om.out.debug('Logged "%s" to "%s"' % (edata.get_exception_class(),
-                                              filename))
+
+        args = (edata.get_exception_class(), filename)
+        om.out.debug('Logged "%s" to "%s"' % args)
 
     def write_crash_file(self, edata):
         """
@@ -200,6 +201,7 @@ class ExceptionHandler(object):
                                'We recommend you report these vulnerabilities'
                                ' to the developers in order to help increase'
                                ' the project\'s stability.\n'
+                               '\n'
                                'To report these bugs just run the "report"'
                                ' command.')
 
