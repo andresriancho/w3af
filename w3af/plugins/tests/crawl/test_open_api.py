@@ -43,7 +43,8 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/swagger.json',
-                                   IntParamQueryString().get_specification())]
+                                   IntParamQueryString().get_specification(),
+                                   content_type='application/json')]
 
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
@@ -118,7 +119,8 @@ class TestOpenAPINestedModelSpec(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json')]
 
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
@@ -178,7 +180,8 @@ class TestOpenAPIRaisesWarningIfNoAuth(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json')]
 
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']
@@ -208,7 +211,8 @@ class TestOpenAPIFindsSpecInOtherDirectory(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/api/v2/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json')]
 
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']
@@ -235,7 +239,8 @@ class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/a/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json')]
 
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']

@@ -29,9 +29,8 @@ import traceback
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
-from os.path import basename
-
 from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.controllers.misc.traceback_utils import get_exception_location
 from w3af.core.controllers.core_helpers.status import CoreStatus
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from w3af.core.controllers.exceptions import (ScanMustStopException,
@@ -281,9 +280,7 @@ class ExceptionData(object):
         self.exception_class = e.__class__.__name__
 
         # Extract the filename and line number where the exception was raised
-        filepath = traceback.extract_tb(tb)[-1][0]
-        self.filename = basename(filepath)
-        self.lineno, self.function_name = self._get_last_call_info(tb)
+        self.filename, self.function_name, self.lineno = get_exception_location(tb)
 
         # See add_traceback_string()
         if hasattr(e, 'original_traceback_string'):
@@ -310,13 +307,6 @@ class ExceptionData(object):
 
     def get_traceback_str(self):
         return self.traceback_str
-
-    def _get_last_call_info(self, tb):
-        current = tb
-        while getattr(current, 'tb_next', None) is not None:
-            current = current.tb_next
-
-        return current.tb_lineno, current.tb_frame.f_code.co_name
 
     def get_summary(self):
         res = ('A "%s" exception was found while running %s.%s on "%s".'

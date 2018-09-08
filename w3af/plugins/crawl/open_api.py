@@ -31,6 +31,7 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.kb.info import Info
+from w3af.core.controllers.misc.traceback_utils import get_traceback, get_exception_location
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.dc.headers import Headers
@@ -165,8 +166,23 @@ class open_api(CrawlPlugin):
         :param http_response: An HTTP response
         :return: None
         """
+        if not OpenAPI.can_parse(http_response):
+            return
+
         parser = OpenAPI(http_response, self._no_spec_validation)
-        parser.parse()
+
+        try:
+            parser.parse()
+        except Exception, e:
+            tb = get_traceback()
+            filename, _function, line = get_exception_location(tb)
+
+            msg = ('Found an exception while parsing the OpenAPI'
+                   ' specification at %s. The exception message was: "%s"'
+                   ' and was generated at %s:%s:%s')
+            args = (spec_url, e, filename, _function, line)
+            om.out.debug(msg % args)
+            return
 
         self._report_to_kb_if_needed(http_response, parser)
         self._send_spec_to_core(spec_url)
