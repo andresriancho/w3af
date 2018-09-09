@@ -95,6 +95,8 @@ class ParameterHandler(object):
         :return: None, just modifies the self.operation and self.spec
         """
         self._fix_string_format()
+        self._fix_string_with_invalid_format()
+        self._fix_bad_default_for_number_type()
 
     def _fix_string_format(self):
         """
@@ -122,6 +124,78 @@ class ParameterHandler(object):
 
             if param_format == 'string' and param_type == 'string':
                 del parameter.param_spec['format']
+
+    def _fix_string_with_invalid_format(self):
+        """
+        The specification [0] only allows some values for format when string
+        type is used. Developers sometimes make this mistake:
+
+            {
+                "default": "",
+                "type": "string",           <--------- THIS
+                "name": "fields[Users]",
+                "in": "query",
+                "format": "int64",          <--------- THIS
+                "required": false,
+                "description": "Fields to be selected (csv)"
+            }
+
+        So this method will iterate through all the parameters in this
+        operation and remove the invalid format.
+
+        [0] https://swagger.io/specification/#dataTypes
+
+        :return: None
+        """
+        invalid_formats = ['int32', 'int64', 'float', 'double', '']
+
+        for parameter_name, parameter in self.operation.params.iteritems():
+
+            param_format = parameter.param_spec.get('format', None)
+            param_type = parameter.param_spec.get('type', None)
+
+            if param_format in invalid_formats and param_type == 'string':
+                del parameter.param_spec['format']
+
+    def _fix_bad_default_for_number_type(self):
+        """
+        Sometimes developers set the default value to something that is not
+        valid for the type / format they specify.
+
+            {
+                "default": "",              <--------- THIS
+                "type": "string",
+                "name": "fields[Users]",
+                "in": "query",
+                "format": "int64",          <--------- THIS
+                "required": false,
+                "description": "Fields to be selected (csv)"
+            }
+
+        >>> long('')
+        ValueError: invalid literal for long() with base 10: ''
+
+        Just set a default value of zero if an empty string is specified.
+
+        :return: None
+        """
+        fix_formats = ['double', 'float', 'int32', 'int64']
+
+        for parameter_name, parameter in self.operation.params.iteritems():
+
+            param_format = parameter.param_spec.get('format', None)
+            param_default = parameter.param_spec.get('default', None)
+
+            if param_format not in fix_formats:
+                continue
+
+            if not isinstance(param_default, basestring):
+                continue
+
+            if param_default.isdigit():
+                continue
+
+            parameter.param_spec['default'] = 0
 
     def _set_param_value(self, parameter):
         """
