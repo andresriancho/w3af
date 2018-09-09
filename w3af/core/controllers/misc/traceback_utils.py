@@ -19,10 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import sys
 import traceback
-
-from os.path import basename
 
 
 def get_traceback():
@@ -38,12 +37,14 @@ def get_exception_location(tb):
 
     :param tb: A traceback
     :return: A tuple similar to
-                ('pool276.py',
+                ('/home/user/tools/w3af/.../',
+                 'pool276.py',
                  'get()',
                  643)
     """
     file_path = traceback.extract_tb(tb)[-1][0]
-    file_path = basename(file_path)
+    path = os.path.dirname(file_path)
+    file_name = os.path.basename(file_path)
 
     current = tb
     while getattr(current, 'tb_next', None) is not None:
@@ -51,4 +52,4 @@ def get_exception_location(tb):
 
     function_name = '%s()' % current.tb_frame.f_code.co_name
 
-    return file_path, function_name, current.tb_lineno
+    return path, file_name, function_name, current.tb_lineno

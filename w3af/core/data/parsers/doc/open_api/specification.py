@@ -78,13 +78,13 @@ class SpecificationHandler(object):
             for operation_name, operation in resource.operations.items():
                 operations = self._set_operation_params(operation)
 
-                for operation in operations:
+                for _operation in operations:
                     data = (self.spec,
                             api_resource_name,
                             resource,
                             operation_name,
-                            operation,
-                            operation.params)
+                            _operation,
+                            _operation.params)
                     yield data
 
     def _set_operation_params(self, operation):

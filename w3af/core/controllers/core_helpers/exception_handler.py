@@ -280,7 +280,8 @@ class ExceptionData(object):
         self.exception_class = e.__class__.__name__
 
         # Extract the filename and line number where the exception was raised
-        self.filename, self.function_name, self.lineno = get_exception_location(tb)
+        path, filename, self.function_name, self.lineno = get_exception_location(tb)
+        self.filename = os.path.join(path, filename)
 
         # See add_traceback_string()
         if hasattr(e, 'original_traceback_string'):

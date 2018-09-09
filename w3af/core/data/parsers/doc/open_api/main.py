@@ -29,6 +29,9 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 
+import w3af.core.controllers.output_manager as om
+
+from w3af.core.controllers.misc.traceback_utils import get_traceback, get_exception_location
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.open_api.requests import RequestFactory
@@ -140,13 +143,38 @@ class OpenAPI(BaseParser):
                                                      self.no_validation)
 
         for data in specification_handler.get_api_information():
-            request_factory = RequestFactory(*data)
-            fuzzable_request = request_factory.get_fuzzable_request()
+            try:
+                request_factory = RequestFactory(*data)
+                fuzzable_request = request_factory.get_fuzzable_request()
+            except Exception, e:
+                #
+                # This is a strange situation because parsing of the OpenAPI
+                # spec can fail awfully for one of the operations but succeed
+                # for the rest.
+                #
+                # Usually we would simply stop processing the document, but it
+                # is better to a) provide value to the user, and b) warn him
+                # so that they can report the issue and improve w3af
+                #
+                # Just crashing wouldn't provide any value to the user
+                #
+                tb = get_traceback()
+                path, filename, _function, line = get_exception_location(tb)
+                spec_url = self.get_http_response().get_url()
 
-            if not self._should_audit(fuzzable_request):
-                continue
+                msg = ('Failed to generate a fuzzable request for one of the'
+                       ' OpenAPI operations. The parser will continue with the'
+                       ' next operation. The OpenAPI specification is at "%s" and'
+                       ' the exception was: "%s" at %s/%s:%s():%s.')
 
-            self.api_calls.append(fuzzable_request)
+                args = (spec_url, e, path, filename, _function, line)
+
+                om.out.error(msg % args)
+            else:
+                if not self._should_audit(fuzzable_request):
+                    continue
+
+                self.api_calls.append(fuzzable_request)
 
     def _should_audit(self, fuzzable_request):
         """
