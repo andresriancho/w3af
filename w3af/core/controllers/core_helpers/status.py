@@ -577,9 +577,27 @@ class CoreStatus(object):
 
         progress = int(run_time / estimated_end_time * 100)
 
+        # If the calculated progress is 100% but any of the consumers is still
+        # running, then we should return 99%. This happens when the ETA estimation
+        # is incorrect (often)
+        if progress == 100 and self.any_consumer_running():
+            progress = 99
+
         om.out.debug('The scan will finish in %.2f seconds (%s%% done)' % (eta, progress))
 
         return progress
+
+    def any_consumer_running(self):
+        if not self.has_finished_crawl():
+            return True
+
+        if not self.has_finished_audit():
+            return True
+
+        if not self.has_finished_grep():
+            return True
+
+        return False
 
     def get_crawl_adjustment_ratio(self):
         """
