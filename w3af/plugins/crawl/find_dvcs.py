@@ -147,6 +147,9 @@ class find_dvcs(CrawlPlugin):
         if http_response.get_code() in self.BAD_HTTP_CODES:
             return
 
+        if not http_response.get_body():
+            return
+
         try:
             filenames = repo_get_files(http_response.get_raw_body())
         except Exception, e:
