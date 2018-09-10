@@ -40,6 +40,7 @@ CSP_DIRECTIVE_STYLE = "style-src"
 CSP_DIRECTIVE_IMAGE = "img-src"
 CSP_DIRECTIVE_MEDIA = "media-src"
 CSP_DIRECTIVE_FRAME = "frame-src"
+CSP_DIRECTIVE_FRAME_ANCESTORS = "frame-ancestors"
 CSP_DIRECTIVE_FONT = "font-src"
 CSP_DIRECTIVE_CONNECTION = "connect-src"
 CSP_DIRECTIVE_REPORT_URI = "report-uri"
@@ -466,7 +467,8 @@ def retrieve_csp_policies(response, select_only_reportonly_policies=False,
     directive_allowed_names = [CSP_DIRECTIVE_DEFAULT, CSP_DIRECTIVE_SCRIPT,
                                CSP_DIRECTIVE_OBJECT, CSP_DIRECTIVE_STYLE,
                                CSP_DIRECTIVE_IMAGE, CSP_DIRECTIVE_MEDIA,
-                               CSP_DIRECTIVE_FRAME, CSP_DIRECTIVE_FONT,
+                               CSP_DIRECTIVE_FRAME, CSP_DIRECTIVE_FRAME_ANCESTORS,
+                               CSP_DIRECTIVE_FONT,
                                CSP_DIRECTIVE_CONNECTION,
                                CSP_DIRECTIVE_REPORT_URI, CSP_DIRECTIVE_FORM,
                                CSP_DIRECTIVE_SANDBOX,
