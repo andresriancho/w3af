@@ -23,6 +23,7 @@ import os
 
 from itertools import repeat, izip
 from collections import deque
+from threading import RLock
 
 from w3af import ROOT_PATH
 
@@ -76,6 +77,7 @@ class file_upload(AuditPlugin):
 
         # Internal attributes
         self._urls_recently_tested = deque(maxlen=30)
+        self._urt_lock = RLock()
 
         # User configured
         self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
@@ -166,12 +168,16 @@ class file_upload(AuditPlugin):
 
         to_verify_filtered = list()
 
-        for url in to_verify:
-            if url in self._urls_recently_tested:
-                continue
+        # Run the read / writes to self._urls_recently_tested in a lock to
+        # prevent RuntimeError generated when a thread is reading from it (in)
+        # and another is appending to it.
+        with self._urt_lock:
+            for url in to_verify:
+                if url in self._urls_recently_tested:
+                    continue
 
-            to_verify_filtered.append(url)
-            self._urls_recently_tested.append(url)
+                to_verify_filtered.append(url)
+                self._urls_recently_tested.append(url)
 
         #
         #   Got nothing interesting, return.

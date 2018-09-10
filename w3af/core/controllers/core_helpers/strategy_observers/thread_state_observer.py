@@ -157,7 +157,7 @@ class ThreadStateObserver(StrategyObserver):
         workers_to_inspect = []
 
         for worker_state in inspect_data:
-            if worker_state['idle']:
+            if worker_state['idle'] or worker_state['start_time'] is None:
                 continue
 
             spent = time.time() - worker_state['start_time']

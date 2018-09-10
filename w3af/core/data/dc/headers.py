@@ -106,6 +106,7 @@ class Headers(NonRepeatKeyValueContainer):
     def iget(self, header_name, default=None):
         """
         :param header_name: The name of the header we want the value for
+        :param default: The default value to return if the header_name is not found
         :return: The value for a header given a name (be case insensitive)
         """
         lower = string.lower

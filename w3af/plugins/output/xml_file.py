@@ -91,7 +91,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.7'
+    XML_OUTPUT_VERSION = '2.8'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -198,12 +198,14 @@ class xml_file(OutputPlugin):
 
         try:
             self._add_scan_status_to_context(context)
-        except RuntimeError:
+        except RuntimeError, rte:
             # In some very strange scenarios we get this error:
             #
             #   Can NOT call get_run_time before start()
             #
             # Just "ignore" this call to flush and write the XML on the next one
+            msg = 'xml_file.flush() failed to add scan status to context: "%s"'
+            om.out.debug(msg % rte)
             return
 
         self._add_root_info_to_context(context)

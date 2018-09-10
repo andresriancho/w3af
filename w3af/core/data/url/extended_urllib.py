@@ -1188,7 +1188,9 @@ class ExtendedUrllib(object):
         no_traceback_for = (URLTimeoutError,
                             ConnectionPoolException,
                             BadStatusLine,
-                            socket.error)
+                            socket.error,
+                            OpenSSL.SSL.SysCallError,
+                            OpenSSL.SSL.ZeroReturnError)
         if not isinstance(exception, no_traceback_for):
             msg = 'Traceback for this error: %s'
             om.out.debug(msg % traceback.format_exc())

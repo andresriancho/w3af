@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import functools
 
-from w3af.core.data.constants.severity import INFORMATION
-
 
 class LogSink(object):
     """
@@ -37,6 +35,7 @@ class LogSink(object):
         'vulnerability',
         'console',
         'log_http',
+        'log_crash',
     )
 
     def __init__(self, om_queue):
@@ -59,15 +58,17 @@ class LogSink(object):
         try:
             self.om_queue.put((args, kwargs))
         except IOError:
-            print('LogSink queue communication lost. Some log messages will'
-                  ' be lost.')
+            print('LogSink queue communication lost.'
+                  ' Some log messages will be lost.')
 
     def __getattr__(self, name):
         """
         This magic method replaces all the previous debug/information/error ones
-        It will basically return a func pointer to
-        self.add_to_queue('debug',  ...) where "..." is completed later by the
-        caller.
+        It will basically return a func pointer to:
+
+            self.add_to_queue('debug',  ...)
+
+        Where "..." is completed later by the caller.
 
         @see: http://docs.python.org/library/functools.html for help on partial.
         @see: METHODS defined at the top of this class

@@ -18,9 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from w3af.core.data.dc.headers import Headers
+import re
+import urllib
 
+from w3af.plugins.audit.sqli import sqli
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (IntParamQueryString,
                                                                               NestedModel)
 
@@ -43,7 +46,8 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/swagger.json',
-                                   IntParamQueryString().get_specification())]
+                                   IntParamQueryString().get_specification(),
+                                   content_type='application/json')]
 
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
@@ -102,6 +106,9 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
 
 
 class TestOpenAPINestedModelSpec(PluginTest):
+
+    BEARER = 'bearer 0x12345'
+
     target_url = 'http://w3af.org/'
 
     _run_configs = {
@@ -110,15 +117,41 @@ class TestOpenAPINestedModelSpec(PluginTest):
             'plugins': {'crawl': (PluginConfig('open_api',
 
                                                ('header_auth',
-                                                'Basic: bearer 0x12345',
+                                                'Basic: %s' % BEARER,
                                                 PluginConfig.HEADER),
 
-                                               ),)}
+                                               ),),
+                        'audit': (PluginConfig('sqli'),)}
         }
     }
 
+    class SQLIMockResponse(MockResponse):
+        def get_response(self, http_request, uri, response_headers):
+            basic = http_request.headers.get('Basic', '')
+            if basic != TestOpenAPINestedModelSpec.BEARER:
+                return 401, response_headers, ''
+
+            # The body is in json format, need to escape my double quotes
+            request_body = str(http_request.parsed_body)
+            payloads = [p.replace('"', '\\"') for p in sqli.SQLI_STRINGS]
+
+            response_body = 'Sunny outside'
+
+            for payload in payloads:
+                if payload in request_body:
+                    response_body = 'PostgreSQL query failed:'
+                    break
+
+            return self.status, response_headers, response_body
+
     MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json'),
+
+                      SQLIMockResponse(re.compile('http://w3af.org/api/pets.*'),
+                                       body=None,
+                                       method='GET',
+                                       status=200)]
 
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
@@ -166,6 +199,9 @@ class TestOpenAPINestedModelSpec(PluginTest):
         self.assertEqual(fuzzable_request.get_headers(), e_headers)
         self.assertEqual(fuzzable_request.get_data(), e_data)
 
+        vulns = self.kb.get('sqli', 'sqli')
+        self.assertEqual(len(vulns), 2)
+
 
 class TestOpenAPIRaisesWarningIfNoAuth(PluginTest):
     target_url = 'http://w3af.org/'
@@ -178,7 +214,8 @@ class TestOpenAPIRaisesWarningIfNoAuth(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json')]
 
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']
@@ -208,7 +245,8 @@ class TestOpenAPIFindsSpecInOtherDirectory(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/api/v2/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json')]
 
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']
@@ -235,7 +273,8 @@ class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
     }
 
     MOCK_RESPONSES = [MockResponse('http://w3af.org/a/openapi.json',
-                                   NestedModel().get_specification())]
+                                   NestedModel().get_specification(),
+                                   content_type='application/json')]
 
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']

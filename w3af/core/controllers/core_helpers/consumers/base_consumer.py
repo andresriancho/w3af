@@ -200,6 +200,16 @@ class BaseConsumer(Process):
                 finally:
                     self.in_queue.task_done()
 
+    def get_running_task_count(self):
+        """
+        :return: The number of tasks which are currently running in the
+                 threadpool. This is commonly used for measuring ETA.
+        """
+        if self._threadpool is None:
+            return 0
+
+        return self._threadpool.get_running_task_count()
+
     def _teardown(self):
         raise NotImplementedError
 
@@ -392,8 +402,7 @@ class BaseConsumer(Process):
         """
         return self._out_queue.get(timeout=timeout)
 
-    def handle_exception(self, phase, plugin_name,
-                         fuzzable_request, _exception):
+    def handle_exception(self, phase, plugin_name, fuzzable_request, _exception):
         """
         Get the exception information, and put it into the output queue
         then, the strategy will get the items from the output queue and

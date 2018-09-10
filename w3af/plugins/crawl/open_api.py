@@ -166,6 +166,9 @@ class open_api(CrawlPlugin):
         :param http_response: An HTTP response
         :return: None
         """
+        if not OpenAPI.can_parse(http_response):
+            return
+
         parser = OpenAPI(http_response, self._no_spec_validation, self._discover_fuzzable_headers)
         parser.parse()
 
@@ -192,7 +195,17 @@ class open_api(CrawlPlugin):
         if not targets:
             return False
 
-        return fuzzable_request.get_url().get_domain() == targets[0].get_domain()
+        target_domain = targets[0].get_domain()
+        api_call_domain = fuzzable_request.get_url().get_domain()
+
+        if target_domain == api_call_domain:
+            return True
+
+        om.out.debug('The OpenAPI specification has operations which point'
+                     ' to a domain (%s) outside the defined target (%s).'
+                     ' Ignoring the operation to prevent scanning out of scope'
+                     ' targets.' % (api_call_domain, target_domain))
+        return False
 
     def _report_to_kb_if_needed(self, http_response, parser):
         """
