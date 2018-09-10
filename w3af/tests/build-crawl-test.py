@@ -101,7 +101,7 @@ def _main():
         sys.exit(1)
 
     try:
-        form_params = int(form_params)
+        form_params = float(form_params)
         assert form_params >= 1
     except:
         print('Error in --form-params parameter')
@@ -194,8 +194,7 @@ def build_href(page_path, page_filename, qs):
 
 
 def get_query_string_for_page(page_num, parameters_per_page):
-    # TODO: Implement parameters per page < 1 which is probabilistic
-    assert parameters_per_page >= 1
+    parameters_per_page = get_probabilistic_count(parameters_per_page)
 
     query_string = []
 
@@ -217,6 +216,22 @@ def generate_index_html(output):
     index_html = render_index_html(href)
 
     file(os.path.join(output, 'index.html'), 'w').write(index_html)
+
+
+def get_probabilistic_count(count):
+    integer = int(count)
+
+    if integer == count:
+        return integer
+
+    decimal_part = count - integer
+    decimal_part *= 100
+
+    print random.randint(0, 100) , decimal_part
+    if random.randint(0, 100) > decimal_part:
+        return integer + 1
+
+    return integer
 
 
 def generate_site(pages, parameters_per_page, forms, form_params, output):
@@ -257,22 +272,22 @@ def generate_site(pages, parameters_per_page, forms, form_params, output):
 
         hrefs = [href_1, href_2]
 
-        # TODO: Implement forms per page < 1 which is probabilistic
-        assert forms >= 1
+        forms_i = get_probabilistic_count(forms)
+        form_params_i = get_probabilistic_count(form_params)
 
         #
         # Build the forms for this page
         #
         generated_forms = []
 
-        for form_num in xrange(int(forms)):
+        for form_num in xrange(int(forms_i)):
             action_num = random.randint(0, pages)
 
             form_path = generate_page_path(action_num)
             form_filename = generate_page_filename(action_num)
             action = '/' + form_path + '/' + form_filename
 
-            params = [generate_parameter_name(page_num, form_num, i) for i in xrange(int(form_params))]
+            params = [generate_parameter_name(page_num, form_num, i) for i in xrange(int(form_params_i))]
 
             generated_forms.append(Form(action, params))
 
