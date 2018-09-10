@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
 
+from operator import xor
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
@@ -441,8 +443,8 @@ class CoreStatus(object):
             #     values is to run scans and use scan_log_analysis.py to check
             #     (see: show_progress_delta).
             #
-            t_queued = queue_size / output_speed * adjustment.known
-            t_new = input_speed * t_queued / output_speed * adjustment.unknown
+            t_queued = (queue_size / output_speed) * adjustment.known
+            t_new = (input_speed * t_queued / output_speed) * adjustment.unknown
             eta_minutes = t_queued + t_new
         else:
             # This case is easier, we have an output speed which is
@@ -461,7 +463,7 @@ class CoreStatus(object):
         eta = eta_minutes * 60
 
         if adjustment.average:
-            eta = (eta + self._eta_smooth[_type]) / 2.0
+            eta = eta * 3 / 4 + self._eta_smooth[_type] * 1 / 4
             self._eta_smooth[_type] = eta
 
         self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
@@ -602,13 +604,13 @@ class CoreStatus(object):
         # scan will finish soon (not many items in the queue). To prevent
         # this we set a big adjustment ratio
         #
-        if run_time < 30:
-            return Adjustment(known=4, unknown=25)
-
         if run_time < 60:
-            return Adjustment(known=2, unknown=5)
+            return Adjustment(known=0.5, unknown=7.5)
 
-        return Adjustment(known=0.25, unknown=0.75)
+        if run_time < 120:
+            return Adjustment(known=0.75, unknown=4.0)
+
+        return Adjustment(known=0.75, unknown=0.75)
 
     def get_audit_adjustment_ratio(self):
         """
@@ -627,20 +629,20 @@ class CoreStatus(object):
         # this to zero is a really good idea
         #
         if self.has_finished_crawl():
-            return Adjustment(known=1.1, unknown=0)
+            return Adjustment(known=1.2, unknown=0)
 
         #
         # During the early phases of the scan it is easy to believe that the
         # scan will finish soon (not many items in the queue). To prevent
         # this we set a big adjustment ratio
         #
-        if run_time < 30:
-            return Adjustment(known=1, unknown=2)
-
         if run_time < 60:
-            return Adjustment(known=1, unknown=1.5)
+            return Adjustment(known=1, unknown=3.0)
 
-        return Adjustment(known=2.25, unknown=1.75)
+        if run_time < 120:
+            return Adjustment(known=1, unknown=2.0)
+
+        return Adjustment(known=1.1, unknown=2.0)
 
     def get_grep_adjustment_ratio(self):
         """
@@ -661,7 +663,7 @@ class CoreStatus(object):
         # this to zero is a really good idea
         #
         if self.has_finished_crawl() and self.has_finished_audit():
-            return Adjustment(known=0.5, unknown=0, average=False)
+            return Adjustment(known=1.0, unknown=0, average=False)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -669,24 +671,30 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(known=1, unknown=40)
+            return Adjustment(known=1.0, unknown=40)
 
         if run_time < 60:
-            return Adjustment(known=1, unknown=20)
+            return Adjustment(known=1.0, unknown=20)
 
         if run_time < 120:
-            return Adjustment(known=1, unknown=10)
+            return Adjustment(known=1.0, unknown=10)
 
         if run_time < 180:
-            return Adjustment(known=1, unknown=7.5)
+            return Adjustment(known=1.0, unknown=7.5)
 
         #
-        # Cases that fall into this adjustment rate:
-        #   * Crawl is running / Audit is not
-        #   * Audit is running / Crawl is not
-        #   * Crawl is running / Audit is running
+        # Crawl is running XOR Audit is running
         #
-        return Adjustment(known=0.5, unknown=0.75)
+        crawl_finished = self.has_finished_crawl()
+        audit_finished = self.has_finished_audit()
+
+        if xor(crawl_finished, audit_finished):
+            return Adjustment(known=1.0, unknown=0.5, average=False)
+
+        #
+        # Crawl is running and Audit is running
+        #
+        return Adjustment(known=1.0, unknown=0.75)
 
     def log_eta(self, msg):
         om.out.debug('[get_eta] %s' % msg)
@@ -721,7 +729,7 @@ class CoreStatus(object):
             after_audit = 0.0
             if grep_eta >= audit_eta:
                 after_audit = grep_eta - audit_eta
-                after_audit = after_audit * 0.9
+                after_audit = after_audit * 0.1
 
             self.log_eta('Crawl has finished. Using audit and grep ETAs'
                          ' to calculate overall ETA.')
@@ -729,23 +737,26 @@ class CoreStatus(object):
 
         # The crawling, audit and grep (all if they were enabled) are running.
         # Estimating ETA here is difficult!
+        self.log_eta('ETA calculation will merge ETAs for all phases.')
+
         grep_eta = self.get_grep_eta()
         audit_eta = self.get_audit_eta()
         crawl_eta = self.get_crawl_eta()
 
-        after_crawl_audit = 0.0
+        audit_after_crawl = 0.0
+        if audit_eta > crawl_eta:
+            audit_after_crawl = audit_eta = crawl_eta
+
+        grep_after_crawl_audit = 0.0
         if grep_eta >= audit_eta:
-            after_crawl_audit += grep_eta - audit_eta
+            grep_after_crawl_audit += grep_eta - audit_eta
 
         if grep_eta >= crawl_eta:
-            after_crawl_audit += grep_eta - crawl_eta
+            grep_after_crawl_audit += grep_eta - crawl_eta
 
-        self.log_eta('Crawl, audit and grep are running.'
-                     ' Using all ETAs to calculate overall ETA.')
-
-        average_1 = (crawl_eta + audit_eta) / 2.0
-        average_2 = after_crawl_audit / 7.5
-        return average_1 + average_2
+        audit_after_crawl = audit_after_crawl * 0.75
+        grep_after_crawl_audit = grep_after_crawl_audit * 0.05
+        return crawl_eta + audit_after_crawl + grep_after_crawl_audit
 
     def get_sent_request_count(self):
         """
