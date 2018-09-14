@@ -36,6 +36,8 @@ class click_jacking(GrepPlugin):
     :author: Andres (andres@andresriancho.com)
     """
 
+    MAX_SAMPLES = 25
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
@@ -59,7 +61,14 @@ class click_jacking(GrepPlugin):
         if self._is_protected_against_clickjacking(request, response):
             return
 
+        self._add_response_to_findings(response)
+
+    def _add_response_to_findings(self, response):
         self._vuln_count += 1
+
+        if len(self._vuln_urls) >= self.MAX_SAMPLES:
+            return
+
         self._vuln_urls.add(response.get_url())
         self._vuln_ids.add(response.id)
 
@@ -149,19 +158,29 @@ class click_jacking(GrepPlugin):
 
         response_ids = [_id for _id in self._vuln_ids]
         
-        # If none of the URLs implement protection, simply report
-        # ONE vulnerability that says that
         if self._total_http_request_count == self._vuln_count:
-            desc = 'The application has no protection against Click-Jacking attacks'
+            # If none of the URLs implement protection, simply report
+            # ONE vulnerability that says that
+            desc = 'The application has no protection against Click-Jacking attacks.'
 
-        # If most of the URLs implement the protection but some
-        # don't, report ONE vulnerability saying: "Most are protected,
-        # but x, y are not
+            if len(response_ids) >= self.MAX_SAMPLES:
+                desc += (' All the received HTTP responses were found to be'
+                         ' vulnerable, only the first %s samples were captured'
+                         ' as proof.' % self.MAX_SAMPLES)
+
         else:
-
-            desc = ('Some application URLs have no protection against'
-                    ' Click-Jacking attacks. The list of vulnerable URLs is:'
-                    '\n\n - ')
+            # If most of the URLs implement the protection but some
+            # don't, report ONE vulnerability saying: "Most are protected,
+            # but x, y are not
+            if len(response_ids) >= self.MAX_SAMPLES:
+                desc = ('Multiple application URLs have no protection against'
+                        ' Click-Jacking attacks. Only the first %s samples were'
+                        ' captured as proof. The list of vulnerable URLs is:'
+                        '\n\n - ' % self.MAX_SAMPLES)
+            else:
+                desc = ('Multiple application URLs have no protection against'
+                        ' Click-Jacking attacks. The list of vulnerable URLs is:'
+                        '\n\n - ')
 
             desc += ' - '.join([str(url) + '\n' for url in self._vuln_urls])
 
