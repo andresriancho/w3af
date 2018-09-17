@@ -47,7 +47,7 @@ from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
 # In this case we'll collect at most PATH_MAX_VARIANTS URLs with different
 # paths inside the "abc" path.
 #
-PATH_MAX_VARIANTS = 75
+PATH_MAX_VARIANTS = 50
 
 #
 # Limits the max number of variants we'll allow for URLs with the same path
@@ -59,7 +59,7 @@ PATH_MAX_VARIANTS = 75
 # For URLs which have the same path (/abc/def) and parameters
 # (id=number&abc=string) we'll collect at most PARAMS_MAX_VARIANTS of those
 #
-PARAMS_MAX_VARIANTS = 25
+PARAMS_MAX_VARIANTS = 15
 
 #
 # Limits the number variants for "the same form". A good example to understand this
@@ -84,7 +84,7 @@ PARAMS_MAX_VARIANTS = 25
 #
 # https://github.com/andresriancho/w3af/issues/15970
 #
-MAX_EQUAL_FORM_VARIANTS = 10
+MAX_EQUAL_FORM_VARIANTS = 5
 
 
 class VariantDB(object):
