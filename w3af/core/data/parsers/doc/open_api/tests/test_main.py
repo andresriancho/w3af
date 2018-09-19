@@ -140,9 +140,13 @@ class TestOpenAPIMain(unittest.TestCase):
 
         e_url = 'http://w3af.org/api/cats'
         e_force_fuzzing_headers = ['X-Awesome-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
 
         self.assertEqual(api_call.get_method(), 'GET')
         self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
 
         #
@@ -152,9 +156,14 @@ class TestOpenAPIMain(unittest.TestCase):
 
         e_url = 'http://w3af.org/api/cats?limit=42'
         e_force_fuzzing_headers = ['X-Awesome-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
 
         self.assertEqual(api_call.get_method(), 'GET')
         self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
 
         #
@@ -164,9 +173,13 @@ class TestOpenAPIMain(unittest.TestCase):
 
         e_url = 'http://w3af.org/api/pets'
         e_force_fuzzing_headers = ['X-Bar-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
 
         self.assertEqual(api_call.get_method(), 'GET')
         self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
 
         #
@@ -176,9 +189,14 @@ class TestOpenAPIMain(unittest.TestCase):
 
         e_url = 'http://w3af.org/api/pets'
         e_force_fuzzing_headers = ['X-Bar-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Bar-Header', 'default bar'),
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
 
         self.assertEqual(api_call.get_method(), 'GET')
         self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
 
     def test_can_parse_content_type_no_keywords(self):

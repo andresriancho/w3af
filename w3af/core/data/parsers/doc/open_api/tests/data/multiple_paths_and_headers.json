@@ -37,15 +37,16 @@
             "in": "header",
             "description": "magic-header",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "X-Bar-Header",
             "in": "header",
             "description": "another-magic-header",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "string",
+            "default": "default bar"
           }
         ],
         "responses": {
@@ -74,7 +75,10 @@
             "in": "header",
             "description": "magic-header",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "foo", "bar"
+            ]
           },
           {
             "name": "limit",
@@ -89,7 +93,9 @@
             "in": "header",
             "description": "awesome-header",
             "required": false,
-            "type": "string"
+            "type": "integer",
+            "format": "int32",
+            "default": 2018
           }
         ],
         "responses": {
