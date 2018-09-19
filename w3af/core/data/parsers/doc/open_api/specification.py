@@ -87,34 +87,6 @@ class SpecificationHandler(object):
                             _operation.params)
                     yield data
 
-    def get_parameter_headers(self):
-        """
-        Looks for all parameters which are passed to endpoints via headers.
-
-        :return: A list of unique header names.
-        """
-        spec_dict = self._load_spec_dict()
-
-        if not spec_dict or not spec_dict['paths']:
-            return []
-
-        params = set()
-        for path in spec_dict['paths']:
-            endpoint = spec_dict['paths'][path]
-            if not endpoint:
-                continue
-            for method_name in endpoint:
-                operation = endpoint[method_name]
-                if not operation or not operation['parameters']:
-                    continue
-                for parameter in operation['parameters']:
-                    if parameter['in'] == 'header':
-                        params.add(parameter['name'])
-                        om.out.debug('Found a parameter header in Open API spec: %s'
-                                     % parameter['name'])
-
-        return list(params)
-
     def _set_operation_params(self, operation):
         """
         Takes all of the information associated with an operation and fills the

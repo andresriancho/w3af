@@ -146,13 +146,10 @@ class OpenAPI(BaseParser):
         specification_handler = SpecificationHandler(self.get_http_response(),
                                                      self.no_validation)
 
-        if self.discover_fuzzable_headers:
-            fuzzable_openapi_headers = specification_handler.get_parameter_headers()
-
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
-                fuzzable_request = request_factory.get_fuzzable_request()
+                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
@@ -181,9 +178,6 @@ class OpenAPI(BaseParser):
                 if not self._should_audit(fuzzable_request):
                     continue
                     
-                if self.discover_fuzzable_headers:
-                    fuzzable_request.set_force_fuzzing_headers(fuzzable_openapi_headers)
-
                 self.api_calls.append(fuzzable_request)
 
     def _should_audit(self, fuzzable_request):
