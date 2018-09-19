@@ -200,6 +200,71 @@ class TestOpenAPIMain(unittest.TestCase):
         self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
 
+    def test_disabling_headers_discovery(self):
+        body = file(self.MULTIPLE_PATHS_AND_HEADERS).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response, discover_fuzzable_headers=False)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        api_calls.sort(by_path)
+
+        self.assertEqual(len(api_calls), 4)
+
+        e_force_fuzzing_headers = []
+
+        #
+        # Assertions on call #2
+        #
+        api_call = api_calls[1]
+
+        e_url = 'http://w3af.org/api/cats?limit=42'
+        e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #3
+        #
+        api_call = api_calls[2]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_headers = Headers([
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #4
+        #
+        api_call = api_calls[3]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_headers = Headers([
+            ('X-Bar-Header', 'default bar'),
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
     def test_disabling_spec_validation(self):
         body = file(self.NOT_VALID_SPEC).read()
         headers = Headers({'Content-Type': 'application/json'}.items())
