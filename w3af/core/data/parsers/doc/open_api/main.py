@@ -177,7 +177,7 @@ class OpenAPI(BaseParser):
             else:
                 if not self._should_audit(fuzzable_request):
                     continue
-                    
+
                 self.api_calls.append(fuzzable_request)
 
     def _should_audit(self, fuzzable_request):

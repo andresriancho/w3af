@@ -36,7 +36,7 @@ class RequestFactory(object):
     DEFAULT_CONTENT_TYPE = JSONContainer.JSON_CONTENT_TYPE
 
     def __init__(self, spec, api_resource_name, resource, operation_name,
-                 operation, parameters, ):
+                 operation, parameters):
         """
         Receives what comes out of SpecificationHandler.get_api_information()
         and creates a fuzzable request which w3af can send to the wire.
@@ -59,6 +59,8 @@ class RequestFactory(object):
         Creates a fuzzable request by querying different parts of the spec
         parameters, operation, etc.
 
+        :param discover_fuzzable_headers: If it's set to true,
+                                          then all fuzzable headers will be added to the fuzzable request.
         :return: A fuzzable request.
         """
         method = self.get_method()
