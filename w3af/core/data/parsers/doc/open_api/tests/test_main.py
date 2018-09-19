@@ -42,6 +42,7 @@ class TestOpenAPIMain(unittest.TestCase):
     PETSTORE_SIMPLE = os.path.join(DATA_PATH, 'petstore-simple.json')
     PETSTORE_EXPANDED = os.path.join(DATA_PATH, 'petstore-simple.json')
     MULTIPLE_PATHS_AND_HEADERS = os.path.join(DATA_PATH, 'multiple_paths_and_headers.json')
+    NOT_VALID_SPEC = os.path.join(DATA_PATH, 'not_quite_valid_petstore_simple.json')
 
     def test_json_pet_store(self):
         # http://petstore.swagger.io/v2/swagger.json
@@ -198,6 +199,36 @@ class TestOpenAPIMain(unittest.TestCase):
         self.assertEqual(api_call.get_uri().url_string, e_url)
         self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+    def test_disabling_spec_validation(self):
+        body = file(self.NOT_VALID_SPEC).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+        self.assertEqual(len(api_calls), 0)
+
+        parser = OpenAPI(response, no_validation=True)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+        self.assertEqual(len(api_calls), 1)
+
+        api_call = api_calls[0]
+        e_url = 'http://w3af.org/api/pets'
+        e_force_fuzzing_headers = []
+        e_headers = Headers([('Content-Type', 'application/json')])
+        e_body = '{"pet": {"age": 42}}'
+
+        self.assertEqual(api_call.get_method(), 'POST')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+        self.assertEqual(api_call.get_data(), e_body)
 
     def test_can_parse_content_type_no_keywords(self):
         # JSON content type
