@@ -347,7 +347,7 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['required'], True)
         self.assertEqual(param.param_spec['in'], 'body')
         self.assertIn('schema', param.param_spec)
-        self.assertEqual(param.fill, {u'age': 42})
+        self.assertEqual(param.fill, {u'age': 42, u'name': 'John'})
 
     def test_no_model_json_object_complex_nested_in_body(self):
         specification_as_string = ComplexDereferencedNestedModel().get_specification()

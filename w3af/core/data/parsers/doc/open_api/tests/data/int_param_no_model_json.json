@@ -47,9 +47,13 @@
                 "age": {
                   "type": "integer",
                   "format": "int32"
+                },
+                "name": {
+                  "type": "string"
                 }
               }
-            }          }
+            }
+          }
         ],
         "responses": {
           "200": {
