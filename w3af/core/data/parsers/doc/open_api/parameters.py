@@ -67,53 +67,12 @@ class ParameterHandler(object):
             # We make sure that all parameters have a fill attribute
             parameter.fill = None
 
-            if self._should_skip(parameter, optional):
+            if self._should_skip_setting_param_value(parameter, optional):
                 continue
 
             self._set_param_value(parameter)
 
         return operation
-
-    @staticmethod
-    def _should_skip(parameter, optional):
-        if ParameterHandler._is_header_with_default(parameter):
-            return False
-
-        if not parameter.required and not optional:
-            return True
-
-        return False
-
-    @staticmethod
-    def _is_header_with_default(parameter):
-        return ParameterHandler._is_header(parameter) and ParameterHandler._parameter_has_default(parameter)
-
-    @staticmethod
-    def _is_header(parameter):
-        return parameter.param_spec.get('in', None) == 'header'
-
-    @staticmethod
-    def _parameter_has_default(parameter):
-        if ParameterHandler._spec_has_default(parameter.param_spec):
-            return True
-
-        schema = parameter.param_spec.get('schema', None)
-        if schema is not None:
-            return ParameterHandler._spec_has_default(schema)
-
-        return False
-
-    @staticmethod
-    def _spec_has_default(spec):
-        default = spec.get('default', None)
-        if default is not None:
-            return True
-
-        enum = spec.get('enum', None)
-        if enum is not None:
-            return len(enum) > 0
-
-        return False
 
     def operation_has_optional_params(self):
         """
@@ -333,7 +292,8 @@ class ParameterHandler(object):
             parameter_name = 'unknown' if parameter_name is None else parameter_name
             return smart_fill_file(parameter_name, 'cat.png')
 
-    def _get_parameter_type(self, param_spec):
+    @staticmethod
+    def _get_parameter_type(param_spec):
         """
         The parameter has a strong type:
 
@@ -569,3 +529,74 @@ class ParameterHandler(object):
             created_object[property_name] = value
 
         return created_object
+
+    @staticmethod
+    def _should_skip_setting_param_value(parameter, optional):
+        """
+        Checks if we should set a value to a parameter.
+
+        :param parameter: The parameter which we need to check.
+        :param optional: Should we set the values for the optional parameters?
+        :return: True if we should set a value for the parameter, False otherwise.
+        """
+        if ParameterHandler._is_header_with_default(parameter):
+            return False
+
+        if not parameter.required and not optional:
+            return True
+
+        return False
+
+    @staticmethod
+    def _is_header_with_default(parameter):
+        """
+        Checks if the parameter is a header and it's spec has a default value.
+
+        :param parameter: The parameter which we need to check.
+        :return: True if the parameter is a header with defined default value, False otherwise.
+        """
+        return ParameterHandler._is_header(parameter) and ParameterHandler._parameter_has_default(parameter)
+
+    @staticmethod
+    def _is_header(parameter):
+        """
+        Checks if the parameter is a header.
+
+        :param parameter: The parameter which we need to check.
+        :return: True if the parameter is a header, False otherwise.
+        """
+        return parameter.param_spec.get('in', None) == 'header'
+
+    @staticmethod
+    def _parameter_has_default(parameter):
+        """
+        Checks if the parameter has a default value.
+
+        :param parameter: The parameter which we need to check.
+        :return: True if the parameter has a default value, False otherwise.
+        """
+        if ParameterHandler._spec_has_default(parameter.param_spec):
+            return True
+
+        schema = parameter.param_spec.get('schema', None)
+        if schema is not None:
+            return ParameterHandler._spec_has_default(schema)
+
+        return False
+
+    @staticmethod
+    def _spec_has_default(spec):
+        """
+        Checks if the spec defines a default value in 'default' or 'enum' attributes.
+        :param spec: The spec which we need to check.
+        :return: True is the spec defines a default value, False otherwise.
+        """
+        default = spec.get('default', None)
+        if default is not None:
+            return True
+
+        enum = spec.get('enum', None)
+        if enum is not None:
+            return len(enum) > 0
+
+        return False
