@@ -70,20 +70,27 @@ class URLTree(object):
         tree_nodes = self._url_to_tree_nodes(url)
         parent = None
 
+        # Note: The last node from tree_nodes is always a leaf
         for node in tree_nodes:
             if parent is None:
+                self._update_leaf_flag(self.tree, node)
                 parent = self.tree[node]
             else:
-                # The last node from tree_nodes is always a leaf
-                #
-                # If the node was already in the parent, it wasn't created
-                # but it might need an update on it's leaf status
-                if node in parent and node.is_leaf:
-                    for n in parent:
-                        if node.path == n.path:
-                            n.set_is_leaf(True)
-
+                self._update_leaf_flag(parent, node)
                 parent = parent[node]
+
+    def _update_leaf_flag(self, parent, node):
+        # If the node was already in the parent, it wasn't created
+        # but it might need an update on it's leaf status
+        if not node.is_leaf:
+            return
+
+        if node not in parent:
+            return
+
+        for n in parent:
+            if node.path == n.path:
+                n.set_is_leaf(True)
 
     def iteritems(self):
         for k in sorted(self.tree.keys()):

@@ -52,6 +52,8 @@ class find_dvcs(CrawlPlugin):
     :author: Tomas Velazquez (tomas.velazquezz - gmail.com)
     """
 
+    BAD_HTTP_CODES = {301, 302, 307}
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -140,6 +142,12 @@ class find_dvcs(CrawlPlugin):
                                                 respect_size_limit=False)
 
         if is_404(http_response):
+            return
+
+        if http_response.get_code() in self.BAD_HTTP_CODES:
+            return
+
+        if not http_response.get_body():
             return
 
         try:
