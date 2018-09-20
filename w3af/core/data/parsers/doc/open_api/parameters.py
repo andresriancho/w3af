@@ -67,12 +67,53 @@ class ParameterHandler(object):
             # We make sure that all parameters have a fill attribute
             parameter.fill = None
 
-            if not parameter.required and not optional:
+            if self._should_skip(parameter, optional):
                 continue
 
             self._set_param_value(parameter)
 
         return operation
+
+    @staticmethod
+    def _should_skip(parameter, optional):
+        if ParameterHandler._is_header_with_default(parameter):
+            return False
+
+        if not parameter.required and not optional:
+            return True
+
+        return False
+
+    @staticmethod
+    def _is_header_with_default(parameter):
+        return ParameterHandler._is_header(parameter) and ParameterHandler._parameter_has_default(parameter)
+
+    @staticmethod
+    def _is_header(parameter):
+        return parameter.param_spec.get('in', None) == 'header'
+
+    @staticmethod
+    def _parameter_has_default(parameter):
+        if ParameterHandler._spec_has_default(parameter.param_spec):
+            return True
+
+        schema = parameter.param_spec.get('schema', None)
+        if schema is not None:
+            return ParameterHandler._spec_has_default(schema)
+
+        return False
+
+    @staticmethod
+    def _spec_has_default(spec):
+        default = spec.get('default', None)
+        if default is not None:
+            return True
+
+        enum = spec.get('enum', None)
+        if enum is not None:
+            return len(enum) > 0
+
+        return False
 
     def operation_has_optional_params(self):
         """

@@ -142,6 +142,7 @@ class TestOpenAPIMain(unittest.TestCase):
         e_url = 'http://w3af.org/api/cats'
         e_force_fuzzing_headers = ['X-Awesome-Header', 'X-Foo-Header']
         e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
             ('X-Foo-Header', 'foo'),
             ('Content-Type', 'application/json')])
 
@@ -191,7 +192,7 @@ class TestOpenAPIMain(unittest.TestCase):
         e_url = 'http://w3af.org/api/pets'
         e_force_fuzzing_headers = ['X-Bar-Header', 'X-Foo-Header']
         e_headers = Headers([
-            ('X-Bar-Header', 'default bar'),
+            ('X-Bar-Header', '56'),
             ('X-Foo-Header', '42'),
             ('Content-Type', 'application/json')])
 
@@ -217,6 +218,22 @@ class TestOpenAPIMain(unittest.TestCase):
         self.assertEqual(len(api_calls), 4)
 
         e_force_fuzzing_headers = []
+
+        #
+        # Assertions on call #1
+        #
+        api_call = api_calls[0]
+
+        e_url = 'http://w3af.org/api/cats'
+        e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
 
         #
         # Assertions on call #2
@@ -256,7 +273,7 @@ class TestOpenAPIMain(unittest.TestCase):
 
         e_url = 'http://w3af.org/api/pets'
         e_headers = Headers([
-            ('X-Bar-Header', 'default bar'),
+            ('X-Bar-Header', '56'),
             ('X-Foo-Header', '42'),
             ('Content-Type', 'application/json')])
 

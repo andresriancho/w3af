@@ -45,8 +45,7 @@
             "in": "header",
             "description": "another-magic-header",
             "required": false,
-            "type": "string",
-            "default": "default bar"
+            "type": "string"
           }
         ],
         "responses": {
