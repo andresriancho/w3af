@@ -28,6 +28,8 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.open_api.construct_request import construct_request
 
+import w3af.core.controllers.output_manager as om
+
 
 class RequestFactory(object):
 
@@ -52,11 +54,13 @@ class RequestFactory(object):
         self.operation = operation
         self.parameters = parameters
 
-    def get_fuzzable_request(self):
+    def get_fuzzable_request(self, discover_fuzzable_headers=False):
         """
         Creates a fuzzable request by querying different parts of the spec
         parameters, operation, etc.
 
+        :param discover_fuzzable_headers: If it's set to true,
+                                          then all fuzzable headers will be added to the fuzzable request.
         :return: A fuzzable request.
         """
         method = self.get_method()
@@ -69,7 +73,26 @@ class RequestFactory(object):
                                            post_data=data_container,
                                            method=method)
 
+        if discover_fuzzable_headers:
+            fuzzable_request.set_force_fuzzing_headers(self._get_parameter_headers())
+
         return fuzzable_request
+
+    def _get_parameter_headers(self):
+        """
+        Looks for all parameters which are passed to the endpoint via headers.
+
+        :return: A list of unique header names.
+        """
+        parameter_headers = set()
+        for parameter_name in self.parameters:
+            parameter = self.parameters[parameter_name]
+            if parameter.location == 'header':
+                parameter_headers.add(parameter.name)
+                om.out.debug('Found a parameter header for %s endpoint: %s'
+                             % (self.operation.path_name, parameter.name))
+
+        return list(parameter_headers)
 
     def _bravado_construct_request(self):
         """

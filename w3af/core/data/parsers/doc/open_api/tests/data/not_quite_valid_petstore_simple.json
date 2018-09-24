@@ -12,7 +12,7 @@
       "name": "MIT"
     }
   },
-  "host": "petstore.swagger.io",
+  "host": "w3af.org",
   "basePath": "/api",
   "schemes": [
     "http"
@@ -35,7 +35,7 @@
           {
             "name": "pet",
             "in": "body",
-            "description": "Pet to add to the store",
+            "description": "This spec should fail validation because 'required' list contains a property which is not defined in 'properties'",
             "required": true,
             "schema": {
               "title": "Pet",
@@ -47,9 +47,6 @@
                 "age": {
                   "type": "integer",
                   "format": "int32"
-                },
-                "name": {
-                  "type": "string"
                 }
               }
             }

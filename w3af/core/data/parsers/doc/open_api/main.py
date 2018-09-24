@@ -62,10 +62,11 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response, no_validation=False):
+    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True):
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
         self.no_validation = no_validation
+        self.discover_fuzzable_headers = discover_fuzzable_headers
 
     @staticmethod
     def content_type_match(http_resp):
@@ -137,7 +138,10 @@ class OpenAPI(BaseParser):
 
     def parse(self):
         """
-        Extract all the API endpoints using the bravado Open API parser
+        Extract all the API endpoints using the bravado Open API parser.
+
+        The method also looks for all parameters which are passed to endpoints via headers,
+        and stores them in to the fuzzable request
         """
         specification_handler = SpecificationHandler(self.get_http_response(),
                                                      self.no_validation)
@@ -145,7 +149,7 @@ class OpenAPI(BaseParser):
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
-                fuzzable_request = request_factory.get_fuzzable_request()
+                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI

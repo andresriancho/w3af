@@ -30,12 +30,19 @@ from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
+# Order them to be able to easily assert things
+def by_path(fra, frb):
+    return cmp(fra.get_url().url_string, frb.get_url().url_string)
+
+
 class TestOpenAPIMain(unittest.TestCase):
     DATA_PATH = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc', 'open_api', 'tests', 'data')
 
     SWAGGER_JSON = os.path.join(DATA_PATH, 'swagger.json')
     PETSTORE_SIMPLE = os.path.join(DATA_PATH, 'petstore-simple.json')
     PETSTORE_EXPANDED = os.path.join(DATA_PATH, 'petstore-simple.json')
+    MULTIPLE_PATHS_AND_HEADERS = os.path.join(DATA_PATH, 'multiple_paths_and_headers.json')
+    NOT_VALID_SPEC = os.path.join(DATA_PATH, 'not_quite_valid_petstore_simple.json')
 
     def test_json_pet_store(self):
         # http://petstore.swagger.io/v2/swagger.json
@@ -110,6 +117,200 @@ class TestOpenAPIMain(unittest.TestCase):
             data = (method, uri, headers, data)
 
             self.assertIn(data, e_api_calls)
+
+    def test_json_multiple_paths_and_headers(self):
+        body = file(self.MULTIPLE_PATHS_AND_HEADERS).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        api_calls.sort(by_path)
+
+        self.assertEqual(len(api_calls), 4)
+
+        #
+        # Assertions on call #1
+        #
+        api_call = api_calls[0]
+
+        e_url = 'http://w3af.org/api/cats'
+        e_force_fuzzing_headers = ['X-Awesome-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #2
+        #
+        api_call = api_calls[1]
+
+        e_url = 'http://w3af.org/api/cats?limit=42'
+        e_force_fuzzing_headers = ['X-Awesome-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #3
+        #
+        api_call = api_calls[2]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_force_fuzzing_headers = ['X-Bar-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #4
+        #
+        api_call = api_calls[3]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_force_fuzzing_headers = ['X-Bar-Header', 'X-Foo-Header']
+        e_headers = Headers([
+            ('X-Bar-Header', '56'),
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+    def test_disabling_headers_discovery(self):
+        body = file(self.MULTIPLE_PATHS_AND_HEADERS).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response, discover_fuzzable_headers=False)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        api_calls.sort(by_path)
+
+        self.assertEqual(len(api_calls), 4)
+
+        e_force_fuzzing_headers = []
+
+        #
+        # Assertions on call #1
+        #
+        api_call = api_calls[0]
+
+        e_url = 'http://w3af.org/api/cats'
+        e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #2
+        #
+        api_call = api_calls[1]
+
+        e_url = 'http://w3af.org/api/cats?limit=42'
+        e_headers = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #3
+        #
+        api_call = api_calls[2]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_headers = Headers([
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+        #
+        # Assertions on call #4
+        #
+        api_call = api_calls[3]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_headers = Headers([
+            ('X-Bar-Header', '56'),
+            ('X-Foo-Header', '42'),
+            ('Content-Type', 'application/json')])
+
+        self.assertEqual(api_call.get_method(), 'GET')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+    def test_disabling_spec_validation(self):
+        body = file(self.NOT_VALID_SPEC).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+        self.assertEqual(len(api_calls), 0)
+
+        parser = OpenAPI(response, no_validation=True)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+        self.assertEqual(len(api_calls), 1)
+
+        api_call = api_calls[0]
+        e_url = 'http://w3af.org/api/pets'
+        e_force_fuzzing_headers = []
+        e_headers = Headers([('Content-Type', 'application/json')])
+        e_body = '{"pet": {"age": 42}}'
+
+        self.assertEqual(api_call.get_method(), 'POST')
+        self.assertEqual(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+        self.assertEqual(api_call.get_data(), e_body)
 
     def test_can_parse_content_type_no_keywords(self):
         # JSON content type
