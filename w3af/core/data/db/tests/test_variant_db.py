@@ -24,6 +24,7 @@ import unittest
 
 from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
+from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.utils.form_params import FormParameters
@@ -170,6 +171,33 @@ class TestVariantDB(unittest.TestCase):
         s = clean_fuzzable_request(fr(URL(u)))
         e = u'(GET)-http://w3af.org/spam/%s/' % PATH_TOKEN
         self.assertEqual(s, e)
+
+    def test_clean_fuzzable_request_json(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"),
+                             headers=Headers([('Host', 'www.w3af.com')]),
+                             method='PUT',
+                             post_data=JSONContainer('{"key": "value", "second_key": ["abc", 3, 2.1]}'))
+
+        expected = u'(PUT)-http://www.w3af.com/!object-second_key-list-0-string=string&object-key-string=string'
+        self.assertEqual(clean_fuzzable_request(fr), expected)
+
+    def test_clean_fuzzable_request_json_array_null(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"),
+                             headers=Headers([('Host', 'www.w3af.com')]),
+                             method='POST',
+                             post_data=JSONContainer('["abc", null, null]'))
+
+        expected = u'(POST)-http://www.w3af.com/!list-0-string=string&list-1-null=none&list-2-null=none'
+        self.assertEqual(clean_fuzzable_request(fr), expected)
+
+    def test_clean_fuzzable_request_json_null_field(self):
+        fr = FuzzableRequest(URL("http://www.w3af.com/"),
+                             headers=Headers([('Host', 'www.w3af.com')]),
+                             method='POST',
+                             post_data=JSONContainer('{"key": null}'))
+
+        expected = u'(POST)-http://www.w3af.com/!object-key-null=none'
+        self.assertEqual(clean_fuzzable_request(fr), expected)
 
     def test_clean_form_fuzzable_request(self):
         fr = FuzzableRequest(URL("http://www.w3af.com/"),
