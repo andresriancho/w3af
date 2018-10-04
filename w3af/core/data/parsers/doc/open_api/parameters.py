@@ -20,9 +20,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import copy
 import random
 import datetime
+
+from bravado_core.operation import Operation
 
 from w3af.core.data.fuzzer.form_filler import (smart_fill,
                                                smart_fill_file)
@@ -61,7 +62,11 @@ class ParameterHandler(object):
         """
         self._fix_common_spec_issues()
 
-        operation = copy.deepcopy(self.operation)
+        # Make a copy of the operation
+        operation = Operation.from_spec(self.operation.swagger_spec,
+                                        self.operation.path_name,
+                                        self.operation.http_method,
+                                        self.operation.op_spec)
 
         for parameter_name, parameter in operation.params.iteritems():
             # We make sure that all parameters have a fill attribute
