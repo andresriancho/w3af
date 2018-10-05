@@ -119,3 +119,46 @@ class TestJSONContainer(unittest.TestCase):
 
         dc_copy = copy.deepcopy(dc)
         self.assertIsNotNone(dc_copy.get_token())
+
+    def test_headers(self):
+        jcont = JSONContainer(COMPLEX_OBJECT)
+
+        e_headers = [('Content-Type', 'application/json')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont.set_header('Content-Type', 'application/vnd.w3af+json')
+        e_headers = [('Content-Type', 'application/vnd.w3af+json')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont.set_header('X-Foo-Header', 'Bar')
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', 'Bar')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        headers = {'Content-Type': 'application/vnd.w3af+json', 'X-Foo-Header': 'Bar'}
+        jcont = JSONContainer(COMPLEX_OBJECT, headers)
+
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', 'Bar')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont.set_header('X-Foo-Header', '42')
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', '42')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont = JSONContainer(COMPLEX_OBJECT, None)
+        e_headers = [('Content-Type', 'application/json')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+    def test_wrong_headers(self):
+        jcont = JSONContainer(COMPLEX_OBJECT)
+
+        with self.assertRaises(TypeError):
+            jcont.set_header(1, 'Foo')
+
+        with self.assertRaises(TypeError):
+            jcont.set_header('Foo', 1)
+
+        with self.assertRaises(TypeError):
+            JSONContainer(COMPLEX_OBJECT, 'Foo')
+
+        with self.assertRaises(TypeError):
+            JSONContainer(COMPLEX_OBJECT, [])

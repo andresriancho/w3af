@@ -177,29 +177,27 @@ class RequestFactory(object):
         request_dict = self._bravado_construct_request()
         headers = Headers(request_dict['headers'].items())
 
+        # First, we try to extract content type from the operation.
+        #
+        # The REST API endpoint might support more than one content-type
+        # for consuming it. We only use the first one since in 99% of the cases
+        # a vulnerability which we find using one content-type will be present
+        # in others. This works the other way around also, there are very few
+        # vulnerabilities which are going to be exploitable with one content-type.
+        if self.operation.consumes:
+            headers['Content-Type'] = self.operation.consumes[0]
+
         content_type, _ = headers.iget('content-type', None)
-        if content_type is None:
-            # The content type is not in the headers, so we try to extract
-            # it from the operation.
+        if content_type is None and self.parameters:
+            # Content-Type is not set yet.
             #
-            # The REST API endpoint might support more than one content-type
-            # for consuming it. We only use the first one since in 99% of the cases
-            # a vulnerability which we find using one content-type will be present
-            # in others. This works the other way around also, there are very few
-            # vulnerabilities which are going to be exploitable with one content-
-            # type.
-            if self.operation.consumes:
-                content_type = self.operation.consumes[0]
-                headers['Content-Type'] = content_type
-            else:
-                # Finally, there are some specification documents where the consumes
-                # section might be empty. This is because the operation doesn't
-                # receive anything or because the specification is wrong.
-                #
-                # If there are parameters then we opt for serializing them as
-                # JSON, which is a safe default
-                if self.parameters:
-                    headers['Content-Type'] = self.DEFAULT_CONTENT_TYPE
+            # There are some specification documents where the consumes
+            # section might be empty. This is because the operation doesn't
+            # receive anything or because the specification is wrong.
+            #
+            # If there are parameters then we opt for serializing them as
+            # JSON, which is a safe default
+            headers['Content-Type'] = self.DEFAULT_CONTENT_TYPE
 
         return headers
 
@@ -230,5 +228,6 @@ class RequestFactory(object):
 
         # Create the data container
         dc = dc_from_content_type_and_raw_params(content_type, parameters)
+        dc.set_header('Content-Type', content_type)
 
         return dc

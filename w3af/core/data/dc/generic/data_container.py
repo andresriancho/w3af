@@ -227,6 +227,16 @@ class DataContainer(DiskItem):
         """
         return []
 
+    def set_header(self, header, value):
+        """
+        Sets a header required to send the self._post_data to the wire.
+        Override in sub-classes with care.
+
+        :param header: Header name
+        :param value:  Header value
+        """
+        pass
+
     @property
     def all_items(self):
         return str(self)
