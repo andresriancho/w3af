@@ -148,6 +148,16 @@ class TestJSONContainer(unittest.TestCase):
         e_headers = [('Content-Type', 'application/json')]
         self.assertEquals(jcont.get_headers(), e_headers)
 
+    def test_headers_immutable(self):
+        jcont = JSONContainer(OBJECT)
+
+        e_headers = [('Content-Type', 'application/json')]
+        headers = jcont.get_headers()
+        self.assertEquals(headers, e_headers)
+
+        headers.append(('X-Foo-Header', 'Bar'))
+        self.assertEquals(jcont.get_headers(), e_headers)
+
     def test_wrong_headers(self):
         jcont = JSONContainer(COMPLEX_OBJECT)
 
