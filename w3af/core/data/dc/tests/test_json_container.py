@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pickle
 import unittest
 import copy
 
@@ -172,3 +173,33 @@ class TestJSONContainer(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             JSONContainer(COMPLEX_OBJECT, [])
+
+    def test_pickle(self):
+        original = JSONContainer(COMPLEX_OBJECT)
+
+        e_headers = [('Content-Type', 'application/json')]
+        self.assertEquals(original.get_headers(), e_headers)
+
+        clone = pickle.loads(pickle.dumps(original))
+        self.assertEquals(original, clone)
+        self.assertEquals(clone.get_headers(), e_headers)
+
+        original = JSONContainer(COMPLEX_OBJECT)
+        original.set_header('Content-Type', 'application/vnd.w3af+json')
+
+        e_headers = [('Content-Type', 'application/vnd.w3af+json')]
+        self.assertEquals(original.get_headers(), e_headers)
+
+        clone = pickle.loads(pickle.dumps(original))
+        self.assertEquals(original, clone)
+        self.assertEquals(clone.get_headers(), e_headers)
+
+        original = JSONContainer(COMPLEX_OBJECT)
+        original.set_header('X-Foo-Header', 'Bar')
+
+        e_headers = [('Content-Type', 'application/json'), ('X-Foo-Header', 'Bar')]
+        self.assertEquals(original.get_headers(), e_headers)
+
+        clone = pickle.loads(pickle.dumps(original))
+        self.assertEquals(original, clone)
+        self.assertEquals(clone.get_headers(), e_headers)
