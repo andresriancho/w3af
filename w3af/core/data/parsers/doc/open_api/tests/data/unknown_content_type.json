@@ -29,7 +29,7 @@
         "description": "Updates a pet",
         "operationId": "updatePet",
         "consumes": [
-          "application/vnd.w3af+json"
+          "application/vnd.w3af"
         ],
         "produces": [
           "application/json"
@@ -50,47 +50,6 @@
                   "type": "string"
                 }
               }
-            }
-          },
-          {
-            "name": "X-Foo-Header",
-            "in": "header",
-            "description": "Just a magic header",
-            "required": true,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "pet response",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Pet"
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "description": "Creates a pet",
-        "operationId": "createPet",
-        "consumes": [
-          "application/x-www-form-urlencoded",
-          "application/vnd.w3af+json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "info",
-            "in": "body",
-            "description": "Information about the pet",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Pet"
             }
           }
         ],
