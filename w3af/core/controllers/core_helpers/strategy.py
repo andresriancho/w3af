@@ -539,6 +539,8 @@ class CoreStrategy(object):
         #
         from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
         targets_with_404 = []
+        targets_redirecting_to_https = []
+        targets_redirecting_to_other_domain = []
 
         for url in cf.cf.get('targets'):
             try:
@@ -550,6 +552,14 @@ class CoreStrategy(object):
                        ' URL "%s", the original exception was: "%s" (%s).')
                 args = (url, e, e.__class__.__name__)
                 raise ScanMustStopException(msg % args)
+
+            if self._target_redirects_to_other_domain(url, response):
+                targets_redirecting_to_other_domain.append(url)
+                continue
+
+            if self._target_redirects_to_https(url, response):
+                targets_redirecting_to_https.append(url)
+                continue
 
             try:
                 current_target_is_404 = is_404(response)
@@ -565,6 +575,37 @@ class CoreStrategy(object):
                 if current_target_is_404:
                     targets_with_404.append(url)
 
+        if targets_redirecting_to_other_domain:
+            urls = ' - %s\n'.join(u.url_string for u in targets_redirecting_to_other_domain)
+            om.out.information('w3af identified that the following user-configured'
+                               ' targets redirect to external domains which will'
+                               ' not be included in the scan. This could'
+                               ' result in a scan with low coverage: not all'
+                               ' areas of the application are scanned. Please'
+                               ' manually verify that these URLs are correct'
+                               ' and run the scan again.\n'
+                               '\n'
+                               'In most cases this situation is solved by running'
+                               ' two scans, one against each application domain.'
+                               '\n'
+                               '%s\n' % urls)
+
+        if targets_redirecting_to_https:
+            urls = ' - %s\n'.join(u.url_string for u in targets_redirecting_to_https)
+            om.out.information('w3af identified that the following user-configured'
+                               ' targets redirect HTTPS URLs which will'
+                               ' not be included in the scan. This could'
+                               ' result in a scan with low coverage: not all'
+                               ' areas of the application are scanned. Please'
+                               ' manually verify that these URLs are correct'
+                               ' and run the scan again.\n'
+                               '\n'
+                               'In most cases this situation is solved by running'
+                               ' two scans, one against the HTTP port and another'
+                               ' against the HTTPS port.'
+                               '\n'
+                               '%s\n' % urls)
+
         if targets_with_404:
             urls = ' - %s\n'.join(u.url_string for u in targets_with_404)
             om.out.information('w3af identified the following user-configured'
@@ -575,6 +616,34 @@ class CoreStrategy(object):
                                ' required, run the scan again.\n'
                                '\n'
                                '%s\n' % urls)
+
+    def _target_redirects_to_other_domain(self, url, response):
+        """
+        :param url: The URL that was requested
+        :param response: The HTTP response
+        :return: True if the response is redirecting the browser to another domain
+        """
+        response_url = response.get_url()
+
+        if response_url.get_domain() != url.get_domain():
+            return True
+
+        return False
+
+    def _target_redirects_to_https(self, url, response):
+        """
+        :param url: The URL that was requested
+        :param response: The HTTP response
+        :return: True if the response is redirecting the browser to HTTPS
+        """
+        if url.get_protocol() != 'http':
+            return False
+
+        response_url = response.get_url()
+        if response_url.get_protocol() != 'https':
+            return False
+
+        return True
 
     def _setup_crawl_infrastructure(self):
         """
