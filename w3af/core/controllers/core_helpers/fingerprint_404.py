@@ -266,15 +266,25 @@ class Fingerprint404(object):
     def _append_to_base_404_responses(self, data):
         self._base_404_responses.append(data)
 
-        msg = 'Added 404 data for "%s" (id:%s) to the base 404 result database (size: %s/%s)'
-        args = (data.url, data.id, len(self._base_404_responses), MAX_404_RESPONSES)
+        msg = ('Added 404 data for "%s" (id:%s, len:%s) to the base'
+               ' 404 result database (size: %s/%s)')
+        args = (data.url,
+                data.id,
+                len(data.body),
+                len(self._base_404_responses),
+                MAX_404_RESPONSES)
         om.out.debug(msg % args)
 
     def _append_to_extended_404_responses(self, data):
         self._extended_404_responses.append(data)
 
-        msg = 'Added 404 data for "%s" (id:%s) to the extended 404 result database (size: %s/%s)'
-        args = (data.url, data.id, len(self._extended_404_responses), MAX_404_RESPONSES)
+        msg = ('Added 404 data for "%s" (id:%s, len:%s)) to the extended'
+               ' 404 result database (size: %s/%s)')
+        args = (data.url,
+                data.id,
+                len(data.body),
+                len(self._base_404_responses),
+                MAX_404_RESPONSES)
         om.out.debug(msg % args)
 
         self.clean_404_response_db()
@@ -663,7 +673,8 @@ class Fingerprint404(object):
 
         #
         #   Not equal! This means that the URL we generated really triggered
-        #   a 404, and that our response is different (not a 404)
+        #   a 404, and that the response received as parameter is different
+        #   (not a 404)
         #
         if not is_fuzzy_equal:
             msg = ('The generated HTTP response for %s (id: %s) is different'
