@@ -171,7 +171,7 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     :return: True if the process should exit
     """
     if StartUpConfig().get_skip_dependencies_check():
-        return True
+        return False
 
     disable_warnings()
 
