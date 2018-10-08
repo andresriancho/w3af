@@ -39,10 +39,12 @@ class JSONContainer(DataContainer):
     """
 
     JSON_CONTENT_TYPE = 'application/json'
+    DEFAULT_HEADERS = {'Content-Type': JSON_CONTENT_TYPE}
 
-    def __init__(self, json_post_data, encoding=UTF8):
+    def __init__(self, json_post_data, headers=None, encoding=UTF8):
         """
         :param json_post_data: The JSON data as string
+        :param headers: The headers as dict
         """
         DataContainer.__init__(self, encoding=encoding)
 
@@ -52,14 +54,21 @@ class JSONContainer(DataContainer):
         if not JSONContainer.is_json(json_post_data):
             raise ValueError(ERR_MSG % json_post_data[:50])
 
+        if headers is not None and not isinstance(headers, dict):
+            raise TypeError(ERR_MSG % headers)
+
         self._json = None
         self._raw_json = None
+
+        self._headers = headers
+        if self._headers is None:
+            self._headers = JSONContainer.DEFAULT_HEADERS.copy()
 
         self.parse_json(json_post_data)
 
     def __reduce__(self):
-        return self.__class__, (self._raw_json,), {'token': self.token,
-                                                   'encoding': self.encoding}
+        return self.__class__, (self._raw_json, self._headers), {'token': self.token,
+                                                                 'encoding': self.encoding}
 
     def get_type(self):
         return 'JSON'
@@ -161,4 +170,13 @@ class JSONContainer(DataContainer):
             return filter_non_printable(str(self))[:self.MAX_PRINTABLE]
 
     def get_headers(self):
-        return [('Content-Type', self.JSON_CONTENT_TYPE)]
+        return list(self._headers.items())
+
+    def set_header(self, name, value):
+        if not isinstance(name, basestring):
+            raise TypeError('Header name must be a string.')
+
+        if not isinstance(value, basestring):
+            raise TypeError('Header value must be a string.')
+
+        self._headers[name] = value

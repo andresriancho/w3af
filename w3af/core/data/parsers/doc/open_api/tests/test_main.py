@@ -25,6 +25,7 @@ import unittest
 
 from w3af import ROOT_PATH
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -43,6 +44,8 @@ class TestOpenAPIMain(unittest.TestCase):
     PETSTORE_EXPANDED = os.path.join(DATA_PATH, 'petstore-simple.json')
     MULTIPLE_PATHS_AND_HEADERS = os.path.join(DATA_PATH, 'multiple_paths_and_headers.json')
     NOT_VALID_SPEC = os.path.join(DATA_PATH, 'not_quite_valid_petstore_simple.json')
+    CUSTOM_CONTENT_TYPE = os.path.join(DATA_PATH, 'custom_content_type.json')
+    UNKNOWN_CONTENT_TYPE = os.path.join(DATA_PATH, 'unknown_content_type.json')
 
     def test_json_pet_store(self):
         # http://petstore.swagger.io/v2/swagger.json
@@ -200,6 +203,78 @@ class TestOpenAPIMain(unittest.TestCase):
         self.assertEqual(api_call.get_uri().url_string, e_url)
         self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+
+    # Check if the OpenAPI plugin takes into account content types provided in a 'consumes' list.
+    def test_custom_content_type(self):
+        body = file(self.CUSTOM_CONTENT_TYPE).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        api_calls.sort(by_path)
+
+        self.assertEqual(len(api_calls), 2)
+
+        #
+        # Assertions on call #1
+        #
+        api_call = api_calls[0]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_force_fuzzing_headers = []
+        e_headers = Headers([('Content-Type', 'application/vnd.w3af+json')])
+        e_post_data_headers = Headers([('Content-Type', 'application/vnd.w3af+json')])
+        e_all_headers = Headers([('Content-Type', 'application/vnd.w3af+json')])
+
+        self.assertIsInstance(api_call.get_raw_data(), JSONContainer)
+        self.assertEquals(api_call.get_method(), 'PUT')
+        self.assertEquals(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEquals(api_call.get_post_data_headers(), e_post_data_headers)
+        self.assertEquals(api_call.get_all_headers(), e_all_headers)
+        self.assertEquals(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+        self.assertEquals(str(api_call.get_raw_data()), '{"info": {"tag": "7", "name": "John", "id": 42}}')
+
+        #
+        # Assertions on call #2
+        #
+        api_call = api_calls[1]
+
+        e_url = 'http://w3af.org/api/pets'
+        e_force_fuzzing_headers = ['X-Foo-Header']
+        e_headers = Headers([('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', '42')])
+        e_post_data_headers = Headers([('Content-Type', 'application/vnd.w3af+json')])
+        e_all_headers = Headers([('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', '42')])
+
+        self.assertIsInstance(api_call.get_raw_data(), JSONContainer)
+        self.assertEquals(api_call.get_method(), 'POST')
+        self.assertEquals(api_call.get_uri().url_string, e_url)
+        self.assertEquals(api_call.get_headers(), e_headers)
+        self.assertEquals(api_call.get_post_data_headers(), e_post_data_headers)
+        self.assertEquals(api_call.get_all_headers(), e_all_headers)
+        self.assertEquals(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
+        self.assertEquals(str(api_call.get_raw_data()), '{"info": {"tag": "7", "name": "John"}}')
+
+    # Check if the OpenAPI plugin doesn't return a fuzzable request for a endpoint
+    # which contains an unknown content type in its 'consumes' list.
+    def test_unknown_content_type(self):
+        body = file(self.UNKNOWN_CONTENT_TYPE).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+        self.assertEquals(api_calls, [])
 
     def test_disabling_headers_discovery(self):
         body = file(self.MULTIPLE_PATHS_AND_HEADERS).read()
