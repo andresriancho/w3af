@@ -23,6 +23,7 @@ import sys
 import warnings
 import logging
 
+from w3af.core.data.db.startup_cfg import StartUpConfig
 from .utils import verify_python_version
 verify_python_version()
 
@@ -169,6 +170,9 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     
     :return: True if the process should exit
     """
+    if StartUpConfig().get_skip_dependencies_check():
+        return True
+
     disable_warnings()
 
     platform = get_current_platform()
