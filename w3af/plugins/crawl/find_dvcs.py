@@ -50,6 +50,7 @@ class find_dvcs(CrawlPlugin):
 
     :author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
     :author: Tomas Velazquez (tomas.velazquezz - gmail.com)
+    :author: Andres Riancho (andres@andresriancho.com)
     """
 
     BAD_HTTP_CODES = {301, 302, 307}
@@ -82,12 +83,13 @@ class find_dvcs(CrawlPlugin):
         """
         domain_path = fuzzable_request.get_url().get_domain_path()
 
-        if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.add(domain_path)
+        if domain_path in self._analyzed_dirs:
+            return
 
-            test_generator = self._url_generator(domain_path)
-            self.worker_pool.map_multi_args(self._send_and_check,
-                                            test_generator)
+        self._analyzed_dirs.add(domain_path)
+
+        test_generator = self._url_generator(domain_path)
+        self.worker_pool.map_multi_args(self._send_and_check, test_generator)
 
     def _url_generator(self, domain_path):
         """
