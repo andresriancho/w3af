@@ -135,6 +135,7 @@ class ssl_certificate(AuditPlugin):
 
         try:
             ssl_sock = ssl.wrap_socket(s,
+                                       server_hostname=domain,
                                        ca_certs=self._ca_file,
                                        cert_reqs=ssl.CERT_REQUIRED,
                                        ssl_version=ssl.PROTOCOL_SSLv23)
@@ -308,7 +309,6 @@ class ssl_certificate(AuditPlugin):
                 ' %s site:\n%s')
         desc %= args
         
-        om.out.information(desc)
         i = Info('SSL Certificate dump', desc, 1, self.get_name())
         i.set_url(url)
         
