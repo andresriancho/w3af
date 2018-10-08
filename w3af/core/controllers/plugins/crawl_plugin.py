@@ -98,3 +98,23 @@ class CrawlPlugin(Plugin):
                 on_success(http_response, url, *args)
 
         return http_response
+
+    def http_get(self, url, *args, **kwargs):
+        """
+        Similar to `http_get_and_parse` but will not send the HTTP response to
+        the core.
+
+        :param url: The URL instance to send the GET request to
+        :param args: args for send_mutant
+        :param kwargs: kwargs for send_mutant
+        :return: The HTTP response
+        """
+        fr = FuzzableRequest(url, method='GET')
+
+        on_success = kwargs.pop('on_success', None)
+        http_response = self._uri_opener.send_mutant(fr, cache=True, *args, **kwargs)
+
+        if on_success is not None:
+            on_success(http_response, url, *args)
+
+        return http_response
