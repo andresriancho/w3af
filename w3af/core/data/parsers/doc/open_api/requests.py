@@ -25,7 +25,6 @@ from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.factory import dc_from_content_type_and_raw_params
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
-from w3af.core.data.dc.xmlrpc import XmlRpcContainer
 from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
