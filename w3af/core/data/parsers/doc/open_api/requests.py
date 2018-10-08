@@ -217,8 +217,7 @@ class RequestFactory(object):
         if not self.operation.consumes:
             return None
 
-        container_types = [JSONContainer, MultipartContainer,
-                           URLEncodedForm, XmlRpcContainer]
+        container_types = [JSONContainer, MultipartContainer, URLEncodedForm]
         for container_type in container_types:
             content_type = self._look_for_consuming_content_type(container_type)
             if content_type is not None:
