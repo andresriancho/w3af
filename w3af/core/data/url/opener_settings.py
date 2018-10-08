@@ -46,7 +46,7 @@ from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler, NoOpErrorHandler
-from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, LIST, BOOL
+from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, URL_LIST, BOOL
 
 USER_AGENT_HEADER = 'User-Agent'
 
@@ -601,15 +601,15 @@ class OpenerSettings(Configurable):
                         help=h, tabid='Misc')
         ol.add(o)
 
-        d = 'Comma separated list of URLs which will always be detected as' \
-            ' 404 pages'
-        o = opt_factory('always_404', cfg.get('always_404'), d, LIST,
+        d = ('Comma separated list of URLs which will always be detected as'
+             ' 404 pages')
+        o = opt_factory('always_404', cfg.get('always_404'), d, URL_LIST,
                         tabid='404 settings')
         ol.add(o)
         
-        d = 'Comma separated list of URLs which will never be detected as' \
-            ' 404 pages'
-        o = opt_factory('never_404', cfg.get('never_404'), d, LIST,
+        d = ('Comma separated list of URLs which will never be detected as'
+             ' 404 pages')
+        o = opt_factory('never_404', cfg.get('never_404'), d, URL_LIST,
                         tabid='404 settings')
         ol.add(o)
         
