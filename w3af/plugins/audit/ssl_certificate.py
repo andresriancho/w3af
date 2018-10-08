@@ -67,15 +67,17 @@ class ssl_certificate(AuditPlugin):
         url = freq.get_url()
         domain = url.get_domain()
 
-        if 'http' == url.get_protocol().lower():
+        if url.get_protocol().lower() == 'http':
             return
         
         with self._plugin_lock:
 
-            if not domain in self._already_tested:
-                self._already_tested.add(domain)
+            if domain in self._already_tested:
+                return
+
+            self._already_tested.add(domain)
                 
-                self._analyze_ssl_cert(url, domain)
+            self._analyze_ssl_cert(url, domain)
 
     def _analyze_ssl_cert(self, url, domain):
         """
@@ -87,7 +89,15 @@ class ssl_certificate(AuditPlugin):
         self._ssl_info_to_kb(url, domain)
         
     def _is_ssl_v2(self, url, domain):
+        """
+        Check if the server allows SSLv2 connections
+
+        :param url: the URL to connect to
+        :param domain: the domain to connect to
+        :return: None, save any new vulnerabilities to the KB
+        """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         # SSLv2 check
         # NB! From OpenSSL lib ver >= 1.0 there is no support for SSLv2
         try:
@@ -100,19 +110,29 @@ class ssl_certificate(AuditPlugin):
         except Exception, e:
             pass
         else:
-            desc = 'The target host "%s" has SSL version 2 enabled which is'\
-                   ' known to be insecure.'
-            desc = desc % domain
+            desc = ('The target host "%s" has SSL version 2 enabled which is'
+                    ' known to be insecure.')
+            desc %= domain
             
-            v = Vuln('Insecure SSL version', desc,
-                     severity.LOW, 1, self.get_name())
-
+            v = Vuln('Insecure SSL version',
+                     desc,
+                     severity.LOW,
+                     1,
+                     self.get_name())
             v.set_url(url)
 
             self.kb_append(self, 'ssl_v2', v)
 
     def _is_trusted_cert(self, url, domain):
+        """
+        Check if the server uses a trusted certificate
+
+        :param url: the URL to connect to
+        :param domain: the domain to connect to
+        :return: None, save any new vulnerabilities to the KB
+        """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         try:
             ssl_sock = ssl.wrap_socket(s,
                                        ca_certs=self._ca_file,
@@ -246,8 +266,8 @@ class ssl_certificate(AuditPlugin):
         try:
             cert, cert_der, cipher = self._get_cert(url, domain)
         except RuntimeError, rte:
-            msg = 'Failed to analyze certificate expiration due to an error in'\
-                  ' the get_cert method: "%s".'
+            msg = ('Failed to analyze certificate expiration due to an error'
+                   ' in the get_cert method: "%s".')
             om.out.debug(msg % rte)
             return
 
@@ -277,15 +297,17 @@ class ssl_certificate(AuditPlugin):
         try:
             cert, cert_der, cipher = self._get_cert(url, domain)
         except RuntimeError, rte:
-            msg = 'Failed to store SSL information to KB due to an error in'\
-                  ' the get_cert method: "%s".'
+            msg = ('Failed to store SSL information to KB due to an error in'
+                   ' the get_cert method: "%s".')
             om.out.debug(msg % rte)
             return
         
         # Print the SSL information to the log
-        desc = 'This is the information about the SSL certificate used for'\
-               ' %s site:\n%s' % (domain,
-                                  self._dump_ssl_info(cert, cert_der, cipher))
+        args = (domain, self._dump_ssl_info(cert, cert_der, cipher))
+        desc = ('This is the information about the SSL certificate used for'
+                ' %s site:\n%s')
+        desc %= args
+        
         om.out.information(desc)
         i = Info('SSL Certificate dump', desc, 1, self.get_name())
         i.set_url(url)
@@ -299,8 +321,8 @@ class ssl_certificate(AuditPlugin):
         res = '\n== Certificate information ==\n'
         res += pformat(cert)
         res += '\n\n== Used cipher ==\n' + pformat(cipher)
-        res += '\n\n== Certificate dump ==\n' + \
-            ssl.DER_cert_to_PEM_cert(cert_der)
+        res += '\n\n== Certificate dump ==\n' + ssl.DER_cert_to_PEM_cert(cert_der)
+        
         # Indent
         res = res.replace('\n', '\n    ')
         res = '    ' + res
@@ -312,19 +334,18 @@ class ssl_certificate(AuditPlugin):
         """
         ol = OptionList()
 
-        d = 'Set minimal amount of days before expiration of the certificate'\
-            ' for alerting'
-        h = 'If the certificate will expire in period of minExpireDays w3af'\
-            ' will show an alert about it, which is useful for admins to'\
-            ' remember to renew the certificate.'
-        o = opt_factory('minExpireDays', self._min_expire_days, d, 'integer',
-                        help=h)
+        d = ('Set minimal amount of days before expiration of the certificate'
+             ' for alerting')
+        h = ('If the certificate will expire in period of minExpireDays w3af'
+             ' will show an alert about it, which is useful for admins to'
+             ' remember to renew the certificate.')
+        o = opt_factory('mix_expire_days', self._min_expire_days, d, 'integer', help=h)
         ol.add(o)
-
+        
         d = 'CA PEM file path'
-        o = opt_factory('caFileName', self._ca_file, d, INPUT_FILE)
+        o = opt_factory('ca_file_name', self._ca_file, d, INPUT_FILE)
         ol.add(o)
-
+        
         return ol
 
     def set_options(self, options_list):
@@ -332,11 +353,11 @@ class ssl_certificate(AuditPlugin):
         This method sets all the options that are configured using the user
         interface generated by the framework using the result of get_options().
 
-        :param OptionList: A dictionary with the options for the plugin.
+        :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
-        self._min_expire_days = options_list['minExpireDays'].get_value()
-        self._ca_file = options_list['caFileName'].get_value()
+        self._min_expire_days = options_list['mix_expire_days'].get_value()
+        self._ca_file = options_list['ca_file_name'].get_value()
 
     def get_long_desc(self):
         """
