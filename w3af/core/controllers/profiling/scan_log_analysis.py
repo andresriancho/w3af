@@ -1302,7 +1302,9 @@ def show_total_http_requests(scan):
 
     total = sum(count.itervalues())
     print('The scan sent %s HTTP requests' % total)
-    print('%i%% responses came from HTTP cache' % (cached_responses / total * 100,))
+
+    if total:
+        print('%i%% responses came from HTTP cache' % (cached_responses / total * 100,))
 
     for code, num in count.iteritems():
         print('    Sent %s HTTP requests which returned code %s' % (code, num))
