@@ -40,7 +40,7 @@ SCAN_FINISHED_IN = re.compile('Scan finished in (.*).')
 SCAN_TOOK_RE = re.compile('took (\d*\.\d\d)s to run')
 
 HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
-HTTP_METHOD_RE = re.compile('\] (.*?) .*? returned HTTP code')
+HTTP_METHOD_URL_RE = re.compile('\] (.*?) (.*?) (with data: ".*?" )?returned HTTP code')
 FROM_CACHE = 'from_cache=1'
 
 SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) seconds')
@@ -1343,6 +1343,7 @@ def show_total_http_requests(scan):
 
     count = dict()
     methods = dict()
+    urls = dict()
     cached_responses = 0.0
 
     for line in scan:
@@ -1362,14 +1363,22 @@ def show_total_http_requests(scan):
             else:
                 count[code] = 1
 
-        match = HTTP_METHOD_RE.search(line)
+        match = HTTP_METHOD_URL_RE.search(line)
         if match:
             method = match.group(1)
+            url = match.group(2)
 
             if method in methods:
                 methods[method] += 1
             else:
                 methods[method] = 1
+
+            url = get_path(url)
+
+            if url in urls:
+                urls[url] += 1
+            else:
+                urls[url] = 1
 
     total = sum(count.itervalues())
     print('The scan sent %s HTTP requests' % total)
@@ -1398,6 +1407,16 @@ def show_total_http_requests(scan):
     for method, count in methods_list:
         args = (method, count, count / float(total) * 100)
         print('    HTTP method %s was sent %s times (%i%%)' % args)
+
+    print('')
+
+    urls_list = urls.items()
+    urls_list.sort(by_value)
+    urls_list = urls_list[:10]
+
+    for url, num in urls_list:
+        args = (url, num, num / float(total) * 100)
+        print('    URL %s received %s requests (%i%%)' % args)
 
     print('')
 
