@@ -500,6 +500,8 @@ def show_errors(scan):
         print('The scan finished without errors / exceptions.')
         return
 
+    print('The scan generated %s errors during the run.' % len(errors))
+
     print('The following errors / exceptions were identified:')
     for error in errors:
         print('    - %s' % error)
