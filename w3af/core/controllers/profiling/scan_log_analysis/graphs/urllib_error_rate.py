@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 EXTENDED_URLLIB_ERRORS_RE = re.compile('ExtendedUrllib error rate is at (.*?)%')
 
 
-def show_extended_urllib_error_rate(scan):
+def show_extended_urllib_error_rate(scan_log_filename, scan):
     error_rate = []
     error_rate_timestamps = []
 

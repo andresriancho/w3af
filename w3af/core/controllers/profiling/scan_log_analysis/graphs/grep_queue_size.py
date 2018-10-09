@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 GREP_DISK_DICT = re.compile('The current GrepIn DiskDict size is (\d*)\.')
 
 
-def show_queue_size_grep(scan):
+def show_queue_size_grep(scan_log_filename, scan):
     scan.seek(0)
 
     grep_queue_sizes = []

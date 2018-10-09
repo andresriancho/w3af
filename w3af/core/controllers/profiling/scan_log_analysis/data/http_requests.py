@@ -7,7 +7,7 @@ HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
 FROM_CACHE = 'from_cache=1'
 
 
-def show_total_http_requests(scan):
+def show_total_http_requests(scan_log_filename, scan):
     scan.seek(0)
 
     count = dict()

@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 AUDITOR_DISK_DICT = re.compile('The current AuditorIn DiskDict size is (\d*).')
 
 
-def show_queue_size_audit(scan):
+def show_queue_size_audit(scan_log_filename, scan):
     scan.seek(0)
 
     auditor_queue_sizes = []

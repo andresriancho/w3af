@@ -13,7 +13,7 @@ CALCULATED_ETA = re.compile('Calculated (.*?) ETA: (.*?) seconds')
 CRAWL_INFRA_FINISHED = 'Producer CrawlInfra has finished'
 
 
-def show_progress_delta(scan):
+def show_progress_delta(scan_log_filename, scan):
     first_timestamp = get_first_timestamp(scan)
 
     #

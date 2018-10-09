@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) seconds')
 
 
-def show_timeout(scan):
+def show_timeout(scan_log_filename, scan):
     scan.seek(0)
     timeouts = []
     timeout_timestamps = []

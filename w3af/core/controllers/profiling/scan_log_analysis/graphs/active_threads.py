@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 ACTIVE_THREADS = re.compile('The framework has (.*?) active threads.')
 
 
-def show_active_threads(scan):
+def show_active_threads(scan_log_filename, scan):
     scan.seek(0)
 
     active_threads = []

@@ -1,12 +1,17 @@
 import re
 
+from utils.output import ListOutput, ListOutputItem
+
+
 NEW_URL_FOUND = re.compile('New URL found by (.*?) plugin')
 
 
-def show_crawling_stats(scan):
+def show_crawling_stats(scan_log_filename, scan):
     FOUND = 'A new form was found!'
     IGNORING = 'Ignoring form'
     FUZZABLE = 'New fuzzable request identified'
+
+    output = ListOutput('crawl_stats')
 
     scan.seek(0)
 
@@ -36,21 +41,13 @@ def show_crawling_stats(scan):
             else:
                 new_url_found_by_plugin[plugin_name] = 1
 
-    print('Found %s fuzzable requests' % fuzzable)
-    print('Found %s forms' % found_forms)
-    print('Ignored %s forms' % ignored_forms)
+    output.append(ListOutputItem('fuzzable requests', {'found': fuzzable}))
+    output.append(ListOutputItem('forms', {'found': found_forms,
+                                           'ignored': ignored_forms}))
 
     if not new_url_found_by_plugin:
         return
 
-    print('')
-    print('URLs found grouped by plugin:')
+    output.append(ListOutputItem('found URLs (group by plugin)', new_url_found_by_plugin))
 
-    def by_value(a, b):
-        return cmp(b[1], a[1])
-
-    nufbp = new_url_found_by_plugin.items()
-    nufbp.sort(by_value)
-
-    for plugin_name, count in nufbp:
-        print('    - %s: %s' % (plugin_name, count))
+    return output

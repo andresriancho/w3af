@@ -1,4 +1,4 @@
-def show_known_problems(scan):
+def show_known_problems(scan_log_filename, scan):
     """
     This will query the log for some known issues and if those appear show
     alerts in the output.

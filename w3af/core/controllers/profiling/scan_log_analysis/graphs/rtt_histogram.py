@@ -7,7 +7,7 @@ from utils.graph import _num_formatter
 RTT_RE = re.compile('\(.*?rtt=(.*?),.*\)')
 
 
-def show_rtt_histo(scan):
+def show_rtt_histo(scan_log_filename, scan):
     scan.seek(0)
     rtts = []
 

@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 PARSER_PROCESS_MEMORY_LIMIT = re.compile('Using RLIMIT_AS memory usage limit (.*?) MB for new pool process')
 
 
-def show_parser_process_memory_limit(scan):
+def show_parser_process_memory_limit(scan_log_filename, scan):
     scan.seek(0)
 
     memory_limit = []

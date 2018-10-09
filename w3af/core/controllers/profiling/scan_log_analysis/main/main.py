@@ -1,3 +1,5 @@
+import sys
+
 from data.file_sizes import show_file_sizes
 from data.crawl_graph import generate_crawl_graph
 from data.errors import show_errors
@@ -31,73 +33,48 @@ from graphs.connection_pool_wait import show_connection_pool_wait
 from graphs.http_requests_over_time import show_http_requests_over_time
 
 
-def show_scan_stats(scan_log_filename, scan):
-    show_scan_finished_in(scan)
+def get_console_functions():
+    return [
+        #show_scan_finished_in,
+        show_file_sizes,
+        show_errors,
+        #show_discovery_time,
+        #show_audit_time,
+        #show_grep_time,
+        #show_output_time,
+        #show_plugin_time,
+        #show_http_errors,
+        #show_total_http_requests,
+        #show_rtt_histo,
+        #show_timeout,
+        #show_extended_urllib_error_rate,
+        #show_connection_pool_wait,
+        #show_http_requests_over_time,
+        show_crawling_stats,
+        #generate_crawl_graph,
+        #show_queue_size_grep,
+        #show_queue_size_audit,
+        #show_queue_size_crawl,
+        #show_progress_delta,
+        #show_grep_plugin_performance,
+        #show_parser_errors,
+        #show_parser_process_memory_limit,
+        #show_worker_pool_size,
+        #show_active_threads,
+        #show_consumer_pool_size,
+        show_consumer_join_times,
+        #show_freeze_locations,
+        #show_known_problems,
+    ]
 
-    show_file_sizes(scan_log_filename, scan)
 
-    print('')
+def generate_console_output(scan_log_filename, scan):
+    for _function in get_console_functions():
 
-    show_errors(scan)
+        output = _function(scan_log_filename, scan)
 
-    print('')
+        if output is None:
+            print('%s returned None' % _function.__name__)
+            sys.exit(1)
 
-    print('Wall time used by threads:')
-    show_discovery_time(scan)
-    show_audit_time(scan)
-    show_grep_time(scan)
-    show_output_time(scan)
-
-    show_plugin_time(scan)
-
-    print('')
-
-    show_http_errors(scan)
-    show_total_http_requests(scan)
-    show_rtt_histo(scan)
-    show_timeout(scan)
-    show_extended_urllib_error_rate(scan)
-    show_connection_pool_wait(scan)
-    show_http_requests_over_time(scan)
-
-    print('')
-
-    show_crawling_stats(scan)
-    generate_crawl_graph(scan)
-
-    print('')
-
-    show_queue_size_grep(scan)
-    show_queue_size_audit(scan)
-    show_queue_size_crawl(scan)
-
-    print('')
-
-    show_progress_delta(scan)
-
-    print('')
-
-    show_grep_plugin_performance(scan)
-
-    print('')
-
-    show_parser_errors(scan)
-    show_parser_process_memory_limit(scan)
-
-    print('')
-
-    show_worker_pool_size(scan)
-    show_active_threads(scan)
-    show_consumer_pool_size(scan)
-
-    print('')
-
-    show_consumer_join_times(scan)
-
-    print('')
-
-    show_freeze_locations(scan)
-
-    print('')
-
-    show_known_problems(scan)
+        output.to_console()

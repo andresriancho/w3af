@@ -1,24 +1,22 @@
 import re
 import os
 
+from utils.output import KeyValueOutput
+
 XML_OUTPUT_SIZE = re.compile('The XML output file size is (.*?) bytes.')
 
 
 def show_file_sizes(scan_log_filename, scan):
-    print('')
-
     stat_info = os.stat(scan_log_filename)
 
-    print('The debug log file size is %s bytes' % stat_info.st_size)
-
-    latest_xml_size_line = None
+    latest_xml_size = None
 
     for line in scan:
         match = XML_OUTPUT_SIZE.search(line)
         if match:
-            latest_xml_size_line = line
+            latest_xml_size = match.group(1)
 
-    if latest_xml_size_line is None:
-        return
+    data = {'debug_log': stat_info.st_size,
+            'xml_output': latest_xml_size}
 
-    print(latest_xml_size_line)
+    return KeyValueOutput('file_sizes', 'output file sizes (bytes)', data)

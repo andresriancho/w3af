@@ -9,7 +9,7 @@ except ImportError:
     print('Missing dependency, please run:\n    pip install plotille')
     sys.exit(1)
 
-from main.main import show_scan_stats
+from main.main import generate_console_output
 from main.watch import watch
 
 
@@ -53,4 +53,4 @@ if __name__ == '__main__':
     if parsed_args.watch:
         watch(scan, parsed_args.watch)
     else:
-        show_scan_stats(parsed_args.scan_log, scan)
+        generate_console_output(parsed_args.scan_log, scan)

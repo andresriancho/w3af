@@ -1,10 +1,11 @@
 import re
 
+from utils.output import KeyValueOutput
 
 JOIN_TIMES = re.compile('(.*?) took (.*?) seconds to join\(\)')
 
 
-def show_consumer_join_times(scan):
+def show_consumer_join_times(scan_log_filename, scan):
     scan.seek(0)
 
     join_times = []
@@ -18,9 +19,9 @@ def show_consumer_join_times(scan):
             join_times.append(match.group(0))
 
     if not join_times:
-        print('The scan log has no calls to join()')
-        return
+        return KeyValueOutput('consumer_join_times',
+                              'The scan log has no calls to join()')
 
-    print('These consumers were join()\'ed')
-    for join_time in join_times:
-        print('    - %s' % join_time)
+    return KeyValueOutput('consumer_join_times',
+                          'These consumers have been join()ed',
+                          join_times)

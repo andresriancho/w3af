@@ -7,7 +7,7 @@ from utils.utils import (get_first_timestamp,
 SCAN_FINISHED_IN = re.compile('Scan finished in (.*).')
 
 
-def show_scan_finished_in(scan):
+def show_scan_finished_in(scan_log_filename, scan):
     scan.seek(0)
 
     first_timestamp = get_first_timestamp(scan)

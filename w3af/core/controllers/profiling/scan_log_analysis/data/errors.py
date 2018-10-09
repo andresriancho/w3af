@@ -1,5 +1,8 @@
 import re
 
+from utils.output import KeyValueOutput
+
+
 ERRORS_RE = [re.compile('Unhandled exception "(.*?)"'),
              re.compile('traceback', re.IGNORECASE),
              re.compile('w3af-crash'),
@@ -7,7 +10,7 @@ ERRORS_RE = [re.compile('Unhandled exception "(.*?)"'),
              re.compile('The scan will stop')]
 
 
-def show_errors(scan):
+def show_errors(scan_log_filename, scan):
     scan.seek(0)
 
     errors = []
@@ -18,12 +21,7 @@ def show_errors(scan):
             if match:
                 errors.append(line)
 
-    if not errors:
-        print('The scan finished without errors / exceptions.')
-        return
+    output = KeyValueOutput('errors', 'errors and exceptions', {'count': len(errors),
+                                                                'errors': errors})
 
-    print('The scan generated %s errors during the run.' % len(errors))
-
-    print('The following errors / exceptions were identified:')
-    for error in errors:
-        print('    - %s' % error)
+    return output

@@ -7,7 +7,7 @@ from utils.utils import get_line_epoch, InvalidTimeStamp
 HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
 
 
-def show_http_requests_over_time(scan):
+def show_http_requests_over_time(scan_log_filename, scan):
     scan.seek(0)
     requests_by_minute = []
     requests_in_this_minute = 0

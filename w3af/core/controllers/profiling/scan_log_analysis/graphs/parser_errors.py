@@ -9,7 +9,7 @@ PARSER_TIMEOUT = '[timeout] The parser took more than'
 PARSER_MEMORY_LIMIT = 'The parser exceeded the memory usage limit of'
 
 
-def show_parser_errors(scan):
+def show_parser_errors(scan_log_filename, scan):
     scan.seek(0)
 
     timeout_count = 0

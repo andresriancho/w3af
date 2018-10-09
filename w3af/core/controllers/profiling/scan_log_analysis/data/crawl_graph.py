@@ -5,7 +5,7 @@ from utils.utils import get_path
 WEBSPIDER_FOUND_LINK = re.compile('\[web_spider\] Found new link "(.*?)" at "(.*?)"')
 
 
-def generate_crawl_graph(scan):
+def generate_crawl_graph(scan_log_filename, scan):
     scan.seek(0)
 
     data = {}

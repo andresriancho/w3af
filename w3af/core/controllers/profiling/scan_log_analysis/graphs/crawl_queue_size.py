@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfraIn DiskDict size is (\d*).')
 
 
-def show_queue_size_crawl(scan):
+def show_queue_size_crawl(scan_log_filename, scan):
     scan.seek(0)
 
     crawl_queue_sizes = []

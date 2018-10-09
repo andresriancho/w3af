@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 IDLE_CONSUMER_WORKERS = re.compile('\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
 
 
-def show_consumer_pool_size(scan):
+def show_consumer_pool_size(scan_log_filename, scan):
     scan.seek(0)
 
     consumer_pool_perc_audit = []

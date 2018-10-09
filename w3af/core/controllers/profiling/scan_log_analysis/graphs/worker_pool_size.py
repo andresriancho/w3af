@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 WORKER_POOL_SIZE = re.compile('the worker pool size to (.*?) ')
 
 
-def show_worker_pool_size(scan):
+def show_worker_pool_size(scan_log_filename, scan):
     scan.seek(0)
 
     worker_pool_sizes = []

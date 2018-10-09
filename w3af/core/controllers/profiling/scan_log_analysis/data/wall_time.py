@@ -21,7 +21,7 @@ def show_generic_spent_time(scan, name, must_have):
     print('    %s() took %s' % (name, epoch_to_string(spent_time)))
 
 
-def show_plugin_time(scan):
+def show_plugin_time(scan_log_filename, scan):
     scan.seek(0)
     spent_time_by_plugin = dict()
 
@@ -70,17 +70,17 @@ def show_plugin_time(scan):
             print('    - %s took %s' % (plugin_name, epoch_to_string(took)))
 
 
-def show_discovery_time(scan):
+def show_discovery_time(scan_log_filename, scan):
     show_generic_spent_time(scan, 'discover', '.discover(')
 
 
-def show_audit_time(scan):
+def show_audit_time(scan_log_filename, scan):
     show_generic_spent_time(scan, 'audit', '.audit(')
 
 
-def show_grep_time(scan):
+def show_grep_time(scan_log_filename, scan):
     show_generic_spent_time(scan, 'grep', '.grep(')
 
 
-def show_output_time(scan):
+def show_output_time(scan_log_filename, scan):
     show_generic_spent_time(scan, 'output', '.flush(')

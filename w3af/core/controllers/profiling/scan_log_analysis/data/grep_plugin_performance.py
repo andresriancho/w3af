@@ -3,7 +3,7 @@ import re
 GREP_PLUGIN_RE = re.compile('\] (.*?).grep\(uri=".*"\) took (.*?)s to run')
 
 
-def show_grep_plugin_performance(scan):
+def show_grep_plugin_performance(scan_log_filename, scan):
     scan.seek(0)
 
     grep_plugin_times = {}

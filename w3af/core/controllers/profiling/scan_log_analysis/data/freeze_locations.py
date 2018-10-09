@@ -1,7 +1,7 @@
 from utils.utils import get_line_epoch, InvalidTimeStamp
 
 
-def show_freeze_locations(scan):
+def show_freeze_locations(scan_log_filename, scan):
     """
     [Wed Nov  1 23:43:16 2017 - debug] ...
     [Wed Nov  1 23:43:19 2017 - debug] ...
