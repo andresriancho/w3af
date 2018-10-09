@@ -10,10 +10,10 @@ from data.grep_plugin_performance import show_grep_plugin_performance
 from data.known_problems import show_known_problems
 from data.freeze_locations import show_freeze_locations
 from data.wall_time import (show_audit_time,
-                                                                              show_discovery_time,
-                                                                              show_grep_time,
-                                                                              show_output_time,
-                                                                              show_plugin_time)
+                            show_discovery_time,
+                            show_grep_time,
+                            show_output_time,
+                            show_plugin_time)
 
 from graphs.urllib_error_rate import show_extended_urllib_error_rate
 from graphs.parser_memory_limit import show_parser_process_memory_limit
