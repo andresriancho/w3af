@@ -17,6 +17,10 @@ from w3af.core.controllers.misc.get_w3af_version import get_w3af_version
 import w3af.core.controllers.output_manager as om
 
 
+# from https://en.wikipedia.org/wiki/Percent-encoding#Types_of_URI_characters
+URL_RE = re.compile('^([a-z]|[A-Z]|[0-9]|\.|-|_|~|\[|\]|#|\'|\(|\)|;|:|@|&|=|\+|\$|,|\*|!|\/|\?)+$')
+
+
 USAGE_DOC = """
 w3af - Web Application Attack and Audit Framework
 
@@ -89,13 +93,12 @@ def _generate_run_commands(script_file, profile, force_profile, target_url):
     :target_url: Target URL for scan
     """
     commands_to_run = []
+
     if target_url:
-        # from https://en.wikipedia.org/wiki/Percent-encoding#Types_of_URI_characters
-        if re.compile('^([a-z]|[A-Z]|[0-9]|\.|-|_|~|\[|\]|#|\'|\(|\)|;|:|@|&|=|\+|\$|,|\*|!|\/|\?)+$')\
-           .match(target_url):
-                commands_to_run.extend(['target', 'set target {}'.format(target_url), 'back'])
+        if URL_RE.match(target_url):
+            commands_to_run.extend(['target', 'set target {}'.format(target_url), 'back'])
         else:
-            print ('Target url contains bad symbols, exit')
+            print ('Target URL is invalid')
             sys.exit(2)
 
     if script_file is not None:
