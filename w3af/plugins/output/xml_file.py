@@ -420,6 +420,10 @@ class xml_file(OutputPlugin):
             # Copy to the real output file
             report_file_name = os.path.expanduser(self._file_name)
             shutil.copy(tempfh.name, report_file_name)
+
+            stat_info = os.stat(report_file_name)
+            om.out.debug('The XML output file size is %s bytes.' % stat_info.st_size)
+
         finally:
             os.remove(tempfh.name)
 

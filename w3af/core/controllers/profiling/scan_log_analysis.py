@@ -84,6 +84,8 @@ SCAN_PROGRESS = re.compile('The scan will finish in .*? seconds \((.*?)% done\)'
 CALCULATED_ETA = re.compile('Calculated (.*?) ETA: (.*?) seconds')
 CRAWL_INFRA_FINISHED = 'Producer CrawlInfra has finished'
 
+XML_OUTPUT_SIZE = re.compile('The XML output file size is (.*?) bytes.')
+
 
 def _num_formatter(val, chars, delta, left=False):
     align = '<' if left else ''
@@ -117,8 +119,10 @@ def epoch_to_string(spent_time):
     return msg
 
 
-def show_scan_stats(scan):
+def show_scan_stats(scan_log_filename, scan):
     show_scan_finished_in(scan)
+
+    show_file_sizes(scan_log_filename, scan)
 
     print('')
 
@@ -183,6 +187,26 @@ def show_scan_stats(scan):
     print('')
 
     show_known_problems(scan)
+
+
+def show_file_sizes(scan_log_filename, scan):
+    print('')
+
+    stat_info = os.stat(scan_log_filename)
+
+    print('The debug log file size is %s bytes' % stat_info.st_size)
+
+    latest_xml_size_line = None
+
+    for line in scan:
+        match = XML_OUTPUT_SIZE.search(line)
+        if match:
+            latest_xml_size_line = line
+
+    if latest_xml_size_line is None:
+        return
+
+    print(latest_xml_size_line)
 
 
 def show_extended_urllib_error_rate(scan):
@@ -1611,4 +1635,4 @@ if __name__ == '__main__':
     if parsed_args.watch:
         watch(scan, parsed_args.watch)
     else:
-        show_scan_stats(scan)
+        show_scan_stats(parsed_args.scan_log, scan)
