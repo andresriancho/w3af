@@ -40,6 +40,7 @@ SCAN_FINISHED_IN = re.compile('Scan finished in (.*).')
 SCAN_TOOK_RE = re.compile('took (\d*\.\d\d)s to run')
 
 HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
+HTTP_METHOD_RE = re.compile('\] (.*?) .*? returned HTTP code')
 FROM_CACHE = 'from_cache=1'
 
 SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) seconds')
@@ -69,6 +70,8 @@ JOIN_TIMES = re.compile('(.*?) took (.*?) seconds to join\(\)')
 CONNECTION_POOL_WAIT = re.compile('Waited (.*?)s for a connection to be available in the pool.')
 
 WEBSPIDER_FOUND_LINK = re.compile('\[web_spider\] Found new link "(.*?)" at "(.*?)"')
+NEW_URL_FOUND = re.compile('New URL found by (.*?) plugin')
+
 IDLE_CONSUMER_WORKERS = re.compile('\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
 
 PARSER_TIMEOUT = '[timeout] The parser took more than'
@@ -256,6 +259,7 @@ def generate_crawl_graph(scan):
     referers = data.keys()
     referers.sort(sort_by_len)
 
+    print('')
     print('web_spider crawling data (source -> new link)')
 
     previous_referer = None
@@ -270,6 +274,8 @@ def generate_crawl_graph(scan):
             else:
                 print('%s -> %s' % (referer, new_link))
                 previous_referer = referer
+
+    print('')
 
 
 def show_parser_process_memory_limit(scan):
@@ -1218,9 +1224,11 @@ def show_crawling_stats(scan):
     FUZZABLE = 'New fuzzable request identified'
 
     scan.seek(0)
+
     found_forms = 0
     ignored_forms = 0
     fuzzable = 0
+    new_url_found_by_plugin = {}
 
     for line in scan:
         if FUZZABLE in line:
@@ -1235,9 +1243,32 @@ def show_crawling_stats(scan):
             ignored_forms += 1
             continue
 
+        match = NEW_URL_FOUND.search(line)
+        if match:
+            plugin_name = match.group(1)
+            if plugin_name in new_url_found_by_plugin:
+                new_url_found_by_plugin[plugin_name] += 1
+            else:
+                new_url_found_by_plugin[plugin_name] = 1
+
     print('Found %s fuzzable requests' % fuzzable)
     print('Found %s forms' % found_forms)
     print('Ignored %s forms' % ignored_forms)
+
+    if not new_url_found_by_plugin:
+        return
+
+    print('')
+    print('URLs found grouped by plugin:')
+
+    def by_value(a, b):
+        return cmp(b[1], a[1])
+
+    nufbp = new_url_found_by_plugin.items()
+    nufbp.sort(by_value)
+
+    for plugin_name, count in nufbp:
+        print('    - %s: %s' % (plugin_name, count))
 
 
 def show_generic_spent_time(scan, name, must_have):
@@ -1285,13 +1316,18 @@ def show_http_errors(scan):
 
 def show_total_http_requests(scan):
     scan.seek(0)
+
     count = dict()
+    methods = dict()
     cached_responses = 0.0
 
     for line in scan:
 
         if FROM_CACHE in line:
             cached_responses += 1
+
+        if 'returned HTTP code' not in line:
+            continue
 
         match = HTTP_CODE_RE.search(line)
         if match:
@@ -1302,14 +1338,42 @@ def show_total_http_requests(scan):
             else:
                 count[code] = 1
 
+        match = HTTP_METHOD_RE.search(line)
+        if match:
+            method = match.group(1)
+
+            if method in methods:
+                methods[method] += 1
+            else:
+                methods[method] = 1
+
     total = sum(count.itervalues())
     print('The scan sent %s HTTP requests' % total)
 
-    if total:
-        print('%i%% responses came from HTTP cache' % (cached_responses / total * 100,))
+    if not total:
+        return
 
-    for code, num in count.iteritems():
-        print('    Sent %s HTTP requests which returned code %s' % (code, num))
+    print('    %i%% responses came from HTTP cache' % (cached_responses / total * 100,))
+    print('')
+
+    def by_value(a, b):
+        return cmp(b[1], a[1])
+
+    count_list = count.items()
+    count_list.sort(by_value)
+
+    for code, num in count_list:
+        args = (code, num, num / float(total) * 100)
+        print('    HTTP response code %s was received %s times (%i%%)' % args)
+
+    print('')
+
+    methods_list = methods.items()
+    methods_list.sort(by_value)
+
+    for method, count in methods_list:
+        args = (method, count, count / float(total) * 100)
+        print('    HTTP method %s was sent %s times (%i%%)' % args)
 
     print('')
 
