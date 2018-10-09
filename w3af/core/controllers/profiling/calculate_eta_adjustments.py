@@ -20,9 +20,9 @@ sys.path.append(ROOT_PATH)
 
 from w3af.core.controllers.core_helpers.status import CoreStatus, Adjustment
 from scan_log_analysis import (get_first_timestamp,
-                               get_line_epoch,
-                               CRAWL_INFRA_FINISHED,
-                               JOIN_TIMES)
+                                                                                 get_line_epoch,
+                                                                                 CRAWL_INFRA_FINISHED,
+                                                                                 JOIN_TIMES)
 
 
 HELP = '''\
