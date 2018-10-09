@@ -180,6 +180,7 @@ class SSLSocket(object):
         for i in xrange(x509.get_extension_count()):
             ext = x509.get_extension(i)
             ext_name = ext.get_short_name()
+
             if ext_name != 'subjectAltName':
                 continue
 
@@ -199,7 +200,8 @@ class SSLSocket(object):
             'subject': (
                 (('commonName', x509.get_subject().CN),),
             ),
-            'subjectAltName': dns_name
+            'subjectAltName': dns_name,
+            'notAfter': x509.get_notAfter()
         }
 
 
