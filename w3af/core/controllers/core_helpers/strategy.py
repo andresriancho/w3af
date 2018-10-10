@@ -419,13 +419,16 @@ class CoreStrategy(object):
         
         msg = ('The remote web server is not answering our HTTP requests,'
                ' multiple errors have been found while trying to GET a response'
-               ' from the server.\n\n'
+               ' from the server.\n'
+               '\n'
                'In most cases this means that the configured target is'
                ' incorrect, the port is closed, there is a firewall blocking'
                ' our packets or there is no HTTP daemon listening on that'
-               ' port.\n\n'
+               ' port.\n'
+               '\n'
                'Please verify your target configuration and try again. The'
-               ' tested targets were:\n\n'
+               ' tested targets were:\n'
+               '\n'
                ' %s\n')
 
         targets = cf.cf.get('targets')
@@ -458,14 +461,19 @@ class CoreStrategy(object):
         """
         site_does_redirect = False
         msg = ('The configured target domain redirects all HTTP requests to a'
-               ' different location. The most common scenarios are:\n\n'
-               ''
+               ' different location. The most common scenarios are:\n'
+               '\n'
                '    * HTTP redirect to HTTPS\n'
-               '    * domain.com redirect to www.domain.com\n\n'
-               ''
+               '    * domain.com redirect to www.domain.com\n'
+               '\n'
                'While the scan engine can identify URLs and vulnerabilities'
-               ' using the current configuration it might be wise to start'
-               ' a new scan setting the target URL to the redirect target.')
+               ' using the current configuration, it might be wise to start'
+               ' a new scan setting the target URL to the redirect target.\n'
+               '\n'
+               'Depending on multiple factors, this configuration might also'
+               ' reduce the effectiveness of the scanner 404 page detection,'
+               ' leading to false positives in both identified URLs and'
+               ' vulnerabilities.')
 
         targets = cf.cf.get('targets')
 
@@ -539,8 +547,6 @@ class CoreStrategy(object):
         #
         from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
         targets_with_404 = []
-        targets_redirecting_to_https = []
-        targets_redirecting_to_other_domain = []
 
         for url in cf.cf.get('targets'):
             try:
@@ -552,14 +558,6 @@ class CoreStrategy(object):
                        ' URL "%s", the original exception was: "%s" (%s).')
                 args = (url, e, e.__class__.__name__)
                 raise ScanMustStopException(msg % args)
-
-            if self._target_redirects_to_other_domain(url, response):
-                targets_redirecting_to_other_domain.append(url)
-                continue
-
-            if self._target_redirects_to_https(url, response):
-                targets_redirecting_to_https.append(url)
-                continue
 
             try:
                 current_target_is_404 = is_404(response)
@@ -575,75 +573,18 @@ class CoreStrategy(object):
                 if current_target_is_404:
                     targets_with_404.append(url)
 
-        if targets_redirecting_to_other_domain:
-            urls = ' - %s\n'.join(u.url_string for u in targets_redirecting_to_other_domain)
-            om.out.information('w3af identified that the following user-configured'
-                               ' targets redirect to external domains which will'
-                               ' not be included in the scan. This could'
-                               ' result in a scan with low coverage: not all'
-                               ' areas of the application are scanned. Please'
-                               ' manually verify that these URLs are correct'
-                               ' and run the scan again.\n'
-                               '\n'
-                               'In most cases this situation is solved by running'
-                               ' two scans, one against each application domain.'
-                               '\n'
-                               '%s\n' % urls)
-
-        if targets_redirecting_to_https:
-            urls = ' - %s\n'.join(u.url_string for u in targets_redirecting_to_https)
-            om.out.information('w3af identified that the following user-configured'
-                               ' targets redirect HTTPS URLs which will'
-                               ' not be included in the scan. This could'
-                               ' result in a scan with low coverage: not all'
-                               ' areas of the application are scanned. Please'
-                               ' manually verify that these URLs are correct'
-                               ' and run the scan again.\n'
-                               '\n'
-                               'In most cases this situation is solved by running'
-                               ' two scans, one against the HTTP port and another'
-                               ' against the HTTPS port.'
-                               '\n'
-                               '%s\n' % urls)
-
         if targets_with_404:
             urls = ' - %s\n'.join(u.url_string for u in targets_with_404)
-            om.out.information('w3af identified the following user-configured'
-                               ' targets as non-existing pages (404). This could'
-                               ' result in a scan with low coverage: not all'
-                               ' areas of the application are scanned. Please'
-                               ' manually verify that these URLs exist and, if'
-                               ' required, run the scan again.\n'
+            om.out.information('w3af identified the user-configured URLs listed'
+                               ' below as non-existing pages (404). This could'
+                               ' result in a scan with low test coverage: some'
+                               ' application areas might not be scanned.\n'
+                               '\n'
+                               'Please manually verify that these URLs exist '
+                               ' and, consider running a new scan with different'
+                               ' targets.\n'
                                '\n'
                                '%s\n' % urls)
-
-    def _target_redirects_to_other_domain(self, url, response):
-        """
-        :param url: The URL that was requested
-        :param response: The HTTP response
-        :return: True if the response is redirecting the browser to another domain
-        """
-        response_url = response.get_url()
-
-        if response_url.get_domain() != url.get_domain():
-            return True
-
-        return False
-
-    def _target_redirects_to_https(self, url, response):
-        """
-        :param url: The URL that was requested
-        :param response: The HTTP response
-        :return: True if the response is redirecting the browser to HTTPS
-        """
-        if url.get_protocol() != 'http':
-            return False
-
-        response_url = response.get_url()
-        if response_url.get_protocol() != 'https':
-            return False
-
-        return True
 
     def _setup_crawl_infrastructure(self):
         """
