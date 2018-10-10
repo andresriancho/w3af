@@ -85,6 +85,9 @@ class FourOhFourResponse(object):
         self.url = http_response.get_url().url_string
         self.id = http_response.id
 
+    def __repr__(self):
+        return '<FourOhFourResponse (path:%s, body:"%s")>' % (self.path, self.body[:20])
+
 
 def lru_404_cache(wrapped_method):
 
@@ -695,19 +698,20 @@ class Fingerprint404(object):
             return False
 
         #
-        #   The responses are equal, both can be 404, or both can be the result
-        #   of the application ignoring the last part of the URL, example:
+        #   The responses are fuzzy-equal, both can be 404, or both can be the
+        #   result of the application ignoring the last part of the URL,
+        #   example:
         #
         #       http://w3af.com/foo/ignored
         #       http://w3af.com/foo/also-ignored
         #
-        if self._looks_like_404_page(response_404):
-            msg = ('The generated HTTP response for %s (id: %s) looks like'
-                   ' a 404 response AND is similar to the HTTP response body'
-                   ' passed as parameter (id:%s, did:%s)')
-            args = (url_404,
+        if self._looks_like_404_page(http_response):
+            msg = ('The HTTP response passed as parameter (id: %s) looks like'
+                   ' a 404 response AND is similar to the generated HTTP 404'
+                   ' response (id:%s, url:%s) (did:%s)')
+            args = (http_response.id,
                     four_oh_data.id,
-                    http_response.id,
+                    url_404,
                     debugging_id)
             om.out.debug(msg % args)
 
@@ -769,9 +773,12 @@ class Fingerprint404(object):
         score = 0
         lower_404_body = response_404.get_body().lower()
 
+        already_found = set()
+
         for word in COMMON_404_WORDS:
-            if word in lower_404_body:
+            if word in lower_404_body and word not in already_found:
                 score += 1
+                already_found.add(word)
 
         return score >= MIN_SCORE_FOR_404
 
