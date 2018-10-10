@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import division
 
 import re
+import random
 import unittest
 
 import httpretty
@@ -40,15 +41,20 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import (Fingerprint404,
 
 class TestGenerate404Filename(unittest.TestCase):
     def test_404_generation(self):
+
+        random.seed(1)
+
         tests = [
             ('ab-23', 'ba-23'),
             ('abc-12', 'bac-21'),
             ('ab-23.html', 'ba-23.html'),
             ('a1a2', 'd4d5'),
             ('a1a2.html', 'd4d5.html'),
-            ('Z', 'c'), # overflow handling
             ('hello.html', 'ehllo.html'),
             ('r57_Mohajer22.php', 'r57_oMahejr22.php'),
+
+            # overflow handling
+            ('Z', 'i0pVZ'),
         ]
 
         for fname, modfname in tests:
@@ -110,8 +116,8 @@ class Test404FalseNegative(unittest.TestCase):
         urllib = ExtendedUrllib()
         worker_pool = Pool(processes=2,
                            worker_names='WorkerThread',
-                           max_queued_tasks=2,
-                           maxtasksperchild=20)
+                           max_queued_tasks=20,
+                           maxtasksperchild=1)
 
         fingerprint_404 = Fingerprint404()
         fingerprint_404.set_url_opener(urllib)
@@ -122,5 +128,69 @@ class Test404FalseNegative(unittest.TestCase):
 
         fingerprint_404.cleanup()
         urllib.clear()
-        #worker_pool.terminate_join()
+        worker_pool.terminate_join()
+
+
+class Test404FalsePositiveLargeResponses(unittest.TestCase):
+
+    def get_body(self, unique_parts):
+        parts = [re.__doc__, random.__doc__, unittest.__doc__]
+        parts.extend(unique_parts)
+
+        # Do not increase this 50 too much, it will exceed the xurllib max
+        # HTTP response body length
+        parts = parts * 50
+
+        random.seed(1)
+        random.shuffle(parts)
+
+        body = '\n'.join(parts)
+
+        # Replace these strings here to prevent _looks_like_404_page from
+        # matching.
+        body = body.replace('error', '')
+        body = body.replace('support', '')
+
+        return body
+
+    def request_callback(self, request, uri, headers):
+        unique_parts = ['The request failed', 'Come back later']
+        body = self.get_body(unique_parts)
+        return 200, headers, body
+
+    @httpretty.activate
+    def test_false_positive(self):
+
+        httpretty.register_uri(httpretty.GET,
+                               re.compile("w3af.com/(.*)"),
+                               body=self.request_callback,
+                               status=200)
+
+        root_url = URL('http://w3af.com/')
+
+        success_url = URL('http://w3af.com/fi/')
+
+        unique_parts = ['Welcome to our site',
+                        'Content is being loaded using async JS',
+                        'Please wait...']
+        body = self.get_body(unique_parts)
+        headers = Headers([('Content-Type', 'text/html')])
+        success_200 = HTTPResponse(200, body, headers, success_url, success_url)
+
+        urllib = ExtendedUrllib()
+        worker_pool = Pool(processes=2,
+                           worker_names='WorkerThread',
+                           max_queued_tasks=20,
+                           maxtasksperchild=20)
+
+        fingerprint_404 = Fingerprint404()
+        fingerprint_404.set_url_opener(urllib)
+        fingerprint_404.set_worker_pool(worker_pool)
+        fingerprint_404.generate_404_knowledge(root_url)
+
+        self.assertFalse(fingerprint_404.is_404(success_200))
+
+        fingerprint_404.cleanup()
+        urllib.clear()
+        worker_pool.terminate_join()
 
