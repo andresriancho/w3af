@@ -24,6 +24,7 @@ from __future__ import with_statement
 import copy
 import thread
 import itertools
+import functools
 
 from functools import wraps
 from collections import deque
@@ -89,20 +90,31 @@ class FourOhFourResponse(object):
         return '<FourOhFourResponse (path:%s, body:"%s")>' % (self.path, self.body[:20])
 
 
-def lru_404_cache(wrapped_method):
+class LRUCache404(object):
 
-    @wraps(wrapped_method)
-    def inner(self, http_response):
-        path = http_response.get_uri().url_string
+    def __init__(self, _function):
+        self.function = _function
+
+        # It is OK to store 1000 here, I'm only storing path+filename as the
+        # key, and bool as the value.
+        self.is_404_LRU = SynchronizedLRUDict(1000)
+
+    def __get__(self, instance, instancetype):
+        # https://stackoverflow.com/questions/5469956/python-decorator-self-is-mixed-up
+        return functools.partial(self.__call__, instance)
+
+    def __call__(self, *args, **kwargs):
+        http_response = args[1]
+        cache_key = http_response.get_uri().url_string
 
         try:
-            return self.is_404_LRU[path]
+            result = self.is_404_LRU[cache_key]
         except KeyError:
-            result = wrapped_method(self, http_response)
-            self.is_404_LRU[path] = result
+            result = self.function(*args, **kwargs)
+            self.is_404_LRU[cache_key] = result
             return result
-
-    return inner
+        else:
+            return result
 
 
 class Fingerprint404(object):
@@ -139,14 +151,9 @@ class Fingerprint404(object):
         self._base_404_responses = deque(maxlen=MAX_404_RESPONSES)
         self._extended_404_responses = deque(maxlen=MAX_404_RESPONSES)
 
-        # It is OK to store 1000 here, I'm only storing path+filename as the key,
-        # and bool as the value.
-        self.is_404_LRU = SynchronizedLRUDict(1000)
-
     def cleanup(self):
         self._base_404_responses = None
         self._extended_404_responses = None
-        self.is_404_LRU = None
         self._already_analyzed = False
         self._directory_uses_404_codes = None
         self._clean_404_response_db_calls = 0
@@ -376,7 +383,7 @@ class Fingerprint404(object):
 
         return response
 
-    @lru_404_cache
+    @LRUCache404
     def is_404(self, http_response):
         """
         All of my previous versions of is_404 were very complex and tried to
