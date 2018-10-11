@@ -53,6 +53,9 @@ def generate_404_filename(filename):
     :param filename: The original filename
     :return: A mutated filename
     """
+    if not filename:
+        return rand_alnum(5)
+
     split_filename = filename.rsplit(u'.', 1)
     if len(split_filename) == 2:
         orig_filename, extension = split_filename
@@ -61,17 +64,17 @@ def generate_404_filename(filename):
         orig_filename = split_filename[0]
 
     #
-    #   This handles the case of files which don't have a name,
-    #   such as .env.
+    # This handles the case of files which don't have a name,
+    # such as .env.
     #
     if not orig_filename:
         return u'%s.%s' % (rand_alnum(5), extension)
 
     #
-    #   This handles the case of files which have really short names
-    #   such as "a.html" or "ac.rb". When trying to modify those short
-    #   names it is likely that we'll end up with either the same one
-    #   or another one that also exists in the path
+    # This handles the case of files which have really short names
+    # such as "a.html" or "ac.rb". When trying to modify those short
+    # names it is likely that we'll end up with either the same one
+    # or another one that also exists in the path
     #
     if len(orig_filename) in (1, 2):
         orig_filename = u'%s%s' % (rand_alnum(4), orig_filename)
