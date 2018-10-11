@@ -23,6 +23,7 @@ from __future__ import with_statement
 
 import copy
 import thread
+import threading
 import itertools
 import functools
 
@@ -90,31 +91,122 @@ class FourOhFourResponse(object):
         return '<FourOhFourResponse (path:%s, body:"%s")>' % (self.path, self.body[:20])
 
 
-class LRUCache404(object):
-
-    def __init__(self, _function):
-        self.function = _function
-
-        # It is OK to store 1000 here, I'm only storing path+filename as the
-        # key, and bool as the value.
-        self.is_404_LRU = SynchronizedLRUDict(1000)
-
+class Decorator(object):
     def __get__(self, instance, instancetype):
         # https://stackoverflow.com/questions/5469956/python-decorator-self-is-mixed-up
         return functools.partial(self.__call__, instance)
 
+
+class LRUCache404(Decorator):
+    """
+    This decorator caches the 404 responses to reduce CPU usage and,
+    in some cases, HTTP requests being sent.
+    """
+    def __init__(self, _function):
+        self._function = _function
+
+        # It is OK to store 1000 here, I'm only storing path+filename as the
+        # key, and bool as the value.
+        self._is_404_LRU = SynchronizedLRUDict(1000)
+
     def __call__(self, *args, **kwargs):
-        http_response = args[1]
-        cache_key = http_response.get_uri().url_string
+        cache_key = self.get_cache_key(args)
 
         try:
-            result = self.is_404_LRU[cache_key]
+            result = self._is_404_LRU[cache_key]
         except KeyError:
-            result = self.function(*args, **kwargs)
-            self.is_404_LRU[cache_key] = result
+            result = self._function(*args, **kwargs)
+            self._is_404_LRU[cache_key] = result
             return result
         else:
             return result
+
+    def get_cache_key(self, args):
+        http_response = args[1]
+        return http_response.get_uri().url_string
+
+
+class PreventMultipleThreads(Decorator):
+    """
+    This decorator tracks executions of is_404(), if one of those executions
+    is running with parameter X, and new one call is made to is_404() with the
+    same parameter, then the decorator forces the second caller to wait until
+    the first execution is completed.
+
+    The second execution will then run, query the cache, and get the result.
+
+    Without this decorator two executions would run, consume CPU, in some cases
+    send HTTP requests, and finally both were going to write the same result
+    to the cache.
+
+    This issue could be seen in the debug logs as:
+
+        [Thu Oct 11 10:18:24 2018 - debug] GET https://host/SP8Bund2/ returned HTTP code "404" ...
+        [Thu Oct 11 10:18:24 2018 - debug] GET https://host/KKJCnk08/ returned HTTP code "404" ...
+        [Thu Oct 11 10:18:24 2018 - debug] GET https://host/PfOoZiAF/ returned HTTP code "404" ...
+        [Thu Oct 11 10:18:24 2018 - debug] GET https://host/Pg6Uuid1/ returned HTTP code "404" ...
+        [Thu Oct 11 10:18:24 2018 - debug] GET https://host/y4FeR1lB/ returned HTTP code "404" ...
+
+    Notice the same timestamp in each line, and the 8 random chars being sent in the
+    directory, which is part of the is_404() algorithm.
+    """
+
+    # in seconds
+    TIMEOUT = 120
+
+    def __init__(self, _function):
+        self._function = _function
+        self._404_call_events = {}
+
+    def __call__(self, *args, **kwargs):
+        call_key = self.get_call_key(args)
+
+        event = self._404_call_events.get(call_key, None)
+
+        if event is None:
+            # There is no current execution of is_404 with these parameters
+            #
+            # Create a new event and save it to the dict, then call the wrapped
+            # function and set() the event so anyone waiting() on it will be
+            # released
+            event = threading.Event()
+            self._404_call_events[call_key] = event
+
+            try:
+                return self._function(*args, **kwargs)
+            finally:
+                event.set()
+                self._404_call_events.pop(call_key, None)
+
+        else:
+            # Another thread is already running is_404 on the same URL path
+            # we better wait for a while
+            wait_result = event.wait(timeout=self.TIMEOUT)
+            if not wait_result:
+                # Something really bad happen. The is_404() function should
+                # never take more than TIMEOUT seconds to process one HTTP
+                # response.
+                #
+                # To prevent more issues during the scan we're going to return
+                # True here, meaning that the is_404() will return True without
+                # even being called.
+                #
+                # This will reduce the processing / HTTP requests, etc. for a
+                # scan that is most likely having really bad performance.
+                msg = ('is_404() took more than %s seconds to run, returning'
+                       ' True to reduce CPU usage and HTTP requests. This error'
+                       ' is very rare and should be manually analyzed.')
+                args = (self.TIMEOUT,)
+                om.out.error(msg % args)
+                return True
+            else:
+                # All right! is_404 function call is complete, now let's call
+                # it again to obtain the result from the cache
+                return self._function(*args, **kwargs)
+
+    def get_call_key(self, args):
+        http_response = args[1]
+        return http_response.get_uri().url_string
 
 
 class Fingerprint404(object):
@@ -383,6 +475,7 @@ class Fingerprint404(object):
 
         return response
 
+    @PreventMultipleThreads
     @LRUCache404
     def is_404(self, http_response):
         """
