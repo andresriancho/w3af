@@ -623,6 +623,7 @@ class Fingerprint404(object):
                               url_404.get_extension())
 
             self._directory_uses_404_codes.add(path_extension)
+            self._append_to_extended_404_responses(four_oh_data)
 
             if http_response.get_code() != 404:
                 # Not a 404! We know because of the new knowledge that this path
