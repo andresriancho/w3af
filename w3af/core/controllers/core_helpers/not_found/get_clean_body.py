@@ -51,6 +51,7 @@ def get_clean_body(response):
                  response.get_uri().switch_protocol()]
 
     to_replace = []
+
     for base_url in base_urls:
         to_replace.extend([u.url_string for u in base_url.get_directories()])
         to_replace.extend(base_url.url_string.split(u'/'))
