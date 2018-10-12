@@ -314,6 +314,7 @@ def get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
     # uniq sorted by longest len
     encoded_payloads = list(encoded_payloads)
     encoded_payloads.sort(lambda x, y: cmp(len(y), len(x)))
+    encoded_payloads = [i.lower() for i in encoded_payloads]
 
     for to_replace in encoded_payloads:
         body, body_lower = remove_using_lower_case(body, body_lower, to_replace)
