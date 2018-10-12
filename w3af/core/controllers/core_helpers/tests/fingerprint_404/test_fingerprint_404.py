@@ -252,3 +252,25 @@ class Test404HandleIgnoredPathDeep(GenericIgnoredPartTest):
         success_200 = HTTPResponse(200, self.ALL_SAME_BODY, headers, query_url, query_url)
 
         self.assertFalse(self.fingerprint_404.is_404(success_200))
+
+
+class Test404HandleAllIs404(GenericIgnoredPartTest):
+
+    def request_callback(self, request, uri, headers):
+        body = self.ALL_SAME_BODY
+        return 200, headers, body
+
+    @httpretty.activate
+    def test_handle_really_a_404(self):
+
+        httpretty.register_uri(httpretty.GET,
+                               re.compile("w3af.com/(.*)"),
+                               body=self.request_callback,
+                               status=200)
+
+        # This is the URL we found during crawling and want to know if is_404()
+        query_url = URL('http://w3af.com/path1/path2/')
+        headers = Headers([('Content-Type', 'text/html')])
+        success_200 = HTTPResponse(200, self.ALL_SAME_BODY, headers, query_url, query_url)
+
+        self.assertFalse(self.fingerprint_404.is_404(success_200))
