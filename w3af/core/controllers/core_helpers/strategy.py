@@ -580,11 +580,11 @@ class CoreStrategy(object):
                                ' result in a scan with low test coverage: some'
                                ' application areas might not be scanned.\n'
                                '\n'
-                               'Please manually verify that these URLs exist '
+                               'Please manually verify that these URLs exist'
                                ' and, consider running a new scan with different'
                                ' targets.\n'
                                '\n'
-                               '%s\n' % urls)
+                               ' - %s\n' % urls)
 
     def _setup_crawl_infrastructure(self):
         """
