@@ -76,6 +76,7 @@ class open_api(CrawlPlugin):
         self._no_spec_validation = False
         self._custom_spec_location = ''
         self._discover_fuzzable_headers = True
+        self._parameter_values_location = ''
 
     def crawl(self, fuzzable_request):
         """
@@ -407,6 +408,13 @@ class open_api(CrawlPlugin):
         o = opt_factory('discover_fuzzable_headers', self._discover_fuzzable_headers, d, BOOL, help=h)
         ol.add(o)
 
+        d = 'Path to a file with parameter values.'
+        h = ('This option sets a path to a YAML file which contains parameter values'
+             ' which should be used in testing API endpoints. If no parameter values are provided,'
+             ' the plugin tries to guess them.')
+        o = opt_factory('parameter_values_location', self._parameter_values_location, d, INPUT_FILE, help=h)
+        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -422,6 +430,7 @@ class open_api(CrawlPlugin):
         self._no_spec_validation = options_list['no_spec_validation'].get_value()
         self._custom_spec_location = options_list['custom_spec_location'].get_value()
         self._discover_fuzzable_headers = options_list['discover_fuzzable_headers'].get_value()
+        self._parameter_values_location = options_list['parameter_values_location'].get_value()
 
     def get_long_desc(self):
         """
@@ -448,10 +457,35 @@ class open_api(CrawlPlugin):
             * query_string_auth
             * header_auth
 
-        By default, the plugin validates Open API specification.
-        The validation may be disabled by 'no_spec_validation' configuration parameter.
+        By default, the plugin validates Open API specification. The validation
+        may be disabled by 'no_spec_validation' configuration parameter.
 
         During parsing an Open API specification, the plugin looks for parameters
-        which are passed to endpoints via HTTP headers, and enables them for further testing.
-        This behavior may be disabled by setting 'discover_fuzzable_headers' configuration parameter to False.
+        which are passed to endpoints via HTTP headers, and enables them
+        for further testing. This behavior may be disabled by setting
+        'discover_fuzzable_headers' configuration parameter to False.
+
+        The plugin tries to guess valid values for parameters of API endpoints
+        but the values highly depend on the context. If users have some knowledge
+        about correct values which may be used with the API endpoints, they can tell
+        the plugin about them via 'parameter_values_location' configuration parameter.
+        The option specifies a path to a YAML file, here is an example:
+
+            - path: /users/{user-id}
+              parameters:
+              - name: user-id
+                values:
+                - '1234567'
+              - name: X-First-Name
+                values:
+                - John
+                - Bill
+            - path: /users
+              parameters:
+              - name: user-id
+                values:
+                - '1234567'
+              - name: birth-date
+                values:
+                - 2000-01-02
         """
