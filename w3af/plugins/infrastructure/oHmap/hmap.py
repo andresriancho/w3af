@@ -278,6 +278,19 @@ def get_fingerprint(url, threads):
                 processes=threads,
                 max_queued_tasks=5)
 
+    def logging_decorator(test, url):
+        om.out.debug('[hmap] Starting test %s' % test.__name__)
+
+        try:
+            result = test(url)
+        except Exception, e:
+            args = (test.__name__, e)
+            om.out.debug('[hmap] Test %s raised an exception: "%s"' % args)
+            raise
+        else:
+            om.out.debug('[hmap] Test %s finished successfully' % test.__name__)
+            return result
+
     tests = {basic_get,
              basic_options,
              unknown_method,
@@ -292,7 +305,7 @@ def get_fingerprint(url, threads):
              fake_content_length}
 
     for test in tests:
-        pool.apply_async(func=test, args=(url,))
+        pool.apply_async(func=logging_decorator, args=(test, url,))
 
     pool.close()
     pool.join()
