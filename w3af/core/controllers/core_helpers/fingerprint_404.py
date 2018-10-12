@@ -27,17 +27,19 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.url.helpers import NO_CONTENT_MSG
+from w3af.core.data.db.cached_disk_dict import CachedDiskDict
 
 from w3af.core.controllers.misc.diff import diff
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
-from w3af.core.controllers.core_helpers.not_found.generate_404 import send_request_generate_404
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
+from w3af.core.controllers.core_helpers.not_found.generate_404 import send_request_generate_404
 from w3af.core.controllers.core_helpers.not_found.decorators import LRUCache404, PreventMultipleThreads
 
 
 IS_EQUAL_RATIO = 0.90
 MAX_FUZZY_LENGTH = 1025 * 4
 NOT_404_RESPONSE_CODES = (200, 500, 301, 302, 303, 307, 401)
+MAX_404_IN_MEMORY = 50
 
 
 class Fingerprint404(object):
@@ -64,8 +66,8 @@ class Fingerprint404(object):
         #   The most commonly used keys for this dict are stored in memory
         #   while the least commonly used are stored in SQLite
         #
-        # TODO: DiskDictWithMemoryCache
-        self._404_responses = dict()
+        self._404_responses = CachedDiskDict(max_in_memory=MAX_404_IN_MEMORY,
+                                             table_prefix='is_404')
 
     @PreventMultipleThreads
     @LRUCache404

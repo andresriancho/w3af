@@ -23,9 +23,9 @@ import sys
 import time
 import random
 
-from multiprocessing.dummy import Process
 from Queue import Empty
 from functools import wraps
+from multiprocessing.dummy import Process
 
 import w3af.core.controllers.output_manager as om
 
