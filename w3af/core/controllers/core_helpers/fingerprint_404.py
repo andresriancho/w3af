@@ -157,6 +157,8 @@ class Fingerprint404(object):
                 if http_response.get_headers() == Headers():
                     return True
 
+        return False
+
     def _is_404_complex(self, http_response):
         """
         Verifies if the response is a 404 by comparing it with other responses
