@@ -28,17 +28,16 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.url.helpers import NO_CONTENT_MSG
 
-from w3af.core.controllers.misc.decorators import retry
 from w3af.core.controllers.misc.diff import diff
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
-from w3af.core.controllers.misc.generate_404_filename import generate_404_filename
+from w3af.core.controllers.core_helpers.not_found.generate_404 import send_request_generate_404
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
 from w3af.core.controllers.core_helpers.not_found.decorators import LRUCache404, PreventMultipleThreads
-from w3af.core.controllers.exceptions import HTTPRequestException, FourOhFourDetectionException
 
 
 IS_EQUAL_RATIO = 0.90
 MAX_FUZZY_LENGTH = 1025 * 4
+NOT_404_RESPONSE_CODES = (200, 500, 301, 302, 303, 307, 401)
 
 
 class Fingerprint404(object):
@@ -67,82 +66,6 @@ class Fingerprint404(object):
         #
         # TODO: DiskDictWithMemoryCache
         self._404_responses = dict()
-
-    def set_url_opener(self, urlopener):
-        self._uri_opener = urlopener
-
-    def set_worker_pool(self, worker_pool):
-        self._worker_pool = worker_pool
-
-    def _send_request_generate_404(self, http_response, debugging_id):
-        url_404 = self._get_url_for_404_request(http_response)
-        response_404 = self._send_404(url_404, debugging_id=debugging_id)
-        return FourOhFourResponse(response_404)
-
-    def _get_404_response(self, http_response, query, debugging_id):
-        """
-        :return: A FourOhFourResponse instance.
-                    * First try to get the response from the 404 DB
-
-                    * If the data is not there then send an HTTP request
-                    with a randomly generated path or name to force a 404,
-                    save the data to the DB and then return it.
-        """
-        om.out.information('Query %s' % query.normalized_path)
-        known_404 = self._404_responses.get(query.normalized_path, None)
-        if known_404 is not None:
-            return known_404
-
-        known_404 = self._send_request_generate_404(http_response, debugging_id)
-        self._404_responses[query.normalized_path] = known_404
-        return known_404
-
-    def _get_url_for_404_request(self, http_response):
-        """
-        :param http_response: The HTTP response to modify
-        :return: A new URL with randomly generated filename or path that will
-                 trigger a 404.
-        """
-        response_url = http_response.get_url()
-        path = response_url.get_path()
-        filename = response_url.get_file_name()
-
-        if path == '/' or filename:
-            relative_url = generate_404_filename(filename)
-            url_404 = response_url.copy()
-            url_404.set_file_name(relative_url)
-
-        else:
-            relative_url = '../%s/' % rand_alnum(8)
-            url_404 = response_url.url_join(relative_url)
-
-        return url_404
-
-    @retry(tries=2, delay=0.5, backoff=2)
-    def _send_404(self, url404, debugging_id=None):
-        """
-        Sends a GET request to url404.
-
-        :return: The HTTP response body.
-        """
-        # I don't use the cache, because the URLs are random and the only thing
-        # that cache does is to fill up disk space
-        try:
-            response = self._uri_opener.GET(url404,
-                                            cache=False,
-                                            grep=False,
-                                            debugging_id=debugging_id)
-        except HTTPRequestException, hre:
-            message = 'Exception found while detecting 404: "%s" (did:%s)'
-            args = (hre, debugging_id)
-            om.out.debug(message % args)
-            raise FourOhFourDetectionException(message % args)
-        else:
-            msg = 'Generated forced 404 for %s (id:%s, did:%s)'
-            args = (url404, response.id, debugging_id)
-            om.out.debug(msg % args)
-
-        return response
 
     @PreventMultipleThreads
     @LRUCache404
@@ -259,7 +182,7 @@ class Fingerprint404(object):
         known_404 = self._get_404_response(http_response, query, debugging_id)
 
         # Trivial performance improvement that prevents running fuzzy_equal
-        if query.code == 200 and known_404.code == 404:
+        if query.code in NOT_404_RESPONSE_CODES and known_404.code == 404:
             msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
                    ' [known 404 with ID %s uses 404 code]')
             args = (http_response.get_url(),
@@ -313,7 +236,6 @@ class Fingerprint404(object):
                     IS_EQUAL_RATIO,
                     known_404.id)
             om.out.debug(msg % args)
-
             return False
 
         if len(query.body) < MAX_FUZZY_LENGTH:
@@ -398,10 +320,12 @@ class Fingerprint404(object):
         else:
             # Need to send the second request and calculate the diff, there is
             # no previous knowledge that we can use
-            known_404_2 = self._send_request_generate_404(http_response, debugging_id)
+            known_404_2 = send_request_generate_404(self._uri_opener,
+                                                    http_response,
+                                                    debugging_id)
 
             known_404_1.diff, _ = diff(known_404_1.body, known_404_2.body)
-            self._404_responses[known_404_1.normalized_path] = known_404_1
+            self._404_responses[query.normalized_path] = known_404_1
 
         if known_404_1.diff == '':
             # The two known 404 we generated are equal, and we only get here
@@ -417,7 +341,7 @@ class Fingerprint404(object):
                     debugging_id,
                     known_404.id)
             om.out.debug(msg % args)
-            return True
+            return False
 
         diff_x = known_404_1.diff
         _, diff_y = diff(known_404_1.body, query.body)
@@ -448,6 +372,32 @@ class Fingerprint404(object):
                 known_404.id)
         om.out.debug(msg % args)
         return True
+
+    def set_url_opener(self, urlopener):
+        self._uri_opener = urlopener
+
+    def set_worker_pool(self, worker_pool):
+        self._worker_pool = worker_pool
+
+    def _get_404_response(self, http_response, query, debugging_id):
+        """
+        :return: A FourOhFourResponse instance.
+                    * First try to get the response from the 404 DB
+
+                    * If the data is not there then send an HTTP request
+                    with a randomly generated path or name to force a 404,
+                    save the data to the DB and then return it.
+        """
+        known_404 = self._404_responses.get(query.normalized_path, None)
+        if known_404 is not None:
+            return known_404
+
+        known_404 = send_request_generate_404(self._uri_opener,
+                                              http_response,
+                                              debugging_id)
+
+        self._404_responses[query.normalized_path] = known_404
+        return known_404
 
 
 def fingerprint_404_singleton(cleanup=False):
