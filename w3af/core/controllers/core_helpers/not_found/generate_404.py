@@ -1,5 +1,5 @@
 """
-generate_404_filename.py
+generate_404.py
 
 Copyright 2018 Andres Riancho
 
@@ -22,7 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import string
 import itertools
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.controllers.misc.decorators import retry
+from w3af.core.controllers.exceptions import HTTPRequestException, FourOhFourDetectionException
+from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
 
 
 def generate_404_filename(filename):
@@ -53,6 +58,9 @@ def generate_404_filename(filename):
     :param filename: The original filename
     :return: A mutated filename
     """
+    if not filename:
+        return rand_alnum(5)
+
     split_filename = filename.rsplit(u'.', 1)
     if len(split_filename) == 2:
         orig_filename, extension = split_filename
@@ -61,17 +69,17 @@ def generate_404_filename(filename):
         orig_filename = split_filename[0]
 
     #
-    #   This handles the case of files which don't have a name,
-    #   such as .env.
+    # This handles the case of files which don't have a name,
+    # such as .env.
     #
     if not orig_filename:
         return u'%s.%s' % (rand_alnum(5), extension)
 
     #
-    #   This handles the case of files which have really short names
-    #   such as "a.html" or "ac.rb". When trying to modify those short
-    #   names it is likely that we'll end up with either the same one
-    #   or another one that also exists in the path
+    # This handles the case of files which have really short names
+    # such as "a.html" or "ac.rb". When trying to modify those short
+    # names it is likely that we'll end up with either the same one
+    # or another one that also exists in the path
     #
     if len(orig_filename) in (1, 2):
         orig_filename = u'%s%s' % (rand_alnum(4), orig_filename)
@@ -130,3 +138,58 @@ def grouper(iterable, n, fillvalue=None):
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
     args = [iter(iterable)] * n
     return itertools.izip_longest(fillvalue=fillvalue, *args)
+
+
+def send_request_generate_404(uri_opener, http_response, debugging_id):
+    url_404 = get_url_for_404_request(http_response)
+    response_404 = send_404(uri_opener, url_404, debugging_id=debugging_id)
+    return FourOhFourResponse(response_404)
+
+
+def get_url_for_404_request(http_response):
+    """
+    :param http_response: The HTTP response to modify
+    :return: A new URL with randomly generated filename or path that will
+             trigger a 404.
+    """
+    response_url = http_response.get_url()
+    path = response_url.get_path()
+    filename = response_url.get_file_name()
+
+    if path == '/' or filename:
+        relative_url = generate_404_filename(filename)
+        url_404 = response_url.copy()
+        url_404.set_file_name(relative_url)
+
+    else:
+        relative_url = '../%s/' % rand_alnum(8)
+        url_404 = response_url.url_join(relative_url)
+
+    return url_404
+
+
+@retry(tries=2, delay=0.5, backoff=2)
+def send_404(uri_opener, url404, debugging_id=None):
+    """
+    Sends a GET request to url404.
+
+    :return: The HTTP response body.
+    """
+    # I don't use the cache, because the URLs are random and the only thing
+    # that cache does is to fill up disk space
+    try:
+        response = uri_opener.GET(url404,
+                                  cache=False,
+                                  grep=False,
+                                  debugging_id=debugging_id)
+    except HTTPRequestException, hre:
+        message = 'Exception found while detecting 404: "%s" (did:%s)'
+        args = (hre, debugging_id)
+        om.out.debug(message % args)
+        raise FourOhFourDetectionException(message % args)
+    else:
+        msg = 'Generated forced 404 for %s (id:%s, did:%s)'
+        args = (url404, response.id, debugging_id)
+        om.out.debug(msg % args)
+
+    return response

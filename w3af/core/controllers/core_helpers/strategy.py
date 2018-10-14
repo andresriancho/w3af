@@ -31,7 +31,6 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.extended_urllib import MAX_ERROR_COUNT
-from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.info import Info
 
 from w3af.core.controllers.core_helpers.consumers.grep import grep
@@ -118,6 +117,7 @@ class CoreStrategy(object):
         """
         try:
             self.verify_target_server_up()
+            self.replace_targets_with_redir()
             self.alert_if_target_is_301_all()
             
             self._setup_grep()
@@ -450,6 +450,52 @@ class CoreStrategy(object):
                 else:
                     sent_requests += 1
 
+    def replace_targets_with_redir(self):
+        """
+        The user might have configured one or more target URLs which are
+        redirecting to other parts of the application.
+
+        To prevent issues with the 404 detection we replace these URLs
+        with the 30x redirect destination.
+
+        Only replace the targets which redirect to the same domain and
+        protocol.
+
+        :return: None. The result is saved to cf.cf.get('targets')
+        """
+        targets = cf.cf.get('targets')
+        new_targets = []
+
+        for url in targets:
+            try:
+                http_response = self._w3af_core.uri_opener.GET(url,
+                                                               cache=False,
+                                                               follow_redirects=True)
+            except ScanMustStopByUserRequest:
+                # Not a real error, the user stopped the scan
+                raise
+            except Exception, e:
+                msg = 'Exception found during replace_targets_with_redir(): "%s"'
+                om.out.debug(msg % e)
+                raise ScanMustStopException(msg % e)
+            else:
+                redir_uri = http_response.get_redirect_destination()
+
+                if not redir_uri:
+                    # Keep the ones that are not redirects without changes
+                    new_targets.append(url)
+                    continue
+
+                if http_response.does_redirect_outside_target():
+                    # Keep this one, it will be handled below by
+                    # alert_if_target_is_301_all
+                    new_targets.append(url)
+                    continue
+
+                new_targets.append(redir_uri)
+
+        cf.cf.save('targets', new_targets)
+
     def alert_if_target_is_301_all(self):
         """
         Alert the user when the configured target is set to a site which will
@@ -486,46 +532,13 @@ class CoreStrategy(object):
                 # Not a real error, the user stopped the scan
                 raise
             except Exception, e:
-                emsg = 'Exception found during alert_if_target_is_301_all(): "%s"'
-                emsg %= e
-
-                om.out.debug(emsg)
-                raise ScanMustStopException(emsg)
+                msg = 'Exception found during alert_if_target_is_301_all(): "%s"'
+                om.out.debug(msg % e)
+                raise ScanMustStopException(msg % e)
             else:
-                if 300 <= http_response.get_code() <= 399:
-
-                    # Get the redirect target
-                    lower_headers = http_response.get_lower_case_headers()
-                    redirect_url = None
-
-                    for header_name in ('location', 'uri'):
-                        if header_name in lower_headers:
-                            header_value = lower_headers[header_name]
-                            header_value = header_value.strip()
-                            try:
-                                redirect_url = URL(header_value)
-                            except ValueError:
-                                # No special invalid URL handling required
-                                continue
-
-                    if not redirect_url:
-                        continue
-
-                    # Check if the protocol was changed:
-                    target_proto = url.get_protocol()
-                    redirect_proto = redirect_url.get_protocol()
-
-                    if target_proto != redirect_proto:
-                        site_does_redirect = True
-                        break
-
-                    # Check if the domain was changed:
-                    target_domain = url.get_domain()
-                    redirect_domain = redirect_url.get_domain()
-
-                    if target_domain != redirect_domain:
-                        site_does_redirect = True
-                        break
+                if http_response.does_redirect_outside_target():
+                    site_does_redirect = True
+                    break
 
         if site_does_redirect:
             name = 'Target redirect'
@@ -580,11 +593,11 @@ class CoreStrategy(object):
                                ' result in a scan with low test coverage: some'
                                ' application areas might not be scanned.\n'
                                '\n'
-                               'Please manually verify that these URLs exist '
+                               'Please manually verify that these URLs exist'
                                ' and, consider running a new scan with different'
                                ' targets.\n'
                                '\n'
-                               '%s\n' % urls)
+                               ' - %s\n' % urls)
 
     def _setup_crawl_infrastructure(self):
         """
