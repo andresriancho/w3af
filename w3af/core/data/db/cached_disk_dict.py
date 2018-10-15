@@ -124,7 +124,7 @@ class CachedDiskDict(object):
         :return: The name of the key that was moved to disk, or None if
                  all the keys are still in memory.
         """
-        for key in self._in_memory:
+        for key in self._in_memory.keys():
             if not self._belongs_in_memory(key):
                 try:
                     value = self._in_memory[key]
