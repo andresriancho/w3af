@@ -1,0 +1,19 @@
+- path: /pets
+  parameters:
+  - name: X-Foo-Header
+    values:
+    - 10101
+  - name: X-Bar-Header
+    values:
+    - cat
+    - dog
+- path: /cats
+  parameters:
+  - name: limit
+    values:
+    - 1
+    - 1000
+  - name: X-Awesome-Header
+    values:
+    - 2017
+    - 2018

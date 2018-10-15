@@ -599,12 +599,16 @@ class TestSpecification(unittest.TestCase):
                     self.assertFalse(hasattr(parameter, 'fill'))
 
                 parameter_handler = ParameterHandler(spec_handler.spec, operation)
-                updated_operation = parameter_handler.set_operation_params(True)
-                self.assertOperation(operation, updated_operation)
+                updated_operations = parameter_handler.set_operation_params(True)
+                self.assertOperations(operation, updated_operations)
 
                 parameter_handler = ParameterHandler(spec_handler.spec, operation)
                 updated_operation = parameter_handler.set_operation_params(False)
-                self.assertOperation(operation, updated_operation)
+                self.assertOperations(operation, updated_operation)
+
+    def assertOperations(self, operation, updated_operations):
+        for updated_operation in updated_operations:
+            self.assertOperation(operation, updated_operation)
 
     def assertOperation(self, operation, updated_operation):
 
