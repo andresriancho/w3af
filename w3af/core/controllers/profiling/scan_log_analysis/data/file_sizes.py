@@ -6,7 +6,7 @@ from utils.output import KeyValueOutput
 XML_OUTPUT_SIZE = re.compile('The XML output file size is (.*?) bytes.')
 
 
-def show_file_sizes(scan_log_filename, scan):
+def get_file_sizes(scan_log_filename, scan):
     stat_info = os.stat(scan_log_filename)
 
     latest_xml_size = None

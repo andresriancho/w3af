@@ -1,4 +1,7 @@
-def show_known_problems(scan_log_filename, scan):
+from utils.output import KeyValueOutput
+
+
+def get_known_problems(scan_log_filename, scan):
     """
     This will query the log for some known issues and if those appear show
     alerts in the output.
@@ -19,14 +22,19 @@ def show_known_problems(scan_log_filename, scan):
 
     for line in scan:
         if grep_teardown in line:
-            found_grep_teardown = line
+            found_grep_teardown = line.strip()
             continue
 
         if discover_call in line and found_grep_teardown:
-            print('Known issue found!')
-            print('')
-            print('The grep consumer was finished at:')
-            print('    %s' % found_grep_teardown)
-            print('But calls to discover were found after:')
-            print('    %s' % line)
-            break
+            data = ('The grep consumer was finished at:\n'
+                    '    %s\n' 
+                    'But calls to discover were found after:\n'
+                    '    %s' % (found_grep_teardown, line))
+
+            return KeyValueOutput('known_problems',
+                                  'Known scanner race condition found!',
+                                  data)
+
+    return KeyValueOutput('known_problems',
+                          'No known problems found',
+                          [])

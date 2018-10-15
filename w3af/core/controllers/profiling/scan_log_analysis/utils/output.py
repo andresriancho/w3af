@@ -25,7 +25,22 @@ class KeyValueOutput(object):
             values_list.sort(sort_by_value)
 
             for key, value in values_list:
-                print('    - %s: %s' % (key, value))
+                if isinstance(value, list):
+                    list_header = '    - %s:' % key
+                    print(list_header)
+
+                    for value_i in value:
+                        print('%s - %s' % (' ' * 8, value_i))
+                else:
+                    print('    - %s: %s' % (key, value))
+
+        elif isinstance(self.values, (int, float)):
+            print('    - %s' % (self.values,))
+
+        elif isinstance(self.values, basestring):
+            data = self.values
+            data = data.replace('\n', '\n    ')
+            print('    %s' % data)
 
         elif isinstance(self.values, list):
             self.values.sort()
