@@ -292,7 +292,7 @@ class CoreStrategy(object):
         finished = set()
         consumer_forced_end = set()
 
-        while True:
+        while not self._scan_reached_max_time():
             # Get results and handle exceptions
             self._handle_all_consumer_exceptions(_other)
 
@@ -306,6 +306,43 @@ class CoreStrategy(object):
                 break
 
             finished, consumer_forced_end = route_result
+
+        #
+        # Handle the case where the scan reached the max time
+        #
+        if self._scan_reached_max_time():
+            msg = ('The scan has reached the maximum scan time of %s minutes.'
+                   ' The scan will end and some vulnerabilities might not be'
+                   ' identified.')
+            args = (cf.cf.get('max_scan_time'), )
+            om.out.information(msg % args)
+
+            self._w3af_core.stop()
+
+    def _scan_reached_max_time(self):
+        """
+        Check the user-configured setting and return True if we're 5 minutes
+        before the deadline.
+
+        Return True 5 minutes before the `max_scan_time` to give the scan threads
+        time to finish and "guarantee" that the scan will be stopped before
+        `max_scan_time`.
+
+        :return: True if the scan has reached the `max_scan_time` - 5m.
+        """
+        # in minutes
+        max_scan_time = cf.cf.get('max_scan_time')
+
+        # The default is 0: no limit.
+        if max_scan_time == 0:
+            return False
+
+        # Get the scan time and compare with the max
+        scan_time = self._w3af_core.status.get_run_time()
+        if scan_time + 5 > max_scan_time:
+            return True
+
+        return False
 
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
                                           consumer_forced_end):
