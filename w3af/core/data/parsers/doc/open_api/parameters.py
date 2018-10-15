@@ -20,8 +20,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import copy
 import random
 import datetime
+import yaml
 
 from bravado_core.operation import Operation
 
@@ -31,6 +33,61 @@ from w3af.core.data.fuzzer.form_filler import (smart_fill,
 
 class OpenAPIParamResolutionException(Exception):
     pass
+
+
+class ParameterValueParsingError(Exception):
+
+    def __init__(self, message):
+        super(ParameterValueParsingError, self).__init__(message)
+
+
+# TODO: describe
+class ParameterValues(object):
+
+    def __init__(self):
+        self._values = {}
+
+    def is_empty(self):
+        return not self._values
+
+    def get(self, path, name):
+        values = self._values.get(self.key(path, name), None)
+        if not values:
+            return []
+        return list(values)
+
+    def set(self, path, name, values):
+        if not isinstance(values, list):
+            raise ValueError('values is not a list')
+        self._values[self.key(path, name)] = list(values)
+
+    @staticmethod
+    def key(path, name):
+        return '%s|%s' % (path, name)
+
+    def load_from_file(self, filename):
+        with open(filename, 'r') as content:
+            return self.load_from_string(content)
+
+    def load_from_string(self, string):
+        content = yaml.load(string)
+
+        if not isinstance(content, list):
+            raise ParameterValueParsingError('root is not a list')
+
+        for item in content:
+            if 'path' not in item:
+                raise ParameterValueParsingError('item does not have path')
+            if 'parameters' not in item:
+                raise ParameterValueParsingError('item does not have parameters')
+            for parameter in item['parameters']:
+                if 'name' not in parameter:
+                    raise ParameterValueParsingError('parameter does not have name')
+                if 'values' not in parameter:
+                    raise ParameterValueParsingError('parameter does not have values')
+                if not isinstance(parameter['values'], list):
+                    raise ParameterValueParsingError('values is not a list')
+                self.set(item['path'], parameter['name'], parameter['values'])
 
 
 class ParameterHandler(object):
@@ -53,20 +110,18 @@ class ParameterHandler(object):
         self.spec = spec
         self.operation = operation
 
-    def set_operation_params(self, optional=False):
+    def set_operation_params(self, optional=False, custom_parameter_values=ParameterValues()):
         """
         This is the main entry point. We return a set with the required and
         optional parameters for the provided operation / specification.
 
         :param optional: Should we set the values for the optional parameters?
+        :param custom_parameter_values: TODO
         """
         self._fix_common_spec_issues()
 
         # Make a copy of the operation
-        operation = Operation.from_spec(self.operation.swagger_spec,
-                                        self.operation.path_name,
-                                        self.operation.http_method,
-                                        self.operation.op_spec)
+        operation = self._copy(self.operation)
 
         for parameter_name, parameter in operation.params.iteritems():
             # We make sure that all parameters have a fill attribute
@@ -75,9 +130,69 @@ class ParameterHandler(object):
             if self._should_skip_setting_param_value(parameter, optional):
                 continue
 
-            self._set_param_value(parameter)
+            self._try_to_set_param_value(parameter)
 
-        return operation
+        operations = [operation]
+        if custom_parameter_values.is_empty():
+            return operations
+
+        # TODO describe
+        for parameter_name, parameter in operation.params.iteritems():
+
+            if self._should_skip_setting_param_value(parameter, optional):
+                continue
+
+            values = custom_parameter_values.get(operation.path_name, parameter.name)
+            if values:
+                operations = self._set_custom_parameter_values(operations, parameter_name, values)
+
+        return operations
+
+    @staticmethod
+    def _set_custom_parameter_values(operations, parameter_name, values):
+        """
+        TODO
+        :param operations:
+        :param parameter_name:
+        :param values:
+        :return:
+        """
+
+        if not values:
+            return operations
+
+        # If we have a single value, then just update all operations with it
+        if len(values) == 1:
+            for operation in operations:
+                operation.params[parameter_name].fill = values[0]
+            return operations
+
+        # If we have multiple values, then make a copy of each operation for each value
+        extended_operations = []
+        for operation in operations:
+            for value in values:
+                clone = ParameterHandler._copy(operation)
+                clone.params[parameter_name].fill = value
+                extended_operations.append(clone)
+        return extended_operations
+
+    @staticmethod
+    def _copy(operation):
+        """
+        TODO: mention deepcopy
+        :param operation:
+        :return:
+        """
+        clone = Operation.from_spec(operation.swagger_spec,
+                                    operation.path_name,
+                                    operation.http_method,
+                                    operation.op_spec)
+
+        for parameter_name, parameter in operation.params.iteritems():
+            if hasattr(parameter, 'fill'):
+                clone.params[parameter_name].fill = copy.deepcopy(parameter.fill)
+
+        return clone
 
     def operation_has_optional_params(self):
         """
@@ -202,7 +317,7 @@ class ParameterHandler(object):
 
             parameter.param_spec['default'] = 0
 
-    def _set_param_value(self, parameter):
+    def _try_to_set_param_value(self, parameter):
         """
         If the parameter has a default value, then we use that. If there is
         no value, we try to fill it with something that makes sense based on

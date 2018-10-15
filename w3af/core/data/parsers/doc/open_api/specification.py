@@ -34,8 +34,7 @@ except ImportError:
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler
-
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler, ParameterValues
 
 # Silence please.
 SILENCE = ('bravado_core.resource',
@@ -50,10 +49,20 @@ for to_silence in SILENCE:
 
 
 class SpecificationHandler(object):
-    def __init__(self, http_response, no_validation=False):
+
+    def __init__(self, http_response,
+                 no_validation=False,
+                 custom_parameter_values=ParameterValues()):
+        """
+        TODO
+        :param http_response:
+        :param no_validation:
+        :param custom_parameter_values:
+        """
         self.http_response = http_response
         self.spec = None
         self.no_validation = no_validation
+        self.custom_parameter_values = custom_parameter_values
 
     def get_http_response(self):
         return self.http_response
@@ -76,7 +85,8 @@ class SpecificationHandler(object):
 
         for api_resource_name, resource in self.spec.resources.items():
             for operation_name, operation in resource.operations.items():
-                operations = self._set_operation_params(operation)
+                operations = self._set_operation_params(operation,
+                                                        self.custom_parameter_values)
 
                 for _operation in operations:
                     data = (self.spec,
@@ -87,13 +97,15 @@ class SpecificationHandler(object):
                             _operation.params)
                     yield data
 
-    def _set_operation_params(self, operation):
+    def _set_operation_params(self, operation, custom_parameter_values):
         """
+        TODO: update
         Takes all of the information associated with an operation and fills the
         parameters with some values in order to have a non-empty REST API call
         which will increase our chances of finding vulnerabilities.
 
         :param operation: Data associated with the operation
+        :param custom_parameter_values: TODO
         :return: Two instances of the operation instance:
                     * One only containing values for the required fields
                     * One containing values for the required and optional fields
@@ -102,9 +114,11 @@ class SpecificationHandler(object):
         has_optional = parameter_handler.operation_has_optional_params()
 
         for optional in {False, has_optional}:
-            op = parameter_handler.set_operation_params(optional=optional)
-            if op is not None:
-                yield op
+            operations = parameter_handler.set_operation_params(optional,
+                                                                custom_parameter_values)
+            if operations is not None:
+                for op in operations:
+                    yield op
 
     def _parse_spec_from_dict(self, spec_dict, retry=True):
         """

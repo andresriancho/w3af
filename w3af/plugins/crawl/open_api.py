@@ -24,6 +24,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
 
 from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterValues
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.options.option_types import QUERY_STRING, HEADER, BOOL, INPUT_FILE
@@ -170,7 +171,12 @@ class open_api(CrawlPlugin):
         if not OpenAPI.can_parse(http_response):
             return
 
-        parser = OpenAPI(http_response, self._no_spec_validation, self._discover_fuzzable_headers)
+        context_parameter_values = ParameterValues()
+        if not self._parameter_values_location:
+            context_parameter_values.load_from_file(self._parameter_values_location)
+
+        parser = OpenAPI(http_response, self._no_spec_validation,
+                         self._discover_fuzzable_headers, context_parameter_values)
         parser.parse()
 
         self._report_to_kb_if_needed(http_response, parser)
@@ -187,7 +193,8 @@ class open_api(CrawlPlugin):
         fuzzable_request = FuzzableRequest(spec_url, method='GET')
         self.output_queue.put(fuzzable_request)
 
-    def _is_target_domain(self, fuzzable_request):
+    @staticmethod
+    def _is_target_domain(fuzzable_request):
         """
         :param fuzzable_request: The api call as a fuzzable request
         :return: True if the target domain matches
@@ -475,7 +482,7 @@ class open_api(CrawlPlugin):
               parameters:
               - name: user-id
                 values:
-                - '1234567'
+                - 1234567
               - name: X-First-Name
                 values:
                 - John
@@ -484,7 +491,7 @@ class open_api(CrawlPlugin):
               parameters:
               - name: user-id
                 values:
-                - '1234567'
+                - 1234567
               - name: birth-date
                 values:
                 - 2000-01-02

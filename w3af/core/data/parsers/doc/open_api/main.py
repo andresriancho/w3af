@@ -24,6 +24,8 @@ import yaml
 
 from yaml import load
 
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterValues
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
@@ -62,11 +64,22 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True):
+    def __init__(self, http_response,
+                 no_validation=False,
+                 discover_fuzzable_headers=True,
+                 parameter_values=ParameterValues()):
+        """
+        TODO
+        :param http_response:
+        :param no_validation:
+        :param discover_fuzzable_headers:
+        :param parameter_values:
+        """
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
+        self.parameter_values = parameter_values
 
     @staticmethod
     def content_type_match(http_resp):
@@ -144,7 +157,8 @@ class OpenAPI(BaseParser):
         and stores them in to the fuzzable request
         """
         specification_handler = SpecificationHandler(self.get_http_response(),
-                                                     self.no_validation)
+                                                     self.no_validation,
+                                                     self.parameter_values)
 
         for data in specification_handler.get_api_information():
             try:
@@ -180,7 +194,8 @@ class OpenAPI(BaseParser):
 
                 self.api_calls.append(fuzzable_request)
 
-    def _should_audit(self, fuzzable_request):
+    @staticmethod
+    def _should_audit(fuzzable_request):
         """
         We want to make sure that w3af doesn't delete all the items from the
         REST API, so we ignore DELETE calls.
