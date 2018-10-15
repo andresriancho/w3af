@@ -154,7 +154,10 @@ class RequestFactory(object):
                 continue
 
             if param_def.param_spec['type'] == 'array':
-                parameters[param_name] = parameters[param_name][0]
+                # It can happen that we didn't set a value for the parameter before,
+                # for example, when the parameter is not required
+                if parameters and parameters[param_name]:
+                    parameters[param_name] = parameters[param_name][0]
 
         if parameters:
             formatted_params = [(k, [str(v)]) for k, v in parameters.items() if v is not None]
