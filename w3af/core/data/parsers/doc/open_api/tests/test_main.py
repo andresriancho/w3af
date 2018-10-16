@@ -469,7 +469,7 @@ class TestOpenAPIMain(unittest.TestCase):
         values = ParameterValues()
         values.load_from_file(self.PETSTORE_SIMPLE_PARAMETER_VALUES)
 
-        parser = OpenAPI(response, parameter_values=values)
+        parser = OpenAPI(response, custom_parameter_values=values)
         parser.parse()
         api_calls = parser.get_api_calls()
 
@@ -520,7 +520,7 @@ class TestOpenAPIMain(unittest.TestCase):
         values = ParameterValues()
         values.load_from_file(self.MULTIPLE_HEADERS_PARAMETER_VALUES)
 
-        parser = OpenAPI(response, parameter_values=values)
+        parser = OpenAPI(response, custom_parameter_values=values)
         parser.parse()
         api_calls = parser.get_api_calls()
 
