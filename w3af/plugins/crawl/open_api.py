@@ -172,7 +172,7 @@ class open_api(CrawlPlugin):
             return
 
         context_parameter_values = ParameterValues()
-        if not self._parameter_values_location:
+        if self._parameter_values_location:
             context_parameter_values.load_from_file(self._parameter_values_location)
 
         parser = OpenAPI(http_response, self._no_spec_validation,
