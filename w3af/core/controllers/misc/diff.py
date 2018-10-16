@@ -63,8 +63,8 @@ def diff(a, b):
         if op == 1:
             b_changes.append(change)
 
-    a_changes = ''.join(a_changes)
-    b_changes = ''.join(b_changes)
+    a_changes = '\n'.join(a_changes)
+    b_changes = '\n'.join(b_changes)
 
     return a_changes, b_changes
 

@@ -1,7 +1,7 @@
 """
-config.py
+test_response.py
 
-Copyright 2006 Andres Riancho
+Copyright 2018 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,26 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import unittest
+
+from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
+from w3af.core.data.parsers.doc.url import URL
 
 
-class Config(dict):
-    """
-    This class saves config parameters sent by the user.
+class TestFourOhFourResponse(unittest.TestCase):
+    def test_normalize_path(self):
+        url = URL('https://w3af.org/a/b/c/')
+        normalized_path = FourOhFourResponse.normalize_path(url)
 
-    :author: Andres Riancho (andres.riancho@gmail.com)
-    """
-
-    def save(self, variable_name, value):
-        """
-        This method saves the variable_name value to a dict.
-        """
-        self[variable_name] = value
-
-    def cleanup(self):
-        """
-        Cleanup internal data.
-        """
-        self.clear()
-
-
-cf = Config()
+        self.assertEqual(normalized_path, 'https://w3af.org/a/b/path/')

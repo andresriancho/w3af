@@ -26,12 +26,20 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.input_file_option import InputFileOption
+from w3af.core.controllers.misc.temp_dir import (create_temp_dir,
+                                                 remove_temp_dir)
 
 
 class TestInputFileOption(unittest.TestCase):
 
     INPUT_FILE = os.path.relpath(os.path.join(ROOT_PATH, 'core', 'data',
                                               'options', 'tests', 'test.txt'))
+
+    def setUp(self):
+        create_temp_dir()
+
+    def tearDown(self):
+        remove_temp_dir()
 
     def test_valid_base64_data(self):
         value = '%s%s' % (InputFileOption.DATA_PROTO,
@@ -61,3 +69,9 @@ class TestInputFileOption(unittest.TestCase):
 
         self.assertIn(InputFileOption.DATA_PROTO,
                       opt.get_value_for_profile(self_contained=True))
+
+    def test_relative_path(self):
+        opt = opt_factory('name', self.INPUT_FILE, 'desc',
+                          INPUT_FILE, 'help', 'tab')
+
+        self.assertEquals(opt.get_value(), self.INPUT_FILE)

@@ -1,7 +1,8 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
+from utils.output import KeyValueOutput
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -9,7 +10,7 @@ from utils.utils import (get_first_timestamp,
 EXTENDED_URLLIB_ERRORS_RE = re.compile('ExtendedUrllib error rate is at (.*?)%')
 
 
-def show_extended_urllib_error_rate(scan_log_filename, scan):
+def get_error_rate_data(scan_log_filename, scan):
     error_rate = []
     error_rate_timestamps = []
 
@@ -18,6 +19,21 @@ def show_extended_urllib_error_rate(scan_log_filename, scan):
         if match:
             error_rate.append(int(match.group(1)))
             error_rate_timestamps.append(get_line_epoch(line))
+
+    return error_rate, error_rate_timestamps
+
+
+def get_error_rate_summary(scan_log_filename, scan):
+    error_rate, _ = get_error_rate_data(scan_log_filename, scan)
+
+    return KeyValueOutput('error_rate_summary',
+                          'Error rate summary',
+                          {'Error rate exceeded 10%': False if not error_rate else max(error_rate) > 10,
+                           'Error rate exceeded 20%': False if not error_rate else max(error_rate) > 20})
+
+
+def draw_extended_urllib_error_rate(scan_log_filename, scan):
+    error_rate, error_rate_timestamps = get_error_rate_data(scan_log_filename, scan)
 
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
@@ -29,16 +45,11 @@ def show_extended_urllib_error_rate(scan_log_filename, scan):
         print('')
         return
 
-    print('Extended URL library error rate')
-    print('    Error rate exceeded 10%%: %s' % (max(error_rate) > 10,))
-    print('    Error rate exceeded 20%%: %s' % (max(error_rate) > 10,))
-    print('')
-
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Error rate'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -50,5 +61,4 @@ def show_extended_urllib_error_rate(scan_log_filename, scan):
              label='Error rate')
 
     print(fig.show())
-    print('')
     print('')

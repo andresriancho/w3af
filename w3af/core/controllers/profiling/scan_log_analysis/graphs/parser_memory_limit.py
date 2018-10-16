@@ -1,7 +1,8 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
+from utils.output import KeyValueOutput
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -9,7 +10,7 @@ from utils.utils import (get_first_timestamp,
 PARSER_PROCESS_MEMORY_LIMIT = re.compile('Using RLIMIT_AS memory usage limit (.*?) MB for new pool process')
 
 
-def show_parser_process_memory_limit(scan_log_filename, scan):
+def get_parser_process_memory_limit_data(scan_log_filename, scan):
     scan.seek(0)
 
     memory_limit = []
@@ -21,6 +22,19 @@ def show_parser_process_memory_limit(scan_log_filename, scan):
             memory_limit.append(int(match.group(1)))
             memory_limit_timestamps.append(get_line_epoch(line))
 
+    return memory_limit, memory_limit_timestamps
+
+
+def get_parser_process_memory_limit_summary(scan_log_filename, scan):
+    memory_limit, _ = get_parser_process_memory_limit_data(scan_log_filename, scan)
+    return KeyValueOutput('parser_process_memory_limit',
+                          'Latest memory limit',
+                          '%s MB' % memory_limit[-1])
+
+
+def draw_parser_process_memory_limit(scan_log_filename, scan):
+    memory_limit, memory_limit_timestamps = get_parser_process_memory_limit_data(scan_log_filename, scan)
+
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_epoch = last_timestamp - first_timestamp
@@ -30,15 +44,11 @@ def show_parser_process_memory_limit(scan_log_filename, scan):
         print('No parser process memory limit information found')
         return
 
-    print('Parser process memory limit')
-    print('    Latest memory limit: %s MB' % memory_limit[-1])
-    print('')
-
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Parser memory limit (MB)'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -50,5 +60,4 @@ def show_parser_process_memory_limit(scan_log_filename, scan):
              label='Memory limit')
 
     print(fig.show())
-    print('')
     print('')

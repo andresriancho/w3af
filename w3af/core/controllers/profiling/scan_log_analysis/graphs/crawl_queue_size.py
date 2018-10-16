@@ -1,7 +1,7 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfraIn DiskDict size is (\d*).')
 
 
-def show_queue_size_crawl(scan_log_filename, scan):
+def get_queue_size_crawl_data(scan_log_filename, scan):
     scan.seek(0)
 
     crawl_queue_sizes = []
@@ -20,6 +20,12 @@ def show_queue_size_crawl(scan_log_filename, scan):
         if match:
             crawl_queue_sizes.append(int(match.group(1)))
             crawl_queue_timestamps.append(get_line_epoch(line))
+
+    return crawl_queue_sizes, crawl_queue_timestamps
+
+
+def draw_queue_size_crawl(scan_log_filename, scan):
+    crawl_queue_sizes, crawl_queue_timestamps = get_queue_size_crawl_data(scan_log_filename, scan)
 
     # Get the last timestamp to use as max in the graphs
     first_timestamp = get_first_timestamp(scan)
@@ -38,8 +44,8 @@ def show_queue_size_crawl(scan_log_filename, scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Items in CrawlInfra queue'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -51,5 +57,4 @@ def show_queue_size_crawl(scan_log_filename, scan):
              label='Crawl')
 
     print(fig.show())
-    print('')
     print('')
