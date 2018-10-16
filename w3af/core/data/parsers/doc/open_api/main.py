@@ -67,19 +67,22 @@ class OpenAPI(BaseParser):
     def __init__(self, http_response,
                  no_validation=False,
                  discover_fuzzable_headers=True,
-                 parameter_values=ParameterValues()):
+                 custom_parameter_values=ParameterValues()):
         """
-        TODO
-        :param http_response:
-        :param no_validation:
-        :param discover_fuzzable_headers:
-        :param parameter_values:
+        Initialize OpenAPI plugin.
+        :param http_response: An HTTP response with an OpenAPI specification.
+        :param no_validation: Turns on/off validation of the OpenAPI spec.
+        :param discover_fuzzable_headers: Turns on/off discovering HTTP headers
+                                          which are used by API endpoints
+                                          and which can then be used for testing/fuzzing.
+        :param custom_parameter_values: Sets context-specific values for parameters
+                                        used by the API endpoints.
         """
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
-        self.parameter_values = parameter_values
+        self.custom_parameter_values = custom_parameter_values
 
     @staticmethod
     def content_type_match(http_resp):
@@ -158,7 +161,7 @@ class OpenAPI(BaseParser):
         """
         specification_handler = SpecificationHandler(self.get_http_response(),
                                                      self.no_validation,
-                                                     self.parameter_values)
+                                                     self.custom_parameter_values)
 
         for data in specification_handler.get_api_information():
             try:

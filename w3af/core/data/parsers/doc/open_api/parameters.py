@@ -41,22 +41,36 @@ class ParameterValueParsingError(Exception):
         super(ParameterValueParsingError, self).__init__(message)
 
 
-# TODO: describe
 class ParameterValues(object):
 
     def __init__(self):
         self._values = {}
 
     def is_empty(self):
+        """
+        :return: True if no parameter values were set, false otherwise.
+        """
         return not self._values
 
     def get(self, path, name):
+        """
+        Gets values for a parameter of API endpoint.
+        :param path: A path to the API endpoint.
+        :param name: A name of the parameter.
+        :return: A list of values assigned to the parameter.
+        """
         values = self._values.get(self.key(path, name), None)
         if not values:
             return []
         return list(values)
 
     def set(self, path, name, values):
+        """
+        Sets values for a parameter of API endpoint.
+        :param path: A path to the API endpoint.
+        :param name: A name of the parameter.
+        :param values: A list of values to be assigned to the parameter.
+        """
         if not isinstance(values, list):
             raise ValueError('values is not a list')
         self._values[self.key(path, name)] = list(values)
@@ -66,10 +80,18 @@ class ParameterValues(object):
         return '%s|%s' % (path, name)
 
     def load_from_file(self, filename):
+        """
+        Loads parameter values from a YAML file.
+        :param filename: A path to the file to be loaded.
+        """
         with open(filename, 'r') as content:
             return self.load_from_string(content)
 
     def load_from_string(self, string):
+        """
+        Loads parameter values from YAML.
+        :param string: Definition of parameter values in YAML.
+        """
         content = yaml.load(string)
 
         if not isinstance(content, list):
@@ -115,8 +137,25 @@ class ParameterHandler(object):
         This is the main entry point. We return a set with the required and
         optional parameters for the provided operation / specification.
 
+        The method tries to fill out the parameters with the best values.
+        But a caller can provide context-specific values. In this case,
+        the method prefers them while filling out the parameters of the operation.
+        If the caller provided multiple values for parameters,
+        then the method tries to enumerate all possible combinations of parameters.
+
+        For example, let's consider an operation which takes two required parameters,
+        and a caller provided the following values for each of them:
+          * param_one -> foo, bar
+          * param_two -> 1984, 42
+        Then, the method generates 4 new operations with the following values:
+          * param_one = foo, param_two = 1984
+          * param_one = foo, param_two = 42
+          * param_one = bar, param_two = 1984
+          * param_one = bar, param_two = 42
+
         :param optional: Should we set the values for the optional parameters?
-        :param custom_parameter_values: TODO
+        :param custom_parameter_values: Sets context-specific values for parameters
+                                        used by the API endpoints.
         """
         self._fix_common_spec_issues()
 
@@ -132,11 +171,14 @@ class ParameterHandler(object):
 
             self._try_to_set_param_value(parameter)
 
+        # Return a list with single operation
+        # if no context-specific values were provided.
         operations = [operation]
         if custom_parameter_values.is_empty():
             return operations
 
-        # TODO describe
+        # If the caller provided some context-specific values,
+        # then prefer them, and enumerate all combinations.
         for parameter_name, parameter in operation.params.iteritems():
 
             if self._should_skip_setting_param_value(parameter, optional):
@@ -151,17 +193,17 @@ class ParameterHandler(object):
     @staticmethod
     def _set_custom_parameter_values(operations, parameter_name, values):
         """
-        TODO
-        :param operations:
-        :param parameter_name:
-        :param values:
-        :return:
+        For all operations in the list, assigns the values to the specified parameter.
+        In case of multiple values, the method creates copies of operations for each value.
+        :param operations: The list of operations.
+        :param parameter_name: A name of the parameter.
+        :param values: The list of values.
+        :return: A new list of operations with assigned values.
         """
-
         if not values:
             return operations
 
-        # If we have a single value, then just update all operations with it
+        # If we have a single value, then just update all operations with it.
         if len(values) == 1:
             for operation in operations:
                 operation.params[parameter_name].fill = values[0]
@@ -174,14 +216,23 @@ class ParameterHandler(object):
                 clone = ParameterHandler._copy(operation)
                 clone.params[parameter_name].fill = value
                 extended_operations.append(clone)
+
         return extended_operations
 
     @staticmethod
     def _copy(operation):
         """
-        TODO: mention deepcopy
-        :param operation:
-        :return:
+        Creates a copy of the operation.
+
+        Note: deepcopy() may cause problems with debugging
+        when it's used with complex objects which contain loops.
+        Basically, pdb can start skipping breakpoints after a call to deepcopy().
+        Most probably, no complex objects will be used for 'fill' field,
+        so no problem with debugging should occur. If such a problem occurs,
+        we need to avoid using deepcopy() here.
+
+        :param operation: The operation to be copied.
+        :return: A clone of the operation.
         """
         clone = Operation.from_spec(operation.swagger_spec,
                                     operation.path_name,

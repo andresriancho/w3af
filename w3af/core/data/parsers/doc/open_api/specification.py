@@ -54,10 +54,11 @@ class SpecificationHandler(object):
                  no_validation=False,
                  custom_parameter_values=ParameterValues()):
         """
-        TODO
-        :param http_response:
-        :param no_validation:
-        :param custom_parameter_values:
+        Initialize an new instance of SpecificationHandler.
+        :param http_response: An HTTP response with an API specification.
+        :param no_validation: Turns on/off validation of the OpenAPI spec.
+        :param custom_parameter_values: Sets context-specific values for parameters
+                                        used by the API endpoints.
         """
         self.http_response = http_response
         self.spec = None
@@ -99,16 +100,24 @@ class SpecificationHandler(object):
 
     def _set_operation_params(self, operation, custom_parameter_values):
         """
-        TODO: update
         Takes all of the information associated with an operation and fills the
         parameters with some values in order to have a non-empty REST API call
         which will increase our chances of finding vulnerabilities.
 
+        While filling out the operation, the method considers the following cases:
+         * The operation only contains values for the required fields
+         * The operation contains values for both required and optional fields
+
+        A caller can provide context-specific values for parameters used by the operation.
+        If such context-specific values were provided, the method prefers them
+        while filling out the parameters of the operation.
+        If the caller provided multiple values for parameters,
+        then the method tries to enumerate all possible combinations of parameters.
+
         :param operation: Data associated with the operation
-        :param custom_parameter_values: TODO
-        :return: Two instances of the operation instance:
-                    * One only containing values for the required fields
-                    * One containing values for the required and optional fields
+        :param custom_parameter_values: Context-specific values for parameters
+                                        of the operation.
+        :return: A number of operations with assigned values for their parameters.
         """
         parameter_handler = ParameterHandler(self.spec, operation)
         has_optional = parameter_handler.operation_has_optional_params()
