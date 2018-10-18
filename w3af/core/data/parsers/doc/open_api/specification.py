@@ -58,6 +58,26 @@ class SpecificationHandler(object):
     def get_http_response(self):
         return self.http_response
 
+    def shallow_copy(self):
+        """
+        TODO
+        :return:
+        """
+        return SpecificationHandler(self.http_response, self.no_validation)
+
+    def parse(self):
+        """
+        TODO
+        :return:
+        """
+        spec_dict = self._load_spec_dict()
+        if spec_dict is None:
+            return None
+
+        self.spec = self._parse_spec_from_dict(spec_dict)
+
+        return self.spec
+
     def get_api_information(self):
         """
         This is the main method.
@@ -65,13 +85,10 @@ class SpecificationHandler(object):
         :yield: All the information we were able to collect about each API endpoint
                 This includes the specification, parameters, URL, etc.
         """
-        spec_dict = self._load_spec_dict()
+        if not self.spec:
+            self.parse()
 
-        if spec_dict is None:
-            return
-
-        self.spec = self._parse_spec_from_dict(spec_dict)
-        if self.spec is None:
+        if not self.spec:
             return
 
         for api_resource_name, resource in self.spec.resources.items():

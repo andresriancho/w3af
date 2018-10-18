@@ -67,6 +67,7 @@ class OpenAPI(BaseParser):
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
+        self.specification_handler = None
 
     @staticmethod
     def content_type_match(http_resp):
@@ -136,6 +137,13 @@ class OpenAPI(BaseParser):
         # sure until we really parse it in OpenAPI.parse()
         return True
 
+    def get_specification_handler(self):
+        """
+        TODO
+        :return:
+        """
+        return self.specification_handler
+
     def parse(self):
         """
         Extract all the API endpoints using the bravado Open API parser.
@@ -143,10 +151,10 @@ class OpenAPI(BaseParser):
         The method also looks for all parameters which are passed to endpoints via headers,
         and stores them in to the fuzzable request
         """
-        specification_handler = SpecificationHandler(self.get_http_response(),
-                                                     self.no_validation)
+        self.specification_handler = SpecificationHandler(self.get_http_response(),
+                                                          self.no_validation)
 
-        for data in specification_handler.get_api_information():
+        for data in self.specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
                 fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
