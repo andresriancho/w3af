@@ -19,17 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 
 import w3af.core.data.constants.severity as severity
-
+from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.kb.info import Info
 
 
-class private_keys(GrepPlugin):
+class keys(GrepPlugin):
     """
-    Grep every page for private keys.
+    Grep every page for public and private keys.
 
     :author: Yvonne Kim
     """
@@ -39,7 +39,10 @@ class private_keys(GrepPlugin):
         self.PUBLIC = 'public'
         self.PRIVATE = 'private'
 
-        key_regex = (
+        PUBLIC = 'public'
+        PRIVATE = 'private'
+
+        KEY_FORMATS = (
             # RSA (PKCS1)
             ('-----BEGIN RSA PRIVATE KEY-----', ('RSA-PRIVATE', PRIVATE)), 
             ('-----BEGIN RSA PUBLIC KEY-----', ('RSA-PUBLIC', PUBLIC)),
@@ -53,7 +56,7 @@ class private_keys(GrepPlugin):
             # Elliptic Curve
             ('-----BEGIN EC PRIVATE KEY-----', ('EC-PRIVATE', PRIVATE)),
             ('-----BEGIN EC PUBLIC KEY-----', ('EC-PUBLIC', PUBLIC)),
-            ('ecdsa-sha2-nistp256', ('EC-PUBLIC', PUBLIC))
+            ('ecdsa-sha2-nistp256', ('EC-PUBLIC', PUBLIC)),
             
             # SSH2
             ('---- BEGIN SSH2 PUBLIC KEY ----', ('SSH2-PRIVATE', PRIVATE)),
@@ -72,10 +75,10 @@ class private_keys(GrepPlugin):
             
             # XML
             ('<RSAKeyPair>', ('XML-RSA', PRIVATE)),
-            ('<RSAKeyValue>', ('.NET-XML-RSA', PUBLIC)),
+            ('<RSAKeyValue>', ('.NET-XML-RSA', PUBLIC))
         )        
 
-        self._multi_re = MultiRE(key_regex)
+        self._multi_in = MultiIn(KEY_FORMATS)
 
 
     def grep(self, request, response):
@@ -92,25 +95,22 @@ class private_keys(GrepPlugin):
         if not response.get_code() == 200:
             return
 
-        clear_text_body = response.get_clear_text_body()
-
-        if clear_text_body is None:
-            return
-
-        for _, _, _, (key, keypair_type) in self._multi_re.query(response.body):
+        for _, (key, keypair_type) in self._multi_in.query(response.body):
             desc = u'The URL: "%s" discloses a key of type: "%s"'
             desc %= (response.get_url(), key)
 
             if keypair_type == self.PUBLIC:
-                item = Info('Public key disclosure', desc, response.id, self.get_name())
+                item = Info(
+                    'Public key disclosure', desc, response.id, self.get_name())
 
             elif keypair_type == self.PRIVATE:
-                item = Vuln('Private key disclosure', desc, severity.HIGH, response.id, self.get_name())                
+                item = Vuln(
+                    'Private key disclosure', desc, severity.HIGH, response.id, self.get_name())                
 
             item.set_url(response.get_url())
             item.add_to_highlight(key)
 
-            self.kb_append_uniq(self, 'keys', item, 'URL')            
+            self.kb_append(self, 'keys', item)
         
 
     def get_long_desc(self):
@@ -119,6 +119,8 @@ class private_keys(GrepPlugin):
         """
 
         return """
-        This plugin scans responses for keys in a few of the most common formats. Private keys are classified as vulnerabilities while public keys are information.
+        This plugin scans responses for keys in a few of the most common formats.
+        Private keys are classified as vulnerabilities while public keys are stored
+        as information. 
 
         """
