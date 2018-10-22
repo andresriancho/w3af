@@ -15,7 +15,7 @@ DB2 Driver
 DB2 Error
 DB2 ODBC
 detected an internal error
-detected an internal error [IBM][CLI Driver][DB2/6000]
+detected an internal error \[IBM]\[CLI Driver]\[DB2/6000]
 Died at
 Disallowed Parent Path
 error
@@ -75,7 +75,7 @@ server at
 server object error
 SQL command not properly ended
 SQL Server Driver
-SQL Server Driver][SQL Server
+SQL Server Driver]\[SQL Server
 SQLException
 supplied argument is not a valid MySQL result resource
 Supplied argument is not a valid PostgreSQL result
