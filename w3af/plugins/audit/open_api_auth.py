@@ -49,12 +49,12 @@ class open_api_auth(AuditPlugin):
         # The check works only with API endpoints.
         # crawl.open_api plugin has to be called before.
         if not self._has_api_spec():
-            om.out.info("Could not find an API specification, skip")
+            om.out.information("Could not find an API specification, skip")
             return
 
         # The API spec must define authentication mechanisms.
         if not self._has_security_definitions_in_spec():
-            om.out.info("The API spec has no security definitions, skip")
+            om.out.information("The API spec has no security definitions, skip")
             return
 
         # The check only runs if the open api specification
@@ -62,7 +62,7 @@ class open_api_auth(AuditPlugin):
         # TODO: take into account `security` section for an operation (or there may be a global one)
         #       https://swagger.io/docs/specification/2-0/authentication/
         if not self._has_auth(freq):
-            om.out.info("Request doesn't have auth info, skip")
+            om.out.information("Request doesn't have auth info, skip")
             return
 
         # Remove auth info from the request
@@ -155,13 +155,13 @@ class open_api_auth(AuditPlugin):
         :param auth:
         :return:
         """
-        if auth['in'] == 'query':
+        if auth.location == 'query':
             params = freq.get_url().get_params()
             del params[auth.name]
             freq.get_url().set_params(params)
 
-        if auth['in'] == 'header':
-            self._remove_header(freq, auth['name'])
+        if auth.location == 'header':
+            self._remove_header(freq, auth.name)
 
     def _has_auth(self, freq):
         """
@@ -182,21 +182,21 @@ class open_api_auth(AuditPlugin):
 
     @staticmethod
     def _has_basic_auth(freq):
-        return freq.get_headers().iget('Authorization', '').startswith('basic')
+        return freq.get_headers().iget('Authorization', '')[0].startswith('basic')
 
     @staticmethod
     def _has_api_key(freq, auth):
         if not hasattr(auth, 'name'):
             return False
 
-        if not hasattr(auth, 'in'):
+        if not hasattr(auth, 'location'):
             return False
 
-        if auth['in'] == 'query':
+        if auth.location == 'query':
             params = freq.get_url().get_params()
             return params and auth.name in params and params[auth.name]
 
-        if auth['in'] == 'header' and freq.get_headers().iget(auth.name):
+        if auth.location == 'header' and freq.get_headers().iget(auth.name)[0]:
             return True
 
         return False
