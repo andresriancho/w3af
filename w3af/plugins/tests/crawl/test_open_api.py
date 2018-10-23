@@ -18,14 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import json
 import re
-import urllib
 
 from w3af.plugins.audit.sqli import sqli
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (IntParamQueryString,
-                                                                              NestedModel)
+                                                                              NestedModel,
+                                                                              PetstoreSimpleModel)
 
 
 class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
@@ -131,8 +132,10 @@ class TestOpenAPINestedModelSpec(PluginTest):
             if basic != TestOpenAPINestedModelSpec.BEARER:
                 return 401, response_headers, ''
 
+            print('debug: get_response: uri = %s' % uri)
+
             # The body is in json format, need to escape my double quotes
-            request_body = str(http_request.parsed_body)
+            request_body = json.dumps(http_request.parsed_body)
             payloads = [p.replace('"', '\\"') for p in sqli.SQLI_STRINGS]
 
             response_body = 'Sunny outside'
@@ -289,3 +292,73 @@ class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
         info_i = infos[0]
         self.assertEqual(info_i.get_name(), 'Open API specification found')
 
+
+class TestOpenAPIFuzzURLParts(PluginTest):
+    api_key = 'xxx'
+
+    target_url = 'http://w3af.org/'
+
+    vulnerable_url = 'http://w3af.org/api/pets/1%25272%25223'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api',
+
+                                               ('header_auth',
+                                                'X-API-Key: %s' % api_key,
+                                                PluginConfig.HEADER),
+
+                                               ),),
+                        'audit': (PluginConfig('sqli'),)}
+        }
+    }
+
+    class SQLIMockResponse(MockResponse):
+
+        def get_response(self, http_request, uri, response_headers):
+            header = http_request.headers.get('X-API-Key', '')
+            if header != TestOpenAPIFuzzURLParts.api_key:
+                return 401, response_headers, ''
+
+            response_body = 'Sunny outside'
+            if uri == TestOpenAPIFuzzURLParts.vulnerable_url:
+                print('debug: get_response: uri = %s' % uri)
+                response_body = 'PostgreSQL query failed:'
+
+            return self.status, response_headers, response_body
+
+    MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
+                                   PetstoreSimpleModel().get_specification(),
+                                   content_type='application/json'),
+
+                      SQLIMockResponse(re.compile('http://w3af.org/api/.*'),
+                                       body=None,
+                                       method='GET',
+                                       status=200),
+
+                      SQLIMockResponse(re.compile('http://w3af.org/api/.*'),
+                                       body=None,
+                                       method='POST',
+                                       status=200)
+                      ]
+
+    def test_mp(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        #
+        # Since we configured authentication we should only get one of the Info
+        #
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 1, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
+        vulns = self.kb.get('sqli', 'sqli')
+        self.assertEqual(len(vulns), 1)
+
+        vuln = vulns[0]
+        self.assertEquals(vuln.get_method(), 'GET')
+        self.assertEquals(vuln.get_url().url_string, TestOpenAPIFuzzURLParts.vulnerable_url)
