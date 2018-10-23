@@ -83,18 +83,36 @@ class RequestFactory(object):
     def _get_parameter_headers(self):
         """
         Looks for all parameters which are passed to the endpoint via headers.
+        The method filters out headers with auth info
+        which are defined 'securityDefinitions' section of the API spec.
 
         :return: A list of unique header names.
         """
         parameter_headers = set()
-        for parameter_name in self.parameters:
-            parameter = self.parameters[parameter_name]
+        for parameter_name, parameter in self.parameters.iteritems():
             if parameter.location == 'header':
+
+                # Skip auth headers.
+                if self._is_auth_header(parameter.name):
+                    continue
+
                 parameter_headers.add(parameter.name)
                 om.out.debug('Found a parameter header for %s endpoint: %s'
                              % (self.operation.path_name, parameter.name))
 
         return list(parameter_headers)
+
+    def _is_auth_header(self, name):
+        """
+        :param name: Header name.
+        :return: True if this is an auth header, False otherwise.
+        """
+        for key, auth in self.spec.security_definitions.iteritems():
+            if hasattr(auth, 'location') and hasattr(auth, 'name') \
+                    and auth.location == 'header' and auth.name == name:
+                return True
+
+        return False
 
     def _bravado_construct_request(self):
         """
