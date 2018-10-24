@@ -208,23 +208,27 @@ class open_api_auth(AuditPlugin):
 
         return False
 
-    @staticmethod
-    def _has_basic_auth(freq):
+    def _has_basic_auth(self, freq):
         """
         TODO
         :param freq:
         :return:
         """
+        if not self._is_acceptable_auth_type(freq, 'basic'):
+            return False
+
         return freq.get_headers().iget('Authorization', '')[0].startswith('basic')
 
-    @staticmethod
-    def _has_api_key(freq, auth):
+    def _has_api_key(self, freq, auth):
         """
         TODO
         :param freq:
         :param auth:
         :return:
         """
+        if not self._is_acceptable_auth_type(freq, 'apiKey'):
+            return False
+
         if not hasattr(auth, 'name'):
             return False
 
@@ -239,6 +243,17 @@ class open_api_auth(AuditPlugin):
             return True
 
         return False
+
+    def _has_oauth2(self, freq):
+        """
+        TODO
+        :param freq:
+        :return:
+        """
+        if not self._is_acceptable_auth_type(freq, 'oauth2'):
+            return False
+
+        return freq.get_headers().iget('Authorization', '')[0].startswith('Bearer')
 
     def _is_acceptable_auth_type(self, freq, auth_type):
         """
@@ -263,17 +278,6 @@ class open_api_auth(AuditPlugin):
                     return True
 
         return False
-
-    def _has_oauth2(self, freq):
-        """
-        TODO
-        :param freq:
-        :return:
-        """
-        if not self._is_acceptable_auth_type(freq, 'oauth2'):
-            return False
-
-        return freq.get_headers().iget('Authorization', '')[0].startswith('Bearer')
 
     def get_long_desc(self):
         """

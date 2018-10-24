@@ -154,6 +154,7 @@ class TestOpenAPIAuth(PluginTest):
         self.assertTrue(plugin._is_acceptable_auth_type(fr, 'apiKey'))
         self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
         self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
+
         self.assertTrue(plugin._has_auth(fr))
         self.assertTrue(plugin._has_oauth2(fr))
         self.assertFalse(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
@@ -178,6 +179,12 @@ class TestOpenAPIAuth(PluginTest):
                              headers=Headers([('X-API-Key', 'zzz')]),
                              post_data=KeyValueContainer(),
                              method='POST')
+
+        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'oauth2'))
+        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'apiKey'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
+
         self.assertTrue(plugin._has_auth(fr))
         self.assertTrue(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
         self.assertFalse(plugin._has_oauth2(fr))
@@ -244,5 +251,22 @@ class TestOpenAPIAuth(PluginTest):
         self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
         self.assertFalse(plugin._has_auth(fr))
         self.assertFalse(plugin._has_oauth2(fr))
+        self.assertFalse(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
+        self.assertFalse(plugin._has_basic_auth(fr))
+
+        # /api/pets/{id} doesn't have a 'security' section
+        # but global 'security' section should apply here (only OAuth2)
+        fr = FuzzableRequest(URL('http://w3af.org/api/pets/42'),
+                             headers=Headers([('Authorization', 'Bearer xxx')]),
+                             post_data=KeyValueContainer(),
+                             method='GET')
+
+        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'oauth2'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'apiKey'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
+
+        self.assertTrue(plugin._has_auth(fr))
+        self.assertTrue(plugin._has_oauth2(fr))
         self.assertFalse(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
         self.assertFalse(plugin._has_basic_auth(fr))
