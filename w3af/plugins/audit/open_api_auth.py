@@ -25,6 +25,8 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 
 
 class open_api_auth(AuditPlugin):
@@ -38,6 +40,9 @@ class open_api_auth(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         self._spec = None
+
+        # Note: we can let a user set a list of expected codes.
+        self._expected_codes = [401]
 
     def audit(self, freq, orig_response, debugging_id):
         """
@@ -89,7 +94,20 @@ class open_api_auth(AuditPlugin):
         """
         TODO
         """
-        pass
+        if response.get_code() not in self._expected_codes:
+            desc = 'A %s request without auth info was send to %s. ' \
+                   'The server replied with an unexpected code (%d) but expected %s' \
+                   % (freq.get_method(), freq.get_url(), response.get_code(), self._expected_codes)
+
+            # TODO severity may depend on response codes
+            v = Vuln.from_fr('Broken authentication', desc,
+                             severity.HIGH, response.id,
+                             self.get_name(), freq)
+
+            v['response_code'] = response.get_code()
+            v['method'] = freq.get_method()
+
+            self.kb_append_uniq(self, 'open_api_auth', v)
 
     def _has_security_definitions_in_spec(self):
         """

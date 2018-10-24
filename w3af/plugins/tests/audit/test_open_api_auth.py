@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import re
 
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.dc.headers import Headers
@@ -89,20 +90,20 @@ class TestOpenAPIAuth(PluginTest):
                      content_type='text/plain'),
 
         # Authenticate GET requests to /api/pets
-        AuthMockResponse('http://w3af.org/api/pets',
+        AuthMockResponse(re.compile('http://w3af.org/api/pets$'),
                          '{ "id": 42 }',
                          content_type='application/json',
                          method='GET'),
 
         # No auth for POST requests to /api/pets
         # This should result to a vulnerability.
-        MockResponse('http://w3af.org/api/pets',
+        MockResponse(re.compile('http://w3af.org/api/pets$'),
                      '{ "id": 42 }',
                      content_type='application/json',
                      method='POST'),
 
         # Authenticate requests to /api/pets/{id}
-        AuthMockResponse('http://w3af.org/api/pets/*',
+        AuthMockResponse(re.compile('http://w3af.org/api/pets.*'),
                          '{ "id": 42 }',
                          content_type='application/json')
     ]
@@ -111,33 +112,40 @@ class TestOpenAPIAuth(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        specification_handler = self.kb.raw_read('open_api', 'specification_handler')
+        specification_handler = self.kb.raw_read('open_api',
+                                                 'specification_handler')
         self.assertIsNotNone(specification_handler, "no specification handler")
-        self.assertTrue(isinstance(specification_handler, SpecificationHandler), "not a SpecificationHandler")
+        self.assertTrue(isinstance(specification_handler, SpecificationHandler),
+                        "not a SpecificationHandler")
 
         infos = self.kb.get('open_api', 'open_api')
         self.assertEqual(len(infos), 1, infos)
         info_i = infos[0]
         self.assertEqual(info_i.get_name(), 'Open API specification found')
 
-        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
-        fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/openapi.yaml', '/')]
-        fuzzable_requests.sort(by_path)
-        self.assertEqual(len(fuzzable_requests), 6)
+        frs = self.kb.get_all_known_fuzzable_requests()
+        frs = [f for f in frs if f.get_url().get_path() not in ('/openapi.yaml', '/')]
+        frs.sort(by_path)
+        self.assertEqual(len(frs), 6)
 
-        # TODO check for vulns
-        # vulns = self.kb.get('open_api_auth', 'open_api_auth')
-        # self.assertEquals(len(vulns), 1)
-        # vuln = vulns[0]
-        # self.assertEquals('TBD', vuln.get_name())
-        # self.assertEquals('TBD', vuln.get_url().url_string)
+        vulns = self.kb.get('open_api_auth', 'open_api_auth')
+        self.assertEquals(len(vulns), 1)
+
+        vuln = vulns[0]
+        self.assertEquals('Broken authentication', vuln.get_name())
+        self.assertEquals('High', vuln.get_severity())
+        self.assertEquals('http://w3af.org/api/pets', vuln.get_url().url_string)
+        self.assertEquals('POST', vuln['method'])
+        self.assertEquals(200, vuln['response_code'])
 
     def test_open_api_auth(self):
         api_http_response = generate_response(PetstoreWithSecurity.get_specification())
         parser = OpenAPI(api_http_response)
         parser.parse()
-        self.kb.raw_write('open_api', 'specification_handler', parser.get_specification_handler().shallow_copy())
-        self.kb.raw_write('open_api', 'request_to_operation_id', parser.get_request_to_operation_id())
+        self.kb.raw_write('open_api', 'specification_handler',
+                          parser.get_specification_handler().shallow_copy())
+        self.kb.raw_write('open_api', 'request_to_operation_id',
+                          parser.get_request_to_operation_id())
 
         spec = parser.get_specification_handler().get_spec()
 
@@ -171,7 +179,8 @@ class TestOpenAPIAuth(PluginTest):
 
         # Check if the updated request doesn't have auth info.
         self.assertFalse(plugin._has_auth(updated_fr))
-        self.assertFalse(plugin._has_api_key(updated_fr, spec.security_definitions['ApiKeyAuth']))
+        self.assertFalse(plugin._has_api_key(updated_fr,
+                                             spec.security_definitions['ApiKeyAuth']))
         self.assertFalse(plugin._has_oauth2(updated_fr))
         self.assertFalse(plugin._has_basic_auth(updated_fr))
 
@@ -201,7 +210,8 @@ class TestOpenAPIAuth(PluginTest):
 
         # Check if the updated request doesn't have auth info.
         self.assertFalse(plugin._has_auth(updated_fr))
-        self.assertFalse(plugin._has_api_key(updated_fr, spec.security_definitions['ApiKeyAuth']))
+        self.assertFalse(plugin._has_api_key(updated_fr,
+                                             spec.security_definitions['ApiKeyAuth']))
         self.assertFalse(plugin._has_oauth2(updated_fr))
         self.assertFalse(plugin._has_basic_auth(updated_fr))
 
@@ -217,7 +227,8 @@ class TestOpenAPIAuth(PluginTest):
         # Remove auth info from the request.
         updated_fr = plugin._remove_auth(fr)
         self.assertFalse(plugin._has_auth(updated_fr))
-        self.assertFalse(plugin._has_api_key(updated_fr, spec.security_definitions['ApiKeyAuth']))
+        self.assertFalse(plugin._has_api_key(updated_fr,
+                                             spec.security_definitions['ApiKeyAuth']))
         self.assertFalse(plugin._has_oauth2(updated_fr))
         self.assertFalse(plugin._has_basic_auth(updated_fr))
 
