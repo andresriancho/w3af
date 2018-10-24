@@ -123,7 +123,7 @@ class TestOpenAPIAuth(PluginTest):
         fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
         fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/openapi.yaml', '/')]
         fuzzable_requests.sort(by_path)
-        self.assertEqual(len(fuzzable_requests), 4)
+        self.assertEqual(len(fuzzable_requests), 6)
 
         # TODO check for vulns
         # vulns = self.kb.get('open_api_auth', 'open_api_auth')
@@ -223,15 +223,14 @@ class TestOpenAPIAuth(PluginTest):
                              post_data=KeyValueContainer(),
                              method='POST')
 
-        # TODO figure out why it doesn't have POST method for /api/pets
-        #self.assertTrue(plugin._is_acceptable_auth_type(fr, 'oauth2'))
-        #self.assertTrue(plugin._is_acceptable_auth_type(fr, 'apiKey'))
-        #self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
-        #self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
-        #self.assertTrue(plugin._has_auth(fr))
-        #self.assertFalse(plugin._has_oauth2(fr))
-        #self.assertTrue(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
-        #self.assertFalse(plugin._has_basic_auth(fr))
+        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'oauth2'))
+        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'apiKey'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
+        self.assertTrue(plugin._has_auth(fr))
+        self.assertFalse(plugin._has_oauth2(fr))
+        self.assertTrue(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
+        self.assertFalse(plugin._has_basic_auth(fr))
 
         # Check the endpoint which doesn't require auth.
         fr = FuzzableRequest(URL('http://w3af.org/api/ping'),

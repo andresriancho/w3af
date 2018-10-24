@@ -124,6 +124,7 @@ definitions:
             format: int64
 
   NewPet:
+    type: object
     required:
       - name
     properties:
@@ -133,6 +134,7 @@ definitions:
         type: string
 
   Error:
+    type: object
     required:
       - code
       - message
