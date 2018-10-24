@@ -46,17 +46,6 @@ def generate_response(specification_as_string):
                         url, url, _id=1)
 
 
-class AuthMockResponse(MockResponse):
-
-    def get_response(self, http_request, uri, response_headers):
-        if http_request.headers.get('X-API-Key', '') != 'xxx':
-            return 401, response_headers, ''
-
-        return super(AuthMockResponse, self).get_response(http_request,
-                                                          uri,
-                                                          response_headers)
-
-
 class PetstoreWithSecurity(object):
 
     @staticmethod
@@ -79,19 +68,44 @@ class TestOpenAPIAuth(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.yaml',
-                                   PetstoreWithSecurity().get_specification(),
-                                   content_type='application/yaml'),
-                      MockResponse('http://w3af.org/api/ping',
-                                   '',
-                                   content_type='text/plain'),
-                      MockResponse('http://w3af.org/api/pets',
-                                   '{ "id": 42 }',
-                                   content_type='application/json'),
-                      AuthMockResponse('http://w3af.org/api/pets/*',
-                                       '{ "id": 42 }',
-                                       content_type='application/json')
-                      ]
+    class AuthMockResponse(MockResponse):
+
+        def get_response(self, http_request, uri, response_headers):
+            if http_request.headers.get('X-API-Key', '') != 'xxx':
+                return 401, response_headers, ''
+
+            return self.status, response_headers, '{ "id": 42 }'
+
+    MOCK_RESPONSES = [
+
+        # No auth required for the API spec.
+        MockResponse('http://w3af.org/openapi.yaml',
+                     PetstoreWithSecurity().get_specification(),
+                     content_type='application/yaml'),
+
+        # No auth required for the health check endpoint.
+        MockResponse('http://w3af.org/api/ping',
+                     '',
+                     content_type='text/plain'),
+
+        # Authenticate GET requests to /api/pets
+        AuthMockResponse('http://w3af.org/api/pets',
+                         '{ "id": 42 }',
+                         content_type='application/json',
+                         method='GET'),
+
+        # No auth for POST requests to /api/pets
+        # This should result to a vulnerability.
+        MockResponse('http://w3af.org/api/pets',
+                     '{ "id": 42 }',
+                     content_type='application/json',
+                     method='POST'),
+
+        # Authenticate requests to /api/pets/{id}
+        AuthMockResponse('http://w3af.org/api/pets/*',
+                         '{ "id": 42 }',
+                         content_type='application/json')
+    ]
 
     def test_petstore_with_security(self):
         cfg = self._run_configs['cfg']
