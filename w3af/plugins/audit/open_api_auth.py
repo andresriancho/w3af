@@ -57,15 +57,13 @@ class open_api_auth(AuditPlugin):
             om.out.information("The API spec has no security definitions, skip")
             return
 
-        # The check only runs if the open api specification
+        # The check only runs if the API specification
         # requires authentication for a endpoint.
-        # TODO: take into account `security` section for an operation (or there may be a global one)
-        #       https://swagger.io/docs/specification/2-0/authentication/
         if not self._has_auth(freq):
             om.out.information("Request doesn't have auth info, skip")
             return
 
-        # Remove auth info from the request
+        # Remove auth info from the request.
         freq_with_no_auth = self._remove_auth(freq)
 
         # Send the request to the server, and check if access was denied.
@@ -163,6 +161,36 @@ class open_api_auth(AuditPlugin):
         if auth.location == 'header':
             self._remove_header(freq, auth.name)
 
+    def _get_operation_by_id(self, operation_id):
+        """
+        TODO
+        :param operation_id:
+        :return:
+        """
+        for api_resource_name, resource in self._spec.resources.items():
+            for operation_name, operation in resource.operations.items():
+                if operation.operation_id == operation_id:
+                    return operation
+
+        return None
+
+    @staticmethod
+    def _get_operation_id(freq):
+        """
+        TODO
+        :param freq:
+        :return:
+        """
+        request_to_operation_id = kb.kb.raw_read('open_api', 'request_to_operation_id')
+        if not request_to_operation_id:
+            return None
+
+        key = '%s|%s' % (freq.get_method(), freq.get_url())
+        if key not in request_to_operation_id:
+            return None
+
+        return request_to_operation_id[key]
+
     def _has_auth(self, freq):
         """
         TODO
@@ -182,10 +210,21 @@ class open_api_auth(AuditPlugin):
 
     @staticmethod
     def _has_basic_auth(freq):
+        """
+        TODO
+        :param freq:
+        :return:
+        """
         return freq.get_headers().iget('Authorization', '')[0].startswith('basic')
 
     @staticmethod
     def _has_api_key(freq, auth):
+        """
+        TODO
+        :param freq:
+        :param auth:
+        :return:
+        """
         if not hasattr(auth, 'name'):
             return False
 
@@ -201,8 +240,39 @@ class open_api_auth(AuditPlugin):
 
         return False
 
-    @staticmethod
-    def _has_oauth2(freq):
+    def _is_acceptable_auth_type(self, freq, auth_type):
+        """
+        TODO
+        :param freq:
+        :param auth_type:
+        :return:
+        """
+        operation_id = self._get_operation_id(freq)
+        operation = self._get_operation_by_id(operation_id)
+        if not operation:
+            return False
+
+        for security_spec in operation.security_specs:
+            for key, value in security_spec.iteritems():
+                if key not in self._spec.security_definitions:
+                    # Should not happen.
+                    continue
+
+                security_definition = self._spec.security_definitions[key]
+                if security_definition.type == auth_type:
+                    return True
+
+        return False
+
+    def _has_oauth2(self, freq):
+        """
+        TODO
+        :param freq:
+        :return:
+        """
+        if not self._is_acceptable_auth_type(freq, 'oauth2'):
+            return False
+
         return freq.get_headers().iget('Authorization', '')[0].startswith('Bearer')
 
     def get_long_desc(self):

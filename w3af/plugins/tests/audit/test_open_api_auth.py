@@ -22,6 +22,7 @@ import os
 
 from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.parsers.doc.open_api import OpenAPI
 
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.url import URL
@@ -119,21 +120,26 @@ class TestOpenAPIAuth(PluginTest):
 
     def test_open_api_auth(self):
         api_http_response = generate_response(PetstoreWithSecurity.get_specification())
-        specification_handler = SpecificationHandler(api_http_response)
-        self.kb.raw_write('open_api', 'specification_handler', specification_handler)
+        parser = OpenAPI(api_http_response)
+        parser.parse()
+        self.kb.raw_write('open_api', 'specification_handler', parser.get_specification_handler().shallow_copy())
+        self.kb.raw_write('open_api', 'request_to_operation_id', parser.get_request_to_operation_id())
 
-        spec = specification_handler.parse()
+        spec = parser.get_specification_handler().get_spec()
 
         plugin = open_api_auth()
         self.assertTrue(plugin._has_api_spec())
         self.assertTrue(plugin._has_security_definitions_in_spec())
 
-        url = URL('http://w3af.org/api/pets')
-
-        fr = FuzzableRequest(url,
+        fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
                              headers=Headers([('Authorization', 'Bearer xxx')]),
                              post_data=KeyValueContainer(),
                              method='GET')
+
+        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'oauth2'))
+        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'apiKey'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
         self.assertTrue(plugin._has_auth(fr))
         self.assertTrue(plugin._has_oauth2(fr))
         self.assertFalse(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
@@ -154,7 +160,7 @@ class TestOpenAPIAuth(PluginTest):
         self.assertFalse(plugin._has_oauth2(updated_fr))
         self.assertFalse(plugin._has_basic_auth(updated_fr))
 
-        fr = FuzzableRequest(url,
+        fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
                              headers=Headers([('X-API-Key', 'zzz')]),
                              post_data=KeyValueContainer(),
                              method='POST')
@@ -178,7 +184,7 @@ class TestOpenAPIAuth(PluginTest):
         self.assertFalse(plugin._has_oauth2(updated_fr))
         self.assertFalse(plugin._has_basic_auth(updated_fr))
 
-        fr = FuzzableRequest(url,
+        fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
                              headers=Headers([('X-Foo-Header', 'foo'), ('X-Bar-Header', 'bar')]),
                              post_data=KeyValueContainer(),
                              method='PUT')
@@ -197,3 +203,33 @@ class TestOpenAPIAuth(PluginTest):
         open_api_auth._remove_header(fr, 'X-Bar-Header')
         self.assertFalse(fr.get_headers().icontains('X-Bar-Header'))
         self.assertTrue(fr.get_headers().icontains('X-Foo-Header'))
+
+        fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
+                             headers=Headers([('X-API-Key', 'zzz')]),
+                             post_data=KeyValueContainer(),
+                             method='POST')
+
+        # TODO figure out why it doesn't have POST method for /api/pets
+        #self.assertTrue(plugin._is_acceptable_auth_type(fr, 'oauth2'))
+        #self.assertTrue(plugin._is_acceptable_auth_type(fr, 'apiKey'))
+        #self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
+        #self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
+        #self.assertTrue(plugin._has_auth(fr))
+        #self.assertFalse(plugin._has_oauth2(fr))
+        #self.assertTrue(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
+        #self.assertFalse(plugin._has_basic_auth(fr))
+
+        # Check the endpoint which doesn't require auth.
+        fr = FuzzableRequest(URL('http://w3af.org/api/ping'),
+                             headers=Headers(),
+                             post_data=KeyValueContainer(),
+                             method='GET')
+
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'oauth2'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'apiKey'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
+        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
+        self.assertFalse(plugin._has_auth(fr))
+        self.assertFalse(plugin._has_oauth2(fr))
+        self.assertFalse(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
+        self.assertFalse(plugin._has_basic_auth(fr))

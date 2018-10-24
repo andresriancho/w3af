@@ -58,6 +58,7 @@ paths:
           format: int32
       security:
         - ApiKeyAuth: []
+        - OAuth2: [read]
       responses:
         "200":
           description: pet response
@@ -81,6 +82,7 @@ paths:
             $ref: '#/definitions/NewPet'
       security:
         - ApiKeyAuth: []
+        - OAuth2: [write]
       responses:
         "200":
           description: pet response
@@ -93,14 +95,14 @@ paths:
   /pets/{id}:
     get:
       description: Returns a pet
-      operationId: find pet by id
+      operationId: findPetById
       parameters:
-      - name: id
-        in: path
-        description: ID of pet to fetch
-        required: true
-        type: integer
-        format: int64
+        - name: id
+          in: path
+          description: ID of pet to fetch
+          required: true
+          type: integer
+          format: int64
       responses:
         "200":
           description: pet response

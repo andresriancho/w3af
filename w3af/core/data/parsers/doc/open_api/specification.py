@@ -65,6 +65,13 @@ class SpecificationHandler(object):
         """
         return SpecificationHandler(self.http_response, self.no_validation)
 
+    def get_spec(self):
+        """
+        TODO
+        :return:
+        """
+        return self.spec
+
     def parse(self):
         """
         TODO

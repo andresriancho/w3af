@@ -68,6 +68,7 @@ class OpenAPI(BaseParser):
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
         self.specification_handler = None
+        self.request_to_operation_id = {}
 
     @staticmethod
     def content_type_match(http_resp):
@@ -144,6 +145,13 @@ class OpenAPI(BaseParser):
         """
         return self.specification_handler
 
+    def get_request_to_operation_id(self):
+        """
+        TODO
+        :return:
+        """
+        return self.request_to_operation_id
+
     def parse(self):
         """
         Extract all the API endpoints using the bravado Open API parser.
@@ -154,10 +162,14 @@ class OpenAPI(BaseParser):
         self.specification_handler = SpecificationHandler(self.get_http_response(),
                                                           self.no_validation)
 
+        self.request_to_operation_id = {}
         for data in self.specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
                 fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
+
+                key = '%s|%s' % (fuzzable_request.get_method(), fuzzable_request.get_url())
+                self.request_to_operation_id[key] = data[4].operation_id
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
@@ -188,7 +200,8 @@ class OpenAPI(BaseParser):
 
                 self.api_calls.append(fuzzable_request)
 
-    def _should_audit(self, fuzzable_request):
+    @staticmethod
+    def _should_audit(fuzzable_request):
         """
         We want to make sure that w3af doesn't delete all the items from the
         REST API, so we ignore DELETE calls.
