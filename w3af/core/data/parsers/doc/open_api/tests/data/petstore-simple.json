@@ -12,7 +12,7 @@
       "name": "MIT"
     }
   },
-  "host": "w3af.org",
+  "host": "petstore.swagger.io",
   "basePath": "/api",
   "schemes": [
     "http"

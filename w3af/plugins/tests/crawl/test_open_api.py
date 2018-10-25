@@ -132,8 +132,6 @@ class TestOpenAPINestedModelSpec(PluginTest):
             if basic != TestOpenAPINestedModelSpec.BEARER:
                 return 401, response_headers, ''
 
-            print('debug: get_response: uri = %s' % uri)
-
             # The body is in json format, need to escape my double quotes
             request_body = json.dumps(http_request.parsed_body)
             payloads = [p.replace('"', '\\"') for p in sqli.SQLI_STRINGS]
@@ -294,11 +292,10 @@ class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
 
 
 class TestOpenAPIFuzzURLParts(PluginTest):
+
     api_key = 'xxx'
-
-    target_url = 'http://w3af.org/'
-
-    vulnerable_url = 'http://w3af.org/api/pets/1%25272%25223'
+    target_url = 'http://petstore.swagger.io/'
+    vulnerable_url = 'http://petstore.swagger.io/api/pets/1%25272%25223'
 
     _run_configs = {
         'cfg': {
@@ -323,27 +320,26 @@ class TestOpenAPIFuzzURLParts(PluginTest):
 
             response_body = 'Sunny outside'
             if uri == TestOpenAPIFuzzURLParts.vulnerable_url:
-                print('debug: get_response: uri = %s' % uri)
                 response_body = 'PostgreSQL query failed:'
 
             return self.status, response_headers, response_body
 
-    MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
+    MOCK_RESPONSES = [MockResponse('http://petstore.swagger.io/openapi.json',
                                    PetstoreSimpleModel().get_specification(),
                                    content_type='application/json'),
 
-                      SQLIMockResponse(re.compile('http://w3af.org/api/.*'),
-                                       body=None,
+                      SQLIMockResponse(re.compile('http://petstore.swagger.io/api/pets.*'),
+                                       body='{}',
                                        method='GET',
                                        status=200),
 
-                      SQLIMockResponse(re.compile('http://w3af.org/api/.*'),
-                                       body=None,
+                      SQLIMockResponse(re.compile('http://petstore.swagger.io/api/pets.*'),
+                                       body='{}',
                                        method='POST',
                                        status=200)
                       ]
 
-    def test_mp(self):
+    def test_fuzzing_parameters_in_path(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
