@@ -54,7 +54,7 @@ class PetstoreWithSecurity(object):
         return file('%s/data/petstore_with_security.yaml' % CURRENT_PATH).read()
 
 
-class TestOpenAPIAuth(PluginTest):
+class TestOpenAPIAuthWithPetstore(PluginTest):
 
     target_url = 'http://w3af.org/'
     api_key_auth = ('header_auth', 'X-API-Key: xxx', PluginConfig.HEADER)
@@ -138,7 +138,10 @@ class TestOpenAPIAuth(PluginTest):
         self.assertEquals('POST', vuln['method'])
         self.assertEquals(200, vuln['response_code'])
 
-    def test_open_api_auth(self):
+
+class TestOpenAPIAuth(PluginTest):
+
+    def init_plugin(self):
         api_http_response = generate_response(PetstoreWithSecurity.get_specification())
         parser = OpenAPI(api_http_response)
         parser.parse()
@@ -152,6 +155,11 @@ class TestOpenAPIAuth(PluginTest):
         plugin = open_api_auth()
         self.assertTrue(plugin._has_api_spec())
         self.assertTrue(plugin._has_security_definitions_in_spec())
+
+        return plugin, spec
+
+    def test_with_bearer(self):
+        plugin, spec = self.init_plugin()
 
         fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
                              headers=Headers([('Authorization', 'Bearer xxx')]),
@@ -184,6 +192,9 @@ class TestOpenAPIAuth(PluginTest):
         self.assertFalse(plugin._has_oauth2(updated_fr))
         self.assertFalse(plugin._has_basic_auth(updated_fr))
 
+    def test_with_api_key(self):
+        plugin, spec = self.init_plugin()
+
         fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
                              headers=Headers([('X-API-Key', 'zzz')]),
                              post_data=KeyValueContainer(),
@@ -215,6 +226,9 @@ class TestOpenAPIAuth(PluginTest):
         self.assertFalse(plugin._has_oauth2(updated_fr))
         self.assertFalse(plugin._has_basic_auth(updated_fr))
 
+    def test_with_no_auth(self):
+        plugin, spec = self.init_plugin()
+
         fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
                              headers=Headers([('X-Foo-Header', 'foo'), ('X-Bar-Header', 'bar')]),
                              post_data=KeyValueContainer(),
@@ -226,6 +240,7 @@ class TestOpenAPIAuth(PluginTest):
 
         # Remove auth info from the request.
         updated_fr = plugin._remove_auth(fr)
+
         self.assertFalse(plugin._has_auth(updated_fr))
         self.assertFalse(plugin._has_api_key(updated_fr,
                                              spec.security_definitions['ApiKeyAuth']))
@@ -236,19 +251,8 @@ class TestOpenAPIAuth(PluginTest):
         self.assertFalse(fr.get_headers().icontains('X-Bar-Header'))
         self.assertTrue(fr.get_headers().icontains('X-Foo-Header'))
 
-        fr = FuzzableRequest(URL('http://w3af.org/api/pets'),
-                             headers=Headers([('X-API-Key', 'zzz')]),
-                             post_data=KeyValueContainer(),
-                             method='POST')
-
-        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'oauth2'))
-        self.assertTrue(plugin._is_acceptable_auth_type(fr, 'apiKey'))
-        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'basic'))
-        self.assertFalse(plugin._is_acceptable_auth_type(fr, 'unknown'))
-        self.assertTrue(plugin._has_auth(fr))
-        self.assertFalse(plugin._has_oauth2(fr))
-        self.assertTrue(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
-        self.assertFalse(plugin._has_basic_auth(fr))
+    def test_no_security(self):
+        plugin, spec = self.init_plugin()
 
         # Check the endpoint which doesn't require auth.
         fr = FuzzableRequest(URL('http://w3af.org/api/ping'),
@@ -264,6 +268,9 @@ class TestOpenAPIAuth(PluginTest):
         self.assertFalse(plugin._has_oauth2(fr))
         self.assertFalse(plugin._has_api_key(fr, spec.security_definitions['ApiKeyAuth']))
         self.assertFalse(plugin._has_basic_auth(fr))
+
+    def test_with_global_security(self):
+        plugin, spec = self.init_plugin()
 
         # /api/pets/{id} doesn't have a 'security' section
         # but global 'security' section should apply here (only OAuth2)
