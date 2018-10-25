@@ -149,7 +149,12 @@ class OpenAPI(BaseParser):
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
-                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
+                fuzzable_request = request_factory.get_fuzzable_request()
+
+                if self.discover_fuzzable_headers:
+                    operation = data[4]
+                    headers = self._get_parameter_headers(operation)
+                    fuzzable_request.set_force_fuzzing_headers(headers)
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
@@ -180,7 +185,46 @@ class OpenAPI(BaseParser):
 
                 self.api_calls.append(fuzzable_request)
 
-    def _should_audit(self, fuzzable_request):
+    def _get_parameter_headers(self, operation):
+        """
+        Looks for all parameters which are passed to the endpoint via headers.
+        The method filters out headers with auth info
+        which are defined in 'securityDefinitions' section of the API spec.
+
+        :param operation: An instance of Operation class
+                          which represents the API endpoint.
+        :return: A list of unique header names.
+        """
+        parameter_headers = set()
+        for parameter_name, parameter in operation.params.iteritems():
+            if parameter.location == 'header':
+
+                # Skip auth headers.
+                if self._is_auth_header(parameter.name, operation.swagger_spec):
+                    continue
+
+                parameter_headers.add(parameter.name)
+                om.out.debug('Found a parameter header for %s endpoint: %s'
+                             % (operation.path_name, parameter.name))
+
+        return list(parameter_headers)
+
+    @staticmethod
+    def _is_auth_header(name, spec):
+        """
+        :param name: Header name.
+        :param spec: API specification.
+        :return: True if this is an auth header, False otherwise.
+        """
+        for key, auth in spec.security_definitions.iteritems():
+            if hasattr(auth, 'location') and hasattr(auth, 'name') \
+                    and auth.location == 'header' and auth.name == name:
+                return True
+
+        return False
+
+    @staticmethod
+    def _should_audit(fuzzable_request):
         """
         We want to make sure that w3af doesn't delete all the items from the
         REST API, so we ignore DELETE calls.

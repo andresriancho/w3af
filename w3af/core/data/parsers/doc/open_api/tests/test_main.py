@@ -30,6 +30,7 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 
+from w3af.core.data.parsers.doc.open_api.tests.example_specifications import PetstoreModel
 
 # Order them to be able to easily assert things
 def by_path(fra, frb):
@@ -434,7 +435,21 @@ class TestOpenAPIMain(unittest.TestCase):
         http_resp = self.generate_response('"', 'image/jpeg')
         self.assertFalse(OpenAPI.is_valid_json_or_yaml(http_resp))
 
-    def generate_response(self, specification_as_string, content_type='application/json'):
+    def test_no_forcing_fuzzing_auth_headers(self):
+        specification_as_string = PetstoreModel().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        parser = OpenAPI(http_response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        self.assertTrue(len(api_calls) > 0)
+        for fuzzable_request in api_calls:
+            fuzzing_headers = fuzzable_request.get_force_fuzzing_headers()
+            self.assertNotIn('api_key', fuzzing_headers)
+            self.assertNotIn('Authorization', fuzzing_headers)
+
+    @staticmethod
+    def generate_response(specification_as_string, content_type='application/json'):
         url = URL('http://www.w3af.com/swagger.json')
         headers = Headers([('content-type', content_type)])
         return HTTPResponse(200, specification_as_string, headers,
