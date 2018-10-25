@@ -1,7 +1,8 @@
 from utils.utils import get_line_epoch, InvalidTimeStamp
+from utils.output import KeyValueOutput
 
 
-def show_freeze_locations(scan_log_filename, scan):
+def get_freeze_locations(scan_log_filename, scan):
     """
     [Wed Nov  1 23:43:16 2017 - debug] ...
     [Wed Nov  1 23:43:19 2017 - debug] ...
@@ -26,20 +27,10 @@ def show_freeze_locations(scan_log_filename, scan):
 
         if time_spent > 5:
             line = line.strip()
-
-            if len(line) >= 80:
-                msg = 'Found %s second freeze at: %s...' % (time_spent, line[:80])
-            else:
-                msg = 'Found %s second freeze at: %s' % (time_spent, line)
-
-            freezes.append(msg)
+            freezes.append(line)
 
         previous_line_time = current_line_epoch
 
-    if not freezes:
-        print('No delays greater than 3 seconds were found between two scan log lines')
-        return
-
-    print('Found the delays greater than 3 seconds around these scan log lines:')
-    for freeze in freezes:
-        print('    - %s' % freeze)
+    return KeyValueOutput('debug_log_freeze',
+                          'Delays greater than 5 seconds between two log lines',
+                          freezes)

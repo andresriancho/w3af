@@ -25,7 +25,7 @@ import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from w3af.core.data.db.disk_dict import DiskDict
+from w3af.core.data.db.cached_disk_dict import CachedDiskDict
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
                                         clean_fuzzable_request_form)
 
@@ -107,10 +107,14 @@ class VariantDB(object):
     HASH_IGNORE_HEADERS = ('referer',)
     TAG = '[variant_db]'
 
+    MAX_IN_MEMORY = 50
+
     def __init__(self):
-        self._variants = DiskDict(table_prefix='variant_db')
+        self._variants = CachedDiskDict(max_in_memory=self.MAX_IN_MEMORY,
+                                        table_prefix='variant_db')
         self._variants_eq = ScalableBloomFilter()
-        self._variants_form = DiskDict(table_prefix='variant_db_form')
+        self._variants_form = CachedDiskDict(max_in_memory=self.MAX_IN_MEMORY,
+                                             table_prefix='variant_db_form')
 
         self.params_max_variants = cf.cf.get('params_max_variants')
         self.path_max_variants = cf.cf.get('path_max_variants')

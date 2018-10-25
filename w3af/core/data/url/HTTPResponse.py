@@ -146,8 +146,8 @@ class HTTPResponse(DiskItem):
         self._uri = original_url
         # The URL where we were redirected to (equal to original_url
         # when no redirect)
-        self._redirected_url = geturl
-        self._redirected_uri = geturl.uri2url()
+        self._redirected_url = geturl.uri2url()
+        self._redirected_uri = geturl
 
         # Set the rest
         self._msg = smart_unicode(msg)
@@ -717,6 +717,51 @@ class HTTPResponse(DiskItem):
             return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF
         else:
             return ''
+
+    def get_redirect_destination(self):
+        lower_headers = self.get_lower_case_headers()
+        redirect_url = None
+
+        for header_name in ('location', 'uri'):
+            if header_name in lower_headers:
+                header_value = lower_headers[header_name]
+                header_value = header_value.strip()
+
+                try:
+                    redirect_url = self.get_url().url_join(header_value)
+                except ValueError:
+                    # No special invalid URL handling required
+                    continue
+                else:
+                    break
+
+        return redirect_url
+
+    def does_redirect_outside_target(self):
+        """
+        :return: True when the redirect destination is not the same
+                 domain and protocol than the originally requested URL
+        """
+        redirect_destination = self.get_redirect_destination()
+
+        if redirect_destination is None:
+            return False
+
+        # Check if the protocol was changed:
+        original_proto = self.get_url().get_protocol()
+        redirect_proto = redirect_destination.get_protocol()
+
+        if original_proto != redirect_proto:
+            return True
+
+        # Check if the domain was changed:
+        original_domain = self.get_url().get_domain()
+        redirect_domain = redirect_destination.get_domain()
+
+        if original_domain != redirect_domain:
+            return True
+
+        return False
 
     def copy(self):
         return copy.deepcopy(self)

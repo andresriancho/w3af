@@ -1,5 +1,9 @@
 import sys
 
+USAGE = '''\
+python extract-responses.py <log-file> <response-id> [<response-id>]
+'''
+
 
 def read_response(filename, _id):
     recording = False
@@ -20,6 +24,10 @@ def read_response(filename, _id):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print(USAGE)
+        sys.exit(1)
+
     filename = sys.argv[1]
     ids = sys.argv[2:]
 

@@ -10,7 +10,7 @@ ERRORS_RE = [re.compile('Unhandled exception "(.*?)"'),
              re.compile('The scan will stop')]
 
 
-def show_errors(scan_log_filename, scan):
+def get_errors(scan_log_filename, scan):
     scan.seek(0)
 
     errors = []
@@ -19,6 +19,7 @@ def show_errors(scan_log_filename, scan):
         for error_re in ERRORS_RE:
             match = error_re.search(line)
             if match:
+                line = line.strip()
                 errors.append(line)
 
     output = KeyValueOutput('errors', 'errors and exceptions', {'count': len(errors),

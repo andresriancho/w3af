@@ -1,6 +1,7 @@
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
+from utils.output import KeyValueOutput
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -9,7 +10,7 @@ PARSER_TIMEOUT = '[timeout] The parser took more than'
 PARSER_MEMORY_LIMIT = 'The parser exceeded the memory usage limit of'
 
 
-def show_parser_errors(scan_log_filename, scan):
+def get_parser_errors_data(scan_log_filename, scan):
     scan.seek(0)
 
     timeout_count = 0
@@ -31,6 +32,24 @@ def show_parser_errors(scan_log_filename, scan):
             memory_errors.append(memory_count)
             memory_errors_timestamps.append(get_line_epoch(line))
 
+    return (timeout_count, timeout_errors, timeout_errors_timestamps,
+            memory_count, memory_errors, memory_errors_timestamps)
+
+
+def get_parser_errors_summary(scan_log_filename, scan):
+    (timeout_count, _, _,
+     memory_count, _, _) = get_parser_errors_data(scan_log_filename, scan)
+
+    return KeyValueOutput('parser_error_summary',
+                          'Parser errors',
+                          {'Timeout errors': timeout_count,
+                           'Memory errors': memory_count})
+
+
+def draw_parser_errors(scan_log_filename, scan):
+    (timeout_count, timeout_errors, timeout_errors_timestamps,
+     memory_count, memory_errors, memory_errors_timestamps) = get_parser_errors_data(scan_log_filename, scan)
+
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_epoch = last_timestamp - first_timestamp
@@ -42,16 +61,11 @@ def show_parser_errors(scan_log_filename, scan):
         print('')
         return
 
-    print('Parser errors')
-    print('    Timeout errors: %s' % timeout_count)
-    print('    Memory errors: %s' % memory_count)
-    print('')
-
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Parser errors'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -69,5 +83,4 @@ def show_parser_errors(scan_log_filename, scan):
              lc=200)
 
     print(fig.show(legend=True))
-    print('')
     print('')
