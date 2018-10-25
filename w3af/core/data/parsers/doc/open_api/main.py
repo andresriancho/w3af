@@ -67,6 +67,7 @@ class OpenAPI(BaseParser):
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
+        self.fuzzed_auth_headers = []
 
     @staticmethod
     def content_type_match(http_resp):
@@ -146,15 +147,11 @@ class OpenAPI(BaseParser):
         specification_handler = SpecificationHandler(self.get_http_response(),
                                                      self.no_validation)
 
+        self.fuzzed_auth_headers = []
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
                 fuzzable_request = request_factory.get_fuzzable_request()
-
-                if self.discover_fuzzable_headers:
-                    operation = data[4]
-                    headers = self._get_parameter_headers(operation)
-                    fuzzable_request.set_force_fuzzing_headers(headers)
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
@@ -183,6 +180,11 @@ class OpenAPI(BaseParser):
                 if not self._should_audit(fuzzable_request):
                     continue
 
+                if self.discover_fuzzable_headers:
+                    operation = data[4]
+                    headers = self._get_parameter_headers(operation)
+                    fuzzable_request.set_force_fuzzing_headers(headers)
+
                 self.api_calls.append(fuzzable_request)
 
     def _get_parameter_headers(self, operation):
@@ -199,8 +201,8 @@ class OpenAPI(BaseParser):
         for parameter_name, parameter in operation.params.iteritems():
             if parameter.location == 'header':
 
-                # Skip auth headers.
-                if self._is_auth_header(parameter.name, operation.swagger_spec):
+                # Fuzz auth headers only once.
+                if self._is_already_fuzzed_auth_header(parameter.name, operation.swagger_spec):
                     continue
 
                 parameter_headers.add(parameter.name)
@@ -208,6 +210,16 @@ class OpenAPI(BaseParser):
                              % (operation.path_name, parameter.name))
 
         return list(parameter_headers)
+
+    def _is_already_fuzzed_auth_header(self, name, spec):
+        if not self._is_auth_header(name, spec):
+            return False
+
+        if name in self.fuzzed_auth_headers:
+            return True
+
+        self.fuzzed_auth_headers.append(name)
+        return False
 
     @staticmethod
     def _is_auth_header(name, spec):
@@ -217,8 +229,10 @@ class OpenAPI(BaseParser):
         :return: True if this is an auth header, False otherwise.
         """
         for key, auth in spec.security_definitions.iteritems():
-            if hasattr(auth, 'location') and hasattr(auth, 'name') \
-                    and auth.location == 'header' and auth.name == name:
+            if not hasattr(auth, 'location') or not hasattr(auth, 'name'):
+                continue
+
+            if auth.location == 'header' and auth.name == name:
                 return True
 
         return False

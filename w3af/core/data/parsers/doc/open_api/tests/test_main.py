@@ -32,6 +32,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import PetstoreModel
 
+
 # Order them to be able to easily assert things
 def by_path(fra, frb):
     return cmp(fra.get_url().url_string, frb.get_url().url_string)
@@ -443,10 +444,19 @@ class TestOpenAPIMain(unittest.TestCase):
         api_calls = parser.get_api_calls()
 
         self.assertTrue(len(api_calls) > 0)
+        found_api_key = False
         for fuzzable_request in api_calls:
             fuzzing_headers = fuzzable_request.get_force_fuzzing_headers()
-            self.assertNotIn('api_key', fuzzing_headers)
             self.assertNotIn('Authorization', fuzzing_headers)
+            if found_api_key:
+                self.assertNotIn('api_key', fuzzing_headers)
+            else:
+                found_api_key = 'api_key' in fuzzing_headers
+
+        # Make sure that we forced to fuzz 'api_key' header once.
+        self.assertTrue(found_api_key)
+        self.assertEquals(1, len(parser.fuzzed_auth_headers))
+        self.assertIn('api_key', parser.fuzzed_auth_headers)
 
     @staticmethod
     def generate_response(specification_as_string, content_type='application/json'):
