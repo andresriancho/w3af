@@ -38,7 +38,8 @@ from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 
 from w3af.core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
-    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT, IP)
+    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT, IP,
+    QUERY_STRING, HEADER)
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -75,7 +76,7 @@ class TestBasic(unittest.TestCase):
 
         OPTION_TYPES = (
             BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
-            INPUT_FILE, OUTPUT_FILE, PORT, IP)
+            INPUT_FILE, OUTPUT_FILE, PORT, IP, QUERY_STRING, HEADER)
 
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
