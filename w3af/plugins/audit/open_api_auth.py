@@ -31,7 +31,27 @@ from w3af.core.data.kb.vuln import Vuln
 
 class open_api_auth(AuditPlugin):
     """
-    TODO
+    Checks if REST API endpoints authenticate incoming requests
+    as defined in their API specification.
+    See details in the plugin description below.
+
+    Here is a list of possible enhancements:
+      * Consider sending requests with other HTTP methods,
+        and check that 401 or 405 error code is returned
+        On the one hand, it may not look too good if we just replace the method,
+        and keep the rest of the request untouched (headers, payload, etc).
+        But on the other hand, the application is supposed to check HTTP method
+        in the very beginning, and reject requests if the method is not supported.
+        If the API spec says a particular method is supported, then the check should expect 401
+        If the API spec says a particular method is not supported,
+        then the check should expect 405 (preferred) or 401 (should it only expect 405 in this case?).
+      * Allow a user to specify response codes that the plugin should expect.
+        Currently the plugin expects only 401.
+        We can introduce 'expected_code_regex' configuration parameter
+        which set a regex for expected response codes.
+      * If the plugin is updated to send other HTTP methods (see above),
+        we may want to introduce another configuration parameter
+        to set expected response codes in this case.
 
     :author: Artem Smotrakov (artem.smotrakov@gmail.com)
     :author: Andres Riancho (andres.riancho@gmail.com)
@@ -73,24 +93,10 @@ class open_api_auth(AuditPlugin):
 
         # Send the request to the server, and check if access was denied.
         self._uri_opener.send_mutant(freq_with_no_auth,
-                                     callback=self._check_access_denied,
+                                     callback=self._check_response_code,
                                      debugging_id=debugging_id)
 
-        # TODO consider sending requests with other HTTP methods,
-        #      and check that 401 or 405 error code is returned
-        #      On the one hand, it may not look too good if we just replace the method,
-        #      and keep the rest of the request untouched (headers, payload, etc).
-        #      But on the other hand, the application is supposed to check HTTP method in the very beginning,
-        #      and reject requests if the method is not supported.
-        #      If the API spec says a particular method is supported, then the check should expect 401
-        #      If the API spec says a particular method is not supported,
-        #      then the check should expect 405 (preferred) or 401 (should it only expect 405 in this case?).
-
-        # TODO Should we compare the response with orig_response (see fuzzy_equal),
-        #      and report a vulnerability if they are similar?
-        #      Or, just checking the response code is enough?
-
-    def _check_access_denied(self, freq, response):
+    def _check_response_code(self, freq, response):
         """
         TODO
         """
@@ -302,5 +308,26 @@ class open_api_auth(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        TODO
+        This plugin checks that REST API endpoints require authentication
+        according to their API specification.
+
+        OpenAPI specification offers the following structures
+        to define requirements for authentication:
+          * 'securityDefinitions' section describes all available authentication mechanisms.
+            It offers three methods: basic, apiKey and oauth2.
+          * 'security' section may be used in each operation to specify
+            which authentication mechanisms the operation accepts.
+          * Global 'security' section describes authentication mechanisms
+            for operations which don't have their own 'security' section
+
+        Currently the check is pretty simple:
+          * Remove authentication info from the request (API key, header, etc).
+          * Send the modified request to the endpoint.
+          * Check if the response has 401 error code (access denied).
+
+        A couple of important notes:
+          * The plugin requires the 'crawl.open_api' plugin to be enabled.
+            It works only with REST API endpoints.
+          * The check works only when API specification requires authentication for a endpoint.
+          * The check works only if a user provided authentication info (API key, header, etc).
         """
