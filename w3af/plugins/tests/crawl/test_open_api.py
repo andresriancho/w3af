@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import json
 import re
-import urllib
 
 from w3af.plugins.audit.sqli import sqli
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
@@ -126,13 +126,14 @@ class TestOpenAPINestedModelSpec(PluginTest):
     }
 
     class SQLIMockResponse(MockResponse):
+
         def get_response(self, http_request, uri, response_headers):
             basic = http_request.headers.get('Basic', '')
             if basic != TestOpenAPINestedModelSpec.BEARER:
                 return 401, response_headers, ''
 
             # The body is in json format, need to escape my double quotes
-            request_body = str(http_request.parsed_body)
+            request_body = json.dumps(http_request.parsed_body)
             payloads = [p.replace('"', '\\"') for p in sqli.SQLI_STRINGS]
 
             response_body = 'Sunny outside'
