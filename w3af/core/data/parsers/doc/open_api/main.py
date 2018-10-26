@@ -45,6 +45,11 @@ class OpenAPI(BaseParser):
     The parser only returns interesting results for get_forms(), where all
     FuzzableRequests associated with REST API calls are returned.
 
+    The parser stores a couple of things to the kb which then can be used by other plugins:
+      * An instance of SpecificationHandler which provides the API specification.
+      * A mapping { method, url -> operation id } which allows to find the operation
+        which is associated with a fuzzable request.
+
     [0] https://www.openapis.org/
     [1] https://github.com/Yelp/bravado-core
 
@@ -140,15 +145,13 @@ class OpenAPI(BaseParser):
 
     def get_specification_handler(self):
         """
-        TODO
-        :return:
+        :return: An instance of SpecificationHandler which was used by the parser.
         """
         return self.specification_handler
 
     def get_request_to_operation_id(self):
         """
-        TODO
-        :return:
+        :return: A mapping { method, url -> operation id }
         """
         return self.request_to_operation_id
 
