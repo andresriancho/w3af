@@ -42,9 +42,11 @@ class open_api_auth(AuditPlugin):
         and keep the rest of the request untouched (headers, payload, etc).
         But on the other hand, the application is supposed to check HTTP method
         in the very beginning, and reject requests if the method is not supported.
-        If the API spec says a particular method is supported, then the check should expect 401
+        If the API spec says a particular method is supported,
+        then the check should expect 401
         If the API spec says a particular method is not supported,
-        then the check should expect 405 (preferred) or 401 (should it only expect 405 in this case?).
+        then the check should expect 405 (preferred) or 401
+        (should it only expect 405 in this case?).
       * Allow a user to specify response codes that the plugin should expect.
         Currently the plugin expects only 401.
         We can introduce 'expected_code_regex' configuration parameter
@@ -52,6 +54,8 @@ class open_api_auth(AuditPlugin):
       * If the plugin is updated to send other HTTP methods (see above),
         we may want to introduce another configuration parameter
         to set expected response codes in this case.
+      * Severity of identified issues may depend on response codes
+        returned by the server.
 
     :author: Artem Smotrakov (artem.smotrakov@gmail.com)
     :author: Andres Riancho (andres.riancho@gmail.com)
@@ -60,20 +64,19 @@ class open_api_auth(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         self._spec = None
-
-        # Note: we can let a user set a list of expected codes.
         self._expected_codes = [401]
 
     def audit(self, freq, orig_response, debugging_id):
         """
-        TODO
-        :param freq: A FuzzableRequest
-        :param orig_response: The HTTP response associated with the fuzzable request
-        :param debugging_id: A unique identifier for this call to audit()
+        Check if an API endpoint requires authentication according to its API spec.
+
+        :param freq: A FuzzableRequest to the API endpoint.
+        :param orig_response: The HTTP response associated with the fuzzable request.
+        :param debugging_id: A unique identifier for this call to audit().
         """
         # The check works only with API endpoints.
         # crawl.open_api plugin has to be called before.
-        if not self._has_api_spec():
+        if not self._is_api_spec_available():
             om.out.information("Could not find an API specification, skip")
             return
 
@@ -91,21 +94,26 @@ class open_api_auth(AuditPlugin):
         # Remove auth info from the request.
         freq_with_no_auth = self._remove_auth(freq)
 
-        # Send the request to the server, and check if access was denied.
+        # Send the request to the server, and check if access denied.
         self._uri_opener.send_mutant(freq_with_no_auth,
                                      callback=self._check_response_code,
                                      debugging_id=debugging_id)
 
     def _check_response_code(self, freq, response):
         """
-        TODO
+        Check if an HTTP request contains an expected response code.
+
+        :param freq: A FuzzableRequest to the API endpoint.
+        :param response: The HTTP response associated with the fuzzable request.
         """
         if response.get_code() not in self._expected_codes:
             desc = 'A %s request without auth info was send to %s. ' \
-                   'The server replied with an unexpected code (%d) but expected %s' \
-                   % (freq.get_method(), freq.get_url(), response.get_code(), self._expected_codes)
+                   'The server replied with an unexpected code (%d), expected %s' \
+                   % (freq.get_method(), freq.get_url(),
+                      response.get_code(), self._expected_codes)
 
-            # TODO severity may depend on response codes
+            # Should severity depend on response codes?
+            # For example, 2xx codes results to HIGH, but 4xx may be MEDIUM/LOW
             v = Vuln.from_fr('Broken authentication', desc,
                              severity.HIGH, response.id,
                              self.get_name(), freq)
@@ -117,18 +125,23 @@ class open_api_auth(AuditPlugin):
 
     def _has_security_definitions_in_spec(self):
         """
-        TODO
-        :return:
+        :return: True if the API spec contains 'securityDefinitions' section,
+                 False otherwise.
         """
         if self._spec.security_definitions:
             return True
 
         return False
 
-    def _has_api_spec(self):
+    def _is_api_spec_available(self):
         """
-        TODO
-        :return:
+        Make sure that we have API specification.
+        The API spec has to be provided by crawl.open_api plugin
+        which should be called before.
+
+        The plugins use the global knowledge base to share the API spec.
+
+        :return: True if API specification is available, False otherwise.
         """
         if self._spec:
             return True
@@ -145,9 +158,15 @@ class open_api_auth(AuditPlugin):
 
     def _remove_auth(self, freq):
         """
-        TODO
-        :param freq:
-        :return:
+        Remove authentication info from a fuzzable request.
+
+        The method looks for authentication info which is defined in the API spec.
+        For example, if 'securityDefinitions' section defines oauth2 and apiKey methods,
+        then the method will look for Authorization header and the API key
+        (may be passed in a query string or header).
+
+        :param freq: The fuzzable request to be modified.
+        :return: A copy of the fuzzable request without auth info.
         """
         updated_freq = copy.deepcopy(freq)
         for key, auth in self._spec.security_definitions.iteritems():
@@ -162,9 +181,10 @@ class open_api_auth(AuditPlugin):
     @staticmethod
     def _remove_header(freq, name):
         """
-        TODO
-        :param freq:
-        :return:
+        Remove a header from a fuzzable request.
+
+        :param freq: The fuzzable request to be updated.
+        :param name: The header name.
         """
         headers = freq.get_headers()
         if headers.icontains(name):
@@ -172,10 +192,11 @@ class open_api_auth(AuditPlugin):
 
     def _remove_api_key(self, freq, auth):
         """
-        TODO
-        :param freq:
-        :param auth:
-        :return:
+        Remove an API key from a fuzzable request.
+
+        :param freq: The fuzzable request to be modified.
+        :param auth: An element of 'securityDefinitions' section
+                     which describes the API key.
         """
         if auth.location == 'query':
             params = freq.get_url().get_params()
@@ -187,9 +208,10 @@ class open_api_auth(AuditPlugin):
 
     def _get_operation_by_id(self, operation_id):
         """
-        TODO
-        :param operation_id:
-        :return:
+        Look for an operation by its ID in the API specification.
+
+        :param operation_id: ID of an operation.
+        :return: An instance of Operation (Bravado).
         """
         for api_resource_name, resource in self._spec.resources.items():
             for operation_name, operation in resource.operations.items():
@@ -201,9 +223,13 @@ class open_api_auth(AuditPlugin):
     @staticmethod
     def _get_operation_id(freq):
         """
-        TODO
-        :param freq:
-        :return:
+        Get an operation ID which is associated with a fuzzable request.
+
+        The method uses a mapping { method, url -> operation id }
+        which should be provided by crawl.open_api plugin.
+
+        :param freq: The fuzzable request.
+        :return: An ID of the operation associated with the request.
         """
         request_to_operation_id = kb.kb.raw_read('open_api', 'request_to_operation_id')
         if not request_to_operation_id:
@@ -217,8 +243,11 @@ class open_api_auth(AuditPlugin):
 
     def _has_auth(self, freq):
         """
-        TODO
-        :return:
+        Check if a fuzzable request contains authentication info
+        according to the API specification.
+
+        :param freq: The fuzzable request to be checked.
+        :return: True if the request contains auth info, False otherwise.
         """
         for key, auth in self._spec.security_definitions.iteritems():
             if auth.type == 'basic' and self._has_basic_auth(freq):
@@ -234,9 +263,11 @@ class open_api_auth(AuditPlugin):
 
     def _has_basic_auth(self, freq):
         """
-        TODO
-        :param freq:
-        :return:
+        Check if a fuzzable request contains Basic auth info
+        if it's allowed by the API specification.
+
+        :param freq: The fuzzable request to be checked.
+        :return: True if the request contains Basic auth info, False otherwise.
         """
         if not self._is_acceptable_auth_type(freq, 'basic'):
             return False
@@ -245,10 +276,13 @@ class open_api_auth(AuditPlugin):
 
     def _has_api_key(self, freq, auth):
         """
-        TODO
-        :param freq:
-        :param auth:
-        :return:
+        Check if a fuzzable request contains an API key
+        if it's allowed by the API specification.
+
+        :param freq: The request to be checked.
+        :param auth: An element of 'securityDefinitions' section
+                     which describes the API key.
+        :return: True if the request contains an API key, False otherwise.
         """
         if not self._is_acceptable_auth_type(freq, 'apiKey'):
             return False
@@ -270,9 +304,11 @@ class open_api_auth(AuditPlugin):
 
     def _has_oauth2(self, freq):
         """
-        TODO
-        :param freq:
-        :return:
+        Check if a fuzzable request contains OAuth2 info
+        if it's allowed by the API specification.
+
+        :param freq: The fuzzable request to be checked.
+        :return: True if the request contains OAuth2 info, False otherwise.
         """
         if not self._is_acceptable_auth_type(freq, 'oauth2'):
             return False
@@ -281,10 +317,13 @@ class open_api_auth(AuditPlugin):
 
     def _is_acceptable_auth_type(self, freq, auth_type):
         """
-        TODO
-        :param freq:
-        :param auth_type:
-        :return:
+        Check if the API specification allows a fuzzable request
+        to have a specific auth info.
+
+        :param freq: The fuzzable request to be checked.
+        :param auth_type: Auth method (oauth2, apiKey or basic).
+        :return: True if the API specification allows the request
+                 to have the specified auth method, False otherwise.
         """
         operation_id = self._get_operation_id(freq)
         operation = self._get_operation_by_id(operation_id)

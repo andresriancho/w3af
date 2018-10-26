@@ -153,7 +153,7 @@ class TestOpenAPIAuth(PluginTest):
         spec = parser.get_specification_handler().get_spec()
 
         plugin = open_api_auth()
-        self.assertTrue(plugin._has_api_spec())
+        self.assertTrue(plugin._is_api_spec_available())
         self.assertTrue(plugin._has_security_definitions_in_spec())
 
         return plugin, spec
