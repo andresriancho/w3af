@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-requests.py
+specification.py
 
 Copyright 2017 Andres Riancho
 
@@ -50,32 +50,34 @@ for to_silence in SILENCE:
 
 
 class SpecificationHandler(object):
+
     def __init__(self, http_response, no_validation=False):
         self.http_response = http_response
-        self.spec = None
         self.no_validation = no_validation
+        self.spec = None
 
     def get_http_response(self):
         return self.http_response
 
     def shallow_copy(self):
         """
-        TODO
-        :return:
+        :return: A copy of the SpecificationHandler
+                 which doesn't contain a Spec instance.
         """
         return SpecificationHandler(self.http_response, self.no_validation)
 
     def get_spec(self):
         """
-        TODO
-        :return:
+        :return: An instance of Spec (Bravado)
+                 which was created by this SpecificationHandler.
         """
         return self.spec
 
     def parse(self):
         """
-        TODO
-        :return:
+        Parse an API specification provided in the HTTP response.
+
+        :return: An instance of Spec (Bravado).
         """
         spec_dict = self._load_spec_dict()
         if spec_dict is None:
