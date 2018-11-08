@@ -79,6 +79,13 @@ class MultiplePathsAndHeaders(object):
         return file('%s/data/multiple_paths_and_headers.json' % CURRENT_PATH).read()
 
 
+class PetstoreSimpleModel(object):
+
+    @staticmethod
+    def get_specification():
+        return file('%s/data/petstore-simple.json' % CURRENT_PATH).read()
+
+
 class IntParamPath(object):
     def get_specification(self):
         spec = APISpec(
