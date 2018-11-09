@@ -434,6 +434,7 @@ class PluginConfig(object):
     INT = 'integer'
     URL = 'url'
     INPUT_FILE = 'input_file'
+    YAML_INPUT_FILE = 'yaml_input_file'
     QUERY_STRING = 'query_string'
     HEADER = 'header'
 
