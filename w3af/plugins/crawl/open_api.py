@@ -27,7 +27,8 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.parsers.doc.open_api.parameters import ParameterValues
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.options.option_types import QUERY_STRING, HEADER, BOOL, INPUT_FILE
+from w3af.core.data.options.option_types import (QUERY_STRING, HEADER, BOOL,
+                                                 INPUT_FILE, YAML_INPUT_FILE)
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.db.disk_set import DiskSet
@@ -422,7 +423,7 @@ class open_api(CrawlPlugin):
         h = ('This option sets a path to a YAML file which contains parameter values'
              ' which should be used in testing API endpoints. If no parameter values are provided,'
              ' the plugin tries to guess them.')
-        o = opt_factory('parameter_values_file', self._parameter_values_file, d, INPUT_FILE, help=h)
+        o = opt_factory('parameter_values_file', self._parameter_values_file, d, YAML_INPUT_FILE, help=h)
         ol.add(o)
 
         return ol
