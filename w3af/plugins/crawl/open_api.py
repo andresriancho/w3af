@@ -479,23 +479,6 @@ class open_api(CrawlPlugin):
         but the values highly depend on the context. If users have some knowledge
         about correct values which may be used with the API endpoints, they can tell
         the plugin about them via 'parameter_values_file' configuration parameter.
-        The option specifies a path to a YAML file, here is an example:
-
-            - path: /users/{user-id}
-              parameters:
-              - name: user-id
-                values:
-                - 1234567
-              - name: X-First-Name
-                values:
-                - John
-                - Bill
-            - path: /users
-              parameters:
-              - name: user-id
-                values:
-                - 1234567
-              - name: birth-date
-                values:
-                - 2000-01-02
+        The parameter sets a path to a YAML file which contains custom parameter values.
+        Please read the documentation for more information and examples about this feature.
         """
