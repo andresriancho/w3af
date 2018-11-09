@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 import copy
+import socket
 import urllib
+
 import urlparse
 
 from functools import wraps
@@ -174,7 +176,9 @@ class URL(DiskItem):
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
 
-    IS_VALID_DOMAIN_RE = re.compile('[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$')
+    DOMAIN_LABEL_PATTERN = r'(?![0-9]+$)(?!-)[a-zA-Z0-9_-]{1,63}(?<!-)'
+    DOMAIN_PATTERN = r'^({label})(\.{label})*\.?$'.format(label=DOMAIN_LABEL_PATTERN)
+    RE_DOMAIN = re.compile(DOMAIN_PATTERN)
     SET_DOMAIN_RE = re.compile('[a-z0-9-.]+([a-z0-9-]+)*$')
 
     __slots__ = (
@@ -561,7 +565,36 @@ class URL(DiskItem):
         """
         :return: Returns a boolean that indicates if self.netloc domain is valid
         """
-        return self.IS_VALID_DOMAIN_RE.match(self.netloc) is not None
+        parsed_url = urlparse(self.netloc)
+    
+        # scheme, netloc must be defined
+        if not all([parsed_url.scheme, parsed_url.netloc]):
+            return False
+        # params, query, fragment must not be defined
+        if any([parsed_url.params, parsed_url.query, parsed_url.fragment]):
+            return False
+    
+        # check if port valid
+        try:
+            parsed_url.port
+        except ValueError:
+            return False
+    
+        # check if domain name valid
+        if not self.RE_DOMAIN.match(parsed_url.hostname):
+            # not a valid domain - maybe an IP address
+            # Check IPv4
+            try:
+                # Check IPv4
+                socket.inet_aton(parsed_url.hostname)
+            except socket.error:
+                # not ipv4
+                try:
+                    socket.inet_pton(socket.AF_INET6, parsed_url.hostname)
+                except socket.error:
+                    # neither IPv6
+                    return False
+        return True
 
     def get_net_location(self):
         """
