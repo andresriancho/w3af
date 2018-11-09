@@ -189,6 +189,7 @@ class URL(DiskItem):
                  '_netloc',
                  '_path',
                  '_params',
+                 '_hostname',
 
                  # Internals
                  '_cache',
@@ -200,7 +201,8 @@ class URL(DiskItem):
                  'path',
                  'params',
                  'querystring',
-                 'fragment')
+                 'fragment',
+                 'hostname',)
 
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         """
@@ -218,6 +220,7 @@ class URL(DiskItem):
         self._netloc = None
         self._path = None
         self._params = None
+        self._hostname = None
 
         # Internal attributes
         self._cache = {}
@@ -232,23 +235,28 @@ class URL(DiskItem):
             msg = 'Invalid encoding "%s" when creating URL.'
             raise ValueError(msg % encoding)
 
-        scheme, netloc, path, params, qs, fragment = urlparse.urlparse(data)
+        parsed = urlparse.urlparse(data)
         #
         # This is the case when someone creates a URL like
         # this: URL('www.w3af.com')
         #
-        if scheme == netloc == '' and not path.startswith(u'/'):
+        if parsed.scheme == parsed.netloc == '' and not parsed.path.startswith(u'/'):
             # By default we set the protocol to "http"
             scheme = u'http'
             netloc = path
             path = u''
+        else:
+            scheme = parsed.scheme
+            netloc = parsed.netloc
+            path = parsed.path
 
         self.scheme = scheme or u''
         self.netloc = netloc or u''
         self.path = path or u'/'
-        self.params = params or u''
-        self.querystring = qs or u''
-        self.fragment = fragment or u''
+        self.params = parsed.params or u''
+        self.querystring = parsed.query or u''
+        self.fragment = parsed.fragment or u''
+        self.hostname = parsed.hostname or u''
 
         if not self.netloc and self.scheme != 'file':
             # The URL is invalid, we don't have a netloc!
@@ -564,24 +572,9 @@ class URL(DiskItem):
     def is_valid_domain(self):
         """
         :return: Returns a boolean that indicates if self.netloc domain is valid
-        """
-        parsed_url = urlparse(self.netloc)
-    
-        # scheme, netloc must be defined
-        if not all([parsed_url.scheme, parsed_url.netloc]):
-            return False
-        # params, query, fragment must not be defined
-        if any([parsed_url.params, parsed_url.query, parsed_url.fragment]):
-            return False
-    
-        # check if port valid
-        try:
-            parsed_url.port
-        except ValueError:
-            return False
-    
+        """        
         # check if domain name valid
-        if not self.RE_DOMAIN.match(parsed_url.hostname):
+        if not self.RE_DOMAIN.match(self.hostname):
             # not a valid domain - maybe an IP address
             # Check IPv4
             try:
