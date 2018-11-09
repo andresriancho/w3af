@@ -44,6 +44,10 @@ class YamlFileOption(BaseOption):
         If required we replace the %ROOT_PATH% with the right value for this
         platform.
         """
+        if value == '':
+            self._value = value
+            return
+
         validated_value = self.validate(value)
 
         self._value = InputFileOption.get_relative_path(validated_value)
