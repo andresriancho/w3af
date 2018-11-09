@@ -592,7 +592,6 @@ class TestURLParser(unittest.TestCase):
         self.assertTrue(URL('http://1.2.3.4').is_valid_domain())
         self.assertTrue(URL('http://fe80::1').is_valid_domain())
         self.assertTrue(URL('http://aaa.com').is_valid_domain())
-        self.assertTrue(URL('http://aaa.com').is_valid_domain())
         self.assertTrue(URL('http://w3af.com').is_valid_domain())
         self.assertTrue(URL('http://w3af.com:39').is_valid_domain())
         self.assertTrue(URL('http://w3af.com:3932').is_valid_domain())
@@ -602,11 +601,11 @@ class TestURLParser(unittest.TestCase):
         self.assertTrue(URL('https://_abc:3932').is_valid_domain())
         
     def test_is_valid_domain_invalid(self):
-        self.assertTrue(URL('https://w3af.com:39a').is_valid_domain())
-        self.assertTrue(URL('http://aaa*a').is_valid_domain())
-        self.assertTrue(URL('http://-sub.w3af.com:39').is_valid_domain())
-        self.assertTrue(URL('http://sub.-w3af.com:39').is_valid_domain())
-        self.assertTrue(URL('').is_valid_domain())
+        self.assertFalse(URL('https://w3af.com:39a').is_valid_domain()
+        self.assertFalse(URL('http://aaa*a').is_valid_domain())
+        self.assertFalse(URL('http://-sub.w3af.com:39').is_valid_domain())
+        self.assertFalse(URL('http://sub.-w3af.com:39').is_valid_domain())
+        self.assertFalse(URL('').is_valid_domain())
 
     #
     #    get_path
