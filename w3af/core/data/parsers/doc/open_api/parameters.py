@@ -92,7 +92,10 @@ class ParameterValues(object):
         Loads parameter values from YAML.
         :param string: Definition of parameter values in YAML.
         """
-        content = yaml.load(string)
+        try:
+            content = yaml.load(string)
+        except yaml.YAMLError, e:
+            raise ParameterValueParsingError(e)
 
         if not isinstance(content, list):
             raise ParameterValueParsingError('root is not a list')

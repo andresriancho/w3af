@@ -27,7 +27,8 @@ import unittest
 from w3af import ROOT_PATH
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.json_container import JSONContainer
-from w3af.core.data.parsers.doc.open_api.parameters import ParameterValues
+from w3af.core.data.parsers.doc.open_api.parameters import (ParameterValues,
+                                                            ParameterValueParsingError)
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -458,6 +459,24 @@ class TestOpenAPIMain(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             values.set('/foo', 'bar', 'wrong')
+
+    def test_loading_invalid_parameter_values(self):
+        values = ParameterValues()
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('{}')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('"')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('\\')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('-path: {')
 
     def test_petstore_simple_with_parameter_values(self):
         body = file(self.PETSTORE_SIMPLE).read()
