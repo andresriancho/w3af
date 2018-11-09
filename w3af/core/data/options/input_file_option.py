@@ -63,15 +63,8 @@ class InputFileOption(BaseOption):
 
         validated_value = self.validate(value)
 
-        # I want to make the paths shorter, so we're going to make them
-        # relative, at least in the case where they are inside the cwd
-        current_dir = os.path.abspath(os.curdir)
-        configured_value_dir = os.path.abspath(os.path.dirname(validated_value))
-
-        if configured_value_dir.startswith(current_dir):
-            self._value = os.path.relpath(validated_value)
-        else:
-            self._value = validated_value
+        # I want to make the paths shorter
+        self._value = self.get_relative_path(validated_value)
 
     def get_value_for_profile(self, self_contained=False):
         """
@@ -222,3 +215,16 @@ class InputFileOption(BaseOption):
         data = base64.b64encode(file(filename).read().encode('zlib')).strip()
         return '%s%s' % (self.DATA_PROTO, data)
 
+    @staticmethod
+    def get_relative_path(path):
+        """
+        Tries to make the path shorter. The method is going to make the path
+        relative, at least in the case where it's inside the cwd.
+        """
+        current_dir = os.path.abspath(os.curdir)
+        configured_value_dir = os.path.abspath(os.path.dirname(path))
+
+        if configured_value_dir.startswith(current_dir):
+            return os.path.relpath(path)
+
+        return path

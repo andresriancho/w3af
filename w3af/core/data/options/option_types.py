@@ -37,6 +37,7 @@ HEADER = 'header'
 # Files
 OUTPUT_FILE = 'output_file'
 INPUT_FILE = 'input_file'
+YAML_INPUT_FILE = 'yaml_input_file'
 
 # Misc
 BOOL = 'boolean'
