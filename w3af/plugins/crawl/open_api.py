@@ -87,10 +87,10 @@ class open_api(CrawlPlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         """
+        self._enable_file_name_fuzzing()
         if self._has_custom_spec_location():
             self._analyze_custom_spec()
         else:
-            self._enable_file_name_fuzzing()
             self._analyze_common_paths(fuzzable_request)
             self._analyze_current_path(fuzzable_request)
 
@@ -108,6 +108,7 @@ class open_api(CrawlPlugin):
         """
         if self._first_run:
             cf.cf.save('fuzz_url_filenames', True)
+            cf.cf.save('fuzz_url_parts', True)
 
     def _should_analyze(self, url):
         """
@@ -175,8 +176,10 @@ class open_api(CrawlPlugin):
         if self._parameter_values_file:
             context_parameter_values.load_from_file(self._parameter_values_file)
 
-        parser = OpenAPI(http_response, self._no_spec_validation,
-                         self._discover_fuzzable_headers, context_parameter_values)
+        parser = OpenAPI(http_response,
+                         self._no_spec_validation,
+                         self._discover_fuzzable_headers,
+                         context_parameter_values)
         parser.parse()
 
         self._report_to_kb_if_needed(http_response, parser)

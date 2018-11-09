@@ -428,7 +428,7 @@ class ssl_certificate(AuditPlugin):
         h = ('If the certificate will expire in period of minExpireDays w3af'
              ' will show an alert about it, which is useful for admins to'
              ' remember to renew the certificate.')
-        o = opt_factory('mix_expire_days', self._min_expire_days, d, 'integer', help=h)
+        o = opt_factory('min_expire_days', self._min_expire_days, d, 'integer', help=h)
         ol.add(o)
         
         d = 'Path to the ca.pem file containing all root certificates'
@@ -445,7 +445,7 @@ class ssl_certificate(AuditPlugin):
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
-        self._min_expire_days = options_list['mix_expire_days'].get_value()
+        self._min_expire_days = options_list['min_expire_days'].get_value()
         self._ca_file = options_list['ca_file_name'].get_value()
 
     def get_long_desc(self):
@@ -456,7 +456,7 @@ class ssl_certificate(AuditPlugin):
         This plugin audits SSL certificate parameters.
 
         One configurable parameter exists:
-            - mix_expire_days
+            - min_expire_days
             - ca_file_name
 
         Note: This plugin is only useful when testing HTTPS sites.
