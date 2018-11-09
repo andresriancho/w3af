@@ -75,7 +75,7 @@ class open_api(CrawlPlugin):
         self._query_string_auth = ''
         self._header_auth = ''
         self._no_spec_validation = False
-        self._custom_spec_location = ''
+        self._custom_spec_file = ''
         self._discover_fuzzable_headers = True
         self._parameter_values_file = ''
 
@@ -88,7 +88,7 @@ class open_api(CrawlPlugin):
                                 (among other things) the URL to test.
         """
         self._enable_file_name_fuzzing()
-        if self._has_custom_spec_location():
+        if self._has_custom_spec_file():
             self._analyze_custom_spec()
         else:
             self._analyze_common_paths(fuzzable_request)
@@ -340,14 +340,14 @@ class open_api(CrawlPlugin):
             self._spec_url_generator_current_path(fuzzable_request)
         )
 
-    def _has_custom_spec_location(self):
+    def _has_custom_spec_file(self):
         """
         Checks if the plugin is configured to use a custom API specification
         from a local file.
 
         :return: True if the plugin is configured to read a custom API spec
         """
-        return self._custom_spec_location != ''
+        return self._custom_spec_file != ''
 
     def _analyze_custom_spec(self):
         """
@@ -359,15 +359,15 @@ class open_api(CrawlPlugin):
             return
         self._first_run = False
 
-        url = URL('file://%s' % os.path.abspath(self._custom_spec_location))
+        url = URL('file://%s' % os.path.abspath(self._custom_spec_file))
 
-        ext = os.path.splitext(self._custom_spec_location)[1][1:].lower()
+        ext = os.path.splitext(self._custom_spec_file)[1][1:].lower()
         if ext not in ('yaml', 'json'):
             om.out.error('Skip loading custom API spec '
                          'because of unknown file extension: %s' % ext)
             return
 
-        with open(self._custom_spec_location, 'r') as f:
+        with open(self._custom_spec_file, 'r') as f:
             custom_spec_as_string = f.read()
 
         headers = Headers([('content-type', 'application/%s' % ext)])
@@ -407,7 +407,7 @@ class open_api(CrawlPlugin):
              ' but sometimes applications do not provide an API specification.',
              ' Set this parameter to specify a local path to the API specification.'
              ' The file must have .json or .yaml extension.')
-        o = opt_factory('custom_spec_location', self._custom_spec_location, d, INPUT_FILE, help=h)
+        o = opt_factory('custom_spec_file', self._custom_spec_file, d, INPUT_FILE, help=h)
         ol.add(o)
 
         d = 'Automatic HTTP header discovery for further testing'
@@ -438,7 +438,7 @@ class open_api(CrawlPlugin):
         self._query_string_auth = options_list['query_string_auth'].get_value()
         self._header_auth = options_list['header_auth'].get_value()
         self._no_spec_validation = options_list['no_spec_validation'].get_value()
-        self._custom_spec_location = options_list['custom_spec_location'].get_value()
+        self._custom_spec_file = options_list['custom_spec_file'].get_value()
         self._discover_fuzzable_headers = options_list['discover_fuzzable_headers'].get_value()
         self._parameter_values_file = options_list['parameter_values_file'].get_value()
 
@@ -458,7 +458,7 @@ class open_api(CrawlPlugin):
 
         To provide the required information, the user can also set
         the Open API specification URL as the scan target,
-        or set 'custom_spec_location' configuration parameter
+        or set 'custom_spec_file' configuration parameter
         to provide a path to a local file which contains the specification.
         
         Most APIs require authentication, this plugin supports authentication
