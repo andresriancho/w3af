@@ -77,7 +77,7 @@ class open_api(CrawlPlugin):
         self._no_spec_validation = False
         self._custom_spec_location = ''
         self._discover_fuzzable_headers = True
-        self._parameter_values_location = ''
+        self._parameter_values_file = ''
 
     def crawl(self, fuzzable_request):
         """
@@ -172,8 +172,8 @@ class open_api(CrawlPlugin):
             return
 
         context_parameter_values = ParameterValues()
-        if self._parameter_values_location:
-            context_parameter_values.load_from_file(self._parameter_values_location)
+        if self._parameter_values_file:
+            context_parameter_values.load_from_file(self._parameter_values_file)
 
         parser = OpenAPI(http_response, self._no_spec_validation,
                          self._discover_fuzzable_headers, context_parameter_values)
@@ -419,7 +419,7 @@ class open_api(CrawlPlugin):
         h = ('This option sets a path to a YAML file which contains parameter values'
              ' which should be used in testing API endpoints. If no parameter values are provided,'
              ' the plugin tries to guess them.')
-        o = opt_factory('parameter_values_location', self._parameter_values_location, d, INPUT_FILE, help=h)
+        o = opt_factory('parameter_values_file', self._parameter_values_file, d, INPUT_FILE, help=h)
         ol.add(o)
 
         return ol
@@ -437,7 +437,7 @@ class open_api(CrawlPlugin):
         self._no_spec_validation = options_list['no_spec_validation'].get_value()
         self._custom_spec_location = options_list['custom_spec_location'].get_value()
         self._discover_fuzzable_headers = options_list['discover_fuzzable_headers'].get_value()
-        self._parameter_values_location = options_list['parameter_values_location'].get_value()
+        self._parameter_values_file = options_list['parameter_values_file'].get_value()
 
     def get_long_desc(self):
         """
@@ -475,7 +475,7 @@ class open_api(CrawlPlugin):
         The plugin tries to guess valid values for parameters of API endpoints
         but the values highly depend on the context. If users have some knowledge
         about correct values which may be used with the API endpoints, they can tell
-        the plugin about them via 'parameter_values_location' configuration parameter.
+        the plugin about them via 'parameter_values_file' configuration parameter.
         The option specifies a path to a YAML file, here is an example:
 
             - path: /users/{user-id}
