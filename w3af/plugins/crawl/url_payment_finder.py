@@ -203,6 +203,7 @@ class url_payment_finder(CrawlPlugin):
             - http://host.tld
 
         The plugin will request:
+            - http://host.tld/inc/
             - http://host.tld/include/pay/success.php
             - http://host.tld/cgi/validate/payment.cgi
             ...
