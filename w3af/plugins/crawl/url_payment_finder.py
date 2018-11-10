@@ -1,5 +1,5 @@
 """
-url_payment_fuzzer.py
+url_payment_finder.py
 
 Copyright 2006 Andres Riancho
 
