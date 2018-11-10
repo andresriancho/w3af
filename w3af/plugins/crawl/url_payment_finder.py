@@ -32,7 +32,7 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-class url_payment_fuzzer(CrawlPlugin):
+class url_payment_finder(CrawlPlugin):
     """
     Try to find hidden gateway payment confirmation page.
     :author: Coiffey Pierre (pierre.coiffey@gmail.com)
@@ -138,7 +138,7 @@ class url_payment_fuzzer(CrawlPlugin):
                  as parameter.
 
         >>> from w3af.core.data.parsers.doc.url import URL
-        >>> u = url_payment_fuzzer()
+        >>> u = url_payment_finder()
         >>> url = URL( 'http://www.w3af.com/' )
         >>> list(u._mutate_path(url))
         []
