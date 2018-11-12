@@ -224,7 +224,7 @@ class ssl_certificate(AuditPlugin):
                                  on_certificate_validation_error=on_certificate_validation_error,
                                  on_success=on_success,
                                  on_exception=on_exception)
-            except ssl.SSLError:
+            except (OpenSSL.SSL.Error, ssl.SSLError):
                 # The protocol failed, try the next one
                 continue
             else:
