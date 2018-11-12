@@ -453,12 +453,12 @@ class URL(DiskItem):
             port = net_location[(colon_symb_max_index + 1):]
 
             if not port:
-                msg = 'Expected protocol number, got an empty string instead.'
+                msg = 'Expected port number, got an empty string instead.'
                 raise ValueError(msg)
 
             # Assign default port if nondigit.
             if not port.isdigit():
-                msg = 'Expected protocol number, got "%s" instead.'
+                msg = 'Expected port number, got "%s" instead.'
                 raise ValueError(msg % port)
 
             if int(port) > 65535 or int(port) < 1:
