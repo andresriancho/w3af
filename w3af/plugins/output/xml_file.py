@@ -405,7 +405,7 @@ class xml_file(OutputPlugin):
         #     run successfully at least once
         tempfh = NamedTemporaryFile(delete=False,
                                     prefix='w3af-xml-output',
-                                    suffix='xml')
+                                    suffix='.xml')
 
         om.out.debug('[xml_file.flush()] write_context_to_file() created'
                      ' template.stream and NamedTemporaryFile')
