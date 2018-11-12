@@ -64,6 +64,7 @@ class open_api_auth(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         self._spec = None
+        self._spec_is_good = None
         self._expected_codes = [401]
 
     def audit(self, freq, orig_response, debugging_id):
@@ -74,21 +75,13 @@ class open_api_auth(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request.
         :param debugging_id: A unique identifier for this call to audit().
         """
-        # The check works only with API endpoints.
-        # crawl.open_api plugin has to be called before.
-        if not self._is_api_spec_available():
-            om.out.information("Could not find an API specification, skip")
-            return
-
-        # The API spec must define authentication mechanisms.
-        if not self._has_security_definitions_in_spec():
-            om.out.information("The API spec has no security definitions, skip")
+        if not self._has_good_spec():
             return
 
         # The check only runs if the API specification
         # requires authentication for a endpoint.
         if not self._has_auth(freq):
-            om.out.information("Request doesn't have auth info, skip")
+            om.out.debug("Fuzzable request doesn't contain authentication info, skipping open_api_auth.")
             return
 
         # Remove auth info from the request.
@@ -99,6 +92,33 @@ class open_api_auth(AuditPlugin):
                                      callback=self._check_response_code,
                                      debugging_id=debugging_id)
 
+    def _has_good_spec(self):
+        """
+        Checks if we have an API specification, and it contains all required data,
+        so that it makes sense to run the plugin.
+
+        The method checks the API specification only once and cache the result.
+
+        :return: True the API specification is available and good enough, False othersise.
+        """
+        if self._spec_is_good is None:
+            # The check works only with API endpoints.
+            # crawl.open_api plugin has to be called before.
+            if not self._is_api_spec_available():
+                om.out.debug("Could not find an API specification in the KB, skipping open_api_auth.")
+                self._spec_is_good = False
+                return False
+
+            # The API spec must define authentication mechanisms.
+            if not self._has_security_definitions_in_spec():
+                om.out.debug("The API specification has no security definitions, skipping open_api_auth.")
+                self._spec_is_good = False
+                return False
+
+            self._spec_is_good = True
+
+        return self._spec_is_good
+
     def _check_response_code(self, freq, response):
         """
         Check if an HTTP request contains an expected response code.
@@ -107,10 +127,10 @@ class open_api_auth(AuditPlugin):
         :param response: The HTTP response associated with the fuzzable request.
         """
         if response.get_code() not in self._expected_codes:
-            desc = 'A %s request without auth info was send to %s. ' \
-                   'The server replied with an unexpected code (%d), expected %s' \
-                   % (freq.get_method(), freq.get_url(),
-                      response.get_code(), self._expected_codes)
+            desc = 'A %s request without authentication information was sent to %s. ' \
+                   'The server replied with unexpected HTTP response code %d (expected one of %s). ' \
+                   'This is a strong indicator of a REST API authentication bypass.' \
+                   % (freq.get_method(), freq.get_url(), response.get_code(), self._expected_codes)
 
             # Should severity depend on response codes?
             # For example, 2xx codes results to HIGH, but 4xx may be MEDIUM/LOW
