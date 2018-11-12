@@ -381,6 +381,8 @@ class xml_file(OutputPlugin):
         Write xml report to the file by rendering the context
         :return: None
         """
+        om.out.debug('[xml_file.flush()] Starting _write_context_to_file()')
+
         template = self._jinja2_env.get_template('root.tpl')
 
         # We use streaming as explained here:
@@ -405,6 +407,9 @@ class xml_file(OutputPlugin):
                                     prefix='w3af-xml-output',
                                     suffix='xml')
 
+        om.out.debug('[xml_file.flush()] write_context_to_file() created'
+                     ' template.stream and NamedTemporaryFile')
+
         try:
             # Write each report section to the temp file
             for report_section in report_stream:
@@ -417,15 +422,23 @@ class xml_file(OutputPlugin):
             # Close the temp file so all the content is flushed
             tempfh.close()
 
+            om.out.debug('[xml_file.flush()] write_context_to_file() starting to'
+                         ' copy temp file to destination')
+
             # Copy to the real output file
             report_file_name = os.path.expanduser(self._file_name)
             shutil.copy(tempfh.name, report_file_name)
+
+            om.out.debug('[xml_file.flush()] write_context_to_file() finished copy'
+                         ' operation.')
 
             stat_info = os.stat(report_file_name)
             om.out.debug('The XML output file size is %s bytes.' % stat_info.st_size)
 
         finally:
             os.remove(tempfh.name)
+
+        om.out.debug('[xml_file.flush()] write_context_to_file() finished')
 
     def get_long_desc(self):
         """
