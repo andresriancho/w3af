@@ -85,10 +85,10 @@ class open_api(CrawlPlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         """
+        self._enable_file_name_fuzzing()
         if self._has_custom_spec_location():
             self._analyze_custom_spec()
         else:
-            self._enable_file_name_fuzzing()
             self._analyze_common_paths(fuzzable_request)
             self._analyze_current_path(fuzzable_request)
 
@@ -106,6 +106,7 @@ class open_api(CrawlPlugin):
         """
         if self._first_run:
             cf.cf.save('fuzz_url_filenames', True)
+            cf.cf.save('fuzz_url_parts', True)
 
     def _should_analyze(self, url):
         """
@@ -169,7 +170,9 @@ class open_api(CrawlPlugin):
         if not OpenAPI.can_parse(http_response):
             return
 
-        parser = OpenAPI(http_response, self._no_spec_validation, self._discover_fuzzable_headers)
+        parser = OpenAPI(http_response,
+                         self._no_spec_validation,
+                         self._discover_fuzzable_headers)
         parser.parse()
 
         self._report_to_kb_if_needed(http_response, parser)
@@ -186,7 +189,8 @@ class open_api(CrawlPlugin):
         fuzzable_request = FuzzableRequest(spec_url, method='GET')
         self.output_queue.put(fuzzable_request)
 
-    def _is_target_domain(self, fuzzable_request):
+    @staticmethod
+    def _is_target_domain(fuzzable_request):
         """
         :param fuzzable_request: The api call as a fuzzable request
         :return: True if the target domain matches
