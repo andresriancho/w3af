@@ -203,7 +203,7 @@ class xml_file(OutputPlugin):
             #
             #   Can NOT call get_run_time before start()
             #
-            # Just "ignore" this call to flush and write the XML on the next one
+            # Just "ignore" this call to flush and write the XML in the next call
             msg = 'xml_file.flush() failed to add scan status to context: "%s"'
             om.out.debug(msg % rte)
             return
@@ -237,11 +237,17 @@ class xml_file(OutputPlugin):
     @took
     def _add_scan_status_to_context(self, context):
         status = self.get_w3af_core().status.get_status_as_dict()
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read status')
+
         total_urls = len(kb.kb.get_all_known_urls())
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read total_urls')
+
         known_urls = self._get_known_urls()
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read generated URLTree')
 
         scan_status = ScanStatus(self._jinja2_env, status, total_urls, known_urls)
         context.scan_status = scan_status.to_string()
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() rendered')
 
     def _get_known_urls(self):
         """
@@ -249,7 +255,7 @@ class xml_file(OutputPlugin):
         then it structures them into a tree which has some helper methods
         to allow us to easily print them using jinja2 templates.
 
-        :return:
+        :return: A URLTree instance
         """
         url_tree = URLTree()
 
