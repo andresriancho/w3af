@@ -24,7 +24,7 @@ import sys
 import time
 import base64
 import jinja2
-import shutil
+import subprocess
 
 import lz4.frame
 
@@ -427,7 +427,9 @@ class xml_file(OutputPlugin):
 
             # Copy to the real output file
             report_file_name = os.path.expanduser(self._file_name)
-            shutil.copy(tempfh.name, report_file_name)
+
+            cmd = 'cp %s %s' % (tempfh.name, report_file_name)
+            subprocess.call(cmd, shell=True)
 
             om.out.debug('[xml_file.flush()] write_context_to_file() finished copy'
                          ' operation.')
