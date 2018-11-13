@@ -237,12 +237,19 @@ class open_api(CrawlPlugin):
         # Save a shallow copy of the specification handler to the kb.
         # It would be better to save the API spec
         # but looks like pickling doesn't work well with Bravado.
-        kb.kb.raw_write('open_api', 'specification_handler',
-                        parser.get_specification_handler().shallow_copy())
+        specification_handlers = kb.kb.raw_read('open_api', 'specification_handlers')
+        if not specification_handlers:
+            specification_handlers = []
+        specification_handlers.append(parser.get_specification_handler().shallow_copy())
+        kb.kb.raw_write('open_api', 'specification_handlers', specification_handlers)
 
         # Store the operation ids in the kb.
-        kb.kb.raw_write('open_api', 'request_to_operation_id',
-                        parser.get_request_to_operation_id())
+        request_to_operation_id = kb.kb.raw_read('open_api', 'request_to_operation_id')
+        if not request_to_operation_id:
+            request_to_operation_id = {}
+        for method_and_url, operation_id in parser.get_request_to_operation_id().iteritems():
+            request_to_operation_id[method_and_url] = operation_id
+        kb.kb.raw_write('open_api', 'request_to_operation_id', request_to_operation_id)
 
         # Warn the user about missing credentials
         if self._query_string_auth or self._header_auth:

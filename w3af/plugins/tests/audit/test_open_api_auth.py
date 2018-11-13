@@ -112,11 +112,16 @@ class TestOpenAPIAuthWithPetstore(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        specification_handler = self.kb.raw_read('open_api',
-                                                 'specification_handler')
-        self.assertIsNotNone(specification_handler, "no specification handler")
+        specification_handlers = self.kb.raw_read('open_api',
+                                                  'specification_handlers')
+        self.assertIsNotNone(specification_handlers, 'no specification handlers (none)')
+        self.assertTrue(isinstance(specification_handlers, list),
+                        'not a list of SpecificationHandler')
+        self.assertEquals(len(specification_handlers), 1)
+
+        specification_handler = specification_handlers[0]
         self.assertTrue(isinstance(specification_handler, SpecificationHandler),
-                        "not a SpecificationHandler")
+                        'not a SpecificationHandler')
 
         infos = self.kb.get('open_api', 'open_api')
         self.assertEqual(len(infos), 1, infos)
@@ -145,8 +150,8 @@ class TestOpenAPIAuth(PluginTest):
         api_http_response = generate_response(PetstoreWithSecurity.get_specification())
         parser = OpenAPI(api_http_response)
         parser.parse()
-        self.kb.raw_write('open_api', 'specification_handler',
-                          parser.get_specification_handler().shallow_copy())
+        self.kb.raw_write('open_api', 'specification_handlers',
+                          [parser.get_specification_handler().shallow_copy()])
         self.kb.raw_write('open_api', 'request_to_operation_id',
                           parser.get_request_to_operation_id())
 
@@ -154,7 +159,6 @@ class TestOpenAPIAuth(PluginTest):
 
         plugin = open_api_auth()
         self.assertTrue(plugin._is_api_spec_available())
-        self.assertTrue(plugin._has_security_definitions_in_spec())
 
         return plugin, spec
 

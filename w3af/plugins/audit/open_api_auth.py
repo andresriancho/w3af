@@ -63,7 +63,7 @@ class open_api_auth(AuditPlugin):
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        self._spec = None
+        self._specs = []
         self._expected_codes = [401]
 
     def get_plugin_deps(self):
@@ -84,18 +84,15 @@ class open_api_auth(AuditPlugin):
         # The check works only with API endpoints.
         # crawl.open_api plugin has to be called before.
         if not self._is_api_spec_available():
-            om.out.debug("Could not find an API specification in the KB, skipping open_api_auth.")
-            return False
-
-        # The API spec must define authentication mechanisms.
-        if not self._has_security_definitions_in_spec():
-            om.out.debug("The API specification has no security definitions, skipping open_api_auth.")
-            return False
+            om.out.debug('Could not find any acceptable API specification in the KB, '
+                         'skipping open_api_auth.')
+            return
 
         # The check only runs if the API specification
         # requires authentication for a endpoint.
         if not self._has_auth(freq):
-            om.out.debug("Fuzzable request doesn't contain authentication info, skipping open_api_auth.")
+            om.out.debug('Fuzzable request does not contain authentication info, '
+                         'skipping open_api_auth.')
             return
 
         # Remove auth info from the request.
@@ -130,38 +127,41 @@ class open_api_auth(AuditPlugin):
 
             self.kb_append_uniq(self, 'open_api_auth', v)
 
-    def _has_security_definitions_in_spec(self):
-        """
-        :return: True if the API spec contains 'securityDefinitions' section,
-                 False otherwise.
-        """
-        if self._spec.security_definitions:
-            return True
-
-        return False
-
     def _is_api_spec_available(self):
         """
-        Make sure that we have API specification.
-        The API spec has to be provided by crawl.open_api plugin
+        Make sure that we have at least one API specification
+        which contains 'securityDefinitions' section.
+        The API specs have to be provided by crawl.open_api plugin
         which should be called before.
 
-        The plugins use the global knowledge base to share the API spec.
+        The plugins use the global knowledge base to share the API specs.
 
-        :return: True if API specification is available, False otherwise.
+        :return: True if API specifications are available, False otherwise.
         """
-        if self._spec:
+        if self._specs:
             return True
 
-        specification_handler = kb.kb.raw_read('open_api', 'specification_handler')
-        if not specification_handler:
+        specification_handlers = kb.kb.raw_read('open_api', 'specification_handlers')
+        if not specification_handlers:
             return False
 
-        self._spec = specification_handler.parse()
-        if self._spec:
-            return True
+        for specification_handler in specification_handlers:
+            spec = specification_handler.parse()
+            spec_url = specification_handler.get_http_response().get_url()
 
-        return False
+            if not spec:
+                om.out.debug('Could not parse the API specification from %s, '
+                             'skipping it.' % spec_url)
+                continue
+
+            if not spec.security_definitions:
+                om.out.debug('The API specification from %s '
+                             'has no security definitions, skipping it.' % spec_url)
+                continue
+
+            self._specs.append(spec)
+
+        return len(self._specs) > 0
 
     def _remove_auth(self, freq):
         """
@@ -176,12 +176,13 @@ class open_api_auth(AuditPlugin):
         :return: A copy of the fuzzable request without auth info.
         """
         updated_freq = copy.deepcopy(freq)
-        for key, auth in self._spec.security_definitions.iteritems():
-            if auth.type == 'basic' or auth.type == 'oauth2':
-                self._remove_header(updated_freq, 'Authorization')
+        for spec in self._specs:
+            for key, auth in spec.security_definitions.iteritems():
+                if auth.type == 'basic' or auth.type == 'oauth2':
+                    self._remove_header(updated_freq, 'Authorization')
 
-            if auth.type == 'apiKey':
-                self._remove_api_key(updated_freq, auth)
+                if auth.type == 'apiKey':
+                    self._remove_api_key(updated_freq, auth)
 
         return updated_freq
 
@@ -215,17 +216,18 @@ class open_api_auth(AuditPlugin):
 
     def _get_operation_by_id(self, operation_id):
         """
-        Look for an operation by its ID in the API specification.
+        Look for an operation and it's specification.
 
         :param operation_id: ID of an operation.
-        :return: An instance of Operation (Bravado).
+        :return: An instance of Operation and Spec (Bravado).
         """
-        for api_resource_name, resource in self._spec.resources.items():
-            for operation_name, operation in resource.operations.items():
-                if operation.operation_id == operation_id:
-                    return operation
+        for spec in self._specs:
+            for api_resource_name, resource in spec.resources.items():
+                for operation_name, operation in resource.operations.items():
+                    if operation.operation_id == operation_id:
+                        return operation, spec
 
-        return None
+        return None, None
 
     @staticmethod
     def _get_operation_id(freq):
@@ -256,15 +258,16 @@ class open_api_auth(AuditPlugin):
         :param freq: The fuzzable request to be checked.
         :return: True if the request contains auth info, False otherwise.
         """
-        for key, auth in self._spec.security_definitions.iteritems():
-            if auth.type == 'basic' and self._has_basic_auth(freq):
-                return True
+        for spec in self._specs:
+            for key, auth in spec.security_definitions.iteritems():
+                if auth.type == 'basic' and self._has_basic_auth(freq):
+                    return True
 
-            if auth.type == 'apiKey' and self._has_api_key(freq, auth):
-                return True
+                if auth.type == 'apiKey' and self._has_api_key(freq, auth):
+                    return True
 
-            if auth.type == 'oauth2' and self._has_oauth2(freq):
-                return True
+                if auth.type == 'oauth2' and self._has_oauth2(freq):
+                    return True
 
         return False
 
@@ -333,17 +336,13 @@ class open_api_auth(AuditPlugin):
                  to have the specified auth method, False otherwise.
         """
         operation_id = self._get_operation_id(freq)
-        operation = self._get_operation_by_id(operation_id)
-        if not operation:
+        operation, spec = self._get_operation_by_id(operation_id)
+        if not operation or not spec:
             return False
 
         for security_spec in operation.security_specs:
             for key, value in security_spec.iteritems():
-                if key not in self._spec.security_definitions:
-                    # Should not happen.
-                    continue
-
-                security_definition = self._spec.security_definitions[key]
+                security_definition = spec.security_definitions[key]
                 if security_definition.type == auth_type:
                     return True
 
