@@ -37,7 +37,7 @@ from w3af.core.controllers.core_helpers.not_found.decorators import LRUCache404,
 
 
 IS_EQUAL_RATIO = 0.90
-MAX_FUZZY_LENGTH = 1025 * 4
+MAX_FUZZY_LENGTH = 1024 * 4
 NOT_404_RESPONSE_CODES = (200, 500, 301, 302, 303, 307, 401)
 MAX_404_IN_MEMORY = 50
 
