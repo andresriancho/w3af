@@ -66,6 +66,13 @@ class open_api_auth(AuditPlugin):
         self._spec = None
         self._expected_codes = [401]
 
+    def get_plugin_deps(self):
+        """
+        :return: A list with the names of the plugins
+                 that should be run before the current one.
+        """
+        return ['crawl.open_api']
+
     def audit(self, freq, orig_response, debugging_id):
         """
         Check if an API endpoint requires authentication according to its API spec.
@@ -365,7 +372,7 @@ class open_api_auth(AuditPlugin):
           * Check if the response has 401 error code (access denied).
 
         A couple of important notes:
-          * The plugin requires the 'crawl.open_api' plugin to be enabled.
+          * The plugin enables the 'crawl.open_api' plugin.
             It works only with REST API endpoints.
           * The check works only when API specification requires authentication for a endpoint.
           * The check works only if a user provided authentication info (API key, header, etc).
