@@ -30,6 +30,8 @@ from functools import wraps
 from concurrent.futures import Future
 from multiprocessing.dummy import Queue, Process
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.data.misc.file_utils import replace_file_special_chars
 from w3af.core.controllers.misc.temp_dir import get_temp_dir, create_temp_dir
 from w3af.core.controllers.exceptions import (DBException,
@@ -277,6 +279,23 @@ class SQLiteExecutor(Process):
     def set_received_poison_pill(self, received):
         self._poison_pill_received = received
 
+    def _report_qsize_limit_reached(self):
+        """
+        Report if the queue size has reached the limit.
+
+        When the limit is hit, all the different framework components, such as
+        DiskDict, DiskList, KB, etc. will start to lock waiting for the DB result,
+        which considerably degrades performance.
+
+        :return: None
+        """
+        if self._in_queue.qsize() == self._in_queue.maxsize:
+            msg = ('The SQLiteExecutor.in_queue length has reached its max'
+                   ' limit of %s after processing %s queries. Framework'
+                   ' performance will degrade.')
+            args = (self._in_queue.maxsize, self._current_query_num)
+            om.out.debug(msg % args)
+
     def _report_qsize(self):
         """
         Reports the in queue size every N seconds according to REPORT_QSIZE_EVERY_N_CALLS
@@ -290,7 +309,8 @@ class SQLiteExecutor(Process):
             self._last_reported_qsize = self._current_query_num
 
             msg = 'The SQLiteExecutor.in_queue length is %s. Processed %s queries.'
-            print(msg % (self._in_queue.qsize(), self._current_query_num))
+            args = (self._in_queue.qsize(), self._current_query_num)
+            print(msg % args)
 
     def query(self, query, parameters):
         future = Future()
@@ -414,7 +434,9 @@ class SQLiteExecutor(Process):
 
             args = args or ()
             kwds = kwds or {}
-            
+
+            self._report_qsize_limit_reached()
+
             if self.DEBUG:
                 self._report_qsize()
                 #print('%s %s %s' % (op_code, args, kwds))
