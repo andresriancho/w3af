@@ -54,6 +54,13 @@ class PetstoreWithSecurity(object):
         return file('%s/data/petstore_with_security.yaml' % CURRENT_PATH).read()
 
 
+class UsersWithSecurity(object):
+
+    @staticmethod
+    def get_specification():
+        return file('%s/data/users_with_security.yaml' % CURRENT_PATH).read()
+
+
 class TestOpenAPIAuthWithPetstore(PluginTest):
 
     target_url = 'http://w3af.org/'
@@ -141,6 +148,116 @@ class TestOpenAPIAuthWithPetstore(PluginTest):
         self.assertEquals('High', vuln.get_severity())
         self.assertEquals('http://w3af.org/api/pets', vuln.get_url().url_string)
         self.assertEquals('POST', vuln['method'])
+        self.assertEquals(200, vuln['response_code'])
+
+
+class TestOpenAPIAuthMultipleSpecs(PluginTest):
+
+    target_url = 'http://w3af.org/'
+    api_key_auth = ('header_auth', 'X-API-Key: xxx', PluginConfig.HEADER)
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'crawl': (PluginConfig('open_api', api_key_auth,),),
+                'audit': (PluginConfig('open_api_auth'),)
+            }
+        }
+    }
+
+    class AuthMockResponse(MockResponse):
+
+        def get_response(self, http_request, uri, response_headers):
+            if http_request.headers.get('X-API-Key', '') != 'xxx':
+                return 401, response_headers, ''
+
+            return self.status, response_headers, '{ "id": 42 }'
+
+    MOCK_RESPONSES = [
+
+        # No auth required for the API specs.
+        MockResponse('http://w3af.org/api/v1/openapi.yaml',
+                     PetstoreWithSecurity().get_specification(),
+                     content_type='application/yaml'),
+
+        MockResponse('http://w3af.org/api/v2/openapi.yaml',
+                     UsersWithSecurity().get_specification(),
+                     content_type='application/yaml'),
+
+        # No auth required for the health check endpoint.
+        MockResponse('http://w3af.org/api/ping',
+                     'ich bin gut',
+                     content_type='text/plain'),
+
+        # Authenticate GET requests to /api/pets
+        AuthMockResponse(re.compile('http://w3af.org/api/pets$'),
+                         '{ "id": 42 }',
+                         content_type='application/json',
+                         method='GET'),
+
+        # No auth for POST requests to /api/pets
+        # This should result to a vulnerability.
+        MockResponse(re.compile('http://w3af.org/api/pets$'),
+                     '{ "id": 42 }',
+                     content_type='application/json',
+                     method='POST'),
+
+        # Authenticate requests to /api/pets/{id}
+        AuthMockResponse(re.compile('http://w3af.org/api/pets.*'),
+                         '{ "id": 42 }',
+                         content_type='application/json'),
+
+        # No auth requests to /api/users.
+        # This should result to a vulnerability.
+        MockResponse('http://w3af.org/api/users',
+                     '{ "id": 123 }',
+                     content_type='application/json')
+    ]
+
+    def test_multiple_specs(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        specification_handlers = self.kb.raw_read('open_api',
+                                                  'specification_handlers')
+        self.assertIsNotNone(specification_handlers, 'no specification handlers (none)')
+        self.assertTrue(isinstance(specification_handlers, list),
+                        'not a list of SpecificationHandler')
+        self.assertEquals(len(specification_handlers), 2)
+
+        specification_handler = specification_handlers[0]
+        self.assertTrue(isinstance(specification_handler, SpecificationHandler),
+                        'not a SpecificationHandler')
+
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 2, infos)
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+        info_i = infos[1]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
+        frs = self.kb.get_all_known_fuzzable_requests()
+        frs = [f for f in frs if f.get_url().get_path() not in ('/api/v1/openapi.yaml', '/api/v2/openapi.yaml', '/')]
+        frs.sort(by_path)
+        self.assertEqual(len(frs), 8)
+
+        vulns = self.kb.get('open_api_auth', 'open_api_auth')
+        self.assertEquals(len(vulns), 2)
+        vulns.sort(by_path)
+
+        vuln = vulns[0]
+        self.assertEquals('Broken authentication', vuln.get_name())
+        self.assertEquals('High', vuln.get_severity())
+        self.assertEquals('http://w3af.org/api/pets', vuln.get_url().url_string)
+        self.assertEquals('POST', vuln['method'])
+        self.assertEquals(200, vuln['response_code'])
+
+        vuln = vulns[1]
+        self.assertEquals('Broken authentication', vuln.get_name())
+        self.assertEquals('High', vuln.get_severity())
+        self.assertEquals('http://w3af.org/api/users', vuln.get_url().url_string)
+        self.assertEquals('GET', vuln['method'])
         self.assertEquals(200, vuln['response_code'])
 
 
