@@ -202,7 +202,7 @@ class SQLiteDBMS(object):
         query = 'DELETE FROM %s WHERE 1=1' % name
         return self.execute(query, commit=True)
     
-    def create_table(self, name, columns, pk_columns=()):
+    def create_table(self, name, columns, pk_columns=(), constraints=()):
         """
         Create table in convenient way.
         """
@@ -215,6 +215,9 @@ class SQLiteDBMS(object):
         if not isinstance(columns, list):
             raise ValueError('create_table requires column names and types in a list')
 
+        if not isinstance(constraints, tuple):
+            raise ValueError('constraints requires constraints in a tuple')
+
         # Create the table
         query = 'CREATE TABLE %s (' % name
         
@@ -225,9 +228,13 @@ class SQLiteDBMS(object):
             
         query += ', '.join(all_columns)
         
-        # Finally the PK
+        # Finally the PK and constraints
         if pk_columns:
             query += ', PRIMARY KEY (%s)' % ','.join(pk_columns)
+
+        if constraints:
+            for c in constraints:
+                query += ', CONSTRAINT %s' % c
 
         query += ')'
 
