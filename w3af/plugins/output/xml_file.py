@@ -236,20 +236,23 @@ class xml_file(OutputPlugin):
 
     @took
     def _add_scan_status_to_context(self, context):
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() start')
+
         status = self.get_w3af_core().status.get_status_as_dict()
         om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read status')
 
-        total_urls = len(kb.kb.get_all_known_urls())
+        all_known_urls = kb.kb.get_all_known_urls()
+        total_urls = len(all_known_urls)
         om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read total_urls')
 
-        known_urls = self._get_known_urls()
+        known_urls = self._get_known_urls(all_known_urls)
         om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read generated URLTree')
 
         scan_status = ScanStatus(self._jinja2_env, status, total_urls, known_urls)
         context.scan_status = scan_status.to_string()
         om.out.debug('[xml_file.flush()] _add_scan_status_to_context() rendered')
 
-    def _get_known_urls(self):
+    def _get_known_urls(self, all_known_urls):
         """
         This method calls kb.get_all_known_urls() to retrieve the URLs,
         then it structures them into a tree which has some helper methods
@@ -259,7 +262,7 @@ class xml_file(OutputPlugin):
         """
         url_tree = URLTree()
 
-        for url in kb.kb.get_all_known_urls():
+        for url in all_known_urls:
             url_tree.add_url(url)
 
         return url_tree
