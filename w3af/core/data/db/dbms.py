@@ -296,7 +296,7 @@ class SQLiteExecutor(Process):
 
         :return: None
         """
-        if self._in_queue.qsize() == self._in_queue.maxsize:
+        if self._in_queue.qsize() >= self._in_queue.maxsize - 10:
             msg = ('The SQLiteExecutor.in_queue length has reached its max'
                    ' limit of %s after processing %s queries. Framework'
                    ' performance will degrade.')
