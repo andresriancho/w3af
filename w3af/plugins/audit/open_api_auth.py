@@ -64,7 +64,6 @@ class open_api_auth(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         self._spec = None
-        self._spec_is_good = None
         self._expected_codes = [401]
 
     def audit(self, freq, orig_response, debugging_id):
@@ -75,8 +74,16 @@ class open_api_auth(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request.
         :param debugging_id: A unique identifier for this call to audit().
         """
-        if not self._has_good_spec():
-            return
+        # The check works only with API endpoints.
+        # crawl.open_api plugin has to be called before.
+        if not self._is_api_spec_available():
+            om.out.debug("Could not find an API specification in the KB, skipping open_api_auth.")
+            return False
+
+        # The API spec must define authentication mechanisms.
+        if not self._has_security_definitions_in_spec():
+            om.out.debug("The API specification has no security definitions, skipping open_api_auth.")
+            return False
 
         # The check only runs if the API specification
         # requires authentication for a endpoint.
@@ -91,33 +98,6 @@ class open_api_auth(AuditPlugin):
         self._uri_opener.send_mutant(freq_with_no_auth,
                                      callback=self._check_response_code,
                                      debugging_id=debugging_id)
-
-    def _has_good_spec(self):
-        """
-        Checks if we have an API specification, and it contains all required data,
-        so that it makes sense to run the plugin.
-
-        The method checks the API specification only once and cache the result.
-
-        :return: True the API specification is available and good enough, False othersise.
-        """
-        if self._spec_is_good is None:
-            # The check works only with API endpoints.
-            # crawl.open_api plugin has to be called before.
-            if not self._is_api_spec_available():
-                om.out.debug("Could not find an API specification in the KB, skipping open_api_auth.")
-                self._spec_is_good = False
-                return False
-
-            # The API spec must define authentication mechanisms.
-            if not self._has_security_definitions_in_spec():
-                om.out.debug("The API specification has no security definitions, skipping open_api_auth.")
-                self._spec_is_good = False
-                return False
-
-            self._spec_is_good = True
-
-        return self._spec_is_good
 
     def _check_response_code(self, freq, response):
         """
