@@ -32,14 +32,24 @@ from w3af.core.data.url.constants import MAX_HTTP_RETRIES
 
 class HTTPRequest(RequestMixIn, urllib2.Request):
 
-    def __init__(self, url, data=None, headers=Headers(),
-                 origin_req_host=None, unverifiable=False,
-                 cookies=True, cache=False, method=None,
-                 error_handling=True, retries=MAX_HTTP_RETRIES,
+    def __init__(self, url,
+                 data=None,
+                 headers=Headers(),
+                 origin_req_host=None,
+                 unverifiable=False,
+                 cookies=True,
+                 session=None,
+                 cache=False,
+                 method=None,
+                 error_handling=True,
+                 retries=MAX_HTTP_RETRIES,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
-                 new_connection=False, follow_redirects=False,
-                 use_basic_auth=True, use_proxy=True,
-                 debugging_id=None, binary_response=False):
+                 new_connection=False,
+                 follow_redirects=False,
+                 use_basic_auth=True,
+                 use_proxy=True,
+                 debugging_id=None,
+                 binary_response=False):
         """
         This is a simple wrapper around a urllib2 request object which helps
         with some common tasks like serialization, cache, etc.
@@ -52,6 +62,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         #
         self.url_object = url
         self.cookies = cookies
+        self.session = session
         self.get_from_cache = cache
         self.error_handling = error_handling
         self.retries_left = retries
@@ -132,6 +143,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         sdict['headers'] = dict(self.get_headers())
         sdict['data'] = self.get_data()
         sdict['cookies'] = self.cookies
+        sdict['session'] = self.session
         sdict['cache'] = self.get_from_cache
         sdict['timeout'] = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
         sdict['new_connection'] = self.new_connection
@@ -173,6 +185,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         method, uri = udict['method'], udict['uri']
         headers, data = udict['headers'], udict['data']
         cookies = udict['cookies']
+        session = udict['session']
         cache = udict['cache']
         timeout = socket._GLOBAL_DEFAULT_TIMEOUT if udict['timeout'] is None else udict['timeout']
         new_connection = udict['new_connection']
@@ -186,7 +199,8 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         url = URL(uri)
         
         return cls(url, data=data, headers=headers_inst,
-                   cookies=cookies, cache=cache, method=method,
+                   cookies=cookies, session=session,
+                   cache=cache, method=method,
                    timeout=timeout, new_connection=new_connection,
                    follow_redirects=follow_redirects,
                    use_basic_auth=use_basic_auth, use_proxy=use_proxy,
