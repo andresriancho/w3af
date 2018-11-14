@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import random
 
 from nose.plugins.attrib import attr
 
@@ -133,7 +134,7 @@ class FormAuthTest(GenericFormAuthTest):
         self.assertEquals(len(vulns), 0)
 
 
-class TestFormAuthFailedLoginMatch(GenericFormAuthTest):
+class TestFormAuthFailedLoginMatchTrivial(GenericFormAuthTest):
 
     target_url = u'http://w3af.org/'
     login_url = u'http://w3af.org/login'
@@ -172,7 +173,7 @@ class TestFormAuthFailedLoginMatch(GenericFormAuthTest):
 
     ]
 
-    def test_found_credentials_post(self):
+    def test_found_credentials(self):
         self._scan(self.target_url, self.basic_config)
 
         # Assert the general results
@@ -185,3 +186,263 @@ class TestFormAuthFailedLoginMatch(GenericFormAuthTest):
         self.assertEquals(vuln.get_url().url_string, self.login_url)
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], 'admin')
+
+
+class TestFormAuthFailedLoginMatchWithStaticLargeResponse(GenericFormAuthTest):
+
+    target_url = u'http://w3af.org/'
+    login_url = u'http://w3af.org/login'
+
+    FORM = ('<form method="POST" action="/login">'
+            '    <input name="username" type="text" />'
+            '    <input name="password" type="password" />'
+            '    <input name="submit" type="submit" />'
+            '</form>')
+
+    HEADER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+    FOOTER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+
+    def request_callback(self, request, uri, response_headers):
+        response_headers['content-type'] = 'text/html'
+
+        username = request.parsed_body.get('username', [''])[0]
+        password = request.parsed_body.get('password', [''])[0]
+
+        klass = TestFormAuthFailedLoginMatchWithStaticLargeResponse
+
+        if username == 'admin' and password == 'admin':
+            body = '%s\n%s\n%s' % (klass.HEADER,
+                                   'Success, redirecting to the home page... <a href="/home">home<a>',
+                                   klass.FOOTER)
+        else:
+            body = klass.HEADER + '\nFail\n' + klass.FOOTER
+
+        return 200, response_headers, body
+
+    MOCK_RESPONSES = [
+              MockResponse(url=target_url,
+                           body=FORM,
+                           status=200,
+                           method='GET',
+                           content_type='text/html'),
+
+              MockResponse(url=login_url,
+                           body=request_callback,
+                           method='POST',
+                           content_type='text/html',
+                           status=200),
+
+    ]
+
+    def test_found_credentials(self):
+        self._scan(self.target_url, self.basic_config)
+
+        # Assert the general results
+        vulns = self.kb.get('form_auth', 'auth')
+        self.assertEquals(len(vulns), 1)
+
+        vuln = vulns[0]
+
+        self.assertEquals(vuln.get_name(), 'Guessable credentials')
+        self.assertEquals(vuln.get_url().url_string, self.login_url)
+        self.assertEquals(vuln['user'], 'admin')
+        self.assertEquals(vuln['pass'], 'admin')
+
+
+class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse(GenericFormAuthTest):
+
+    target_url = u'http://w3af.org/'
+    login_url = u'http://w3af.org/login'
+
+    FORM = ('<form method="POST" action="/login">'
+            '    <input name="username" type="text" />'
+            '    <input name="password" type="password" />'
+            '    <input name="submit" type="submit" />'
+            '</form>')
+
+    HEADER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+    FOOTER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+
+    def request_callback(self, request, uri, response_headers):
+        response_headers['content-type'] = 'text/html'
+
+        username = request.parsed_body.get('username', [''])[0]
+        password = request.parsed_body.get('password', [''])[0]
+
+        klass = TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse
+
+        if username == 'admin' and password == 'admin':
+            body = '%s\n%s\n%s' % (klass.HEADER,
+                                   'Success, redirecting to the home page... <a href="/home">home<a>',
+                                   klass.FOOTER)
+        else:
+            body = '%s\n%s\n%s' % (klass.HEADER,
+                                   'Invalid username / password %s' % random.randint(1, 10000),
+                                   klass.FOOTER)
+
+        return 200, response_headers, body
+
+    MOCK_RESPONSES = [
+              MockResponse(url=target_url,
+                           body=FORM,
+                           status=200,
+                           method='GET',
+                           content_type='text/html'),
+
+              MockResponse(url=login_url,
+                           body=request_callback,
+                           method='POST',
+                           content_type='text/html',
+                           status=200),
+
+    ]
+
+    def test_found_credentials(self):
+        # Controls the numbers generated in the request_callback
+        random.seed(1)
+
+        self._scan(self.target_url, self.basic_config)
+
+        # Assert the general results
+        vulns = self.kb.get('form_auth', 'auth')
+        self.assertEquals(len(vulns), 1)
+
+        vuln = vulns[0]
+
+        self.assertEquals(vuln.get_name(), 'Guessable credentials')
+        self.assertEquals(vuln.get_url().url_string, self.login_url)
+        self.assertEquals(vuln['user'], 'admin')
+        self.assertEquals(vuln['pass'], 'admin')
+
+
+class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponseShortSuccess(GenericFormAuthTest):
+
+    target_url = u'http://w3af.org/'
+    login_url = u'http://w3af.org/login'
+
+    FORM = ('<form method="POST" action="/login">'
+            '    <input name="username" type="text" />'
+            '    <input name="password" type="password" />'
+            '    <input name="submit" type="submit" />'
+            '</form>')
+
+    HEADER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+    FOOTER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+
+    def request_callback(self, request, uri, response_headers):
+        response_headers['content-type'] = 'text/html'
+
+        username = request.parsed_body.get('username', [''])[0]
+        password = request.parsed_body.get('password', [''])[0]
+
+        klass = TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse
+
+        if username == 'admin' and password == 'admin':
+            body = 'Success, redirecting'
+        else:
+            body = '%s\n%s\n%s' % (klass.HEADER,
+                                   'Invalid username / password %s' % random.randint(1, 10000),
+                                   klass.FOOTER)
+
+        return 200, response_headers, body
+
+    MOCK_RESPONSES = [
+              MockResponse(url=target_url,
+                           body=FORM,
+                           status=200,
+                           method='GET',
+                           content_type='text/html'),
+
+              MockResponse(url=login_url,
+                           body=request_callback,
+                           method='POST',
+                           content_type='text/html',
+                           status=200),
+
+    ]
+
+    def test_found_credentials(self):
+        # Controls the numbers generated in the request_callback
+        random.seed(1)
+
+        self._scan(self.target_url, self.basic_config)
+
+        # Assert the general results
+        vulns = self.kb.get('form_auth', 'auth')
+        self.assertEquals(len(vulns), 1)
+
+        vuln = vulns[0]
+
+        self.assertEquals(vuln.get_name(), 'Guessable credentials')
+        self.assertEquals(vuln.get_url().url_string, self.login_url)
+        self.assertEquals(vuln['user'], 'admin')
+        self.assertEquals(vuln['pass'], 'admin')
+
+
+captcha_count = 1
+
+
+class TestFormAuthFailedLoginMatchWithCAPTCHA(GenericFormAuthTest):
+
+    target_url = u'http://w3af.org/'
+    login_url = u'http://w3af.org/login'
+
+    FORM = ('<form method="POST" action="/login">'
+            '    <input name="username" type="text" />'
+            '    <input name="password" type="password" />'
+            '    <input name="submit" type="submit" />'
+            '</form>')
+
+    HEADER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+    FOOTER = 'abc <b>def</b> xyz'.join('\n' for _ in xrange(100))
+
+    def request_callback(self, request, uri, response_headers):
+        response_headers['content-type'] = 'text/html'
+
+        username = request.parsed_body.get('username', [''])[0]
+        password = request.parsed_body.get('password', [''])[0]
+
+        klass = TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse
+
+        body = '%s\n%s\n%s' % (klass.HEADER,
+                               'Invalid username / password %s' % random.randint(1, 10000),
+                               klass.FOOTER)
+
+        if username == 'admin':
+            global captcha_count
+            captcha_count += 1
+
+            if captcha_count > 2:
+                body = '%s\n%s\n%s' % (klass.HEADER,
+                                       'Now you need to complete a CAPTCHA %s' % random.randint(1, 10000),
+                                       klass.FOOTER)
+            else:
+                if password == 'will-not-guess-not-in-password-file':
+                    body = 'Success, redirecting'
+
+        return 200, response_headers, body
+
+    MOCK_RESPONSES = [
+              MockResponse(url=target_url,
+                           body=FORM,
+                           status=200,
+                           method='GET',
+                           content_type='text/html'),
+
+              MockResponse(url=login_url,
+                           body=request_callback,
+                           method='POST',
+                           content_type='text/html',
+                           status=200),
+
+    ]
+
+    def test_not_found_credentials(self):
+        # Controls the numbers generated in the request_callback
+        random.seed(1)
+
+        self._scan(self.target_url, self.basic_config)
+
+        # Assert the general results
+        vulns = self.kb.get('form_auth', 'auth')
+        self.assertEquals(len(vulns), 0)

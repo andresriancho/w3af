@@ -31,14 +31,12 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from w3af.core.data.url.helpers import get_clean_body_impl
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.misc.diff import diff
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
-from w3af.core.controllers.exceptions import (BaseFrameworkException,
-                                              ScanMustStopOnUrlError)
+from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class form_auth(BruteforcePlugin):
@@ -271,7 +269,7 @@ class form_auth(BruteforcePlugin):
                                                     session=session)
             body = self._clean_body(response, user, passwd)
 
-            if self._matches_failed_login(body, login_failed_bodies):
+            if self._matches_any_failed_page(body, login_failed_bodies):
                 continue
 
             msg = 'Failed to generate a response that matches the failed login page'
@@ -279,7 +277,7 @@ class form_auth(BruteforcePlugin):
 
         return True
 
-    def _matches_failed_login(self, resp_body, login_failed_result_list):
+    def _matches_any_failed_page(self, resp_body, login_failed_result_list):
         """
         :return: True if the resp_body matches the previously created
                  responses that are stored in login_failed_result_list.
@@ -336,8 +334,22 @@ class form_auth(BruteforcePlugin):
         :param password: The password to replace
         :return: A clean body (string)
         """
-        strings_to_replace_list = [username, password]
-        return get_clean_body_impl(http_response, strings_to_replace_list)
+        #
+        # At some point this method was implemented as follows:
+        #
+        #   strings_to_replace_list = [username, password]
+        #   return get_clean_body_impl(http_response, strings_to_replace_list)
+        #
+        # There is a complex interaction between cleaning the response body
+        # and the diff() in FailedLoginPage.matches(). The problem is that the
+        # bruteforce plugin will extract usernames and passwords from the HTML
+        # thus doing a _clean_body() with username and password will "break"
+        # one HTTP response in one way (clean with password A) and another HTTP
+        # response in another way (clean with password B) thus making diff()
+        # crazy
+        #
+
+        return http_response.body
 
     def _brute_worker(self, mutant, login_failed_result_list, combination, session):
         """
@@ -361,52 +373,60 @@ class form_auth(BruteforcePlugin):
         self._true_extra_fields(form)
         self._fill_form(form, user, password)
 
-        try:
-            resp = self._uri_opener.send_mutant(mutant,
-                                                session=session,
-                                                grep=False)
-        except ScanMustStopOnUrlError:
-            return
+        resp = self._uri_opener.send_mutant(mutant,
+                                            session=session,
+                                            grep=False)
 
         body = self._clean_body(resp, user, password)
 
-        if self._matches_failed_login(body, login_failed_result_list):
+        if self._matches_any_failed_page(body, login_failed_result_list):
             return
 
-        # SUCCESS! This might be a valid combination!
         #
-        # Now test with an invalid password to ensure our previous test
-        # found valid credentials.
+        # SUCCESS (most likely)
+        #
+        # The application is most likely answering with one of these
+        # messages (first 3 are examples of errors, last is success):
+        #
+        #   (f) "The username is valid but the password is invalid"
+        #
+        #   (f) "Brute-force detected, user blocked"
+        #
+        #   (f) "Brute-force detected, please complete this CAPTCHA form"
+        #
+        #   (s) "Welcome Mr. Admin, how can I help?"
+        #
+        # Let's try to identify if we're in the (f) cases...
         #
         # This needs to be done in a different browser session, the old
         # session is (potentially) already logged in, sending a new
         # authentication request in that session will most likely
         # succeed with a 302 redirect to the user's home page or similar
+        #
         new_session = self._create_new_session(mutant)
 
-        form.set_login_password(rand_alnum(8))
+        password_1 = rand_alnum(8)
+        form.set_login_password(password_1)
+        verify_resp_1 = self._uri_opener.send_mutant(mutant,
+                                                     session=new_session,
+                                                     grep=False)
 
-        verif_resp = self._uri_opener.send_mutant(mutant,
-                                                  session=new_session,
-                                                  grep=False)
+        password_2 = rand_alnum(8)
+        form.set_login_password(password_2)
+        verify_resp_2 = self._uri_opener.send_mutant(mutant,
+                                                     session=new_session,
+                                                     grep=False)
 
-        body = self._clean_body(verif_resp, user, password)
+        body_1 = self._clean_body(verify_resp_1, user, password_1)
+        body_2 = self._clean_body(verify_resp_2, user, password_2)
 
-        if not self._matches_failed_login(body, login_failed_result_list):
-            #
-            # The application is most likely answering with one of these
-            # messages:
-            #
-            #   * "The username is valid but the password is invalid"
-            #
-            #   * "Brute-force detected, user blocked"
-            #
-            #   * "Brute-force detected, please complete this CAPTCHA form"
-            #
+        potential_captcha_page = FailedLoginPage(body_1, body_2)
+        
+        if self._matches_any_failed_page(body, [potential_captcha_page]):
             om.out.debug('The form brute-force plugin detected a response'
-                         ' that might indicate that a user exists. Please'
-                         ' review HTTP response with ID %s manually.' %
-                         verif_resp.id)
+                         ' that might indicate that a user exists or CAPTCHA'
+                         ' protection is present. Please manually review HTTP'
+                         ' response with ID %s.' % verify_resp_2.id)
             return
 
         #
@@ -473,18 +493,22 @@ class FailedLoginPage(object):
         if self.body_b == query:
             return True
 
-        if self.body_b == self.body_a and self.body_a != query:
-            return False
-
         if not fuzzy_equal(self.body_a, query, 0.60):
-            # They are really different!
+            # They are really different, no need to calculate diff()
             return False
 
         if self.diff_a_b is None:
             self.diff_a_b, _ = diff(self.body_a, self.body_b)
 
-        diff_a_query, _ = diff(self.body_a, query)
-        if fuzzy_equal(self.diff_a_b, diff_a_query, 0.9):
+        _, diff_query_a = diff(self.body_a, query)
+
+        # Had to add this in order to prevent issues with CSRF tokens, which
+        # might be part of the HTTP response body, are random (not removed by
+        # clean_body) and will "break" the diff
+        if len(diff_query_a) < 64:
+            return True
+
+        if fuzzy_equal(self.diff_a_b, diff_query_a, 0.9):
             return True
 
         return False
