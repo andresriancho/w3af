@@ -7,6 +7,7 @@ from data.errors import get_errors
 from data.consumer_join_times import get_consumer_join_times
 from data.scan_finished_in import get_scan_finished_in
 from data.crawling_stats import get_crawling_stats
+from data.bruteforce import get_bruteforce_data
 from data.http_requests import get_total_http_requests
 from data.http_errors import get_http_errors
 from data.dbms_queue_size_exceeded import get_dbms_queue_size_exceeded
@@ -62,6 +63,7 @@ def get_console_functions():
         get_dbms_queue_size_exceeded,
         #show_progress_delta,                   ######
         get_grep_plugin_performance,
+        get_bruteforce_data,
         get_parser_errors_summary,
         draw_parser_errors,
         get_parser_process_memory_limit_summary,
@@ -102,6 +104,7 @@ def get_json_functions():
         get_dbms_queue_size_exceeded,
         #show_progress_delta,       ######
         get_grep_plugin_performance,
+        get_bruteforce_data,
         get_parser_errors_summary,
         get_parser_errors_data,
         get_parser_process_memory_limit_summary,
