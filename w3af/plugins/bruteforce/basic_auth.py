@@ -20,11 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import base64
+import time
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
+from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.dc.headers import Headers
@@ -37,37 +39,45 @@ class basic_auth(BruteforcePlugin):
     Bruteforce HTTP basic authentication.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        BruteforcePlugin.__init__(self)
-
-    def audit(self, freq):
+    def audit(self, freq, debugging_id=None):
         """
         Tries to bruteforce a basic HTTP auth. This is not fast!
 
         :param freq: A FuzzableRequest
+        :param debugging_id: The ID to use in the logs to be able to track this
+                             call to audit(). Plugins need to send this ID to
+                             the ExtendedUrllib to get improved logging.
         """
         auth_url_list = [i.get_url().get_domain_path() for i in
-                                 kb.kb.get('http_auth_detect', 'auth')]
+                         kb.kb.get('http_auth_detect', 'auth')]
 
         domain_path = freq.get_url().get_domain_path()
-        if domain_path in auth_url_list and domain_path not in self._already_tested:
 
-                # Save it (we don't want dups!)
-                self._already_tested.append(domain_path)
+        if domain_path not in auth_url_list:
+            return
 
-                # Let the user know what we are doing
-                msg = 'Starting basic authentication bruteforce on URL: "%s".'
-                om.out.information(msg % domain_path)
+        if domain_path in self._already_tested:
+            return
 
-                up_generator = self._create_user_pass_generator(domain_path)
+        # Save it (we don't want dups!)
+        self._already_tested.append(domain_path)
 
-                self._bruteforce(domain_path, up_generator)
+        # Let the user know what we are doing
+        msg = 'Starting basic authentication bruteforce on "%s"'
+        om.out.information(msg % domain_path)
+        start = time.time()
 
-                om.out.information(
-                    'No more user/password combinations available.')
+        up_generator = self._create_user_pass_generator(domain_path)
 
-    def _brute_worker(self, url, combination):
+        self._bruteforce(domain_path, up_generator, debugging_id)
+
+        # Finished!
+        took_str = epoch_to_string(start)
+        msg = 'Finished basic authentication bruteforce on "%s" (spent %s)'
+        args = (domain_path, took_str)
+        om.out.information(msg % args)
+
+    def _brute_worker(self, url, combination, debugging_id):
         """
         Try a user/password combination with HTTP basic authentication against
         a specific URL.
@@ -81,44 +91,51 @@ class basic_auth(BruteforcePlugin):
         #
         # If one thread sees that we already bruteforced the access, the rest
         # will simply no-op
-        if not self._found or not self._stop_on_first:
-            user, passwd = combination
+        if self._found and self._stop_on_first:
+            return
 
-            raw_values = "%s:%s" % (user, passwd)
-            auth = 'Basic %s' % base64.b64encode(raw_values).strip()
-            headers = Headers([('Authorization', auth)])
+        user, passwd = combination
 
-            fr = FuzzableRequest(url, headers=headers, method='GET')
+        raw_values = '%s:%s' % (user, passwd)
+        auth = 'Basic %s' % base64.b64encode(raw_values).strip()
+        headers = Headers([('Authorization', auth)])
 
-            try:
-                response = self._uri_opener.send_mutant(fr, cache=False,
-                                                        grep=False)
-            except BaseFrameworkException, w3:
-                msg = 'Exception while brute-forcing basic authentication,'\
-                      ' error message: "%s".'
-                om.out.debug(msg % w3)
-            else:
-                # GET was OK
-                if response.get_code() != 401:
-                    self._found = True
-                    
-                    desc = 'Found authentication credentials to: "%s".'\
-                           ' A valid user and password combination is: %s/%s .'
-                    desc = desc % (url, user, passwd)
-                    v = Vuln('Guessable credentials', desc,
-                             severity.HIGH, response.id, self.get_name())
-                    v.set_url(url)
-                    
-                    v['user'] = user
-                    v['pass'] = passwd
-                    v['response'] = response
-                    v['request'] = fr
+        fr = FuzzableRequest(url, headers=headers, method='GET')
 
-                    kb.kb.append(self, 'auth', v)
-                    om.out.vulnerability(v.get_desc(),
-                                         severity=v.get_severity())
+        try:
+            response = self._uri_opener.send_mutant(fr,
+                                                    cache=False,
+                                                    grep=False,
+                                                    debugging_id=debugging_id)
+        except BaseFrameworkException, w3:
+            msg = ('Exception raised while brute-forcing basic authentication,'
+                   ' error message: "%s".')
+            om.out.debug(msg % w3)
+            return
 
-    def end(self):
+        # GET was OK
+        if response.get_code() != 401:
+            self._found = True
+
+            desc = ('Found authentication credentials to: "%s".'
+                    ' A valid user and password combination is: %s/%s .')
+            desc %= (url, user, passwd)
+            v = Vuln('Guessable credentials', desc,
+                     severity.HIGH, response.id, self.get_name())
+            v.set_url(url)
+
+            v['user'] = user
+            v['pass'] = passwd
+            v['response'] = response
+            v['request'] = fr
+
+            kb.kb.append(self, 'auth', v)
+            om.out.vulnerability(v.get_desc(),
+                                 severity=v.get_severity())
+
+            self._configure_credentials_in_opener()
+
+    def _configure_credentials_in_opener(self):
         """
         Configure the main urllib with the newly found credentials.
         """
@@ -127,12 +144,15 @@ class basic_auth(BruteforcePlugin):
                                                      v['user'],
                                                      v['pass'])
 
+    def end(self):
+        self._configure_credentials_in_opener()
+
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin bruteforces basic authentication logins.
+        This plugin bruteforces basic authentication endpoints.
 
         Nine configurable parameters exist:
             - usersFile
