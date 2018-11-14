@@ -20,14 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import time
+import uuid
 import urllib
 import socket
+import OpenSSL
 import urllib2
 import httplib
 import threading
 import traceback
 import functools
-import OpenSSL
 
 from contextlib import contextmanager
 from collections import deque
@@ -542,6 +543,9 @@ class ExtendedUrllib(object):
         """
         return self.settings.get_cookies()
 
+    def get_new_session(self):
+        return str(uuid.uuid4())
+
     def send_clean(self, mutant, debugging_id=None, grep=True):
         """
         Sends a mutant to the network (without using the cache) and then returns
@@ -599,7 +603,8 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True, error_handling=True, timeout=None,
+                    cookies=True, session=None,
+                    error_handling=True, timeout=None,
                     follow_redirects=False, use_basic_auth=True,
                     respect_size_limit=True,
                     debugging_id=None,
@@ -637,6 +642,7 @@ class ExtendedUrllib(object):
             'grep': grep,
             'cache': cache,
             'cookies': cookies,
+            'session': session,
             'error_handling': error_handling,
             'timeout': timeout,
             'follow_redirects': follow_redirects,
@@ -659,7 +665,8 @@ class ExtendedUrllib(object):
         return res
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
-            grep=True, cookies=True, respect_size_limit=True,
+            grep=True, cookies=True, session=None,
+            respect_size_limit=True,
             error_handling=True, timeout=None, follow_redirects=False,
             use_basic_auth=True, use_proxy=True, debugging_id=None,
             binary_response=False):
@@ -679,6 +686,7 @@ class ExtendedUrllib(object):
                         the defined timeout as the socket timeout value for this
                         request. The timeout is specified in seconds
         :param cookies: Send stored cookies in request (or not)
+        :param session: The browser session / cookiejar to use in this request
         :param follow_redirects: Follow 30x redirects (or not)
         :param debugging_id: A unique identifier for this call to audit()
 
@@ -699,7 +707,8 @@ class ExtendedUrllib(object):
         new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
 
-        req = HTTPRequest(uri, cookies=cookies, cache=cache, data=data,
+        req = HTTPRequest(uri, cookies=cookies, session=session,
+                          cache=cache, data=data,
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
@@ -713,7 +722,7 @@ class ExtendedUrllib(object):
             return self.send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
-             cookies=True, error_handling=True, timeout=None,
+             cookies=True, session=None, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
              debugging_id=None,
              respect_size_limit=None,
@@ -755,8 +764,8 @@ class ExtendedUrllib(object):
         new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
 
-        req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
-                          error_handling=error_handling, method='POST',
+        req = HTTPRequest(uri, data=data, cookies=cookies, session=session,
+                          cache=False, error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
                           use_basic_auth=use_basic_auth, use_proxy=use_proxy,
@@ -813,7 +822,7 @@ class ExtendedUrllib(object):
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         """
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
-                       cache=False, grep=True, cookies=True,
+                       cache=False, grep=True, cookies=True, session=None,
                        error_handling=True, timeout=None, use_basic_auth=True,
                        use_proxy=True,
                        follow_redirects=False,
@@ -839,7 +848,8 @@ class ExtendedUrllib(object):
             new_connection = True if timeout is not None else False
             host = uri.get_domain()
             timeout = uri_opener.get_timeout(host) if timeout is None else timeout
-            req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
+            req = HTTPRequest(uri, data, cookies=cookies, session=session,
+                              cache=cache,
                               method=method,
                               error_handling=error_handling,
                               retries=max_retries,

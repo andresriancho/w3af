@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.url.helpers import get_clean_body_impl, NO_CONTENT_MSG
+from w3af.core.data.url.helpers import get_clean_body_impl
 
 
 def get_clean_body(response):

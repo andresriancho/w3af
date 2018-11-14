@@ -373,13 +373,13 @@ class CoreStrategy(object):
                     # This consumer is saying that it doesn't have any
                     # pending or in progress work
                     finished.add(url_producer)
-                    om.out.debug('Producer %s has finished' % url_producer.get_name())
+                    om.out.debug('Producer %s has finished (empty queue)' % url_producer.get_name())
             else:
                 if result_item == POISON_PILL:
                     # This consumer is saying that it has finished, so we
                     # remove it from the list.
                     consumer_forced_end.add(url_producer)
-                    om.out.debug('Producer %s has finished' % url_producer.get_name())
+                    om.out.debug('Producer %s has finished (poison pill)' % url_producer.get_name())
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
                 else:
