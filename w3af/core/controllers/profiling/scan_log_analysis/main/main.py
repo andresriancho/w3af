@@ -28,6 +28,7 @@ from graphs.consumer_pool_size import draw_consumer_pool_size, get_consumer_pool
 from graphs.worker_pool_size import draw_worker_pool_size, get_worker_pool_size_data
 from graphs.timeout import draw_timeout, get_timeout_data
 from graphs.rtt_histogram import draw_rtt_histogram, get_rtt_histogram_data
+from graphs.rtt import draw_rtt, get_rtt_data
 from graphs.progress_delta import show_progress_delta
 from graphs.crawl_queue_size import draw_queue_size_crawl, get_queue_size_crawl_data
 from graphs.grep_queue_size import draw_queue_size_grep, get_queue_size_grep_data
@@ -49,6 +50,7 @@ def get_console_functions():
         get_http_errors,
         get_total_http_requests,
         draw_rtt_histogram,
+        draw_rtt,
         draw_timeout,
         draw_extended_urllib_error_rate,
         get_error_rate_summary,
@@ -90,6 +92,7 @@ def get_json_functions():
         get_http_errors,
         get_total_http_requests,
         get_rtt_histogram_data,
+        get_rtt_data,
         get_timeout_data,
         get_error_rate_data,
         get_error_rate_summary,
