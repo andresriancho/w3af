@@ -7,8 +7,10 @@ from data.errors import get_errors
 from data.consumer_join_times import get_consumer_join_times
 from data.scan_finished_in import get_scan_finished_in
 from data.crawling_stats import get_crawling_stats
+from data.bruteforce import get_bruteforce_data
 from data.http_requests import get_total_http_requests
 from data.http_errors import get_http_errors
+from data.dbms_queue_size_exceeded import get_dbms_queue_size_exceeded
 from data.grep_plugin_performance import get_grep_plugin_performance
 from data.known_problems import get_known_problems
 from data.freeze_locations import get_freeze_locations
@@ -26,6 +28,7 @@ from graphs.consumer_pool_size import draw_consumer_pool_size, get_consumer_pool
 from graphs.worker_pool_size import draw_worker_pool_size, get_worker_pool_size_data
 from graphs.timeout import draw_timeout, get_timeout_data
 from graphs.rtt_histogram import draw_rtt_histogram, get_rtt_histogram_data
+from graphs.rtt import draw_rtt, get_rtt_data
 from graphs.progress_delta import show_progress_delta
 from graphs.crawl_queue_size import draw_queue_size_crawl, get_queue_size_crawl_data
 from graphs.grep_queue_size import draw_queue_size_grep, get_queue_size_grep_data
@@ -47,6 +50,7 @@ def get_console_functions():
         get_http_errors,
         get_total_http_requests,
         draw_rtt_histogram,
+        draw_rtt,
         draw_timeout,
         draw_extended_urllib_error_rate,
         get_error_rate_summary,
@@ -58,8 +62,10 @@ def get_console_functions():
         draw_queue_size_grep,
         draw_queue_size_audit,
         draw_queue_size_crawl,
+        get_dbms_queue_size_exceeded,
         #show_progress_delta,                   ######
         get_grep_plugin_performance,
+        get_bruteforce_data,
         get_parser_errors_summary,
         draw_parser_errors,
         get_parser_process_memory_limit_summary,
@@ -86,6 +92,7 @@ def get_json_functions():
         get_http_errors,
         get_total_http_requests,
         get_rtt_histogram_data,
+        get_rtt_data,
         get_timeout_data,
         get_error_rate_data,
         get_error_rate_summary,
@@ -97,8 +104,10 @@ def get_json_functions():
         get_queue_size_grep_data,
         get_queue_size_audit_data,
         get_queue_size_crawl_data,
+        get_dbms_queue_size_exceeded,
         #show_progress_delta,       ######
         get_grep_plugin_performance,
+        get_bruteforce_data,
         get_parser_errors_summary,
         get_parser_errors_data,
         get_parser_process_memory_limit_summary,

@@ -74,6 +74,10 @@ def draw_connection_pool_wait(scan_log_filename, scan):
     fig.set_y_limits(min_=0)
     fig.color_mode = 'byte'
 
+    if len(connection_pool_waits) <= 2:
+        print('Not enough connection pool wait data to create histogram')
+        return
+
     print('Time waiting for available TCP/IP connection')
     print('')
     print(plotille.hist(connection_pool_waits, bins=25))

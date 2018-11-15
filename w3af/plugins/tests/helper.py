@@ -114,7 +114,7 @@ class PluginTest(unittest.TestCase):
         for http_method in all_methods:
             httpretty.register_uri(http_method,
                                    re.compile(re_str),
-                                   body=self.request_callback)
+                                   body=self.__internal_request_callback)
 
     def tearDown(self):
         self.w3afcore.quit()
@@ -196,7 +196,7 @@ class PluginTest(unittest.TestCase):
         self.assertEquals(set(found),
                           set(expected))
 
-    def request_callback(self, http_request, uri, headers):
+    def __internal_request_callback(self, http_request, uri, headers):
         self.request_callback_call_count += 1
         match = None
 
@@ -596,6 +596,9 @@ class MockResponse(object):
                     * Headers dict
                     * Response body string
         """
+        if callable(self.body):
+            return self.body(self, http_request, uri, response_headers)
+
         response_headers.update({'status': self.status})
         response_headers.update(self.headers)
 

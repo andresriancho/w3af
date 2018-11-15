@@ -99,7 +99,7 @@ class PreventMultipleThreads(Decorator):
     """
 
     # in seconds
-    TIMEOUT = 120
+    TIMEOUT = 240
 
     def __init__(self, _function):
         self._function = _function

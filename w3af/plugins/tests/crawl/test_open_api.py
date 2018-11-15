@@ -26,7 +26,8 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (IntParamQueryString,
                                                                               NestedModel,
-                                                                              PetstoreModel)
+                                                                              PetstoreModel,
+                                                                              PetstoreSimpleModel)
 
 
 class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
@@ -364,3 +365,71 @@ class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
         info_i = infos[0]
         self.assertEqual(info_i.get_name(), 'Open API specification found')
 
+
+class TestOpenAPIFuzzURLParts(PluginTest):
+
+    api_key = 'xxx'
+    target_url = 'http://petstore.swagger.io/'
+    vulnerable_url = 'http://petstore.swagger.io/api/pets/1%25272%25223'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api',
+
+                                               ('header_auth',
+                                                'X-API-Key: %s' % api_key,
+                                                PluginConfig.HEADER),
+
+                                               ),),
+                        'audit': (PluginConfig('sqli'),)}
+        }
+    }
+
+    class SQLIMockResponse(MockResponse):
+
+        def get_response(self, http_request, uri, response_headers):
+            header = http_request.headers.get('X-API-Key', '')
+            if header != TestOpenAPIFuzzURLParts.api_key:
+                return 401, response_headers, ''
+
+            response_body = 'Sunny outside'
+            if uri == TestOpenAPIFuzzURLParts.vulnerable_url:
+                response_body = 'PostgreSQL query failed:'
+
+            return self.status, response_headers, response_body
+
+    MOCK_RESPONSES = [MockResponse('http://petstore.swagger.io/openapi.json',
+                                   PetstoreSimpleModel().get_specification(),
+                                   content_type='application/json'),
+
+                      SQLIMockResponse(re.compile('http://petstore.swagger.io/api/pets.*'),
+                                       body='{}',
+                                       method='GET',
+                                       status=200),
+
+                      SQLIMockResponse(re.compile('http://petstore.swagger.io/api/pets.*'),
+                                       body='{}',
+                                       method='POST',
+                                       status=200)
+                      ]
+
+    def test_fuzzing_parameters_in_path(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        #
+        # Since we configured authentication we should only get one of the Info
+        #
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 1, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
+        vulns = self.kb.get('sqli', 'sqli')
+        self.assertEqual(len(vulns), 1)
+
+        vuln = vulns[0]
+        self.assertEquals(vuln.get_method(), 'GET')
+        self.assertEquals(vuln.get_url().url_string, TestOpenAPIFuzzURLParts.vulnerable_url)

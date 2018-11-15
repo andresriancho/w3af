@@ -18,6 +18,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
 import unittest
 
 from nose.plugins.attrib import attr
@@ -87,6 +88,21 @@ class TestDiskDict(unittest.TestCase):
         disk_dict['a'] = 'abc'
 
         self.assertEqual(len(disk_dict), 1)
+
+    def test_len_performance(self):
+        disk_dict = DiskDict()
+
+        for i in xrange(100000):
+            disk_dict[i] = i
+
+        start = time.time()
+
+        for i in xrange(10000):
+            len(disk_dict)
+
+        end = time.time()
+
+        self.assertLess(end - start, 10)
 
     def test_len_very_large_dict(self):
         disk_dict = DiskDict()
