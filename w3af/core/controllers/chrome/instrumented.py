@@ -274,20 +274,23 @@ class InstrumentedChrome(object):
 
         return result['result']['result']['value']
 
-    def get_js_variable_value(self, variable_name):
+    def _js_runtime_evaluate(self, expression, timeout=5):
         """
-        Read the value of a JS variable and return it. The value will be
-        deserialized into a Python object.
+        A wrapper around Runtime.evaluate that provides error handling and
+        timeouts.
 
-        :param variable_name: The variable name. See the unittest at
-                              test_load_page_read_js_variable to understand
-                              how to reference a variable, it might be counter-
-                              intuitive.
+        :param expression: The expression to evaluate
 
-        :return: The variable value as a python object
+        :param timeout: The time to wait until the expression is run (in seconds)
+
+        :return: The result of evaluating the expression, None if exceptions
+                 were raised in JS during the expression execution.
         """
-        result = self.chrome_conn.Runtime.evaluate(expression=variable_name,
-                                                   returnByValue=True)
+        result = self.chrome_conn.Runtime.evaluate(expression=expression,
+                                                   returnByValue=True,
+                                                   generatePreview=True,
+                                                   awaitPromise=True,
+                                                   timeout=timeout * 1000)
 
         # This is a rare case where the DOM is not present
         if result is None:
@@ -303,6 +306,20 @@ class InstrumentedChrome(object):
             return None
 
         return result['result']['result']['value']
+
+    def get_js_variable_value(self, variable_name):
+        """
+        Read the value of a JS variable and return it. The value will be
+        deserialized into a Python object.
+
+        :param variable_name: The variable name. See the unittest at
+                              test_load_page_read_js_variable to understand
+                              how to reference a variable, it might be counter-
+                              intuitive.
+
+        :return: The variable value as a python object
+        """
+        return self._js_runtime_evaluate(variable_name)
 
     def get_js_errors(self):
         """
@@ -325,7 +342,18 @@ class InstrumentedChrome(object):
 
     def dispatch_js_event(self, index):
         assert isinstance(index, int)
-        return self.get_js_variable_value('window._DOMAnalyzer.dispatchCustomEvent(%i)' % index)
+
+        result = self._js_runtime_evaluate('window._DOMAnalyzer.dispatchCustomEvent(%i)' % index)
+
+        if result is None:
+            raise EventTimeout('The event execution timed out')
+
+        elif result is False:
+            # This happens when the element associated with the event is not in
+            # the DOM anymore
+            raise EventException('The event was not run')
+
+        return True
 
     def get_console_messages(self):
         console_message = self.chrome_conn.read_console_message()
@@ -408,6 +436,14 @@ class InstrumentedChrome(object):
 
 
 class InstrumentedChromeException(Exception):
+    pass
+
+
+class EventTimeout(Exception):
+    pass
+
+
+class EventException(Exception):
     pass
 
 

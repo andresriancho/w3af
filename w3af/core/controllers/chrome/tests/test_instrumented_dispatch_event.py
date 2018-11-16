@@ -87,6 +87,29 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         # The event is still in there
         self.assertEqual(self.ic.get_js_event_listeners(), [[{}, u'click', {}, False]])
 
+    def test_dispatch_click_event_timeout(self):
+        self._unittest_setup(OnClickEventTimeoutRequestHandler)
+
+        # The event was recorded
+        self.assertEqual(self.ic.get_js_event_listeners(), [[{}, u'click', {}, False]])
+
+        dom_before = self.ic.get_dom()
+
+        # dispatch the event
+        self.ic.dispatch_js_event(0)
+
+        dom_after = self.ic.get_dom()
+
+        self.assertNotEqual(dom_after, dom_before)
+        self.assertIn('<td id="t2">three</td>', dom_after)
+        self.assertNotIn('<td id="t2">two</td>', dom_after)
+
+        self.assertIn('<td id="t2">two</td>', dom_before)
+        self.assertNotIn('<td id="t2">three</td>', dom_before)
+
+        # The event is still in there
+        self.assertEqual(self.ic.get_js_event_listeners(), [[{}, u'click', {}, False]])
+
 
 class OnClickEventRequestHandler(ExtendedHttpRequestHandler):
     # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
@@ -95,15 +118,49 @@ class OnClickEventRequestHandler(ExtendedHttpRequestHandler):
                             <tr><td id="t2">two</td></tr>
                         </table>
 
-                        <script>
+                        <script>                           
                             // Function to change the content of t2
                             function modifyText() {
-                              var t2 = document.getElementById("t2");
-                              if (t2.firstChild.nodeValue == "three") {
-                                t2.firstChild.nodeValue = "two";
-                              } else {
-                                t2.firstChild.nodeValue = "three";
-                              }
+                                var t2 = document.getElementById("t2");
+                                if (t2.firstChild.nodeValue == "three") {
+                                    t2.firstChild.nodeValue = "two";
+                                } else {
+                                    t2.firstChild.nodeValue = "three";
+                                }
+                            }
+
+                            // add event listener to table
+                            var el = document.getElementById("outside");
+                            el.addEventListener("click", modifyText, false);
+                        </script>
+                        ''')
+
+
+class OnClickEventTimeoutRequestHandler(ExtendedHttpRequestHandler):
+    # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
+    RESPONSE_BODY = ('''<table id="outside">
+                            <tr><td id="t1">one</td></tr>
+                            <tr><td id="t2">two</td></tr>
+                        </table>
+
+                        <script>
+                            function sleep(ms) {
+                                return new Promise(resolve => setTimeout(resolve, ms));
+                            }
+
+                            // Function to change the content of t2
+                            async function modifyText() {
+                                await sleep(1000 * 10);
+                                
+                                var t2 = document.getElementById("t2");
+                                if (t2.firstChild.nodeValue == "three") {
+                                    t2.firstChild.nodeValue = "two";
+                                } else {
+                                    t2.firstChild.nodeValue = "three";
+                                }
+                              
+                                // Added this long sleep here
+                                await sleep(1000 * 10);
                             }
 
                             // add event listener to table
