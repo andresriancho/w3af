@@ -24,6 +24,7 @@ import json
 import time
 import logging
 
+from collections import deque
 from PyChromeDevTools import GenericElement, ChromeInterface, TIMEOUT
 from websocket import WebSocketTimeoutException
 
@@ -115,6 +116,7 @@ class DebugChromeInterface(ChromeInterface):
                                                    auto_connect=auto_connect)
         self.debugging_id = debugging_id
         self.dialog_handler = dialog_handler
+        self.console = deque(maxlen=500)
 
     def set_debugging_id(self, debugging_id):
         self.debugging_id = debugging_id
@@ -255,6 +257,12 @@ class DebugChromeInterface(ChromeInterface):
                 self.Page.handleJavaScriptDialog(accept=dismiss,
                                                  promptText=response_message)
 
+            if message['method'] == 'Runtime.consoleAPICalled':
+                params = message['params']
+                _type = params['type']
+                args = params['args']
+                self.console.append(ConsoleMessage(_type, args))
+
         if 'error' in message:
             if 'message' in message['error']:
                 message = message['error']['message']
@@ -274,6 +282,20 @@ class DebugChromeInterface(ChromeInterface):
         else:
             om.out.debug(message)
 
+    def read_console_message(self):
+        """
+        Reads one console log message from the deque and returns it.
+
+        Note that by reading the message you are removing it from the
+        dequeue and won't be able to read the same message again.
+
+        :return: A ConsoleMessage instance, or None if the deque is empty
+        """
+        try:
+            return self.console.popleft()
+        except IndexError:
+            return None
+
     def __getattr__(self, attr):
         generic_element = DebugGenericElement(attr, self)
         self.__setattr__(attr, generic_element)
@@ -282,3 +304,44 @@ class DebugChromeInterface(ChromeInterface):
 
 class ChromeInterfaceException(Exception):
     pass
+
+
+class ConsoleMessage(object):
+    __slots__ = ('type', 'message', 'args')
+
+    def __init__(self, _type, args):
+        self.type = _type
+        self.args = args
+        self.message = self.get_message(args)
+
+    def get_message(self, args):
+        """
+        When console.log('hello world') is called, the event args looks like:
+
+            [{"type":"string","value":"hello world"}]
+
+        This method extracts the value only if the args list has one item
+        and the type is a string.
+
+        :param args: The arguments passed to console.log
+        :return: The message (if any) as a string
+        """
+        if not len(args) == 1:
+            return None
+
+        arg = args[0]
+
+        _type = arg.get('type', None)
+        if _type != 'string':
+            return None
+
+        value = arg.get('value', None)
+        if value is None:
+            return None
+
+        return value
+
+    def __str__(self):
+        return '<ConsoleMessage(%s): "%s">' % (self.type, self.message)
+
+    __repr__ = __str__

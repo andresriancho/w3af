@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import logging
 
 from contextlib import contextmanager
@@ -26,6 +27,8 @@ from requests import ConnectionError
 
 import w3af.core.controllers.output_manager as om
 
+from w3af import ROOT_PATH
+from w3af.core.controllers.tests.running_tests import is_running_tests
 from w3af.core.controllers.profiling.utils.ps_mem import get_memory_usage
 from w3af.core.controllers.chrome.devtools import DebugChromeInterface
 from w3af.core.controllers.chrome.process import ChromeProcess
@@ -47,6 +50,9 @@ class InstrumentedChrome(object):
     PROXY_HOST = '127.0.0.1'
     CHROME_HOST = '127.0.0.1'
     PAGE_LOAD_TIMEOUT = 20
+
+    JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
+    JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
 
     def __init__(self, uri_opener, http_traffic_queue):
         self.uri_opener = uri_opener
@@ -162,12 +168,43 @@ class InstrumentedChrome(object):
         # Disable downloads
         self.chrome_conn.Page.setDownloadBehavior(behavior='deny')
 
+        # Add JavaScript to be evaluated on every frame load
+        self.chrome_conn.Page.addScriptToEvaluateOnNewDocument(source=self.get_dom_analyzer_source())
+
+        # Handle alert and prompts
+        self.set_dialog_handler(self.dialog_handler)
+
         # Enable events
         self.chrome_conn.Page.enable()
         self.chrome_conn.Page.setLifecycleEventsEnabled(enabled=True)
 
-        # Handle alert and prompts
-        self.set_dialog_handler(self.dialog_handler)
+        # Enable console log events
+        # https://chromedevtools.github.io/devtools-protocol/tot/Runtime#event-consoleAPICalled
+        self.chrome_conn.Runtime.enable()
+
+    def get_dom_analyzer_source(self):
+        """
+        :return: The JS source code for the DOM analyzer. This is a helper script
+                 that runs on the browser side and extracts information for us.
+
+                 According to the `addScriptToEvaluateOnNewDocument` docs:
+
+                    Evaluates given script in every frame upon creation
+                    (before loading frame's scripts).
+
+                So we'll be able to override the addEventListener to analyze all
+                on* handlers.
+        """
+        source = []
+
+        if is_running_tests():
+            js_onerror_source = file(self.JS_ONERROR_HANDLER).read()
+            source.append(js_onerror_source)
+
+        js_dom_analyzer_source = file(self.JS_DOM_ANALYZER).read()
+        source.append(js_dom_analyzer_source)
+
+        return '\n\n'.join(source)
 
     def load_url(self, url):
         """
@@ -267,12 +304,31 @@ class InstrumentedChrome(object):
 
         return result['result']['result']['value']
 
-    def get_event_listeners(self):
-        #self.chrome_conn.DOM.getDocument(depth=1, pierce=False)
-        #self.chrome_conn.DOM.querySelectorAll(nodeId=3, selector='*')
-        self.chrome_conn.DOM.resolveNode(backendNodeId=4)
+    def get_js_errors(self):
+        """
+        This method should only be used during unit-testing, since it depends
+        on onerror.js being loaded in get_dom_analyzer_source()
 
-        return self.chrome_conn.DOMDebugger.getEventListeners()
+        :return: A list with all errors that appeared during the execution of
+                 the JS code in the Chrome browser
+        """
+        return self.get_js_variable_value('window.errors')
+
+    def get_js_set_timeouts(self):
+        return self.get_js_variable_value('window._DOMAnalyzer.set_timeouts')
+
+    def get_js_set_intervals(self):
+        return self.get_js_variable_value('window._DOMAnalyzer.set_intervals')
+
+    def get_js_event_listeners(self):
+        return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
+
+    def get_console_messages(self):
+        console_message = self.chrome_conn.read_console_message()
+
+        while console_message is not None:
+            yield console_message
+            console_message = self.chrome_conn.read_console_message()
 
     def terminate(self):
         om.out.debug('Terminating %s (did: %s)' % (self, self.debugging_id))

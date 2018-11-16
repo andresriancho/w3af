@@ -41,7 +41,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     SERVER_HOST = '127.0.0.1'
     SERVER_ROOT_PATH = '/tmp/'
 
-    def unittest_setup(self, request_handler_klass):
+    def _unittest_setup(self, request_handler_klass):
         self.uri_opener = ExtendedUrllib()
         self.http_traffic_queue = Queue.Queue()
 
@@ -64,14 +64,50 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         while not self.http_traffic_queue.empty():
             self.http_traffic_queue.get()
 
+        self.assertEqual(self.ic.get_js_errors(), [])
+
         self.ic.terminate()
         self.server.shutdown()
         self.server_thread.join()
 
-    def test_no_event_handlers_empty(self):
-        self.unittest_setup(LinkTagRequestHandler)
+    def _print_all_console_messages(self):
+        for console_message in self.ic.get_console_messages():
+            print(console_message)
 
-        self.assertEqual(len(self.ic.get_event_listeners()), [])
+    def test_no_event_handlers_empty(self):
+        self._unittest_setup(EmptyRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [])
+
+    def test_no_event_handlers_link(self):
+        self._unittest_setup(LinkTagRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [])
+
+    def test_window_settimeout(self):
+        self._unittest_setup(WindowSetTimeoutRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [{u'0': {}, u'1': 3000}])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [])
+
+    def test_settimeout(self):
+        self._unittest_setup(SetTimeoutRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [{u'0': {}, u'1': 3000}])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [])
+
+    def test_setinterval(self):
+        self._unittest_setup(WindowSetIntervalRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [{u'0': {}, u'1': 3000}])
+        self.assertEqual(self.ic.get_js_event_listeners(), [])
 
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
@@ -80,3 +116,21 @@ class EmptyRequestHandler(ExtendedHttpRequestHandler):
 
 class LinkTagRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = '<a href="/">click</a>'
+
+
+class WindowSetTimeoutRequestHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = ('<script>'
+                     '    window.setTimeout(function(){ console.log("Hello"); }, 3000);'
+                     '</script>')
+
+
+class SetTimeoutRequestHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = ('<script>'
+                     '    setTimeout(function(){ console.log("Hello"); }, 3000);'
+                     '</script>')
+
+
+class WindowSetIntervalRequestHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = ('<script>'
+                     '    window.setInterval(function(){ console.log("Hello"); }, 3000);'
+                     '</script>')
