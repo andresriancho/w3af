@@ -133,6 +133,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         event.view     = window;
 
         element.dispatchEvent(event);
+
+        return true;
     },
 
 };
