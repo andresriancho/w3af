@@ -237,6 +237,36 @@ class InstrumentedChrome(object):
 
         return result['result']['result']['value']
 
+    def get_js_variable_value(self, variable_name):
+        """
+        Read the value of a JS variable and return it. The value will be
+        deserialized into a Python object.
+
+        :param variable_name: The variable name. See the unittest at
+                              test_load_page_read_js_variable to understand
+                              how to reference a variable, it might be counter-
+                              intuitive.
+
+        :return: The variable value as a python object
+        """
+        result = self.chrome_conn.Runtime.evaluate(expression=variable_name,
+                                                   returnByValue=True)
+
+        # This is a rare case where the DOM is not present
+        if result is None:
+            return None
+
+        if 'result' not in result:
+            return None
+
+        if 'result' not in result['result']:
+            return None
+
+        if 'value' not in result['result']['result']:
+            return None
+
+        return result['result']['result']['value']
+
     def get_event_listeners(self):
         #self.chrome_conn.DOM.getDocument(depth=1, pierce=False)
         #self.chrome_conn.DOM.querySelectorAll(nodeId=3, selector='*')

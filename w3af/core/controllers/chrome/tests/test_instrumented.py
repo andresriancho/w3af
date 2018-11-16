@@ -194,3 +194,51 @@ class TestInstrumentedChromeWithDialogDismiss(unittest.TestCase):
 class CreateAlertHandler(ExtendedHttpRequestHandler):
 
     RESPONSE_BODY = '<script>alert(1);</script>'
+
+
+class TestInstrumentedChromeReadJSVariables(unittest.TestCase):
+
+    SERVER_HOST = '127.0.0.1'
+    SERVER_ROOT_PATH = '/tmp/'
+
+    def setUp(self):
+        self.uri_opener = ExtendedUrllib()
+        self.http_traffic_queue = Queue.Queue()
+
+        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
+                                                webroot=self.SERVER_ROOT_PATH,
+                                                handler=JSVariablesHandler)
+
+        self.server_thread = t
+        self.server = s
+        self.server_port = p
+
+        self.ic = InstrumentedChrome(self.uri_opener, self.http_traffic_queue)
+
+    def tearDown(self):
+        while not self.http_traffic_queue.empty():
+            self.http_traffic_queue.get()
+
+        self.ic.terminate()
+        self.server.shutdown()
+        self.server_thread.join()
+
+    def test_load_page_read_js_variable(self):
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        self.ic.load_url(url)
+        self.ic.wait_for_load()
+
+        # all of these work
+        self.assertEqual(self.ic.get_js_variable_value('foo'), {'bar': 'baz'})
+        self.assertEqual(self.ic.get_js_variable_value('window.window.foo'), {'bar': 'baz'})
+        self.assertEqual(self.ic.get_js_variable_value('window.foo'), {'bar': 'baz'})
+
+
+class JSVariablesHandler(ExtendedHttpRequestHandler):
+
+    RESPONSE_BODY = ('<script>'
+                     '    window.foo = {'
+                     '        "bar" : "baz"'
+                     '    }'
+                     '</script>')
