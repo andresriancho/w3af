@@ -436,28 +436,6 @@ class TestOpenAPIMain(unittest.TestCase):
         http_resp = self.generate_response('"', 'image/jpeg')
         self.assertFalse(OpenAPI.is_valid_json_or_yaml(http_resp))
 
-    def test_no_forcing_fuzzing_auth_headers(self):
-        specification_as_string = PetstoreModel().get_specification()
-        http_response = self.generate_response(specification_as_string)
-        parser = OpenAPI(http_response)
-        parser.parse()
-        api_calls = parser.get_api_calls()
-
-        self.assertTrue(len(api_calls) > 0)
-        found_api_key = False
-        for fuzzable_request in api_calls:
-            fuzzing_headers = fuzzable_request.get_force_fuzzing_headers()
-            self.assertNotIn('Authorization', fuzzing_headers)
-            if found_api_key:
-                self.assertNotIn('api_key', fuzzing_headers)
-            else:
-                found_api_key = 'api_key' in fuzzing_headers
-
-        # Make sure that we forced to fuzz 'api_key' header once.
-        self.assertTrue(found_api_key)
-        self.assertEquals(1, len(parser.fuzzed_auth_headers))
-        self.assertIn('api_key', parser.fuzzed_auth_headers)
-
     @staticmethod
     def generate_response(specification_as_string, content_type='application/json'):
         url = URL('http://www.w3af.com/swagger.json')
