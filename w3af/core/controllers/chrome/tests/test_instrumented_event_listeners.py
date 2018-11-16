@@ -21,19 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import Queue
 import unittest
 
-import w3af.core.data.kb.config as cf
-
-from w3af.core.controllers.output_manager import manager
-from w3af.core.controllers.threads.threadpool import Pool
-from w3af.core.controllers.chrome.crawler import ChromeCrawler
 from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
-from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.db.variant_db import PATH_MAX_VARIANTS
-from w3af.core.data.parsers.doc.url import URL
-from w3af.plugins.crawl.web_spider import web_spider
 
 
 class TestChromeCrawlerGetEventListeners(unittest.TestCase):
@@ -109,6 +100,27 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         self.assertEqual(self.ic.get_js_set_intervals(), [{u'0': {}, u'1': 3000}])
         self.assertEqual(self.ic.get_js_event_listeners(), [])
 
+    def test_onclick_event_listener(self):
+        self._unittest_setup(OnClickEventRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [[{}, u'click', {}, False]])
+
+    def test_onclick_anonymous_event_listener(self):
+        self._unittest_setup(OnClickEventAnonymousRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [[{}, u'click', {}, False]])
+
+    def test_onclick_arrow_event_listener(self):
+        self._unittest_setup(OnClickEventArrowRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [[{}, u'click', {}, False]])
+
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = ''
@@ -134,3 +146,71 @@ class WindowSetIntervalRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = ('<script>'
                      '    window.setInterval(function(){ console.log("Hello"); }, 3000);'
                      '</script>')
+
+
+class OnClickEventRequestHandler(ExtendedHttpRequestHandler):
+    # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
+    RESPONSE_BODY = ('''<table id="outside">
+                            <tr><td id="t1">one</td></tr>
+                            <tr><td id="t2">two</td></tr>
+                        </table>
+                        
+                        <script>
+                            // Function to change the content of t2
+                            function modifyText() {
+                              var t2 = document.getElementById("t2");
+                              if (t2.firstChild.nodeValue == "three") {
+                                t2.firstChild.nodeValue = "two";
+                              } else {
+                                t2.firstChild.nodeValue = "three";
+                              }
+                            }
+                            
+                            // add event listener to table
+                            var el = document.getElementById("outside");
+                            el.addEventListener("click", modifyText, false);
+                        </script>
+                        ''')
+
+
+class OnClickEventAnonymousRequestHandler(ExtendedHttpRequestHandler):
+    # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Event_listener_with_anonymous_function
+    RESPONSE_BODY = ('''<table id="outside">
+                            <tr><td id="t1">one</td></tr>
+                            <tr><td id="t2">two</td></tr>
+                        </table>
+
+                        <script>
+                            // Function to change the content of t2
+                            function modifyText(new_text) {
+                              var t2 = document.getElementById("t2");
+                              t2.firstChild.nodeValue = new_text;    
+                            }
+                             
+                            // Function to add event listener to table
+                            var el = document.getElementById("outside");
+                            el.addEventListener("click", function(){modifyText("four")}, false);
+                        </script>
+                        ''')
+
+
+class OnClickEventArrowRequestHandler(ExtendedHttpRequestHandler):
+    # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Event_listener_with_an_arrow_function
+    RESPONSE_BODY = ('''<table id="outside">
+                            <tr><td id="t1">one</td></tr>
+                            <tr><td id="t2">two</td></tr>
+                        </table>
+
+                        <script>
+                            // Function to change the content of t2
+                            function modifyText(new_text) {
+                              var t2 = document.getElementById("t2");
+                              t2.firstChild.nodeValue = new_text;    
+                            }
+                             
+                            // Add event listener to table with an arrow function
+                            var el = document.getElementById("outside");
+                            el.addEventListener("click", () => { modifyText("four"); }, false);
+                        </script>
+                        ''')
+
