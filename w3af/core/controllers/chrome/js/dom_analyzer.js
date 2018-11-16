@@ -106,6 +106,35 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         _DOMAnalyzer.event_listeners.push([element, type, listener, useCapture]);
     },
 
+    /**
+     * Dispatch an event
+     *
+     * https://developer.mozilla.org/en-US/docs/Web/API/Document/createEvent
+     * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent
+     */
+    dispatchCustomEvent: function (index) {
+
+        // TODO: For now we use the index in event_listeners
+        [element, type, listener, useCapture] = _DOMAnalyzer.event_listeners[index];
+
+        // The element might have been removed from the DOM
+        if( !element ) return false;
+
+        // Do not dispatch events to hidden elements. A user would not be able
+        // to do this with a browser
+        if( element.offsetWidth <= 0 && element.offsetHeight <= 0 ) return false;
+
+        let event = document.createEvent("Events");
+        event.initEvent(type, true, true);
+        event.altKey   = false;
+        event.shiftKey = false;
+        event.ctrlKey  = false;
+        event.metaKey  = false;
+        event.view     = window;
+
+        element.dispatchEvent(event);
+    },
+
 };
 
 _DOMAnalyzer.initialize();

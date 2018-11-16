@@ -323,6 +323,10 @@ class InstrumentedChrome(object):
     def get_js_event_listeners(self):
         return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
 
+    def dispatch_js_event(self, index):
+        assert isinstance(index, int)
+        return self.get_js_variable_value('window._DOMAnalyzer.dispatchCustomEvent(%i)' % index)
+
     def get_console_messages(self):
         console_message = self.chrome_conn.read_console_message()
 

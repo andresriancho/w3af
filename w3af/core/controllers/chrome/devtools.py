@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import json
 import time
+import pprint
 import logging
 
 from collections import deque
@@ -257,7 +258,7 @@ class DebugChromeInterface(ChromeInterface):
                 self.Page.handleJavaScriptDialog(accept=dismiss,
                                                  promptText=response_message)
 
-            if message['method'] == 'Runtime.consoleAPICalled':
+            elif message['method'] == 'Runtime.consoleAPICalled':
                 params = message['params']
                 _type = params['type']
                 args = params['args']
@@ -342,6 +343,7 @@ class ConsoleMessage(object):
         return value
 
     def __str__(self):
-        return '<ConsoleMessage(%s): "%s">' % (self.type, self.message)
+        data = self.message if self.message is not None else '\n%s' % pprint.pformat(self.args, indent=4)
+        return '<ConsoleMessage(%s): "%s">' % (self.type, data)
 
     __repr__ = __str__
