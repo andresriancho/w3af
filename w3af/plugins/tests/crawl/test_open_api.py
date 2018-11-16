@@ -30,6 +30,10 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (In
                                                                               PetstoreSimpleModel)
 
 
+def by_path(fra, frb):
+    return cmp(fra.get_url().url_string, frb.get_url().url_string)
+
+
 class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
 
     target_url = 'http://w3af.org/'
@@ -75,9 +79,6 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
         fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/swagger.json', '/')]
 
         # Order them to be able to easily assert things
-        def by_path(fra, frb):
-            return cmp(fra.get_url().url_string, frb.get_url().url_string)
-
         fuzzable_requests.sort(by_path)
 
         #
@@ -180,9 +181,6 @@ class TestOpenAPINestedModelSpec(PluginTest):
         fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/openapi.json', '/')]
 
         # Order them to be able to easily assert things
-        def by_path(fra, frb):
-            return cmp(fra.get_url().url_string, frb.get_url().url_string)
-
         fuzzable_requests.sort(by_path)
 
         self.assertEqual(len(fuzzable_requests), 1)
