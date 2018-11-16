@@ -24,6 +24,8 @@ import yaml
 
 from yaml import load
 
+import w3af.core.data.kb.knowledge_base as kb
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
@@ -67,7 +69,6 @@ class OpenAPI(BaseParser):
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
-        self.fuzzed_auth_headers = []
 
     @staticmethod
     def content_type_match(http_resp):
@@ -147,7 +148,6 @@ class OpenAPI(BaseParser):
         specification_handler = SpecificationHandler(self.get_http_response(),
                                                      self.no_validation)
 
-        self.fuzzed_auth_headers = []
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
@@ -180,18 +180,29 @@ class OpenAPI(BaseParser):
                 if not self._should_audit(fuzzable_request):
                     continue
 
+                operation = data[4]
+                headers = self._get_parameter_headers(operation)
                 if self.discover_fuzzable_headers:
-                    operation = data[4]
-                    headers = self._get_parameter_headers(operation)
                     fuzzable_request.set_force_fuzzing_headers(headers)
+
+                # TODO move it to a separate method
+                # TODO should it expect multiple specs?
+                auth_headers = kb.kb.raw_read('http_data', 'auth_headers')
+                if not isinstance(auth_headers, set):
+                    auth_headers = set()
+
+                for header in headers:
+                    if OpenAPI._is_auth_header(header, operation.swagger_spec):
+                        auth_headers.add(header)
+
+                kb.kb.raw_write('http_data', 'auth_headers', auth_headers)
 
                 self.api_calls.append(fuzzable_request)
 
-    def _get_parameter_headers(self, operation):
+    @staticmethod
+    def _get_parameter_headers(operation):
         """
         Looks for all parameters which are passed to the endpoint via headers.
-        The method filters out headers with auth info
-        which are defined in 'securityDefinitions' section of the API spec.
 
         :param operation: An instance of Operation class
                           which represents the API endpoint.
@@ -200,30 +211,16 @@ class OpenAPI(BaseParser):
         parameter_headers = set()
         for parameter_name, parameter in operation.params.iteritems():
             if parameter.location == 'header':
-
-                # Fuzz auth headers only once.
-                if self._is_already_fuzzed_auth_header(parameter.name, operation.swagger_spec):
-                    continue
-
                 parameter_headers.add(parameter.name)
                 om.out.debug('Found a parameter header for %s endpoint: %s'
                              % (operation.path_name, parameter.name))
 
         return list(parameter_headers)
 
-    def _is_already_fuzzed_auth_header(self, name, spec):
-        if not self._is_auth_header(name, spec):
-            return False
-
-        if name in self.fuzzed_auth_headers:
-            return True
-
-        self.fuzzed_auth_headers.append(name)
-        return False
-
     @staticmethod
     def _is_auth_header(name, spec):
         """
+        TODO
         :param name: Header name.
         :param spec: API specification.
         :return: True if this is an auth header, False otherwise.
