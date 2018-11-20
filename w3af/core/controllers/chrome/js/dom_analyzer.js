@@ -117,12 +117,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         // TODO: For now we use the index in event_listeners
         [element, type, listener, useCapture] = _DOMAnalyzer.event_listeners[index];
 
-        // The element might have been removed from the DOM
-        if( !element ) return false;
-
-        // Do not dispatch events to hidden elements. A user would not be able
-        // to do this with a browser
-        if( element.offsetWidth <= 0 && element.offsetHeight <= 0 ) return false;
+        if (_DOMAnalyzer.elementIsHidden(element)) return false;
 
         let event = document.createEvent("Events");
         event.initEvent(type, true, true);
@@ -135,6 +130,40 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         element.dispatchEvent(event);
 
         return true;
+    },
+
+    /**
+     * Element is hidden
+     *
+     */
+    elementIsHidden: function(element) {
+        // The element might have been removed from the DOM
+        if( !element ) return true;
+
+        // The element is not in the user's view
+        if( element.offsetWidth <= 0 && element.offsetHeight <= 0 ) return true;
+
+        return false;
+    },
+
+    /**
+     * Get elements with events
+     *
+     */
+    getElementsWithEventHandlers: function (index) {
+
+        let all_elements = document.getElementsByTagName("*");
+
+        for(let i = 0; i < length; i++) {
+            let element = all_elements[i];
+
+            if (_DOMAnalyzer.elementIsHidden(element)) return false;
+
+            var tag_name = element.tagName.toLowerCase();
+
+        }
+
+
     },
 
 };
