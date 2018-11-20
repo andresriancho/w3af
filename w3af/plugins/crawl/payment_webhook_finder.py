@@ -1,5 +1,5 @@
 """
-url_payment_finder.py
+payment_webhook_finder.py
 
 Copyright 2006 Andres Riancho
 
@@ -32,9 +32,9 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-class url_payment_finder(CrawlPlugin):
+class payment_webhook_finder(CrawlPlugin):
     """
-    Try to find hidden gateway payment confirmation page.
+    Find hidden payment gateway webhooks.
     :author: Coiffey Pierre (pierre.coiffey@gmail.com)
     """
     _dirs = ('/', '/inc/', '/include/', '/include/pay/', '/includes/', '/includes/pay/', '/lib/',
@@ -55,9 +55,6 @@ class url_payment_finder(CrawlPlugin):
 
         CrawlPlugin.__init__(self)
 
-        self._headers = None
-        self._first_time = True
-        self._fuzz_images = False
         self._seen = ScalableBloomFilter()
 
     def crawl(self, fuzzable_request):
@@ -138,7 +135,7 @@ class url_payment_finder(CrawlPlugin):
                  as parameter.
 
         >>> from w3af.core.data.parsers.doc.url import URL
-        >>> u = url_payment_finder()
+        >>> u = payment_webhook_finder()
         >>> url = URL( 'http://www.w3af.com/' )
         >>> list(u._mutate_path(url))
         []
@@ -182,9 +179,6 @@ class url_payment_finder(CrawlPlugin):
             self._head = True
         else:
             self._head = False
-
-    def _head_enabled(self):
-        return self._head
 
     def get_plugin_deps(self):
         """
