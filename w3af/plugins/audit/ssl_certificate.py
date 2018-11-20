@@ -19,14 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import socket
-import ssl
 import re
 import os
+import ssl
+import socket
+import OpenSSL
 
-from time import gmtime
-from datetime import date
 from pprint import pformat
+from datetime import date, datetime
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
@@ -36,6 +36,8 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
 
@@ -65,230 +67,335 @@ class ssl_certificate(AuditPlugin):
         :param debugging_id: A unique identifier for this call to audit()
         """
         url = freq.get_url()
-        domain = url.get_domain()
+        port = url.get_port()
 
-        if 'http' == url.get_protocol().lower():
+        # openssl requires the domain to be a string, and does not perform any
+        # automatic type casting from unicode
+        domain = str(url.get_domain())
+
+        if url.get_protocol().lower() == 'http':
             return
         
         with self._plugin_lock:
 
-            if not domain in self._already_tested:
-                self._already_tested.add(domain)
-                
-                self._analyze_ssl_cert(url, domain)
+            if domain in self._already_tested:
+                return
 
-    def _analyze_ssl_cert(self, url, domain):
+            self._already_tested.add(domain)
+
+            # Now perform the security analysis
+            self._allows_ssl_v2(domain, port)
+            self._analyze_ssl_cert(domain, port)
+
+    def _analyze_ssl_cert(self, domain, port):
         """
         Analyze the SSL cert and store the information in the KB.
         """
-        self._is_ssl_v2(url, domain)
-        self._is_trusted_cert(url, domain)
-        self._cert_expiration_analysis(url, domain)
-        self._ssl_info_to_kb(url, domain)
-        
-    def _is_ssl_v2(self, url, domain):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # SSLv2 check
-        # NB! From OpenSSL lib ver >= 1.0 there is no support for SSLv2
-        try:
-            # pylint: disable=E1101
-            ssl_sock = ssl.wrap_socket(s,
-                                       cert_reqs=ssl.CERT_NONE,
-                                       ssl_version=ssl.PROTOCOL_SSLv2)
-            ssl_sock.connect((domain, url.get_port()))
-            # pylint: enable=E1101
-        except Exception, e:
-            pass
-        else:
-            desc = 'The target host "%s" has SSL version 2 enabled which is'\
-                   ' known to be insecure.'
-            desc = desc % domain
-            
-            v = Vuln('Insecure SSL version', desc,
-                     severity.LOW, 1, self.get_name())
+        self._is_trusted_cert(domain, port)
 
-            v.set_url(url)
+        try:
+            cert, cert_der, cipher = self._get_ssl_cert(domain, port)
+        except Exception, e:
+            om.out.debug('Failed to retrieve SSL certificate: "%s"' % e)
+        else:
+            self._cert_expiration_analysis(domain, port, cert, cert_der, cipher)
+            self._ssl_info_to_kb(domain, port, cert, cert_der, cipher)
+        
+    def _allows_ssl_v2(self, domain, port):
+        """
+        Check if the server allows SSLv2 connections
+
+        :param domain: the domain to connect to
+        :return: None, save any new vulnerabilities to the KB
+        """
+        # From OpenSSL lib ver >= 1.0 there is no support for SSLv2, so maybe
+        # we want to start a connection using that protocol and it fails from
+        # our side
+        if getattr(ssl, 'PROTOCOL_SSLv2', None) is None:
+            om.out.debug('There is no SSLv2 protocol support in the client.'
+                         ' Will not be able to verify if the remote end has'
+                         ' SSLv2 support.')
+            return
+
+        def on_success(domain, port, ssl_sock, result):
+            desc = ('The target host "%s" has SSL version 2 enabled which is'
+                    ' known to be insecure.')
+            desc %= domain
+
+            v = Vuln('Insecure SSL version',
+                     desc,
+                     severity.LOW,
+                     1,
+                     self.get_name())
+            v.set_url(self._url_from_parts(domain, port))
 
             self.kb_append(self, 'ssl_v2', v)
 
-    def _is_trusted_cert(self, url, domain):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            ssl_sock = ssl.wrap_socket(s,
-                                       ca_certs=self._ca_file,
-                                       cert_reqs=ssl.CERT_REQUIRED,
-                                       ssl_version=ssl.PROTOCOL_SSLv23)
-            ssl_sock.connect((domain, url.get_port()))
-            match_hostname(ssl_sock.getpeercert(), domain)
-        except (ssl.SSLError, CertificateError), e:
-            invalid_cert = isinstance(e, CertificateError)
-            details = str(e)
+        self._ssl_connect_specific_protocol(domain,
+                                            port,
+                                            ssl_version=ssl.PROTOCOL_SSLv2,
+                                            on_success=on_success)
 
-            if isinstance(e, ssl.SSLError):
-                err_chunks = details.split(':')
-                if len(err_chunks) == 7:
-                    details = err_chunks[5] + ':' + err_chunks[6]
-                if 'CERTIFICATE' in details:
-                    invalid_cert = True
+    def _url_from_parts(self, domain, port):
+        return URL('https://%s:%s/' % (domain, port))
 
-            if invalid_cert:
-                desc = ('"%s" uses an invalid security certificate.'
-                        ' The certificate is not trusted because: "%s".')
-                desc %= (domain, details)
-                
-                v = Vuln('Self-signed SSL certificate', desc,
-                         severity.LOW, 1, self.get_name())
+    def _is_trusted_cert(self, domain, port):
+        """
+        Check if the server uses a trusted certificate
 
-                tag = 'invalid_ssl_cert'
-            else:
-                # We use here Info instead of Vuln because it is too common case
-                desc = ('"%s" has an invalid SSL configuration.'
-                        ' Technical details: "%s"')
-                desc %= (domain, details)
-                
-                v = Info('Invalid SSL connection', desc, 1, self.get_name())
+        :param domain: the domain to connect to
+        :param port: the port to connect to
+        :return: None, save any new vulnerabilities to the KB
+        """
+        def on_success(_domain, _port, ssl_sock, result):
+            """
+            OpenSSL's certificate validation was successful, but we still need
+            to call match_hostname()
+            """
+            try:
+                peer_cert = ssl_sock.getpeercert()
+            except ssl.SSLError, ssl_error:
+                om.out.debug('Failed to retrieve the peer certificate: "%s"' % ssl_error)
+                return
 
-                tag = 'invalid_ssl_connect'
+            if not peer_cert:
+                om.out.debug('The peer cert is empty: %r' % peer_cert)
+                return
 
-            v.set_url(url)
+            try:
+                match_hostname(peer_cert, _domain)
+            except CertificateError, cve:
+                self._handle_certificate_validation_error(cve, _domain, _port)
+
+        self._ssl_connect(domain,
+                          port,
+                          cert_reqs=ssl.CERT_REQUIRED,
+                          on_certificate_validation_error=self._handle_certificate_validation_error,
+                          on_success=on_success)
+
+    def _get_procotols(self):
+        """
+        Not all python versions support all SSL protocols.
+        :return: The protocol constants that exist in this python version
+        """
+        proto_names = ('PROTOCOL_SSLv3',
+                       'PROTOCOL_TLSv1',
+                       'PROTOCOL_SSLv23',
+                       'PROTOCOL_TLSv1_1',
+                       'PROTOCOL_TLSv1_2',
+                       'PROTOCOL_SSLv2')
+
+        for ssl_proto_name in proto_names:
+            proto_const = getattr(ssl, ssl_proto_name, None)
+            if proto_const is not None:
+                yield proto_const
+
+    def _ssl_connect(self,
+                     domain,
+                     port,
+                     ca_certs=None,
+                     cert_reqs=ssl.CERT_NONE,
+                     on_certificate_validation_error=None,
+                     on_success=None,
+                     on_exception=None):
+        """
+        Connect to domain and port negotiating the SSL / TLS protocol
+
+        :param domain: the domain to connect to
+        :param port: the port to connect to
+        :param on_certificate_validation_error: Handler for certificate validation errors
+        :param on_success: Handler for successful connections
+        :param on_exception: Handler for other exceptions
+        :return: None if there was an error (handle those with on_*). A Result
+                 instance as created by on_success() otherwise.
+        """
+        connect = self._ssl_connect_specific_protocol
+        ca_certs = self._ca_file if ca_certs is None else ca_certs
+
+        for protocol in self._get_procotols():
+            om.out.debug('Trying to connect with SSL protocol %s' % protocol)
             
-            self.kb_append(self, tag, v)
+            try:
+                result = connect(domain,
+                                 port,
+                                 ssl_version=protocol,
+                                 ca_certs=ca_certs,
+                                 cert_reqs=cert_reqs,
+                                 on_certificate_validation_error=on_certificate_validation_error,
+                                 on_success=on_success,
+                                 on_exception=on_exception)
+            except (OpenSSL.SSL.Error, ssl.SSLError):
+                # The protocol failed, try the next one
+                continue
+            else:
+                if result is not None:
+                    return result
+
+    def _ssl_connect_specific_protocol(self,
+                                       domain,
+                                       port,
+                                       ssl_version=ssl.PROTOCOL_SSLv23,
+                                       cert_reqs=ssl.CERT_NONE,
+                                       ca_certs=None,
+                                       on_certificate_validation_error=None,
+                                       on_success=None,
+                                       on_exception=None):
+        """
+        Connect to domain and port using a specific SSL / TLS protocol
+
+        :param domain: the domain to connect to
+        :param port: the port to connect to
+        :param on_certificate_validation_error: Handler for certificate validation errors
+        :param on_success: Handler for successful connections
+        :param on_exception: Handler for other exceptions
+        :return: An OpenSSL socket instance if the connection was successfully
+                 created, if you need to use the ssl_sock do it in on_success
+        """
+        ca_certs = self._ca_file if ca_certs is None else ca_certs
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        try:
+            s.connect((domain, port))
+        except socket.error, se:
+            msg = 'Failed to connect to %s:%s. Socket error: "%s"'
+            args = (domain, port, se)
+            om.out.debug(msg % args)
+            return
+
+        try:
+            ssl_sock = wrap_socket(s,
+                                   server_hostname=domain,
+                                   ca_certs=ca_certs,
+                                   cert_reqs=cert_reqs,
+                                   ssl_version=ssl_version)
+        except (OpenSSL.SSL.Error, ssl.SSLError) as ssl_error:
+            # When a certificate validation error is found, call the
+            # handler (if any) and return. The other errors, like connection
+            # timeouts, SSL protocol handshake errors, etc. should raise
+            # an exception
+            if self._is_certificate_validation_error(ssl_error):
+                if on_certificate_validation_error:
+                    on_certificate_validation_error(ssl_error, domain, port)
+                return Result()
+            else:
+                # Raise SSL errors
+                raise
 
         except Exception, e:
-            om.out.debug(str(e))
+            msg = 'Unhandled %s exception in _ssl_connect_specific_protocol(): "%s"'
+            args = (e.__class__.__name__, e)
+            om.out.debug(msg % args)
 
-    def _get_cert(self, url, domain):
+            if on_exception:
+                on_exception(domain, port, e)
+        else:
+            result = Result()
+
+            if on_success:
+                on_success(domain, port, ssl_sock, result)
+
+            try:
+                ssl_sock.close()
+            except Exception, e:
+                om.out.debug('Exception found while closing SSL socket: "%s"' % e)
+
+            return result
+
+    def _is_certificate_validation_error(self, cve):
+        details = self._get_ssl_error_details(cve)
+        return 'certificate' in details
+
+    def _get_ssl_error_details(self, cve):
+        try:
+            return cve.args[0][0][2]
+        except:
+            return str(cve)
+
+    def _handle_certificate_validation_error(self, cve, domain, port):
+        """
+        When a certificate validation error occurs this method is called to
+        save any interesting information to the KB.
+
+        :param cve: The exception
+        :param domain: Where we connected to
+        :param port: Where we connected to
+        :return: None, save information to the KB
+        """
+        details = self._get_ssl_error_details(cve)
+        args = (domain, details)
+
+        desc = ('"%s" uses an invalid SSL certificate.'
+                ' The certificate is not trusted because: "%s".')
+        desc %= args
+
+        v = Vuln('Invalid SSL certificate', desc,
+                 severity.LOW, 1, self.get_name())
+
+        v.set_url(self._url_from_parts(domain, port))
+        self.kb_append(self, 'invalid_ssl_cert', v)
+
+    def _get_ssl_cert(self, domain, port):
         """
         Get the certificate information for this domain:port
 
-        :param url: The URL we want to query (we get the port from here)
-        :param domain: The domain to connect to
+        :param domain: Where we connected to
+        :param port: Where we connected to
         :return: A tuple with:
                     * cert
                     * cert_der
                     * cipher
         """
-        for extract_method in (self._get_ca_signed_cert,
-                               self._self_signed_cert):
-            try:
-                return extract_method(url, domain)
-            except RuntimeError, rte:
-                om.out.debug(str(rte))
+        def extract_cert_data(domain, port, ssl_sock, result):
+            """
+            Extract the cert, cert_der and cipher from an ssl socket connection
+            """
+            result.cert = ssl_sock.getpeercert()
+            result.cert_der = ssl_sock.getpeercert(binary_form=True)
+            result.cipher = ssl_sock.get_cipher_name()
 
-        # If all fails raise rte
-        raise rte
+            return result
 
-    def _self_signed_cert(self, url, domain):
-        """
-        Helper method to get a certificate when it is self signed
+        r = self._ssl_connect(domain,
+                              port,
+                              on_success=extract_cert_data)
 
-        :param url: The URL we want to query (we get the port from here)
-        :param domain: The domain to connect to
-        :return: A tuple with:
-                    * cert
-                    * cert_der
-                    * cipher
-        """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        return r.cert, r.cert_der, r.cipher
+
+    def _cert_expiration_analysis(self, domain, port, cert, cert_der, cipher):
+        not_after = cert['notAfter']
 
         try:
-            ssl_sock = ssl.wrap_socket(s, ssl_version=ssl.PROTOCOL_SSLv23)
-            ssl_sock.connect((domain, url.get_port()))
-        except Exception:
-            msg = 'Failed to connect to %s with PROTOCOL_SSLv23.'
-            raise RuntimeError(msg % domain)
-        else:
-            return self._extract_cert_data(ssl_sock)
-
-    def _get_ca_signed_cert(self, url, domain):
-        """
-        Helper method to get a certificate when it is properly signed.
-
-        :param url: The URL we want to query (we get the port from here)
-        :param domain: The domain to connect to
-        :return: A tuple with:
-                    * cert
-                    * cert_der
-                    * cipher
-        """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            # When we use CERT_REQUIRED certificate is required and *validated*
-            ssl_sock = ssl.wrap_socket(s, ca_certs=self._ca_file,
-                                       cert_reqs=ssl.CERT_REQUIRED,
-                                       ssl_version=ssl.PROTOCOL_SSLv23)
-            ssl_sock.connect((domain, url.get_port()))
-        except Exception:
-            msg = 'Failed to connect to %s with CERT_REQUIRED.'
-            raise RuntimeError(msg % domain)
-        else:
-            return self._extract_cert_data(ssl_sock)
-
-    def _extract_cert_data(self, ssl_sock):
-        """
-        Extract the cert, cert_der and cipher from a ssl socket connection.
-
-        :param ssl_sock: The SSL socket connection
-        :return: A tuple with:
-                    * cert
-                    * cert_der
-                    * cipher
-        """
-        cert = ssl_sock.getpeercert()
-        cert_der = ssl_sock.getpeercert(binary_form=True)
-        cipher = ssl_sock.cipher()
-
-        ssl_sock.close()
-
-        return cert, cert_der, cipher
-
-    def _cert_expiration_analysis(self, url, domain):
-        try:
-            cert, cert_der, cipher = self._get_cert(url, domain)
-        except RuntimeError, rte:
-            msg = 'Failed to analyze certificate expiration due to an error in'\
-                  ' the get_cert method: "%s".'
-            om.out.debug(msg % rte)
-            return
-
-        try:
-            exp_date = gmtime(ssl.cert_time_to_seconds(cert['notAfter']))
+            exp_date = datetime.strptime(not_after, '%Y%m%d%H%M%SZ')
         except ValueError:
-            msg = 'Invalid SSL certificate date format.'
+            msg = 'Invalid SSL certificate date format: %s' % not_after
             om.out.debug(msg)
             return
         except KeyError:
-            msg = 'SSL certificate does not have notAfter field.'
+            msg = 'SSL certificate does not have an "notAfter" field.'
             om.out.debug(msg)
             return
 
-        expire_days = (date(exp_date.tm_year, exp_date.tm_mon,
-                       exp_date.tm_mday) - date.today()).days
+        exp_date_parsed = date(exp_date.year, exp_date.month, exp_date.day)
+        expire_days = (exp_date_parsed - date.today()).days
 
-        if expire_days < self._min_expire_days:
-            desc = 'The certificate for "%s" will expire soon.' % domain
-
-            i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
-            i.set_url(url)
-
-            self.kb_append(self, 'ssl_soon_expire', i)
-
-    def _ssl_info_to_kb(self, url, domain):
-        try:
-            cert, cert_der, cipher = self._get_cert(url, domain)
-        except RuntimeError, rte:
-            msg = 'Failed to store SSL information to KB due to an error in'\
-                  ' the get_cert method: "%s".'
-            om.out.debug(msg % rte)
+        if expire_days > self._min_expire_days:
+            om.out.debug('Certificate will expire in %s days' % expire_days)
             return
+
+        desc = 'The certificate for "%s" will expire soon.' % domain
+
+        i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
+        i.set_url(self._url_from_parts(domain, port))
+
+        self.kb_append(self, 'ssl_soon_expire', i)
+
+    def _ssl_info_to_kb(self, domain, port, cert, cert_der, cipher):
+        args = (domain, self._dump_ssl_info(cert, cert_der, cipher))
+        desc = 'SSL certificate used for %s:\n%s'
+        desc %= args
         
-        # Print the SSL information to the log
-        desc = 'This is the information about the SSL certificate used for'\
-               ' %s site:\n%s' % (domain,
-                                  self._dump_ssl_info(cert, cert_der, cipher))
-        om.out.information(desc)
         i = Info('SSL Certificate dump', desc, 1, self.get_name())
-        i.set_url(url)
+        i.set_url(self._url_from_parts(domain, port))
         
         self.kb_append(self, 'certificate', i)
 
@@ -296,11 +403,15 @@ class ssl_certificate(AuditPlugin):
         """
         Dump X509 certificate.
         """
-        res = '\n== Certificate information ==\n'
+        res = '\n== Certificate information ==\n\n'
         res += pformat(cert)
-        res += '\n\n== Used cipher ==\n' + pformat(cipher)
-        res += '\n\n== Certificate dump ==\n' + \
-            ssl.DER_cert_to_PEM_cert(cert_der)
+
+        res += '\n\n== Used cipher ==\n\n'
+        res += cipher
+
+        res += '\n\n== Certificate dump ==\n\n'
+        res += ssl.DER_cert_to_PEM_cert(cert_der)
+        
         # Indent
         res = res.replace('\n', '\n    ')
         res = '    ' + res
@@ -312,19 +423,18 @@ class ssl_certificate(AuditPlugin):
         """
         ol = OptionList()
 
-        d = 'Set minimal amount of days before expiration of the certificate'\
-            ' for alerting'
-        h = 'If the certificate will expire in period of minExpireDays w3af'\
-            ' will show an alert about it, which is useful for admins to'\
-            ' remember to renew the certificate.'
-        o = opt_factory('minExpireDays', self._min_expire_days, d, 'integer',
-                        help=h)
+        d = ('Set minimal amount of days before expiration of the certificate'
+             ' for alerting')
+        h = ('If the certificate will expire in period of minExpireDays w3af'
+             ' will show an alert about it, which is useful for admins to'
+             ' remember to renew the certificate.')
+        o = opt_factory('min_expire_days', self._min_expire_days, d, 'integer', help=h)
         ol.add(o)
-
-        d = 'CA PEM file path'
-        o = opt_factory('caFileName', self._ca_file, d, INPUT_FILE)
+        
+        d = 'Path to the ca.pem file containing all root certificates'
+        o = opt_factory('ca_file_name', self._ca_file, d, INPUT_FILE)
         ol.add(o)
-
+        
         return ol
 
     def set_options(self, options_list):
@@ -332,11 +442,11 @@ class ssl_certificate(AuditPlugin):
         This method sets all the options that are configured using the user
         interface generated by the framework using the result of get_options().
 
-        :param OptionList: A dictionary with the options for the plugin.
+        :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
-        self._min_expire_days = options_list['minExpireDays'].get_value()
-        self._ca_file = options_list['caFileName'].get_value()
+        self._min_expire_days = options_list['min_expire_days'].get_value()
+        self._ca_file = options_list['ca_file_name'].get_value()
 
     def get_long_desc(self):
         """
@@ -346,11 +456,15 @@ class ssl_certificate(AuditPlugin):
         This plugin audits SSL certificate parameters.
 
         One configurable parameter exists:
-            - minExpireDays
-            - CA PEM file path
+            - min_expire_days
+            - ca_file_name
 
-        Note: It's only useful when testing HTTPS sites.
+        Note: This plugin is only useful when testing HTTPS sites.
         """
+
+
+class Result(object):
+    pass
 
 #
 # This code taken from
@@ -380,7 +494,8 @@ def _dnsname_to_pat(dn, max_wildcards=2):
 
 
 def match_hostname(cert, hostname):
-    """Verify that *cert* (in decoded format as returned by
+    """
+    Verify that *cert* (in decoded format as returned by
     SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 rules
     are mostly followed, but IP addresses are not accepted for *hostname*.
 
@@ -412,13 +527,11 @@ def match_hostname(cert, hostname):
                     dnsnames.append(value)
     
     if len(dnsnames) > 1:
-        raise CertificateError("hostname %s "
-                               "doesn't match either of %s"
+        raise CertificateError("hostname %s doesn't match either of %s"
                                % (hostname, ', '.join(map(str, dnsnames))))
     
     elif len(dnsnames) == 1:
-        raise CertificateError("hostname %s "
-                               "doesn't match %s"
+        raise CertificateError("hostname %s doesn't match %s"
                                % (hostname, dnsnames[0]))
     else:
         raise CertificateError("no appropriate commonName or "

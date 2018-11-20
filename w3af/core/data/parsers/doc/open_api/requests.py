@@ -24,9 +24,13 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.json_container import JSONContainer
 from w3af.core.data.dc.factory import dc_from_content_type_and_raw_params
+from w3af.core.data.dc.urlencoded_form import URLEncodedForm
+from w3af.core.data.dc.multipart_container import MultipartContainer
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.open_api.construct_request import construct_request
+
+import w3af.core.controllers.output_manager as om
 
 
 class RequestFactory(object):
@@ -52,11 +56,13 @@ class RequestFactory(object):
         self.operation = operation
         self.parameters = parameters
 
-    def get_fuzzable_request(self):
+    def get_fuzzable_request(self, discover_fuzzable_headers=False):
         """
         Creates a fuzzable request by querying different parts of the spec
         parameters, operation, etc.
 
+        :param discover_fuzzable_headers: If it's set to true,
+                                          then all fuzzable headers will be added to the fuzzable request.
         :return: A fuzzable request.
         """
         method = self.get_method()
@@ -69,7 +75,26 @@ class RequestFactory(object):
                                            post_data=data_container,
                                            method=method)
 
+        if discover_fuzzable_headers:
+            fuzzable_request.set_force_fuzzing_headers(self._get_parameter_headers())
+
         return fuzzable_request
+
+    def _get_parameter_headers(self):
+        """
+        Looks for all parameters which are passed to the endpoint via headers.
+
+        :return: A list of unique header names.
+        """
+        parameter_headers = set()
+        for parameter_name in self.parameters:
+            parameter = self.parameters[parameter_name]
+            if parameter.location == 'header':
+                parameter_headers.add(parameter.name)
+                om.out.debug('Found a parameter header for %s endpoint: %s'
+                             % (self.operation.path_name, parameter.name))
+
+        return list(parameter_headers)
 
     def _bravado_construct_request(self):
         """
@@ -154,31 +179,61 @@ class RequestFactory(object):
         request_dict = self._bravado_construct_request()
         headers = Headers(request_dict['headers'].items())
 
+        # First, we try to extract content type from a 'consumes'
+        # if the operation has one.
+        content_type = self.get_consuming_content_type()
+        if content_type is not None:
+            headers['Content-Type'] = content_type
+
         content_type, _ = headers.iget('content-type', None)
-        if content_type is None:
-            # The content type is not in the headers, so we try to extract
-            # it from the operation.
+        if content_type is None and self.parameters:
+            # Content-Type is not set yet.
             #
-            # The REST API endpoint might support more than one content-type
-            # for consuming it. We only use the first one since in 99% of the cases
-            # a vulnerability which we find using one content-type will be present
-            # in others. This works the other way around also, there are very few
-            # vulnerabilities which are going to be exploitable with one content-
-            # type.
-            if self.operation.consumes:
-                content_type = self.operation.consumes[0]
-                headers['Content-Type'] = content_type
-            else:
-                # Finally, there are some specification documents where the consumes
-                # section might be empty. This is because the operation doesn't
-                # receive anything or because the specification is wrong.
-                #
-                # If there are parameters then we opt for serializing them as
-                # JSON, which is a safe default
-                if self.parameters:
-                    headers['Content-Type'] = self.DEFAULT_CONTENT_TYPE
+            # There are some specification documents where the consumes
+            # section might be empty. This is because the operation doesn't
+            # receive anything or because the specification is wrong.
+            #
+            # If there are parameters then we opt for serializing them as
+            # JSON, which is a safe default
+            headers['Content-Type'] = self.DEFAULT_CONTENT_TYPE
 
         return headers
+
+    def get_consuming_content_type(self):
+        """
+        Look for the best content type in a 'consumes' list of the operation.
+
+        First, check if any of the consumes values contains JSON,
+        and choose that one. If that fails, continue with url-encoded,
+        and finally multipart.
+
+        The method throws an exception if no data container was found
+        for content types specified in the 'consumes' list.
+
+        :return: One of the content types listed in the 'consumes' list,
+                 or None if the operation doesn't have a 'consumes' list.
+        """
+        if not self.operation.consumes:
+            return None
+
+        container_types = [JSONContainer, MultipartContainer, URLEncodedForm]
+        for container_type in container_types:
+            content_type = self._look_for_consuming_content_type(container_type)
+            if content_type is not None:
+                return content_type
+
+        raise ValueError("'consumes' list contains only unknown content types")
+
+    def _look_for_consuming_content_type(self, container_type):
+        if not self.operation.consumes:
+            return None
+
+        for content_type in self.operation.consumes:
+            temp_headers = Headers([('Content-Type', content_type)])
+            if container_type.content_type_matches(temp_headers):
+                return content_type
+
+        return None
 
     def get_data_container(self, headers):
         """
@@ -207,5 +262,10 @@ class RequestFactory(object):
 
         # Create the data container
         dc = dc_from_content_type_and_raw_params(content_type, parameters)
+        if dc is None:
+            om.out.error("No data container for content type '%s'" % content_type)
+            return None
+
+        dc.set_header('Content-Type', content_type)
 
         return dc

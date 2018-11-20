@@ -60,16 +60,18 @@ class QueueSpeedMeasurement(object):
         data = [ts for ts in data if ts > max_past_time]
 
         if len(data) == 0:
-            # The last 30 seconds had no activity, the RPM is zero!
+            # The last MAX_SECONDS_IN_THE_PAST seconds had no activity,
+            # the RPM is zero!
             return 0.0
 
         if len(data) == 1:
-            # The last 30 seconds only had one read / write action
+            # The last MAX_SECONDS_IN_THE_PAST seconds only had one
+            # read / write action
             return 60.0 / self.MAX_SECONDS_IN_THE_PAST
 
         #
-        # We have at least two read / write actions in the last 30 seconds
-        # calculate the RPM!
+        # We have at least two read / write actions in the last
+        # MAX_SECONDS_IN_THE_PAST seconds calculate the RPM!
         #
         first_item = data[0]
 

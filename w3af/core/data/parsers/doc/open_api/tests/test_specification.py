@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import datetime
 
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -41,11 +42,14 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               DereferencedPetStore,
                                                                               NestedModel,
                                                                               NestedLoopModel,
-                                                                              ArrayModelItems)
+                                                                              ArrayModelItems,
+                                                                              MultiplePathsAndHeaders)
 
 
 class TestSpecification(unittest.TestCase):
-    def generate_response(self, specification_as_string):
+
+    @staticmethod
+    def generate_response(specification_as_string):
         url = URL('http://www.w3af.com/swagger.json')
         headers = Headers([('content-type', 'application/json')])
         return HTTPResponse(200, specification_as_string, headers,
@@ -347,7 +351,7 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['required'], True)
         self.assertEqual(param.param_spec['in'], 'body')
         self.assertIn('schema', param.param_spec)
-        self.assertEqual(param.fill, {u'age': 42})
+        self.assertEqual(param.fill, {u'age': 42, u'name': 'John'})
 
     def test_no_model_json_object_complex_nested_in_body(self):
         specification_as_string = ComplexDereferencedNestedModel().get_specification()
@@ -545,3 +549,69 @@ class TestSpecification(unittest.TestCase):
                                                   u'city': 'Buenos Aires'}},
                           u'type': 'cat', u'name': 'John', u'birthdate': datetime.date(2017, 6, 30)}
         self.assertEqual(param.fill, expected_value)
+
+    def test_parameter_handler_no_params(self):
+        specification_as_string = NoParams().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+        self.check_parameter_setting(handler)
+
+    def test_parameter_handler_simple_int_param_in_qs(self):
+        specification_as_string = IntParamQueryString().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+        self.check_parameter_setting(handler)
+
+    def test_parameter_handler_array_string_items_param_in_qs(self):
+        specification_as_string = ArrayStringItemsQueryString().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+        self.check_parameter_setting(handler)
+
+    def test_parameter_handler_no_model_json_object_complex_nested_in_body(self):
+        specification_as_string = ComplexDereferencedNestedModel().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+        self.check_parameter_setting(handler)
+
+    def test_parameter_handler_model_param_nested_allOf_in_json(self):
+        specification_as_string = NestedModel().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+        self.check_parameter_setting(handler)
+
+    def test_parameter_handler_multiple_paths_and_headers(self):
+        specification_as_string = MultiplePathsAndHeaders().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+        self.check_parameter_setting(handler)
+
+    def check_parameter_setting(self, spec_handler):
+        data = [d for d in spec_handler.get_api_information()]
+        self.assertIsNotNone(data)
+        self.assertIsNotNone(spec_handler.spec)
+
+        for api_resource_name, resource in spec_handler.spec.resources.items():
+            for operation_name, operation in resource.operations.items():
+
+                # Make sure that the parameter doesn't have a value yet
+                for parameter_name, parameter in operation.params.iteritems():
+                    self.assertFalse(hasattr(parameter, 'fill'))
+
+                parameter_handler = ParameterHandler(spec_handler.spec, operation)
+                updated_operation = parameter_handler.set_operation_params(True)
+                self.assertOperation(operation, updated_operation)
+
+                parameter_handler = ParameterHandler(spec_handler.spec, operation)
+                updated_operation = parameter_handler.set_operation_params(False)
+                self.assertOperation(operation, updated_operation)
+
+    def assertOperation(self, operation, updated_operation):
+
+        # Make sure that the parameter now has a value
+        for parameter_name, parameter in updated_operation.params.iteritems():
+            self.assertTrue(hasattr(parameter, 'fill'))
+
+        # Make sure that the original operation doesn't get updated
+        # after set_operation_params() call
+        self.assertNotEquals(operation, updated_operation)

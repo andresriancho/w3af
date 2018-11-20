@@ -25,7 +25,7 @@ import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from w3af.core.data.db.disk_dict import DiskDict
+from w3af.core.data.db.cached_disk_dict import CachedDiskDict
 from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
                                         clean_fuzzable_request_form)
 
@@ -47,7 +47,7 @@ from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
 # In this case we'll collect at most PATH_MAX_VARIANTS URLs with different
 # paths inside the "abc" path.
 #
-PATH_MAX_VARIANTS = 75
+PATH_MAX_VARIANTS = 50
 
 #
 # Limits the max number of variants we'll allow for URLs with the same path
@@ -59,7 +59,7 @@ PATH_MAX_VARIANTS = 75
 # For URLs which have the same path (/abc/def) and parameters
 # (id=number&abc=string) we'll collect at most PARAMS_MAX_VARIANTS of those
 #
-PARAMS_MAX_VARIANTS = 25
+PARAMS_MAX_VARIANTS = 15
 
 #
 # Limits the number variants for "the same form". A good example to understand this
@@ -84,7 +84,7 @@ PARAMS_MAX_VARIANTS = 25
 #
 # https://github.com/andresriancho/w3af/issues/15970
 #
-MAX_EQUAL_FORM_VARIANTS = 10
+MAX_EQUAL_FORM_VARIANTS = 5
 
 
 class VariantDB(object):
@@ -107,10 +107,14 @@ class VariantDB(object):
     HASH_IGNORE_HEADERS = ('referer',)
     TAG = '[variant_db]'
 
+    MAX_IN_MEMORY = 50
+
     def __init__(self):
-        self._variants = DiskDict(table_prefix='variant_db')
+        self._variants = CachedDiskDict(max_in_memory=self.MAX_IN_MEMORY,
+                                        table_prefix='variant_db')
         self._variants_eq = ScalableBloomFilter()
-        self._variants_form = DiskDict(table_prefix='variant_db_form')
+        self._variants_form = CachedDiskDict(max_in_memory=self.MAX_IN_MEMORY,
+                                             table_prefix='variant_db_form')
 
         self.params_max_variants = cf.cf.get('params_max_variants')
         self.path_max_variants = cf.cf.get('path_max_variants')

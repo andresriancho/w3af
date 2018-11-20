@@ -32,6 +32,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.data.misc.encoding import smart_unicode
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 
@@ -50,7 +51,10 @@ class find_dvcs(CrawlPlugin):
 
     :author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
     :author: Tomas Velazquez (tomas.velazquezz - gmail.com)
+    :author: Andres Riancho (andres@andresriancho.com)
     """
+
+    BAD_HTTP_CODES = {301, 302, 307}
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -80,12 +84,13 @@ class find_dvcs(CrawlPlugin):
         """
         domain_path = fuzzable_request.get_url().get_domain_path()
 
-        if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.add(domain_path)
+        if domain_path in self._analyzed_dirs:
+            return
 
-            test_generator = self._url_generator(domain_path)
-            self.worker_pool.map_multi_args(self._send_and_check,
-                                            test_generator)
+        self._analyzed_dirs.add(domain_path)
+
+        test_generator = self._url_generator(domain_path)
+        self.worker_pool.map_multi_args(self._send_and_check, test_generator)
 
     def _url_generator(self, domain_path):
         """
@@ -135,11 +140,20 @@ class find_dvcs(CrawlPlugin):
 
         :return: None, everything is saved to the self.out_queue.
         """
-        http_response = self.http_get_and_parse(repo_url,
-                                                binary_response=True,
-                                                respect_size_limit=False)
+        # Here we use the new http_get instead of http_get_and_parse because
+        # we want to check BAD_HTTP_CODES and the response body (see below)
+        # before we send the response to the core
+        http_response = self.http_get(repo_url,
+                                      binary_response=True,
+                                      respect_size_limit=False)
 
         if is_404(http_response):
+            return
+
+        if http_response.get_code() in self.BAD_HTTP_CODES:
+            return
+
+        if not http_response.get_body():
             return
 
         try:
@@ -165,7 +179,16 @@ class find_dvcs(CrawlPlugin):
             parsed_url_set.add(test_url)
             self._analyzed_filenames.add(filename)
 
+        if not parsed_url_set:
+            return
+
         self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
+
+        # After performing the checks (404, redirects, body is not empty, body
+        # can be parsed, body actually had filenames inside) send the URL to the
+        # core
+        fr = FuzzableRequest(repo_url, method='GET')
+        self.output_queue.put(fr)
 
         # Now we send this finding to the report for manual analysis
         desc = ('A %s was found at: "%s"; this could indicate that a %s is'
@@ -415,15 +438,26 @@ class find_dvcs(CrawlPlugin):
 
             line = line.strip()
 
-            if line.startswith('#') or line == '':
+            # We sometimes get here because of a is_404 false positive, and the
+            # function is trying to parse an HTML document as if it were a
+            # DVCS ignore file.
+            #
+            # To prevent the is_404 false positive from propagating we detect
+            # HTML tags, if those are found, return an empty list.
+            if line.startswith('<') and line.endswith('>'):
+                return []
+
+            if line.startswith('#'):
                 continue
 
             line = self.filter_special_character(line)
+
             if not line:
                 continue
 
             if line.startswith('/') or line.startswith('^'):
                 line = line[1:]
+
             if line.endswith('/') or line.endswith('$'):
                 line = line[:-1]
 

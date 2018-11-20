@@ -31,7 +31,6 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.extended_urllib import MAX_ERROR_COUNT
-from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.info import Info
 
 from w3af.core.controllers.core_helpers.consumers.grep import grep
@@ -118,6 +117,7 @@ class CoreStrategy(object):
         """
         try:
             self.verify_target_server_up()
+            self.replace_targets_with_redir()
             self.alert_if_target_is_301_all()
             
             self._setup_grep()
@@ -295,7 +295,7 @@ class CoreStrategy(object):
         finished = set()
         consumer_forced_end = set()
 
-        while True:
+        while not self._scan_reached_max_time():
             # Get results and handle exceptions
             self._handle_all_consumer_exceptions(_other)
 
@@ -309,6 +309,43 @@ class CoreStrategy(object):
                 break
 
             finished, consumer_forced_end = route_result
+
+        #
+        # Handle the case where the scan reached the max time
+        #
+        if self._scan_reached_max_time():
+            msg = ('The scan has reached the maximum scan time of %s minutes.'
+                   ' The scan will end and some vulnerabilities might not be'
+                   ' identified.')
+            args = (cf.cf.get('max_scan_time'), )
+            om.out.information(msg % args)
+
+            self._w3af_core.stop()
+
+    def _scan_reached_max_time(self):
+        """
+        Check the user-configured setting and return True if we're 5 minutes
+        before the deadline.
+
+        Return True 5 minutes before the `max_scan_time` to give the scan threads
+        time to finish and "guarantee" that the scan will be stopped before
+        `max_scan_time`.
+
+        :return: True if the scan has reached the `max_scan_time` - 5m.
+        """
+        # in minutes
+        max_scan_time = cf.cf.get('max_scan_time')
+
+        # The default is 0: no limit.
+        if max_scan_time == 0:
+            return False
+
+        # Get the scan time and compare with the max
+        scan_time = self._w3af_core.status.get_run_time()
+        if scan_time + 5 > max_scan_time:
+            return True
+
+        return False
 
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
                                           consumer_forced_end):
@@ -339,13 +376,13 @@ class CoreStrategy(object):
                     # This consumer is saying that it doesn't have any
                     # pending or in progress work
                     finished.add(url_producer)
-                    om.out.debug('Producer %s has finished' % url_producer.get_name())
+                    om.out.debug('Producer %s has finished (empty queue)' % url_producer.get_name())
             else:
                 if result_item == POISON_PILL:
                     # This consumer is saying that it has finished, so we
                     # remove it from the list.
                     consumer_forced_end.add(url_producer)
-                    om.out.debug('Producer %s has finished' % url_producer.get_name())
+                    om.out.debug('Producer %s has finished (poison pill)' % url_producer.get_name())
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
                 else:
@@ -422,13 +459,16 @@ class CoreStrategy(object):
         
         msg = ('The remote web server is not answering our HTTP requests,'
                ' multiple errors have been found while trying to GET a response'
-               ' from the server.\n\n'
+               ' from the server.\n'
+               '\n'
                'In most cases this means that the configured target is'
                ' incorrect, the port is closed, there is a firewall blocking'
                ' our packets or there is no HTTP daemon listening on that'
-               ' port.\n\n'
+               ' port.\n'
+               '\n'
                'Please verify your target configuration and try again. The'
-               ' tested targets were:\n\n'
+               ' tested targets were:\n'
+               '\n'
                ' %s\n')
 
         targets = cf.cf.get('targets')
@@ -450,6 +490,52 @@ class CoreStrategy(object):
                 else:
                     sent_requests += 1
 
+    def replace_targets_with_redir(self):
+        """
+        The user might have configured one or more target URLs which are
+        redirecting to other parts of the application.
+
+        To prevent issues with the 404 detection we replace these URLs
+        with the 30x redirect destination.
+
+        Only replace the targets which redirect to the same domain and
+        protocol.
+
+        :return: None. The result is saved to cf.cf.get('targets')
+        """
+        targets = cf.cf.get('targets')
+        new_targets = []
+
+        for url in targets:
+            try:
+                http_response = self._w3af_core.uri_opener.GET(url,
+                                                               cache=False,
+                                                               follow_redirects=True)
+            except ScanMustStopByUserRequest:
+                # Not a real error, the user stopped the scan
+                raise
+            except Exception, e:
+                msg = 'Exception found during replace_targets_with_redir(): "%s"'
+                om.out.debug(msg % e)
+                raise ScanMustStopException(msg % e)
+            else:
+                redir_uri = http_response.get_redirect_destination()
+
+                if not redir_uri:
+                    # Keep the ones that are not redirects without changes
+                    new_targets.append(url)
+                    continue
+
+                if http_response.does_redirect_outside_target():
+                    # Keep this one, it will be handled below by
+                    # alert_if_target_is_301_all
+                    new_targets.append(url)
+                    continue
+
+                new_targets.append(redir_uri)
+
+        cf.cf.save('targets', new_targets)
+
     def alert_if_target_is_301_all(self):
         """
         Alert the user when the configured target is set to a site which will
@@ -461,14 +547,19 @@ class CoreStrategy(object):
         """
         site_does_redirect = False
         msg = ('The configured target domain redirects all HTTP requests to a'
-               ' different location. The most common scenarios are:\n\n'
-               ''
+               ' different location. The most common scenarios are:\n'
+               '\n'
                '    * HTTP redirect to HTTPS\n'
-               '    * domain.com redirect to www.domain.com\n\n'
-               ''
+               '    * domain.com redirect to www.domain.com\n'
+               '\n'
                'While the scan engine can identify URLs and vulnerabilities'
-               ' using the current configuration it might be wise to start'
-               ' a new scan setting the target URL to the redirect target.')
+               ' using the current configuration, it might be wise to start'
+               ' a new scan setting the target URL to the redirect target.\n'
+               '\n'
+               'Depending on multiple factors, this configuration might also'
+               ' reduce the effectiveness of the scanner 404 page detection,'
+               ' leading to false positives in both identified URLs and'
+               ' vulnerabilities.')
 
         targets = cf.cf.get('targets')
 
@@ -481,46 +572,13 @@ class CoreStrategy(object):
                 # Not a real error, the user stopped the scan
                 raise
             except Exception, e:
-                emsg = 'Exception found during alert_if_target_is_301_all(): "%s"'
-                emsg %= e
-
-                om.out.debug(emsg)
-                raise ScanMustStopException(emsg)
+                msg = 'Exception found during alert_if_target_is_301_all(): "%s"'
+                om.out.debug(msg % e)
+                raise ScanMustStopException(msg % e)
             else:
-                if 300 <= http_response.get_code() <= 399:
-
-                    # Get the redirect target
-                    lower_headers = http_response.get_lower_case_headers()
-                    redirect_url = None
-
-                    for header_name in ('location', 'uri'):
-                        if header_name in lower_headers:
-                            header_value = lower_headers[header_name]
-                            header_value = header_value.strip()
-                            try:
-                                redirect_url = URL(header_value)
-                            except ValueError:
-                                # No special invalid URL handling required
-                                continue
-
-                    if not redirect_url:
-                        continue
-
-                    # Check if the protocol was changed:
-                    target_proto = url.get_protocol()
-                    redirect_proto = redirect_url.get_protocol()
-
-                    if target_proto != redirect_proto:
-                        site_does_redirect = True
-                        break
-
-                    # Check if the domain was changed:
-                    target_domain = url.get_domain()
-                    redirect_domain = redirect_url.get_domain()
-
-                    if target_domain != redirect_domain:
-                        site_does_redirect = True
-                        break
+                if http_response.does_redirect_outside_target():
+                    site_does_redirect = True
+                    break
 
         if site_does_redirect:
             name = 'Target redirect'
@@ -570,14 +628,16 @@ class CoreStrategy(object):
 
         if targets_with_404:
             urls = ' - %s\n'.join(u.url_string for u in targets_with_404)
-            om.out.information('w3af identified the following user-configured'
-                               ' targets as non-existing pages (404). This could'
-                               ' result in a scan with low coverage: not all'
-                               ' areas of the application are scanned. Please'
-                               ' manually verify that these URLs exist and, if'
-                               ' required, run the scan again.\n'
+            om.out.information('w3af identified the user-configured URLs listed'
+                               ' below as non-existing pages (404). This could'
+                               ' result in a scan with low test coverage: some'
+                               ' application areas might not be scanned.\n'
                                '\n'
-                               '%s\n' % urls)
+                               'Please manually verify that these URLs exist'
+                               ' and, consider running a new scan with different'
+                               ' targets.\n'
+                               '\n'
+                               ' - %s\n' % urls)
 
     def _setup_crawl_infrastructure(self):
         """

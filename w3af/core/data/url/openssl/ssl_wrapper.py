@@ -30,6 +30,8 @@ _openssl_versions = {}
 _proto_names = [('PROTOCOL_SSLv3', OpenSSL.SSL.SSLv3_METHOD),
                 ('PROTOCOL_TLSv1', OpenSSL.SSL.TLSv1_METHOD),
                 ('PROTOCOL_SSLv23', OpenSSL.SSL.SSLv23_METHOD),
+                ('PROTOCOL_TLSv1_1', OpenSSL.SSL.TLSv1_1_METHOD),
+                ('PROTOCOL_TLSv1_2', OpenSSL.SSL.TLSv1_2_METHOD),
                 ('PROTOCOL_SSLv2', OpenSSL.SSL.SSLv2_METHOD)]
 
 for ssl_proto_name, openssl_proto_const in _proto_names:
@@ -178,6 +180,7 @@ class SSLSocket(object):
         for i in xrange(x509.get_extension_count()):
             ext = x509.get_extension(i)
             ext_name = ext.get_short_name()
+
             if ext_name != 'subjectAltName':
                 continue
 
@@ -197,7 +200,8 @@ class SSLSocket(object):
             'subject': (
                 (('commonName', x509.get_subject().CN),),
             ),
-            'subjectAltName': dns_name
+            'subjectAltName': dns_name,
+            'notAfter': x509.get_notAfter()
         }
 
 

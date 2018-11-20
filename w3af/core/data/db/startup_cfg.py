@@ -41,7 +41,8 @@ class StartUpConfig(object):
     # DEFAULT VALUES
     DEFAULTS = {'auto-update': 'true', 'frequency': 'D',
                 'last-update': 'None', 'last-commit': '',
-                'accepted-disclaimer': 'false'}
+                'accepted-disclaimer': 'false',
+                'skip-dependencies-check': 'false',}
 
     def __init__(self, cfg_file=CFG_FILE):
 
@@ -52,7 +53,7 @@ class StartUpConfig(object):
         configs = self._load_cfg()
 
         (self._autoupd, self._freq, self._lastupd, self._last_commit_id,
-         self._accepted_disclaimer) = configs
+         self._accepted_disclaimer, self._skip_dependencies_check) = configs
 
     ### METHODS #
     
@@ -69,6 +70,9 @@ class StartUpConfig(object):
         self._lastupd = datevalue
         self._config.set(self._start_section, 'last-update',
                          datevalue.isoformat())
+
+    def get_skip_dependencies_check(self):
+        return self._skip_dependencies_check
 
     def get_accepted_disclaimer(self):
         return self._accepted_disclaimer
@@ -98,6 +102,17 @@ class StartUpConfig(object):
     def get_auto_upd(self):
         return self._autoupd
 
+    def _get_bool_val(self, key, default=False):
+        boolvals = {'false': 0, 'off': 0, 'no': 0,
+                    'true': 1, 'on': 1, 'yes': 1}
+
+        # pylint: disable=E1103
+        # E1103: Instance of '_Chainmap' has no 'lower' member
+        #        (but some types could not be inferred)",
+        val = self._config.get(self._start_section, key, raw=True)
+        val = bool(boolvals.get(val.lower(), default))
+        return val
+
     def _load_cfg(self):
         """
         Loads configuration from config file.
@@ -107,29 +122,15 @@ class StartUpConfig(object):
         if not config.has_section(startsection):
             config.add_section(startsection)
             defaults = StartUpConfig.DEFAULTS
-            config.set(startsection, 'auto-update', defaults['auto-update'])
-            config.set(startsection, 'frequency', defaults['frequency'])
-            config.set(startsection, 'last-update', defaults['last-update'])
-            config.set(startsection, 'last-commit', defaults['last-commit'])
-            config.set(startsection, 'accepted-disclaimer',
-                       defaults['accepted-disclaimer'])
+            for key in self.DEFAULTS:
+                config.set(startsection, key, defaults[key])
 
         # Read from file
         config.read(self._start_cfg_file)
 
-        boolvals = {'false': 0, 'off': 0, 'no': 0,
-                    'true': 1, 'on': 1, 'yes': 1}
-
-        # pylint: disable=E1103
-        # E1103: Instance of '_Chainmap' has no 'lower' member 
-        #        (but some types could not be inferred)",
-        auto_upd = config.get(startsection, 'auto-update', raw=True)
-        auto_upd = bool(boolvals.get(auto_upd.lower(), False))
-
-        accepted_disclaimer = config.get(
-            startsection, 'accepted-disclaimer', raw=True)
-        accepted_disclaimer = bool(
-            boolvals.get(accepted_disclaimer.lower(), False))
+        auto_upd = self._get_bool_val('auto-update')
+        accepted_disclaimer = self._get_bool_val('accepted-disclaimer')
+        skip_dependencies_check = self._get_bool_val('skip-dependencies-check')
 
         freq = config.get(startsection, 'frequency', raw=True).upper()
         if freq not in (StartUpConfig.FREQ_DAILY, StartUpConfig.FREQ_WEEKLY,
@@ -147,7 +148,7 @@ class StartUpConfig(object):
             lastrev = config.get(startsection, 'last-commit')
         except TypeError:
             lastrev = 0
-        return (auto_upd, freq, lastupd, lastrev, accepted_disclaimer)
+        return (auto_upd, freq, lastupd, lastrev, accepted_disclaimer, skip_dependencies_check)
 
     def save(self):
         """

@@ -256,17 +256,21 @@ class web_spider(CrawlPlugin):
         """
         # I don't want w3af sending requests to 3rd parties!
         if ref.get_domain() != self._target_domain:
+            om.out.debug('web_spider will ignore %s (different domain name)')
             return False
 
         # Filter the URL according to the configured regular expressions
         if not self._compiled_follow_re.match(ref.url_string):
+            om.out.debug('web_spider will ignore %s (not match follow regex)')
             return False
 
         if self._compiled_ignore_re.match(ref.url_string):
+            om.out.debug('web_spider will ignore %s (match ignore regex)')
             return False
 
         # Implementing only forward
         if self._only_forward and not self._is_forward(ref):
+            om.out.debug('web_spider will ignore %s (is not forward)')
             return False
 
         return True

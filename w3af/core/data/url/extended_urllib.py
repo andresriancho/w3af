@@ -20,14 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import time
+import uuid
 import urllib
 import socket
+import OpenSSL
 import urllib2
 import httplib
 import threading
 import traceback
 import functools
-import OpenSSL
 
 from contextlib import contextmanager
 from collections import deque
@@ -54,6 +55,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
+from w3af.core.data.misc.encoding import smart_unicode
 from w3af.core.data.url.helpers import get_clean_body, get_exception_reason
 from w3af.core.data.url.response_meta import ResponseMeta, SUCCESS
 from w3af.core.data.url.get_average_rtt import GetAverageRTTForMutant
@@ -541,6 +543,9 @@ class ExtendedUrllib(object):
         """
         return self.settings.get_cookies()
 
+    def get_new_session(self):
+        return str(uuid.uuid4())
+
     def send_clean(self, mutant, debugging_id=None, grep=True):
         """
         Sends a mutant to the network (without using the cache) and then returns
@@ -598,7 +603,8 @@ class ExtendedUrllib(object):
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
-                    cookies=True, error_handling=True, timeout=None,
+                    cookies=True, session=None,
+                    error_handling=True, timeout=None,
                     follow_redirects=False, use_basic_auth=True,
                     respect_size_limit=True,
                     debugging_id=None,
@@ -636,6 +642,7 @@ class ExtendedUrllib(object):
             'grep': grep,
             'cache': cache,
             'cookies': cookies,
+            'session': session,
             'error_handling': error_handling,
             'timeout': timeout,
             'follow_redirects': follow_redirects,
@@ -658,7 +665,8 @@ class ExtendedUrllib(object):
         return res
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
-            grep=True, cookies=True, respect_size_limit=True,
+            grep=True, cookies=True, session=None,
+            respect_size_limit=True,
             error_handling=True, timeout=None, follow_redirects=False,
             use_basic_auth=True, use_proxy=True, debugging_id=None,
             binary_response=False):
@@ -678,6 +686,7 @@ class ExtendedUrllib(object):
                         the defined timeout as the socket timeout value for this
                         request. The timeout is specified in seconds
         :param cookies: Send stored cookies in request (or not)
+        :param session: The browser session / cookiejar to use in this request
         :param follow_redirects: Follow 30x redirects (or not)
         :param debugging_id: A unique identifier for this call to audit()
 
@@ -698,7 +707,8 @@ class ExtendedUrllib(object):
         new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
 
-        req = HTTPRequest(uri, cookies=cookies, cache=cache, data=data,
+        req = HTTPRequest(uri, cookies=cookies, session=session,
+                          cache=cache, data=data,
                           error_handling=error_handling, method='GET',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
@@ -712,7 +722,7 @@ class ExtendedUrllib(object):
             return self.send(req, grep=grep)
 
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
-             cookies=True, error_handling=True, timeout=None,
+             cookies=True, session=None, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
              debugging_id=None,
              respect_size_limit=None,
@@ -754,8 +764,8 @@ class ExtendedUrllib(object):
         new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
 
-        req = HTTPRequest(uri, data=data, cookies=cookies, cache=False,
-                          error_handling=error_handling, method='POST',
+        req = HTTPRequest(uri, data=data, cookies=cookies, session=session,
+                          cache=False, error_handling=error_handling, method='POST',
                           retries=self.settings.get_max_retrys(),
                           timeout=timeout, new_connection=new_connection,
                           use_basic_auth=use_basic_auth, use_proxy=use_proxy,
@@ -812,7 +822,7 @@ class ExtendedUrllib(object):
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         """
         def any_method(uri_opener, method, uri, data=None, headers=Headers(),
-                       cache=False, grep=True, cookies=True,
+                       cache=False, grep=True, cookies=True, session=None,
                        error_handling=True, timeout=None, use_basic_auth=True,
                        use_proxy=True,
                        follow_redirects=False,
@@ -838,7 +848,8 @@ class ExtendedUrllib(object):
             new_connection = True if timeout is not None else False
             host = uri.get_domain()
             timeout = uri_opener.get_timeout(host) if timeout is None else timeout
-            req = HTTPRequest(uri, data, cookies=cookies, cache=cache,
+            req = HTTPRequest(uri, data, cookies=cookies, session=session,
+                              cache=cache,
                               method=method,
                               error_handling=error_handling,
                               retries=max_retries,
@@ -1181,14 +1192,18 @@ class ExtendedUrllib(object):
         """
         # Log the exception
         msg = u'Failed to HTTP "%s" "%s". Reason: "%s", going to retry.'
-        om.out.debug(msg % (request.get_method(), original_url, exception))
+        original_url = smart_unicode(original_url)
+        args = (request.get_method(), original_url, exception)
+        om.out.debug(msg % args)
 
         # Don't make a lot of noise on URLTimeoutError which is pretty common
         # and properly handled by this library
         no_traceback_for = (URLTimeoutError,
                             ConnectionPoolException,
                             BadStatusLine,
-                            socket.error)
+                            socket.error,
+                            OpenSSL.SSL.SysCallError,
+                            OpenSSL.SSL.ZeroReturnError)
         if not isinstance(exception, no_traceback_for):
             msg = 'Traceback for this error: %s'
             om.out.debug(msg % traceback.format_exc())

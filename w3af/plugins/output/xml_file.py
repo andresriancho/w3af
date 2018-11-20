@@ -24,7 +24,7 @@ import sys
 import time
 import base64
 import jinja2
-import shutil
+import subprocess
 
 import lz4.frame
 
@@ -91,7 +91,7 @@ class xml_file(OutputPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    XML_OUTPUT_VERSION = '2.7'
+    XML_OUTPUT_VERSION = '2.8'
 
     def __init__(self):
         OutputPlugin.__init__(self)
@@ -198,12 +198,14 @@ class xml_file(OutputPlugin):
 
         try:
             self._add_scan_status_to_context(context)
-        except RuntimeError:
+        except RuntimeError, rte:
             # In some very strange scenarios we get this error:
             #
             #   Can NOT call get_run_time before start()
             #
-            # Just "ignore" this call to flush and write the XML on the next one
+            # Just "ignore" this call to flush and write the XML in the next call
+            msg = 'xml_file.flush() failed to add scan status to context: "%s"'
+            om.out.debug(msg % rte)
             return
 
         self._add_root_info_to_context(context)
@@ -234,24 +236,33 @@ class xml_file(OutputPlugin):
 
     @took
     def _add_scan_status_to_context(self, context):
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() start')
+
         status = self.get_w3af_core().status.get_status_as_dict()
-        total_urls = len(kb.kb.get_all_known_urls())
-        known_urls = self._get_known_urls()
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read status')
+
+        all_known_urls = kb.kb.get_all_known_urls()
+        total_urls = len(all_known_urls)
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read total_urls')
+
+        known_urls = self._get_known_urls(all_known_urls)
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read generated URLTree')
 
         scan_status = ScanStatus(self._jinja2_env, status, total_urls, known_urls)
         context.scan_status = scan_status.to_string()
+        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() rendered')
 
-    def _get_known_urls(self):
+    def _get_known_urls(self, all_known_urls):
         """
         This method calls kb.get_all_known_urls() to retrieve the URLs,
         then it structures them into a tree which has some helper methods
         to allow us to easily print them using jinja2 templates.
 
-        :return:
+        :return: A URLTree instance
         """
         url_tree = URLTree()
 
-        for url in kb.kb.get_all_known_urls():
+        for url in all_known_urls:
             url_tree.add_url(url)
 
         return url_tree
@@ -379,6 +390,8 @@ class xml_file(OutputPlugin):
         Write xml report to the file by rendering the context
         :return: None
         """
+        om.out.debug('[xml_file.flush()] Starting _write_context_to_file()')
+
         template = self._jinja2_env.get_template('root.tpl')
 
         # We use streaming as explained here:
@@ -401,7 +414,10 @@ class xml_file(OutputPlugin):
         #     run successfully at least once
         tempfh = NamedTemporaryFile(delete=False,
                                     prefix='w3af-xml-output',
-                                    suffix='xml')
+                                    suffix='.xml')
+
+        om.out.debug('[xml_file.flush()] write_context_to_file() created'
+                     ' template.stream and NamedTemporaryFile')
 
         try:
             # Write each report section to the temp file
@@ -415,11 +431,25 @@ class xml_file(OutputPlugin):
             # Close the temp file so all the content is flushed
             tempfh.close()
 
+            om.out.debug('[xml_file.flush()] write_context_to_file() starting to'
+                         ' copy temp file to destination')
+
             # Copy to the real output file
             report_file_name = os.path.expanduser(self._file_name)
-            shutil.copy(tempfh.name, report_file_name)
+
+            cmd = 'cp %s %s' % (tempfh.name, report_file_name)
+            subprocess.call(cmd, shell=True)
+
+            om.out.debug('[xml_file.flush()] write_context_to_file() finished copy'
+                         ' operation.')
+
+            stat_info = os.stat(report_file_name)
+            om.out.debug('The XML output file size is %s bytes.' % stat_info.st_size)
+
         finally:
             os.remove(tempfh.name)
+
+        om.out.debug('[xml_file.flush()] write_context_to_file() finished')
 
     def get_long_desc(self):
         """

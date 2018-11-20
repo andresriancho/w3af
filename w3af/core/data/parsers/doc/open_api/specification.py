@@ -50,9 +50,10 @@ for to_silence in SILENCE:
 
 
 class SpecificationHandler(object):
-    def __init__(self, http_response):
+    def __init__(self, http_response, no_validation=False):
         self.http_response = http_response
         self.spec = None
+        self.no_validation = no_validation
 
     def get_http_response(self):
         return self.http_response
@@ -77,13 +78,13 @@ class SpecificationHandler(object):
             for operation_name, operation in resource.operations.items():
                 operations = self._set_operation_params(operation)
 
-                for operation in operations:
+                for _operation in operations:
                     data = (self.spec,
                             api_resource_name,
                             resource,
                             operation_name,
-                            operation,
-                            operation.params)
+                            _operation,
+                            _operation.params)
                     yield data
 
     def _set_operation_params(self, operation):
@@ -108,13 +109,23 @@ class SpecificationHandler(object):
     def _parse_spec_from_dict(self, spec_dict, retry=True):
         """
         load_spec_dict will load the open api document into a dict. We use this
-        function to parse the dict into a bravado Spec instance.
+        function to parse the dict into a bravado Spec instance. By default,
+        it validates the spec, but validation may be disabled
+        by passing `no_validation=True` to the construction
 
         :param spec_dict: The output of load_spec_dict
         :return: A Spec instance which holds all the dict information in an
                  accessible way.
         """
         config = {'use_models': False}
+        if self.no_validation:
+            om.out.debug('Open API spec validation disabled')
+            config.update({
+                'validate_swagger_spec': False,
+                'validate_requests': False,
+                'validate_responses': False
+            })
+
         url_string = self.http_response.get_url().url_string
 
         try:

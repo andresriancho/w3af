@@ -55,47 +55,50 @@ class dav(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
-        # Start
         domain_path = freq.get_url().get_domain_path()
-        if domain_path not in self._already_tested_dirs:
-            self._already_tested_dirs.add(domain_path)
-            #
-            # Send the three requests in different threads, store the
-            # apply_result objects in order to be able to "join()" in the
-            # next for loop
-            #
-            # TODO: This seems to be a fairly common use case: Send args to N
-            # functions that need to be run in different threads. If possible
-            # code this into threadpool.py in order to make this code clearer
-            results = []
-            for func in [self._PUT, self._PROPFIND, self._SEARCH]:
-                apply_res = self.worker_pool.apply_async(func, (domain_path,))
-                results.append(apply_res)
+        if domain_path in self._already_tested_dirs:
+            return
 
-            for apply_res in results:
-                apply_res.get()
+        self._already_tested_dirs.add(domain_path)
+
+        #
+        # Send the three requests in different threads, store the
+        # apply_result objects in order to be able to "join()" in the
+        # next for loop
+        #
+        # TODO: This seems to be a fairly common use case: Send args to N
+        # functions that need to be run in different threads. If possible
+        # code this into threadpool.py in order to make this code clearer
+        #
+        results = []
+
+        for func in [self._PUT, self._PROPFIND, self._SEARCH]:
+            apply_res = self.worker_pool.apply_async(func, (domain_path,))
+            results.append(apply_res)
+
+        for apply_res in results:
+            apply_res.get()
 
     #pylint: disable=C0103
     def _SEARCH(self, domain_path):
         """
         Test SEARCH method.
         """
-        content = "<?xml version='1.0'?>\r\n"
-        content += "<g:searchrequest xmlns:g='DAV:'>\r\n"
-        content += "<g:sql>\r\n"
-        content += "Select 'DAV:displayname' from scope()\r\n"
-        content += "</g:sql>\r\n"
-        content += "</g:searchrequest>\r\n"
+        content = ("<?xml version='1.0'?>\r\n"
+                   "<g:searchrequest xmlns:g='DAV:'>\r\n"
+                   "<g:sql>\r\n"
+                   "Select 'DAV:displayname' from scope()\r\n"
+                   "</g:sql>\r\n"
+                   "</g:searchrequest>\r\n")
 
         res = self._uri_opener.SEARCH(domain_path, data=content,
                                       headers=self.CONTENT_TYPE)
 
-        content_matches = '<a:response>' in res or '<a:status>' in res or \
-            'xmlns:a="DAV:"' in res
+        content_matches = '<a:response>' in res or '<a:status>' in res or 'xmlns:a="DAV:"' in res
 
         if content_matches and res.get_code() in xrange(200, 300):
-            msg = 'Directory listing with HTTP SEARCH method was found at' \
-                  'directory: "%s".' % domain_path
+            msg = ('Directory listing with HTTP SEARCH method was found at'
+                   'directory: "%s".' % domain_path)
                   
             v = Vuln('Insecure DAV configuration', msg, severity.MEDIUM,
                      res.id, self.get_name())
@@ -110,12 +113,12 @@ class dav(AuditPlugin):
         """
         Test PROPFIND method
         """
-        content = "<?xml version='1.0'?>\r\n"
-        content += "<a:propfind xmlns:a='DAV:'>\r\n"
-        content += "<a:prop>\r\n"
-        content += "<a:displayname:/>\r\n"
-        content += "</a:prop>\r\n"
-        content += "</a:propfind>\r\n"
+        content = ("<?xml version='1.0'?>\r\n"
+                   "<a:propfind xmlns:a='DAV:'>\r\n"
+                   "<a:prop>\r\n"
+                   "<a:displayname:/>\r\n"
+                   "</a:prop>\r\n"
+                   "</a:propfind>\r\n")
 
         headers = copy.deepcopy(self.CONTENT_TYPE)
         headers['Depth'] = '1'
@@ -124,8 +127,8 @@ class dav(AuditPlugin):
                                         headers=headers)
 
         if "D:href" in res and res.get_code() in xrange(200, 300):
-            msg = 'Directory listing with HTTP PROPFIND method was found at' \
-                  ' directory: "%s".' % domain_path
+            msg = ('Directory listing with HTTP PROPFIND method was found at'
+                   ' directory: "%s".' % domain_path)
 
             v = Vuln('Insecure DAV configuration', msg, severity.MEDIUM,
                      res.id, self.get_name())
@@ -151,8 +154,8 @@ class dav(AuditPlugin):
         # check if uploaded
         res = self._uri_opener.GET(url, cache=True)
         if res.get_body() == rnd_content:
-            msg = 'File upload with HTTP PUT method was found at resource:' \
-                  ' "%s". A test file was uploaded to: "%s".'
+            msg = ('File upload with HTTP PUT method was found at resource:'
+                   ' "%s". A test file was uploaded to: "%s".')
             msg = msg % (domain_path, res.get_url())
             
             v = Vuln('Publicly writable directory', msg, severity.HIGH,
@@ -165,10 +168,10 @@ class dav(AuditPlugin):
 
         # Report some common errors
         elif put_response.get_code() == 500:
-            msg = 'DAV seems to be incorrectly configured. The web server' \
-                  ' answered with a 500 error code. In most cases, this means'\
-                  ' that the DAV extension failed in some way. This error was'\
-                  ' found at: "%s".' % put_response.get_url()
+            msg = ('DAV seems to be incorrectly configured. The web server'
+                   ' answered with a 500 error code. In most cases, this means'
+                   ' that the DAV extension failed in some way. This error was'
+                   ' found at: "%s".' % put_response.get_url())
 
             i = Info('DAV incorrect configuration', msg, res.id, self.get_name())
 
@@ -184,10 +187,10 @@ class dav(AuditPlugin):
             if 'supported' in put_response.get_body().lower():
                 return
             
-            msg = 'DAV seems to be correctly configured and allowing you to'\
-                  ' use the PUT method but the directory does not have the'\
-                  ' right permissions that would allow the web server to'\
-                  ' write to it. This error was found at: "%s".'
+            msg = ('DAV seems to be correctly configured and allowing you to'
+                   ' use the PUT method but the directory does not have the'
+                   ' right permissions that would allow the web server to'
+                   ' write to it. This error was found at: "%s".')
             msg = msg % put_response.get_url()
             
             i = Info('DAV incorrect configuration', msg,

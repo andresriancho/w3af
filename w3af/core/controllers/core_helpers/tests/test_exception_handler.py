@@ -51,7 +51,9 @@ class TestExceptionHandler(unittest.TestCase):
         except Exception, e:
             exec_info = sys.exc_info()
             enabled_plugins = ''
-            self.exception_handler.handle(self.status, e, exec_info,
+            self.exception_handler.handle(self.status,
+                                          e,
+                                          exec_info,
                                           enabled_plugins)
 
         scan_id = self.exception_handler.get_scan_id()
@@ -69,7 +71,8 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
         self.assertEquals(edata.filename, 'test_exception_handler.py')
-        self.assertEquals(edata.exception, e)
+        self.assertEquals(edata.exception_msg, str(e))
+        self.assertEquals(edata.exception_class, e.__class__.__name__)
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
         self.assertEquals(edata.lineno, 50)
@@ -159,7 +162,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.filename, 'test_exception_handler.py')
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 134)
+        self.assertEquals(edata.lineno, 137)
 
     def test_handle_multi_calls(self):
 
@@ -186,7 +189,7 @@ class TestExceptionHandler(unittest.TestCase):
 
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 167)
+        self.assertEquals(edata.lineno, 170)
 
 
 class FakeStatus(CoreStatus):

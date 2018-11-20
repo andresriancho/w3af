@@ -47,7 +47,7 @@ from w3af.core.data.url.handlers.blacklist import BlacklistHandler
 from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler, NoOpErrorHandler
-from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, LIST, BOOL
+from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, URL_LIST, BOOL
 
 USER_AGENT_HEADER = 'User-Agent'
 
@@ -551,8 +551,8 @@ class OpenerSettings(Configurable):
         ol.add(o)
         
         d = 'Ignore session cookies'
-        h = ('If set to True, w3af will ignore all session cookies sent by'
-             ' the web application')
+        h = ('If set to True, w3af will not extract cookies from HTTP responses'
+             ' nor send HTTP cookies in requests.')
         o = opt_factory('ignore_session_cookies',
                         cfg.get('ignore_session_cookies'), d, 'boolean',
                         help=h, tabid='Cookies')
@@ -606,13 +606,13 @@ class OpenerSettings(Configurable):
 
         d = ('Comma separated list of URLs which will always be detected as'
              ' 404 pages')
-        o = opt_factory('always_404', cfg.get('always_404'), d, LIST,
+        o = opt_factory('always_404', cfg.get('always_404'), d, URL_LIST,
                         tabid='404 settings')
         ol.add(o)
         
         d = ('Comma separated list of URLs which will never be detected as'
              ' 404 pages')
-        o = opt_factory('never_404', cfg.get('never_404'), d, LIST,
+        o = opt_factory('never_404', cfg.get('never_404'), d, URL_LIST,
                         tabid='404 settings')
         ol.add(o)
         
