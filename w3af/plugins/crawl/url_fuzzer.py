@@ -107,7 +107,10 @@ class url_fuzzer(CrawlPlugin):
             mutants_chain = chain(self._mutate_by_appending(url),
                                   self._mutate_path(url),
                                   self._mutate_file_type(url),
-                                  self._mutate_domain_name(url))
+                                  self._mutate_domain_name(url),
+                                  self._mutate_by_prepending(url),
+                                  self._mutate_file_name(url)
+                                  )
             url_repeater = repeat(url)
             args = izip(url_repeater, mutants_chain)
 
