@@ -248,6 +248,37 @@ class url_fuzzer(CrawlPlugin):
                 url_copy.set_file_name(filename)
                 yield url_copy
 
+    def _mutate_by_prepending(self, url):
+        """
+        Adds something before the file name of the url (mutate the file being requested)
+
+        :param url: A URL to transform.
+        :return: A list of URL's that mutate the original url passed
+                 as parameter.
+
+        >>> from w3af.core.data.parsers.doc.url import URL
+        >>> u = url_fuzzer()
+        >>> url = URL( 'http://www.w3af.com/' )
+        >>> mutants = u._mutate_by_prepending( url )
+        >>> list(mutants)
+        []
+
+        >>> url = URL( 'http://www.w3af.com/foo.html' )
+        >>> mutants = u._mutate_by_prepending( url )
+        >>> URL( 'http://www.w3af.com/.foo.html' ) in mutants
+        True
+        >>> URL( 'http://www.w3af.com/Copy_of_foo.html' ) in mutants
+        True
+
+        """
+        if not url.url_string.endswith('/') and url.url_string.count('/') >= 3:
+            for to_prepend in self._prependables:
+                url_copy = url.copy()
+                filename = url_copy.get_file_name()
+                filename = to_prepend + filename
+                url_copy.set_file_name(filename)
+                yield url_copy
+
     def _mutate_file_type(self, url):
         """
         If the url is : "http://www.foobar.com/asd.txt" this method returns:
