@@ -49,11 +49,11 @@ class url_fuzzer(CrawlPlugin):
                     '.$$$', '.sav', '.save', '.saved', '.swp', '.swo',
                     '.copy', '.original', '.orig', '.org', '.txt', '.default',
                     '.tpl', '.tmp', '.temp', '.conf', '.nsx', '.cs', '.csproj',
-                    '.vb', '.0', '.1', '.2', '.arc', '.lst', '.inc', '::$DATA',
+                    '.vb', '.0', '.1', '.2', '.arc', '.lst', '::$DATA',
                     '.sql.gz', '.bak.sql', '.bak.sql.gz', '.bak.sql.bz2',
                     '.bak.sql.tar.gz'
                    )
-    _prependables = ('_', '.', '~', '.~', 'Copy_', 'Copy_of_', 'Copy_(1)_of_',
+    _prependables = ('_', '.', '~', '.~', '.$', 'Copy_', 'Copy_of_', 'Copy_(1)_of_',
                      'Copy_(2)_of_', 'Copy ', 'Copy of ', 'backup-'
                     )
     _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
