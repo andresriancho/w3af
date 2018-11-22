@@ -57,8 +57,8 @@ class url_fuzzer(CrawlPlugin):
                      'Copy_(2)_of_', 'Copy ', 'Copy of ', 'backup-'
                     )
     _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
-                    'bzip2', 'zip', 'rar'
-                    )
+                    'bzip2', 'zip', 'rar', 'tar'
+                   )
     _file_types = (
         'inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
         'bak', 'bak1', 'backup', 'backup1', 'old', 'old1', 'c', 'cpp',
