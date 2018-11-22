@@ -41,11 +41,18 @@ class url_fuzzer(CrawlPlugin):
     Try to find backups, and other related files.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    _appendables = ('~', '.tar.gz', '.gz', '.7z', '.cab', '.tgz',
-                    '.gzip', '.bzip2', '.inc', '.zip', '.rar', '.jar', '.java',
-                    '.class', '.properties', '.bak', '.bak1', '.bkp', '.back',
-                    '.backup', '.backup1', '.old', '.old1', '.$$$'
-                    )
+    _appendables = ('~', '~~', '_', '.', '.tar.gz', '.gz', '.7z', '.cab',
+                    '.tgz', '.gzip', '.bzip2', '.inc', '.zip', '.rar',
+                    '.tar', '.jar', '.java', '.class', '.properties',
+                    '.bak', '.bak1', '_bak', '-bak', '.bk', '.bkp', '.back',
+                    '.bac', '.backup', '.backup1', '.old', '.old1', '_old',
+                    '.$$$', '.sav', '.save', '.saved', '.swp', '.swo',
+                    '.copy', '.original', '.orig', '.org', '.txt', '.default',
+                    '.tpl', '.tmp', '.temp', '.conf', '.nsx', '.cs', '.csproj',
+                    '.vb', '.0', '.1', '.2', '.arc', '.lst', '.inc', '::$DATA',
+                    '.sql.gz', '.bak.sql', '.bak.sql.gz', '.bak.sql.bz2',
+                    '.bak.sql.tar.gz'
+                   )
     _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
                     'bzip2', 'zip', 'rar'
                     )
