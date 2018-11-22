@@ -59,11 +59,12 @@ class url_fuzzer(CrawlPlugin):
     _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
                     'bzip2', 'zip', 'rar', 'tar'
                    )
-    _file_types = (
-        'inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
-        'bak', 'bak1', 'backup', 'backup1', 'old', 'old1', 'c', 'cpp',
-        'cs', 'vb', 'phps', 'disco', 'ori', 'orig', 'original'
-    )
+    _file_types = ('inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
+                   'bak', 'bak1', 'backup', 'backup1', 'old', 'old1', 'c', 'cpp',
+                   'cs', 'vb', 'phps', 'disco', 'ori', 'orig', 'original', 'save',
+                   'saved', 'bkp', 'txt', 'tpl', 'tmp', 'temp', 'bakup', 'bakup1',
+                   'sql'
+                  )
 
     def __init__(self):
         CrawlPlugin.__init__(self)
