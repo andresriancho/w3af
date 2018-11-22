@@ -53,6 +53,9 @@ class url_fuzzer(CrawlPlugin):
                     '.sql.gz', '.bak.sql', '.bak.sql.gz', '.bak.sql.bz2',
                     '.bak.sql.tar.gz'
                    )
+    _prependables = ('_', '.', '~', '.~', 'Copy_', 'Copy_of_', 'Copy_(1)_of_',
+                     'Copy_(2)_of_', 'Copy ', 'Copy of ', 'backup-'
+                    )
     _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
                     'bzip2', 'zip', 'rar'
                     )
