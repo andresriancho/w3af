@@ -311,6 +311,33 @@ class url_fuzzer(CrawlPlugin):
                 url_copy.set_extension(filetype)
                 yield url_copy
 
+    def _mutate_file_name(self, url):
+        filename = url.get_file_name()
+        if filename:
+            domain = url.get_domain_path()
+            url_string = domain.url_string
+            name = filename[:filename.rfind(u'.')]
+            extension = url.get_extension()
+
+            mutate_name_testing = (
+                url_string + '#' + filename + '#',
+                url_string + name + ' (copy).' + extension,
+                url_string + name + ' - Copy.' + extension,
+                url_string + name + ' copy.' + extension,
+                url_string + '.~lock.' + filename + '#',
+                url_string + name + '-backup.' + extension,
+                url_string + name + '-bkp.' + extension,
+                url_string + '.' + name + '.swp',
+                url_string + '_' + name + '.swp',
+                url_string + '.' + name + '.swo',
+                url_string + '_' + name + '.swo',
+                url_string + '~' + name + '.tmp'
+            )
+
+            for change in mutate_name_testing:
+                newurl = URL(change)
+                yield newurl
+
     def _mutate_path(self, url):
         """
         Mutate the path instead of the file.
