@@ -330,11 +330,11 @@ class url_fuzzer(CrawlPlugin):
                 url_string + '.~lock.' + filename + '#',
                 url_string + name + '-backup.' + extension,
                 url_string + name + '-bkp.' + extension,
-                url_string + '.' + name + '.swp',
-                url_string + '_' + name + '.swp',
-                url_string + '.' + name + '.swo',
-                url_string + '_' + name + '.swo',
-                url_string + '~' + name + '.tmp'
+                url_string + '.' + filename + '.swp',
+                url_string + '_' + filename + '.swp',
+                url_string + '.' + filename + '.swo',
+                url_string + '_' + filename + '.swo',
+                url_string + '~' + filename + '.tmp'
             )
 
             for change in mutate_name_testing:
