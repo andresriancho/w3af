@@ -41,7 +41,7 @@ class url_fuzzer(CrawlPlugin):
     Try to find backups, and other related files.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    _appendables = ('~', '~~', '_', '.', '.tar.gz', '.gz', '.7z', '.cab',
+    _appendables = {'~', '~~', '_', '.', '.tar.gz', '.gz', '.7z', '.cab',
                     '.tgz', '.gzip', '.bzip2', '.inc', '.zip', '.rar',
                     '.tar', '.jar', '.java', '.class', '.properties',
                     '.bak', '.bak1', '_bak', '-bak', '.bk', '.bkp', '.back',
@@ -52,19 +52,19 @@ class url_fuzzer(CrawlPlugin):
                     '.vb', '.0', '.1', '.2', '.arc', '.lst', '::$DATA',
                     '.sql.gz', '.bak.sql', '.bak.sql.gz', '.bak.sql.bz2',
                     '.bak.sql.tar.gz'
-                   )
-    _prependables = ('_', '.', '~', '.~', '.$', 'Copy_', 'Copy_of_', 'Copy_(1)_of_',
+                    }
+    _prependables = {'_', '.', '~', '.~', '.$', 'Copy_', 'Copy_of_', 'Copy_(1)_of_',
                      'Copy_(2)_of_', 'Copy ', 'Copy of ', 'backup-'
-                    )
-    _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
+                    }
+    _backup_exts = {'tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
                     'bzip2', 'zip', 'rar', 'tar'
-                   )
-    _file_types = ('inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
+                   }
+    _file_types = {'inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
                    'bak', 'bak1', 'backup', 'backup1', 'old', 'old1', 'c', 'cpp',
                    'cs', 'vb', 'phps', 'disco', 'ori', 'orig', 'original', 'save',
                    'saved', 'bkp', 'txt', 'tpl', 'tmp', 'temp', 'bakup', 'bakup1',
                    'sql'
-                  )
+                  }
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -322,7 +322,7 @@ class url_fuzzer(CrawlPlugin):
             name = filename[:filename.rfind(u'.')]
             extension = url.get_extension()
 
-            mutate_name_testing = (
+            mutate_name_testing = {
                 url_string + '#' + filename + '#',
                 url_string + name + ' (copy).' + extension,
                 url_string + name + ' - Copy.' + extension,
@@ -335,7 +335,7 @@ class url_fuzzer(CrawlPlugin):
                 url_string + '.' + filename + '.swo',
                 url_string + '_' + filename + '.swo',
                 url_string + '~' + filename + '.tmp'
-            )
+            }
 
             for change in mutate_name_testing:
                 newurl = URL(change)
