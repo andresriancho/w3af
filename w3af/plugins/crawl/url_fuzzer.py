@@ -319,17 +319,22 @@ class url_fuzzer(CrawlPlugin):
         if filename:
             domain = url.get_domain_path()
             url_string = domain.url_string
-            name = filename[:filename.rfind(u'.')]
             extension = url.get_extension()
+
+            if extension:
+                extension = '.' + extension
+                name = filename[:filename.rfind(u'.')]
+            else:
+                name = filename
 
             mutate_name_testing = {
                 url_string + '#' + filename + '#',
-                url_string + name + ' (copy).' + extension,
-                url_string + name + ' - Copy.' + extension,
-                url_string + name + ' copy.' + extension,
+                url_string + name + ' (copy)' + extension,
+                url_string + name + ' - Copy' + extension,
+                url_string + name + ' copy' + extension,
                 url_string + '.~lock.' + filename + '#',
-                url_string + name + '-backup.' + extension,
-                url_string + name + '-bkp.' + extension,
+                url_string + name + '-backup' + extension,
+                url_string + name + '-bkp' + extension,
                 url_string + '.' + filename + '.swp',
                 url_string + '_' + filename + '.swp',
                 url_string + '.' + filename + '.swo',
