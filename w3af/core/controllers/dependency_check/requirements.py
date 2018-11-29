@@ -55,7 +55,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
 
                      # This was used for testing, but now it's required for
                      # regular users too, do not remove!
-                     PIPDependency('psutil', 'psutil', '2.2.1'),
+                     PIPDependency('psutil', 'psutil', '5.4.8'),
 
                      # Added for the crawl.ds_store plugin
                      PIPDependency('ds_store', 'ds-store', '1.1.2'),
