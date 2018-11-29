@@ -624,7 +624,8 @@ class CoreStrategy(object):
                     targets_with_404.append(url)
 
         if targets_with_404:
-            urls = ' - %s\n'.join(u.url_string for u in targets_with_404)
+            urls = [' - %s\n' % u.url_string for u in targets_with_404]
+            urls = ''.join(urls)
             om.out.information('w3af identified the user-configured URLs listed'
                                ' below as non-existing pages (404). This could'
                                ' result in a scan with low test coverage: some'
