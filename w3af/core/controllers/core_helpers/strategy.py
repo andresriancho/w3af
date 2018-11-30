@@ -307,17 +307,17 @@ class CoreStrategy(object):
 
             finished, consumer_forced_end = route_result
 
-        #
-        # Handle the case where the scan reached the max time
-        #
-        if self._scan_reached_max_time():
-            msg = ('The scan has reached the maximum scan time of %s minutes.'
-                   ' The scan will end and some vulnerabilities might not be'
-                   ' identified.')
-            args = (cf.cf.get('max_scan_time'), )
-            om.out.information(msg % args)
+            #
+            # Handle the case where the scan reached the max time
+            #
+            if self._scan_reached_max_time():
+                msg = ('The scan has reached the maximum scan time of %s minutes.'
+                       ' The scan will end and some vulnerabilities might not be'
+                       ' identified.')
+                args = (cf.cf.get('max_scan_time'), )
+                om.out.information(msg % args)
 
-            self._w3af_core.stop()
+                self._w3af_core.stop()
 
     def _scan_reached_max_time(self):
         """
