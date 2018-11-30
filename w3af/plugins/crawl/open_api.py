@@ -396,8 +396,8 @@ class open_api(CrawlPlugin):
         ol.add(o)
 
         d = 'Path to Open API specification'
-        h = ('By default, the plugin looks for the API specification on the target,',
-             ' but sometimes applications do not provide an API specification.',
+        h = ('By default, the plugin looks for the API specification on the target,'
+             ' but sometimes applications do not provide an API specification.'
              ' Set this parameter to specify a local path to the API specification.'
              ' The file must have .json or .yaml extension.')
         o = opt_factory('custom_spec_location', self._custom_spec_location, d, INPUT_FILE, help=h)
