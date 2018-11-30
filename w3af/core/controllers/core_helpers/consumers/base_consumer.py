@@ -178,6 +178,8 @@ class BaseConsumer(Process):
 
             if work_unit == POISON_PILL:
 
+                om.out.debug('Processing POISON_PILL in %s' % self._thread_name)
+
                 try:
                     # Close the pool and wait for everyone to finish
                     if self._threadpool is not None:
@@ -341,11 +343,16 @@ class BaseConsumer(Process):
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         """
+        msg = 'Called %s consumer join()'
+        om.out.debug(msg % self._thread_name)
+
         start_time = time.time()
 
         if not self.is_alive():
             # This return has a long history, follow it here:
             # https://github.com/andresriancho/w3af/issues/1172
+            msg = 'The %s consumer thread was not alive'
+            om.out.debug(msg % self._thread_name)
             return
 
         if not self._poison_pill_sent:
@@ -356,7 +363,13 @@ class BaseConsumer(Process):
             # send the poison pill
             self.in_queue_put(POISON_PILL, force=True)
 
+            msg = 'Sent POISON_PILL to the %s consumer in_queue'
+            om.out.debug(msg % self._thread_name)
+
         self.in_queue.join()
+
+        msg = 'Successfully joined the %s consumer in_queue'
+        om.out.debug(msg % self._thread_name)
 
         if self._threadpool is not None:
             self._threadpool.close()
