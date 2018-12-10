@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import sys
 import time
 import random
@@ -36,10 +37,6 @@ from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.data.misc.cached_queue import CachedQueue
 
-# For some reason getting a randint with a large MAX like this is faster than
-# with a small one like 10**10
-MAX_RAND = 10**24
-
 
 def task_decorator(method):
     """
@@ -49,7 +46,7 @@ def task_decorator(method):
     
     @wraps(method)
     def _wrapper(self, *args, **kwds):
-        rnd_id = random.randint(1, MAX_RAND)
+        rnd_id = os.urandom(32).encode('hex')
         function_id = '%s_%s' % (method.__name__, rnd_id)
 
         self._add_task(function_id)
@@ -258,7 +255,7 @@ class BaseConsumer(Process):
         try:
             self._tasks_in_progress.pop(function_id)
         except KeyError:
-            raise AssertionError('The function %s was not found!' % function_id)
+            raise AssertionError('The function with ID %s was not found!' % function_id)
 
     def _add_task(self, function_id):
         """
