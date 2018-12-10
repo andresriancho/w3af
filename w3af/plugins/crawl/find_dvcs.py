@@ -391,13 +391,23 @@ class find_dvcs(CrawlPlugin):
         filenames = set()
 
         for line in body.split('\n'):
-            if '/' not in line:
+            # https://docstore.mik.ua/orelly/other/cvs/cvs-CHP-6-SECT-9.htm
+            #
+            # /name/revision/timestamp[+conflict]/options/tagdate
+            if not line.startswith('/'):
                 continue
 
-            slashes = line.split('/')
-            if len(slashes) != 6:
+            # /name/revision/timestamp[+conflict]/options/tagdate
+            tokens = line.split('/')
+            if len(tokens) != 6:
                 continue
-            filenames.add(slashes[1])
+
+            # Example value: Sun Apr 7 01:29:26 1996
+            timestamp = tokens[2]
+            if timestamp.count(':') <= 1:
+                continue
+
+            filenames.add(tokens[1])
 
         return filenames
 
