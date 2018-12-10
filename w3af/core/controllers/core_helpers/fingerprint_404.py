@@ -323,9 +323,13 @@ class Fingerprint404(object):
         else:
             # Need to send the second request and calculate the diff, there is
             # no previous knowledge that we can use
+            #
+            # Send exclude=[known_404_1.url] to prevent the function from sending
+            # an HTTP request to the same forced 404 URL
             known_404_2 = send_request_generate_404(self._uri_opener,
                                                     http_response,
-                                                    debugging_id)
+                                                    debugging_id,
+                                                    exclude=[known_404_1.url])
 
             known_404_1.diff, _ = diff(known_404_1.body, known_404_2.body)
             self._404_responses[query.normalized_path] = known_404_1
@@ -334,7 +338,7 @@ class Fingerprint404(object):
             # The two known 404 we generated are equal, and we only get here
             # if the query is not equal to known_404_1, this means that the
             # application is using the same 404 response body for all responses
-            # in this path, but did not use that one for the query response.
+            # in this path, but did not use that one for the `query` response.
             msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
                    ' [the two known 404 responses are equal (id:%s)]')
             args = (http_response.get_url(),
