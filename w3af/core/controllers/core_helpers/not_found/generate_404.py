@@ -32,8 +32,9 @@ from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResp
 
 
 def should_flip(index, seed):
-    random.seed(index + seed)
-    return random.randint(1, 100) % 5 in (0, 1, 2)
+    rnd = random.Random()
+    rnd.seed(index + seed)
+    return rnd.randint(1, 100) % 5 in (0, 1, 2)
 
 
 def generate_404_without_filename():
