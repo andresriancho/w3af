@@ -1138,6 +1138,7 @@ class ExtendedUrllib(object):
                                                    binary_response=req.with_binary_response())
         http_resp.set_id(res.id)
         http_resp.set_from_cache(from_cache)
+        http_resp.set_debugging_id(req.debugging_id)
 
         args = (res.id, from_cache, grep, http_resp.get_wait_time(), req.debugging_id)
         flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f,did=%s)' % args
