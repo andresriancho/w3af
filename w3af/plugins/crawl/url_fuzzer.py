@@ -47,8 +47,7 @@ class url_fuzzer(CrawlPlugin):
                     '.backup', '.backup1', '.old', '.old1', '.$$$'
                     )
     _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
-                    'bzip2', 'zip', 'rar'
-                    )
+                    'bzip2', 'zip', 'rar')
     _file_types = (
         'inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
         'bak', 'bak1', 'backup', 'backup1', 'old', 'old1', 'c', 'cpp',
@@ -107,54 +106,40 @@ class url_fuzzer(CrawlPlugin):
         Perform a simple GET to see if the result is an error or not, and then
         run the actual fuzzing.
         """
-        response = self._uri_opener.GET(mutant, cache=True,
+        response = self._uri_opener.GET(mutant,
+                                        cache=True,
                                         headers=self._headers)
 
-        if not (is_404(response) or
-        response.get_code() in (403, 401) or
-        self._return_without_eval(mutant)):
+        if is_404(response):
+            return
 
-            # Create the fuzzable request and send it to the core
-            fr = FuzzableRequest.from_http_response(response)
-            self.output_queue.put(fr)
-            
-            #
-            #   Save it to the kb (if new)!
-            #
-            if response.get_url() not in self._seen and response.get_url().get_file_name():
-                desc = 'A potentially interesting file was found at: "%s".'
-                desc = desc % response.get_url()
+        if response.get_code() in (403, 401, 301, 302, 500, 400):
+            return
 
-                i = Info('Potentially interesting file', desc, response.id,
-                         self.get_name())
-                i.set_url(response.get_url())
-                
-                kb.kb.append(self, 'files', i)
-                om.out.information(i.get_desc())
+        # Create the fuzzable request and send it to the core
+        fr = FuzzableRequest.from_http_response(response)
+        self.output_queue.put(fr)
 
-                # Report only once
-                self._seen.add(response.get_url())
+        #
+        #   Save it to the kb (if new)!
+        #
+        if response.get_url() in self._seen:
+            return
 
-    def _return_without_eval(self, uri):
-        """
-        This method tries to lower the false positives.
-        """
-        if not uri.has_query_string():
-            return False
+        if not response.get_url().get_file_name():
+            return
 
-        uri.set_file_name(uri.get_file_name() + rand_alnum(7))
+        # Report only once
+        self._seen.add(response.get_url())
 
-        try:
-            response = self._uri_opener.GET(uri, cache=True,
-                                            headers=self._headers)
-        except BaseFrameworkException, e:
-            msg = 'An exception was raised while requesting "%s", the error'
-            msg += 'message is: "%s"'
-            om.out.error(msg % (uri, e))
-        else:
-            if not is_404(response):
-                return True
-        return False
+        desc = 'A potentially interesting file was found at: "%s".'
+        desc %= response.get_url()
+
+        i = Info('Potentially interesting file', desc, response.id, self.get_name())
+        i.set_url(response.get_url())
+
+        kb.kb.append(self, 'files', i)
+        om.out.information(i.get_desc())
 
     def _mutate_domain_name(self, url):
         """
