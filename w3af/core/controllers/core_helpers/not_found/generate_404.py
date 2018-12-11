@@ -306,7 +306,7 @@ def send_404(uri_opener, url404, debugging_id=None):
         om.out.debug(message % args)
         raise FourOhFourDetectionException(message % args)
     else:
-        msg = 'Generated forced 404 for %s (id:%s, did:%s, len:%s)'
+        msg = 'Received response for 404 URL %s (id:%s, did:%s, len:%s)'
         args = (url404, response.id, debugging_id, len(response.body))
         om.out.debug(msg % args)
 
