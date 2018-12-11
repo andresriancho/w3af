@@ -356,7 +356,7 @@ class Fingerprint404(object):
         diff_x = known_404_1.diff
         _, diff_y = diff(known_404_1.body, query.body)
 
-        is_fuzzy_equal = fuzzy_equal(diff_x, diff_y, IS_EQUAL_RATIO)
+        is_fuzzy_equal = fuzzy_equal_for_diff(diff_x, diff_y, IS_EQUAL_RATIO)
 
         if not is_fuzzy_equal:
             msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
