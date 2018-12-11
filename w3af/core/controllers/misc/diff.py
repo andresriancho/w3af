@@ -45,11 +45,11 @@ def diff(a, b):
     b = smart_str_ignore(b)
 
     dmp = dmp_module.diff_match_patch()
+    dmp.Diff_Timeout = MAX_DIFF_TIME
 
     changes = dmp.diff_main(a,
                             b,
-                            checklines=True,
-                            deadline=MAX_DIFF_TIME)
+                            checklines=True)
 
     dmp.diff_cleanupSemantic(changes)
 
