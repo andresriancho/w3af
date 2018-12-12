@@ -413,22 +413,19 @@ class find_dvcs(CrawlPlugin):
 
     def filter_special_character(self, line):
         """
-        Analyze the possible regexp contents and extract filenames or
-        directories without regexp.
+        Takes a line from .gitignore (or similar) and removes all the
+        regular expression special characters.
 
-        :param line: A regexp filename or directory.
-        :return: A real filename or directory.
+        Example gitignore files:
+            https://github.com/github/gitignore
+
+        :param line: A line from gitignore
+        :return: The same line, without the special characters.
         """
-        special_characters = ['*', '?', '[', ']', ':']
+        special_characters = ['*', '?', '[', ']', ':', '!']
 
         for char in special_characters:
-            if char in line:
-                l = line.split(char)[0]
-                if '/' in l:
-                    line = '/'.join(l.split('/')[:-1])
-                else:
-                    line = ''
-                    break
+            line = line.replace(char, '')
 
         return line
 
@@ -458,6 +455,10 @@ class find_dvcs(CrawlPlugin):
                 return []
 
             if line.startswith('#'):
+                continue
+
+            # Lines with spaces are usually good indicators of false positives
+            if ' ' in line:
                 continue
 
             line = self.filter_special_character(line)
