@@ -278,7 +278,13 @@ class w3afCore(object):
 
         except Exception, e:
             msg = 'Unhandled exception "%s", traceback:\n%s'
-            om.out.error(msg % (e, traceback.format_exc()))
+
+            if hasattr(e, 'original_traceback_string'):
+                traceback_string = e.original_traceback_string
+            else:
+                traceback_string = traceback.format_exc()
+
+            om.out.error(msg % (e, traceback_string))
             raise
 
         finally:
