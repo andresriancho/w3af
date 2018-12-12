@@ -185,8 +185,7 @@ class w3afCore(object):
         # Init the 404 detection for the whole framework
         fp_404_db = fingerprint_404_singleton(cleanup=True)
         fp_404_db.set_url_opener(self.uri_opener)
-        fp_404_db.set_worker_pool(self.worker_pool)
-    
+
     def start(self):
         """
         The user interfaces call this method to start the whole scanning

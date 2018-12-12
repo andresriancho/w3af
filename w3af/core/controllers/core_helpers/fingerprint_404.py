@@ -57,8 +57,7 @@ class Fingerprint404(object):
         #   the knowledge about the server's 404 response bodies.
         #
         self._uri_opener = None
-        self._worker_pool = None
-        
+
         #
         #   Store the 404 responses in a dict which has normalized paths
         #   as keys and 404 data as values.
@@ -337,22 +336,6 @@ class Fingerprint404(object):
             known_404_1.diff_with_id = known_404_2.id
             self._404_responses[query.normalized_path] = known_404_1
 
-        if known_404_1.diff == '':
-            # The two known 404 we generated are equal, and we only get here
-            # if the query is not equal to known_404_1, this means that the
-            # application is using the same 404 response body for all responses
-            # in this path, but did not use that one for the `query` response.
-            msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
-                   ' [the two known 404 responses are equal (id:%s)]')
-            args = (http_response.get_url(),
-                    http_response.id,
-                    http_response.get_code(),
-                    len(http_response.get_body()),
-                    debugging_id,
-                    known_404.id)
-            om.out.debug(msg % args)
-            return False
-
         diff_x = known_404_1.diff
         _, diff_y = diff(known_404_1.body, query.body)
 
@@ -391,9 +374,6 @@ class Fingerprint404(object):
 
     def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
-
-    def set_worker_pool(self, worker_pool):
-        self._worker_pool = worker_pool
 
     def _get_404_response(self, http_response, query, debugging_id):
         """
