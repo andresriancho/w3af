@@ -78,4 +78,4 @@ class FourOhFourResponse(object):
         return url.url_string
 
     def __repr__(self):
-        return '<FourOhFourResponse (path:%s, body:"%s")>' % (self.path, self.body[:20])
+        return '<FourOhFourResponse (url:%s, code:%s)>' % (self.url, self.code)
