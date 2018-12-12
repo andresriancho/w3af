@@ -644,3 +644,15 @@ class MockResponse(object):
                 return True
 
         return False
+
+
+LOREM = """Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer
+        eu lacus accumsan arcu fermentum euismod. Donec pulvinar porttitor
+        tellus. Aliquam venenatis. Donec facilisis pharetra tortor.  In nec
+        mauris eget magna consequat convallis. Nam sed sem vitae odio
+        pellentesque interdum. Sed consequat viverra nisl. Suspendisse arcu
+        metus, blandit quis, rhoncus, pharetra eget, velit. Mauris
+        urna. Morbi nonummy molestie orci. Praesent nisi elit, fringilla ac,
+        suscipit non, tristique vel, mauris. Curabitur vel lorem id nisl porta
+        adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate tristique
+        enim. Donec quis lectus a justo imperdiet tempus."""
