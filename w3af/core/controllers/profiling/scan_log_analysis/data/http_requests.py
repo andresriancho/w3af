@@ -84,7 +84,7 @@ def get_total_http_requests(scan_log_filename, scan):
         requests_by_method[method] = (count, '%.2f%%' % (count / float(total) * 100,))
 
     output.append(ListOutputItem('HTTP request method analysis',
-                                 responses_by_code))
+                                 requests_by_method))
 
     urls_list = urls.items()
     urls_list.sort(by_value)
