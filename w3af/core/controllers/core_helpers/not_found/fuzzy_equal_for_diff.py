@@ -58,8 +58,8 @@ def fuzzy_equal_for_diff(diff_x, diff_y, is_equal_ratio):
     split_x = remove_hashes(split_x)
     split_y = remove_hashes(split_y)
 
-    x = u'\n'.join(split_x)
-    y = u'\n'.join(split_y)
+    x = '\n'.join(split_x)
+    y = '\n'.join(split_y)
 
     return fuzzy_equal(x, y, threshold=is_equal_ratio)
 
