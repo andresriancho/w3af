@@ -50,7 +50,9 @@ class ExceptionHandler(object):
     """
 
     MAX_EXCEPTIONS_PER_PLUGIN = 3
-    NO_HANDLING = (MemoryError, OSError, IOError,
+    NO_HANDLING = (MemoryError,
+                   OSError,
+                   IOError,
                    ScanMustStopByUnknownReasonExc,
                    ScanMustStopException,
                    ScanMustStopByUserRequest,
@@ -94,10 +96,9 @@ class ExceptionHandler(object):
         except_type, except_class, tb = exec_info
 
         #
-        # There are some exceptions, that because of their nature I don't want
-        # to handle. So what I do is to raise them in order for them to get to
-        # w3afCore.py , most likely to the except lines around
-        # self.strategy.start()
+        # There are some exceptions, that because of their nature, can't be
+        # handled here. Raise them so that w3afCore.py, most likely to the
+        # except lines around self.strategy.start(), can decide what to do
         #
         if isinstance(exception, self.NO_HANDLING):
             raise exception, None, tb
