@@ -509,10 +509,12 @@ class ExtendedUrllib(object):
         anymore.
         """
         self._opener = None
+
         self.clear()
+        self.clear_timeout()
+
         self.settings.clear_cookies()
         self.settings.clear_cache()
-        self.clear_timeout()
         self.settings.close_connections()
 
     def restart(self):
