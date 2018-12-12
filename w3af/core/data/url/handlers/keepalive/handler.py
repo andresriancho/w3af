@@ -96,6 +96,8 @@ class KeepAliveHandler(object):
         """
         Close all open connections
         """
+        debug('Closing all connections')
+
         for conn in self._cm.get_all():
             self._cm.remove_connection(conn, reason='close all connections')
 

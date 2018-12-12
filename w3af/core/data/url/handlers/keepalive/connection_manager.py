@@ -60,8 +60,12 @@ class ConnectionManager(object):
         for conns in (self._free_conns, self._used_conns):
             conns.discard(conn)
 
-        args = (conn, reason)
         msg = 'Removed %s from pool. Reason "%s"'
+        args = (conn, reason)
+        debug(msg % args)
+
+        msg = 'Free connection size %s / Used connection size %s'
+        args = (len(self._free_conns), len(self._used_conns))
         debug(msg % args)
 
     def free_connection(self, conn):
