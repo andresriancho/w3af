@@ -109,18 +109,13 @@ class CrawlInfrastructure(BaseConsumer):
                 if work_unit == POISON_PILL:
 
                     try:
-                        # Close the pool and wait for everyone to finish
-                        self._threadpool.close()
-                        self._threadpool.join()
-                        self._threadpool = None
-
-                        self._running = False
-                        self._teardown()
+                        self._process_poison_pill()
+                    except Exception, e:
+                        msg = 'An exception was found while processing poison pill: "%s"'
+                        om.out.debug(msg % e)
                     finally:
-                        # Finish this consumer and everyone consuming the output
-                        self._out_queue.put(POISON_PILL)
+                        self._running = False
                         self.in_queue.task_done()
-                        self.set_has_finished()
                         break
 
                 else:

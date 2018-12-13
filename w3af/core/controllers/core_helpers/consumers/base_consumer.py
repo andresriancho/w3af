@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import sys
 import time
-import random
 
 from Queue import Empty
 from functools import wraps
@@ -174,22 +173,13 @@ class BaseConsumer(Process):
                 continue
 
             if work_unit == POISON_PILL:
-
-                om.out.debug('Processing POISON_PILL in %s' % self._thread_name)
-
                 try:
-                    # Close the pool and wait for everyone to finish
-                    if self._threadpool is not None:
-                        self._threadpool.close()
-                        self._threadpool.join()
-                        self._threadpool = None
-
-                    self._teardown()
+                    self._process_poison_pill()
+                except Exception, e:
+                    msg = 'An exception was found while processing poison pill: "%s"'
+                    om.out.debug(msg % e)
                 finally:
-                    # Finish this consumer and everyone consuming the output
-                    self._out_queue.put(POISON_PILL)
                     self.in_queue.task_done()
-                    self.set_has_finished()
                     break
 
             else:
@@ -198,6 +188,72 @@ class BaseConsumer(Process):
                     self._consume_wrapper(work_unit)
                 finally:
                     self.in_queue.task_done()
+
+    def _process_poison_pill(self):
+        om.out.debug('Processing POISON_PILL in %s' % self._thread_name)
+
+        try:
+            self._shutdown_threadpool()
+        except:
+            # All the logging is done inside the method, an empty
+            # except clause is acceptable in this case
+            pass
+
+        try:
+            self._call_teardown()
+        except:
+            # All the logging is done inside the method, an empty
+            # except clause is acceptable in this case
+            pass
+        finally:
+            self._out_queue.put(POISON_PILL)
+            self.set_has_finished()
+
+    def _shutdown_threadpool(self):
+        if self._threadpool is None:
+            return
+
+        #
+        # Close the pool and wait for everyone to finish
+        #
+        # Quickly set the threadpool attribute to None to prevent other calls
+        # to this method from running close() or join() twice on the same pool
+        # This should never happen (only one POISON_PILL should ever be sent
+        # to a queue) but...
+        #
+        pool = self._threadpool
+        self._threadpool = None
+
+        msg_fmt = 'Exception found while %s pool in %s consumer: "%s"'
+
+        try:
+            pool.close()
+        except Exception, e:
+            args = ('closing', self.get_name(), e)
+            om.out.debug(msg_fmt % args)
+
+        try:
+            pool.join()
+        except Exception, e:
+            args = ('joining', self.get_name(), e)
+            om.out.debug(msg_fmt % args)
+
+            # First try to call join(), which is nice and waits for all the
+            # tasks to complete. If that fails, then call terminate()
+            try:
+                pool.terminate()
+            except Exception, e:
+                args = ('terminating', self.get_name(), e)
+                om.out.debug(msg_fmt % args)
+
+    def _call_teardown(self):
+        # Finish this consumer and everyone consuming the output
+        try:
+            self._teardown()
+        except Exception, e:
+            msg = 'Exception found while calling teardown() in %s consumer: "%s"'
+            args = (self.get_name(), e)
+            om.out.debug(msg % args)
 
     def get_running_task_count(self):
         """
