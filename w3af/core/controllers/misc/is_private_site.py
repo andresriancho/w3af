@@ -19,15 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import socket
-
-
-TEN_X = re.compile(r'(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_SEVEN_TWO = re.compile(r'(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_NINE_TWO = re.compile(r'(192\.168\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_TWO_SEVEN = re.compile(r'(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_SIX_NINE = re.compile(r'(169\.254\.\d?\d?\d?\.\d?\d?\d?)')
+import ipaddress
 
 
 def is_private_site(domain_or_ip_address):
@@ -52,19 +45,7 @@ def is_private_site(domain_or_ip_address):
 
 
 def matches_private_ip(ip_address):
-    if TEN_X.match(ip_address):
-        return True
-
-    if ONE_SEVEN_TWO.match(ip_address):
-        return True
-
-    if ONE_NINE_TWO.match(ip_address):
-        return True
-
-    if ONE_TWO_SEVEN.match(ip_address):
-        return True
-
-    if ONE_SIX_NINE.match(ip_address):
-        return True
-
-    return False
+    try:
+        return ipaddress.ip_address(ip_address).is_private
+    except:
+        return False

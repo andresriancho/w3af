@@ -98,7 +98,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('lz4', 'lz4', '1.1.0'),
 
                      # Vulners API plugin needs this lib
-                     PIPDependency('vulners', 'vulners', '1.3.0')
+                     PIPDependency('vulners', 'vulners', '1.3.0'),
+
+                     PIPDependency('ipaddresses', 'ipaddresses', '0.0.2')
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
