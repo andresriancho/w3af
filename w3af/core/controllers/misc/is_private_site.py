@@ -23,11 +23,11 @@ import re
 import socket
 
 
-TEN_X = re.compile('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_SEVEN_TWO = re.compile('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_NINE_TWO = re.compile('(192\.168\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_TWO_SEVEN = re.compile('(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_SIX_NINE = re.compile('(169\.254\.\d?\d?\d?\.\d?\d?\d?)')
+TEN_X = re.compile(r'(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
+ONE_SEVEN_TWO = re.compile(r'(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
+ONE_NINE_TWO = re.compile(r'(192\.168\.\d?\d?\d?\.\d?\d?\d?)')
+ONE_TWO_SEVEN = re.compile(r'(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
+ONE_SIX_NINE = re.compile(r'(169\.254\.\d?\d?\d?\.\d?\d?\d?)')
 
 
 def is_private_site(domain_or_ip_address):
