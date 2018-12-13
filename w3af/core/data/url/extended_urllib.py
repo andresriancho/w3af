@@ -260,7 +260,7 @@ class ExtendedUrllib(object):
             if not self._should_auto_adjust_timeout_now():
                 return
 
-        host = request.get_host()
+        host = request.get_domain()
         average_rtt, num_samples = self.get_average_rtt(TIMEOUT_ADJUST_LIMIT,
                                                         host)
 
@@ -289,7 +289,7 @@ class ExtendedUrllib(object):
         :return: None
         """
         # Get current timeout
-        host = request.get_host()
+        host = request.get_domain()
         timeout = self.get_timeout(host)
 
         # We increase it without a limit because the limit is set in set_timeout
@@ -344,11 +344,11 @@ class ExtendedUrllib(object):
         if self.get_total_requests() % TIMEOUT_ADJUST_LIMIT != 0:
             return False
 
-        elapsed = time.clock() - self._adjust_timeout_last_call
+        elapsed = time.time() - self._adjust_timeout_last_call
         if elapsed < TIMEOUT_UPDATE_ELAPSED_MIN:
             return False
 
-        self._adjust_timeout_last_call = time.clock()
+        self._adjust_timeout_last_call = time.time()
         return True
 
     def get_total_requests(self):
@@ -676,7 +676,7 @@ class ExtendedUrllib(object):
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, cookies=True, session=None,
-            respect_size_limit=True,
+            respect_size_limit=True, new_connection=False,
             error_handling=True, timeout=None, follow_redirects=False,
             use_basic_auth=True, use_proxy=True, debugging_id=None,
             binary_response=False):
@@ -714,7 +714,6 @@ class ExtendedUrllib(object):
         self.setup()
 
         host = uri.get_domain()
-        new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
 
         req = HTTPRequest(uri, cookies=cookies, session=session,
@@ -734,7 +733,7 @@ class ExtendedUrllib(object):
     def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
              cookies=True, session=None, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
-             debugging_id=None,
+             debugging_id=None, new_connection=False,
              respect_size_limit=None,
              binary_response=False):
         """
@@ -771,7 +770,6 @@ class ExtendedUrllib(object):
         #
         data = str(data)
         host = uri.get_domain()
-        new_connection = True if timeout is not None else False
         timeout = self.get_timeout(host) if timeout is None else timeout
 
         req = HTTPRequest(uri, data=data, cookies=cookies, session=session,
@@ -835,6 +833,7 @@ class ExtendedUrllib(object):
                        use_proxy=True,
                        follow_redirects=False,
                        debugging_id=None,
+                       new_connection=False,
                        respect_size_limit=None,
                        binary_response=False):
             """
@@ -853,7 +852,6 @@ class ExtendedUrllib(object):
 
             max_retries = uri_opener.settings.get_max_retrys()
 
-            new_connection = True if timeout is not None else False
             host = uri.get_domain()
             timeout = uri_opener.get_timeout(host) if timeout is None else timeout
             req = HTTPRequest(uri, data, cookies=cookies, session=session,
@@ -1179,7 +1177,7 @@ class ExtendedUrllib(object):
 
             # Before sending it again we update the timeout, which could have
             # changed because of the error we just found
-            host = req.get_uri().get_domain()
+            host = req.get_host()
             req.set_timeout(self.get_timeout(host))
 
             return self.send(req, grep=grep)
@@ -1227,7 +1225,7 @@ class ExtendedUrllib(object):
         reason = get_exception_reason(exception)
         reason = reason or str(exception)
 
-        host = request.get_host()
+        host = request.get_domain()
 
         # The HTTP request failed, this most likely means that we received a
         # timeout or some other network / protocol error.
@@ -1432,7 +1430,7 @@ class ExtendedUrllib(object):
         # pylint: enable=E0702
 
     def _log_successful_response(self, response):
-        host = response.get_url().get_net_location()
+        host = response.get_url().get_domain()
         self._last_responses.append(ResponseMeta(True,
                                                  SUCCESS,
                                                  rtt=response.get_wait_time(),

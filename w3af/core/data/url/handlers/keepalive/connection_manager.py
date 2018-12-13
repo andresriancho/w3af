@@ -38,13 +38,11 @@ class ConnectionManager(object):
         # Stats
         self.request_counter = 0
 
-    def remove_connection(self, conn, host=None, reason=UNKNOWN):
+    def remove_connection(self, conn, reason=UNKNOWN):
         """
         Remove a connection, it was closed by the server.
 
         :param conn: Connection to remove
-        :param host: The host for to the connection. If passed, the connection
-                     will be removed faster.
         :param reason: Why this connection is removed
         """
         # Just make sure we don't leak open connections
@@ -76,6 +74,7 @@ class ConnectionManager(object):
             self._used_conns.discard(conn)
             self._free_conns.add(conn)
             conn.current_request_start = None
+            conn.connection_manager_move_ts = time.time()
 
     def replace_connection(self, bad_conn, req, conn_factory):
         """
@@ -86,13 +85,12 @@ class ConnectionManager(object):
         :param conn_factory: The factory function for new connection creation.
         """
         # Remove
-        self.remove_connection(bad_conn,
-                               host=req.get_host(),
-                               reason='replace connection')
+        self.remove_connection(bad_conn, reason='replace connection')
 
         # Create the new one
         new_conn = conn_factory(req)
         new_conn.current_request_start = time.time()
+        new_conn.connection_manager_move_ts = time.time()
         self._used_conns.add(new_conn)
 
         # Log
@@ -101,7 +99,16 @@ class ConnectionManager(object):
 
         return new_conn
 
-    def log_stats(self, host):
+    def get_connection_pool_stats(self, host_port):
+        # General stats
+        free = len(self.get_all_free_for_host_port(host_port))
+        in_use = list(self.get_all_used_for_host_port(host_port))
+        args = (host_port, free, len(in_use), self.MAX_CONNECTIONS, len(in_use) + free)
+
+        msg = '%s connection pool stats (free:%s / in_use:%s / max:%s / total:%s)'
+        return msg % args
+
+    def log_stats(self, host_port):
         """
         Log stats every N requests for a connection (which in most cases translate
         1:1 to HTTP requests).
@@ -113,18 +120,14 @@ class ConnectionManager(object):
         if self.request_counter % self.LOG_STATS_EVERY != 0:
             return
 
-        # General stats
-        free = len(self.get_all_free_for_host(host))
-        in_use = list(self.get_all_used_for_host(host))
-        args = (host, free, len(in_use), self.MAX_CONNECTIONS)
-
-        msg = '%s connection pool stats (free:%s / in_use:%s / max:%s)'
-        om.out.debug(msg % args)
+        stats = self.get_connection_pool_stats(host_port)
+        om.out.debug(stats)
 
         # Connection in use time stats
         def sort_by_time(c1, c2):
             return cmp(c1.current_request_start, c2.current_request_start)
 
+        in_use = list(self.get_all_used_for_host_port(host_port))
         in_use.sort(sort_by_time)
         top_offenders = in_use[:5]
 
@@ -141,8 +144,80 @@ class ConnectionManager(object):
             args = (conn.id, spent)
             connection_info.append('(%s, %.2f sec)' % args)
 
-        connection_info = ' '.join(connection_info)
-        om.out.debug('Connections with more in use time: %s' % connection_info)
+        if connection_info:
+            connection_info = ' '.join(connection_info)
+            om.out.debug('Connections with more in use time: %s' % connection_info)
+            return
+
+        if not top_offenders:
+            om.out.debug('There are no connections marked as in use in the'
+                         ' connection pool at this time')
+            return
+
+        without_request_start = ' '.join([conn.id for conn in top_offenders])
+        msg = ('Connections with more in use time: No connections marked'
+               ' as in_use have started to send the first byte. They are'
+               ' in_use but still inactive. The in_use connections are: %s'
+               % without_request_start)
+        om.out.debug(msg)
+
+    def get_free_connection_to_close(self):
+        """
+        Find a connection that is in self._free and return it.
+        :return: An HTTP connection that will be closed
+        """
+        try:
+            return self._free_conns.pop()
+        except KeyError:
+            return None
+
+    def _reuse_connection(self, req, host_port):
+        """
+        Find an existing connection to reuse
+
+        :param req: HTTP request
+        :param host: The host to connect to
+        :return:
+        """
+        for conn in self.get_all_free_for_host_port(host_port):
+            try:
+                self._free_conns.remove(conn)
+            except KeyError:
+                # The connection was removed from the set by another thread
+                continue
+            else:
+                self._used_conns.add(conn)
+                conn.current_request_start = time.time()
+                conn.connection_manager_move_ts = time.time()
+
+                msg = 'Reusing free %s to use in %s'
+                args = (conn, req)
+                debug(msg % args)
+
+                return conn
+
+    def _create_new_connection(self, req, conn_factory, host_port, conn_total):
+        """
+        Creates a new HTTP connection using conn_factory
+
+        :return: An HTTP connection
+        """
+        debug('Creating a new HTTPConnection for request %s' % req)
+
+        # Create a new connection
+        conn = conn_factory(req)
+        conn.current_request_start = time.time()
+        conn.connection_manager_move_ts = time.time()
+
+        # Store it internally
+        self._used_conns.add(conn)
+
+        # Log
+        msg = 'Added %s to pool to use in %s, current %s pool size: %s'
+        args = (conn, req, host_port, conn_total + 1)
+        debug(msg % args)
+
+        return conn
 
     def get_available_connection(self, req, conn_factory):
         """
@@ -152,13 +227,78 @@ class ConnectionManager(object):
         :param conn_factory: Factory function for connection creation. Receives
                              req as parameter.
         """
-        waited_time_for_conn = 0.0
-        host = req.get_host()
+        host_port = req.get_netloc()
+        self.log_stats(host_port)
 
-        self.log_stats(host)
+        waited_time_for_conn = 0.0
 
         while waited_time_for_conn < self.GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME:
-            if not req.new_connection:
+            #
+            # One potential situation is that w3af is not freeing the
+            # connections properly because of a bug. Connections that never
+            # leave self._used_conns or self._free_conns are going to slowly kill
+            # the HTTP connection pool, and then the whole framework, since at
+            # some point (when the max is reached) no more HTTP requests will be
+            # sent.
+            #
+            self.cleanup_broken_connections()
+
+            conn_total = self.get_connections_total(host_port)
+
+            #
+            # If the connection pool is not full let's try to create a new connection
+            # this is the default case, we want to quickly populate the connection
+            # pool and, only if the pool is full, re-use the existing connections
+            #
+            # FIXME: Doing this here without a lock leads to
+            #
+            if conn_total < self.MAX_CONNECTIONS:
+                conn = self._create_new_connection(req, conn_factory, host_port, conn_total)
+
+                if waited_time_for_conn > 0:
+                    msg = 'Waited %.2fs for a connection to be available in the pool.'
+                    om.out.debug(msg % waited_time_for_conn)
+
+                return conn
+
+            if req.new_connection:
+                #
+                # The user is requesting a new HTTP connection, this is a rare
+                # case because req.new_connection is False by default.
+                #
+                # Before this feature was used together with req.timeout, but
+                # now it is not required anymore.
+                #
+                # This code path is reached when there is no more space in the
+                # connection pool, but because new_connection is set, it is
+                # possible to force a free connection to be closed:
+                #
+                if len(self._free_conns) > len(self._used_conns):
+                    #
+                    # Close one of the free connections and create a new one.
+                    #
+                    # Close an existing free connection because the framework
+                    # is not using them (more free than used), this action should
+                    # not degrade the connection pool performance
+                    #
+                    conn = self.get_free_connection_to_close()
+
+                    if conn is not None:
+                        self.remove_connection(conn, reason='need fresh connection')
+                        return self._create_new_connection(req,
+                                                           conn_factory,
+                                                           host_port,
+                                                           conn_total)
+
+                msg = ('The HTTP request %s has new_connection set to True.'
+                       ' This forces the ConnectionManager to wait until a'
+                       ' new connection can be created. No pre-existing'
+                       ' connections can be reused.')
+                args = (req,)
+                debug(msg % args)
+
+            else:
+                #
                 # If the user is not specifying that he needs a new HTTP
                 # connection for this request then check if we can reuse an
                 # existing free connection from the connection pool
@@ -167,71 +307,37 @@ class ConnectionManager(object):
                 # most likely re-use the connections
                 #
                 # A user sets req.new_connection to True when he wants to
-                # do something special with the connection (such as setting
-                # a specific timeout)
-                for conn in self.get_all_free_for_host(host):
-                    try:
-                        self._free_conns.remove(conn)
-                    except KeyError:
-                        # The connection was removed from the set by another thread
-                        continue
-                    else:
-                        self._used_conns.add(conn)
-                        conn.current_request_start = time.time()
+                # do something special with the connection. In the past a
+                # new_connection was set to True when a timeout was specified,
+                # that is not required anymore!
+                #
+                conn = self._reuse_connection(req, host_port)
+                if conn is not None:
+                    return conn
 
-                        msg = 'Reusing free %s to use in %s'
-                        args = (conn, req)
-                        debug(msg % args)
-
-                        return conn
-
-            debug('Going to create a new HTTPConnection')
-
-            # If the connection pool is not full let's try to create a new conn
-            conn_total = self.get_connections_total(host)
-            if conn_total < self.MAX_CONNECTIONS:
-                # Create a new connection
-                conn = conn_factory(req)
-                conn.current_request_start = time.time()
-
-                # Store it internally
-                self._used_conns.add(conn)
-
-                # Log
-                msg = 'Added %s to pool to use in %s, current %s pool size: %s'
-                args = (conn, req, host, conn_total + 1)
-                debug(msg % args)
-
-                if waited_time_for_conn > 0:
-                    msg = 'Waited %.2fs for a connection to be available in the pool.'
-                    om.out.debug(msg % waited_time_for_conn)
-
-                return conn
-
-            # Well, the connection pool for this host is full, this
-            # means that many threads are sending requests to the host
-            # and using the connections. This is not bad, just shows
-            # that w3af is keeping the connections busy
+            #
+            # Well, the connection pool for this host is full AND there are
+            # no free connections to re-use, this means that many threads are
+            # sending requests to the host and using the connections. This is
+            # not bad, just shows that w3af is keeping the connections busy
             #
             # Another reason for this situation is that the connections
             # are *really* slow => taking many seconds to retrieve the
             # HTTP response => not freeing often
             #
             # We should wait a little and try again
-            args = (conn_total, host)
-            msg = ('MAX_CONNECTIONS (%s) for host %s reached. Waiting for one'
-                   ' to be released')
+            #
+            msg = ('Will not create a new connection because MAX_CONNECTIONS'
+                   ' (%s) for host %s was reached. Waiting for a connection'
+                   ' to be released to send HTTP request %s. %s')
+
+            stats = self.get_connection_pool_stats(host_port)
+            args = (self.MAX_CONNECTIONS, host_port, req, stats)
+
             debug(msg % args)
 
             waited_time_for_conn += self.GET_AVAILABLE_CONNECTION_RETRY_SECS
             time.sleep(self.GET_AVAILABLE_CONNECTION_RETRY_SECS)
-
-            # Yet another potential situation is that w3af is not freeing the
-            # connections properly because of a bug. Connections that never
-            # leave the self._used_conns are going to slowly kill the HTTP
-            # client, since at some point (when the max is reached) no more HTTP
-            # requests will be sent.
-            self.cleanup_broken_connections()
 
         msg = ('HTTP connection pool (keepalive) waited too long (%s sec)'
                ' for a free connection, giving up. This usually occurs'
@@ -244,79 +350,107 @@ class ConnectionManager(object):
 
     def cleanup_broken_connections(self):
         """
-        Find connections that have been in self._used_conns for more than
-        FORCEFULLY_CLOSE_CONN_TIME. Close and remove them.
+        Find connections that have been in self._used_conns or self._free_conns
+        for more than FORCEFULLY_CLOSE_CONN_TIME. Close and remove them.
 
         :return: None
         """
+        now = time.time()
+
         for conn in self._used_conns.copy():
             current_request_start = conn.current_request_start
             if current_request_start is None:
                 continue
 
-            time_in_used_state = time.time() - current_request_start
+            time_in_used_state = now - current_request_start
+
             if time_in_used_state > self.FORCEFULLY_CLOSE_CONN_TIME:
                 reason = ('Connection %s has been in "used_conns" for more than'
-                          ' FORCEFULLY_CLOSE_CONN_TIME. Forcefully closing it.')
+                          ' %.2f seconds, forcefully closing it')
+                args = (conn, self.FORCEFULLY_CLOSE_CONN_TIME)
 
-                om.out.debug(reason % conn)
+                om.out.debug(reason % args)
 
-                self.remove_connection(conn,
-                                       host=None,
-                                       reason=reason)
+                # This does a conn.close() and removes from self._used_conns
+                self.remove_connection(conn, reason=reason)
+            else:
+                msg = '%s has been in used state for %.2f seconds'
+                args = (conn, time_in_used_state)
+                debug(msg % args)
+
+        for conn in self._free_conns.copy():
+            connection_manager_move_ts = conn.connection_manager_move_ts
+            if connection_manager_move_ts is None:
+                continue
+
+            time_in_free_state = now - connection_manager_move_ts
+
+            if time_in_free_state > self.FORCEFULLY_CLOSE_CONN_TIME:
+                reason = ('Connection %s has been in "free_conns" for more than'
+                          ' %.2f seconds, forcefully closing it')
+                args = (conn, self.FORCEFULLY_CLOSE_CONN_TIME)
+
+                om.out.debug(reason % args)
+
+                # This does a conn.close() and removes from self._used_conns
+                self.remove_connection(conn, reason=reason)
+            else:
+                msg = '%s has been in free state for %.2f seconds'
+                args = (conn, time_in_free_state)
+                debug(msg % args)
 
     def iter_all_connections(self):
         for conns in (self._free_conns, self._used_conns):
             for conn in conns.copy():
                 yield conn
 
-    def get_all_free_for_host(self, host):
+    def get_all_free_for_host_port(self, host_port):
         """
-        :param host: The host to filter by
+        :param host_port: The host and port to filter by
         :return: All free connections for the specified host
         """
         free_conns = set()
 
         for conn in self._free_conns.copy():
-            if conn.host == host:
+            if conn.host_port == host_port:
                 free_conns.add(conn)
 
         return free_conns
 
-    def get_all_used_for_host(self, host):
+    def get_all_used_for_host_port(self, host_port):
         """
-        :param host: The host to filter by
+        :param host_port: The host and port to filter by
         :return: All in use connections for the specified host
         """
         used_conns = set()
 
         for conn in self._used_conns.copy():
-            if conn.host == host:
+            if conn.host_port == host_port:
                 used_conns.add(conn)
 
         return used_conns
 
-    def get_all(self, host=None):
+    def get_all(self, host_port=None):
         """
         If <host> is passed return a set containing the created connections
         for that host. Otherwise return a dict with 'host: str' and
         'conns: list' as items.
 
-        :param host: Host
+        :param host_port: Host and port to filter by
         """
         conns = set()
 
         for conn in self.iter_all_connections():
-            if host is None:
+            if host_port is None:
                 conns.add(conn)
-            elif host == conn.host:
+            elif conn.host_port == host_port:
                 conns.add(conn)
 
         return conns
 
-    def get_connections_total(self, host=None):
+    def get_connections_total(self, host_port=None):
         """
         If <host> is None return the grand total of open connections;
         otherwise return the total of created conns for <host>.
         """
-        return len(self.get_all(host=host))
+        return len(self.get_all(host_port=host_port))
