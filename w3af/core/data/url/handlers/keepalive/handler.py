@@ -308,6 +308,7 @@ class KeepAliveHandler(object):
         The real workhorse.
         """
         self._update_socket_timeout(conn, req)
+
         try:
             conn.putrequest(req.get_method(), req.get_selector(),
                             skip_host=1, skip_accept_encoding=1)
