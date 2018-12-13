@@ -39,15 +39,14 @@ def is_private_site(domain_or_ip_address):
         return True
 
     try:
-        addrinfo = socket.getaddrinfo(domain_or_ip_address, 0)
-    except socket.gaierror:
-        # If I can't resolve this DNS name, then it's a private domain
-        return True
+        ip_address = socket.gethostbyname(domain_or_ip_address)
+    except socket.gaierror, se:
+        # raises exception when it's not found
+        if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
+            return True
     else:
-        ip_address_list = [info[4][0] for info in addrinfo]
-        for ip_address in ip_address_list:
-            if matches_private_ip(ip_address):
-                return True
+        if matches_private_ip(ip_address):
+            return True
 
     return False
 
