@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import socket
-
 from itertools import izip, repeat
 
 import w3af.core.controllers.output_manager as om
@@ -29,11 +27,11 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args, one_to_many
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
-
+from w3af.core.controllers.misc.is_private_site import is_private_site
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.dc.headers import Headers
@@ -59,8 +57,7 @@ class find_vhosts(InfrastructurePlugin):
 
         # Internal variables
         self._first_exec = True
-        self._already_queried = ScalableBloomFilter()
-        self._can_resolve_domain_names = False
+        self._already_queried_dns = ScalableBloomFilter()
 
     def discover(self, fuzzable_request):
         """
@@ -69,78 +66,39 @@ class find_vhosts(InfrastructurePlugin):
         :param fuzzable_request: A fuzzable_request instance that contains
                                  (among other things) the URL to test.
         """
-        analysis_result = self._analyze(fuzzable_request)
-        self._report_results(fuzzable_request, analysis_result)
-
-    def _analyze(self, fuzzable_request):
-        vhost_list = []
-
         if self._first_exec:
             self._first_exec = False
-            vhost_list.extend(self._generic_vhosts(fuzzable_request))
 
-        # I also test for ""dead links"" that the web developer left in the
+            self._check_potential_vhosts(fuzzable_request,
+                                         self._get_common_virtual_hosts(fuzzable_request))
+
+        # Also test for ""dead links"" that the web developer left in the
         # page. For example, if w3af finds a link to:
         #
         #   "http://corp.intranet.com/"
         #
-        # It will try to resolve the dns name, if it fails, it will try
+        # It will try to resolve the DNS name, if it fails, it will try
         # to request that page from the server
-        vhost_list.extend(self._get_dead_links(fuzzable_request))
+        self._check_potential_vhosts(fuzzable_request,
+                                     self._get_dead_domains(fuzzable_request))
 
-        return vhost_list
-
-    def _report_results(self, fuzzable_request, analysis_result):
+    def _get_dead_domains(self, fuzzable_request):
         """
-        Report our findings
+        Find every link on a HTML document verify if the domain can be resolved
+
+        :return: Yield domains that can not be resolved or resolve to a private
+                 IP address
         """
-        reported = set()
-
-        for vhost, request_id in analysis_result:
-            if vhost in reported:
-                continue
-
-            reported.add(vhost)
-
-            domain = fuzzable_request.get_url().get_domain()
-            desc = (u'Found a new virtual host at the target web server, the'
-                    u' virtual host name is: "%s". To access this site'
-                    u' you might need to change your DNS resolution settings'
-                    u' in order to point "%s" to the IP address of "%s".')
-            desc %= (vhost, vhost, domain)
-
-            v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
-                             request_id, self.get_name(), fuzzable_request)
-
-            kb.kb.append(self, 'find_vhosts', v)
-            om.out.information(v.get_desc())
-
-    def _get_dead_links(self, fuzzable_request):
-        """
-        Find every link on a HTML document verify if the domain is reachable or
-        not; after that, verify if the web found a different name for the target
-        site or if we found a new site that is linked. If the link points to a
-        dead site then report it (it could be pointing to some private address
-        or something...)
-        """
-        # Get some responses to compare later
         original_response = self._uri_opener.GET(fuzzable_request.get_uri(), cache=True)
-
-        base_url = fuzzable_request.get_url().base_url()
-        base_response = self._uri_opener.GET(base_url, cache=True)
-        base_resp_body = base_response.get_body()
 
         try:
             dp = parser_cache.dpc.get_document_parser_for(original_response)
         except BaseFrameworkException:
             # Failed to find a suitable parser for the document
-            return []
-
-        # Set the non existent response
-        non_existent_response = self._get_non_exist(fuzzable_request)
-        non_existent_resp_body = non_existent_response.get_body()
+            return
 
         # Note:
+        #
         # - With parsed_references I'm 100% that it's really something in the
         #   HTML that the developer intended to add.
         #
@@ -152,61 +110,37 @@ class find_vhosts(InfrastructurePlugin):
         parsed_references, re_references = dp.get_references()
         parsed_references.extend(re_references)
 
-        res = []
-        vhosts = self._verify_link_domain(parsed_references)
-
-        for domain, vhost_response in self._send_in_threads(base_url, vhosts):
-
-            vhost_resp_body = vhost_response.get_body()
-
-            if fuzzy_not_equal(vhost_resp_body, base_resp_body, 0.35) and \
-            fuzzy_not_equal(vhost_resp_body, non_existent_resp_body, 0.35):
-                res.append((domain, vhost_response.id))
-            else:
-                desc = (u'The content of "%s" references a non existent domain:'
-                        u' "%s". This can be a broken link, or an internal'
-                        u' domain name.')
-                desc %= (fuzzable_request.get_url(), domain)
-                
-                i = Info(u'Internal hostname in HTML link', desc,
-                         original_response.id, self.get_name())
-                i.set_url(fuzzable_request.get_url())
-                
-                kb.kb.append(self, 'find_vhosts', i)
-                om.out.information(i.get_desc())
-
-        return res
-
-    def _verify_link_domain(self, parsed_references):
-        """
-        Verify each link in parsed_references and yield the ones that can NOT
-        be resolved using DNS.
-        """
         for link in parsed_references:
             domain = link.get_domain()
 
-            if domain in self._already_queried:
+            if domain in self._already_queried_dns:
                 continue
 
-            self._already_queried.add(domain)
+            self._already_queried_dns.add(domain)
 
-            try:
-                host = socket.gethostbyname(domain)
-            except socket.gaierror, se:
-                # raises exception when it's not found
-                if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
-                    yield domain
-            except:
-                # We get here on other exceptions, an example is when the
-                # domain contains non-alnum chars
-                pass
-            else:
-                if host in ('127.0.0.1',):
-                    yield host
+            if not is_private_site(domain):
+                continue
 
-    def _generic_vhosts(self, fuzzable_request):
+            desc = (u'The content of "%s" references a non existent domain: "%s".'
+                    u' This can be a broken link, or an internal domain name.')
+            desc %= (fuzzable_request.get_url(), domain)
+
+            i = Info(u'Internal hostname in HTML link', desc,
+                     original_response.id, self.get_name())
+            i.set_url(fuzzable_request.get_url())
+
+            kb.kb.append(self, 'find_vhosts', i)
+            om.out.information(i.get_desc())
+
+            yield domain
+
+    def _check_potential_vhosts(self, fuzzable_request, vhosts):
         """
-        Test some generic virtual hosts, only do this once.
+        Send the HTTP requests to check for potential findings
+
+        :param fuzzable_request: The fuzzable request as received by the plugin
+        :param vhosts: A generator yielding potential vhosts to check
+        :return: None, vulnerabilities (if any) are written to the KB
         """
         # Get some responses to compare later
         base_url = fuzzable_request.get_url().base_url()
@@ -216,22 +150,28 @@ class find_vhosts(InfrastructurePlugin):
         non_existent_response = self._get_non_exist(fuzzable_request)
         non_existent_resp_body = non_existent_response.get_body()
 
-        res = []
-        vhosts = self._get_common_virtual_hosts(base_url)
-
         for vhost, vhost_response in self._send_in_threads(base_url, vhosts):
-            vhost_resp_body = vhost_response.get_body()
 
             # If they are *really* different (not just different by some chars)
-            if not fuzzy_not_equal(vhost_resp_body, orig_resp_body, 0.35):
+            if fuzzy_equal(vhost_response.get_body(), orig_resp_body, 0.35):
                 continue
 
-            if not fuzzy_not_equal(vhost_resp_body, non_existent_resp_body, 0.35):
+            if fuzzy_equal(vhost_response.get_body(), non_existent_resp_body, 0.35):
                 continue
 
-            res.append((vhost, vhost_response.id))
+            domain = fuzzable_request.get_url().get_domain()
+            desc = (u'Found a new virtual host at the target web server, the'
+                    u' virtual host name is: "%s". To access this site'
+                    u' you might need to change your DNS resolution settings'
+                    u' in order to point "%s" to the IP address of "%s".')
+            desc %= (vhost, vhost, domain)
 
-        return res
+            ids = [vhost_response.id, original_response.id, non_existent_response.id]
+            v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
+                             ids, self.get_name(), fuzzable_request)
+
+            kb.kb.append(self, 'find_vhosts', v)
+            om.out.information(v.get_desc())
 
     def _send_in_threads(self, base_url, vhosts):
         base_url_repeater = repeat(base_url)
@@ -252,18 +192,18 @@ class find_vhosts(InfrastructurePlugin):
 
     def _get_non_exist(self, fuzzable_request):
         base_url = fuzzable_request.get_url().base_url()
-        non_existent_domain = 'iDoNotExistPleaseGoAwayNowOrDie' + rand_alnum(4)
+        non_existent_domain = 'iDoNotExistPleaseGoAwayNowOrDie%s.com' % rand_alnum(4)
         return self._http_get_vhost(base_url, non_existent_domain)
 
-    def _get_common_virtual_hosts(self, base_url):
+    def _get_common_virtual_hosts(self, fuzzable_request):
         """
         Get a list of common virtual hosts based on the target domain
 
-        :param base_url: The target URL object.
+        :param fuzzable_request: The fuzzable request as received by the plugin
         :return: A list of possible domain names that could be hosted in the
                  same web server that "domain".
-
         """
+        base_url = fuzzable_request.get_url().base_url()
         domain = base_url.get_domain()
         root_domain = base_url.get_root_domain()
 
@@ -277,11 +217,11 @@ class find_vhosts(InfrastructurePlugin):
             if is_ip_address(domain):
                 continue
 
-            # intranet.www.targetsite.com
+            # intranet.www.target.com
             yield subdomain + '.' + domain
-            # intranet.targetsite.com
+            # intranet.target.com
             yield subdomain + '.' + root_domain
-            # intranet.targetsite
+            # intranet.target
             yield subdomain + '.' + root_domain.split('.')[0]
 
     def get_long_desc(self):
