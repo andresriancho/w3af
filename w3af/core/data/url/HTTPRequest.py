@@ -210,8 +210,10 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         return copy.deepcopy(self)
 
     def __repr__(self):
-        fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s, did:%s)>'
+        fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s, did:%s, timeout:%s, new_connection:%s)>'
         return fmt % (self.url_object.url_string,
                       self.cookies,
                       self.get_from_cache,
-                      self.debugging_id)
+                      self.debugging_id,
+                      self.timeout,
+                      self.new_connection)
