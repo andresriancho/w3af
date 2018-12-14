@@ -20,14 +20,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import sys
+import cPickle
 import unittest
 import threading
-import sys
 
 from nose.plugins.attrib import attr
 
-from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
+from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler, ExceptionData
 from w3af.core.controllers.core_helpers.status import CoreStatus
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 
 
 class TestExceptionHandler(unittest.TestCase):
@@ -194,3 +200,84 @@ class TestExceptionHandler(unittest.TestCase):
 
 class FakeStatus(CoreStatus):
     pass
+
+
+class TestExceptionData(unittest.TestCase):
+
+    def get_fuzzable_request(self):
+        headers = Headers([(u'Hello', u'World')])
+        post_data = KeyValueContainer(init_val=[('a', ['b'])])
+        url = URL('http://w3af.org')
+        return FuzzableRequest(url, method='GET', post_data=post_data,
+                               headers=headers)
+
+    def test_without_traceback(self):
+        tb = None
+        enabled_plugins = '{}'
+
+        fr = self.get_fuzzable_request()
+
+        core = w3afCore()
+        status = CoreStatus(core)
+        status.set_running_plugin('audit', 'sqli', log=False)
+        status.set_current_fuzzable_request('audit', fr)
+
+        exception_data = ExceptionData(status,
+                                       KeyError(),
+                                       tb,
+                                       enabled_plugins,
+                                       store_tb=False)
+
+        pickled_ed = cPickle.dumps(exception_data)
+        unpickled_ed = cPickle.loads(pickled_ed)
+
+        self.assertEqual(exception_data.to_json(),
+                         unpickled_ed.to_json())
+
+    def test_serialize_deserialize(self):
+        try:
+            raise KeyError
+        except Exception, e:
+            except_type, except_class, tb = sys.exc_info()
+            enabled_plugins = '{}'
+
+            fr = self.get_fuzzable_request()
+
+            core = w3afCore()
+            status = CoreStatus(core)
+            status.set_running_plugin('audit', 'sqli', log=False)
+            status.set_current_fuzzable_request('audit', fr)
+
+            exception_data = ExceptionData(status,
+                                           e,
+                                           tb,
+                                           enabled_plugins,
+                                           store_tb=False)
+
+            pickled_ed = cPickle.dumps(exception_data)
+            unpickled_ed = cPickle.loads(pickled_ed)
+
+            self.assertEqual(exception_data.to_json(),
+                             unpickled_ed.to_json())
+
+    def test_fail_traceback_serialize(self):
+        try:
+            raise KeyError
+        except Exception, e:
+            except_type, except_class, tb = sys.exc_info()
+            enabled_plugins = '{}'
+
+            fr = self.get_fuzzable_request()
+
+            core = w3afCore()
+            status = CoreStatus(core)
+            status.set_running_plugin('audit', 'sqli', log=False)
+            status.set_current_fuzzable_request('audit', fr)
+
+            exception_data = ExceptionData(status,
+                                           e,
+                                           tb,
+                                           enabled_plugins,
+                                           store_tb=True)
+
+            self.assertRaises(TypeError, cPickle.dumps, exception_data)

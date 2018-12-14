@@ -83,7 +83,10 @@ class ExceptionHandler(object):
 
         :param current_status: Pointer to the core_helpers.status module
         :param exception: The exception that was raised
-        :param exec_info: The exec info as returned by sys module
+        :param exec_info: The exec info as returned by sys module. In some
+                          scenarios the data can be (partially) incomplete.
+                          except_type and except_class might be None; or all the
+                          three fields might be None.
         :param enabled_plugins: A string as returned by helpers.pprint_plugins.
                                 First I thought about getting the enabled_plugins
                                 after the scan finished, but that proved to be
@@ -232,7 +235,7 @@ class ExceptionHandler(object):
             data = (exception.plugin,
                     exception.fuzzable_request,
                     exception.exception,
-                    exception.traceback)
+                    exception.traceback_str)
 
             if phase not in exception_dict:
                 exception_dict[phase] = [data]
@@ -260,40 +263,47 @@ class ExceptionHandler(object):
 
 
 class ExceptionData(object):
-    def __init__(self, current_status, e, tb, enabled_plugins):
+    def __init__(self, current_status, e, tb, enabled_plugins, store_tb=True):
+        """
+        :param current_status: The CoreStatus instance
+        :param e: Exception instance
+        :param tb: Traceback or None
+        :param enabled_plugins: w3af enabled plugins
+        :param store_tb: When the exception is raised in a consumer and needs to
+                         be serialized to be sent to the main thread, it is
+                         impossible to keep the traceback
+        """
         assert isinstance(e, Exception)
         assert isinstance(current_status, CoreStatus)
 
-        #
-        # According to [0] it is not a good idea to keep references to tracebacks:
-        #
-        #   > traceback refers to a linked list of frames, and each frame has references
-        #   > to lots of other stuff like the code object, the global dict, local dict,
-        #   > builtin dict, ...
-        #
-        # [0] https://bugs.python.org/issue13831
-        #
-        # TODO: Remove the next line:
-        self.traceback = tb
+        self.traceback = None
+        self.traceback_str = None
+        self.function_name = None
+        self.lineno = None
+        self.filename = None
+        self.exception = None
+        self.exception_msg = None
+        self.exception_class = None
+        self.phase = None
+        self.plugin = None
+        self.status = None
+        self.fuzzable_request = None
 
+        self._initialize(current_status, e, tb, enabled_plugins, store_tb)
+
+    def _initialize(self, current_status, e, tb, enabled_plugins, store_tb):
+        self._initialize_from_exception(e)
+        self._initialize_from_traceback(tb, store_tb)
+        self._initialize_from_status(current_status)
+        self._initialize_from_plugins(enabled_plugins)
+
+    def _initialize_from_exception(self, e):
         self.exception = e
         self.exception_msg = str(e)
         self.exception_class = e.__class__.__name__
 
-        # Extract the filename and line number where the exception was raised
-        path, filename, self.function_name, self.lineno = get_exception_location(tb)
-        self.filename = os.path.join(path, filename)
-
-        # See add_traceback_string()
-        if hasattr(e, 'original_traceback_string'):
-            self.traceback_str = e.original_traceback_string
-        else:
-            self.traceback_str = ''.join(traceback.format_tb(tb))
-
-        self.traceback_str = cleanup_bug_report(self.traceback_str)
-
+    def _initialize_from_status(self, current_status):
         self.phase, self.plugin = current_status.latest_running_plugin()
-        self.enabled_plugins = enabled_plugins
 
         #
         # Do not save the CoreStatus instance here without cleaning it first,
@@ -306,6 +316,37 @@ class ExceptionData(object):
 
         self.fuzzable_request = current_status.get_current_fuzzable_request(self.phase)
         self.fuzzable_request = cleanup_bug_report(str(self.fuzzable_request))
+
+    def _initialize_from_plugins(self, enabled_plugins):
+        self.enabled_plugins = enabled_plugins
+
+    def _initialize_from_traceback(self, tb, store_tb):
+        if store_tb:
+            #
+            # According to [0] it is not a good idea to keep references to tracebacks:
+            #
+            #   > traceback refers to a linked list of frames, and each frame has references
+            #   > to lots of other stuff like the code object, the global dict, local dict,
+            #   > builtin dict, ...
+            #
+            # [0] https://bugs.python.org/issue13831
+            #
+            # TODO: Remove the next line:
+            self.traceback = tb
+
+        # Extract the filename and line number where the exception was raised
+        path, filename, self.function_name, self.lineno = get_exception_location(tb)
+        if path is not None:
+            self.filename = os.path.join(path, filename)
+
+        # See add_traceback_string()
+        if hasattr(self.exception, 'original_traceback_string'):
+            traceback_string = self.exception.original_traceback_string
+        else:
+            traceback_string = ''.join(traceback.format_tb(tb))
+            self.exception.original_traceback_string = traceback_string
+
+        self.traceback_str = cleanup_bug_report(traceback_string)
 
     def get_traceback_str(self):
         return self.traceback_str
