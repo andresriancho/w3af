@@ -37,6 +37,7 @@ class click_jacking(GrepPlugin):
     """
 
     MAX_SAMPLES = 25
+    DO_NOT_FRAME = {301, 302, 303, 307, 400}
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -50,7 +51,18 @@ class click_jacking(GrepPlugin):
         """
         Check x-frame-options header
         """
+        if response.get_code() in self.DO_NOT_FRAME:
+            return
+
         if not response.is_text_or_html():
+            return
+
+        # An attacker will never run a clickjacking attack on an empty response
+        # Empty responses are common in redirects, 400 and 500 errors, etc.
+        if not response.get_body():
+            return
+
+        if not self._response_will_be_rendered(response):
             return
 
         if is_404(response):
@@ -62,6 +74,26 @@ class click_jacking(GrepPlugin):
             return
 
         self._add_response_to_findings(response)
+
+    def _response_will_be_rendered(self, response):
+        """
+        Browsers will never render responses with application/javascript
+        content-type, so it doesn't make sense for an attacker to do a
+        click-jacking attack on these.
+
+        :param response: An HTTP response
+        :return: True if the response has javascript content type
+        """
+        if 'javascript' in response.content_type:
+            return False
+
+        if 'css' in response.content_type:
+            return False
+
+        if 'application/xml' in response.content_type:
+            return False
+
+        return True
 
     def _add_response_to_findings(self, response):
         self._vuln_count += 1
