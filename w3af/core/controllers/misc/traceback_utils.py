@@ -42,6 +42,9 @@ def get_exception_location(tb):
                  'get()',
                  643)
     """
+    if tb is None:
+        return None, None, None, None
+
     file_path = traceback.extract_tb(tb)[-1][0]
     path = os.path.dirname(file_path)
     file_name = os.path.basename(file_path)
