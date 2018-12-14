@@ -176,7 +176,9 @@ class audit(BaseConsumer):
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
         except Exception, e:
-            self.handle_exception('audit', plugin.get_name(),
-                                  fuzzable_request, e)
+            self.handle_exception('audit',
+                                  plugin.get_name(),
+                                  fuzzable_request,
+                                  e)
 
         took_line.send()
