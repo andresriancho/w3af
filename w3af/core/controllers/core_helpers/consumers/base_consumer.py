@@ -118,13 +118,13 @@ class BaseConsumer(Process):
         # This was with a max_in_queue_size of 100 set for the CachedQueue defined below.
         #
         # Meaning that:
-        #       * There were 119 items in the queue (100 in memory ) in the first log line
+        #       * There were 119 items in the queue (100 in memory) in the first log line
         #       * Also at 16:45:36, there were 128 items in the queue (100 in memory)
         #       * It took 16 seconds to consume 28 items from the queue (from second 36 to second 52)
         #
         # This surprises me a little bit. I expected this queue to have less items in memory.
         # Since I want to remove the memory usage in the framework, I'm going to reduce the
-        # maxsize sent to this CachedQueue to 50
+        # maxsize sent to this CachedQueue to 75
         #
         # But just in case I'm using a CachedQueue!
         self._out_queue = CachedQueue(maxsize=75, name=thread_name + 'Out')
@@ -189,6 +189,20 @@ class BaseConsumer(Process):
                 finally:
                     self.in_queue.task_done()
 
+            self._log_queue_sizes()
+
+    def _log_queue_sizes(self):
+        if not self._poison_pill_sent:
+            return
+
+        msg = ('The %s input queue received the POISON_PILL. Processing %s'
+               ' tasks from input queue and %s tasks from output queue before'
+               ' breaking out of the loop')
+        args = (self._thread_name,
+                self.in_queue.qsize(),
+                self.out_queue.qsize())
+        om.out.debug(msg % args)
+
     def _process_poison_pill(self):
         om.out.debug('Processing POISON_PILL in %s' % self._thread_name)
 
@@ -211,6 +225,8 @@ class BaseConsumer(Process):
 
     def _shutdown_threadpool(self):
         if self._threadpool is None:
+            msg = '%s pool is None. No shutdown required.'
+            om.out.debug(msg % self._thread_name)
             return
 
         #
@@ -232,6 +248,9 @@ class BaseConsumer(Process):
             args = ('closing', self.get_name(), e)
             om.out.debug(msg_fmt % args)
 
+        msg = '%s pool is closed'
+        om.out.debug(msg % self._thread_name)
+
         try:
             pool.join()
         except Exception, e:
@@ -245,6 +264,12 @@ class BaseConsumer(Process):
             except Exception, e:
                 args = ('terminating', self.get_name(), e)
                 om.out.debug(msg_fmt % args)
+            else:
+                msg = '%s pool has been terminated after failed call to join'
+                om.out.debug(msg % self._thread_name)
+
+        msg = '%s pool has been joined'
+        om.out.debug(msg % self._thread_name)
 
     def _call_teardown(self):
         # Finish this consumer and everyone consuming the output
@@ -391,6 +416,20 @@ class BaseConsumer(Process):
     def in_queue_size(self):
         return self.in_queue.qsize()
 
+    def send_poison_pill(self):
+        if self._poison_pill_sent:
+            return
+
+        # https://github.com/andresriancho/w3af/issues/9587
+        # let put() know that all new tasks should be ignored
+        self._poison_pill_sent = True
+
+        # send the poison pill
+        self.in_queue_put(POISON_PILL, force=True)
+
+        msg = 'Sent POISON_PILL to the %s consumer in_queue'
+        om.out.debug(msg % self._thread_name)
+
     def join(self):
         """
         Poison the loop and wait for all queued work to finish this might take
@@ -408,28 +447,45 @@ class BaseConsumer(Process):
             om.out.debug(msg % self._thread_name)
             return
 
-        if not self._poison_pill_sent:
-            # https://github.com/andresriancho/w3af/issues/9587
-            # let put() know that all new tasks should be ignored
-            self._poison_pill_sent = True
-
-            # send the poison pill
-            self.in_queue_put(POISON_PILL, force=True)
-
-            msg = 'Sent POISON_PILL to the %s consumer in_queue'
-            om.out.debug(msg % self._thread_name)
-
+        self.send_poison_pill()
         self.in_queue.join()
 
         msg = 'Successfully joined the %s consumer in_queue'
         om.out.debug(msg % self._thread_name)
 
-        if self._threadpool is not None:
-            self._threadpool.close()
-            self._threadpool.join()
+        self._shutdown_threadpool()
 
         spent_time = time.time() - start_time
         om.out.debug('%s took %.2f seconds to join()' % (self._thread_name, spent_time))
+
+    def _clear_input_output_queues(self):
+        #
+        # Remove all queued tasks from the input queue to prevent new tasks
+        # from being started
+        #
+        while True:
+            try:
+                self.in_queue.get_nowait()
+            except Empty:
+                break
+            else:
+                self.in_queue.task_done()
+
+        om.out.debug('No more tasks in %s consumer input queue.' % self._thread_name)
+
+        #
+        # Remove all queued tasks from the output queue to prevent the results
+        # from making it to the core, which could trigger other tasks
+        #
+        while True:
+            try:
+                self.out_queue.get_nowait()
+            except Empty:
+                break
+            else:
+                self.out_queue.task_done()
+
+        om.out.debug('No more tasks in %s consumer output queue.' % self._thread_name)
 
     def terminate(self):
         """
@@ -437,29 +493,11 @@ class BaseConsumer(Process):
         exits. Should be very fast and called only if we don't care about the
         queued work anymore (ie. user clicked stop in the UI).
         """
-        while not self.in_queue.empty():
-            try:
-                self.in_queue.get_nowait()
-            except Empty:
-                # We get here in very rare cases where:
-                #
-                #  * Another thread (T1) is running and reading from in_queue
-                #  * Our thread (T2) asks if the queue is empty and gets False
-                #  * T1 reads from in_queue
-                #  * T2 reads from the queue but there are no more tasks there
-                #  * T2 locks for ever (at least that is what happen when self.in_queue.get()
-                #    was used instead of get_nowait()
-                #
-                msg = 'Handled race condition in %s consumer terminate()'
-                args = (self._thread_name,)
-                om.out.debug(msg % args)
+        self._clear_input_output_queues()
 
-                continue
-
-            self.in_queue.task_done()
-
-        om.out.debug('No more tasks in %s consumer input queue.' % self._thread_name)
-
+        # This call to join should be super-fast, there are no tasks in the
+        # queues: only need to wait for the tasks that are currently running
+        # in the threadpool
         self.join()
 
     def get_result(self, timeout=0.5):
@@ -486,7 +524,11 @@ class BaseConsumer(Process):
         status.set_running_plugin(phase, plugin_name, log=False)
         status.set_current_fuzzable_request(phase, fuzzable_request)
 
-        exception_data = ExceptionData(status, _exception, tb, enabled_plugins)
+        exception_data = ExceptionData(status,
+                                       _exception,
+                                       tb,
+                                       enabled_plugins,
+                                       store_tb=False)
         self._out_queue.put(exception_data)
 
     def add_observer(self, observer):
