@@ -51,6 +51,10 @@ class click_jacking(GrepPlugin):
         """
         Check x-frame-options header
         """
+        # Can not iframe a POST, PUT, etc.
+        if request.get_method() != 'GET':
+            return
+
         if response.get_code() in self.DO_NOT_FRAME:
             return
 
@@ -101,7 +105,7 @@ class click_jacking(GrepPlugin):
         if len(self._vuln_urls) >= self.MAX_SAMPLES:
             return
 
-        self._vuln_urls.add(response.get_url())
+        self._vuln_urls.add(response.get_uri())
         self._vuln_ids.add(response.id)
 
     def _is_protected_against_clickjacking(self, request, response):
@@ -169,8 +173,13 @@ class click_jacking(GrepPlugin):
         #   Content-Security-Policy: frame-ancestors '*';
         #   Content-Security-Policy: frame-ancestors 'https://*';
         #
+        insecure_ancestors = ('*',
+                              'http', 'https',
+                              'http://', 'https://',
+                              'http://*', 'https://*')
+
         for policy in frame_ancestors:
-            if policy.lower() in ('*', 'http', 'https', 'http://', 'https://', 'http://*', 'https://*'):
+            if policy.lower() in insecure_ancestors:
                 return False
 
         # Content-Security-Policy: frame-ancestors 'self';
