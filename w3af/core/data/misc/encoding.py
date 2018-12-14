@@ -144,7 +144,15 @@ def smart_str(s, encoding=DEFAULT_ENCODING, errors='strict'):
     except UnicodeEncodeError:
         # This will raise an exception if errors is strict, or return a
         # string representation of the object
-        return smart_str(unicode(s), encoding=encoding, errors=errors)
+        try:
+            unicode_s = unicode(s)
+        except UnicodeEncodeError:
+            if errors == 'strict':
+                raise
+
+            return ''
+        else:
+            return smart_str(unicode_s, encoding=encoding, errors=errors)
 
 
 def smart_str_ignore(s, encoding=DEFAULT_ENCODING):
