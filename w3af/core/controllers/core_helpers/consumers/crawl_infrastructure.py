@@ -70,8 +70,6 @@ class CrawlInfrastructure(BaseConsumer):
         self._report_max_time = True
         self._reported_found_urls = ScalableBloomFilter()
 
-        self._log_queue_sizes_every = 0
-
         # Override BaseConsumer.in_queue in order to have an ordered queue for
         # our crawling process.
         #
@@ -110,6 +108,8 @@ class CrawlInfrastructure(BaseConsumer):
             else:
                 if work_unit == POISON_PILL:
 
+                    self._log_queue_sizes()
+
                     try:
                         self._process_poison_pill()
                     except Exception, e:
@@ -130,15 +130,6 @@ class CrawlInfrastructure(BaseConsumer):
                     # Free memory
                     work_unit = None
 
-            self._log_queue_sizes_every += 1
-
-            # The 100 is related with the timeout parameter in this line above:
-            #
-            #    work_unit = self.in_queue.get(timeout=0.1)
-            #
-            if self._log_queue_sizes_every % 100 == 0:
-                self._log_queue_sizes()
-
     def _teardown(self, plugin=None):
         """
         End plugins
@@ -152,11 +143,11 @@ class CrawlInfrastructure(BaseConsumer):
         # we call .end(), so no need to call the same method twice
         to_teardown = set(to_teardown) - self._disabled_plugins
 
-        msg = 'Starting CrawlInfra consumer _teardown() with %s plugins.'
+        msg = 'Starting CrawlInfra consumer _teardown() with %s plugins'
         om.out.debug(msg % len(to_teardown))
 
         for plugin in to_teardown:
-            om.out.debug('Calling %s.end().' % plugin.get_name())
+            om.out.debug('Calling %s.end()' % plugin.get_name())
             start_time = time.time()
 
             try:
@@ -171,24 +162,24 @@ class CrawlInfrastructure(BaseConsumer):
                 # still be able to `end()` without sending HTTP requests to
                 # the remote server
                 msg_fmt = ('Spent %.2f seconds running %s.end() until a'
-                           ' scan must stop exception was raised.')
+                           ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
             except Exception, e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
-                           ' unhandled exception was found.')
+                           ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
                 self.handle_exception('crawl', plugin.get_name(), 'plugin.end()', e)
 
             else:
-                msg_fmt = 'Spent %.2f seconds running %s.end().'
+                msg_fmt = 'Spent %.2f seconds running %s.end()'
                 self._log_end_took(msg_fmt, start_time, plugin)
 
             finally:
                 self._disabled_plugins.add(plugin)
 
-        om.out.debug('Finished CrawlInfra consumer _teardown().')
+        om.out.debug('Finished CrawlInfra consumer _teardown()')
 
     @task_decorator
     def _consume(self, function_id, work_unit):
@@ -309,7 +300,7 @@ class CrawlInfrastructure(BaseConsumer):
             else:
                 self.in_queue.task_done()
 
-        om.out.debug('No more tasks in %s consumer input queue.' % self._thread_name)
+        self._log_queue_sizes()
 
         # Poison the run() loop for this consumer so that no more tasks are
         # processed
@@ -351,9 +342,8 @@ class CrawlInfrastructure(BaseConsumer):
         all_known_fuzzable_requests = kb.kb.get_all_known_fuzzable_requests()
 
         msg = 'Found %s URLs and %s different injections points.'
-        msg = msg % (len(tmp_url_list),
-                     len(all_known_fuzzable_requests))
-        om.out.information(msg)
+        args = (len(tmp_url_list), len(all_known_fuzzable_requests))
+        om.out.information(msg % args)
 
         # print the URLs
         om.out.information('The URL list is:')

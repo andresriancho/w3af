@@ -203,6 +203,19 @@ class BaseConsumer(Process):
                 self.out_queue.qsize())
         om.out.debug(msg % args)
 
+        msg = 'The %s consumer has %s tasks in progress'
+        args = (self._thread_name, len(self._tasks_in_progress))
+        om.out.debug(msg % args)
+
+        if self._threadpool is not None:
+
+            msg = ('The %s consumer pool has %s tasks in the input queue'
+                   ' and %s tasks in the output queue')
+            args = (self._thread_name,
+                    self._threadpool._inqueue.qsize(),
+                    self._threadpool._outqueue.qsize())
+            om.out.debug(msg % args)
+
     def _process_poison_pill(self):
         om.out.debug('Processing POISON_PILL in %s' % self._thread_name)
 
@@ -448,6 +461,11 @@ class BaseConsumer(Process):
             return
 
         self.send_poison_pill()
+
+        msg = 'Calling join() on %s.in_queue (qsize:%s)'
+        args = (self._thread_name, self.in_queue.qsize())
+        om.out.debug(msg % args)
+
         self.in_queue.join()
 
         msg = 'Successfully joined the %s consumer in_queue'
@@ -471,7 +489,7 @@ class BaseConsumer(Process):
             else:
                 self.in_queue.task_done()
 
-        om.out.debug('No more tasks in %s consumer input queue.' % self._thread_name)
+        self._log_queue_sizes()
 
         #
         # Remove all queued tasks from the output queue to prevent the results
@@ -485,7 +503,7 @@ class BaseConsumer(Process):
             else:
                 self.out_queue.task_done()
 
-        om.out.debug('No more tasks in %s consumer output queue.' % self._thread_name)
+        self._log_queue_sizes()
 
     def terminate(self):
         """

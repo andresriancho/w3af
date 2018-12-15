@@ -54,7 +54,7 @@ class audit(BaseConsumer):
         return 'Auditor'
 
     def _teardown(self):
-        msg = 'Starting Audit consumer _teardown() with %s plugins.'
+        msg = 'Starting Audit consumer _teardown() with %s plugins'
         om.out.debug(msg % len(self._consumer_plugins))
 
         for plugin in self._consumer_plugins:
