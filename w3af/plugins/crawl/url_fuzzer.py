@@ -41,19 +41,30 @@ class url_fuzzer(CrawlPlugin):
     Try to find backups, and other related files.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    _appendables = ('~', '.tar.gz', '.gz', '.7z', '.cab', '.tgz',
-                    '.gzip', '.bzip2', '.inc', '.zip', '.rar', '.jar', '.java',
-                    '.class', '.properties', '.bak', '.bak1', '.bkp', '.back',
-                    '.backup', '.backup1', '.old', '.old1', '.$$$'
-                    )
-    _backup_exts = ('tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
-                    'bzip2', 'zip', 'rar'
-                    )
-    _file_types = (
-        'inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
-        'bak', 'bak1', 'backup', 'backup1', 'old', 'old1', 'c', 'cpp',
-        'cs', 'vb', 'phps', 'disco', 'ori', 'orig', 'original'
-    )
+    _appendables = {'~', '~~', '_', '.', '.tar.gz', '.gz', '.7z', '.cab',
+                    '.tgz', '.gzip', '.bzip2', '.inc', '.zip', '.rar',
+                    '.tar', '.jar', '.java', '.class', '.properties',
+                    '.bak', '.bak1', '_bak', '-bak', '.bk', '.bkp', '.back',
+                    '.bac', '.backup', '.backup1', '.old', '.old1', '_old',
+                    '.$$$', '.sav', '.save', '.saved', '.swp', '.swo',
+                    '.copy', '.original', '.orig', '.org', '.txt', '.default',
+                    '.tpl', '.tmp', '.temp', '.conf', '.nsx', '.cs', '.csproj',
+                    '.vb', '.0', '.1', '.2', '.arc', '.lst', '::$DATA',
+                    '.sql.gz', '.bak.sql', '.bak.sql.gz', '.bak.sql.bz2',
+                    '.bak.sql.tar.gz'
+                    }
+    _prependables = {'_', '.', '~', '.~', '.$', 'Copy_', 'Copy_of_', 'Copy_(1)_of_',
+                     'Copy_(2)_of_', 'Copy ', 'Copy of ', 'backup-'
+                    }
+    _backup_exts = {'tar.gz', '7z', 'gz', 'cab', 'tgz', 'gzip',
+                    'bzip2', 'zip', 'rar', 'tar'
+                   }
+    _file_types = {'inc', 'fla', 'jar', 'war', 'java', 'class', 'properties',
+                   'bak', 'bak1', 'backup', 'backup1', 'old', 'old1', 'c', 'cpp',
+                   'cs', 'vb', 'phps', 'disco', 'ori', 'orig', 'original', 'save',
+                   'saved', 'bkp', 'txt', 'tpl', 'tmp', 'temp', 'bakup', 'bakup1',
+                   'sql'
+                  }
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -96,7 +107,10 @@ class url_fuzzer(CrawlPlugin):
             mutants_chain = chain(self._mutate_by_appending(url),
                                   self._mutate_path(url),
                                   self._mutate_file_type(url),
-                                  self._mutate_domain_name(url))
+                                  self._mutate_domain_name(url),
+                                  self._mutate_by_prepending(url),
+                                  self._mutate_file_name(url)
+                                  )
             url_repeater = repeat(url)
             args = izip(url_repeater, mutants_chain)
 
@@ -237,6 +251,37 @@ class url_fuzzer(CrawlPlugin):
                 url_copy.set_file_name(filename)
                 yield url_copy
 
+    def _mutate_by_prepending(self, url):
+        """
+        Adds something before the file name of the url (mutate the file being requested)
+
+        :param url: A URL to transform.
+        :return: A list of URL's that mutate the original url passed
+                 as parameter.
+
+        >>> from w3af.core.data.parsers.doc.url import URL
+        >>> u = url_fuzzer()
+        >>> url = URL( 'http://www.w3af.com/' )
+        >>> mutants = u._mutate_by_prepending( url )
+        >>> list(mutants)
+        []
+
+        >>> url = URL( 'http://www.w3af.com/foo.html' )
+        >>> mutants = u._mutate_by_prepending( url )
+        >>> URL( 'http://www.w3af.com/.foo.html' ) in mutants
+        True
+        >>> URL( 'http://www.w3af.com/Copy_of_foo.html' ) in mutants
+        True
+
+        """
+        if not url.url_string.endswith('/') and url.url_string.count('/') >= 3:
+            for to_prepend in self._prependables:
+                url_copy = url.copy()
+                filename = url_copy.get_file_name()
+                filename = to_prepend + filename
+                url_copy.set_file_name(filename)
+                yield url_copy
+
     def _mutate_file_type(self, url):
         """
         If the url is : "http://www.foobar.com/asd.txt" this method returns:
@@ -268,6 +313,38 @@ class url_fuzzer(CrawlPlugin):
                 url_copy = url.copy()
                 url_copy.set_extension(filetype)
                 yield url_copy
+
+    def _mutate_file_name(self, url):
+        filename = url.get_file_name()
+        if filename:
+            domain = url.get_domain_path()
+            url_string = domain.url_string
+            extension = url.get_extension()
+
+            if extension:
+                extension = '.' + extension
+                name = filename[:filename.rfind(u'.')]
+            else:
+                name = filename
+
+            mutate_name_testing = {
+                url_string + '#' + filename + '#',
+                url_string + name + ' (copy)' + extension,
+                url_string + name + ' - Copy' + extension,
+                url_string + name + ' copy' + extension,
+                url_string + '.~lock.' + filename + '#',
+                url_string + name + '-backup' + extension,
+                url_string + name + '-bkp' + extension,
+                url_string + '.' + filename + '.swp',
+                url_string + '_' + filename + '.swp',
+                url_string + '.' + filename + '.swo',
+                url_string + '_' + filename + '.swo',
+                url_string + '~' + filename + '.tmp'
+            }
+
+            for change in mutate_name_testing:
+                newurl = URL(change)
+                yield newurl
 
     def _mutate_path(self, url):
         """
