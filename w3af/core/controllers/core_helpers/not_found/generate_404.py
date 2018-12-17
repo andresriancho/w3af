@@ -34,6 +34,8 @@ from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResp
 def should_flip(index, seed):
     rnd = random.Random()
     rnd.seed(index + seed)
+
+    # 3 out of 5 get flip
     return rnd.randint(1, 100) % 5 in (0, 1, 2)
 
 
