@@ -348,7 +348,7 @@ class CoreStrategy(object):
 
         # Get the scan time and compare with the max
         scan_time = self._w3af_core.status.get_run_time()
-        if scan_time + 5 > max_scan_time:
+        if scan_time > max_scan_time:
             return True
 
         return False
