@@ -65,27 +65,20 @@ class payment_webhook_finder(CrawlPlugin):
                                     (among other things) the URL to test.
         """
         url = fuzzable_request.get_url()
-        self._headers = Headers([('Referer', url.url_string)])
-
-        if self._first_time:
-            self._verify_head_enabled(url)
-            self._first_time = False
 
         # First we need to delete fragments and query strings from URL.
         url = url.uri2url()
 
+        # Check if we already performed the analysis on that URL. If we did, then return
+
         # And we mark this one as a "do not return" URL, because the
         # core already found it using another technique.
+        if url in self._seen:
+            return
+        
         self._seen.add(url)
 
-        self._verify_head_enabled(url)
-
-        if self._head_enabled():
-            response = self._uri_opener.HEAD(url, cache=True,
-                                             headers=self._headers)
-        else:
-            response = self._uri_opener.GET(url, cache=True,
-                                            headers=self._headers)
+        response = self._uri_opener.GET(url, cache=True)
 
         if response.is_text_or_html():
             mutants_chain = chain(self._mutate_path(url))
@@ -100,8 +93,7 @@ class payment_webhook_finder(CrawlPlugin):
         Perform a simple GET to see if the result is an error or not, and then
         run the actual fuzzing.
         """
-        response = self._uri_opener.GET(mutant, cache=True,
-                                        headers=self._headers)
+        response = self._uri_opener.GET(mutant, cache=True)
 
         if (response.get_code() in (403, 401) or not(is_404(response))):
 
@@ -138,7 +130,6 @@ class payment_webhook_finder(CrawlPlugin):
         >>> u = payment_webhook_finder()
         >>> url = URL( 'http://www.w3af.com/' )
         >>> list(u._mutate_path(url))
-        []
 
         >>> URL('http://www.w3af.com/inc/payment.php') in mutants
         True
@@ -162,23 +153,6 @@ class payment_webhook_finder(CrawlPlugin):
                     for ext_to_append in ext_to_append_list:
                         newurl = URL(url_string + dir_to_append + file_to_append + ext_to_append)
                         yield newurl
-
-    def _verify_head_enabled(self, url):
-        """
-        Verifies if the requested URL permits a HEAD request.
-        This was saved inside the KB by the plugin allowed_methods
-
-        :return : Sets self._head to the correct value, nothing is returned.
-        """
-        allowed_methods_infos = kb.kb.get('allowed_methods', 'methods')
-        allowed_methods = []
-        for info in allowed_methods_infos:
-            allowed_methods.extend(info['methods'])
-        
-        if 'HEAD' in allowed_methods:
-            self._head = True
-        else:
-            self._head = False
 
     def get_plugin_deps(self):
         """
