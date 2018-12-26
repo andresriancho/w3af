@@ -256,7 +256,7 @@ class ConnectionManager(object):
                 conn = self._create_new_connection(req, conn_factory, host_port, conn_total)
 
                 if waited_time_for_conn > 0:
-                    msg = 'Waited %.2fs for a connection to be available in the pool.'
+                    msg = 'Waited %.2fs for a connection to be available in the pool'
                     om.out.debug(msg % waited_time_for_conn)
 
                 return conn
