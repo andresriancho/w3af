@@ -391,34 +391,41 @@ class find_dvcs(CrawlPlugin):
         filenames = set()
 
         for line in body.split('\n'):
-            if '/' not in line:
+            # https://docstore.mik.ua/orelly/other/cvs/cvs-CHP-6-SECT-9.htm
+            #
+            # /name/revision/timestamp[+conflict]/options/tagdate
+            if not line.startswith('/'):
                 continue
 
-            slashes = line.split('/')
-            if len(slashes) != 6:
+            # /name/revision/timestamp[+conflict]/options/tagdate
+            tokens = line.split('/')
+            if len(tokens) != 6:
                 continue
-            filenames.add(slashes[1])
+
+            # Example value: Sun Apr 7 01:29:26 1996
+            timestamp = tokens[2]
+            if timestamp.count(':') <= 1:
+                continue
+
+            filenames.add(tokens[1])
 
         return filenames
 
     def filter_special_character(self, line):
         """
-        Analyze the possible regexp contents and extract filenames or
-        directories without regexp.
+        Takes a line from .gitignore (or similar) and removes all the
+        regular expression special characters.
 
-        :param line: A regexp filename or directory.
-        :return: A real filename or directory.
+        Example gitignore files:
+            https://github.com/github/gitignore
+
+        :param line: A line from gitignore
+        :return: The same line, without the special characters.
         """
-        special_characters = ['*', '?', '[', ']', ':']
+        special_characters = ['*', '?', '[', ']', ':', '!']
 
         for char in special_characters:
-            if char in line:
-                l = line.split(char)[0]
-                if '/' in l:
-                    line = '/'.join(l.split('/')[:-1])
-                else:
-                    line = ''
-                    break
+            line = line.replace(char, '')
 
         return line
 
@@ -448,6 +455,10 @@ class find_dvcs(CrawlPlugin):
                 return []
 
             if line.startswith('#'):
+                continue
+
+            # Lines with spaces are usually good indicators of false positives
+            if ' ' in line:
                 continue
 
             line = self.filter_special_character(line)

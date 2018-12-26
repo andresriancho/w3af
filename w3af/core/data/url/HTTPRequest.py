@@ -116,7 +116,14 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def set_method(self, method):
         self.method = method
-            
+
+    def get_netloc(self):
+        uri = self.get_uri()
+        return '%s:%s' % (uri.get_domain(), uri.get_port())
+
+    def get_domain(self):
+        return self.get_uri().get_domain()
+
     def get_uri(self):
         return self.url_object
     
@@ -210,8 +217,10 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         return copy.deepcopy(self)
 
     def __repr__(self):
-        fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s, did:%s)>'
+        fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s, did:%s, timeout:%.2f, new_connection:%s)>'
         return fmt % (self.url_object.url_string,
                       self.cookies,
                       self.get_from_cache,
-                      self.debugging_id)
+                      self.debugging_id,
+                      self.timeout,
+                      self.new_connection)

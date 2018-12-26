@@ -50,12 +50,12 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('Halberd', 'halberd', '0.2.4'),
                      PIPDependency('darts.lib.utils', 'darts.util.lru', '0.5'),
                      PIPDependency('jinja2', 'Jinja2', '2.10'),
-                     PIPDependency('vulndb', 'vulndb', '0.1.0'),
+                     PIPDependency('vulndb', 'vulndb', '0.1.1'),
                      PIPDependency('markdown', 'markdown', '2.6.1'),
 
                      # This was used for testing, but now it's required for
                      # regular users too, do not remove!
-                     PIPDependency('psutil', 'psutil', '2.2.1'),
+                     PIPDependency('psutil', 'psutil', '5.4.8'),
 
                      # Added for the crawl.ds_store plugin
                      PIPDependency('ds_store', 'ds-store', '1.1.2'),
@@ -101,7 +101,9 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('PyChromeDevTools', 'PyChromeDevTools', '0.1'),
 
                      # Vulners API plugin needs this lib
-                     PIPDependency('vulners', 'vulners', '1.3.0')
+                     PIPDependency('vulners', 'vulners', '1.3.0'),
+
+                     PIPDependency('ipaddresses', 'ipaddresses', '0.0.2')
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

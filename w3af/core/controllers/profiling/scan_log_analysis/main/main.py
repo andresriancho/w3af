@@ -123,6 +123,7 @@ def get_json_functions():
 
 def generate_console_output(scan_log_filename, scan):
     for _function in get_console_functions():
+        scan.seek(0)
 
         output = _function(scan_log_filename, scan)
 
@@ -146,6 +147,7 @@ def generate_json_output(scan_log_filename, scan, json_filename):
 
     for _function in get_json_functions():
 
+        scan.seek(0)
         function_output = _function(scan_log_filename, scan)
 
         if function_output is None:

@@ -131,10 +131,28 @@ def smart_str(s, encoding=DEFAULT_ENCODING, errors='strict'):
     Return a byte-string version of 's', encoded as specified in 'encoding'.
     """
     if isinstance(s, unicode):
-        s = s.encode(encoding, errors)
-    elif not isinstance(s, str):
-        s = str(s)
-    return s
+        return s.encode(encoding, errors)
+
+    # Already a byte-string, nothing to do here
+    if isinstance(s, str):
+        return s
+
+    # Handling objects is hard! Each implements __str__ in a different way
+    # which might trigger issues
+    try:
+        return str(s)
+    except UnicodeEncodeError:
+        # This will raise an exception if errors is strict, or return a
+        # string representation of the object
+        try:
+            unicode_s = unicode(s)
+        except UnicodeEncodeError:
+            if errors == 'strict':
+                raise
+
+            return ''
+        else:
+            return smart_str(unicode_s, encoding=encoding, errors=errors)
 
 
 def smart_str_ignore(s, encoding=DEFAULT_ENCODING):
@@ -155,4 +173,3 @@ def is_known_encoding(encoding):
         return True
     except LookupError:
         return False
-

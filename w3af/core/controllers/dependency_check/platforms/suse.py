@@ -31,7 +31,7 @@ class SuSE(Platform):
     PKG_MANAGER_CMD = 'sudo zypper install'
     PIP_CMD = 'pip-2.7'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'sqlite3-devel',
+    CORE_SYSTEM_PACKAGES = ['python-pip','npm', 'python-devel', 'sqlite3-devel',
                             'git', 'libxml2-devel', 'libxslt-devel',
                             'python-webkitgtk', 'libffi-devel']
 

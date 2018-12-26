@@ -56,9 +56,11 @@ class dwsync_xml(CrawlPlugin):
         directories_to_check = []
 
         for domain_path in fuzzable_request.get_url().get_directories():
-            if domain_path not in self._analyzed_dirs:
-                self._analyzed_dirs.add(domain_path)
-                directories_to_check.append(domain_path)
+            if domain_path in self._analyzed_dirs:
+                continue
+
+            self._analyzed_dirs.add(domain_path)
+            directories_to_check.append(domain_path)
 
         # Send the requests using threads
         self.worker_pool.map(self._find_dwsync, directories_to_check)

@@ -255,6 +255,9 @@ class ThreadStateObserver(StrategyObserver):
                 idle_workers.append(worker_state)
                 continue
 
+            if worker_state['start_time'] is None:
+                continue
+
             spent = time.time() - worker_state['start_time']
 
             # Save us some disk space and sanity, only log worker state if it has

@@ -32,6 +32,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.kb.vuln import Vuln
@@ -98,6 +99,7 @@ class ria_enumerator(CrawlPlugin):
         Analyze XML files.
         """
         response = self._uri_opener.GET(url, cache=True)
+
         if is_404(response):
             return
 
@@ -124,6 +126,9 @@ class ria_enumerator(CrawlPlugin):
 
         kb.kb.append(self, url, i)
         om.out.information(i.get_desc())
+
+        fr = FuzzableRequest.from_http_response(response)
+        self.output_queue.put(fr)
 
     def _analyze_crossdomain_clientaccesspolicy(self, url, response, file_name):
 
@@ -159,7 +164,7 @@ class ria_enumerator(CrawlPlugin):
             url = url.getAttribute(attribute)
 
             if url == '*':
-                desc = 'The "%s" file at "%s" allows flash/silverlight'\
+                desc = 'The "%s" file at "%s" allows flash / silverlight'\
                        ' access from any site.'
                 desc %= (file_name, response.get_url())
 
@@ -171,8 +176,12 @@ class ria_enumerator(CrawlPlugin):
                 kb.kb.append(self, 'vuln', v)
                 om.out.vulnerability(v.get_desc(),
                                      severity=v.get_severity())
+
+                fr = FuzzableRequest.from_http_response(response)
+                self.output_queue.put(fr)
+
             else:
-                desc = 'The "%s" file at "%s" allows flash/silverlight'\
+                desc = 'The "%s" file at "%s" allows flash / silverlight'\
                        ' access from "%s".'
                 desc %= (file_name, response.get_url(), url)
 
@@ -183,6 +192,9 @@ class ria_enumerator(CrawlPlugin):
 
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
+
+                fr = FuzzableRequest.from_http_response(response)
+                self.output_queue.put(fr)
 
     def get_options(self):
         """

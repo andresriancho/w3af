@@ -34,6 +34,7 @@ from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal, MAX_FUZZY_L
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
 from w3af.core.controllers.core_helpers.not_found.generate_404 import send_request_generate_404
 from w3af.core.controllers.core_helpers.not_found.decorators import LRUCache404, PreventMultipleThreads
+from w3af.core.controllers.core_helpers.not_found.fuzzy_equal_for_diff import fuzzy_equal_for_diff
 
 
 IS_EQUAL_RATIO = 0.90
@@ -56,8 +57,7 @@ class Fingerprint404(object):
         #   the knowledge about the server's 404 response bodies.
         #
         self._uri_opener = None
-        self._worker_pool = None
-        
+
         #
         #   Store the 404 responses in a dict which has normalized paths
         #   as keys and 404 data as values.
@@ -169,7 +169,8 @@ class Fingerprint404(object):
         :param http_response: The HTTP response
         :return: True if the HTTP response is a 404
         """
-        debugging_id = rand_alnum(8)
+        response_did = http_response.get_debugging_id()
+        debugging_id = response_did if response_did is not None else rand_alnum(8)
 
         # 404_body stored in the DB was cleaned when creating the
         # FourOhFourResponse class.
@@ -323,64 +324,56 @@ class Fingerprint404(object):
         else:
             # Need to send the second request and calculate the diff, there is
             # no previous knowledge that we can use
+            #
+            # Send exclude=[known_404_1.url] to prevent the function from sending
+            # an HTTP request to the same forced 404 URL
             known_404_2 = send_request_generate_404(self._uri_opener,
                                                     http_response,
-                                                    debugging_id)
+                                                    debugging_id,
+                                                    exclude=[known_404_1.url])
 
             known_404_1.diff, _ = diff(known_404_1.body, known_404_2.body)
+            known_404_1.diff_with_id = known_404_2.id
             self._404_responses[query.normalized_path] = known_404_1
-
-        if known_404_1.diff == '':
-            # The two known 404 we generated are equal, and we only get here
-            # if the query is not equal to known_404_1, this means that the
-            # application is using the same 404 response body for all responses
-            # in this path, but did not use that one for the query response.
-            msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
-                   ' [the two known 404 responses are equal (id:%s)]')
-            args = (http_response.get_url(),
-                    http_response.id,
-                    http_response.get_code(),
-                    len(http_response.get_body()),
-                    debugging_id,
-                    known_404.id)
-            om.out.debug(msg % args)
-            return False
 
         diff_x = known_404_1.diff
         _, diff_y = diff(known_404_1.body, query.body)
 
-        is_fuzzy_equal = fuzzy_equal(diff_x, diff_y, IS_EQUAL_RATIO)
+        is_fuzzy_equal = fuzzy_equal_for_diff(diff_x, diff_y, IS_EQUAL_RATIO)
 
         if not is_fuzzy_equal:
             msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
-                   ' [similarity_ratio < %s with diff of 404 with ID %s]')
+                   ' [similarity_ratio < %s with diff of 404]'
+                   ' [Request IDs: %s]')
             args = (http_response.get_url(),
                     http_response.id,
                     http_response.get_code(),
                     len(http_response.get_body()),
                     debugging_id,
                     IS_EQUAL_RATIO,
-                    known_404.id)
+                    ', '.join([str(http_response.id),
+                               str(known_404_1.id),
+                               str(known_404_1.diff_with_id)]))
             om.out.debug(msg % args)
             return False
 
         msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is a 404'
-               ' [similarity_ratio > %s with diff of 404 with ID %s]')
+               ' [similarity_ratio > %s with diff of 404]'
+               ' [Request IDs: %s]')
         args = (http_response.get_url(),
                 http_response.id,
                 http_response.get_code(),
                 len(http_response.get_body()),
                 debugging_id,
                 IS_EQUAL_RATIO,
-                known_404.id)
+                ', '.join([str(http_response.id),
+                           str(known_404_1.id),
+                           str(known_404_1.diff_with_id)]))
         om.out.debug(msg % args)
         return True
 
     def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
-
-    def set_worker_pool(self, worker_pool):
-        self._worker_pool = worker_pool
 
     def _get_404_response(self, http_response, query, debugging_id):
         """

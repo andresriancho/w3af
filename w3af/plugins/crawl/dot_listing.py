@@ -38,7 +38,7 @@ class dot_listing(CrawlPlugin):
     :author: Tomas Velazquez ( tomas.velazquezz@gmail.com )
     """
     # -rw-r--r--    1 andresr   w3af         8139 Apr 12 13:23 foo.zip
-    regex_str = '[a-z-]{10}\s*\d+\s*(.*?)\s+(.*?)\s+\d+\s+\w+\s+\d+\s+[0-9:]{4,5}\s+(.*)'
+    regex_str = r'[a-z-]{10}\s*\d+\s*(.*?)\s+(.*?)\s+\d+\s+\w+\s+\d+\s+[0-9:]{4,5}\s+(.*)'
     LISTING_PARSER_RE = re.compile(regex_str)
     
     def __init__(self):

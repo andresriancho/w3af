@@ -242,7 +242,8 @@ class Worker(object):
                 'worker_id': self.id}
 
     def __call__(self, inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
-        assert maxtasks is None or (type(maxtasks) == int and maxtasks > 0)
+        assert maxtasks is None or (type(maxtasks) in (int, long) and maxtasks > 0)
+
         put = outqueue.put
         get = inqueue.get
         if hasattr(inqueue, '_writer'):
@@ -291,7 +292,17 @@ class Worker(object):
             except Exception as e:
                 wrapped = create_detailed_pickling_error(e, result[1])
                 put((job, i, (False, wrapped)))
-            completed += 1
+            finally:
+                # https://bugs.python.org/issue29861
+                task = None
+                job = None
+                result = None
+                func = None
+                args = None
+                kwds = None
+
+                completed += 1
+
         debug('worker exiting after %d tasks' % completed)
 
 

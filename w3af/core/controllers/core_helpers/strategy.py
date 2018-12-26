@@ -179,34 +179,39 @@ class CoreStrategy(object):
         """
         om.out.debug('Called strategy.terminate()')
 
-        consumers = {'discovery', 'audit', 'auth', 'bruteforce', 'grep'}
+        consumers = ['discovery', 'audit', 'auth', 'bruteforce', 'grep']
 
         for consumer in consumers:
 
             consumer_inst = getattr(self, '_%s_consumer' % consumer)
 
-            if consumer_inst is not None:
-                om.out.debug('Calling terminate() on %s consumer' % consumer)
-                start = time.time()
+            if consumer_inst is None:
+                msg = '%s consumer is None. Skipping call to terminate()'
+                om.out.debug(msg % consumer)
+                continue
 
-                # Set it immediately to None to avoid any race conditions where
-                # the terminate() method is called twice (from different
-                # threads) and before the first call finishes
-                #
-                # The getattr/setattr tricks are required to make sure that "the
-                # real consumer instance" is set to None. Do not modify unless
-                # you know what you're doing!
-                setattr(self, '_%s_consumer' % consumer, None)
+            om.out.debug('Calling terminate() on %s consumer' % consumer)
+            start = time.time()
 
-                try:
-                    consumer_inst.terminate()
-                except Exception, e:
-                    msg = '%s consumer terminate() raised exception: "%s"'
-                    om.out.debug(msg % e)
-                else:
-                    spent = time.time() - start
-                    args = (consumer, spent)
-                    om.out.debug('terminate() on %s consumer took %.2f seconds' % args)
+            # Set it immediately to None to avoid any race conditions where
+            # the terminate() method is called twice (from different
+            # threads) and before the first call finishes
+            #
+            # The getattr/setattr tricks are required to make sure that "the
+            # real consumer instance" is set to None. Do not modify unless
+            # you know what you're doing!
+            setattr(self, '_%s_consumer' % consumer, None)
+
+            try:
+                consumer_inst.terminate()
+            except Exception, e:
+                msg = '%s consumer terminate() raised exception: "%s"'
+                args = (consumer_inst.get_name(), e)
+                om.out.debug(msg % args)
+            else:
+                spent = time.time() - start
+                args = (consumer, spent)
+                om.out.debug('terminate() on %s consumer took %.2f seconds' % args)
 
         self.set_consumers_to_none()
 
@@ -295,7 +300,7 @@ class CoreStrategy(object):
         finished = set()
         consumer_forced_end = set()
 
-        while not self._scan_reached_max_time():
+        while True:
             # Get results and handle exceptions
             self._handle_all_consumer_exceptions(_other)
 
@@ -306,21 +311,25 @@ class CoreStrategy(object):
                                                                   consumer_forced_end)
 
             if route_result is None:
+                om.out.debug('The fuzzable request router loop will break.'
+                             ' The scan will stop after all consumers complete'
+                             ' their teardown() process.')
                 break
 
             finished, consumer_forced_end = route_result
 
-        #
-        # Handle the case where the scan reached the max time
-        #
-        if self._scan_reached_max_time():
-            msg = ('The scan has reached the maximum scan time of %s minutes.'
-                   ' The scan will end and some vulnerabilities might not be'
-                   ' identified.')
-            args = (cf.cf.get('max_scan_time'), )
-            om.out.information(msg % args)
+            #
+            # Handle the case where the scan reached the max time
+            #
+            if self._scan_reached_max_time():
+                msg = ('The scan has reached the maximum scan time of %s minutes.'
+                       ' The scan will end and some vulnerabilities might not be'
+                       ' identified.')
+                args = (cf.cf.get('max_scan_time'), )
+                om.out.information(msg % args)
 
-            self._w3af_core.stop()
+                self._w3af_core.stop()
+                break
 
     def _scan_reached_max_time(self):
         """
@@ -342,7 +351,7 @@ class CoreStrategy(object):
 
         # Get the scan time and compare with the max
         scan_time = self._w3af_core.status.get_run_time()
-        if scan_time + 5 > max_scan_time:
+        if scan_time > max_scan_time:
             return True
 
         return False
@@ -382,7 +391,12 @@ class CoreStrategy(object):
                     # This consumer is saying that it has finished, so we
                     # remove it from the list.
                     consumer_forced_end.add(url_producer)
-                    om.out.debug('Producer %s has finished (poison pill)' % url_producer.get_name())
+
+                    msg = 'Producer %s has finished (poison pill received, queue size: %s)'
+                    args = (url_producer.get_name(),
+                            url_producer.out_queue.qsize())
+                    om.out.debug(msg % args)
+
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
                 else:
@@ -627,7 +641,8 @@ class CoreStrategy(object):
                     targets_with_404.append(url)
 
         if targets_with_404:
-            urls = ' - %s\n'.join(u.url_string for u in targets_with_404)
+            urls = [' - %s\n' % u.url_string for u in targets_with_404]
+            urls = ''.join(urls)
             om.out.information('w3af identified the user-configured URLs listed'
                                ' below as non-existing pages (404). This could'
                                ' result in a scan with low test coverage: some'

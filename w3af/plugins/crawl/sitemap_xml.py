@@ -24,7 +24,7 @@ import xml.dom.minidom
 import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -62,24 +62,35 @@ class sitemap_xml(CrawlPlugin):
         om.out.debug('Parsing xml file with xml.dom.minidom.')
         try:
             dom = xml.dom.minidom.parseString(response.get_body())
-        except:
-            raise BaseFrameworkException('Error while parsing sitemap.xml')
-        else:
-            raw_url_list = dom.getElementsByTagName("loc")
-            parsed_url_list = []
-            for url in raw_url_list:
-                try:
-                    url = url.childNodes[0].data
-                    url = URL(url)
-                except ValueError, ve:
-                    msg = 'Sitemap file had an invalid URL: "%s"'
-                    om.out.debug(msg % ve)
-                except:
-                    om.out.debug('Sitemap file had an invalid format')
-                else:
-                    parsed_url_list.append(url)
+        except Exception, e:
+            msg = 'Exception while parsing sitemap.xml from %s: "%s"'
+            args = (response.get_url(), e)
+            om.out.debug(msg % args)
+            return
 
-            self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
+        parsed_url_list = []
+        raw_url_list = dom.getElementsByTagName("loc")
+
+        for url in raw_url_list:
+            try:
+                url = url.childNodes[0].data
+            except Exception, e:
+                msg = 'Sitemap file at %s has an invalid format: %s'
+                args = (response.get_url(), e)
+                om.out.debug(msg % args)
+                continue
+
+            try:
+                url = URL(url)
+            except ValueError, ve:
+                msg = 'Sitemap file at %s has an invalid URL: "%s"'
+                args = (response.get_url(), ve)
+                om.out.debug(msg % args)
+                continue
+            else:
+                parsed_url_list.append(url)
+
+        self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
 
     def get_long_desc(self):
         """

@@ -29,6 +29,7 @@ class FourOhFourResponse(object):
                  'normalized_path',
                  'url',
                  'diff',
+                 'diff_with_id',
                  'id',
                  'code')
 
@@ -39,8 +40,11 @@ class FourOhFourResponse(object):
         self.normalized_path = FourOhFourResponse.normalize_path(http_response.get_url())
         self.url = http_response.get_url().url_string
         self.id = http_response.id
-        self.diff = None
         self.code = http_response.get_code()
+
+        # These two are used in _handle_large_http_responses()
+        self.diff = None
+        self.diff_with_id = None
 
     @staticmethod
     def normalize_path(url):
@@ -74,4 +78,4 @@ class FourOhFourResponse(object):
         return url.url_string
 
     def __repr__(self):
-        return '<FourOhFourResponse (path:%s, body:"%s")>' % (self.path, self.body[:20])
+        return '<FourOhFourResponse (url:%s, code:%s)>' % (self.url, self.code)

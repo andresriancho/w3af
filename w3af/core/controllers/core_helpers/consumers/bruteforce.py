@@ -48,11 +48,11 @@ class bruteforce(BaseConsumer):
         return 'Bruteforcer'
 
     def _teardown(self):
-        msg = 'Starting Bruteforce consumer _teardown() with %s plugins.'
+        msg = 'Starting Bruteforce consumer _teardown() with %s plugins'
         om.out.debug(msg % len(self._consumer_plugins))
 
         for plugin in self._consumer_plugins:
-            om.out.debug('Calling %s.end().' % plugin.get_name())
+            om.out.debug('Calling %s.end()' % plugin.get_name())
             start_time = time.time()
 
             try:
@@ -67,22 +67,22 @@ class bruteforce(BaseConsumer):
                 # still be able to `end()` without sending HTTP requests to
                 # the remote server
                 msg_fmt = ('Spent %.2f seconds running %s.end() until a'
-                           ' scan must stop exception was raised.')
+                           ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
             except Exception, e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
-                           ' unhandled exception was found.')
+                           ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
                 self.handle_exception('bruteforce', plugin.get_name(),
                                       'plugin.end()', e)
 
             else:
-                msg_fmt = 'Spent %.2f seconds running %s.end().'
+                msg_fmt = 'Spent %.2f seconds running %s.end()'
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-        om.out.debug('Finished Bruteforce consumer _teardown().')
+        om.out.debug('Finished Bruteforce consumer _teardown()')
 
     def _run_observers(self, fuzzable_request):
         """

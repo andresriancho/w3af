@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 try:
     from cStringIO import StringIO
-except:
+except ImportError:
     from StringIO import StringIO
 
 from ds_store import DSStore

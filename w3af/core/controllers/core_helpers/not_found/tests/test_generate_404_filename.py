@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import division
 
-import random
 import unittest
 
 from w3af.core.controllers.core_helpers.not_found.generate_404 import generate_404_filename
@@ -31,20 +30,23 @@ from w3af.core.controllers.core_helpers.not_found.generate_404 import generate_4
 class TestGenerate404Filename(unittest.TestCase):
     def test_404_generation(self):
 
-        random.seed(1)
-
         tests = [
-            ('ab-23', 'ba-23'),
-            ('abc-12', 'bac-21'),
-            ('ab-23.html', 'ba-23.html'),
-            ('a1a2', 'd4d5'),
-            ('a1a2.html', 'd4d5.html'),
-            ('hello.html', 'ehllo.html'),
-            ('r57_Mohajer22.php', 'r57_oMahejr22.php'),
+            ('ab-23', 'ae-23'),
+            ('abc-12', 'aec-12'),
+            ('ab-23.html', 'ae-23.html'),
+            ('a1a2', 'a4a2'),
+            ('a1a2.html', 'a4a2.html'),
+            ('hello.html', 'hhllo.html'),
+            ('r57_Mohajer22.php', 'r87_Mohajer22.php'),
 
             # overflow handling
-            ('Z', 'i0pVZ'),
+            ('Z', '6dfZZ'),
         ]
 
         for fname, modfname in tests:
             self.assertEqual(generate_404_filename(fname), modfname)
+
+    def test_404_generation_twice(self):
+        self.assertEqual(generate_404_filename('Entries'), 'Enrties')
+        self.assertEqual(generate_404_filename('Entries', seed=2), 'nEtries')
+        self.assertEqual(generate_404_filename('Entries', seed=3), 'Entuies')
