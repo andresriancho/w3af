@@ -197,8 +197,10 @@ class KeepAliveHandler(object):
 
         # If not a persistent connection, or the user specified that he wanted
         # a new connection for this specific request, don't try to reuse it
-        if resp.will_close or req.new_connection:
+        if resp.will_close:
             self._cm.remove_connection(conn, reason='will close')
+        elif resp.new_connection:
+            self._cm.remove_connection(conn, reason='new connection')
 
         # We measure time here because it's the best place we know of
         elapsed = time.time() - start
