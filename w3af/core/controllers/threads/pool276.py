@@ -412,34 +412,42 @@ class Pool(object):
         thread = threading.current_thread()
 
         for taskseq, set_length in iter(taskqueue.get, None):
+            task = None
             i = -1
-            for i, task in enumerate(taskseq):
-                if thread._state:
-                    debug('task handler found thread._state != RUN')
-                    break
-                try:
-                    put(task)
-                except Exception as e:
-                    job, ind = task[:2]
+
+            try:
+                for i, task in enumerate(taskseq):
+                    if thread._state:
+                        debug('task handler found thread._state != RUN')
+                        break
                     try:
-                        cache[job]._set(ind, (False, e))
-                    except KeyError:
-                        pass
-            else:
+                        put(task)
+                    except Exception as e:
+                        job, ind = task[:2]
+                        try:
+                            cache[job]._set(ind, (False, e))
+                        except KeyError:
+                            pass
+                else:
+                    if set_length:
+                        debug('doing set_length()')
+                        set_length(i+1)
+                    continue
+                break
+            except Exception as ex:
+                job, ind = task[:2] if task else (0, 0)
+                if job in cache:
+                    cache[job]._set(ind + 1, (False, ex))
                 if set_length:
                     debug('doing set_length()')
                     set_length(i+1)
-                continue
-
-            # https://bugs.python.org/issue29861
-            task = None
-            taskseq = None
-            job = None
-
-            break
+            finally:
+                # https://bugs.python.org/issue29861
+                task = None
+                taskseq = None
+                job = None
         else:
             debug('task handler got sentinel')
-
 
         try:
             # tell result handler to finish when cache is empty
