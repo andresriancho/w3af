@@ -73,7 +73,8 @@ provided build helper script:
 ```
 $ cd w3af
 $ # <your changes to w3af here>
-$ cd extras
+$ cd extras/docker/
+$ pip install --upgrade docker-tag-naming
 $ sudo ./docker-build.sh
 ...
 ```
