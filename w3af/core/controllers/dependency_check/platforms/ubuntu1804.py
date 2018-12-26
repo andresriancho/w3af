@@ -22,10 +22,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import platform
 
 from .ubuntu1604 import Ubuntu1604
+from ..requirements import CORE, GUI
 
 
 class Ubuntu1804(Ubuntu1604):
     SYSTEM_NAME = 'Ubuntu 18.04'
+
+    CORE_SYSTEM_PACKAGES_18 = Ubuntu1604.CORE_SYSTEM_PACKAGES[:]
+    CORE_SYSTEM_PACKAGES_18.remove('libssl-dev')
+    CORE_SYSTEM_PACKAGES_18.append('libssl1.0-dev')
+
+    SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES_18,
+                       GUI: Ubuntu1604.GUI_SYSTEM_PACKAGES}
 
     def __init__(self):
         super(Ubuntu1804, self).__init__()
