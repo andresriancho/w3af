@@ -291,7 +291,17 @@ class Worker(object):
             except Exception as e:
                 wrapped = create_detailed_pickling_error(e, result[1])
                 put((job, i, (False, wrapped)))
-            completed += 1
+            finally:
+                # https://bugs.python.org/issue29861
+                task = None
+                job = None
+                result = None
+                func = None
+                args = None
+                kwds = None
+
+                completed += 1
+
         debug('worker exiting after %d tasks' % completed)
 
 

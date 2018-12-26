@@ -430,6 +430,12 @@ class Pool(object):
                     debug('doing set_length()')
                     set_length(i+1)
                 continue
+
+            # https://bugs.python.org/issue29861
+            task = None
+            taskseq = None
+            job = None
+
             break
         else:
             debug('task handler got sentinel')
@@ -475,6 +481,11 @@ class Pool(object):
             except KeyError:
                 pass
 
+            # https://bugs.python.org/issue29861
+            task = None
+            job = None
+            obj = None
+
         while cache and thread._state != TERMINATE:
             try:
                 task = get()
@@ -490,6 +501,11 @@ class Pool(object):
                 cache[job]._set(i, obj)
             except KeyError:
                 pass
+
+            # https://bugs.python.org/issue29861
+            task = None
+            job = None
+            obj = None
 
         if hasattr(outqueue, '_reader'):
             debug('ensuring that outqueue is not full')
