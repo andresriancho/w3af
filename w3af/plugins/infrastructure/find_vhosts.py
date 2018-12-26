@@ -147,16 +147,11 @@ class find_vhosts(InfrastructurePlugin):
         original_response = self._uri_opener.GET(base_url, cache=True)
         orig_resp_body = original_response.get_body()
 
-        non_existent_response = self._get_non_exist(fuzzable_request)
-        non_existent_resp_body = non_existent_response.get_body()
+        non_existent_responses = self._get_non_exist(fuzzable_request)
 
         for vhost, vhost_response in self._send_in_threads(base_url, vhosts):
 
-            # If they are *really* different (not just different by some chars)
-            if fuzzy_equal(vhost_response.get_body(), orig_resp_body, 0.35):
-                continue
-
-            if fuzzy_equal(vhost_response.get_body(), non_existent_resp_body, 0.35):
+            if not self._response_is_different(vhost_response, orig_resp_body, non_existent_responses):
                 continue
 
             domain = fuzzable_request.get_url().get_domain()
@@ -166,12 +161,34 @@ class find_vhosts(InfrastructurePlugin):
                     u' in order to point "%s" to the IP address of "%s".')
             desc %= (vhost, vhost, domain)
 
-            ids = [vhost_response.id, original_response.id, non_existent_response.id]
+            ids = [vhost_response.id, original_response.id]
+            ids.extend([r.id for r in non_existent_responses])
+
             v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
                              ids, self.get_name(), fuzzable_request)
 
             kb.kb.append(self, 'find_vhosts', v)
             om.out.information(v.get_desc())
+
+    def _response_is_different(self, vhost_response, orig_resp_body, non_existent_responses):
+        """
+        Note that we use 0.35 in fuzzy_equal because we want the responses to be
+        *really different*.
+
+        :param vhost_response: The HTTP response body for the virtual host
+        :param orig_resp_body: The original HTTP response body
+        :param non_existent_responses: One or more HTTP responses for virtual hosts
+                                       that do not exist in the remote server
+        :return: True if vhost_response is different from orig_resp_body and non_existent_responses
+        """
+        if fuzzy_equal(vhost_response.get_body(), orig_resp_body, 0.35):
+            return False
+
+        for ner in non_existent_responses:
+            if fuzzy_equal(vhost_response.get_body(), ner.get_body(), 0.35):
+                return False
+
+        return True
 
     def _send_in_threads(self, base_url, vhosts):
         base_url_repeater = repeat(base_url)
@@ -191,9 +208,33 @@ class find_vhosts(InfrastructurePlugin):
         return self._uri_opener.GET(base_url, cache=False, headers=headers)
 
     def _get_non_exist(self, fuzzable_request):
+        """
+        :param fuzzable_request: The original fuzzable request
+        :return: One or more HTTP responses which are returned by the application
+                 when the Host header contains a domain that does not exist
+                 in the remote server
+        """
         base_url = fuzzable_request.get_url().base_url()
+
+        # One for the TLD
         non_existent_domain = 'iDoNotExistPleaseGoAwayNowOrDie%s.com' % rand_alnum(4)
-        return self._http_get_vhost(base_url, non_existent_domain)
+
+        # One for subdomain
+        args = (rand_alnum(4), base_url.get_domain())
+        non_existent_subdomain = 'iDoNotExistPleaseGoAwayNowOrDie%s.%s' % args
+
+        result = []
+
+        for ne_domain in (non_existent_domain, non_existent_subdomain):
+            try:
+                http_response = self._http_get_vhost(base_url, ne_domain)
+            except Exception, e:
+                msg = 'Failed to generate invalid domain fingerprint: %s'
+                om.out.debug(msg % e)
+            else:
+                result.append(http_response)
+
+        return result
 
     def _get_common_virtual_hosts(self, fuzzable_request):
         """
