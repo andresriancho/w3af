@@ -219,6 +219,13 @@ class ConnectionManager(object):
 
         return conn
 
+    def _log_waited_time_for_conn(self, waited_time_for_conn):
+        if waited_time_for_conn <= 0:
+            return
+
+        msg = 'Waited %.2fs for a connection to be available in the pool'
+        om.out.debug(msg % waited_time_for_conn)
+
     def get_available_connection(self, req, conn_factory):
         """
         Return an available connection ready to be reused
@@ -250,15 +257,13 @@ class ConnectionManager(object):
             # this is the default case, we want to quickly populate the connection
             # pool and, only if the pool is full, re-use the existing connections
             #
-            # FIXME: Doing this here without a lock leads to
+            # FIXME: Doing this here without a lock leads to a situation where
+            #        the total connections exceed the MAX_CONNECTIONS
             #
             if conn_total < self.MAX_CONNECTIONS:
                 conn = self._create_new_connection(req, conn_factory, host_port, conn_total)
 
-                if waited_time_for_conn > 0:
-                    msg = 'Waited %.2fs for a connection to be available in the pool'
-                    om.out.debug(msg % waited_time_for_conn)
-
+                self._log_waited_time_for_conn(waited_time_for_conn)
                 return conn
 
             if req.new_connection:
@@ -285,6 +290,8 @@ class ConnectionManager(object):
 
                     if conn is not None:
                         self.remove_connection(conn, reason='need fresh connection')
+
+                        self._log_waited_time_for_conn(waited_time_for_conn)
                         return self._create_new_connection(req,
                                                            conn_factory,
                                                            host_port,
@@ -313,6 +320,7 @@ class ConnectionManager(object):
                 #
                 conn = self._reuse_connection(req, host_port)
                 if conn is not None:
+                    self._log_waited_time_for_conn(waited_time_for_conn)
                     return conn
 
             #
