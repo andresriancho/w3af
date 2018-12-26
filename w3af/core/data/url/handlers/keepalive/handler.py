@@ -199,7 +199,7 @@ class KeepAliveHandler(object):
         # a new connection for this specific request, don't try to reuse it
         if resp.will_close:
             self._cm.remove_connection(conn, reason='will close')
-        elif resp.new_connection:
+        elif req.new_connection:
             self._cm.remove_connection(conn, reason='new connection')
 
         # We measure time here because it's the best place we know of
