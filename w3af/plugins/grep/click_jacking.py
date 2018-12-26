@@ -37,7 +37,7 @@ class click_jacking(GrepPlugin):
     """
 
     MAX_SAMPLES = 25
-    DO_NOT_FRAME = {301, 302, 303, 307, 400}
+    DO_NOT_FRAME = {301, 302, 303, 307, 400, 403, 404, 500}
 
     def __init__(self):
         GrepPlugin.__init__(self)
