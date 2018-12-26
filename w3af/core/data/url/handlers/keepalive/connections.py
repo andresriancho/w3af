@@ -7,7 +7,7 @@ import ssl
 import os
 
 from .http_response import HTTPResponse
-from .utils import debug, DEBUG
+from .utils import debug
 
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
@@ -15,12 +15,7 @@ from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
 
 class UniqueID(object):
     def __init__(self):
-        if DEBUG:
-            # Only do the extra id stuff when debugging
-            self.id = binascii.hexlify(os.urandom(8))
-        else:
-            self.id = None
-
+        self.id = binascii.hexlify(os.urandom(8))
         self.req_count = 0
         self.timeout = None
 
