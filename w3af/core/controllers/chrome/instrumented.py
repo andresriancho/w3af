@@ -53,6 +53,7 @@ class InstrumentedChrome(object):
 
     JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
     JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
+    JS_SELECTOR_GENERATOR = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/css-selector-generator.js')
 
     def __init__(self, uri_opener, http_traffic_queue):
         self.uri_opener = uri_opener
@@ -200,6 +201,9 @@ class InstrumentedChrome(object):
         if is_running_tests():
             js_onerror_source = file(self.JS_ONERROR_HANDLER).read()
             source.append(js_onerror_source)
+
+        js_selector_generator_source = file(self.JS_SELECTOR_GENERATOR).read()
+        source.append(js_selector_generator_source)
 
         js_dom_analyzer_source = file(self.JS_DOM_ANALYZER).read()
         source.append(js_dom_analyzer_source)

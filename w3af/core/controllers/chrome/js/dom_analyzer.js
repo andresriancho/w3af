@@ -30,6 +30,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     set_intervals: [],
     event_listeners: [],
 
+    selector_generator: new CssSelectorGenerator,
+
     initialize: function () {
         if(_DOMAnalyzer.initialized) return;
 
@@ -45,7 +47,11 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         let original_setTimeout = window.setTimeout;
 
         window.setTimeout = function() {
-            _DOMAnalyzer.set_timeouts.push(arguments);
+
+            let function_ = arguments[0];
+            let timeout = arguments[1];
+
+            _DOMAnalyzer.set_timeouts.push([function_, timeout]);
             original_setTimeout.apply(this, arguments);
         };
     },
@@ -55,7 +61,11 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         let original_setInterval = window.setInterval;
 
         window.setInterval = function() {
-            _DOMAnalyzer.set_intervals.push(arguments);
+
+            let function_ = arguments[0];
+            let timeout = arguments[1];
+
+            _DOMAnalyzer.set_intervals.push([function_, timeout]);
             original_setInterval.apply(this, arguments);
         };
     },
@@ -103,7 +113,18 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *
      */
     storeEventListenerData: function (element, type, listener, useCapture) {
-        _DOMAnalyzer.event_listeners.push([element, type, listener, useCapture]);
+
+        // TODO: Research why storing element and listener and then reading it
+        //       with the chrome protocol will return {}, which is useless for
+        //       all cases.
+
+        let selector = _DOMAnalyzer.selector_generator.getSelector(element);
+
+        _DOMAnalyzer.event_listeners.push([element.tagName.toLowerCase(),
+                                           element.nodeType,
+                                           selector,
+                                           type,
+                                           useCapture]);
     },
 
     /**
