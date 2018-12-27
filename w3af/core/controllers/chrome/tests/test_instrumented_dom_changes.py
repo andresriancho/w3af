@@ -65,7 +65,11 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
         self.assertEqual(self.ic.get_js_set_intervals(), [])
-        self.assertEqual(self.ic.get_js_event_listeners(), [[{}, u'click', {}, False]])
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'tag_name': u'table',
+                                                             u'node_type': 1,
+                                                             u'selector': u'#outside',
+                                                             u'type': u'click',
+                                                             u'use_capture': False}])
 
 
 class TwoPagesRequestHandler(ExtendedHttpRequestHandler):

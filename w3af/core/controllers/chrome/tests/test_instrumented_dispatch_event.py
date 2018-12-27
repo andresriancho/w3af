@@ -68,7 +68,11 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         self._unittest_setup(OnClickEventRequestHandler)
 
         # The event was recorded
-        self.assertEqual(self.ic.get_js_event_listeners(), [[u'table', 1, u'#outside', u'click', False]])
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
+                                                             u'tag_name': u'table',
+                                                             u'type': u'click',
+                                                             u'node_type': 1,
+                                                             u'selector': u'#outside'}])
 
         dom_before = self.ic.get_dom()
 
@@ -85,13 +89,21 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         self.assertNotIn('<td id="t2">three</td>', dom_before)
 
         # The event is still in there
-        self.assertEqual(self.ic.get_js_event_listeners(), [[u'table', 1, u'#outside', u'click', False]])
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
+                                                             u'tag_name': u'table',
+                                                             u'type': u'click',
+                                                             u'node_type': 1,
+                                                             u'selector': u'#outside'}])
 
     def test_dispatch_click_event_timeout(self):
         self._unittest_setup(OnClickEventTimeoutRequestHandler)
 
         # The event was recorded
-        self.assertEqual(self.ic.get_js_event_listeners(), [[u'table', 1, u'#outside', u'click', False]])
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
+                                                             u'tag_name': u'table',
+                                                             u'type': u'click',
+                                                             u'node_type': 1,
+                                                             u'selector': u'#outside'}])
 
         dom_before = self.ic.get_dom()
 
@@ -108,7 +120,11 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         self.assertNotIn('<td id="t2">three</td>', dom_before)
 
         # The event is still in there
-        self.assertEqual(self.ic.get_js_event_listeners(), [[u'table', 1, u'#outside', u'click', False]])
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
+                                                             u'tag_name': u'table',
+                                                             u'type': u'click',
+                                                             u'node_type': 1,
+                                                             u'selector': u'#outside'}])
 
 
 class OnClickEventRequestHandler(ExtendedHttpRequestHandler):

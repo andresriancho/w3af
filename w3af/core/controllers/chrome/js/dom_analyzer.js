@@ -104,7 +104,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             let function_ = arguments[0];
             let timeout = arguments[1];
 
-            _DOMAnalyzer.set_timeouts.push([function_, timeout]);
+            _DOMAnalyzer.set_timeouts.push({"function": function_,
+                                            "timeout": timeout});
             original_setTimeout.apply(this, arguments);
         };
     },
@@ -118,7 +119,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             let function_ = arguments[0];
             let timeout = arguments[1];
 
-            _DOMAnalyzer.set_intervals.push([function_, timeout]);
+            _DOMAnalyzer.set_intervals.push({"function": function_,
+                                             "timeout": timeout});
             original_setInterval.apply(this, arguments);
         };
     },
@@ -173,11 +175,11 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
         let selector = _DOMAnalyzer.selector_generator.getSelector(element);
 
-        _DOMAnalyzer.event_listeners.push([element.tagName.toLowerCase(),
-                                           element.nodeType,
-                                           selector,
-                                           type,
-                                           useCapture]);
+        _DOMAnalyzer.event_listeners.push({"tag_name": element.tagName.toLowerCase(),
+                                           "node_type": element.nodeType,
+                                           "selector": selector,
+                                           "type": type,
+                                           "use_capture": useCapture});
     },
 
     /**
@@ -189,9 +191,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     dispatchCustomEvent: function (index) {
 
         // TODO: For now we use the index in event_listeners
-        [tag_name, node_type, selector, type, useCapture] = _DOMAnalyzer.event_listeners[index];
+        let edata = _DOMAnalyzer.event_listeners[index];
 
-        let element = document.querySelector(selector);
+        let element = document.querySelector(edata.selector);
 
         // The element might not exist anymore
         if (element == null) return false;
@@ -200,7 +202,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if (_DOMAnalyzer.elementIsHidden(element)) return false;
 
         let event = document.createEvent("Events");
-        event.initEvent(type, true, true);
+        event.initEvent(edata.type, true, true);
         event.altKey   = false;
         event.shiftKey = false;
         event.ctrlKey  = false;
@@ -294,14 +296,14 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             let selector = _DOMAnalyzer.selector_generator.getSelector(element);
 
-            let event = {
+            let edata = {
                 "tag_name": tag_name,
                 "selector": selector,
                 "events": element_events,
             };
 
 
-            events.push(event);
+            events.push(edata);
         }
 
         return events;
