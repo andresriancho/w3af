@@ -42,6 +42,18 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         "onmouseup"
     ],
 
+    elements_allowed_to_inherit_events_from_ancestors: [
+        "a",
+        "div",
+        "input",
+        "textarea",
+        "select",
+        "form",
+        "li",
+        "span",
+        "button"
+    ],
+
     valid_events_per_element: {
         "body" : [
             "onload"
@@ -160,7 +172,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      * Store event listener data
      *
      * @param element          element           window, document, node
-     * @param type             string            The event type, eg. onclick
+     * @param type             string            The event type, eg. click
      * @param listener         function          The function that handles the event
      * @param useCapture       boolean           As defined in the addEventListener docs
      *
@@ -168,10 +180,6 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *
      */
     storeEventListenerData: function (element, type, listener, useCapture) {
-
-        // TODO: Research why storing element and listener and then reading it
-        //       with the chrome protocol will return {}, which is useless for
-        //       all cases.
 
         let selector = _DOMAnalyzer.selector_generator.getSelector(element);
 
@@ -247,7 +255,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
         if (!_DOMAnalyzer.valid_events_per_element.hasOwnProperty(tag_name)) return false;
 
-        return _DOMAnalyzer.valid_events_per_element[tag_name].contains(attr_name);
+        return _DOMAnalyzer.valid_events_per_element[tag_name].includes(attr_name);
     },
 
     /**
@@ -261,18 +269,129 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         let attributes  = element.attributes;
         let attr_length = attributes.length;
         let events = [];
+        let selector = _DOMAnalyzer.selector_generator.getSelector(element);
 
         for( var attr_it = 0; attr_it < attr_length; attr_it++ ){
             let attr_name = attributes[attr_it].nodeName;
 
             if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, attr_name ) ) continue;
 
-            events.push({"event": attr_name,
-                         "handler": attributes[attr_it].nodeValue})
+            let edata = {
+                "tag_name": tag_name,
+                "selector": selector,
+                "event": attr_name,
+                "handler": attributes[attr_it].nodeValue
+            };
 
+            events.push(edata)
         }
 
         return events;
+    },
+
+    /**
+     * Get all of an element's parent elements up the DOM tree
+     *
+     * @param  {Node}   elem     The element
+     * @param  {String} selector Selector to match against [optional]
+     * @return {Array}           The parent elements
+     *
+     * https://gomakethings.com/climbing-up-and-down-the-dom-tree-with-vanilla-javascript/
+     *
+     */
+    getAncestors : function ( elem, selector ) {
+
+        // Element.matches() polyfill
+        if (!Element.prototype.matches) {
+            Element.prototype.matches =
+                Element.prototype.matchesSelector ||
+                Element.prototype.mozMatchesSelector ||
+                Element.prototype.msMatchesSelector ||
+                Element.prototype.oMatchesSelector ||
+                Element.prototype.webkitMatchesSelector ||
+                function(s) {
+                    var matches = (this.document || this.ownerDocument).querySelectorAll(s),
+                        i = matches.length;
+                    while (--i >= 0 && matches.item(i) !== this) {}
+                    return i > -1;
+                };
+        }
+
+        // Setup parents array
+        let parents = [];
+
+        // Get matching parent elements
+        for ( ; elem && elem !== document; elem = elem.parentNode ) {
+
+            // Add matching parents to array
+            if ( selector ) {
+                if ( elem.matches( selector ) ) {
+                    parents.push( elem );
+                }
+            } else {
+                parents.push( elem );
+            }
+
+        }
+
+        return parents;
+
+    },
+
+    /**
+     * Elements inherit the events defined in their parent(s)
+     *
+     * For a subset of elements and events this function calculates the
+     * inherited events and returns them.
+     *
+     */
+    extractInheritedEvents: function (tag_name, element) {
+        if( !_DOMAnalyzer.elements_allowed_to_inherit_events_from_ancestors.includes( tag_name ) ) return [];
+
+        // TODO: extractInheritedEvents should also support dynamically added event
+        //       handlers. Right now it goes up the DOM tree using elem.parentNode,
+        //       but completely ignores any addEventListener calls that might have
+        //       been made
+        let ancestors = _DOMAnalyzer.getAncestors(element, null);
+        let events = [];
+
+        for( let ancestor_it = 0; ancestor_it < ancestors.length; ancestor_it++ ){
+            let ancestor_elem = ancestors[ancestor_it];
+            let ancestor_tag_name = ancestor_elem.tagName.toLowerCase();
+            let ancestor_attribute_events = _DOMAnalyzer.extractEventsFromAttributes(ancestor_tag_name, ancestor_elem);
+
+            if (!ancestor_attribute_events.length) continue;
+
+            // attribute_events holds the events associated with the ancestor element
+            // those events are "scoped to the ancestor element", the following lines
+            // change the scope to the child
+            for( let event_it = 0; event_it < ancestor_attribute_events.length; event_it++ ){
+                let ancestor_event = ancestor_attribute_events[event_it];
+
+                ancestor_event.tag_name = tag_name;
+                ancestor_event.selector = _DOMAnalyzer.selector_generator.getSelector(element);
+
+                events.push(ancestor_event);
+            }
+        }
+
+        return events;
+    },
+
+    objectArrayUniq: function( array ) {
+        let a = array.concat();
+
+        for( let i = 0; i < a.length; ++i ) {
+
+            let i_str = JSON.stringify(a[i]);
+
+            for( let j = i + 1; j < a.length; ++j ) {
+                if( i_str === JSON.stringify(a[j]) )
+                    a.splice( j--, 1 );
+            }
+        }
+
+        return a;
     },
 
     /**
@@ -290,20 +409,20 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if (_DOMAnalyzer.elementIsHidden(element)) continue;
 
             let tag_name = element.tagName.toLowerCase();
-            let element_events = _DOMAnalyzer.extractEventsFromAttributes(tag_name, element);
+
+            // Get the element events
+            let attribute_events = _DOMAnalyzer.extractEventsFromAttributes(tag_name, element);
+            let inherited_events = _DOMAnalyzer.extractInheritedEvents(tag_name, element);
+
+            // Merge and unique
+            let element_events = [];
+            element_events = element_events.concat(attribute_events);
+            element_events = element_events.concat(inherited_events);
+            element_events = _DOMAnalyzer.objectArrayUniq(element_events);
 
             if (!element_events.length) continue;
 
-            let selector = _DOMAnalyzer.selector_generator.getSelector(element);
-
-            let edata = {
-                "tag_name": tag_name,
-                "selector": selector,
-                "events": element_events,
-            };
-
-
-            events.push(edata);
+            events = events.concat(element_events);
         }
 
         return events;

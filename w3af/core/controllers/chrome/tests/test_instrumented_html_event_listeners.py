@@ -72,15 +72,42 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         self._unittest_setup(LinkTagRequestHandler)
         self.assertEqual(self.ic.get_html_event_listeners(), [])
 
-    def test_onclick_event_listener(self):
-        self._unittest_setup(OnClickEventRequestHandler)
+    def test_onclick_event_listener_invisible_table(self):
+        self._unittest_setup(OnClickEventInvisibleTableRequestHandler)
 
         event_listeners = self.ic.get_html_event_listeners()
-        self._print_all_console_messages()
-        self.assertEqual(event_listeners, [{u'events': [{u'event': u'onclick',
-                                                         u'handler': u'modifyText();'}],
-                                            u'selector': u'#outside',
-                                            u'tag_name': u'table'}])
+
+        self.assertEqual(event_listeners, [])
+
+    def test_onclick_event_listener_children_that_do_not_inherit(self):
+        self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners()
+
+        self.assertEqual(event_listeners, [{u'tag_name': u'table',
+                                            u'handler': u'modifyText();',
+                                            u'event': u'onclick',
+                                            u'selector': u'#outside'}])
+
+    def test_onclick_event_listener_with_children(self):
+        self._unittest_setup(OnClickEventWithChildrenRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners()
+
+        expected = [{u'event': u'onclick',
+                     u'handler': u'javascript:manualToggle(this)',
+                     u'selector': u'body > :nth-child(1)',
+                     u'tag_name': u'div'},
+                    {u'event': u'onclick',
+                     u'handler': u'javascript:manualToggle(this)',
+                     u'selector': u'body > :nth-child(1) > :nth-child(1)',
+                     u'tag_name': u'span'},
+                    {u'event': u'onclick',
+                     u'handler': u'javascript:manualToggle(this)',
+                     u'selector': u'body > :nth-child(1) > :nth-child(2)',
+                     u'tag_name': u'span'}]
+
+        self.assertEqual(event_listeners, expected)
 
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
@@ -91,24 +118,49 @@ class LinkTagRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = '<a href="/">click</a>'
 
 
-class OnClickEventRequestHandler(ExtendedHttpRequestHandler):
+class OnClickEventWithChildrenRequestHandler(ExtendedHttpRequestHandler):
+    # https://stackoverflow.com/questions/1431812/prevent-javascript-onclick-on-child-element
+    RESPONSE_BODY = ('''<div id="0" onclick="javascript:manualToggle(this)">
+                            <span id="1">Allowed to click</span>
+                            <span id="2">Allowed to click</span>
+                        </div>
+                        
+                        <div>tag to force more complex selector</>
+
+                        <script>
+                            function manualToggle(e) {
+                              e.preventDefault();
+                              
+                              var elem = event.target;
+                              
+                              console.log(elem.attributes[0].value);
+                            }
+                        </script>
+                        ''')
+
+
+class OnClickEventChildrenNoInheritRequestHandler(ExtendedHttpRequestHandler):
     # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
     RESPONSE_BODY = ('''<table id="outside" onclick="modifyText();">
                             <tr><td id="t1">one</td></tr>
-                            <tr><td id="t2">two</td></tr>
                         </table>
 
                         <script>
-                            // Function to change the content of t2
                             function modifyText(e) {
                               e.preventDefault();
-                              
-                              var t2 = document.getElementById("t2");
-                              if (t2.firstChild.nodeValue == "three") {
-                                t2.firstChild.nodeValue = "two";
-                              } else {
-                                t2.firstChild.nodeValue = "three";
-                              }
+                            }
+                        </script>
+                        ''')
+
+
+class OnClickEventInvisibleTableRequestHandler(ExtendedHttpRequestHandler):
+    # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
+    RESPONSE_BODY = ('''<table id="outside" onclick="modifyText();">
+                        </table>
+
+                        <script>
+                            function modifyText(e) {
+                              e.preventDefault();
                             }
                         </script>
                         ''')
