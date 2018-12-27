@@ -121,7 +121,6 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
 
         fp_404_db = fingerprint_404_singleton(cleanup=True)
         fp_404_db.set_url_opener(self.uri_opener)
-        fp_404_db.set_worker_pool(self.pool)
 
         t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
                                                 webroot=self.SERVER_ROOT_PATH,

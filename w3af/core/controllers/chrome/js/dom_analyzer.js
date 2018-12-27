@@ -136,8 +136,14 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     dispatchCustomEvent: function (index) {
 
         // TODO: For now we use the index in event_listeners
-        [element, type, listener, useCapture] = _DOMAnalyzer.event_listeners[index];
+        [tag_name, node_type, selector, type, useCapture] = _DOMAnalyzer.event_listeners[index];
 
+        let element = document.querySelector(selector);
+
+        // The element might not exist anymore
+        if (element == null) return false;
+
+        // The element might be hidden from the user's view
         if (_DOMAnalyzer.elementIsHidden(element)) return false;
 
         let event = document.createEvent("Events");
