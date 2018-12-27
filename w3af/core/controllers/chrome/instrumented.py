@@ -344,6 +344,9 @@ class InstrumentedChrome(object):
     def get_js_event_listeners(self):
         return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
 
+    def get_html_event_listeners(self):
+        return self.get_js_variable_value('window._DOMAnalyzer.getElementsWithEventHandlers()')
+
     def dispatch_js_event(self, index):
         assert isinstance(index, int)
 

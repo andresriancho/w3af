@@ -32,6 +32,59 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
     selector_generator: new CssSelectorGenerator,
 
+    universally_valid_events: [
+        "onclick",
+        "ondblclick",
+        "onmousedown",
+        "onmousemove",
+        "onmouseout",
+        "onmouseover",
+        "onmouseup"
+    ],
+
+    valid_events_per_element: {
+        "body" : [
+            "onload"
+        ],
+        "form" : [
+            "onsubmit",
+            "onreset"
+        ],
+        "input" : [
+            "onselect",
+            "onchange",
+            "onfocus",
+            "onblur",
+            "onkeydown",
+            "onkeypress",
+            "onkeyup",
+            "oninput"
+        ],
+        "textarea" : [
+            "onselect",
+            "onchange",
+            "onfocus",
+            "onblur",
+            "onkeydown",
+            "onkeypress",
+            "onkeyup",
+            "oninput"
+        ],
+        "select" : [
+            "onchange",
+            "onfocus",
+            "onblur"
+        ],
+        "button" : [
+            "onfocus",
+            "onblur"
+        ],
+        "label" : [
+            "onfocus",
+            "onblur"
+        ]
+    },
+
     initialize: function () {
         if(_DOMAnalyzer.initialized) return;
 
@@ -173,24 +226,85 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         return false;
     },
 
+
+    /**
+     * Not all events are valid for all elements. This function returns
+     * true when the event is valid for the element.
+     *
+     * Important note!
+     *
+     *      This function is filtering lots of potentially invalid events
+     *      that the browser might (or not) handle.
+     *
+     *      Events that do not pass this filter will be ignored in the rest
+     *      of the process, so keep an eye on universally_valid_events and
+     *      valid_events_per_element when testing and debugging.
+     */
+    eventIsValidForTagName: function (tag_name, attr_name) {
+        if (_DOMAnalyzer.universally_valid_events.includes(attr_name)) return true;
+
+        if (!_DOMAnalyzer.valid_events_per_element.hasOwnProperty(tag_name)) return false;
+
+        return _DOMAnalyzer.valid_events_per_element[tag_name].contains(attr_name);
+    },
+
+    /**
+     * Extract the events and handlers from the element attributes
+     *
+     * This function extracts ("onclick", "x()") from:
+     *
+     *      <div onclick="x()">...</div>
+     */
+    extractEventsFromAttributes: function (tag_name, element) {
+        let attributes  = element.attributes;
+        let attr_length = attributes.length;
+        let events = [];
+
+        for( var attr_it = 0; attr_it < attr_length; attr_it++ ){
+            let attr_name = attributes[attr_it].nodeName;
+
+            if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, attr_name ) ) continue;
+
+            events.push({"event": attr_name,
+                         "handler": attributes[attr_it].nodeValue})
+
+        }
+
+        return events;
+    },
+
     /**
      * Get elements with events
      *
      */
-    getElementsWithEventHandlers: function (index) {
+    getElementsWithEventHandlers: function () {
 
         let all_elements = document.getElementsByTagName("*");
+        let events = [];
 
-        for(let i = 0; i < length; i++) {
-            let element = all_elements[i];
+        for(let elem_it = 0; elem_it < all_elements.length; elem_it++) {
+            let element = all_elements[elem_it];
 
-            if (_DOMAnalyzer.elementIsHidden(element)) return false;
+            if (_DOMAnalyzer.elementIsHidden(element)) continue;
 
-            var tag_name = element.tagName.toLowerCase();
+            let tag_name = element.tagName.toLowerCase();
+            let element_events = _DOMAnalyzer.extractEventsFromAttributes(tag_name, element);
 
+            if (!element_events.length) continue;
+
+            let selector = _DOMAnalyzer.selector_generator.getSelector(element);
+
+            let event = {
+                "tag_name": tag_name,
+                "selector": selector,
+                "events": element_events,
+            };
+
+
+            events.push(event);
         }
 
-
+        return events;
     },
 
 };
