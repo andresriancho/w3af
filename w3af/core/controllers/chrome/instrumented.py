@@ -353,6 +353,9 @@ class InstrumentedChrome(object):
     def _is_valid_event_type(self, event_type):
         return bool(self.EVENT_TYPE_RE.match(event_type))
 
+    def _escape_js_string(self, selector):
+        return selector.replace('"', '\\"')
+
     def dispatch_js_event(self, selector, event_type):
         """
         Dispatch a new event in the browser
@@ -362,6 +365,7 @@ class InstrumentedChrome(object):
                  True is returned on success
         """
         assert self._is_valid_event_type(event_type)
+        selector = self._escape_js_string(selector)
 
         cmd = 'window._DOMAnalyzer.dispatchCustomEvent("%s", "%s")'
         args = (selector, event_type)

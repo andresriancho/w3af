@@ -108,7 +108,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'tag_name': u'table',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
-                                                             u'type': u'click',
+                                                             u'event_type': u'click',
                                                              u'use_capture': False}])
 
     def test_onclick_anonymous_event_listener(self):
@@ -119,7 +119,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'tag_name': u'table',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
-                                                             u'type': u'click',
+                                                             u'event_type': u'click',
                                                              u'use_capture': False}])
 
     def test_onclick_arrow_event_listener(self):
@@ -130,7 +130,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'tag_name': u'table',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
-                                                             u'type': u'click',
+                                                             u'event_type': u'click',
                                                              u'use_capture': False}])
 
 

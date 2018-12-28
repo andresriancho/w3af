@@ -86,7 +86,8 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
 
         self.assertEqual(event_listeners, [{u'tag_name': u'table',
                                             u'handler': u'modifyText();',
-                                            u'event': u'onclick',
+                                            u'event_type': u'click',
+                                            u'node_type': 1,
                                             u'selector': u'#outside'}])
 
     def test_onclick_event_listener_with_children(self):
@@ -94,15 +95,18 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
 
         event_listeners = self.ic.get_html_event_listeners()
 
-        expected = [{u'event': u'onclick',
+        expected = [{u'event_type': u'click',
+                     u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'body > :nth-child(1)',
                      u'tag_name': u'div'},
-                    {u'event': u'onclick',
+                    {u'event_type': u'click',
+                     u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'body > :nth-child(1) > :nth-child(1)',
                      u'tag_name': u'span'},
-                    {u'event': u'onclick',
+                    {u'event_type': u'click',
+                     u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'body > :nth-child(1) > :nth-child(2)',
                      u'tag_name': u'span'}]

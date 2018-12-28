@@ -33,13 +33,13 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     selector_generator: new CssSelectorGenerator,
 
     universally_valid_events: [
-        "onclick",
-        "ondblclick",
-        "onmousedown",
-        "onmousemove",
-        "onmouseout",
-        "onmouseover",
-        "onmouseup"
+        "click",
+        "dblclick",
+        "mousedown",
+        "mousemove",
+        "mouseout",
+        "mouseover",
+        "mouseup"
     ],
 
     elements_allowed_to_inherit_events_from_ancestors: [
@@ -56,44 +56,44 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
     valid_events_per_element: {
         "body" : [
-            "onload"
-        ],
-        "form" : [
-            "onsubmit",
-            "onreset"
-        ],
-        "input" : [
-            "onselect",
-            "onchange",
-            "onfocus",
-            "onblur",
-            "onkeydown",
-            "onkeypress",
-            "onkeyup",
-            "oninput"
-        ],
-        "textarea" : [
-            "onselect",
-            "onchange",
-            "onfocus",
-            "onblur",
-            "onkeydown",
-            "onkeypress",
-            "onkeyup",
-            "oninput"
-        ],
-        "select" : [
-            "onchange",
-            "onfocus",
-            "onblur"
+            "load"
         ],
         "button" : [
-            "onfocus",
-            "onblur"
+            "focus",
+            "blur"
+        ],
+        "form" : [
+            "submit",
+            "reset"
+        ],
+        "input" : [
+            "select",
+            "change",
+            "focus",
+            "blur",
+            "keydown",
+            "keypress",
+            "keyup",
+            "input"
         ],
         "label" : [
-            "onfocus",
-            "onblur"
+            "focus",
+            "blur"
+        ],
+        "textarea" : [
+            "select",
+            "change",
+            "focus",
+            "blur",
+            "keydown",
+            "keypress",
+            "keyup",
+            "input"
+        ],
+        "select" : [
+            "change",
+            "focus",
+            "blur"
         ]
     },
 
@@ -186,7 +186,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         _DOMAnalyzer.event_listeners.push({"tag_name": element.tagName.toLowerCase(),
                                            "node_type": element.nodeType,
                                            "selector": selector,
-                                           "type": type,
+                                           "event_type": type,
                                            "use_capture": useCapture});
     },
 
@@ -258,7 +258,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     /**
      * Extract the events and handlers from the element attributes
      *
-     * This function extracts ("onclick", "x()") from:
+     * This function extracts ("click", "x()") from:
      *
      *      <div onclick="x()">...</div>
      */
@@ -271,12 +271,18 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         for( var attr_it = 0; attr_it < attr_length; attr_it++ ){
             let attr_name = attributes[attr_it].nodeName;
 
+            // Remove the 'on' from 'onclick'. This will also remove the first
+            // two chars from any attribute name, but it will simply not pass
+            // the eventIsValidForTagName filter below
+            attr_name = attr_name.substr(2);
+
             if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, attr_name ) ) continue;
 
             let edata = {
                 "tag_name": tag_name,
+                "node_type": element.nodeType,
                 "selector": selector,
-                "event": attr_name,
+                "event_type": attr_name,
                 "handler": attributes[attr_it].nodeValue
             };
 
@@ -296,7 +302,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      * https://gomakethings.com/climbing-up-and-down-the-dom-tree-with-vanilla-javascript/
      *
      */
-    getAncestors : function ( elem, selector ) {
+    getAncestors: function (elem, selector) {
 
         // Element.matches() polyfill
         if (!Element.prototype.matches) {
@@ -367,6 +373,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
                 ancestor_event.tag_name = tag_name;
                 ancestor_event.selector = _DOMAnalyzer.selector_generator.getSelector(element);
+                ancestor_event.node_type = element.nodeType;
 
                 events.push(ancestor_event);
             }
