@@ -60,7 +60,16 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
         self.server.shutdown()
         self.server_thread.join()
 
-    def test_onclick_arrow_event_listener(self):
+    @unittest.skip('TODO')
+    def test_onclick_change_location_detect_dom_change(self):
+        """
+        The goal of this test is to make sure these steps work:
+
+            * The onclick handler in the div tag is detected
+            * The div tag can be clicked
+            * The browser navigates to the /a location
+            * The browser detects that the click triggered a full DOM change
+        """
         self._unittest_setup(TwoPagesRequestHandler)
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
@@ -68,7 +77,7 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'tag_name': u'table',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
-                                                             u'type': u'click',
+                                                             u'event_type': u'click',
                                                              u'use_capture': False}])
 
 
