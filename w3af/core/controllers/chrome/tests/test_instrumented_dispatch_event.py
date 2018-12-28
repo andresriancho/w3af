@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import time
 import Queue
 import unittest
 
@@ -72,7 +73,7 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
 
         self.assertEqual(event_listeners, [{u'use_capture': False,
                                             u'tag_name': u'table',
-                                            u'type': u'click',
+                                            u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'#outside'}])
 
@@ -80,7 +81,7 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
 
         event_listener = event_listeners[0]
         selector = event_listener['selector']
-        event_type = event_listener['type']
+        event_type = event_listener['event_type']
 
         # dispatch the event
         self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
@@ -97,18 +98,18 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         # The event is still in there
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
                                                              u'tag_name': u'table',
-                                                             u'type': u'click',
+                                                             u'event_type': u'click',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside'}])
 
-    def test_dispatch_click_event_timeout(self):
+    def test_dispatch_click_event_is_async(self):
         self._unittest_setup(OnClickEventTimeoutRequestHandler)
 
         # The event was recorded
         event_listeners = self.ic.get_js_event_listeners()
         self.assertEqual(event_listeners, [{u'use_capture': False,
                                             u'tag_name': u'table',
-                                            u'type': u'click',
+                                            u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'#outside'}])
 
@@ -116,14 +117,25 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
 
         event_listener = event_listeners[0]
         selector = event_listener['selector']
-        event_type = event_listener['type']
+        event_type = event_listener['event_type']
 
         # dispatch the event
         self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
 
+        # note that the event is dispatched in an async way, so the
+        # dispatch_js_event() call will never timeout, even when the
+        # handler(s) for that event take a lot of time to run
         dom_after = self.ic.get_dom()
 
+        self.assertEqual(dom_after, dom_before)
+
+        # sleep to give the event handler time to work
+        time.sleep(11)
+
+        # and now the changes were applied
+        dom_after = self.ic.get_dom()
         self.assertNotEqual(dom_after, dom_before)
+
         self.assertIn('<td id="t2">three</td>', dom_after)
         self.assertNotIn('<td id="t2">two</td>', dom_after)
 
@@ -133,7 +145,7 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         # The event is still in there
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
                                                              u'tag_name': u'table',
-                                                             u'type': u'click',
+                                                             u'event_type': u'click',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside'}])
 
@@ -165,6 +177,9 @@ class OnClickEventRequestHandler(ExtendedHttpRequestHandler):
 
 class OnClickEventTimeoutRequestHandler(ExtendedHttpRequestHandler):
     # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
+    #
+    # This code works: tested directly in Google Chrome. The text is changed
+    # after the specified delay.
     RESPONSE_BODY = ('''<table id="outside">
                             <tr><td id="t1">one</td></tr>
                             <tr><td id="t2">two</td></tr>
@@ -176,9 +191,9 @@ class OnClickEventTimeoutRequestHandler(ExtendedHttpRequestHandler):
                             }
 
                             // Function to change the content of t2
-                            async function modifyText() {
+                            async function modifyText() {                              
                                 await sleep(1000 * 10);
-                                
+                               
                                 var t2 = document.getElementById("t2");
                                 if (t2.firstChild.nodeValue == "three") {
                                     t2.firstChild.nodeValue = "two";
