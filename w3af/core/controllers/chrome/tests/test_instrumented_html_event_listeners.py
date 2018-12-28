@@ -113,6 +113,21 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
 
         self.assertEqual(event_listeners, expected)
 
+    def test_two_onclick(self):
+        self._unittest_setup(TwoOnClickRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners()
+
+        # Note: The HTML has two onclick attributes. Chrome (checked with the
+        #       real browser devtools) will only use the second one. The first
+        #       is lost during some parsing / DOM generation function inside
+        #       chrome
+        self.assertEqual(event_listeners, [{u'tag_name': u'div',
+                                            u'handler': u'def();',
+                                            u'event_type': u'click',
+                                            u'node_type': 1,
+                                            u'selector': u'#double'}])
+
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = ''
@@ -164,6 +179,25 @@ class OnClickEventInvisibleTableRequestHandler(ExtendedHttpRequestHandler):
 
                         <script>
                             function modifyText(e) {
+                              e.preventDefault();
+                            }
+                        </script>
+                        ''')
+
+
+class TwoOnClickRequestHandler(ExtendedHttpRequestHandler):
+    # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
+    RESPONSE_BODY = ('''<div id="double" onclick="def();" onclick="abc();">
+                            x
+                        </div>
+
+                        <script>
+                            function abc(e) {
+                              e.preventDefault();
+                            }
+                        </script>
+                        <script>
+                            function def(e) {
                               e.preventDefault();
                             }
                         </script>
