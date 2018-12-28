@@ -183,7 +183,7 @@ class DebugChromeInterface(ChromeInterface):
 
             # break on timeout
             now = time.time()
-            if now-start_time > timeout:
+            if now - start_time > timeout:
                 break
 
             try:
