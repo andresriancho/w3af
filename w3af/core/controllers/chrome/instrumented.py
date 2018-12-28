@@ -51,6 +51,7 @@ class InstrumentedChrome(object):
     PROXY_HOST = '127.0.0.1'
     CHROME_HOST = '127.0.0.1'
     PAGE_LOAD_TIMEOUT = 20
+    PAGE_WILL_CHANGE_TIMEOUT = 1
 
     JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
     JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
@@ -228,6 +229,39 @@ class InstrumentedChrome(object):
     def load_about_blank(self):
         self.load_url('about:blank')
 
+    def navigation_started(self, timeout=None):
+        """
+        When an event is dispatched to the browser it is impossible to know
+        before-hand if the JS code will trigger a page navigation to a
+        new URL.
+
+        Use this method after dispatching an event to know if the browser
+        will go to a different URL.
+
+        The method will wait `timeout` seconds for the browser event. If the
+        event does not appear in `timeout` seconds then False is returned.
+
+        :param timeout: How many seconds to wait for the event
+        :return: True if Page.frameScheduledNavigation event is found
+        """
+        events_to_wait_for = [
+            {'event': 'Page.frameScheduledNavigation',
+             'name': None,
+             'timeout': self.PAGE_WILL_CHANGE_TIMEOUT},
+        ]
+
+        for event in events_to_wait_for:
+            matching_message, messages = self.chrome_conn.wait_event(**event)
+
+            if matching_message is None:
+                return False
+
+            msg = 'Received %s from Chrome during navigation_started (did: %s)'
+            args = (event['event'], self.debugging_id)
+            om.out.debug(msg % args)
+
+        return True
+
     def wait_for_load(self):
         """
         Knowing when a page has completed loading is difficult
@@ -280,6 +314,48 @@ class InstrumentedChrome(object):
             return None
 
         return result['result']['result']['value']
+
+    def get_navigation_history(self):
+        """
+        :return: The browser's navigation history, which looks like:
+            {
+              "currentIndex": 2,
+              "entries": [
+                {
+                  "id": 1,
+                  "url": "about:blank",
+                  "userTypedURL": "about:blank",
+                  "title": "",
+                  "transitionType": "typed"
+                },
+                {
+                  "id": 3,
+                  "url": "http://127.0.0.1:45571/",
+                  "userTypedURL": "http://127.0.0.1:45571/",
+                  "title": "",
+                  "transitionType": "typed"
+                },
+                {
+                  "id": 5,
+                  "url": "http://127.0.0.1:45571/a",
+                  "userTypedURL": "http://127.0.0.1:45571/a",
+                  "title": "",
+                  "transitionType": "link"
+                }
+              ]
+            }
+        """
+        result = self.chrome_conn.Page.getNavigationHistory()
+        return result['result']
+
+    def get_navigation_history_index(self):
+        navigation_history = self.get_navigation_history()
+        entries = navigation_history['entries']
+        index = navigation_history['currentIndex']
+        return entries[index]['id']
+
+    def navigate_to_history_index(self, index):
+        self.chrome_conn.Page.navigateToHistoryEntry(entryId=index)
 
     def _js_runtime_evaluate(self, expression, timeout=5):
         """
@@ -351,10 +427,26 @@ class InstrumentedChrome(object):
         return self.get_js_variable_value('window._DOMAnalyzer.getElementsWithEventHandlers()')
 
     def _is_valid_event_type(self, event_type):
+        """
+        Validation function to make sure that a specially crafted page can not
+        inject JS into dispatch_js_event() and other functions that generate code
+        that is then eval'ed
+
+        :param event_type: an event type (eg. click)
+        :return: True if valid
+        """
         return bool(self.EVENT_TYPE_RE.match(event_type))
 
-    def _escape_js_string(self, selector):
-        return selector.replace('"', '\\"')
+    def _escape_js_string(self, text):
+        """
+        Escapes any double quotes that exist in text. Prevents specially crafted
+        pages from injecting JS into functions like dispatch_js_event() that
+        generate code that is then eval'ed.
+
+        :param text: The javascript double quoted string to escape
+        :return: The string with any double quotes escaped with \
+        """
+        return text.replace('"', '\\"')
 
     def dispatch_js_event(self, selector, event_type):
         """

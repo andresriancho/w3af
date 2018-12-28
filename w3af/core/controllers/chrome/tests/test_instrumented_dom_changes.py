@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import time
 import Queue
 import unittest
 
@@ -60,7 +61,6 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
         self.server.shutdown()
         self.server_thread.join()
 
-    @unittest.skip('TODO')
     def test_onclick_change_location_detect_dom_change(self):
         """
         The goal of this test is to make sure these steps work:
@@ -74,11 +74,50 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
         self.assertEqual(self.ic.get_js_set_intervals(), [])
-        self.assertEqual(self.ic.get_js_event_listeners(), [{u'tag_name': u'table',
-                                                             u'node_type': 1,
-                                                             u'selector': u'#outside',
-                                                             u'event_type': u'click',
-                                                             u'use_capture': False}])
+        self.assertEqual(self.ic.get_js_event_listeners(), [])
+
+        event_listeners = self.ic.get_html_event_listeners()
+        self.assertEqual(event_listeners, [{u'tag_name': u'div',
+                                            u'node_type': 1,
+                                            u'selector': u'div',
+                                            u'event_type': u'click',
+                                            u'handler': u'goto();'}])
+
+        event_listener = event_listeners[0]
+        selector = event_listener['selector']
+        event_type = event_listener['event_type']
+
+        dom_before = self.ic.get_dom()
+        index_before = self.ic.get_navigation_history_index()
+
+        # Click on the div tag and force a full dom reload
+        self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
+
+        # See comment about limitations in DebugGenericElement
+        assert False
+        if self.ic.navigation_started():
+            self.ic.wait_for_load()
+
+        dom_after = self.ic.get_dom()
+
+        self.assertNotEqual(dom_before, dom_after)
+        self.assertEqual(dom_after, TwoPagesRequestHandler.RESPONSE_BODY_CHANGED)
+
+        # Assert that the page changed
+        index_after = self.ic.get_navigation_history_index()
+        self.assertGreater(index_after, index_before)
+
+        # Click history back and wait for load to complete
+        #
+        # In this step it is possible to call wait_for_load() because
+        # we know that a page load will happen. After a call to dispatch_js_event()
+        # the page load is only a possibility
+        self.ic.navigate_to_history_index(index_before)
+        self.ic.wait_for_load()
+
+        dom_after_2 = self.ic.get_dom()
+
+        self.assertEqual(dom_after_2, dom_before)
 
 
 class TwoPagesRequestHandler(ExtendedHttpRequestHandler):
@@ -90,10 +129,10 @@ class TwoPagesRequestHandler(ExtendedHttpRequestHandler):
                                  }                           
                              </script>''')
 
-    RESPONSE_BODY_A = 'DOM changed'
+    RESPONSE_BODY_CHANGED = '<body><p>DOM changed</p></body>'
 
     def get_code_body(self, request_path):
         if request_path == '/':
-            return 200, self.RESPONSE_BODY
+            return 200, self.RESPONSE_BODY_ROOT
         elif request_path == '/a':
-            return 200, self.RESPONSE_BODY_A
+            return 200, self.RESPONSE_BODY_CHANGED
