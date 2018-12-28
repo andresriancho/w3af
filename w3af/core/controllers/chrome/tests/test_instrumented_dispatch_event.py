@@ -68,16 +68,22 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         self._unittest_setup(OnClickEventRequestHandler)
 
         # The event was recorded
-        self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
-                                                             u'tag_name': u'table',
-                                                             u'type': u'click',
-                                                             u'node_type': 1,
-                                                             u'selector': u'#outside'}])
+        event_listeners = self.ic.get_js_event_listeners()
+
+        self.assertEqual(event_listeners, [{u'use_capture': False,
+                                            u'tag_name': u'table',
+                                            u'type': u'click',
+                                            u'node_type': 1,
+                                            u'selector': u'#outside'}])
 
         dom_before = self.ic.get_dom()
 
+        event_listener = event_listeners[0]
+        selector = event_listener['selector']
+        event_type = event_listener['type']
+
         # dispatch the event
-        self.assertTrue(self.ic.dispatch_js_event(0))
+        self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
 
         dom_after = self.ic.get_dom()
 
@@ -99,16 +105,21 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
         self._unittest_setup(OnClickEventTimeoutRequestHandler)
 
         # The event was recorded
-        self.assertEqual(self.ic.get_js_event_listeners(), [{u'use_capture': False,
-                                                             u'tag_name': u'table',
-                                                             u'type': u'click',
-                                                             u'node_type': 1,
-                                                             u'selector': u'#outside'}])
+        event_listeners = self.ic.get_js_event_listeners()
+        self.assertEqual(event_listeners, [{u'use_capture': False,
+                                            u'tag_name': u'table',
+                                            u'type': u'click',
+                                            u'node_type': 1,
+                                            u'selector': u'#outside'}])
 
         dom_before = self.ic.get_dom()
 
+        event_listener = event_listeners[0]
+        selector = event_listener['selector']
+        event_type = event_listener['type']
+
         # dispatch the event
-        self.assertTrue(self.ic.dispatch_js_event(0))
+        self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
 
         dom_after = self.ic.get_dom()
 

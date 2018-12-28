@@ -196,12 +196,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      * https://developer.mozilla.org/en-US/docs/Web/API/Document/createEvent
      * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent
      */
-    dispatchCustomEvent: function (index) {
+    dispatchCustomEvent: function (selector, event_type) {
 
-        // TODO: For now we use the index in event_listeners
-        let edata = _DOMAnalyzer.event_listeners[index];
-
-        let element = document.querySelector(edata.selector);
+        let element = document.querySelector(selector);
 
         // The element might not exist anymore
         if (element == null) return false;
@@ -210,7 +207,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if (_DOMAnalyzer.elementIsHidden(element)) return false;
 
         let event = document.createEvent("Events");
-        event.initEvent(edata.type, true, true);
+        event.initEvent(event_type, true, true);
         event.altKey   = false;
         event.shiftKey = false;
         event.ctrlKey  = false;

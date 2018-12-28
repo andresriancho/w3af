@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import os
+import re
 import logging
 
 from contextlib import contextmanager
@@ -54,6 +55,8 @@ class InstrumentedChrome(object):
     JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
     JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
     JS_SELECTOR_GENERATOR = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/css-selector-generator.js')
+
+    EVENT_TYPE_RE = re.compile('[a-zA-Z.]+')
 
     def __init__(self, uri_opener, http_traffic_queue):
         self.uri_opener = uri_opener
@@ -347,10 +350,23 @@ class InstrumentedChrome(object):
     def get_html_event_listeners(self):
         return self.get_js_variable_value('window._DOMAnalyzer.getElementsWithEventHandlers()')
 
-    def dispatch_js_event(self, index):
-        assert isinstance(index, int)
+    def _is_valid_event_type(self, event_type):
+        return bool(self.EVENT_TYPE_RE.match(event_type))
 
-        result = self._js_runtime_evaluate('window._DOMAnalyzer.dispatchCustomEvent(%i)' % index)
+    def dispatch_js_event(self, selector, event_type):
+        """
+        Dispatch a new event in the browser
+        :param selector: CSS selector for the element where the event is dispatched
+        :param event_type: click, hover, etc.
+        :return: Exceptions are raised on timeout and unknown events.
+                 True is returned on success
+        """
+        assert self._is_valid_event_type(event_type)
+
+        cmd = 'window._DOMAnalyzer.dispatchCustomEvent("%s", "%s")'
+        args = (selector, event_type)
+
+        result = self._js_runtime_evaluate(cmd % args)
 
         if result is None:
             raise EventTimeout('The event execution timed out')
