@@ -48,7 +48,7 @@ class TestExceptionHandler(unittest.TestCase):
 
         try:
             raise Exception('unittest')
-        except Exception, e:
+        except Exception as e:
             exec_info = sys.exc_info()
             enabled_plugins = ''
             self.exception_handler.handle(self.status,
@@ -83,7 +83,7 @@ class TestExceptionHandler(unittest.TestCase):
         for _ in xrange(10):
             try:
                 raise Exception('unittest')
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 self.exception_handler.handle(self.status, e, exec_info,
@@ -109,7 +109,7 @@ class TestExceptionHandler(unittest.TestCase):
         for _ in xrange(10):
             try:
                 raise Exception('unittest')
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 self.exception_handler.handle(self.status, e, exec_info,
@@ -139,7 +139,7 @@ class TestExceptionHandler(unittest.TestCase):
         def test(ehandler):
             try:
                 test2()
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 ehandler.handle(self.status, e, exec_info, enabled_plugins)
@@ -175,7 +175,7 @@ class TestExceptionHandler(unittest.TestCase):
         def test(ehandler):
             try:
                 test2()
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 ehandler.handle(self.status, e, exec_info, enabled_plugins)

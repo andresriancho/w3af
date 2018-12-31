@@ -50,7 +50,7 @@ class generic(AuthPlugin):
         """
         try:
             return self.do_user_login()
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             if self._login_error:
                 om.out.error(str(e))
                 self._login_error = False

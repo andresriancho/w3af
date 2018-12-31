@@ -79,7 +79,7 @@ class text_file(OutputPlugin):
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._output_file_name), io.strerror)
             raise BaseFrameworkException(msg % args)
-        except Exception, e:
+        except Exception as e:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._output_file_name), e)
             raise BaseFrameworkException(msg % args)
@@ -92,7 +92,7 @@ class text_file(OutputPlugin):
             msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._http_file_name), io.strerror)
             raise BaseFrameworkException(msg % args)
-        except Exception, e:
+        except Exception as e:
             msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._http_file_name), e)
             raise BaseFrameworkException(msg % args)
@@ -108,7 +108,7 @@ class text_file(OutputPlugin):
         
         try:
             self._file.write(msg)
-        except Exception, e:
+        except Exception as e:
             self._file = None
             msg = ('An exception was raised while trying to write to the output'
                    ' file "%s", error: "%s". Disabling output to this file.')
@@ -130,7 +130,7 @@ class text_file(OutputPlugin):
         
         try:
             self._http.write(msg)
-        except Exception, e:
+        except Exception as e:
             self._http = None
             msg = ('An exception was raised while trying to write to the output'
                    ' file "%s", error: "%s". Disabling output to this file.')

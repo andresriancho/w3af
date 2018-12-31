@@ -202,7 +202,7 @@ class w3afCore(object):
         try:
             # Just in case the GUI / Console forgot to do this...
             self.verify_environment()
-        except Exception, e:
+        except Exception as e:
             error = ('verify_environment() raised an exception: "%s". This'
                      ' should never happen. Are you (UI developer) sure that'
                      ' you called verify_environment() *before* start() ?')
@@ -277,7 +277,7 @@ class w3afCore(object):
                      ' resolved:\n%s\n')
             om.out.error(error % wmse)
 
-        except Exception, e:
+        except Exception as e:
             msg = 'Unhandled exception "%s", traceback:\n%s'
             om.out.error(msg % (e, traceback.format_exc()))
             raise

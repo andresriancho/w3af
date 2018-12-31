@@ -249,7 +249,7 @@ class OutputManager(Process):
 
         try:
             o_plugin.flush()
-        except Exception, exception:
+        except Exception as exception:
             self._handle_output_plugin_exception(o_plugin, exception)
         finally:
             o_plugin.is_running_flush = False
@@ -427,7 +427,7 @@ class OutputManager(Process):
             try:
                 opl_func_ptr = getattr(o_plugin, action_name)
                 apply(opl_func_ptr, args, kwds)
-            except Exception, exception:
+            except Exception as exception:
                 self._handle_output_plugin_exception(o_plugin, exception)
 
     def set_output_plugin_inst(self, output_plugin_inst):

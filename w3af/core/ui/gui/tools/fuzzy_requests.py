@@ -412,12 +412,12 @@ class FuzzyRequests(entries.RememberingWindow):
                                                               fixContentLength)
             error_msg = None
             self.result_ok += 1
-        except HTTPRequestException, e:
+        except HTTPRequestException as e:
             # One HTTP request failed
             error_msg = str(e)
             http_resp = None
             self.result_err += 1
-        except ScanMustStopException, e:
+        except ScanMustStopException as e:
             # Many HTTP requests failed and the URL library wants to stop
             error_msg = str(e)
             self.result_err += 1

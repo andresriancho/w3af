@@ -149,7 +149,7 @@ class TestInterceptProxy(unittest.TestCase):
                 results.put(he)
             except KeyboardInterrupt, k:
                 exceptions.put(k)
-            except Exception, e:
+            except Exception as e:
                 exceptions.put(e)
             else:
                 results.put(response)

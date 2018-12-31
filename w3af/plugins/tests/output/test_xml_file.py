@@ -316,7 +316,7 @@ class TestXMLOutputBinary(PluginTest):
         try:
             tree = ElementTree.parse(self.FILENAME)
             tree.getroot()
-        except Exception, e:
+        except Exception as e:
             self.assertTrue(False, 'Generated invalid XML: "%s"' % e)
 
     def tearDown(self):
@@ -368,7 +368,7 @@ class TestXML0x0B(PluginTest):
         try:
             tree = ElementTree.parse(self.FILENAME)
             tree.getroot()
-        except Exception, e:
+        except Exception as e:
             self.assertTrue(False, 'Generated invalid XML: "%s"' % e)
 
     def tearDown(self):
@@ -417,7 +417,7 @@ class TestSpecialCharacterInURL(PluginTest):
         try:
             tree = ElementTree.parse(self.FILENAME)
             tree.getroot()
-        except Exception, e:
+        except Exception as e:
             self.assertTrue(False, 'Generated invalid XML: "%s"' % e)
 
     def tearDown(self):

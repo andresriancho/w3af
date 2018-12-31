@@ -127,13 +127,13 @@ class ghdb(CrawlPlugin):
         """
         try:
             ghdb_fd = file(self._ghdb_file)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to open ghdb file: "%s", error: "%s".'
             raise BaseFrameworkException(msg % (self._ghdb_file, e))
 
         try:
             dom = xml.dom.minidom.parseString(ghdb_fd.read())
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to parse XML file: "%s", error: "%s".'
             raise BaseFrameworkException(msg % (self._ghdb_file, e))
 
@@ -149,7 +149,7 @@ class ghdb(CrawlPlugin):
             try:
                 query_string = signature.childNodes[4].childNodes[0].data
 
-            except Exception, e:
+            except Exception as e:
                 msg = 'There is a corrupt signature in the GHDB. No query '\
                       ' string was found in the following XML code: "%s".'
                 om.out.debug(msg % signature.toxml())

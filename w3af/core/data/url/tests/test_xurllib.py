@@ -225,7 +225,7 @@ class TestXUrllib(unittest.TestCase):
             except ScanMustStopException, smse:
                 scan_must_stop_e += 1
                 break
-            except Exception, e:
+            except Exception as e:
                 msg = 'Not expecting "%s".'
                 self.assertTrue(False, msg % e.__class__.__name__)
 

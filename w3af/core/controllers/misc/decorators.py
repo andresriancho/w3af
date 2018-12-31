@@ -86,7 +86,7 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg='', log_msg=None):
             while mtries >= 0:
                 try:
                     rv = f(*args, **kwargs)
-                except Exception, ex:
+                except Exception as ex:
                     # Ok, fail!
                     if mtries == 0:
                         if exc_class:

@@ -90,7 +90,7 @@ class GithubIssues(object):
     def login(self):
         try:
             self.gh = Github(self._user_or_token, self._password)
-        except GithubException, ex:
+        except GithubException as ex:
             # Not sure when we get here, but just in case...
             raise LoginFailed(str(ex))
         else:

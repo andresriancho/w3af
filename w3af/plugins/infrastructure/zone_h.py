@@ -61,7 +61,7 @@ class zone_h(InfrastructurePlugin):
 
         try:
             response = self._uri_opener.GET(zone_h_url)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'An exception was raised while running zone-h plugin.'
             msg += ' Exception: "%s"' % e
             om.out.debug(msg)

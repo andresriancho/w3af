@@ -79,7 +79,7 @@ class ConnectionManager(Process):
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.sock.bind((self._ip_address, self._port))
             self.sock.listen(5)
-        except Exception, e:
+        except Exception as e:
             msg = '[w3afAgentServer] Failed to bind to %s:%s' % (
                 self._ip_address, self._port)
             msg += '. Error: "%s".' % e

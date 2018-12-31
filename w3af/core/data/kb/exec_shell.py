@@ -149,7 +149,7 @@ class ExecShell(Shell):
             try:
                 ptf = payload_transfer_factory(self.execute)
                 self._transfer_handler = ptf.get_transfer_handler()
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 return '%s' % e
 
         if not self._transfer_handler.can_transfer():

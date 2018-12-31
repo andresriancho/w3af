@@ -90,7 +90,7 @@ def main(payloads):
         try:
             p1, o1 = get_payload_bin_for_command_len(payload, 1)
             p2, o2 = get_payload_bin_for_command_len(payload, 2)
-        except Exception, e:
+        except Exception as e:
             args = (payload, e)
             msg = 'Failed to create %s.json, exception: "%s"'
             print(msg % args)

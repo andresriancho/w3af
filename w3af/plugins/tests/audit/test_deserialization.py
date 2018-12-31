@@ -54,13 +54,13 @@ class TestDeserializePickle(PluginTest):
 
             try:
                 message = base64.b64decode(b64message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
             try:
                 cPickle.loads(message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
@@ -94,7 +94,7 @@ class TestDeserializePickleNotBase64(PluginTest):
 
             try:
                 cPickle.loads(message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
@@ -128,13 +128,13 @@ class TestShouldInjectIsCalled(PluginTest):
 
             try:
                 message = base64.b64decode(b64message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
             try:
                 cPickle.loads(message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
@@ -339,7 +339,7 @@ class TestExactDelay(unittest.TestCase):
                     try:
                         payload_1 = ed.get_string_for_delay(1)
                         payload_22 = ed.get_string_for_delay(22)
-                    except Exception, e:
+                    except Exception as e:
                         msg = 'Raised exception "%s" on "%s"'
                         args = (e, file_name)
                         self.assertTrue(False, msg % args)

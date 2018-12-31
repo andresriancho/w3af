@@ -149,13 +149,13 @@ class SGMLParser(BaseParser):
         else:
             try:
                 method(tag, tag_name, attrs)
-            except Exception, ex:
+            except Exception as ex:
                 self._handle_exception('parsing %s tag' % tag_name, ex)
 
         try:
             if tag_name in self.TAGS_WITH_URLS:
                 self._find_references(tag, tag_name, attrs)
-        except Exception, ex:
+        except Exception as ex:
             self._handle_exception('extracting references', ex)
 
         try:
@@ -164,7 +164,7 @@ class SGMLParser(BaseParser):
             # changed it to this for performance
             if tag_name == 'a':
                 self._find_emails(tag, tag_name, attrs)
-        except Exception, ex:
+        except Exception as ex:
             self._handle_exception('finding emails', ex)
 
     def end(self, tag):
@@ -248,7 +248,7 @@ class SGMLParser(BaseParser):
         for event, elem in context:
             try:
                 event_map[event](elem)
-            except Exception, e:
+            except Exception as e:
                 msg = ('Found a parser exception while handling tag "%s" with'
                        ' event "%s". The exception was: "%s"')
                 args = (elem.tag, event, e)

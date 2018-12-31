@@ -76,7 +76,7 @@ def factory(module_name, *args):
 
         # Raise so the user sees the whole traceback
         raise
-    except Exception, e:
+    except Exception as e:
         msg = 'There was an error while importing %s: "%s".'
         raise BaseFrameworkException(msg % (module_name, e))
 
@@ -95,7 +95,7 @@ def factory(module_name, *args):
 
     try:
         inst = a_class(*args)
-    except Exception, e:
+    except Exception as e:
         msg = ('Failed to create an instance of "%s". The original exception'
                ' was: "%s". Traceback for this error:\n%s')
         msg = msg % (class_name, e, traceback.format_exc())

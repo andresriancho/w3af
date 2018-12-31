@@ -49,7 +49,7 @@ class TestXXESimple(PluginTest):
             try:
                 root = etree.fromstring(str(xml), parser=parser)
                 body = etree.tostring(root)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
 
             return self.status, response_headers, body
@@ -99,7 +99,7 @@ class TestXXERemoteLoading(PluginTest):
 
             try:
                 sax.parseString(xml, handler)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
             else:
                 body = handler.chars
@@ -145,7 +145,7 @@ class TestXXENegativeWithError(PluginTest):
             try:
                 root = etree.fromstring(str(xml), parser=parser)
                 body = etree.tostring(root)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
 
             return self.status, response_headers, body
@@ -185,7 +185,7 @@ class TestXXENegativeNoError(PluginTest):
             try:
                 root = etree.fromstring(str(xml), parser=parser)
                 body = etree.tostring(root)
-            except Exception, e:
+            except Exception as e:
                 body = 'Generic error here'
 
             return self.status, response_headers, body
@@ -225,7 +225,7 @@ class TestXXEInParameter(PluginTest):
 
             try:
                 root = etree.fromstring(str(xml), parser=parser)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 

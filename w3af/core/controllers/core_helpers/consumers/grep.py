@@ -85,7 +85,7 @@ class grep(BaseConsumer):
 
             try:
                 plugin.end()
-            except Exception, e:
+            except Exception as e:
                 msg = 'An exception was found while running %s.end(): "%s"'
                 args = (plugin.get_name(), e)
                 om.out.error(msg % args)
@@ -170,7 +170,7 @@ class grep(BaseConsumer):
 
             try:
                 plugin.grep_wrapper(request, response)
-            except Exception, e:
+            except Exception as e:
                 self.handle_exception('grep', plugin.get_name(), request, e)
             else:
                 took_line.send()
@@ -183,7 +183,7 @@ class grep(BaseConsumer):
         try:
             for observer in self._observers:
                 observer.grep(self, request, response)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('grep',
                                   'grep._run_observers()',
                                   'grep._run_observers()', e)

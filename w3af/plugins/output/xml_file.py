@@ -769,7 +769,7 @@ class Finding(XMLNode):
         for transaction in info.get_id():
             try:
                 xml = HTTPTransaction(self._jinja2_env, transaction).to_string()
-            except DBException, e:
+            except DBException as e:
                 msg = 'Failed to retrieve request with id %s from DB: "%s"'
                 om.out.error(msg % (transaction, e))
                 continue

@@ -107,7 +107,7 @@ class email_report(OutputPlugin):
             server = smtplib.SMTP(self.smtpServer, self.smtpPort)
             server.sendmail(self.fromAddr, self.toAddrs, msg.as_string())
             server.quit()
-        except Exception, e:
+        except Exception as e:
             msg = 'The SMTP settings in email_report plugin seem to be'\
                   ' incorrect. Original error: "%s".'
             om.out.error(msg % e)

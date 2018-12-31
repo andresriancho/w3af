@@ -275,7 +275,7 @@ class Worker(object):
 
             try:
                 result = (True, func(*args, **kwds))
-            except Exception, e:
+            except Exception as e:
                 add_traceback_string(e)
                 result = (False, e)
 

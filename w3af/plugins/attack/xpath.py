@@ -142,7 +142,7 @@ class xpath(AttackPlugin):
         try:
             false_resp = self._uri_opener.send_mutant(mutant_false)
             true_resp = self._uri_opener.send_mutant(mutant_true)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             return 'Error "%s".' % e
         else:
             if (is_error_resp(false_resp.get_body())
@@ -177,7 +177,7 @@ class xpath(AttackPlugin):
             try:
                 true_resp = self._uri_opener.send_mutant(mutant_true)
                 false_resp = self._uri_opener.send_mutant(mutant_false)
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 om.out.debug('Error "%s"' % e)
             else:
                 if (is_error_resp(false_resp.get_body())
@@ -210,7 +210,7 @@ class xpath(AttackPlugin):
                 diff_ratio += difflib.SequenceMatcher(None, base_res.get_body(),
                                                       req_x.get_body()).ratio()
 
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.debug('Error "%s"' % e)
         except RuntimeError, rte:
             issue = 'https://github.com/andresriancho/w3af/issues/5278'
@@ -314,13 +314,13 @@ class XPathReader(Shell):
         """
         try:
             data_len = self._get_data_len()
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             return 'Error found during data length extraction: "%s"' % e
 
         if data_len is not None:
             try:
                 data = self.get_data(data_len)
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 return 'Error found during data extraction: "%s"' % e
             else:
                 return data

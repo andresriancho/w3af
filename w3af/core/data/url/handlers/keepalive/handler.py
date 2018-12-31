@@ -159,7 +159,7 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host, reason='socket error')
             raise
 
-        except Exception, e:
+        except Exception as e:
             # We better discard this connection, we don't even know what happen!
             reason = 'unexpected exception "%s"' % e
             self._cm.remove_connection(conn, host, reason=reason)
@@ -192,7 +192,7 @@ class KeepAliveHandler(object):
             # https://github.com/andresriancho/w3af/issues/2074
             self._cm.remove_connection(conn, host, reason='http connection died')
             raise HTTPRequestException('The HTTP connection died')
-        except Exception, e:
+        except Exception as e:
             # We better discard this connection, we don't even know what happen!
             reason = 'unexpected exception while reading "%s"' % e
             self._cm.remove_connection(conn, host, reason=reason)
@@ -256,7 +256,7 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, host, reason='OpenSSL.SSL.SysCallError')
             resp = None
             reason = e
-        except Exception, e:
+        except Exception as e:
             # adding this block just in case we've missed something we will
             # still raise the exception, but lets try and close the connection
             # and remove it first.  We previously got into a nasty loop where

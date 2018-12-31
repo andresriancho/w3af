@@ -79,7 +79,7 @@ class payload_transfer_factory(object):
                    'methods can be used. Trying inband echo transfer method.'
                    ' Error: "%s"')
             om.out.error(msg % w3)
-        except Exception, e:
+        except Exception as e:
             om.out.error('Unhandled exception: "%s"' % e)
         else:
             to_test.append(ReverseFTP(self._exec_method, os, inbound_port))

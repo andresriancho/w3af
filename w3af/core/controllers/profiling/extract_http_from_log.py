@@ -48,7 +48,7 @@ def extract(log_file, http_request_id):
 def main(args):
     try:
         request, response = extract(args.log_file, args.id)
-    except Exception, e:
+    except Exception as e:
         print(e)
         sys.exit(1)
 

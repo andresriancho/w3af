@@ -145,7 +145,7 @@ class clamav(GrepPlugin):
         try:
             cd = self._get_connection()
             result_dict = cd.scan_stream(body)
-        except Exception, e:
+        except Exception as e:
             msg = ('The ClamAV plugin failed to connect to clamd using'
                    ' the provided unix socket: "%s". Please verify your'
                    ' configuration and try again. The exception was: "%s".')

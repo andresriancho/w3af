@@ -337,7 +337,7 @@ def _feedTargetsDict(reqFile, addedTargetUrls):
 
                 if not host:
                     errMsg = "invalid format of a request file"
-                    raise SqlmapSyntaxException, errMsg
+                    raise SqlmapSyntaxException as errMsg
 
                 if not url.startswith("http"):
                     url = "%s://%s:%s%s" % (scheme or "http", host, port or "80", url)
@@ -398,11 +398,11 @@ def _loadQueries():
     tree = ElementTree()
     try:
         tree.parse(paths.QUERIES_XML)
-    except Exception, ex:
+    except Exception as ex:
         errMsg = "something appears to be wrong with "
         errMsg += "the file '%s' ('%s'). Please make " % (paths.QUERIES_XML, getSafeExString(ex))
         errMsg += "sure that you haven't made any changes to it"
-        raise SqlmapInstallationException, errMsg
+        raise SqlmapInstallationException as errMsg
 
     for node in tree.findall("*"):
         queries[node.attrib['value']] = iterate(node)
@@ -514,7 +514,7 @@ def _setCrawler():
                 if conf.verbose in (1, 2):
                     status = "%d/%d links visited (%d%%)" % (i + 1, len(targets), round(100.0 * (i + 1) / len(targets)))
                     dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
-            except Exception, ex:
+            except Exception as ex:
                 errMsg = "problem occurred while crawling at '%s' ('%s')" % (target, getSafeExString(ex))
                 logger.error(errMsg)
 
@@ -650,7 +650,7 @@ def _findPageForms():
                     dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
             except KeyboardInterrupt:
                 break
-            except Exception, ex:
+            except Exception as ex:
                 errMsg = "problem occurred while searching for forms at '%s' ('%s')" % (target, getSafeExString(ex))
                 logger.error(errMsg)
 
@@ -1125,9 +1125,9 @@ def _setHTTPHandlers():
 
         try:
             _ = urlparse.urlsplit(conf.proxy)
-        except Exception, ex:
+        except Exception as ex:
             errMsg = "invalid proxy address '%s' ('%s')" % (conf.proxy, getSafeExString(ex))
-            raise SqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException as errMsg
 
         hostnamePort = _.netloc.split(":")
 
@@ -1254,7 +1254,7 @@ def _setSafeVisit():
                 kb.safeReq.post = None
         else:
             errMsg = "invalid format of a safe request file"
-            raise SqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException as errMsg
     else:
         if not re.search(r"\Ahttp[s]*://", conf.safeUrl):
             if ":443/" in conf.safeUrl:
@@ -1579,7 +1579,7 @@ def _createTemporaryDirectory():
         except (OSError, IOError), ex:
             errMsg = "there has been a problem while accessing "
             errMsg += "temporary directory location(s) ('%s')" % getSafeExString(ex)
-            raise SqlmapSystemException, errMsg
+            raise SqlmapSystemException as errMsg
     else:
         try:
             if not os.path.isdir(tempfile.gettempdir()):
@@ -1606,7 +1606,7 @@ def _createTemporaryDirectory():
         except (OSError, IOError, WindowsError), ex:
             errMsg = "there has been a problem while setting "
             errMsg += "temporary directory location ('%s')" % getSafeExString(ex)
-            raise SqlmapSystemException, errMsg
+            raise SqlmapSystemException as errMsg
 
 def _cleanupOptions():
     """
@@ -2451,14 +2451,14 @@ def _basicOptionValidation():
     if conf.regexp:
         try:
             re.compile(conf.regexp)
-        except Exception, ex:
+        except Exception as ex:
             errMsg = "invalid regular expression '%s' ('%s')" % (conf.regexp, getSafeExString(ex))
             raise SqlmapSyntaxException(errMsg)
 
     if conf.crawlExclude:
         try:
             re.compile(conf.crawlExclude)
-        except Exception, ex:
+        except Exception as ex:
             errMsg = "invalid regular expression '%s' ('%s')" % (conf.crawlExclude, getSafeExString(ex))
             raise SqlmapSyntaxException(errMsg)
 

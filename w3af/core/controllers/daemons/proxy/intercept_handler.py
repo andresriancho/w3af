@@ -50,7 +50,7 @@ class InterceptProxyHandler(ProxyHandler):
             else:
                 # Send the request to the remote webserver
                 http_response = self._send_http_request(http_request)
-        except Exception, e:
+        except Exception as e:
             trace = str(traceback.format_exc())
             http_response = self._create_error_response(http_request, None, e,
                                                         trace=trace)
@@ -95,7 +95,7 @@ class InterceptProxyHandler(ProxyHandler):
         try:
             http_request = http_request_parser(head, post_data)
             http_response = self._send_http_request(http_request)
-        except Exception, e:
+        except Exception as e:
             trace = str(traceback.format_exc())
             http_response = self._create_error_response(orig_http_request,
                                                         None, e, trace=trace)

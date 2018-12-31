@@ -63,7 +63,7 @@ class UIUpdater(object):
                 self._handle_update_output(resp)
             except KeyboardInterrupt:
                 pass
-            except Exception, ex:
+            except Exception as ex:
                 self._logger('An error occurred while updating: "%s"' % ex)
 
             # TODO: Please read https://github.com/andresriancho/w3af/issues/6

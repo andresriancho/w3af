@@ -76,7 +76,7 @@ class audit(BaseConsumer):
                            ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-            except Exception, e:
+            except Exception as e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
                            ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
@@ -110,7 +110,7 @@ class audit(BaseConsumer):
         """
         try:
             orig_resp = self.get_original_response(fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('audit',
                                   'audit.get_original_response()',
                                   'audit.get_original_response()', e)
@@ -147,7 +147,7 @@ class audit(BaseConsumer):
         try:
             for observer in self._observers:
                 observer.audit(self, fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('audit',
                                   'audit._run_observers()',
                                   'audit._run_observers()', e)
@@ -175,7 +175,7 @@ class audit(BaseConsumer):
 
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('audit', plugin.get_name(),
                                   fuzzable_request, e)
 

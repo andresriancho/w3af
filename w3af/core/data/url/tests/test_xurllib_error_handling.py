@@ -81,7 +81,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
                     self.uri_opener.GET(url, cache=False)
                 except HTTPRequestException:
                     http_exception_count += 1
-                except Exception, e:
+                except Exception as e:
                     msg = 'Not expecting: "%s"'
                     self.assertTrue(False, msg % e.__class__.__name__)
                 else:
@@ -166,7 +166,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
                 http_exception_count += 1
             except ScanMustStopByKnownReasonExc, smse:
                 break
-            except Exception, e:
+            except Exception as e:
                 msg = 'Not expecting: "%s"'
                 self.assertTrue(False, msg % e.__class__.__name__)
             else:

@@ -168,7 +168,7 @@ class CrawlInfrastructure(BaseConsumer):
                            ' scan must stop exception was raised.')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-            except Exception, e:
+            except Exception as e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
                            ' unhandled exception was found.')
                 self._log_end_took(msg_fmt, start_time, plugin)
@@ -214,7 +214,7 @@ class CrawlInfrastructure(BaseConsumer):
         try:
             for observer in self._observers:
                 observer.crawl(self, fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('CrawlInfrastructure',
                                   'CrawlInfrastructure._run_observers()',
                                   'CrawlInfrastructure._run_observers()', e)
@@ -531,7 +531,7 @@ class CrawlInfrastructure(BaseConsumer):
 
         try:
             result = plugin.discover_wrapper(fuzzable_request)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'An exception was found while running "%s" with "%s": "%s".'
             om.out.error(msg % (plugin.get_name(), fuzzable_request), e)
         except RunOnce:
@@ -539,7 +539,7 @@ class CrawlInfrastructure(BaseConsumer):
             # that is implemented by raising a RunOnce
             # exception
             self._remove_discovery_plugin(plugin)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception(plugin.get_type(), plugin.get_name(),
                                   fuzzable_request, e)
         else:

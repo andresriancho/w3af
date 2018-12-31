@@ -175,7 +175,7 @@ class DAVShell(ExecShell):
 
         try:
             self._uri_opener.DELETE(url_to_del)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error('DAVShell cleanup failed with exception: "%s".' % e)
         else:
             om.out.debug('DAVShell cleanup complete, %s deleted.' % url_to_del)

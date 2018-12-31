@@ -237,7 +237,7 @@ class PluginTest(unittest.TestCase):
 
                 self.assertTrue(False, msg % (target, e.reason))
             
-            except Exception, e:
+            except Exception as e:
                 self.assertTrue(False, msg % (target, e))
 
     def _scan(self, target, plugins, debug=False, assert_exceptions=True,

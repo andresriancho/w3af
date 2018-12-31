@@ -147,7 +147,7 @@ class url_fuzzer(CrawlPlugin):
         try:
             response = self._uri_opener.GET(uri, cache=True,
                                             headers=self._headers)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'An exception was raised while requesting "%s", the error'
             msg += 'message is: "%s"'
             om.out.error(msg % (uri, e))

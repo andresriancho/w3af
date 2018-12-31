@@ -87,7 +87,7 @@ class BigArray(list):
             except IOError, ex:
                 errMsg = "exception occurred while retrieving data "
                 errMsg += "from a temporary file ('%s')" % ex.message
-                raise SqlmapSystemException, errMsg
+                raise SqlmapSystemException as errMsg
 
         return self.chunks[-1].pop()
 
@@ -112,7 +112,7 @@ class BigArray(list):
             errMsg += "make sure that there is enough disk space left. If problem persists, "
             errMsg += "try to set environment variable 'TEMP' to a location "
             errMsg += "writeable by the current user"
-            raise SqlmapSystemException, errMsg
+            raise SqlmapSystemException as errMsg
 
     def _checkcache(self, index):
         if (self.cache and self.cache.index != index and self.cache.dirty):
@@ -126,7 +126,7 @@ class BigArray(list):
             except IOError, ex:
                 errMsg = "exception occurred while retrieving data "
                 errMsg += "from a temporary file ('%s')" % ex.message
-                raise SqlmapSystemException, errMsg
+                raise SqlmapSystemException as errMsg
 
     def __getstate__(self):
         return self.chunks, self.filenames

@@ -116,7 +116,7 @@ class finger_google(InfrastructurePlugin):
             grep_res = True if (gpuri.get_domain() == self._domain) else False
             response = self._uri_opener.GET(gpuri, cache=True,
                                             grep=grep_res)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'ExtendedUrllib exception raised while fetching page in' \
                   ' finger_google, error description: "%s"'
             om.out.debug(msg % e)

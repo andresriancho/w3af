@@ -45,6 +45,6 @@ class URLOption(BaseOption):
     def validate(self, value):
         try:
             return URL(value)
-        except Exception, e:
+        except Exception as e:
             msg = 'Invalid URL configured by user, error: %s.' % e
             raise BaseFrameworkException(msg)

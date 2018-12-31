@@ -70,7 +70,7 @@ class hmap(InfrastructurePlugin):
             msg = 'A BaseFrameworkException occurred while running hmap: "%s"'
             om.out.error(msg % w3)
             return
-        except Exception, e:
+        except Exception as e:
             msg = 'An unhandled exception occurred while running hmap: "%s"'
             om.out.error(msg % e)
             return

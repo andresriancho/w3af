@@ -44,6 +44,6 @@ class FormIDListOption(BaseOption):
     def validate(self, value):
         try:
             return FormIDMatcherList(value)
-        except Exception, e:
+        except Exception as e:
             msg = 'Invalid form ID list configured by user, error: %s.' % e
             raise BaseFrameworkException(msg)

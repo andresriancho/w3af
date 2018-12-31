@@ -213,7 +213,7 @@ class w3afAgentManager(Process):
         es = extrusionScanner(self._exec_method)
         try:
             inbound_port = es.get_inbound_port()
-        except Exception, e:
+        except Exception as e:
 
             om.out.error('The extrusion scan failed.')
             om.out.error('Error: ' + str(e))

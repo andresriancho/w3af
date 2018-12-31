@@ -90,7 +90,7 @@ class seed(Process):
             except HTTPRequestException, hre:
                 msg = 'The target URL: "%s" is unreachable. Exception: "%s".'
                 om.out.error(msg % (url, hre))
-            except Exception, e:
+            except Exception as e:
                 msg = ('The target URL: "%s" is unreachable because of an'
                        ' unhandled exception. Error description: "%s". See'
                        ' debug output for more information.\n'

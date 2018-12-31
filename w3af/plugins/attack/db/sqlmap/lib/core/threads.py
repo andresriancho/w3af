@@ -91,7 +91,7 @@ def exceptionHandledFunction(threadFunction, silent=False):
         kb.threadContinue = False
         kb.threadException = True
         raise
-    except Exception, ex:
+    except Exception as ex:
         if not silent:
             logger.error("thread %s: %s" % (threading.currentThread().getName(), ex.message))
 
@@ -147,7 +147,7 @@ def runThreads(numThreads, threadFunction, cleanupFunction=None, forwardExceptio
 
             try:
                 thread.start()
-            except Exception, ex:
+            except Exception as ex:
                 errMsg = "error occurred while starting new thread ('%s')" % ex.message
                 logger.critical(errMsg)
                 break

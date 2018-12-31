@@ -77,7 +77,7 @@ class dwsync_xml(CrawlPlugin):
 
         try:
             dom = xml.dom.minidom.parseString(response.get_body())
-        except Exception, e:
+        except Exception as e:
             msg = 'Exception while parsing dwsync.xml file at %s : "%s"'
             om.out.debug(msg % (dwsync_url, e))
             return
@@ -92,7 +92,7 @@ class dwsync_xml(CrawlPlugin):
             except ValueError, ve:
                 msg = 'dwsync file had an invalid URL: "%s"'
                 om.out.debug(msg % ve)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Sitemap file had an invalid format: "%s"'
                 om.out.debug(msg % e)
 

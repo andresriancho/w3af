@@ -254,7 +254,7 @@ class ConnectionManager(threading.Thread):
             try:
                 s.connect((self._w3afAgentServer_address,
                           self._w3afAgentServer_port))
-            except Exception, e:
+            except Exception as e:
                 log.debug('Failed to connect to the w3afAgentServer, exception: ' + str(e))
                 sys.exit(1)
             else:

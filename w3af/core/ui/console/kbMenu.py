@@ -131,7 +131,7 @@ class StoreOnBackConfigMenu(ConfigMenu):
         
         try:
             self._configurable.store_in_kb()
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to store "%s" in the knowledge base because of a'\
                   ' configuration error at: "%s".'
             om.out.console(msg % (vuln_name, e))

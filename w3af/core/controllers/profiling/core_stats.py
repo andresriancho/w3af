@@ -87,7 +87,7 @@ def dump_data(w3af_core):
                 'Output manager input queue size': om.manager.get_in_queue().qsize(),
 
                 'Cache stats': get_parser_cache_stats()}
-    except Exception, e:
+    except Exception as e:
         exc_type, exc_value, exc_tb = sys.exc_info()
         tback = traceback.format_exception(exc_type, exc_value, exc_tb)
 
