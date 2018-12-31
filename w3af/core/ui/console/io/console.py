@@ -139,7 +139,7 @@ except Exception as e:
     try:
         import msvcrt
         from w3af.core.ui.console.io.winctrl import *
-    except Exception, a:
+    except Exception as a:
         print str(e + '\n' + a)
         # We arent on windows nor unix
         raise BaseFrameworkException(

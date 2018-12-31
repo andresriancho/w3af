@@ -97,7 +97,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         try:
             lock_response2 = self._uri_opener.GET(fuzzable_request.get_url(),
                                                   headers=headers, cache=True)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             om.out.debug(
                 'Failed to identify secure IIS, exception: ' + str(w3))
         else:

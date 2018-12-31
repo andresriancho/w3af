@@ -199,7 +199,7 @@ class TestXUrllib(unittest.TestCase):
 
         try:
             self.uri_opener.GET(url)
-        except HTTPRequestException, hre:
+        except HTTPRequestException as hre:
             self.assertEqual(hre.value, "Bad HTTP response status line: ''")
         else:
             self.assertTrue(False, 'Expected HTTPRequestException.')
@@ -222,7 +222,7 @@ class TestXUrllib(unittest.TestCase):
                 self.uri_opener.GET(url)
             except HTTPRequestException:
                 http_request_e += 1
-            except ScanMustStopException, smse:
+            except ScanMustStopException as smse:
                 scan_must_stop_e += 1
                 break
             except Exception as e:

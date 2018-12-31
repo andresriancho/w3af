@@ -70,7 +70,7 @@ class form_auth(BruteforcePlugin):
 
         try:
             login_failed_bodies = self._id_failed_login_page(mutant)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             msg = 'Unexpected response during form bruteforce setup: "%s"'
             om.out.debug(msg % bfe)
             return

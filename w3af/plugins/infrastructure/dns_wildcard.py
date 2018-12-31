@@ -88,7 +88,7 @@ class dns_wildcard(InfrastructurePlugin):
 
         try:
             modified_response = self._uri_opener.GET(ip_url, cache=True)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'An error occurred while fetching IP address URL in ' \
                   ' dns_wildcard plugin: "%s"' % w3
             om.out.debug(msg)

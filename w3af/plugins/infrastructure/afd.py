@@ -60,7 +60,7 @@ class afd(InfrastructurePlugin):
         """
         try:
             filtered, not_filtered = self._send_requests(fuzzable_request)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             om.out.error(str(bfe))
         else:
             self._analyze_results(filtered, not_filtered)
@@ -81,7 +81,7 @@ class afd(InfrastructurePlugin):
 
         try:
             http_resp = self._uri_opener.GET(original_url, cache=True)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             msg = ('Active filter detection plugin failed to receive a'
                    ' response for the first request. The exception was: "%s".'
                    ' Can not perform analysis.')

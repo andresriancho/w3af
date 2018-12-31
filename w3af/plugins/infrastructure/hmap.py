@@ -66,7 +66,7 @@ class hmap(InfrastructurePlugin):
 
         try:
             results = upstream_hmap.testServer(ssl, server, port, 1, self._gen_fp, self._threads)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'A BaseFrameworkException occurred while running hmap: "%s"'
             om.out.error(msg % w3)
             return

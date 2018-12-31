@@ -82,7 +82,7 @@ class finger_bing(InfrastructurePlugin):
         except ScanMustStopOnUrlError:
             # Just ignore it
             pass
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'ExtendedUrllib exception raised while fetching page in' \
                   ' finger_bing, error description: "%s"'
             om.out.debug(msg % w3)

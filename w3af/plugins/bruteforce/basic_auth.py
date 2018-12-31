@@ -93,7 +93,7 @@ class basic_auth(BruteforcePlugin):
             try:
                 response = self._uri_opener.send_mutant(fr, cache=False,
                                                         grep=False)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 msg = 'Exception while brute-forcing basic authentication,'\
                       ' error message: "%s".'
                 om.out.debug(msg % w3)

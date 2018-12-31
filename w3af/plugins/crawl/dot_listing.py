@@ -74,7 +74,7 @@ class dot_listing(CrawlPlugin):
         url = domain_path.url_join('.listing')
         try:
             response = self._uri_opener.GET(url, cache=True)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'Failed to GET .listing file: "%s". Exception: "%s".'
             om.out.debug(msg % (url, w3))
             return

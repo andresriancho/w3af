@@ -76,7 +76,7 @@ class finger_google(InfrastructurePlugin):
                 search_string,
                 self._result_limit
             )
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
             raise RunOnce()
@@ -95,7 +95,7 @@ class finger_google(InfrastructurePlugin):
                 search_string,
                 self._result_limit
             )
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
             raise RunOnce()

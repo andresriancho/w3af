@@ -88,7 +88,7 @@ class ghdb(CrawlPlugin):
             search_term = 'site:%s %s' % (domain, gh.search)
             try:
                 self._classic_worker(gh, search_term)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 # Google is saying: "no more automated tests".
                 om.out.error('GHDB exception: "' + str(w3) + '".')
                 break

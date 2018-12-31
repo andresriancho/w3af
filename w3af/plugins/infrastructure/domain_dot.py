@@ -70,7 +70,7 @@ class domain_dot(InfrastructurePlugin):
                 headers = Headers([('Host', domain_dot)])
                 response = self._uri_opener.GET(orig_url, cache=False,
                                                 headers=headers)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 om.out.error(str(w3))
             else:
                 self._analyze_response(original_response, response)
