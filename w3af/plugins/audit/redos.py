@@ -59,7 +59,7 @@ class redos(AuditPlugin):
             for delay_obj in self.get_delays():
                 yield mutant, delay_obj, debugging_id
 
-    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+    def _find_delay_in_mutant(self, mutant, delay_obj, debugging_id):
         """
         Try to delay the response and save a vulnerability if successful
 
