@@ -222,7 +222,7 @@ class ThreadedProc(threading.Thread):
         try:
             self.result = self.func(self.text)
             self.ok = True
-        except Exception, e:
+        except Exception as e:
             self.exception = e
             self.ok = False
         finally:

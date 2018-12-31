@@ -438,7 +438,7 @@ class ResponsePart(RequestResponsePart):
         try:
             rend = getRenderingView(w3af, self)
             self.add_view(rend)
-        except Exception, ex:
+        except Exception as ex:
             print ex
 
     def get_both_texts(self):
@@ -510,7 +510,7 @@ class ThreadedURLImpact(threading.Thread):
                     try:
                         tmp_result = plugin.audit_return_vulns(self.request)
                         plugin.end()
-                    except BaseFrameworkException, e:
+                    except BaseFrameworkException as e:
                         om.out.error(str(e))
                     else:
                         #
@@ -530,7 +530,7 @@ class ThreadedURLImpact(threading.Thread):
                 try:
                     self.result = plugin.audit_return_vulns(self.request)
                     plugin.end()
-                except BaseFrameworkException, e:
+                except BaseFrameworkException as e:
                     om.out.error(str(e))
                 else:
                     #
@@ -542,7 +542,7 @@ class ThreadedURLImpact(threading.Thread):
             #   We got here, everything is OK!
             self.ok = True
 
-        except Exception, e:
+        except Exception as e:
             self.exception = e
             #
             #   This is for debugging errors in the audit button of the

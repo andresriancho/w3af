@@ -131,7 +131,7 @@ class serialized_object(GrepPlugin):
         """
         try:
             match_object = serialized_object_re.search(parameter_value)
-        except Exception, e:
+        except Exception as e:
             args = (e, parameter_value)
             om.out.debug('An exception was found while trying to find a'
                          ' serialized object in a parameter value. The exception'

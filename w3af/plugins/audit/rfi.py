@@ -246,7 +246,7 @@ class rfi(AuditPlugin):
 
                 # Perform the real work
                 self._test_inclusion(freq, rfi_data, orig_response, debugging_id)
-            except socket.error, se:
+            except socket.error as se:
                 errorcode = se[0]
                 if errorcode == errno.EADDRINUSE:
                     # We can't use this address because it is already in use
@@ -257,7 +257,7 @@ class rfi(AuditPlugin):
                            'rfi plugin. The address is already in use by another process.')
                     om.out.error(msg)
 
-            except Exception, e:
+            except Exception as e:
                 msg = 'An error occurred while running local web server for' \
                       ' the remote file inclusion (rfi) plugin: "%s"'
                 om.out.error(msg % e)
@@ -491,7 +491,7 @@ class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             self.wfile.write(self.RESPONSE_BODY)
-        except Exception, e:
+        except Exception as e:
             om.out.debug('[RFIWebHandler] Exception: "%s".' % e)
         finally:
             # Clean up

@@ -68,7 +68,7 @@ def start_scan_helper(scan_info):
         # Start the scan!
         w3af_core.verify_environment()
         w3af_core.start()
-    except Exception, e:
+    except Exception as e:
         scan_info.exception = e
         try:
             w3af_core.stop()

@@ -421,7 +421,7 @@ class PluginTree(gtk.TreeView):
         # Reload the plugin
         try:
             self.w3af.plugins.reload_modified_plugin(plugin_type, plugin_name)
-        except Exception, e:
+        except Exception as e:
             msg = 'The plugin you modified raised the following exception'
             msg += ' while trying to reload it: "%s",' % str(e)
             msg += ' please fix this issue before continuing or w3af will crash.'

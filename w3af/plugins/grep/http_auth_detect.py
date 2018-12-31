@@ -96,7 +96,7 @@ class http_auth_detect(GrepPlugin):
         url_list = []
         try:
             document_parser = parser_cache.dpc.get_document_parser_for(response)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'Failed to find a suitable document parser. Exception: "%s"'
             om.out.debug(msg % e)
         else:

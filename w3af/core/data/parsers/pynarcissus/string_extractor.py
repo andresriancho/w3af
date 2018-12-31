@@ -51,7 +51,7 @@ class StringExtractor(object):
 
         try:
             root = parse(js_source)
-        except Exception, e:
+        except Exception as e:
             pass
         else:
             self.visit(root)

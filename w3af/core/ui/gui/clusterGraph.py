@@ -183,7 +183,7 @@ class distance_function_selector(entries.RememberingWindow):
             window = clusterGraphWidget(
                 self.w3af, self.data, distance_function=selected_function,
                 custom_code=custom_code)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = str(w3)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
@@ -304,7 +304,7 @@ class clusterGraphWidget(w3afDotWindow):
             
             try:
                 callable_object = self._create_callable_object(custom_code)
-            except Exception, e:
+            except Exception as e:
                 # TODO: instead of hiding..., which may consume memory...
                 #       why don't killing?
                 self.hide()
@@ -315,7 +315,7 @@ class clusterGraphWidget(w3afDotWindow):
             try:
                 dotcode = self._generateDotCode(response_list,
                                                 distance_function=callable_object)
-            except Exception, e:
+            except Exception as e:
                 # TODO: instead of hiding..., which may consume memory...
                 # why don't killing?
                 self.hide()

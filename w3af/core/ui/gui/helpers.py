@@ -203,7 +203,7 @@ class _Wrapper(object):
         """Apply the wrap."""
         try:
             return func(*args, **kwargs)
-        except Exception, err:
+        except Exception as err:
             if isinstance(err, self.friendly):
                 FriendlyExceptionDlg(str(err))
             raise
