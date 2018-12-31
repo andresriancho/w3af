@@ -242,7 +242,7 @@ class xxe(AuditPlugin):
 
         try:
             xml_root = etree.fromstring(smart_str_ignore(original_value), parser=parser)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to parse XML to inject XXE tests. Exception was: "%s"'
             om.out.debug(msg % e)
             return None
