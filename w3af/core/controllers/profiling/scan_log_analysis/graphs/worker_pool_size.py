@@ -1,7 +1,7 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 WORKER_POOL_SIZE = re.compile('the worker pool size to (.*?) ')
 
 
-def show_worker_pool_size(scan_log_filename, scan):
+def get_worker_pool_size_data(scan_log_filename, scan):
     scan.seek(0)
 
     worker_pool_sizes = []
@@ -20,6 +20,12 @@ def show_worker_pool_size(scan_log_filename, scan):
         if match:
             worker_pool_sizes.append(int(match.group(1)))
             worker_pool_timestamps.append(get_line_epoch(line))
+
+    return worker_pool_sizes, worker_pool_timestamps
+
+
+def draw_worker_pool_size(scan_log_filename, scan):
+    worker_pool_sizes, worker_pool_timestamps = get_worker_pool_size_data(scan_log_filename, scan)
 
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
@@ -36,8 +42,8 @@ def show_worker_pool_size(scan_log_filename, scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Worker pool size'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -49,5 +55,4 @@ def show_worker_pool_size(scan_log_filename, scan):
              label='Workers')
 
     print(fig.show())
-    print('')
     print('')

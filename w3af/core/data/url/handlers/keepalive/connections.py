@@ -7,7 +7,7 @@ import ssl
 import os
 
 from .http_response import HTTPResponse
-from .utils import debug, DEBUG
+from .utils import debug
 
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
@@ -15,12 +15,7 @@ from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
 
 class UniqueID(object):
     def __init__(self):
-        if DEBUG:
-            # Only do the extra id stuff when debugging
-            self.id = binascii.hexlify(os.urandom(8))
-        else:
-            self.id = None
-
+        self.id = binascii.hexlify(os.urandom(8))
         self.req_count = 0
         self.timeout = None
 
@@ -36,7 +31,7 @@ class UniqueID(object):
         # Only makes sense when DEBUG is True
         timeout = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
         args = (self.__class__.__name__, self.id, self.req_count, timeout)
-        return '%s(id:%s, req_count:%s, timeout:%s)' % args
+        return '<%s(id:%s, req_count:%s, timeout:%s)>' % args
 
 
 class _HTTPConnection(httplib.HTTPConnection, UniqueID):
@@ -47,6 +42,7 @@ class _HTTPConnection(httplib.HTTPConnection, UniqueID):
         httplib.HTTPConnection.__init__(self, host, port, strict,
                                         timeout=timeout)
         self.is_fresh = True
+        self.host_port = '%s:%s' % (self.host, self.port)
 
     def connect(self):
         """
@@ -114,6 +110,8 @@ class ProxyHTTPConnection(_HTTPConnection):
     def __init__(self, host, port=None, strict=None,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         _HTTPConnection.__init__(self, host, port, strict, timeout=timeout)
+        self._real_host = None
+        self._real_port = None
 
     def proxy_setup(self, url):
         # request is called before connect, so can interpret url and get
@@ -139,7 +137,7 @@ class ProxyHTTPConnection(_HTTPConnection):
     def connect(self):
         super(ProxyHTTPConnection, self).connect()
 
-        #send proxy CONNECT request
+        # send proxy CONNECT request
         new_line = '\r\n'
         host_port = '%s:%d' % (self._real_host, self._real_port)
         self.send('CONNECT %s HTTP/1.1%s' % (host_port, new_line))
@@ -153,21 +151,21 @@ class ProxyHTTPConnection(_HTTPConnection):
 
         self.send(new_line)
 
-        #expect a HTTP/1.0 200 Connection established
+        # expect a HTTP/1.0 200 Connection established
         response = self.response_class(self.sock, strict=self.strict,
                                        method=self._method)
         version, code, message = response._read_status()
 
-        #probably here we can handle auth requests...
+        # probably here we can handle auth requests...
         if code != 200:
-            #proxy returned and error, abort connection, and raise exception
+            # proxy returned and error, abort connection, and raise exception
             self.close()
             raise socket.error('Proxy connection failed: %d %s' %
-                              (code, message.strip()))
+                               (code, message.strip()))
 
         # eat up header block from proxy....
         while True:
-            #should not use directly fp probably
+            # should not use directly fp probably
             line = response.fp.readline()
             if line == '\r\n':
                 break
@@ -196,6 +194,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
     def __init__(self, *args, **kwargs):
         UniqueID.__init__(self)
         httplib.HTTPSConnection.__init__(self, *args, **kwargs)
+        self.host_port = '%s:%s' % (self.host, self.port)
 
     def connect(self):
         """
@@ -301,6 +300,7 @@ class HTTPConnection(_HTTPConnection):
                                  strict=strict,
                                  timeout=timeout)
         self.current_request_start = None
+        self.connection_manager_move_ts = None
 
 
 class HTTPSConnection(SSLNegotiatorConnection):
@@ -312,3 +312,4 @@ class HTTPSConnection(SSLNegotiatorConnection):
                                          strict, timeout=timeout)
         self.is_fresh = True
         self.current_request_start = None
+        self.connection_manager_move_ts = None

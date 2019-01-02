@@ -40,4 +40,5 @@ class Config(dict):
         """
         self.clear()
 
+
 cf = Config()

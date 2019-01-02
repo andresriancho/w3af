@@ -1,13 +1,13 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
 from utils.utils import get_line_epoch, InvalidTimeStamp
 
 HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
 
 
-def show_http_requests_over_time(scan_log_filename, scan):
+def get_http_requests_over_time_data(scan_log_filename, scan):
     scan.seek(0)
     requests_by_minute = []
     requests_in_this_minute = 0
@@ -31,14 +31,20 @@ def show_http_requests_over_time(scan_log_filename, scan):
             requests_by_minute.append(requests_in_this_minute)
             requests_in_this_minute = 0
 
+    return requests_by_minute
+
+
+def draw_http_requests_over_time(scan_log_filename, scan):
+    requests_by_minute = get_http_requests_over_time_data(scan_log_filename, scan)
+
     print('HTTP requests sent by minute')
     print('')
 
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'HTTP requests'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -49,5 +55,4 @@ def show_http_requests_over_time(scan_log_filename, scan):
              requests_by_minute)
 
     print(fig.show())
-    print('')
     print('')

@@ -19,13 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import sys
 import time
-import random
 
-from multiprocessing.dummy import Process
 from Queue import Empty
 from functools import wraps
+from multiprocessing.dummy import Process
 
 import w3af.core.controllers.output_manager as om
 
@@ -36,10 +36,6 @@ from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.data.misc.cached_queue import CachedQueue
 
-# For some reason getting a randint with a large MAX like this is faster than
-# with a small one like 10**10
-MAX_RAND = 10**24
-
 
 def task_decorator(method):
     """
@@ -49,7 +45,7 @@ def task_decorator(method):
     
     @wraps(method)
     def _wrapper(self, *args, **kwds):
-        rnd_id = random.randint(1, MAX_RAND)
+        rnd_id = os.urandom(32).encode('hex')
         function_id = '%s_%s' % (method.__name__, rnd_id)
 
         self._add_task(function_id)
@@ -122,13 +118,13 @@ class BaseConsumer(Process):
         # This was with a max_in_queue_size of 100 set for the CachedQueue defined below.
         #
         # Meaning that:
-        #       * There were 119 items in the queue (100 in memory ) in the first log line
+        #       * There were 119 items in the queue (100 in memory) in the first log line
         #       * Also at 16:45:36, there were 128 items in the queue (100 in memory)
         #       * It took 16 seconds to consume 28 items from the queue (from second 36 to second 52)
         #
         # This surprises me a little bit. I expected this queue to have less items in memory.
         # Since I want to remove the memory usage in the framework, I'm going to reduce the
-        # maxsize sent to this CachedQueue to 50
+        # maxsize sent to this CachedQueue to 75
         #
         # But just in case I'm using a CachedQueue!
         self._out_queue = CachedQueue(maxsize=75, name=thread_name + 'Out')
@@ -177,20 +173,13 @@ class BaseConsumer(Process):
                 continue
 
             if work_unit == POISON_PILL:
-
                 try:
-                    # Close the pool and wait for everyone to finish
-                    if self._threadpool is not None:
-                        self._threadpool.close()
-                        self._threadpool.join()
-                        self._threadpool = None
-
-                    self._teardown()
+                    self._process_poison_pill()
+                except Exception, e:
+                    msg = 'An exception was found while processing poison pill: "%s"'
+                    om.out.debug(msg % e)
                 finally:
-                    # Finish this consumer and everyone consuming the output
-                    self._out_queue.put(POISON_PILL)
                     self.in_queue.task_done()
-                    self.set_has_finished()
                     break
 
             else:
@@ -199,6 +188,110 @@ class BaseConsumer(Process):
                     self._consume_wrapper(work_unit)
                 finally:
                     self.in_queue.task_done()
+
+            self._log_queue_sizes()
+
+    def _log_queue_sizes(self):
+        if not self._poison_pill_sent:
+            return
+
+        msg = ('The %s input queue received the POISON_PILL. Processing %s'
+               ' tasks from input queue and %s tasks from output queue before'
+               ' breaking out of the loop')
+        args = (self._thread_name,
+                self.in_queue.qsize(),
+                self.out_queue.qsize())
+        om.out.debug(msg % args)
+
+        msg = 'The %s consumer has %s tasks in progress'
+        args = (self._thread_name, len(self._tasks_in_progress))
+        om.out.debug(msg % args)
+
+        if self._threadpool is not None:
+
+            msg = ('The %s consumer pool has %s tasks in the input queue'
+                   ' and %s tasks in the output queue')
+            args = (self._thread_name,
+                    self._threadpool._inqueue.qsize(),
+                    self._threadpool._outqueue.qsize())
+            om.out.debug(msg % args)
+
+    def _process_poison_pill(self):
+        om.out.debug('Processing POISON_PILL in %s' % self._thread_name)
+
+        try:
+            self._shutdown_threadpool()
+        except:
+            # All the logging is done inside the method, an empty
+            # except clause is acceptable in this case
+            pass
+
+        try:
+            self._call_teardown()
+        except:
+            # All the logging is done inside the method, an empty
+            # except clause is acceptable in this case
+            pass
+        finally:
+            self._out_queue.put(POISON_PILL)
+            self.set_has_finished()
+
+    def _shutdown_threadpool(self):
+        if self._threadpool is None:
+            msg = '%s pool is None. No shutdown required.'
+            om.out.debug(msg % self._thread_name)
+            return
+
+        #
+        # Close the pool and wait for everyone to finish
+        #
+        # Quickly set the threadpool attribute to None to prevent other calls
+        # to this method from running close() or join() twice on the same pool
+        # This should never happen (only one POISON_PILL should ever be sent
+        # to a queue) but...
+        #
+        pool = self._threadpool
+        self._threadpool = None
+
+        msg_fmt = 'Exception found while %s pool in %s consumer: "%s"'
+
+        try:
+            pool.close()
+        except Exception, e:
+            args = ('closing', self.get_name(), e)
+            om.out.debug(msg_fmt % args)
+
+        msg = '%s pool is closed'
+        om.out.debug(msg % self._thread_name)
+
+        try:
+            pool.join()
+        except Exception, e:
+            args = ('joining', self.get_name(), e)
+            om.out.debug(msg_fmt % args)
+
+            # First try to call join(), which is nice and waits for all the
+            # tasks to complete. If that fails, then call terminate()
+            try:
+                pool.terminate()
+            except Exception, e:
+                args = ('terminating', self.get_name(), e)
+                om.out.debug(msg_fmt % args)
+            else:
+                msg = '%s pool has been terminated after failed call to join'
+                om.out.debug(msg % self._thread_name)
+
+        msg = '%s pool has been joined'
+        om.out.debug(msg % self._thread_name)
+
+    def _call_teardown(self):
+        # Finish this consumer and everyone consuming the output
+        try:
+            self._teardown()
+        except Exception, e:
+            msg = 'Exception found while calling teardown() in %s consumer: "%s"'
+            args = (self.get_name(), e)
+            om.out.debug(msg % args)
 
     def get_running_task_count(self):
         """
@@ -256,7 +349,7 @@ class BaseConsumer(Process):
         try:
             self._tasks_in_progress.pop(function_id)
         except KeyError:
-            raise AssertionError('The function %s was not found!' % function_id)
+            raise AssertionError('The function with ID %s was not found!' % function_id)
 
     def _add_task(self, function_id):
         """
@@ -336,34 +429,81 @@ class BaseConsumer(Process):
     def in_queue_size(self):
         return self.in_queue.qsize()
 
+    def send_poison_pill(self):
+        if self._poison_pill_sent:
+            return
+
+        # https://github.com/andresriancho/w3af/issues/9587
+        # let put() know that all new tasks should be ignored
+        self._poison_pill_sent = True
+
+        # send the poison pill
+        self.in_queue_put(POISON_PILL, force=True)
+
+        msg = 'Sent POISON_PILL to the %s consumer in_queue'
+        om.out.debug(msg % self._thread_name)
+
     def join(self):
         """
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         """
+        msg = 'Called %s consumer join()'
+        om.out.debug(msg % self._thread_name)
+
         start_time = time.time()
 
         if not self.is_alive():
             # This return has a long history, follow it here:
             # https://github.com/andresriancho/w3af/issues/1172
+            msg = 'The %s consumer thread was not alive'
+            om.out.debug(msg % self._thread_name)
             return
 
-        if not self._poison_pill_sent:
-            # https://github.com/andresriancho/w3af/issues/9587
-            # let put() know that all new tasks should be ignored
-            self._poison_pill_sent = True
+        self.send_poison_pill()
 
-            # send the poison pill
-            self.in_queue_put(POISON_PILL, force=True)
+        msg = 'Calling join() on %s.in_queue (qsize:%s)'
+        args = (self._thread_name, self.in_queue.qsize())
+        om.out.debug(msg % args)
 
         self.in_queue.join()
 
-        if self._threadpool is not None:
-            self._threadpool.close()
-            self._threadpool.join()
+        msg = 'Successfully joined the %s consumer in_queue'
+        om.out.debug(msg % self._thread_name)
+
+        self._shutdown_threadpool()
 
         spent_time = time.time() - start_time
         om.out.debug('%s took %.2f seconds to join()' % (self._thread_name, spent_time))
+
+    def _clear_input_output_queues(self):
+        #
+        # Remove all queued tasks from the input queue to prevent new tasks
+        # from being started
+        #
+        while True:
+            try:
+                self.in_queue.get_nowait()
+            except Empty:
+                break
+            else:
+                self.in_queue.task_done()
+
+        self._log_queue_sizes()
+
+        #
+        # Remove all queued tasks from the output queue to prevent the results
+        # from making it to the core, which could trigger other tasks
+        #
+        while True:
+            try:
+                self.out_queue.get_nowait()
+            except Empty:
+                break
+            else:
+                self.out_queue.task_done()
+
+        self._log_queue_sizes()
 
     def terminate(self):
         """
@@ -371,29 +511,11 @@ class BaseConsumer(Process):
         exits. Should be very fast and called only if we don't care about the
         queued work anymore (ie. user clicked stop in the UI).
         """
-        while not self.in_queue.empty():
-            try:
-                self.in_queue.get_nowait()
-            except Empty:
-                # We get here in very rare cases where:
-                #
-                #  * Another thread (T1) is running and reading from in_queue
-                #  * Our thread (T2) asks if the queue is empty and gets False
-                #  * T1 reads from in_queue
-                #  * T2 reads from the queue but there are no more tasks there
-                #  * T2 locks for ever (at least that is what happen when self.in_queue.get()
-                #    was used instead of get_nowait()
-                #
-                msg = 'Handled race condition in %s consumer terminate()'
-                args = (self._thread_name,)
-                om.out.debug(msg % args)
+        self._clear_input_output_queues()
 
-                continue
-
-            self.in_queue.task_done()
-
-        om.out.debug('No more tasks in %s consumer input queue.' % self._thread_name)
-
+        # This call to join should be super-fast, there are no tasks in the
+        # queues: only need to wait for the tasks that are currently running
+        # in the threadpool
         self.join()
 
     def get_result(self, timeout=0.5):
@@ -420,7 +542,11 @@ class BaseConsumer(Process):
         status.set_running_plugin(phase, plugin_name, log=False)
         status.set_current_fuzzable_request(phase, fuzzable_request)
 
-        exception_data = ExceptionData(status, _exception, tb, enabled_plugins)
+        exception_data = ExceptionData(status,
+                                       _exception,
+                                       tb,
+                                       enabled_plugins,
+                                       store_tb=False)
         self._out_queue.put(exception_data)
 
     def add_observer(self, observer):

@@ -1,7 +1,7 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -119,8 +119,8 @@ def show_progress_delta(scan_log_filename, scan):
         fig = plotille.Figure()
         fig.width = 90
         fig.height = 20
-        fig.register_label_formatter(float, _num_formatter)
-        fig.register_label_formatter(int, _num_formatter)
+        fig.register_label_formatter(float, num_formatter)
+        fig.register_label_formatter(int, num_formatter)
         fig.y_label = 'Progress'
         fig.x_label = 'Time'
         fig.color_mode = 'byte'
@@ -154,8 +154,8 @@ def show_progress_delta(scan_log_filename, scan):
         fig = plotille.Figure()
         fig.width = 90
         fig.height = 20
-        fig.register_label_formatter(float, _num_formatter)
-        fig.register_label_formatter(int, _num_formatter)
+        fig.register_label_formatter(float, num_formatter)
+        fig.register_label_formatter(int, num_formatter)
         fig.y_label = 'Progress'
         fig.x_label = 'Time'
         fig.color_mode = 'byte'
@@ -189,8 +189,8 @@ def show_progress_delta(scan_log_filename, scan):
         fig = plotille.Figure()
         fig.width = 90
         fig.height = 20
-        fig.register_label_formatter(float, _num_formatter)
-        fig.register_label_formatter(int, _num_formatter)
+        fig.register_label_formatter(float, num_formatter)
+        fig.register_label_formatter(int, num_formatter)
         fig.y_label = 'Progress'
         fig.x_label = 'Time'
         fig.color_mode = 'byte'
@@ -231,8 +231,8 @@ def show_progress_delta(scan_log_filename, scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Progress'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'

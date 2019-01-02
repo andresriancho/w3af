@@ -1,13 +1,14 @@
 import re
 
 from utils.utils import get_path
+from utils.output import ListOutput, ListOutputItem
 
 HTTP_METHOD_URL_RE = re.compile('\] (.*?) (.*?) (with data: ".*?" )?returned HTTP code')
 HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
 FROM_CACHE = 'from_cache=1'
 
 
-def show_total_http_requests(scan_log_filename, scan):
+def get_total_http_requests(scan_log_filename, scan):
     scan.seek(0)
 
     count = dict()
@@ -50,13 +51,15 @@ def show_total_http_requests(scan_log_filename, scan):
                 urls[url] = 1
 
     total = sum(count.itervalues())
-    print('The scan sent %s HTTP requests' % total)
+
+    output = ListOutput('http_requests')
+    output.append(ListOutputItem('Total HTTP requests sent', total))
 
     if not total:
         return
 
-    print('    %i%% responses came from HTTP cache' % (cached_responses / total * 100,))
-    print('')
+    from_cache = '%.2f%%' % (cached_responses / total * 100,)
+    output.append(ListOutputItem('HTTP responses from cache', from_cache))
 
     def by_value(a, b):
         return cmp(b[1], a[1])
@@ -64,27 +67,35 @@ def show_total_http_requests(scan_log_filename, scan):
     count_list = count.items()
     count_list.sort(by_value)
 
-    for code, num in count_list:
-        args = (code, num, num / float(total) * 100)
-        print('    HTTP response code %s was received %s times (%i%%)' % args)
+    responses_by_code = {}
 
-    print('')
+    for code, num in count_list:
+        responses_by_code[code] = (num, '%.2f%%' % (num / float(total) * 100,))
+
+    output.append(ListOutputItem('HTTP responses by code',
+                                 responses_by_code))
 
     methods_list = methods.items()
     methods_list.sort(by_value)
 
-    for method, count in methods_list:
-        args = (method, count, count / float(total) * 100)
-        print('    HTTP method %s was sent %s times (%i%%)' % args)
+    requests_by_method = {}
 
-    print('')
+    for method, count in methods_list:
+        requests_by_method[method] = (count, '%.2f%%' % (count / float(total) * 100,))
+
+    output.append(ListOutputItem('HTTP request method analysis',
+                                 requests_by_method))
 
     urls_list = urls.items()
     urls_list.sort(by_value)
     urls_list = urls_list[:10]
 
-    for url, num in urls_list:
-        args = (url, num, num / float(total) * 100)
-        print('    URL %s received %s requests (%i%%)' % args)
+    urls_with_more_requests = {}
 
-    print('')
+    for url, num in urls_list:
+        urls_with_more_requests[url] = (num, '%.2f%%' % (num / float(total) * 100,))
+
+    output.append(ListOutputItem('URLs which received more HTTP requests',
+                                 urls_with_more_requests))
+
+    return output

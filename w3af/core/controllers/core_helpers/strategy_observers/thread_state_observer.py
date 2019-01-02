@@ -255,6 +255,9 @@ class ThreadStateObserver(StrategyObserver):
                 idle_workers.append(worker_state)
                 continue
 
+            if worker_state['start_time'] is None:
+                continue
+
             spent = time.time() - worker_state['start_time']
 
             # Save us some disk space and sanity, only log worker state if it has
@@ -271,11 +274,28 @@ class ThreadStateObserver(StrategyObserver):
                 else:
                     arg_str = smart_str_ignore(arg_repr)
 
+                if len(arg_str) > 80:
+                    arg_str = arg_str[:80] + "...'"
+
                 parts.append(arg_str)
 
             args_str = ', '.join(parts)
 
-            kwargs_str = smart_str_ignore(worker_state['kwargs'])
+            short_kwargs = {}
+            for key, value in worker_state['kwargs']:
+                try:
+                    value_repr = repr(value)
+                except UnicodeEncodeError:
+                    value_str = smart_str_ignore(value)
+                else:
+                    value_str = smart_str_ignore(value_repr)
+
+                if len(value_str) > 80:
+                    value_str = value_str[:80] + "...'"
+
+                short_kwargs[key] = value_str
+
+            kwargs_str = smart_str_ignore(short_kwargs)
 
             func_name = smart_str_ignore(worker_state['func_name'])
             func_name = self.clean_function_name(func_name)

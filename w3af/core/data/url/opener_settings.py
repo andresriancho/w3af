@@ -24,6 +24,7 @@ import urlparse
 import cookielib
 
 import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.configurable import Configurable
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.config import cf as cfg
@@ -47,6 +48,7 @@ from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler, NoOpErrorHandler
 from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, URL_LIST, BOOL
+
 
 USER_AGENT_HEADER = 'User-Agent'
 
@@ -226,8 +228,7 @@ class OpenerSettings(Configurable):
         return self._cookie_handler.cookiejar
     
     def clear_cookies(self):
-        self._cookie_handler.cookiejar.clear()
-        self._cookie_handler.cookiejar.clear_session_cookies()
+        self._cookie_handler.clear_cookies()
 
     def set_configured_timeout(self, timeout):
         """
@@ -546,8 +547,8 @@ class OpenerSettings(Configurable):
         ol.add(o)
         
         d = 'Ignore session cookies'
-        h = 'If set to True, w3af will ignore all session cookies sent by'\
-            ' the web application'
+        h = ('If set to True, w3af will not extract cookies from HTTP responses'
+             ' nor send HTTP cookies in requests.')
         o = opt_factory('ignore_session_cookies',
                         cfg.get('ignore_session_cookies'), d, 'boolean',
                         help=h, tabid='Cookies')

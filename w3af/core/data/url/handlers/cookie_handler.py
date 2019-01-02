@@ -19,25 +19,72 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import urllib2
+from cookielib import MozillaCookieJar
+from urllib2 import HTTPCookieProcessor
 
 
-class CookieHandler(urllib2.HTTPCookieProcessor):
+class CookieHandler(HTTPCookieProcessor):
+
+    def __init__(self, default_cookiejar=None):
+        HTTPCookieProcessor.__init__(self, None)
+
+        # Store the different cookie jars here, these represent the different
+        # browser sessions that the plugins might request
+        self.jars = {}
+
+        if default_cookiejar is None:
+            default_cookiejar = MozillaCookieJar()
+
+        self.default_cookiejar = default_cookiejar
+
+    def get_cookie_jar(self, request):
+        """
+        :param request: The HTTP request, with a browser session attribute, or
+                        None if the default cookiejar should be used.
+
+        :return: The cookiejar instance
+        """
+        if request.session is None:
+            return self.default_cookiejar
+
+        session = self.jars.get(request.session, None)
+        if session is not None:
+            return session
+
+        new_session = MozillaCookieJar()
+        self.jars[request.session] = new_session
+        return new_session
+
+    def clear_cookies(self):
+        """
+        Clear the cookies from all cookie jars.
+        :return: None
+        """
+        for cookiejar in self.jars.itervalues():
+            cookiejar.clear()
+            cookiejar.clear_session_cookies()
+
+        self.default_cookiejar.clear()
+        self.default_cookiejar.clear_session_cookies()
 
     def http_request(self, request):
-        """
-        I had to subclass the urllib2.HTTPCookieProcessor in order to add the
-        "if request.cookies" to provide the plugins with a feature to send HTTP
-        requests without any cookies.
-        """
-        if request.cookies:
-            try:
-                return urllib2.HTTPCookieProcessor.http_request(self, request)
-            except AttributeError:
-                # https://github.com/andresriancho/w3af/issues/13842
-                return request
-        
-        # Don't do any cookie stuff
+        if not request.cookies:
+            # Don't do any cookie handling
+            return request
+
+        try:
+            cookiejar = self.get_cookie_jar(request)
+            cookiejar.add_cookie_header(request)
+        except AttributeError:
+            # https://github.com/andresriancho/w3af/issues/13842
+            pass
+
         return request
 
+    def http_response(self, request, response):
+        cookiejar = self.get_cookie_jar(request)
+        cookiejar.extract_cookies(response, request)
+        return response
+
     https_request = http_request
+    https_response = http_response

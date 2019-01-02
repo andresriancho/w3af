@@ -524,7 +524,7 @@ class ParameterHandler(object):
 
         created_object = {}
 
-        for property_name, property_data in param_spec['properties'].iteritems():
+        for property_name, property_data in param_spec.get('properties', {}).iteritems():
 
             # This helps us choose a better value for filling the parameter
             if 'name' not in property_data:

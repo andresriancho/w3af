@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import traceback
 
+from Queue import Empty
 from multiprocessing.dummy import Queue, Process
 
 import w3af.core.controllers.output_manager as om
@@ -62,8 +63,24 @@ class seed(Process):
     def join(self):
         return
 
+    @property
+    def out_queue(self):
+        # This output queue can contain one of the following:
+        #    * POISON_PILL
+        #    * (plugin_name, fuzzable_request, AsyncResult)
+        #    * An ExceptionData instance
+        return self._out_queue
+
     def terminate(self):
-        return
+        while True:
+            try:
+                self._out_queue.get_nowait()
+            except Empty:
+                break
+            else:
+                self._out_queue.task_done()
+
+        om.out.debug('No more tasks in Seed consumer output queue.')
 
     def seed_output_queue(self, target_urls):
         """
