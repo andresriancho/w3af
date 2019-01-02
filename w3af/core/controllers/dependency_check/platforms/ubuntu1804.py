@@ -38,6 +38,7 @@ class Ubuntu1804(Ubuntu1604):
     def __init__(self):
         super(Ubuntu1804, self).__init__()
 
-    def is_current_platform(self):
+    @staticmethod
+    def is_current_platform():
         return 'Ubuntu' in platform.dist() and '18.04' in platform.dist()
 
