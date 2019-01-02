@@ -21,7 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 import re
+import time
 import logging
+import threading
 
 from contextlib import contextmanager
 from requests import ConnectionError
@@ -71,6 +73,10 @@ class InstrumentedChrome(object):
         self.chrome_conn = self.connect_to_chrome()
         self.set_chrome_settings()
 
+        self._frame_stopped_loading_event = threading.Event()
+        self._frame_scheduled_navigation = threading.Event()
+        self._network_almost_idle_event = threading.Event()
+
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
                              0,
@@ -109,17 +115,19 @@ class InstrumentedChrome(object):
         port = self.chrome_process.get_devtools_port()
 
         # The timeout we specify here is the websocket timeout, which is used
-        # for send() and recv() calls. When we send a command wait_result() is
-        # called, the websocket timeout might be exceeded multiple times while
-        # waiting for the result.
+        # for send() and recv() calls.
         try:
             chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
                                                port=port,
-                                               timeout=1,
+                                               timeout=0.001,
                                                debugging_id=self.debugging_id)
         except ConnectionError:
             msg = 'Failed to connect to Chrome on port %s'
             raise InstrumentedChromeException(msg % port)
+
+        chrome_conn.name = 'DebugChromeInterface'
+        chrome_conn.daemon = True
+        chrome_conn.start()
 
         return chrome_conn
 
@@ -222,12 +230,24 @@ class InstrumentedChrome(object):
         :return: This method returns immediately, even if the browser is not
                  able to load the URL and an error was raised.
         """
+        # First we set the handler to know when the page completed loading
+        self.chrome_conn.set_event_handler(self._load_url_finished_handler)
+
+        # Then we load the URL
         url = str(url)
         self.chrome_conn.Page.navigate(url=url,
                                        timeout=self.PAGE_LOAD_TIMEOUT)
 
     def load_about_blank(self):
         self.load_url('about:blank')
+
+    def _navigator_started_handler(self, message):
+        if 'method' not in message:
+            return
+
+        if message['method'] == 'Page.frameScheduledNavigation':
+            self._frame_scheduled_navigation.set()
+            return
 
     def navigation_started(self, timeout=None):
         """
@@ -244,31 +264,25 @@ class InstrumentedChrome(object):
         :param timeout: How many seconds to wait for the event
         :return: True if Page.frameScheduledNavigation event is found
         """
-        events_to_wait_for = [
-            {'event': 'Page.frameScheduledNavigation',
-             'name': None,
-             'timeout': self.PAGE_WILL_CHANGE_TIMEOUT},
-        ]
+        timeout = timeout or self.PAGE_WILL_CHANGE_TIMEOUT
+        received_frame_sched_nav = self._frame_scheduled_navigation.wait(timeout=timeout)
 
-        for event in events_to_wait_for:
-            matching_message, messages = self.chrome_conn.wait_event(**event)
-
-            if matching_message is None:
-                return False
-
-            msg = 'Received %s from Chrome during navigation_started (did: %s)'
-            args = (event['event'], self.debugging_id)
-            om.out.debug(msg % args)
+        if not received_frame_sched_nav:
+            self.chrome_conn.unset_event_handler(self._navigator_started_handler)
+            self._frame_scheduled_navigation.clear()
+            return False
 
         return True
 
-    def wait_for_load(self):
+    def _load_url_finished_handler(self, message):
         """
         Knowing when a page has completed loading is difficult
 
-        This method will wait for two events:
+        This handler will wait for two events:
             * Page.frameStoppedLoading
             * Page.lifecycleEvent with name networkIdle
+
+        And set the corresponding flags so that wait_for_load() can return.
 
         If they are not received within PAGE_LOAD_TIMEOUT the method gives up
         and assumes that it is the best thing it can do.
@@ -276,25 +290,63 @@ class InstrumentedChrome(object):
         :return: True when the two events were received
                  False when one or none of the events were received
         """
-        events_to_wait_for = [
-            {'event': 'Page.frameStoppedLoading',
-             'name': None,
-             'timeout': self.PAGE_LOAD_TIMEOUT},
+        if 'method' not in message:
+            return
 
-            {'event': 'Page.lifecycleEvent',
-             'name': 'networkAlmostIdle',
-             'timeout': self.PAGE_LOAD_TIMEOUT}
-        ]
+        if message['method'] == 'Page.frameStoppedLoading':
+            self._frame_stopped_loading_event.set()
+            return
 
-        for event in events_to_wait_for:
-            matching_message, messages = self.chrome_conn.wait_event(**event)
+        if message['method'] == 'Page.lifecycleEvent':
+            if 'params' not in message:
+                return
 
-            if matching_message is None:
-                return False
+            if 'name' not in message['params']:
+                return
 
-            msg = 'Received %s from Chrome while waiting for page load (did: %s)'
-            args = (event['event'], self.debugging_id)
-            om.out.debug(msg % args)
+            if message['params']['name'] == 'networkAlmostIdle':
+                self._network_almost_idle_event.set()
+                return
+
+    def wait_for_load(self, timeout=None):
+        """
+        Knowing when a page has completed loading is difficult
+
+        This method works together with _load_url_finished_handler() that
+        reads all events and sets the corresponding
+
+        And set the corresponding flags so that wait_for_load() can return.
+
+        If they are not received within PAGE_LOAD_TIMEOUT the method gives up
+        and assumes that it is the best thing it can do.
+
+        :return: True when the two events were received
+                 False when one or none of the events were received
+        """
+        # Spend some time waiting for the initial event
+        total_timeout = timeout or self.PAGE_LOAD_TIMEOUT
+        start = time.time()
+
+        received_frame_stopped_loading = self._frame_stopped_loading_event.wait(timeout=total_timeout)
+
+        if not received_frame_stopped_loading:
+            self.chrome_conn.unset_event_handler(self._load_url_finished_handler)
+            self._frame_stopped_loading_event.clear()
+            self._network_almost_idle_event.clear()
+            return False
+
+        # Spend the rest of the time waiting for the second event
+        spent = time.time() - start
+        second_timeout = total_timeout - spent
+        second_timeout = max(second_timeout, 0.1)
+
+        received_network_almost_idle = self._network_almost_idle_event.wait(timeout=second_timeout)
+
+        if not received_network_almost_idle:
+            self.chrome_conn.unset_event_handler(self._load_url_finished_handler)
+            self._frame_stopped_loading_event.clear()
+            self._network_almost_idle_event.clear()
+            return False
 
         return True
 
@@ -456,9 +508,14 @@ class InstrumentedChrome(object):
         :return: Exceptions are raised on timeout and unknown events.
                  True is returned on success
         """
+        # Perform input validation
         assert self._is_valid_event_type(event_type)
         selector = self._escape_js_string(selector)
 
+        # Set the handler to know when the page completed loading
+        self.chrome_conn.set_event_handler(self._navigator_started_handler)
+
+        # Dispatch the event that will potentially trigger _navigator_started_handler()
         cmd = 'window._DOMAnalyzer.dispatchCustomEvent("%s", "%s")'
         args = (selector, event_type)
 
