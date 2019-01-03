@@ -90,6 +90,24 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
                                             u'node_type': 1,
                                             u'selector': u'#outside'}])
 
+    def test_html_events_filter_out_click(self):
+        self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners(event_filter=['foobar'])
+
+        self.assertEqual(event_listeners, [])
+
+    def test_html_events_filter_in_click(self):
+        self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners(event_filter=['click'])
+        self._print_all_console_messages()
+        self.assertEqual(event_listeners, [{u'tag_name': u'table',
+                                            u'handler': u'modifyText();',
+                                            u'event_type': u'click',
+                                            u'node_type': 1,
+                                            u'selector': u'#outside'}])
+
     def test_onclick_event_listener_with_children(self):
         self._unittest_setup(OnClickEventWithChildrenRequestHandler)
 

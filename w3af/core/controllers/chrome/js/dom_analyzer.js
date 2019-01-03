@@ -401,8 +401,10 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     /**
      * Get elements with events
      *
+     * @param  {Array}   event_filter     If non-empty, only return these events in the result
+     *
      */
-    getElementsWithEventHandlers: function () {
+    getElementsWithEventHandlers: function (event_filter) {
 
         let all_elements = document.getElementsByTagName("*");
         let events = [];
@@ -426,10 +428,27 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             if (!element_events.length) continue;
 
+            element_events = _DOMAnalyzer.filterByEventName(element_events, event_filter);
+
             events = events.concat(element_events);
         }
 
         return events;
+    },
+
+    /**
+     * Filter previously extracted events by event_type (click, hover, etc.)
+     *
+     * @param  {Array}   element_events   Events for a specific DOM element
+     * @param  {Array}   event_filter     If non-empty, only return these events in the result
+     *
+     */
+    filterByEventName: function (element_events, event_filter) {
+        if( event_filter.length === 0 ) return element_events;
+
+        return element_events.filter(function(event) {
+            return event_filter.includes(event.event_type);
+        });
     },
 
 };

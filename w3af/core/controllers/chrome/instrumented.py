@@ -503,9 +503,26 @@ class InstrumentedChrome(object):
         # TODO: Paginate
         return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
 
-    def get_html_event_listeners(self):
+    def get_html_event_listeners(self, event_filter=None):
+        """
+        :param event_filter: A list containing the events to filter by.
+                             For example if only the "click" events are
+                             required, the value of event_filter should be
+                             ['click']. Use an empty filter to return all DOM
+                             events.
+
+        :return: The DOM events that match the filters
+        """
         # TODO: Paginate
-        return self.get_js_variable_value('window._DOMAnalyzer.getElementsWithEventHandlers()')
+
+        event_filter = event_filter or []
+        event_filter = list(event_filter)
+        event_filter = repr(event_filter)
+
+        cmd = 'window._DOMAnalyzer.getElementsWithEventHandlers(%s)'
+        args = (event_filter,)
+
+        return self.get_js_variable_value(cmd % args)
 
     def get_all_event_listeners(self):
         # TODO: Paginate
