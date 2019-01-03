@@ -26,7 +26,7 @@ from websocket import WebSocketConnectionClosedException
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.chrome.instrumented import InstrumentedChrome, InstrumentedChromeException
-from w3af.core.controllers.chrome.devtools import ChromeInterfaceException
+from w3af.core.controllers.chrome.devtools import ChromeInterfaceException, ChromeInterfaceTimeout
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -140,9 +140,29 @@ class TestInstrumentedChrome(unittest.TestCase):
         # We simulate an error here
         self.ic.proxy.stop()
 
-        # Trigger it here
+        # Exception is raised
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
         self.assertRaises(ChromeInterfaceException, self.ic.load_url, url)
+
+    def test_exception_handling_in_custom_handlers(self):
+        class UnittestException(Exception):
+            pass
+
+        def raises_exception(message):
+            raise UnittestException('unittest')
+
+        self.ic.chrome_conn.set_event_handler(raises_exception)
+
+        # Exception is raised!
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+        self.assertRaises(UnittestException, self.ic.load_url, url)
+
+        # If we remove the buggy handler things work again
+        self.ic.chrome_conn.unset_event_handler(raises_exception)
+
+        self.ic.load_url(url)
+        self.ic.wait_for_load()
+        self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
 
 
 class TestInstrumentedChromeWithDialogDismiss(unittest.TestCase):

@@ -100,6 +100,28 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         self.set_event_handler(self.console_api_handler)
         self.set_event_handler(self.javascript_dialog_handler)
 
+    def set_event_handler(self, handler):
+        """
+        Sets an event handler function to be called when any Chrome event
+        is received.
+
+        The event handler function receives a parsed message. This message is
+        usually inspected to make sure the received event is the expected one
+        and then an action is taken.
+
+        :param handler: The function to run when the event is received
+        :return: None
+        """
+        self._handlers.append(handler)
+
+    def unset_event_handler(self, handler):
+        try:
+            self._handlers.remove(handler)
+        except ValueError:
+            # Do not raise any exceptions when the handler is not found,
+            # different threads might remove the same handler
+            pass
+
     def console_api_handler(self, message):
         if 'method' not in message:
             return
@@ -131,8 +153,71 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         self.Page.handleJavaScriptDialog(accept=dismiss,
                                          promptText=response_message)
 
-    def set_debugging_id(self, debugging_id):
-        self.debugging_id = debugging_id
+    def _result_id_match_handler(self, command_result, message):
+        if self.exc_type is not None:
+            command_result.set_exception(self.exc_type,
+                                         self.exc_value,
+                                         self.exc_traceback)
+
+            # The exception will be re-raised, we can already forget about it
+            self._clear_exc_info()
+            return
+
+        if 'result' not in message:
+            return
+
+        if message['id'] != command_result.message_id:
+            return
+
+        self.unset_event_handler(command_result.get_id_handler())
+        command_result.set(message)
+
+    def _call_event_handlers(self, message):
+        """
+        Calls any event handlers that match the message
+
+        Note that in set_default_event_handlers() many default handlers are
+        set for errors and exception handling.
+
+        The code that consumes DebugChromeInterface can also set specific event
+        handlers to receive and manage any event type.
+
+        :param message: The message that was received from Chrome
+        :return: None. Exceptions might be raised by the event handler.
+        """
+        for handler in self._handlers:
+            try:
+                handler(message)
+            except Exception as e:
+                try:
+                    function_name = handler.__name__
+                except AttributeError:
+                    # This is required to support partials which are used to
+                    # receive responses with specific messages
+                    function_name = handler.func.__name__
+
+                msg = 'Found an exception while running %s: "%s"'
+                args = (function_name, e)
+                om.out.debug(msg % args)
+
+                # The exceptions are raised in the DebugChromeInterface thread,
+                # and need to be accessible to the main thread. That problem is
+                # solved by storing the exception information and re-raising it
+                # in the next call to DebugChromeInterface.*
+                #
+                # When an exception is raised by an event handler, the
+                # handler will most likely NOT find the event that it was
+                # waiting for and the client will timeout.
+                #
+                # Then, in the next call to DebugChromeInterface.* and in the
+                # main thread, the exception raised in the event handler is
+                # raised
+                self._save_exc_info()
+
+                # Run the next handlers, there is a risk here of two handlers
+                # raising exceptions and the second overwriting the exception
+                # information of the first, but it is a really strange case
+                continue
 
     def set_dialog_handler(self, dialog_handler):
         self.dialog_handler = dialog_handler
@@ -218,91 +303,25 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
 
                 # Not sure what this error is, raise in the next call
                 # See comment below to understand how this works
-                self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
+                self._save_exc_info()
                 continue
             except WebSocketConnectionClosedException:
                 # The connection has been closed, but self.ws is still not
                 # set to None. Just exit the thread.
                 break
 
-            try:
-                self._call_event_handlers(message)
-            except:
-                # The exceptions are raised in one thread, and need to be
-                # accessible to the main thread. That problem is solved by
-                # storing the exception information and re-raising it in
-                # the next call to DebugChromeInterface.*
-                #
-                # When an exception is raised by an event handler, the
-                # handler will most likely NOT find the event that it was
-                # waiting for and the client will timeout.
-                #
-                # Then, in the next call to DebugChromeInterface.* and in the
-                # main thread, the exception raised in the event handler is
-                # raised
-                self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
+            self._call_event_handlers(message)
 
-    def _result_id_match_handler(self, command_result, message):
-        if 'result' not in message:
-            return
+    def _save_exc_info(self):
+        self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
 
-        if message['id'] != command_result.message_id:
-            return
+    def _clear_exc_info(self):
+        self.exc_type = None
+        self.exc_value = None
+        self.exc_traceback = None
 
-        self.unset_event_handler(command_result.get_id_handler())
-        command_result.set(message)
-
-    def set_event_handler(self, handler):
-        """
-        Sets an event handler function to be called when any Chrome event
-        is received.
-
-        The event handler function receives a parsed message. This message is
-        usually inspected to make sure the received event is the expected one
-        and then an action is taken.
-
-        :param handler: The function to run when the event is received
-        :return: None
-        """
-        self._handlers.append(handler)
-
-    def unset_event_handler(self, handler):
-        try:
-            self._handlers.remove(handler)
-        except ValueError:
-            # Do not raise any exceptions when the handler is not found,
-            # different threads might remove the same handler
-            pass
-
-    def _call_event_handlers(self, message):
-        """
-        Calls any event handlers that match the message
-
-        Note that in set_default_event_handlers() many default handlers are
-        set for errors and exception handling.
-
-        The code that consumes DebugChromeInterface can also set specific event
-        handlers to receive and manage any event type.
-
-        :param message: The message that was received from Chrome
-        :return: None. Exceptions might be raised by the event handler.
-        """
-        for handler in self._handlers:
-            try:
-                handler(message)
-            except Exception as e:
-                msg = 'Found an exception while running %s: "%s"'
-
-                try:
-                    args = (handler.__name__, e)
-                except AttributeError:
-                    # This is required to support partials which are used to
-                    # receive responses with specific messages
-                    args = (handler.func.__name__, e)
-
-                om.out.debug(msg % args)
-
-                raise
+    def set_debugging_id(self, debugging_id):
+        self.debugging_id = debugging_id
 
     def debug(self, message):
         if not self.DEBUG:
@@ -338,13 +357,18 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         :param attr: Page, Runtime, etc.
         :return: The callable DebugGenericElement
         """
-
         # Raise any exceptions that were found in the event handlers
         if self.exc_type is not None:
-            raise self.exc_type, self.exc_value, self.exc_traceback
+            exc_type = self.exc_type
+            exc_value = self.exc_value
+            exc_traceback = self.exc_traceback
+
+            # Only raise once
+            self._clear_exc_info()
+
+            raise exc_type, exc_value, exc_traceback
 
         generic_element = DebugGenericElement(attr, self)
-        self.__setattr__(attr, generic_element)
         return generic_element
 
 

@@ -30,9 +30,19 @@ class CommandResult(object):
         self.message = None
         self.id_handler = None
         self.event = threading.Event()
+        self.exc_type = None
+        self.exc_value = None
+        self.exc_traceback = None
 
     def get(self, timeout):
+        # Raise any exceptions right away
+        self._raise_exception_if_exists()
+
         was_set = self.event.wait(timeout=timeout)
+
+        # Or after the timeout, exceptions might have appeared while the
+        # timeout was running
+        self._raise_exception_if_exists()
 
         if not was_set:
             raise ChromeInterfaceTimeout('Timeout')
@@ -43,8 +53,20 @@ class CommandResult(object):
         self.message = message
         self.event.set()
 
+    def set_exception(self, exc_type, exc_value, exc_traceback):
+        self.exc_type = exc_type
+        self.exc_value = exc_value
+        self.exc_traceback = exc_traceback
+        self.event.set()
+
     def set_id_handler(self, id_handler):
         self.id_handler = id_handler
 
     def get_id_handler(self):
         return self.id_handler
+
+    def _raise_exception_if_exists(self):
+        if self.exc_type is None:
+            return
+
+        raise self.exc_type, self.exc_value, self.exc_traceback
