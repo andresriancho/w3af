@@ -33,18 +33,18 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.url.tests.helpers.ssl_daemon import SSLServer
 
 
-class TestInstrumentedChrome(unittest.TestCase):
+class InstrumentedChromeUnittest(unittest.TestCase):
 
     SERVER_HOST = '127.0.0.1'
     SERVER_ROOT_PATH = '/tmp/'
 
-    def setUp(self):
+    def _unittest_setup(self, request_handler_klass):
         self.uri_opener = ExtendedUrllib()
         self.http_traffic_queue = Queue.Queue()
 
         t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
                                                 webroot=self.SERVER_ROOT_PATH,
-                                                handler=ExtendedHttpRequestHandler)
+                                                handler=request_handler_klass)
 
         self.server_thread = t
         self.server = s
@@ -60,27 +60,53 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.server.shutdown()
         self.server_thread.join()
 
+    def start_and_load(self, url):
+        self.ic.load_url(url)
+
+        self.ic.wait_for_load()
+
+        self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
+        self.assertEqual(self.http_traffic_queue.qsize(), 1)
+
+        request, response = self.http_traffic_queue.get()
+
+        self.assertEqual(request.get_url().url_string, url)
+        self.assertEqual(response.get_url().url_string, url)
+
+        self.assertEqual(response.get_body(), ExtendedHttpRequestHandler.RESPONSE_BODY)
+        self.assertIn('Chrome', request.get_headers().get('User-agent'))
+
+
+class TestInstrumentedChrome(InstrumentedChromeUnittest):
+
     def test_terminate(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
         self.ic.terminate()
 
     def test_start_and_load_http(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
         self.start_and_load(url)
 
     def test_load_about_blank(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
         self.ic.load_about_blank()
         self.assertEqual(self.http_traffic_queue.qsize(), 0)
 
     def test_get_pid(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
         pid = self.ic.get_pid()
         self.assertIsInstance(pid, int)
 
     def test_get_memory_usage(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
         private, shared = self.ic.get_memory_usage()
         self.assertIsInstance(private, int)
         self.assertIsInstance(shared, int)
 
     def test_start_and_load_https_self_signed(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
+
         # Define the HTTP response
         http_response = ('HTTP/1.1 200 Ok\r\n'
                          'Connection: close\r\n'
@@ -104,27 +130,13 @@ class TestInstrumentedChrome(unittest.TestCase):
 
         s.stop()
 
-    def start_and_load(self, url):
-        self.ic.load_url(url)
-
-        self.ic.wait_for_load()
-
-        self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
-        self.assertEqual(self.http_traffic_queue.qsize(), 1)
-
-        request, response = self.http_traffic_queue.get()
-
-        self.assertEqual(request.get_url().url_string, url)
-        self.assertEqual(response.get_url().url_string, url)
-
-        self.assertEqual(response.get_body(), ExtendedHttpRequestHandler.RESPONSE_BODY)
-        self.assertIn('Chrome', request.get_headers().get('User-agent'))
-
     def test_initial_connection_to_chrome_fails(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
         self.ic.chrome_process.get_devtools_port = lambda: 1
         self.assertRaises(InstrumentedChromeException, self.ic.connect_to_chrome)
 
     def test_connection_to_chrome_fails_after_page_load(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
         self.ic.load_url(url)
@@ -137,6 +149,8 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.assertRaises(WebSocketConnectionClosedException, self.ic.load_url, url)
 
     def test_proxy_dies(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
+
         # We simulate an error here
         self.ic.proxy.stop()
 
@@ -145,6 +159,8 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.assertRaises(ChromeInterfaceException, self.ic.load_url, url)
 
     def test_exception_handling_in_custom_handlers(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
+
         class UnittestException(Exception):
             pass
 
@@ -165,34 +181,10 @@ class TestInstrumentedChrome(unittest.TestCase):
         self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
 
 
-class TestInstrumentedChromeWithDialogDismiss(unittest.TestCase):
-
-    SERVER_HOST = '127.0.0.1'
-    SERVER_ROOT_PATH = '/tmp/'
-
-    def setUp(self):
-        self.uri_opener = ExtendedUrllib()
-        self.http_traffic_queue = Queue.Queue()
-
-        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
-                                                webroot=self.SERVER_ROOT_PATH,
-                                                handler=CreateAlertHandler)
-
-        self.server_thread = t
-        self.server = s
-        self.server_port = p
-
-        self.ic = InstrumentedChrome(self.uri_opener, self.http_traffic_queue)
-
-    def tearDown(self):
-        while not self.http_traffic_queue.empty():
-            self.http_traffic_queue.get()
-
-        self.ic.terminate()
-        self.server.shutdown()
-        self.server_thread.join()
+class TestInstrumentedChromeWithDialogDismiss(InstrumentedChromeUnittest):
 
     def test_load_page_with_alert(self):
+        self._unittest_setup(CreateAlertHandler)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
         self.ic.load_url(url)
@@ -211,39 +203,45 @@ class TestInstrumentedChromeWithDialogDismiss(unittest.TestCase):
         self.assertIn('Chrome', request.get_headers().get('User-agent'))
 
 
-class CreateAlertHandler(ExtendedHttpRequestHandler):
+class TestInstrumentedChromeWith401(InstrumentedChromeUnittest):
 
-    RESPONSE_BODY = '<script>alert(1);</script>'
+    def test_load_page_with_401(self):
+        # It is possible to load a URL that returns a 401 and then load
+        # any other URL in the same browser instance
+        self._unittest_setup(BasicAuthRequestHandler)
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        #
+        # Load the first URL
+        #
+        self.ic.load_url(url)
+
+        self.ic.wait_for_load()
+
+        self.assertEqual(self.ic.get_dom(), BasicAuthRequestHandler.BASIC_AUTH)
+        self.assertEqual(self.http_traffic_queue.qsize(), 1)
+
+        request, response = self.http_traffic_queue.get()
+
+        self.assertEqual(request.get_url().url_string, url)
+        self.assertEqual(response.get_url().url_string, url)
+
+        self.assertEqual(response.get_body(), BasicAuthRequestHandler.BASIC_AUTH)
+        self.assertIn('Chrome', request.get_headers().get('User-agent'))
+
+        #
+        # Load the second URL
+        #
+        self.ic.load_url(url + 'success')
+        self.ic.wait_for_load()
+
+        self.assertEqual(self.ic.get_dom(), BasicAuthRequestHandler.SUCCESS)
 
 
-class TestInstrumentedChromeReadJSVariables(unittest.TestCase):
-
-    SERVER_HOST = '127.0.0.1'
-    SERVER_ROOT_PATH = '/tmp/'
-
-    def setUp(self):
-        self.uri_opener = ExtendedUrllib()
-        self.http_traffic_queue = Queue.Queue()
-
-        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
-                                                webroot=self.SERVER_ROOT_PATH,
-                                                handler=JSVariablesHandler)
-
-        self.server_thread = t
-        self.server = s
-        self.server_port = p
-
-        self.ic = InstrumentedChrome(self.uri_opener, self.http_traffic_queue)
-
-    def tearDown(self):
-        while not self.http_traffic_queue.empty():
-            self.http_traffic_queue.get()
-
-        self.ic.terminate()
-        self.server.shutdown()
-        self.server_thread.join()
+class TestInstrumentedChromeReadJSVariables(InstrumentedChromeUnittest):
 
     def test_load_page_read_js_variable(self):
+        self._unittest_setup(JSVariablesHandler)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
         self.ic.load_url(url)
@@ -253,6 +251,22 @@ class TestInstrumentedChromeReadJSVariables(unittest.TestCase):
         self.assertEqual(self.ic.get_js_variable_value('foo'), {'bar': 'baz'})
         self.assertEqual(self.ic.get_js_variable_value('window.window.foo'), {'bar': 'baz'})
         self.assertEqual(self.ic.get_js_variable_value('window.foo'), {'bar': 'baz'})
+
+
+class CreateAlertHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = '<script>alert(1);</script>'
+
+
+class BasicAuthRequestHandler(ExtendedHttpRequestHandler):
+
+    SUCCESS = '<body>Hello world</body>'
+    BASIC_AUTH = '<body></body>'
+
+    def get_code_body(self, request_path):
+        if request_path == '/':
+            return 401, self.BASIC_AUTH
+        elif request_path == '/success':
+            return 200, self.SUCCESS
 
 
 class JSVariablesHandler(ExtendedHttpRequestHandler):
