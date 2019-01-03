@@ -403,12 +403,15 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
      * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
+     * @param  {number}  start            Result index to start at when returning events
+     * @param  {number}  count            How many events to return
      *
      */
-    getElementsWithEventHandlers: function (event_filter, tag_name_filter) {
+    getElementsWithEventHandlers: function (event_filter, tag_name_filter, start, count) {
 
         let all_elements = document.getElementsByTagName("*");
         let events = [];
+        let ignored_events = 0;
 
         for(let elem_it = 0; elem_it < all_elements.length; elem_it++) {
             let element = all_elements[elem_it];
@@ -435,7 +438,22 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             // Filter events by event type (click, hover, etc.)
             element_events = _DOMAnalyzer.filterByEventName(element_events, event_filter);
 
-            events = events.concat(element_events);
+            // Pagination (1/2)
+            let element_events_paginated = element_events.slice();
+
+            while( true ){
+                if (ignored_events < start){
+                    element_events_paginated.splice(0, 1);
+                    ignored_events += 1;
+                } else break;
+            }
+
+            events = events.concat(element_events_paginated);
+
+            // Pagination (2/2)
+            if ( events.length >= count ){
+                return events.splice(0, count);
+            }
         }
 
         return events;

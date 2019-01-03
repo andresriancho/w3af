@@ -101,6 +101,7 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
 
         event_listeners = self.ic.get_html_event_listeners(event_filter=['click'])
+        self._print_all_console_messages()
 
         self.assertEqual(event_listeners, [{u'tag_name': u'table',
                                             u'handler': u'modifyText();',
@@ -163,6 +164,33 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
                                             u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'#double'}])
+
+    def test_events_less_than_count(self):
+        self._unittest_setup(EventsLessThanCountHandler)
+
+        event_listeners = self.ic.get_html_event_listeners()
+
+        self.assertEqual(len(event_listeners),
+                         InstrumentedChrome.PAGINATION_PAGE_COUNT - 1,
+                         event_listeners)
+
+    def test_events_more_than_count(self):
+        self._unittest_setup(EventsMoreThanCountHandler)
+
+        event_listeners = self.ic.get_html_event_listeners()
+
+        self.assertEqual(len(event_listeners),
+                         InstrumentedChrome.PAGINATION_PAGE_COUNT + 1,
+                         event_listeners)
+
+    def test_events_equal_count(self):
+        self._unittest_setup(EventsEqualToCountHandler)
+
+        event_listeners = self.ic.get_html_event_listeners()
+
+        self.assertEqual(len(event_listeners),
+                         InstrumentedChrome.PAGINATION_PAGE_COUNT,
+                         event_listeners)
 
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
@@ -238,3 +266,15 @@ class TwoOnClickRequestHandler(ExtendedHttpRequestHandler):
                             }
                         </script>
                         ''')
+
+
+class EventsEqualToCountHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = '<div onclick="def();">x</div>' * InstrumentedChrome.PAGINATION_PAGE_COUNT
+
+
+class EventsLessThanCountHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = '<div onclick="def();">x</div>' * (InstrumentedChrome.PAGINATION_PAGE_COUNT - 1)
+
+
+class EventsMoreThanCountHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = '<div onclick="def();">x</div>' * (InstrumentedChrome.PAGINATION_PAGE_COUNT + 1)

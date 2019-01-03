@@ -58,6 +58,8 @@ class InstrumentedChrome(object):
     PAGE_STATE_LOADING = 1
     PAGE_STATE_LOADED = 2
 
+    PAGINATION_PAGE_COUNT = 50
+
     JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
     JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
     JS_SELECTOR_GENERATOR = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/css-selector-generator.js')
@@ -503,8 +505,77 @@ class InstrumentedChrome(object):
         # TODO: Paginate
         return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
 
-    def get_html_event_listeners(self, event_filter=None, tag_name_filter=None):
+    def get_html_event_listeners_iter(self,
+                                      event_filter=None,
+                                      tag_name_filter=None):
         """
+        :param event_filter: A list containing the events to filter by.
+                     For example if only the "click" events are
+                     required, the value of event_filter should be
+                     ['click']. Use an empty filter to return all DOM
+                     events.
+
+        :param tag_name_filter: A list containing the tag names to filter by.
+                                For example if only the "div" tags should be
+                                returned, the value of tag_name_filter should be
+                                ['div']. Use an empty filter to return events for
+                                all DOM tags.
+
+        :return: The DOM events that match the filters
+        """
+        start = 0
+
+        while True:
+
+            page_items = 0
+
+            for event in self.get_html_event_listeners_paginated(start,
+                                                                 self.PAGINATION_PAGE_COUNT,
+                                                                 event_filter=event_filter,
+                                                                 tag_name_filter=tag_name_filter):
+                page_items += 1
+                yield event
+
+            if page_items < self.PAGINATION_PAGE_COUNT:
+                break
+
+            start += self.PAGINATION_PAGE_COUNT
+
+    def get_html_event_listeners(self,
+                                 event_filter=None,
+                                 tag_name_filter=None):
+        """
+        :param event_filter: A list containing the events to filter by.
+                     For example if only the "click" events are
+                     required, the value of event_filter should be
+                     ['click']. Use an empty filter to return all DOM
+                     events.
+
+        :param tag_name_filter: A list containing the tag names to filter by.
+                                For example if only the "div" tags should be
+                                returned, the value of tag_name_filter should be
+                                ['div']. Use an empty filter to return events for
+                                all DOM tags.
+
+        :return: The DOM events that match the filters
+        """
+        return list(self.get_html_event_listeners_iter(event_filter=event_filter,
+                                                       tag_name_filter=tag_name_filter))
+
+    def get_html_event_listeners_paginated(self,
+                                           start=0,
+                                           count=PAGINATION_PAGE_COUNT,
+                                           event_filter=None,
+                                           tag_name_filter=None):
+        """
+        :param start: The index where to start the current batch at. This is
+                      used for pagination purposes. The initial value is zero.
+
+        :param count: The number of events to return in the result. The default
+                      value is low, it is preferred to keep this number low in
+                      order to avoid large websocket messages flowing from
+                      chrome to the python code.
+
         :param event_filter: A list containing the events to filter by.
                              For example if only the "click" events are
                              required, the value of event_filter should be
@@ -519,7 +590,8 @@ class InstrumentedChrome(object):
 
         :return: The DOM events that match the filters
         """
-        # TODO: Paginate
+        start = int(start)
+        count = int(count)
 
         event_filter = event_filter or []
         event_filter = list(event_filter)
@@ -529,8 +601,8 @@ class InstrumentedChrome(object):
         tag_name_filter = list(tag_name_filter)
         tag_name_filter = repr(tag_name_filter)
 
-        cmd = 'window._DOMAnalyzer.getElementsWithEventHandlers(%s, %s)'
-        args = (event_filter, tag_name_filter)
+        cmd = 'window._DOMAnalyzer.getElementsWithEventHandlers(%s, %s, %i, %i)'
+        args = (event_filter, tag_name_filter, start, count)
 
         return self.get_js_variable_value(cmd % args)
 
