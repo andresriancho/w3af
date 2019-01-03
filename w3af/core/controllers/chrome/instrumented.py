@@ -373,6 +373,7 @@ class InstrumentedChrome(object):
 
         :return:
         """
+        self._page_state = self.PAGE_STATE_LOADED
         self.chrome_conn.Page.stopLoading()
 
     def get_dom(self):
@@ -585,6 +586,7 @@ class InstrumentedChrome(object):
         self.proxy = None
         self.chrome_process = None
         self.chrome_conn = None
+        self._page_state = self.PAGE_STATE_NONE
 
     def get_pid(self):
         return self.chrome_process.get_parent_pid() if self.chrome_process is not None else None
