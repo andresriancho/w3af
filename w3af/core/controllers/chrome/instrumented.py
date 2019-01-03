@@ -376,6 +376,10 @@ class InstrumentedChrome(object):
         self._page_state = self.PAGE_STATE_LOADED
         self.chrome_conn.Page.stopLoading()
 
+    def get_url(self):
+        result = self.chrome_conn.Runtime.evaluate(expression='document.location.href')
+        return result['result']['result']['value']
+
     def get_dom(self):
         result = self.chrome_conn.Runtime.evaluate(expression='document.body.outerHTML')
 
@@ -496,10 +500,20 @@ class InstrumentedChrome(object):
         return self.get_js_variable_value('window._DOMAnalyzer.set_intervals')
 
     def get_js_event_listeners(self):
+        # TODO: Paginate
         return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
 
     def get_html_event_listeners(self):
+        # TODO: Paginate
         return self.get_js_variable_value('window._DOMAnalyzer.getElementsWithEventHandlers()')
+
+    def get_all_event_listeners(self):
+        # TODO: Paginate
+        for event_listener in self.get_js_event_listeners():
+            yield event_listener
+
+        for event_listener in self.get_html_event_listeners():
+            yield event_listener
 
     def _is_valid_event_type(self, event_type):
         """

@@ -24,6 +24,7 @@ import time
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.chrome.pool import ChromePool
+from w3af.core.controllers.chrome.instrumented import EventException
 from w3af.core.data.fuzzer.utils import rand_alnum
 
 
@@ -39,6 +40,7 @@ class ChromeCrawler(object):
     """
 
     RENDERED_VS_RAW_RATIO = 0.1
+    EVENTS_TO_DISPATCH = {'click'}
 
     def __init__(self, uri_opener, max_instances=None, web_spider=None):
         """
@@ -162,6 +164,12 @@ class ChromeCrawler(object):
         self._parse_dom(chrome, debugging_id)
 
         #
+        # Extract events from the DOM, dispatch events (click, etc.) and crawl
+        # the page using chrome
+        #
+        self._crawl_using_js_events(chrome, debugging_id)
+
+        #
         # In order to remove all the DOM from the chrome instance and clear
         # some memory we load the about:blank page
         #
@@ -236,6 +244,68 @@ class ChromeCrawler(object):
         web_spider = self._web_spider
         web_spider.extract_html_forms(dom_http_response, first_http_request)
         web_spider.extract_links_and_verify(dom_http_response, first_http_request)
+
+    def _crawl_using_js_events(self, chrome, debugging_id):
+        """
+        Get all event listeners and click on them.
+
+        :param chrome: The chrome browser where the page is loaded
+        :param debugging_id: Debugging ID for easier tracking in logs
+        :return: None, all the information is sent to the core via HTTP traffic
+                 captured by the browser's proxy
+        """
+        zeroth_navigation_index = chrome.get_navigation_history_index()
+        url = chrome.get_url()
+
+        for event in chrome.get_all_event_listeners():
+            if not self._should_dispatch_event(event):
+                continue
+
+            selector = event['selector']
+            event_type = event['event_type']
+
+            msg = 'Dispatching %s on CSS selector "%s" at page %s (did: %s)'
+            args = (event_type, selector, url, debugging_id)
+            om.out.debug(msg % args)
+
+            try:
+                chrome.dispatch_js_event(selector, event_type)
+            except EventException:
+                msg = ('The %s event on CSS selector "%s" at page %s failed'
+                       ' to run because the element does not exist anymore'
+                       ' (did: %s)')
+                args = (event_type, selector, url, debugging_id)
+                om.out.debug(msg % args)
+
+            if chrome.navigation_started(timeout=0.5):
+                msg = ('Event %s on CSS selector "%s" at page %s triggered'
+                       ' a page load. Waiting for page to finish loading'
+                       ' and going back in history (did: %s)')
+                args = (event_type, selector, url, debugging_id)
+                om.out.debug(msg % args)
+
+                # The event triggered a full dom reload, wait for the page to
+                # finish loading so that we get all the new information in the
+                # proxy HTTP requests
+                chrome.wait_for_load()
+
+                # Now click on the history "back" button and wait for the page
+                # to finish loading (for a second time, this is a completely
+                # different page than in the line above)
+                chrome.navigate_to_history_index(zeroth_navigation_index)
+                chrome.wait_for_load()
+
+    def _should_dispatch_event(self, event):
+        """
+        :param event: The event to analyze
+        :return: True if this event should be dispatched to the browser
+        """
+        event_type = event['event_type']
+
+        if event_type in self.EVENTS_TO_DISPATCH:
+            return True
+
+        return False
 
     def _should_parse_dom(self, dom, raw_body):
         """
