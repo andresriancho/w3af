@@ -76,6 +76,9 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
         self.assertEqual(self.ic.get_js_set_intervals(), [])
         self.assertEqual(self.ic.get_js_event_listeners(), [])
 
+        #
+        # Get event data
+        #
         event_listeners = self.ic.get_html_event_listeners()
         self.assertEqual(event_listeners, [{u'tag_name': u'div',
                                             u'node_type': 1,
@@ -90,14 +93,35 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
         dom_before = self.ic.get_dom()
         index_before = self.ic.get_navigation_history_index()
 
+        #
+        # Assert that navigation is not started yet
+        #
+        navigation_started = self.ic.navigation_started(timeout=0.5)
+        self.assertFalse(navigation_started)
+
+        #
         # Click on the div tag and force a full dom reload
+        #
         self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
 
-        # See comment about limitations in DebugGenericElement
-        assert False
-        if self.ic.navigation_started():
-            self.ic.wait_for_load()
+        #
+        # Navigation has started
+        #
+        navigation_started = self.ic.navigation_started()
+        self.assertTrue(navigation_started)
 
+        #
+        # And after waiting for the page to load, it should have finished
+        #
+        wait_for_load = self.ic.wait_for_load()
+        self.assertTrue(wait_for_load)
+
+        navigation_started = self.ic.navigation_started()
+        self.assertFalse(navigation_started)
+
+        #
+        # Assert that the event really changed the DOM
+        #
         dom_after = self.ic.get_dom()
 
         self.assertNotEqual(dom_before, dom_after)

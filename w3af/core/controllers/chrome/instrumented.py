@@ -23,7 +23,6 @@ import os
 import re
 import time
 import logging
-import threading
 
 from contextlib import contextmanager
 from requests import ConnectionError
@@ -55,6 +54,10 @@ class InstrumentedChrome(object):
     PAGE_LOAD_TIMEOUT = 20
     PAGE_WILL_CHANGE_TIMEOUT = 1
 
+    PAGE_STATE_NONE = 0
+    PAGE_STATE_LOADING = 1
+    PAGE_STATE_LOADED = 2
+
     JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
     JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
     JS_SELECTOR_GENERATOR = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/css-selector-generator.js')
@@ -62,6 +65,12 @@ class InstrumentedChrome(object):
     EVENT_TYPE_RE = re.compile('[a-zA-Z.]+')
 
     def __init__(self, uri_opener, http_traffic_queue):
+        # These keep the internal state of the page based on received events
+        self._frame_stopped_loading_event = None
+        self._frame_scheduled_navigation = None
+        self._network_almost_idle_event = None
+        self._page_state = self.PAGE_STATE_NONE
+
         self.uri_opener = uri_opener
         self.http_traffic_queue = http_traffic_queue
 
@@ -72,10 +81,6 @@ class InstrumentedChrome(object):
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
         self.set_chrome_settings()
-
-        self._frame_stopped_loading_event = threading.Event()
-        self._frame_scheduled_navigation = threading.Event()
-        self._network_almost_idle_event = threading.Event()
 
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
@@ -128,6 +133,9 @@ class InstrumentedChrome(object):
         chrome_conn.name = 'DebugChromeInterface'
         chrome_conn.daemon = True
         chrome_conn.start()
+
+        # Set the handler that will maintain the page state
+        chrome_conn.set_event_handler(self._page_state_handler)
 
         return chrome_conn
 
@@ -222,6 +230,72 @@ class InstrumentedChrome(object):
 
         return '\n\n'.join(source)
 
+    def _page_state_handler(self, message):
+        """
+        This handler defines the current page state:
+            * Null: Nothing has been loaded yet
+            * Loading: Chrome is loading the page
+            * Done: Chrome has completed loading the page
+
+        :param message: The message as received from chrome
+        :return: None
+        """
+        self._navigator_started_handler(message)
+        self._load_url_finished_handler(message)
+
+    def _navigator_started_handler(self, message):
+        """
+        The handler identifies events which are related to a new page being
+        loaded in the browser (Page.Navigate or clicking on an element).
+
+        :param message: The message from chrome
+        :return: None
+        """
+        if 'method' not in message:
+            return
+
+        if message['method'] == 'Page.frameScheduledNavigation':
+            self._frame_scheduled_navigation = True
+            self._frame_stopped_loading_event = False
+            self._network_almost_idle_event = False
+            self._page_state = self.PAGE_STATE_LOADING
+            return
+
+    def _load_url_finished_handler(self, message):
+        """
+        Knowing when a page has completed loading is difficult
+
+        This handler will wait for two chrome events:
+            * Page.frameStoppedLoading
+            * Page.lifecycleEvent with name networkIdle
+
+        And set the corresponding flags so that wait_for_load() can return.
+
+        :param message: The message from chrome
+        :return: True when the two events were received
+                 False when one or none of the events were received
+        """
+        if 'method' not in message:
+            return
+
+        elif message['method'] == 'Page.frameStoppedLoading':
+            self._frame_scheduled_navigation = False
+            self._frame_stopped_loading_event = True
+
+        elif message['method'] == 'Page.lifecycleEvent':
+            if 'params' not in message:
+                return
+
+            if 'name' not in message['params']:
+                return
+
+            if message['params']['name'] == 'networkAlmostIdle':
+                self._frame_scheduled_navigation = False
+                self._network_almost_idle_event = True
+
+        if self._network_almost_idle_event and self._frame_stopped_loading_event:
+            self._page_state = self.PAGE_STATE_LOADED
+
     def load_url(self, url):
         """
         Load an URL into the browser, start listening for events.
@@ -230,8 +304,7 @@ class InstrumentedChrome(object):
         :return: This method returns immediately, even if the browser is not
                  able to load the URL and an error was raised.
         """
-        # First we set the handler to know when the page completed loading
-        self.chrome_conn.set_event_handler(self._load_url_finished_handler)
+        self._page_state = self.PAGE_STATE_LOADING
 
         # Then we load the URL
         url = str(url)
@@ -240,14 +313,6 @@ class InstrumentedChrome(object):
 
     def load_about_blank(self):
         self.load_url('about:blank')
-
-    def _navigator_started_handler(self, message):
-        if 'method' not in message:
-            return
-
-        if message['method'] == 'Page.frameScheduledNavigation':
-            self._frame_scheduled_navigation.set()
-            return
 
     def navigation_started(self, timeout=None):
         """
@@ -262,93 +327,45 @@ class InstrumentedChrome(object):
         event does not appear in `timeout` seconds then False is returned.
 
         :param timeout: How many seconds to wait for the event
-        :return: True if Page.frameScheduledNavigation event is found
+        :return: True if the page state is PAGE_STATE_LOADING
         """
         timeout = timeout or self.PAGE_WILL_CHANGE_TIMEOUT
-        received_frame_sched_nav = self._frame_scheduled_navigation.wait(timeout=timeout)
+        start = time.time()
 
-        if not received_frame_sched_nav:
-            self.chrome_conn.unset_event_handler(self._navigator_started_handler)
-            self._frame_scheduled_navigation.clear()
-            return False
+        while True:
+            if self._page_state == self.PAGE_STATE_LOADING:
+                return True
 
-        return True
+            if time.time() - start > timeout:
+                return False
 
-    def _load_url_finished_handler(self, message):
-        """
-        Knowing when a page has completed loading is difficult
-
-        This handler will wait for two events:
-            * Page.frameStoppedLoading
-            * Page.lifecycleEvent with name networkIdle
-
-        And set the corresponding flags so that wait_for_load() can return.
-
-        If they are not received within PAGE_LOAD_TIMEOUT the method gives up
-        and assumes that it is the best thing it can do.
-
-        :return: True when the two events were received
-                 False when one or none of the events were received
-        """
-        if 'method' not in message:
-            return
-
-        if message['method'] == 'Page.frameStoppedLoading':
-            self._frame_stopped_loading_event.set()
-            return
-
-        if message['method'] == 'Page.lifecycleEvent':
-            if 'params' not in message:
-                return
-
-            if 'name' not in message['params']:
-                return
-
-            if message['params']['name'] == 'networkAlmostIdle':
-                self._network_almost_idle_event.set()
-                return
+            time.sleep(0.1)
 
     def wait_for_load(self, timeout=None):
         """
         Knowing when a page has completed loading is difficult
 
-        This method works together with _load_url_finished_handler() that
-        reads all events and sets the corresponding
+        This method works together with _page_state_handler() that
+        reads all events and sets the corresponding page state
 
-        And set the corresponding flags so that wait_for_load() can return.
+        If the state is not reached within PAGE_LOAD_TIMEOUT or `timeout`
+        the method will exit returning False
 
-        If they are not received within PAGE_LOAD_TIMEOUT the method gives up
-        and assumes that it is the best thing it can do.
-
-        :return: True when the two events were received
-                 False when one or none of the events were received
+        :param timeout: Seconds to wait for the page state
+        :return: True when the page state has reached PAGE_STATE_LOADED
+                 False when not
         """
-        # Spend some time waiting for the initial event
-        total_timeout = timeout or self.PAGE_LOAD_TIMEOUT
+        timeout = timeout or self.PAGE_LOAD_TIMEOUT
         start = time.time()
 
-        received_frame_stopped_loading = self._frame_stopped_loading_event.wait(timeout=total_timeout)
+        while True:
+            if self._page_state == self.PAGE_STATE_LOADED:
+                return True
 
-        if not received_frame_stopped_loading:
-            self.chrome_conn.unset_event_handler(self._load_url_finished_handler)
-            self._frame_stopped_loading_event.clear()
-            self._network_almost_idle_event.clear()
-            return False
+            if time.time() - start > timeout:
+                return False
 
-        # Spend the rest of the time waiting for the second event
-        spent = time.time() - start
-        second_timeout = total_timeout - spent
-        second_timeout = max(second_timeout, 0.1)
-
-        received_network_almost_idle = self._network_almost_idle_event.wait(timeout=second_timeout)
-
-        if not received_network_almost_idle:
-            self.chrome_conn.unset_event_handler(self._load_url_finished_handler)
-            self._frame_stopped_loading_event.clear()
-            self._network_almost_idle_event.clear()
-            return False
-
-        return True
+            time.sleep(0.1)
 
     def stop(self):
         """
@@ -363,6 +380,10 @@ class InstrumentedChrome(object):
 
         # This is a rare case where the DOM is not present
         if result is None:
+            return None
+
+        exception_details = result.get('result', {}).get('exceptionDetails', {})
+        if exception_details:
             return None
 
         return result['result']['result']['value']
@@ -407,6 +428,7 @@ class InstrumentedChrome(object):
         return entries[index]['id']
 
     def navigate_to_history_index(self, index):
+        self._page_state = self.PAGE_STATE_LOADING
         self.chrome_conn.Page.navigateToHistoryEntry(entryId=index)
 
     def _js_runtime_evaluate(self, expression, timeout=5):
@@ -511,9 +533,6 @@ class InstrumentedChrome(object):
         # Perform input validation
         assert self._is_valid_event_type(event_type)
         selector = self._escape_js_string(selector)
-
-        # Set the handler to know when the page completed loading
-        self.chrome_conn.set_event_handler(self._navigator_started_handler)
 
         # Dispatch the event that will potentially trigger _navigator_started_handler()
         cmd = 'window._DOMAnalyzer.dispatchCustomEvent("%s", "%s")'
