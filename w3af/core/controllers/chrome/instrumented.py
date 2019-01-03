@@ -503,13 +503,19 @@ class InstrumentedChrome(object):
         # TODO: Paginate
         return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
 
-    def get_html_event_listeners(self, event_filter=None):
+    def get_html_event_listeners(self, event_filter=None, tag_name_filter=None):
         """
         :param event_filter: A list containing the events to filter by.
                              For example if only the "click" events are
                              required, the value of event_filter should be
                              ['click']. Use an empty filter to return all DOM
                              events.
+
+        :param tag_name_filter: A list containing the tag names to filter by.
+                                For example if only the "div" tags should be
+                                returned, the value of tag_name_filter should be
+                                ['div']. Use an empty filter to return events for
+                                all DOM tags.
 
         :return: The DOM events that match the filters
         """
@@ -519,8 +525,12 @@ class InstrumentedChrome(object):
         event_filter = list(event_filter)
         event_filter = repr(event_filter)
 
-        cmd = 'window._DOMAnalyzer.getElementsWithEventHandlers(%s)'
-        args = (event_filter,)
+        tag_name_filter = tag_name_filter or []
+        tag_name_filter = list(tag_name_filter)
+        tag_name_filter = repr(tag_name_filter)
+
+        cmd = 'window._DOMAnalyzer.getElementsWithEventHandlers(%s, %s)'
+        args = (event_filter, tag_name_filter)
 
         return self.get_js_variable_value(cmd % args)
 

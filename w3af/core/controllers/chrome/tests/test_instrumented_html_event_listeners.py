@@ -101,7 +101,25 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
 
         event_listeners = self.ic.get_html_event_listeners(event_filter=['click'])
-        self._print_all_console_messages()
+
+        self.assertEqual(event_listeners, [{u'tag_name': u'table',
+                                            u'handler': u'modifyText();',
+                                            u'event_type': u'click',
+                                            u'node_type': 1,
+                                            u'selector': u'#outside'}])
+
+    def test_html_events_filter_out_table(self):
+        self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners(tag_name_filter=['foobar'])
+
+        self.assertEqual(event_listeners, [])
+
+    def test_html_events_filter_in_table(self):
+        self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners(tag_name_filter=['table'])
+
         self.assertEqual(event_listeners, [{u'tag_name': u'table',
                                             u'handler': u'modifyText();',
                                             u'event_type': u'click',

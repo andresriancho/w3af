@@ -402,9 +402,10 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      * Get elements with events
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
+     * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
      *
      */
-    getElementsWithEventHandlers: function (event_filter) {
+    getElementsWithEventHandlers: function (event_filter, tag_name_filter) {
 
         let all_elements = document.getElementsByTagName("*");
         let events = [];
@@ -415,6 +416,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if (_DOMAnalyzer.elementIsHidden(element)) continue;
 
             let tag_name = element.tagName.toLowerCase();
+
+            // Filter events by tag name (a, div, etc.)
+            if( tag_name_filter.length > 0 && !tag_name_filter.includes(tag_name) ) continue;
 
             // Get the element events
             let attribute_events = _DOMAnalyzer.extractEventsFromAttributes(tag_name, element);
@@ -428,6 +432,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             if (!element_events.length) continue;
 
+            // Filter events by event type (click, hover, etc.)
             element_events = _DOMAnalyzer.filterByEventName(element_events, event_filter);
 
             events = events.concat(element_events);
