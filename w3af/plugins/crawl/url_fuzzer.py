@@ -343,8 +343,12 @@ class url_fuzzer(CrawlPlugin):
             }
 
             for change in mutate_name_testing:
-                newurl = URL(change)
-                yield newurl
+                try :
+                    newurl = URL(change)
+                    yield newurl
+                except ValueError as exception:
+                    om.out.information('Error while generating a new URL: '\
+                    + exception)
 
     def _mutate_path(self, url):
         """
