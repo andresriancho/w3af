@@ -40,6 +40,8 @@ class grep(BaseConsumer):
 
     TARGET_DOMAINS = None
 
+    LOG_QUEUE_SIZES_EVERY = 25
+
     def __init__(self, grep_plugins, w3af_core):
         """
         :param grep_plugins: Instances of grep plugins in a list
@@ -67,7 +69,9 @@ class grep(BaseConsumer):
                                    thread_pool_size=thread_pool_size,
                                    thread_name=self.get_name(),
                                    max_in_queue_size=max_in_queue_size)
+
         self._already_analyzed = ScalableBloomFilter()
+        self._log_queue_sizes_calls = 0
 
     def get_name(self):
         return 'Grep'
@@ -151,6 +155,24 @@ class grep(BaseConsumer):
         #
         # This is controlled by max_pool_queued_tasks
         self._threadpool.apply_async(self._inner_consume, (request, response))
+
+    def _log_queue_sizes(self):
+        """
+        The grep consumer will loop really fast through all tasks, if the
+        queue sizes are written on every loop, we'll end up with a log file
+        full of those lines (with ~10 lines per second with almost the same
+        information).
+
+        Call the parent's _log_queue_sizes once every 25 calls to this method.
+
+        :return: None
+        """
+        self._log_queue_sizes_calls += 1
+
+        if (self._log_queue_sizes_calls % self.LOG_QUEUE_SIZES_EVERY) != 0:
+            return
+
+        return super(grep, self)._log_queue_sizes()
 
     def _inner_consume(self, request, response):
         """
