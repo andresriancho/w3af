@@ -524,6 +524,9 @@ class BaseConsumer(Process):
         """
         return self._out_queue.get(timeout=timeout)
 
+    def get_result_nowait(self):
+        return self._out_queue.get_nowait()
+
     def handle_exception(self, phase, plugin_name, fuzzable_request, _exception):
         """
         Get the exception information, and put it into the output queue
