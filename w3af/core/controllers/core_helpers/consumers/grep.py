@@ -180,13 +180,14 @@ class grep(BaseConsumer):
         Run the observers handling any exception that they might raise
         :return: None
         """
-        try:
-            for observer in self._observers:
+        for observer in self._observers:
+            try:
                 observer.grep(self, request, response)
-        except Exception, e:
-            self.handle_exception('grep',
-                                  'grep._run_observers()',
-                                  'grep._run_observers()', e)
+            except Exception, e:
+                self.handle_exception('grep',
+                                      'grep._run_observers()',
+                                      'grep._run_observers()',
+                                      e)
 
     def should_grep(self, request, response):
         """
