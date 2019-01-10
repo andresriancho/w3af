@@ -212,8 +212,8 @@ class BaseConsumer(Process):
             msg = ('The %s consumer pool has %s tasks in the input queue'
                    ' and %s tasks in the output queue')
             args = (self._thread_name,
-                    self._threadpool._inqueue.qsize(),
-                    self._threadpool._outqueue.qsize())
+                    self._threadpool.get_inqueue().qsize(),
+                    self._threadpool.get_outqueue().qsize())
             om.out.debug(msg % args)
 
     def _process_poison_pill(self):

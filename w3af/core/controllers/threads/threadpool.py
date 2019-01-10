@@ -407,6 +407,9 @@ class Pool(ThreadPool):
     def get_inqueue(self):
         return self._inqueue
 
+    def get_outqueue(self):
+        return self._outqueue
+
     def get_running_task_count(self):
         # Cheating here a little bit because the task queued in _inqueue will
         # eventually be run by the pool, but is not yet in the pool
