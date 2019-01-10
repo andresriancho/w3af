@@ -203,9 +203,10 @@ class BaseConsumer(Process):
                 self.out_queue.qsize())
         om.out.debug(msg % args)
 
-        msg = 'The %s consumer has %s tasks in progress'
-        args = (self._thread_name, len(self._tasks_in_progress))
-        om.out.debug(msg % args)
+        if len(self._tasks_in_progress):
+            msg = 'The %s consumer has %s tasks in progress'
+            args = (self._thread_name, len(self._tasks_in_progress))
+            om.out.debug(msg % args)
 
         if self._threadpool is not None:
 
