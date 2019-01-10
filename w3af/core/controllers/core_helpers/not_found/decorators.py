@@ -19,16 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import hashlib
 import threading
 import functools
-
-# pylint: disable=E0401
-from darts.lib.utils.lru import SynchronizedLRUDict
-# pylint: enable=E0401
 
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
+from w3af.core.data.db.cached_disk_dict import CachedDiskDict
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 
 class Decorator(object):
@@ -42,12 +41,17 @@ class LRUCache404(Decorator):
     This decorator caches the 404 responses to reduce CPU usage and,
     in some cases, HTTP requests being sent.
     """
+
+    MAX_IN_MEMORY_RESULTS = 10000
+
     def __init__(self, _function):
         self._function = _function
 
-        # It is OK to store 1000 here, I'm only storing path+filename as the
-        # key, and bool as the value.
-        self._is_404_LRU = SynchronizedLRUDict(1000)
+        # The performance impact of storing many items in the cached
+        # (in memory) part of the CachedDiskDict is low. The keys for
+        # this cache are md5 hashes (in binary form, 128-bit) and the
+        # values are booleans
+        self._is_404_LRU = CachedDiskDict(self.MAX_IN_MEMORY_RESULTS)
 
     def __call__(self, *args, **kwargs):
         cache_key = self.get_cache_key(args)
@@ -62,8 +66,17 @@ class LRUCache404(Decorator):
             return result
 
     def get_cache_key(self, args):
+        """
+        :param args: The http response
+        :return: md5 hash of the HTTP response URI (binary form)
+        """
         http_response = args[1]
-        return http_response.get_uri().url_string
+        uri = smart_str_ignore(http_response.get_uri().url_string)
+
+        m = hashlib.md5()
+        m.update(uri)
+
+        return m.digest()
 
 
 class PreventMultipleThreads(Decorator):
