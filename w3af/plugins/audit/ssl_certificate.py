@@ -55,6 +55,15 @@ class ssl_certificate(AuditPlugin):
 
         self._already_tested = set()
         self._min_expire_days = 30
+
+        """
+        It is possible to update this file by downloading the latest
+        cacert.pem from curl:
+        
+            wget https://curl.haxx.se/ca/cacert.pem -O w3af/plugins/audit/ssl_certificate/ca.pem
+            git commit w3af/plugins/audit/ssl_certificate/ca.pem -m "Update ca.pem"
+        
+        """
         self._ca_file = os.path.join(ROOT_PATH, 'plugins', 'audit',
                                      'ssl_certificate', 'ca.pem')
 
