@@ -26,6 +26,7 @@ import w3af.core.data.constants.severity as severity
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.csp.utils import site_protected_against_xss_by_csp
 
+from w3af.core.data.constants.file_extensions import JAVASCRIPT, CSS, FLASH, IMAGES
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.fuzzer.fuzzer import create_mutants
@@ -75,7 +76,13 @@ class xss(AuditPlugin):
         " =",
     ]
     PAYLOADS = ['%s%s%s' % (RANDOMIZE, p, RANDOMIZE) for p in PAYLOADS]
-        
+
+    IGNORE_EXTENSIONS_FOR_PERSISTENT_XSS = set()
+    IGNORE_EXTENSIONS_FOR_PERSISTENT_XSS.update(JAVASCRIPT)
+    IGNORE_EXTENSIONS_FOR_PERSISTENT_XSS.update(CSS)
+    IGNORE_EXTENSIONS_FOR_PERSISTENT_XSS.update(FLASH)
+    IGNORE_EXTENSIONS_FOR_PERSISTENT_XSS.update(IMAGES)
+
     def __init__(self):
         AuditPlugin.__init__(self)
         
@@ -242,12 +249,30 @@ class xss(AuditPlugin):
         om.out.debug('Starting stored XSS search (did=%s)' % debugging_id)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                      fuzzable_requests,
+                                      self._filter_out_images(fuzzable_requests),
                                       self._analyze_persistent_result,
                                       grep=False,
                                       cache=False,
                                       debugging_id=debugging_id)
-    
+
+    def _filter_out_images(self, fuzzable_requests):
+        """
+        The fuzzable requests that have image extensions have a very low
+        chance (near to none) of having a XSS payload. Filter them out of
+        the test to reduce the number of HTTP requests sent during
+        _identify_persistent_xss.
+
+        :param fuzzable_requests: List of fuzzable requests
+        :return: yield fuzzable requests that don't have image extensions
+        """
+        for fuzzable_request in fuzzable_requests:
+            ext = fuzzable_request.get_url().get_extension()
+
+            if ext in self.IGNORE_EXTENSIONS_FOR_PERSISTENT_XSS:
+                continue
+
+            yield fuzzable_request
+
     def _analyze_persistent_result(self, fuzzable_request, response):
         """
         After performing an HTTP request to "fuzzable_request" and getting
