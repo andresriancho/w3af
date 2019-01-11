@@ -52,7 +52,10 @@ class FourOhFourResponse(object):
         Normalizes a path. Examples:
 
             * /abc/def.html -> /abc/filename.html
+            * /abc/def      -> /abc/filename
             * /abc/         -> /path/
+            * /abc/def/     -> /abc/path/
+            * /abc/def/x.do -> /abc/def/filename.do
 
         :return: The normalized path
         """
