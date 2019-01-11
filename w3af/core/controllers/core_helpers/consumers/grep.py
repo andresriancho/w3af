@@ -20,6 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import time
+import threading
+
+# pylint: disable=E0401
+from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
@@ -37,8 +42,6 @@ class grep(BaseConsumer):
     Consumer thread that takes requests and responses from the queue and
     analyzes them using the user-enabled grep plugins.
     """
-
-    TARGET_DOMAINS = None
 
     LOG_QUEUE_SIZES_EVERY = 25
 
@@ -70,9 +73,17 @@ class grep(BaseConsumer):
                                    thread_name=self.get_name(),
                                    max_in_queue_size=max_in_queue_size)
 
-        self._already_analyzed = ScalableBloomFilter()
+        self._already_analyzed_body = ScalableBloomFilter()
+        self._already_analyzed_url = ScalableBloomFilter()
+
+        self._target_domains = None
         self._log_queue_sizes_calls = 0
+
         self._consumer_plugin_dict = dict((plugin.get_name(), plugin) for plugin in self._consumer_plugins)
+        self._first_plugin_name = self._consumer_plugin_dict.keys()[0]
+
+        self._request_response_lru = SynchronizedLRUDict(30)
+        self._request_response_processes = dict()
 
     def get_name(self):
         return 'Grep'
@@ -106,26 +117,16 @@ class grep(BaseConsumer):
 
         om.out.debug('Finished Grep consumer _teardown()')
 
-    def _get_request_response_from_work_unit(self, work_unit):
+    def _get_request_response_from_id_impl(self, http_response_id):
         """
-        In some cases the work unit is a tuple with request / response instances.
+        Just reads the request and response from the files. No threading,
+        events, caching, etc.
 
-        In other cases it is an ID, which needs to be queried from the History DB
-        to get the request / response.
-
-        :param work_unit: One of the options explained above
-        :return: A request / response tuple
+        :param http_response_id: The HTTP response ID
+        :return: An HTTP request and response tuple
         """
-        if not isinstance(work_unit, int):
-            request, response = work_unit
-        else:
-            # Before we sent requests and responses as work units,
-            # but since we changed from Queue to CachedQueue for BaseConsumer
-            # the database was growing really big (1GB) for storing that traffic
-            # and I decided to migrate to using just the response.id and querying
-            # the SQLite one extra time.
-            history = HistoryItem()
-            request, response = history.load_from_file(work_unit)
+        history = HistoryItem()
+        request, response = history.load_from_file(http_response_id)
 
         # Create a fuzzable request based on the urllib2 request object
         headers_inst = Headers(request.header_items())
@@ -136,22 +137,81 @@ class grep(BaseConsumer):
 
         return request, response
 
-    def _consume(self, work_unit):
+    def _get_request_response_from_id(self, http_response_id):
+        """
+        This is a rather complex method that reads the HTTP request and response
+        from disk and makes sure that:
+
+            * Requests and responses are cached in a LRU to prevent reading
+              the same data from disk twice in a short period of time
+
+            * Thread events are used to prevent two threads from starting
+              to read the same HTTP response ID at the same time, which
+              would waste CPU cycles and disk IO.
+
+        :param http_response_id: The HTTP response ID
+        :return: A request / response tuple
+        """
+        #
+        # First check if the request and response was already deserialized
+        # by another thread and stored in the LRU
+        #
+        request_response = self._request_response_lru.get(http_response_id, None)
+        if request_response is not None:
+            request, response = request_response
+            return request, response
+
+        #
+        # Another thread might have started with the deserialization, check
+        # and wait for that thread to finish
+        #
+        event = self._request_response_processes.get(http_response_id, None)
+        if event is not None:
+            # Wait for the other thread to finish reading the request and
+            # response from disk. Timeout after 20 seconds as a safety measure
+            wait_result = event.wait(timeout=20)
+            if not wait_result:
+                om.out.error('There was a timeout waiting for the'
+                             ' deserialization of HTTP request and response'
+                             ' with id %s' % http_response_id)
+                return None, None
+
+            # Read the data from the LRU. There is a 99,9999% chance it is there
+            # since the other thread saved it before setting the event
+            request_response = self._request_response_lru.get(http_response_id, None)
+            if request_response is not None:
+                request, response = request_response
+                return request, response
+
+            # There is a 0,0001% chance we get here when the items in the LRU
+            # are removed right after being added, if this happens we just
+            # continue with the algorithm and read the request / response
+            # from the files
+
+        #
+        # There are no threads deserializing this HTTP response id, start
+        # the process and create an event for others to know they need to
+        # wait
+        #
+        event = threading.Event()
+        self._request_response_processes[http_response_id] = event
+
+        try:
+            request, response = self._get_request_response_from_id_impl(http_response_id)
+            self._request_response_lru[http_response_id] = (request, response)
+        finally:
+            event.set()
+            self._request_response_processes.pop(http_response_id, None)
+
+        return request, response
+
+    def _consume(self, http_response_id):
         """
         Handle a request/response that needs to be analyzed
-        :param work_unit: Request and response in a tuple
+        :param http_response_id: The HTTP response ID
         :return: None
         """
-        request, response = self._get_request_response_from_work_unit(work_unit)
-
-        # We run this again here to prevent a request / response from being
-        # processed twice
-        should_grep = self._already_analyzed.add(response.get_uri())
-        if not should_grep:
-            return
-
-        self._run_observers(request, response)
-        self._run_all_plugins(request, response)
+        self._run_all_plugins(http_response_id)
 
     def _log_queue_sizes(self):
         """
@@ -171,12 +231,11 @@ class grep(BaseConsumer):
 
         return super(grep, self)._log_queue_sizes()
 
-    def _run_all_plugins(self, request, response):
+    def _run_all_plugins(self, http_response_id):
         """
         Run one plugin against a request/response.
 
-        :param request: The HTTP request
-        :param response: The HTTP response
+        :param http_response_id: HTTP response ID
         :return: None, results are saved to KB
         """
         for plugin_name in self._consumer_plugin_dict:
@@ -186,25 +245,38 @@ class grep(BaseConsumer):
             # memory!
             #
             # This is controlled by max_pool_queued_tasks
-            args = (plugin_name, request, response)
+            args = (plugin_name, http_response_id)
             self._threadpool.apply_async(self._run_one_plugin, args)
 
-    def _run_one_plugin(self, plugin_name, request, response):
-        """
-        :param plugin_name: Grep plugin name to run
-        :param request: HTTP request
-        :param response: HTTP response
-        :return: None
-        """
+    def _get_plugin_from_name(self, plugin_name):
         plugin = self._consumer_plugin_dict.get(plugin_name, None)
+
         if plugin is None:
             msg = ('Internal error in grep consumer: plugin with name %s'
                    ' does not exist in dict.')
             args = (plugin_name,)
             om.out.error(msg % args)
 
+        return plugin
+
+    def _run_one_plugin(self, plugin_name, http_response_id):
+        """
+        :param plugin_name: Grep plugin name to run
+        :param http_response_id: HTTP response ID
+        :return: None
+        """
+        plugin = self._get_plugin_from_name(plugin_name)
+        if plugin is None:
+            return
+
+        request, response = self._get_request_response_from_id(http_response_id)
+        if request is None:
+            return
+
+        self._run_observers(plugin_name, request, response)
+
         took_line = TookLine(self._w3af_core,
-                             plugin.get_name(),
+                             plugin_name,
                              'grep',
                              debugging_id=None,
                              method_params={'uri': request.get_uri()})
@@ -216,11 +288,21 @@ class grep(BaseConsumer):
         else:
             took_line.send()
 
-    def _run_observers(self, request, response):
+    def _run_observers(self, plugin_name, request, response):
         """
         Run the observers handling any exception that they might raise
         :return: None
         """
+        # In the current version this method is run for every call to
+        # a grep plugin: if 20 grep plugins are enabled, then this method
+        # is called 20 times for each request and response pair
+        #
+        # This is unnecessary, to reduce the number of calls to the observers
+        # we check that the plugin_name is the first one (just picked an
+        # arbitrary one) from the consumer list
+        if plugin_name != self._first_plugin_name:
+            return
+
         for observer in self._observers:
             try:
                 observer.grep(self, request, response)
@@ -243,11 +325,19 @@ class grep(BaseConsumer):
         # This cache is here to avoid a query to the cf each time a request
         # goes to a grep plugin. Given that in the future the cf will be a
         # sqlite database, this is an important improvement.
-        if self.TARGET_DOMAINS is None:
-            self.TARGET_DOMAINS = cf.cf.get('target_domains')
+        if self._target_domains is None:
+            self._target_domains = cf.cf.get('target_domains')
 
-        if response.get_url().get_domain() not in self.TARGET_DOMAINS:
+        if response.get_url().get_domain() not in self._target_domains:
             return False
+
+        # This prevents the same HTTP response body from being analyze twice
+        #if not self._already_analyzed_body.add(response.get_body_hash()):
+        #    return False
+
+        # This prevents responses for the same URL from being analyze twice
+        #if not self._already_analyzed_url.add(response.get_uri()):
+        #    return False
 
         return True
 
@@ -269,19 +359,5 @@ class grep(BaseConsumer):
         if not self.should_grep(request, response):
             return
 
-        if self.in_queue.next_item_saved_to_memory():
-            #
-            # Just send the request / response, most likely they are going
-            # to live in the CachedQueue for only a couple of seconds
-            #
-            work = (request, response)
-        else:
-            #
-            # Well, this will be a little bit more complicated. We don't
-            # want to fill the disk with the data we save in the queue
-            # so we just send the ID
-            #
-            work = response.id
-
         # Send to the parent class so the data gets saved
-        return super(grep, self).in_queue_put(work)
+        return super(grep, self).in_queue_put(response.id)
