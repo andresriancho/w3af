@@ -19,43 +19,64 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import random
+
 from string import letters, digits
-from random import choice, randint
 
 
-def rand_alpha(length=0):
+LETTERS_DIGITS = letters + digits
+
+
+def get_random_instance(seed):
+    if seed is None:
+        return random.Random()
+
+    rnd = random.Random()
+    rnd.seed(seed)
+    return rnd
+
+
+def rand_alpha(length=0, seed=None):
     """
     Create a random string ONLY with letters
 
     :return: A random string only composed by letters.
     """
-    return ''.join(choice(letters) for _ in xrange(length or randint(10, 30)))
+    rnd = get_random_instance(seed)
+    length = length or rnd.randint(10, 30)
+
+    return ''.join(rnd.choice(letters) for _ in xrange(length))
 
 
-def rand_alnum(length=0):
+def rand_alnum(length=0, seed=None):
     """
     Create a random string with random length
 
     :return: A random string of with length > 10 and length < 30.
     """
-    jibber = ''.join([letters, digits])
-    return ''.join(choice(jibber) for _ in xrange(length or randint(10, 30)))
+    rnd = get_random_instance(seed)
+    length = length or rnd.randint(10, 30)
+
+    return ''.join(rnd.choice(LETTERS_DIGITS) for _ in xrange(length))
 
 
-def rand_number(length=0, exclude_numbers=()):
+def rand_number(length=0, exclude_numbers=(), seed=None):
     """
     Create a random string ONLY with numbers
 
     :return: A random string only composed by numbers.
     """
+    rnd = get_random_instance(seed)
+    length = length or rnd.randint(10, 30)
+
     _digits = digits[:]
     for excluded_number in set(exclude_numbers):
         _digits = _digits.replace(str(excluded_number), '')
 
     if not _digits:
-        raise ValueError('Failed return random number.')
+        raise ValueError('Failed return random number')
 
-    ru = ''.join(choice(_digits) for _ in xrange(length or randint(10, 30)))
+    ru = ''.join(rnd.choice(_digits) for _ in xrange(length))
     return ru
 
 
