@@ -119,7 +119,8 @@ class PreventMultipleThreads(Decorator):
         self._404_call_events = {}
 
     def __call__(self, *args, **kwargs):
-        call_key = self.get_call_key(args)
+        http_response = args[1]
+        call_key = self.get_call_key(http_response)
 
         event = self._404_call_events.get(call_key, None)
 
@@ -153,10 +154,10 @@ class PreventMultipleThreads(Decorator):
                 #
                 # This will reduce the processing / HTTP requests, etc. for a
                 # scan that is most likely having really bad performance.
-                msg = ('is_404() took more than %s seconds to run, returning'
-                       ' True to reduce CPU usage and HTTP requests. This error'
-                       ' is very rare and should be manually analyzed.')
-                args = (self.TIMEOUT,)
+                msg = ('is_404() took more than %s seconds to run on %s,'
+                       ' returning true to reduce CPU usage and HTTP requests.'
+                       ' This error is very rare and should be manually analyzed.')
+                args = (self.TIMEOUT, http_response.get_uri())
                 om.out.error(msg % args)
                 return True
             else:
@@ -164,6 +165,5 @@ class PreventMultipleThreads(Decorator):
                 # it again to obtain the result from the cache
                 return self._function(*args, **kwargs)
 
-    def get_call_key(self, args):
-        http_response = args[1]
+    def get_call_key(self, http_response):
         return FourOhFourResponse.normalize_path(http_response.get_uri())
