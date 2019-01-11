@@ -53,10 +53,10 @@ class grep(BaseConsumer):
         # Any items exceeding max_in_queue_size will be stored on-disk, which
         # is slow but will prevent any high memory usage imposed by this part
         # of the framework
-        max_in_queue_size = 20
+        max_in_queue_size = 25
 
         # thread_pool_size defines how many threads we'll use to run grep plugins
-        thread_pool_size = 2
+        thread_pool_size = 10
 
         # max_pool_queued_tasks defines how many tasks we'll keep in memory waiting
         # for a worker from the pool to be available
@@ -72,6 +72,7 @@ class grep(BaseConsumer):
 
         self._already_analyzed = ScalableBloomFilter()
         self._log_queue_sizes_calls = 0
+        self._consumer_plugin_dict = dict((plugin.get_name(), plugin) for plugin in self._consumer_plugins)
 
     def get_name(self):
         return 'Grep'
@@ -99,6 +100,9 @@ class grep(BaseConsumer):
             msg = 'Spent %.2f seconds running %s.end()'
             args = (spent_time, plugin.get_name())
             om.out.debug(msg % args)
+
+        self._consumer_plugins = dict()
+        self._consumer_plugin_dict = dict()
 
         om.out.debug('Finished Grep consumer _teardown()')
 
@@ -147,14 +151,7 @@ class grep(BaseConsumer):
             return
 
         self._run_observers(request, response)
-
-        # Note that if we don't limit the input queue size for the thread
-        # pool we might end up with a lot of queued calls here! The calls
-        # contain an HTTP response body, so they really use a lot of
-        # memory!
-        #
-        # This is controlled by max_pool_queued_tasks
-        self._threadpool.apply_async(self._inner_consume, (request, response))
+        self._run_all_plugins(request, response)
 
     def _log_queue_sizes(self):
         """
@@ -174,7 +171,7 @@ class grep(BaseConsumer):
 
         return super(grep, self)._log_queue_sizes()
 
-    def _inner_consume(self, request, response):
+    def _run_all_plugins(self, request, response):
         """
         Run one plugin against a request/response.
 
@@ -182,20 +179,42 @@ class grep(BaseConsumer):
         :param response: The HTTP response
         :return: None, results are saved to KB
         """
-        for plugin in self._consumer_plugins:
+        for plugin_name in self._consumer_plugin_dict:
+            # Note that if we don't limit the input queue size for the thread
+            # pool we might end up with a lot of queued calls here! The calls
+            # contain an HTTP response body, so they really use a lot of
+            # memory!
+            #
+            # This is controlled by max_pool_queued_tasks
+            args = (plugin_name, request, response)
+            self._threadpool.apply_async(self._run_one_plugin, args)
 
-            took_line = TookLine(self._w3af_core,
-                                 plugin.get_name(),
-                                 'grep',
-                                 debugging_id=None,
-                                 method_params={'uri': request.get_uri()})
+    def _run_one_plugin(self, plugin_name, request, response):
+        """
+        :param plugin_name: Grep plugin name to run
+        :param request: HTTP request
+        :param response: HTTP response
+        :return: None
+        """
+        plugin = self._consumer_plugin_dict.get(plugin_name, None)
+        if plugin is None:
+            msg = ('Internal error in grep consumer: plugin with name %s'
+                   ' does not exist in dict.')
+            args = (plugin_name,)
+            om.out.error(msg % args)
 
-            try:
-                plugin.grep_wrapper(request, response)
-            except Exception, e:
-                self.handle_exception('grep', plugin.get_name(), request, e)
-            else:
-                took_line.send()
+        took_line = TookLine(self._w3af_core,
+                             plugin.get_name(),
+                             'grep',
+                             debugging_id=None,
+                             method_params={'uri': request.get_uri()})
+
+        try:
+            plugin.grep_wrapper(request, response)
+        except Exception, e:
+            self.handle_exception('grep', plugin_name, request, e)
+        else:
+            took_line.send()
 
     def _run_observers(self, request, response):
         """
