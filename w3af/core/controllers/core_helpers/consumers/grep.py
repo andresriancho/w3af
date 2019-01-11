@@ -238,6 +238,10 @@ class grep(BaseConsumer):
         and then decide how we're going to serialize the request and response
         to be more performant.
 
+        This method MUST be fast, it is part of the request-response cycle.
+        Any performance issue in this method will delay the whole scan
+        engine.
+
         :see: _get_request_response_from_work_unit()
         :param request: HTTP request to grep
         :param response: HTTP response to grep
