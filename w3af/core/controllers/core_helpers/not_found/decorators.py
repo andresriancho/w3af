@@ -23,11 +23,15 @@ import hashlib
 import threading
 import functools
 
+# pylint: disable=E0401
+from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
-from w3af.core.data.db.cached_disk_dict import CachedDiskDict
 from w3af.core.data.misc.encoding import smart_str_ignore
+from w3af.core.data.fuzzer.utils import rand_alnum
 
 
 class Decorator(object):
@@ -42,7 +46,7 @@ class LRUCache404(Decorator):
     in some cases, HTTP requests being sent.
     """
 
-    MAX_IN_MEMORY_RESULTS = 10000
+    MAX_IN_MEMORY_RESULTS = 5000
 
     def __init__(self, _function):
         self._function = _function
@@ -51,32 +55,85 @@ class LRUCache404(Decorator):
         # (in memory) part of the CachedDiskDict is low. The keys for
         # this cache are md5 hashes (in binary form, 128-bit) and the
         # values are booleans
-        self._is_404_LRU = CachedDiskDict(self.MAX_IN_MEMORY_RESULTS)
+        self._is_404_by_url_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
+        self._is_404_by_body_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
 
     def __call__(self, *args, **kwargs):
-        cache_key = self.get_cache_key(args)
-
-        try:
-            result = self._is_404_LRU[cache_key]
-        except KeyError:
-            result = self._function(*args, **kwargs)
-            self._is_404_LRU[cache_key] = result
-            return result
-        else:
-            return result
-
-    def get_cache_key(self, args):
-        """
-        :param args: The http response
-        :return: md5 hash of the HTTP response URI (binary form)
-        """
         http_response = args[1]
-        uri = smart_str_ignore(http_response.get_uri().url_string)
+
+        url_cache_key = self.get_url_cache_key(http_response)
+
+        result = self._is_404_by_url_lru.get(url_cache_key, None)
+
+        if result:
+            self.log_result(http_response, result, 'URL')
+            return result
+
+        body_cache_key = self.get_body_cache_key(http_response)
+
+        result = self._is_404_by_body_lru.get(body_cache_key, None)
+
+        if result:
+            self.log_result(http_response, result, 'body')
+            return result
+
+        # Run the real is_404 function
+        result = self._function(*args, **kwargs)
+
+        # Save the result to both caches
+        self._is_404_by_url_lru[url_cache_key] = result
+        self._is_404_by_body_lru[body_cache_key] = result
+
+        return result
+
+    def log_result(self, http_response, result, cache_name):
+        response_did = http_response.get_debugging_id()
+        debugging_id = response_did if response_did is not None else rand_alnum(8)
+
+        is_is_not = 'is a 404' if result else 'is NOT a 404'
+
+        msg = '"%s" (id:%s, code:%s, len:%s, did:%s) %s [%s 404 cache]'
+        args = (http_response.get_url(),
+                http_response.id,
+                http_response.get_code(),
+                len(http_response.get_body()),
+                debugging_id,
+                is_is_not,
+                cache_name)
+        om.out.debug(msg % args)
+
+        return False
+
+    @staticmethod
+    def get_md5_hash(data):
+        uri = smart_str_ignore(data)
 
         m = hashlib.md5()
         m.update(uri)
 
         return m.digest()
+
+    def get_url_cache_key(self, http_response):
+        """
+        :param http_response: The http response
+        :return: md5 hash of the HTTP response URI (binary form)
+        """
+        return self.get_md5_hash(http_response.get_uri().url_string)
+
+    def get_body_cache_key(self, http_response):
+        """
+        :param http_response: The http response
+        :return: md5 hash of the HTTP response body
+        """
+        # Note that here the path is used to reduce any false positives
+        #
+        # The response body A might be an indicator of 404 in one path
+        # but an indicator of a file that exists in another path
+        path = smart_str_ignore(http_response.get_uri().get_path_without_file())
+        body = smart_str_ignore(http_response.get_body())
+        path_body = '%s%s' % (path, body)
+
+        return self.get_md5_hash(path_body)
 
 
 class PreventMultipleThreads(Decorator):
