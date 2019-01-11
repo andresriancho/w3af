@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import copy
 import httplib
+import hashlib
 import urllib2
 import threading
 from itertools import imap
@@ -31,7 +32,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.misc.decorators import memoized
-from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
+from w3af.core.data.misc.encoding import smart_unicode, smart_str_ignore, ESCAPED_CHAR
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
@@ -140,6 +141,7 @@ class HTTPResponse(DiskItem):
         # Set the info
         self._info = headers
         # Set code
+        self._code = None
         self.set_code(code)
 
         # Set the URL variables
@@ -309,6 +311,14 @@ class HTTPResponse(DiskItem):
 
     def get_code(self):
         return self._code
+
+    def get_body_hash(self):
+        body = smart_str_ignore(self.get_body())
+
+        m = hashlib.md5()
+        m.update(body)
+
+        return m.hexdigest()
 
     def get_body(self):
         with self._body_lock:
