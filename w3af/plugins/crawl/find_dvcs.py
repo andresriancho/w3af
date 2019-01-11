@@ -145,7 +145,8 @@ class find_dvcs(CrawlPlugin):
         # before we send the response to the core
         http_response = self.http_get(repo_url,
                                       binary_response=True,
-                                      respect_size_limit=False)
+                                      respect_size_limit=False,
+                                      grep=False)
 
         if is_404(http_response):
             return
