@@ -324,6 +324,11 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(u.url_join('http://w3af.org:8080/abc.html').url_string,
                          u'http://w3af.org:8080/abc.html')
 
+    def test_url_join_with_query_string(self):
+        u = URL('http://w3af.com/abc/?id=1')
+        self.assertEqual(u.url_join('/../def/').url_string,
+                         u'http://w3af.com/def/')
+
     def test_parse_qs_case01(self):
         self.assertEqual(parse_qs('id=3'),
                          QueryString([(u'id', [u'3'])]))
