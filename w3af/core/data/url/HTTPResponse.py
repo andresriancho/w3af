@@ -320,6 +320,14 @@ class HTTPResponse(DiskItem):
 
         return m.hexdigest()
 
+    def get_hash(self):
+        dump = smart_str_ignore(self.dump())
+
+        m = hashlib.md5()
+        m.update(dump)
+
+        return m.hexdigest()
+
     def get_body(self):
         with self._body_lock:
             if self._body is None:
@@ -730,7 +738,7 @@ class HTTPResponse(DiskItem):
         if isinstance(body, unicode):
             body = body.encode(self.charset, 'replace')
 
-        return "%s%s%s" % (self.dump_response_head(), CRLF, body)
+        return '%s%s%s' % (self.dump_response_head(), CRLF, body)
 
     def dump_headers(self):
         """
