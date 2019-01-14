@@ -44,6 +44,12 @@ class grep(BaseConsumer):
     """
 
     LOG_QUEUE_SIZES_EVERY = 25
+    EXCLUDE_HEADERS_FOR_HASH = {'date',
+                                'expires',
+                                'last-modified',
+                                'etag',
+                                'x-request-id',
+                                'x-content-duration'}
 
     def __init__(self, grep_plugins, w3af_core):
         """
@@ -331,13 +337,46 @@ class grep(BaseConsumer):
         if response.get_url().get_domain() not in self._target_domains:
             return False
 
-        # This prevents the same HTTP response body from being analyze twice
-        #if not self._already_analyzed_body.add(response.get_body_hash()):
-        #    return False
+        #
+        # This prevents the same HTTP response from being analyze twice
+        #
+        # The great majority of grep plugins analyze HTTP response bodies,
+        # some analyze HTTP response headers, and a very small subset analyzes
+        # HTTP requests. Based on these facts it was possible to add these
+        # lines to prevent the same HTTP response from being analyzed twice.
+        #
+        # One of the options I had was to use get_body_hash() below, to prevent
+        # double processing of HTTP response bodies, but that strategy had
+        # more chances of "hiding" some HTTP responses from grep plugins:
+        #
+        #   * HTTP response A contains header set X and body Y. It will be
+        #     processed because it is the first time body Y is seen.
+        #
+        #   * HTTP response A contains header set Z and body Y. It will be
+        #     ignored because Y was already seen.
+        #
+        # So I decided to use both the headers and body. The filter might be
+        # degraded on sites that use HTTP response headers that contain dates
+        # or some other value that changes a lot, this issue was reduced by
+        # using EXCLUDE_HEADERS_FOR_HASH
+        #
+        response_hash = response.get_hash(exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
 
+        if not self._already_analyzed_body.add(response_hash):
+            return False
+
+        #
         # This prevents responses for the same URL from being analyze twice
-        #if not self._already_analyzed_url.add(response.get_uri()):
-        #    return False
+        #
+        # Sometimes the HTTP responses vary in one byte, which will completely
+        # break the filter we have implemented above (it uses an md5 hash for
+        # the response headers and body).
+        #
+        # This filter is less effective, but will reduce some HTTP requests and
+        # responses from making it to the grep plugins
+        #
+        if not self._already_analyzed_url.add(response.get_uri()):
+            return False
 
         return True
 
