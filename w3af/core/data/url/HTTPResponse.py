@@ -320,8 +320,20 @@ class HTTPResponse(DiskItem):
 
         return m.hexdigest()
 
-    def get_hash(self):
-        dump = smart_str_ignore(self.dump())
+    def get_hash(self, exclude_headers=None):
+        exclude_headers = [] or exclude_headers
+
+        body = self.body
+
+        # Images, pdf and binary responses in general are never decoded
+        # to unicode
+        if isinstance(body, unicode):
+            body = body.encode(self.charset, 'replace')
+
+        headers = self.dump_response_head(exclude_headers=exclude_headers)
+
+        args = (headers, CRLF, body)
+        dump = '%s%s%s' % args
 
         m = hashlib.md5()
         m.update(dump)
@@ -708,7 +720,7 @@ class HTTPResponse(DiskItem):
         """
         return self.doc_type == HTTPResponse.DOC_TYPE_IMAGE
 
-    def dump_response_head(self):
+    def dump_response_head(self, exclude_headers=None):
         """
         :return: A byte-string, as we would send to the wire, containing:
 
@@ -717,8 +729,9 @@ class HTTPResponse(DiskItem):
             Header2: Value2
 
         """
+        exclude_headers = exclude_headers or []
         status_line = self.get_status_line()
-        dumped_headers = self.dump_headers()
+        dumped_headers = self.dump_headers(exclude_headers=exclude_headers)
 
         dump_head = '%s%s' % (status_line, dumped_headers)
 
@@ -740,12 +753,15 @@ class HTTPResponse(DiskItem):
 
         return '%s%s%s' % (self.dump_response_head(), CRLF, body)
 
-    def dump_headers(self):
+    def dump_headers(self, exclude_headers=None):
         """
         :return: a str representation of the headers.
         """
+        exclude_headers = exclude_headers or []
+        headers = dict((k, v) for (k, v) in self.headers.items() if k.lower() not in exclude_headers)
+
         if self.headers:
-            return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF
+            return CRLF.join('%s: %s' % (h, hv) for h, hv in headers.iteritems()) + CRLF
         else:
             return ''
 
