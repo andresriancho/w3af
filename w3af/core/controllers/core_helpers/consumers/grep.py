@@ -49,7 +49,8 @@ class grep(BaseConsumer):
                                 'last-modified',
                                 'etag',
                                 'x-request-id',
-                                'x-content-duration'}
+                                'x-content-duration',
+                                'x-execution-time'}
 
     def __init__(self, grep_plugins, w3af_core):
         """
