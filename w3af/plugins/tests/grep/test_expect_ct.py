@@ -1,7 +1,7 @@
 """
 test_expect_ct.py
 
-Copyright 2019 Mehmet Leblebici
+Copyright 2019 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
