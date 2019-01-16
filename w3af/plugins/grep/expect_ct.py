@@ -44,8 +44,6 @@ class expect_ct(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         """
-        if self._reports > MAX_REPORTS:
-            return
 
         if request.get_url().get_protocol() != 'https':
             return
