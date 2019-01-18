@@ -24,6 +24,7 @@ from w3af.core.data.kb.info_set import InfoSet
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 
 ECT_HEADER = 'Expect-CT'
+MAX_REPORTS = 50
 
 class expect_ct(GrepPlugin):
     """
@@ -43,6 +44,10 @@ class expect_ct(GrepPlugin):
         :return: None, all results are saved in the kb.
         """
 
+        if self._reports > MAX_REPORTS:
+            return
+        
+        
         if request.get_url().get_protocol() != 'https':
             return
 
