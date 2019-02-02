@@ -34,6 +34,8 @@ def url_tree_factory():
 
 
 class URLNode(object):
+    __slots__ = ('path', 'is_leaf')
+
     def __init__(self, path, is_leaf):
         self.path = path
 
@@ -93,8 +95,8 @@ class URLTree(object):
                 n.set_is_leaf(True)
 
     def iteritems(self):
-        for k in sorted(self.tree.keys()):
-            yield k, self.tree[k]
+        for k, v in self.tree.iteritems():
+            yield k, v
 
     def _url_to_tree_nodes(self, url):
         """

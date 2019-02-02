@@ -34,10 +34,6 @@ class robots_txt(CrawlPlugin):
     Analyze the robots.txt file and find new URLs
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        CrawlPlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
         """

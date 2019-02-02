@@ -32,7 +32,7 @@ class x_forwarded_for(EvasionPlugin):
     """
     def __init__(self):
         EvasionPlugin.__init__(self)
-        
+
         """
         random.seed(..) is used to generate the same IP addresses in every scan
         otherwise the plugin could generate false negatives
@@ -52,8 +52,10 @@ class x_forwarded_for(EvasionPlugin):
     
     def get_random_ip(self):
         ret_ip = ''
+
         for _ in range(4):
-            ret_ip += '%d.'%(self.random.randint(1, 254))
+            ret_ip += '%d.' % (self.random.randint(1, 254))
+
         return ret_ip[:-1]
         
     def get_priority(self):
@@ -74,12 +76,13 @@ class x_forwarded_for(EvasionPlugin):
             }
 
         Example plugin run:
+        
             Input:
                 GET / HTTP/1.1
                 ...
                 
             Output:
                 GET / HTTP/1.1
+                X-Forwarded-For: 12.34.56.78
                 ...
-                X-Forwarded-For: 34.21.66.xx
         """

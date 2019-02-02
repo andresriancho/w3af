@@ -37,7 +37,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import Pool
 
 
-class request:
+class request(object):
     """
     Collect elements needed to send a Request to an HTTP server
     """
@@ -88,6 +88,8 @@ class request:
 
             s.recv = s2.read
             s.send = s2.write
+
+        s.settimeout(10)
 
         return s
 
@@ -182,7 +184,7 @@ class request:
 ######################################################################
 
 
-class response:
+class response(object):
     """Read in Response from HTTP server and parse out elements of interest"""
     def __init__(self, raw_text):
         self.raw_text = raw_text
@@ -278,21 +280,36 @@ def get_fingerprint(url, threads):
                 processes=threads,
                 max_queued_tasks=5)
 
-    tests = {basic_get,
-             basic_options,
-             unknown_method,
-             unauthorized_activity,
-             nonexistant_object,
-             malformed_method_line,
-             long_url_ranges,
-             long_default_ranges,
-             many_header_ranges,
-             large_header_ranges,
-             unavailable_accept,
-             fake_content_length}
+    def logging_decorator(test, url):
+        om.out.debug('[hmap] Starting test %s' % test.__name__)
+
+        try:
+            result = test(url)
+        except Exception, e:
+            args = (test.__name__, e)
+            om.out.debug('[hmap] Test %s raised an exception: "%s"' % args)
+            raise
+        else:
+            om.out.debug('[hmap] Test %s finished successfully' % test.__name__)
+            return result
+
+    tests = {
+        basic_get,
+        basic_options,
+        unknown_method,
+        unauthorized_activity,
+        nonexistant_object,
+        malformed_method_line,
+        long_url_ranges,
+        long_default_ranges,
+        many_header_ranges,
+        large_header_ranges,
+        unavailable_accept,
+        fake_content_length
+    }
 
     for test in tests:
-        pool.apply_async(func=test, args=(url,))
+        pool.apply_async(func=logging_decorator, args=(test, url,))
 
     pool.close()
     pool.join()
@@ -537,8 +554,7 @@ def find_halfways(ranges):
 
         if (smallest_next[0] - largest_previous[0]) == 1:
             continue
-        hw = ((
-            smallest_next[0] - largest_previous[0]) / 2) + largest_previous[0]
+        hw = ((smallest_next[0] - largest_previous[0]) / 2) + largest_previous[0]
         if VERBOSE:
             print largest_previous, hw, smallest_next
         halfways.append(hw)
@@ -608,18 +624,20 @@ def long_default_ranges(url):
 
 def many_header_helper(url, size):
     req = request(url)
+
     for i in range(size):
-        req.add_header('HEADER' + (
-            '0000000000' + str(i)[-10:]), ('0000000000' + str(i))[-10:])
+        req.add_header('HEADER' + ('0000000000' + str(i)[-10:]),
+                       ('0000000000' + str(i))[-10:])
+
     res = req.submit()
     get_characteristics('MANY_HEADER_RANGES', res)
+
     return res.response_code
 
 
 def many_header_ranges(url):
-    initial_guesses = [99, 100, 228, 229, ]
-    ranges = large_binary_searcher(
-        url, many_header_helper, 10000, guesses=initial_guesses)
+    initial_guesses = [99, 100, 228, 229]
+    ranges = large_binary_searcher(url, many_header_helper, 10000, guesses=initial_guesses)
     add_characteristic('SEMANTIC', 'MANY_HEADER_RANGES', ranges)
 
 
@@ -707,8 +725,7 @@ def get_characteristics(test_name, res):
 
     if response_code not in ['NO_RESPONSE_CODE', 'NO_RESPONSE']:
         header_names = res.header_names()
-        add_characteristic(
-            'SYNTACTIC', 'HEADER_ORDER', header_names, data_type='LIST')
+        add_characteristic('SYNTACTIC', 'HEADER_ORDER', header_names, data_type='LIST')
     else:
         ### Added by APR to solve a wierd exception....
         add_characteristic('SYNTACTIC', 'HEADER_ORDER', [], data_type='LIST')

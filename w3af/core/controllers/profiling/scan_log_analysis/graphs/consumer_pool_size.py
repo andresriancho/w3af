@@ -1,7 +1,7 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 IDLE_CONSUMER_WORKERS = re.compile('\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
 
 
-def show_consumer_pool_size(scan_log_filename, scan):
+def get_consumer_pool_size_data(scan_log_filename, scan):
     scan.seek(0)
 
     consumer_pool_perc_audit = []
@@ -40,6 +40,16 @@ def show_consumer_pool_size(scan_log_filename, scan):
             worker_pool_perc.append(percent)
             worker_pool_timestamps.append(get_line_epoch(line))
 
+    return (consumer_pool_perc_audit, consumer_pool_timestamps_audit,
+            consumer_pool_perc_crawl, consumer_pool_timestamps_crawl,
+            worker_pool_perc, worker_pool_timestamps)
+
+
+def draw_consumer_pool_size(scan_log_filename, scan):
+    (consumer_pool_perc_audit, consumer_pool_timestamps_audit,
+     consumer_pool_perc_crawl, consumer_pool_timestamps_crawl,
+     worker_pool_perc, worker_pool_timestamps) = get_consumer_pool_size_data(scan_log_filename, scan)
+
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
@@ -65,8 +75,8 @@ def show_consumer_pool_size(scan_log_filename, scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Idle worker (%)'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -89,5 +99,4 @@ def show_consumer_pool_size(scan_log_filename, scan):
              lc=250)
 
     print(fig.show(legend=True))
-    print('')
     print('')

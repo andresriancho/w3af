@@ -75,6 +75,7 @@ class MiscSettings(Configurable):
         cf.cf.save('max_equal_form_variants', MAX_EQUAL_FORM_VARIANTS)
 
         cf.cf.save('max_discovery_time', 120)
+        cf.cf.save('max_scan_time', 240)
 
         cf.cf.save('msf_location', '/opt/metasploit3/bin/')
 
@@ -190,6 +191,13 @@ class MiscSettings(Configurable):
              ' to run. By using this parameter, users will be able to set'
              ' the maximum amount of time the crawl phase will run.')
         opt = opt_factory('max_discovery_time', cf.cf.get('max_discovery_time'),
+                          desc, INT, help=h, tabid='Core settings')
+        ol.add(opt)
+
+        desc = 'Maximum scan time (minutes)'
+        h = ('Sets the maximum number of minutes for the scan to run. Use'
+             ' zero to remove the limit.')
+        opt = opt_factory('max_scan_time', cf.cf.get('max_scan_time'),
                           desc, INT, help=h, tabid='Core settings')
         ol.add(opt)
 
@@ -313,8 +321,8 @@ class MiscSettings(Configurable):
         to_save = ('fuzz_cookies', 'fuzz_form_files', 'fuzz_url_filenames',
                    'fuzz_url_parts', 'fuzzed_files_extension',
                    'form_fuzzing_mode', 'max_discovery_time',
-                   'fuzzable_headers', 'interface', 'local_ip_address',
-                   'msf_location', 'stop_on_first_exception',
+                   'max_scan_time', 'fuzzable_headers', 'interface',
+                   'local_ip_address', 'msf_location', 'stop_on_first_exception',
                    'non_targets', 'form_id_action', 'form_id_list',
                    'path_max_variants', 'params_max_variants',
                    'max_equal_form_variants', 'vulndb_language')

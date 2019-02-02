@@ -97,39 +97,36 @@ class digit_sum(CrawlPlugin):
         """
         response = self._uri_opener.send_mutant(fuzzable_request, cache=True)
 
-        add = False
+        if is_404(response):
+            return
 
-        if not is_404(response):
-            # We have different cases:
-            #    - If the URLs are different, then there is nothing to think
-            #      about, we simply found something new!
-            if response.get_url() != original_resp.get_url():
-                add = True
+        # We have different cases:
+        #    - If the URLs are different, then there is nothing to think
+        #      about, we simply found something new!
+        if response.get_url() != original_resp.get_url():
+            self.output_queue.put(fuzzable_request)
 
-            #    - If the content type changed, then there is no doubt that
-            #      we've found something new!
-            elif response.doc_type != original_resp.doc_type:
-                add = True
+        #    - If the content type changed, then there is no doubt that
+        #      we've found something new!
+        elif response.doc_type != original_resp.doc_type:
+            self.output_queue.put(fuzzable_request)
 
-            #    - If we changed the query string parameters, we have to check
-            #      the content
-            elif fuzzy_not_equal(response.get_clear_text_body(),
-                                 original_resp.get_clear_text_body(), 0.8):
-                # In this case what might happen is that the number we changed
-                # is "out of range" and when requesting that it will trigger an
-                # error in the web application, or show us a non-interesting
-                # response that holds no content.
-                #
-                # We choose to return these to the core because they might help
-                # with the code coverage efforts. Think about something like:
-                #     foo.aspx?id=OUT_OF_RANGE&foo=inject_here
-                # vs.
-                #     foo.aspx?id=IN_RANGE&foo=inject_here
-                #
-                # This relates to the EXPECTED_URLS in test_digit_sum.py
-                add = True
-
-        if add:
+        #    - If we changed the query string parameters, we have to check
+        #      the content
+        elif fuzzy_not_equal(response.get_clear_text_body(),
+                             original_resp.get_clear_text_body(), 0.8):
+            # In this case what might happen is that the number we changed
+            # is "out of range" and when requesting that it will trigger an
+            # error in the web application, or show us a non-interesting
+            # response that holds no content.
+            #
+            # We choose to return these to the core because they might help
+            # with the code coverage efforts. Think about something like:
+            #     foo.aspx?id=OUT_OF_RANGE&foo=inject_here
+            # vs.
+            #     foo.aspx?id=IN_RANGE&foo=inject_here
+            #
+            # This relates to the EXPECTED_URLS in test_digit_sum.py
             self.output_queue.put(fuzzable_request)
 
     def _mangle_digits(self, fuzzable_request):

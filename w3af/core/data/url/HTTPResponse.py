@@ -79,11 +79,13 @@ class HTTPResponse(DiskItem):
                  '_time',
                  '_alias',
                  '_doc_type',
-                 '_body_lock')
+                 '_body_lock',
+                 '_debugging_id')
 
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
-                 charset=None, binary_response=False, set_body=False):
+                 charset=None, binary_response=False, set_body=False,
+                 debugging_id=None):
         """
         :param code: HTTP code
         :param read: HTTP body text; typically a string
@@ -146,14 +148,15 @@ class HTTPResponse(DiskItem):
         self._uri = original_url
         # The URL where we were redirected to (equal to original_url
         # when no redirect)
-        self._redirected_url = geturl
-        self._redirected_uri = geturl.uri2url()
+        self._redirected_url = geturl.uri2url()
+        self._redirected_uri = geturl
 
         # Set the rest
         self._msg = smart_unicode(msg)
         self._time = time
         self._alias = alias
         self._doc_type = None
+        self._debugging_id = debugging_id
         
         # Internal lock
         self._body_lock = threading.RLock()
@@ -214,6 +217,7 @@ class HTTPResponse(DiskItem):
         _time = unserialized_dict['time']
         _id = unserialized_dict['id']
         url = URL(unserialized_dict['uri'])
+        debugging_id = unserialized_dict['debugging_id']
 
         headers_inst = Headers(headers.items())
 
@@ -222,7 +226,8 @@ class HTTPResponse(DiskItem):
                    _id=_id,
                    time=_time,
                    charset=charset,
-                   set_body=True)
+                   set_body=True,
+                   debugging_id=debugging_id)
 
     def to_dict(self):
         """
@@ -238,7 +243,8 @@ class HTTPResponse(DiskItem):
                 'time': self.get_wait_time(),
                 'id': self.get_id(),
                 'charset': self.get_charset(),
-                'uri': self.get_uri().url_string}
+                'uri': self.get_uri().url_string,
+                'debugging_id': self._debugging_id}
 
     def get_eq_attrs(self):
         return ('_code',
@@ -258,7 +264,8 @@ class HTTPResponse(DiskItem):
                 '_msg',
                 '_time',
                 '_alias',
-                '_doc_type')
+                '_doc_type',
+                '_debugging_id')
 
     def __contains__(self, string_to_test):
         """
@@ -290,6 +297,12 @@ class HTTPResponse(DiskItem):
 
     def get_id(self):
         return self.id
+
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
+    def get_debugging_id(self):
+        return self._debugging_id
 
     def set_code(self, code):
         self._code = code
@@ -717,6 +730,51 @@ class HTTPResponse(DiskItem):
             return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF
         else:
             return ''
+
+    def get_redirect_destination(self):
+        lower_headers = self.get_lower_case_headers()
+        redirect_url = None
+
+        for header_name in ('location', 'uri'):
+            if header_name in lower_headers:
+                header_value = lower_headers[header_name]
+                header_value = header_value.strip()
+
+                try:
+                    redirect_url = self.get_url().url_join(header_value)
+                except ValueError:
+                    # No special invalid URL handling required
+                    continue
+                else:
+                    break
+
+        return redirect_url
+
+    def does_redirect_outside_target(self):
+        """
+        :return: True when the redirect destination is not the same
+                 domain and protocol than the originally requested URL
+        """
+        redirect_destination = self.get_redirect_destination()
+
+        if redirect_destination is None:
+            return False
+
+        # Check if the protocol was changed:
+        original_proto = self.get_url().get_protocol()
+        redirect_proto = redirect_destination.get_protocol()
+
+        if original_proto != redirect_proto:
+            return True
+
+        # Check if the domain was changed:
+        original_domain = self.get_url().get_domain()
+        redirect_domain = redirect_destination.get_domain()
+
+        if original_domain != redirect_domain:
+            return True
+
+        return False
 
     def copy(self):
         return copy.deepcopy(self)

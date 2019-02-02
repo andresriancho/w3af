@@ -1,7 +1,7 @@
 import re
 import plotille
 
-from utils.graph import _num_formatter
+from utils.graph import num_formatter
 from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
@@ -9,7 +9,7 @@ from utils.utils import (get_first_timestamp,
 ACTIVE_THREADS = re.compile('The framework has (.*?) active threads.')
 
 
-def show_active_threads(scan_log_filename, scan):
+def get_active_threads_data(scan_log_filename, scan):
     scan.seek(0)
 
     active_threads = []
@@ -20,6 +20,12 @@ def show_active_threads(scan_log_filename, scan):
         if match:
             active_threads.append(float(match.group(1)))
             active_threads_timestamps.append(get_line_epoch(line))
+
+    return active_threads, active_threads_timestamps
+
+
+def draw_active_threads(scan_log_filename, scan):
+    active_threads, active_threads_timestamps = get_active_threads_data(scan_log_filename, scan)
 
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
@@ -36,8 +42,8 @@ def show_active_threads(scan_log_filename, scan):
     fig = plotille.Figure()
     fig.width = 90
     fig.height = 20
-    fig.register_label_formatter(float, _num_formatter)
-    fig.register_label_formatter(int, _num_formatter)
+    fig.register_label_formatter(float, num_formatter)
+    fig.register_label_formatter(int, num_formatter)
     fig.y_label = 'Thread count'
     fig.x_label = 'Time'
     fig.color_mode = 'byte'
@@ -48,5 +54,4 @@ def show_active_threads(scan_log_filename, scan):
              active_threads)
 
     print(fig.show())
-    print('')
     print('')

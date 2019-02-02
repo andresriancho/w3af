@@ -27,6 +27,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.kb.info import Info
 
 
@@ -86,6 +87,10 @@ class oracle_discovery(CrawlPlugin):
 
                 kb.kb.append(self, 'oracle_discovery', i)
                 om.out.information(i.get_desc())
+
+                fr = FuzzableRequest.from_http_response(response)
+                self.output_queue.put(fr)
+
                 break
 
         else:

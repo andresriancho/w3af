@@ -26,7 +26,6 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.constants.severity as severity
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
@@ -39,7 +38,7 @@ class dot_listing(CrawlPlugin):
     :author: Tomas Velazquez ( tomas.velazquezz@gmail.com )
     """
     # -rw-r--r--    1 andresr   w3af         8139 Apr 12 13:23 foo.zip
-    regex_str = '[a-z-]{10}\s*\d+\s*(.*?)\s+(.*?)\s+\d+\s+\w+\s+\d+\s+[0-9:]{4,5}\s+(.*)'
+    regex_str = r'[a-z-]{10}\s*\d+\s*(.*?)\s+(.*?)\s+\d+\s+\w+\s+\d+\s+[0-9:]{4,5}\s+(.*)'
     LISTING_PARSER_RE = re.compile(regex_str)
     
     def __init__(self):
@@ -58,9 +57,11 @@ class dot_listing(CrawlPlugin):
         directories_to_check = []
 
         for domain_path in fuzzable_request.get_url().get_directories():
-            if domain_path not in self._analyzed_dirs:
-                self._analyzed_dirs.add(domain_path)
-                directories_to_check.append(domain_path)
+            if domain_path in self._analyzed_dirs:
+                continue
+
+            self._analyzed_dirs.add(domain_path)
+            directories_to_check.append(domain_path)
 
         # Send the requests using threads
         self.worker_pool.map(self._check_and_analyze, directories_to_check)
@@ -70,32 +71,27 @@ class dot_listing(CrawlPlugin):
         Check if a .listing filename exists in the domain_path.
         :return: None, everything is saved to the self.out_queue.
         """
-        # Request the file
         url = domain_path.url_join('.listing')
-        try:
-            response = self._uri_opener.GET(url, cache=True)
-        except BaseFrameworkException as w3:
-            msg = 'Failed to GET .listing file: "%s". Exception: "%s".'
-            om.out.debug(msg % (url, w3))
-            return
 
-        # Check if it's a .listing file
+        response = self._uri_opener.GET(url, cache=True)
+
+
         if is_404(response):
             return
-
-        fr = FuzzableRequest(response.get_url())
-        self.output_queue.put(fr)
 
         parsed_url_set = set()
         users = set()
         groups = set()
 
+        # Check if it's a .listing file
         extracted_info = self._extract_info_from_listing(response.get_body())
         for username, group, filename in extracted_info:
-            if filename != '.' and filename != '..':
-                parsed_url_set.add(domain_path.url_join(filename))
-                users.add(username)
-                groups.add(group)
+            if filename in ('.', '..'):
+                continue
+
+            parsed_url_set.add(domain_path.url_join(filename))
+            users.add(username)
+            groups.add(group)
 
         self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
@@ -111,14 +107,17 @@ class dot_listing(CrawlPlugin):
             kb.kb.append(self, 'dot_listing', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
+            fr = FuzzableRequest(response.get_url())
+            self.output_queue.put(fr)
+
         real_users = set([u for u in users if not u.isdigit()])
         real_groups = set([g for g in groups if not g.isdigit()])
 
         if real_users or real_groups:
-            desc = ('A .listing file which leaks operating system usernames'
+            desc = ('A .listing file which leaks operating system user names'
                     ' and groups was identified at %s. The leaked users are %s,'
                     ' and the groups are %s. This information can be used'
-                    ' during a bruteforce attack to the Web application,'
+                    ' during a bruteforce attack of the Web application,'
                     ' SSH or FTP services.')
             desc %= (response.get_url(),
                      ', '.join(real_users),

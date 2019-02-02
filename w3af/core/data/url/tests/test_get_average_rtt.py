@@ -29,7 +29,6 @@ from nose.plugins.attrib import attr
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.url.get_average_rtt import OutlierException
 
 
 @attr('smoke')

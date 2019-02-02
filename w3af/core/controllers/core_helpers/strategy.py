@@ -31,7 +31,6 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.extended_urllib import MAX_ERROR_COUNT
-from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.info import Info
 
 from w3af.core.controllers.core_helpers.consumers.grep import grep
@@ -118,6 +117,7 @@ class CoreStrategy(object):
         """
         try:
             self.verify_target_server_up()
+            self.replace_targets_with_redir()
             self.alert_if_target_is_301_all()
             
             self._setup_grep()
@@ -176,34 +176,41 @@ class CoreStrategy(object):
         Consume (without processing) all queues with data which are in
         the consumers and then send a poison-pill to that queue.
         """
-        consumers = {'discovery', 'audit', 'auth', 'bruteforce', 'grep'}
+        consumers = ['discovery', 'audit', 'auth', 'bruteforce', 'grep']
 
         for consumer in consumers:
 
             consumer_inst = getattr(self, '_%s_consumer' % consumer)
 
-            if consumer_inst is not None:
-                om.out.debug('Calling terminate() on %s consumer' % consumer)
-                start = time.time()
+            if consumer_inst is None:
+                msg = '%s consumer is None. Skipping call to terminate()'
+                om.out.debug(msg % consumer)
+                continue
 
-                # Set it immediately to None to avoid any race conditions where
-                # the terminate() method is called twice (from different
-                # threads) and before the first call finishes
-                #
-                # The getattr/setattr tricks are required to make sure that "the
-                # real consumer instance" is set to None. Do not modify unless
-                # you know what you're doing!
-                setattr(self, '_%s_consumer' % consumer, None)
+            om.out.debug('Calling terminate() on %s consumer' % consumer)
+            start = time.time()
 
-                try:
-                    consumer_inst.terminate()
-                except Exception as e:
-                    msg = '%s consumer terminate() raised exception: "%s"'
-                    om.out.debug(msg % e)
-                else:
-                    spent = time.time() - start
-                    args = (consumer, spent)
-                    om.out.debug('terminate() on %s consumer took %.2f seconds' % args)
+
+            # Set it immediately to None to avoid any race conditions where
+            # the terminate() method is called twice (from different
+            # threads) and before the first call finishes
+            #
+            # The getattr/setattr tricks are required to make sure that "the
+            # real consumer instance" is set to None. Do not modify unless
+            # you know what you're doing!
+            setattr(self, '_%s_consumer' % consumer, None)
+
+            try:
+                consumer_inst.terminate()
+            except Exception, e:
+                msg = '%s consumer terminate() raised exception: "%s"'
+                args = (consumer_inst.get_name(), e)
+                om.out.debug(msg % args)
+            else:
+                spent = time.time() - start
+                args = (consumer, spent)
+                om.out.debug('terminate() on %s consumer took %.2f seconds' % args)
+
 
         self.set_consumers_to_none()
 
@@ -303,9 +310,50 @@ class CoreStrategy(object):
                                                                   consumer_forced_end)
 
             if route_result is None:
+                om.out.debug('The fuzzable request router loop will break.'
+                             ' The scan will stop after all consumers complete'
+                             ' their teardown() process.')
                 break
 
             finished, consumer_forced_end = route_result
+
+            #
+            # Handle the case where the scan reached the max time
+            #
+            if self._scan_reached_max_time():
+                msg = ('The scan has reached the maximum scan time of %s minutes.'
+                       ' The scan will end and some vulnerabilities might not be'
+                       ' identified.')
+                args = (cf.cf.get('max_scan_time'), )
+                om.out.information(msg % args)
+
+                self._w3af_core.stop()
+                break
+
+    def _scan_reached_max_time(self):
+        """
+        Check the user-configured setting and return True if we're 5 minutes
+        before the deadline.
+
+        Return True 5 minutes before the `max_scan_time` to give the scan threads
+        time to finish and "guarantee" that the scan will be stopped before
+        `max_scan_time`.
+
+        :return: True if the scan has reached the `max_scan_time` - 5m.
+        """
+        # in minutes
+        max_scan_time = cf.cf.get('max_scan_time')
+
+        # The default is 0: no limit.
+        if max_scan_time == 0:
+            return False
+
+        # Get the scan time and compare with the max
+        scan_time = self._w3af_core.status.get_run_time()
+        if scan_time > max_scan_time:
+            return True
+
+        return False
 
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
                                           consumer_forced_end):
@@ -336,13 +384,18 @@ class CoreStrategy(object):
                     # This consumer is saying that it doesn't have any
                     # pending or in progress work
                     finished.add(url_producer)
-                    om.out.debug('Producer %s has finished' % url_producer.get_name())
+                    om.out.debug('Producer %s has finished (empty queue)' % url_producer.get_name())
             else:
                 if result_item == POISON_PILL:
                     # This consumer is saying that it has finished, so we
                     # remove it from the list.
                     consumer_forced_end.add(url_producer)
-                    om.out.debug('Producer %s has finished' % url_producer.get_name())
+
+                    msg = 'Producer %s has finished (poison pill received, queue size: %s)'
+                    args = (url_producer.get_name(),
+                            url_producer.out_queue.qsize())
+                    om.out.debug(msg % args)
+
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
                 else:
@@ -450,6 +503,52 @@ class CoreStrategy(object):
                 else:
                     sent_requests += 1
 
+    def replace_targets_with_redir(self):
+        """
+        The user might have configured one or more target URLs which are
+        redirecting to other parts of the application.
+
+        To prevent issues with the 404 detection we replace these URLs
+        with the 30x redirect destination.
+
+        Only replace the targets which redirect to the same domain and
+        protocol.
+
+        :return: None. The result is saved to cf.cf.get('targets')
+        """
+        targets = cf.cf.get('targets')
+        new_targets = []
+
+        for url in targets:
+            try:
+                http_response = self._w3af_core.uri_opener.GET(url,
+                                                               cache=False,
+                                                               follow_redirects=True)
+            except ScanMustStopByUserRequest:
+                # Not a real error, the user stopped the scan
+                raise
+            except Exception, e:
+                msg = 'Exception found during replace_targets_with_redir(): "%s"'
+                om.out.debug(msg % e)
+                raise ScanMustStopException(msg % e)
+            else:
+                redir_uri = http_response.get_redirect_destination()
+
+                if not redir_uri:
+                    # Keep the ones that are not redirects without changes
+                    new_targets.append(url)
+                    continue
+
+                if http_response.does_redirect_outside_target():
+                    # Keep this one, it will be handled below by
+                    # alert_if_target_is_301_all
+                    new_targets.append(url)
+                    continue
+
+                new_targets.append(redir_uri)
+
+        cf.cf.save('targets', new_targets)
+
     def alert_if_target_is_301_all(self):
         """
         Alert the user when the configured target is set to a site which will
@@ -485,47 +584,16 @@ class CoreStrategy(object):
             except ScanMustStopByUserRequest:
                 # Not a real error, the user stopped the scan
                 raise
-            except Exception as e:
-                emsg = 'Exception found during alert_if_target_is_301_all(): "%s"'
-                emsg %= e
 
-                om.out.debug(emsg)
-                raise ScanMustStopException(emsg)
+            except Exception, e:
+                msg = 'Exception found during alert_if_target_is_301_all(): "%s"'
+                om.out.debug(msg % e)
+                raise ScanMustStopException(msg % e)
+
             else:
-                if 300 <= http_response.get_code() <= 399:
-
-                    # Get the redirect target
-                    lower_headers = http_response.get_lower_case_headers()
-                    redirect_url = None
-
-                    for header_name in ('location', 'uri'):
-                        if header_name in lower_headers:
-                            header_value = lower_headers[header_name]
-                            header_value = header_value.strip()
-                            try:
-                                redirect_url = URL(header_value)
-                            except ValueError:
-                                # No special invalid URL handling required
-                                continue
-
-                    if not redirect_url:
-                        continue
-
-                    # Check if the protocol was changed:
-                    target_proto = url.get_protocol()
-                    redirect_proto = redirect_url.get_protocol()
-
-                    if target_proto != redirect_proto:
-                        site_does_redirect = True
-                        break
-
-                    # Check if the domain was changed:
-                    target_domain = url.get_domain()
-                    redirect_domain = redirect_url.get_domain()
-
-                    if target_domain != redirect_domain:
-                        site_does_redirect = True
-                        break
+                if http_response.does_redirect_outside_target():
+                    site_does_redirect = True
+                    break
 
         if site_does_redirect:
             name = 'Target redirect'
@@ -574,17 +642,18 @@ class CoreStrategy(object):
                     targets_with_404.append(url)
 
         if targets_with_404:
-            urls = ' - %s\n'.join(u.url_string for u in targets_with_404)
+            urls = [' - %s\n' % u.url_string for u in targets_with_404]
+            urls = ''.join(urls)
             om.out.information('w3af identified the user-configured URLs listed'
                                ' below as non-existing pages (404). This could'
                                ' result in a scan with low test coverage: some'
                                ' application areas might not be scanned.\n'
                                '\n'
-                               'Please manually verify that these URLs exist '
+                               'Please manually verify that these URLs exist'
                                ' and, consider running a new scan with different'
                                ' targets.\n'
                                '\n'
-                               '%s\n' % urls)
+                               ' - %s\n' % urls)
 
     def _setup_crawl_infrastructure(self):
         """
