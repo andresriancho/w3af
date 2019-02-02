@@ -73,7 +73,7 @@ class ExceptionHandler(object):
                     (_, _, exception_data.traceback),
                     exception_data.enabled_plugins)
 
-    def handle(self, current_status, Exception as exec_info, enabled_plugins):
+    def handle(self, current_status, Exception, exec_info, enabled_plugins):
         """
         This method stores the current status and the exception for later
         processing. If there are already too many stored exceptions for this
