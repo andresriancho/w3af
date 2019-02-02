@@ -64,7 +64,7 @@ class ScanExceptionResourceTest(APIUnitTest):
                             #u'lineno': 123,
                             u'phase': u'phase',
                             u'plugin': u'plugin'}
-        self.assertEqual(Exception as expected_summary)
+        self.assertEqual(Exception, expected_summary)
 
         response = self.app.get('/scans/%s/exceptions/0' % scan_id,
                                 headers=self.HEADERS)
