@@ -604,7 +604,8 @@ class TestURLParser(unittest.TestCase):
         self.assertFalse(URL('http://aaa*a').is_valid_domain())
         self.assertFalse(URL('http://-sub.w3af.com:39').is_valid_domain())
         self.assertFalse(URL('http://sub.-w3af.com:39').is_valid_domain())
-        self.assertFalse(URL('').is_valid_domain())
+        with self.assertRaises(ValueError):
+            URL('').is_valid_domain()
 
     #
     #    get_path

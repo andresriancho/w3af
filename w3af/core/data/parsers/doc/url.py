@@ -253,7 +253,6 @@ class URL(DiskItem):
         self.params = parsed.params or u''
         self.querystring = parsed.query or u''
         self.fragment = parsed.fragment or u''
-        self.hostname = parsed.hostname or u''
 
         if not self.netloc and self.scheme != 'file':
             # The URL is invalid, we don't have a netloc!
@@ -571,16 +570,17 @@ class URL(DiskItem):
         :return: Returns a boolean that indicates if self.netloc domain is valid
         """        
         # check if domain name valid
-        if not self.RE_DOMAIN.match(self.hostname):
+        hostname = self.netloc.split(':')[0]  # split away port
+        if not self.RE_DOMAIN.match(hostname):
             # not a valid domain - maybe an IP address
             # Check IPv4
             try:
                 # Check IPv4
-                socket.inet_aton(self.hostname)
+                socket.inet_aton(hostname)
             except socket.error:
                 # not ipv4
                 try:
-                    socket.inet_pton(socket.AF_INET6, self.hostname)
+                    socket.inet_pton(socket.AF_INET6, hostname)
                 except socket.error:
                     # neither IPv6
                     return False
