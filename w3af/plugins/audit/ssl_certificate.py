@@ -142,7 +142,7 @@ class ssl_certificate(AuditPlugin):
 
         self._ssl_connect_specific_protocol(domain,
                                             port,
-                                            ssl_version=ssl.PROTOCOL_SSLv2,
+                                            ssl_version=OpenSSL.SSL.SSLv2_METHOD,
                                             on_success=on_success)
 
     def _url_from_parts(self, domain, port):
@@ -187,17 +187,12 @@ class ssl_certificate(AuditPlugin):
         Not all python versions support all SSL protocols.
         :return: The protocol constants that exist in this python version
         """
-        proto_names = ('PROTOCOL_SSLv3',
-                       'PROTOCOL_TLSv1',
-                       'PROTOCOL_SSLv23',
-                       'PROTOCOL_TLSv1_1',
-                       'PROTOCOL_TLSv1_2',
-                       'PROTOCOL_SSLv2')
-
-        for ssl_proto_name in proto_names:
-            proto_const = getattr(ssl, ssl_proto_name, None)
-            if proto_const is not None:
-                yield proto_const
+        return [OpenSSL.SSL.SSLv3_METHOD,
+                OpenSSL.SSL.TLSv1_METHOD,
+                OpenSSL.SSL.SSLv23_METHOD,
+                OpenSSL.SSL.TLSv1_1_METHOD,
+                OpenSSL.SSL.TLSv1_2_METHOD,
+                OpenSSL.SSL.SSLv2_METHOD]
 
     def _ssl_connect(self,
                      domain,
@@ -243,7 +238,7 @@ class ssl_certificate(AuditPlugin):
     def _ssl_connect_specific_protocol(self,
                                        domain,
                                        port,
-                                       ssl_version=ssl.PROTOCOL_SSLv23,
+                                       ssl_version=OpenSSL.SSL.SSLv23_METHOD,
                                        cert_reqs=ssl.CERT_NONE,
                                        ca_certs=None,
                                        on_certificate_validation_error=None,
