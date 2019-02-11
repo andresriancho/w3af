@@ -151,7 +151,7 @@ class HTTPResponse(httplib.HTTPResponse):
             #read all
             self._multiread = self._raw_read()
 
-        if not amt is None:
+        if amt is not None:
             L = len(self._rbuf)
             if amt > L:
                 amt -= L
