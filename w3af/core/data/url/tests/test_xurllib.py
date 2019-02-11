@@ -81,14 +81,6 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
-    def test_mbi(self):
-        url = URL('https://www.mbi.nl/')
-        http_response = self.uri_opener.GET(url,
-                                            cache=False,
-                                            error_handling=False)
-
-        self.assertIn('Nirvana', http_response.body)
-
     def test_github_ssl(self):
         url = URL('https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
 
