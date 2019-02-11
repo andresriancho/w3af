@@ -362,6 +362,10 @@ class grep(BaseConsumer):
         # or some other value that changes a lot, this issue was reduced by
         # using EXCLUDE_HEADERS_FOR_HASH
         #
+
+        # Maybe flip these checks? First the one with the URI and then the
+        # one with the whole body? That way we could improve performance
+        # a little bit?
         response_hash = response.get_hash(exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
 
         if not self._already_analyzed_body.add(response_hash):
