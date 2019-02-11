@@ -235,13 +235,21 @@ class xxe(AuditPlugin):
         if len(original_value) > 1024 * 1024:
             return None
 
+        try:
+            original_value_str = smart_str_ignore(original_value)
+        except Exception, e:
+            msg = ('Failed to encode unicode original value to string'
+                   ' in _parse_xml(). Exception: "%s"')
+            om.out.debug(msg % e)
+            return None
+
         # Secure, don't introduce XXE in our XXE detection plugin ;-)
         parser = etree.XMLParser(load_dtd=False,
                                  no_network=True,
                                  resolve_entities=False)
 
         try:
-            xml_root = etree.fromstring(smart_str_ignore(original_value), parser=parser)
+            xml_root = etree.fromstring(original_value_str, parser=parser)
         except Exception, e:
             msg = 'Failed to parse XML to inject XXE tests. Exception was: "%s"'
             om.out.debug(msg % e)
