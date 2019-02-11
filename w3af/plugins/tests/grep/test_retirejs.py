@@ -24,6 +24,49 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af import ROOT_PATH
 
 
+class TestRetireJSNotAnalyzeHTMLContentType(PluginTest):
+
+    target_url = 'http://httpretty'
+
+    # This is a vulnerable version of JQuery
+    JQUERY_VULN = os.path.join(ROOT_PATH, 'plugins', 'tests', 'grep', 'retirejs', 'jquery.js')
+
+    INDEX = '<html><script src="/js/jquery.js"></script></html>'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body=INDEX,
+                                   method='GET',
+                                   status=200),
+                      MockResponse('http://httpretty/js/jquery.js',
+                                   body=file(JQUERY_VULN).read(),
+                                   method='GET',
+                                   status=200,
+                                   content_type='text/html'),
+                      ]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('retirejs'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('only_forward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        }
+    }
+
+    def test_is_vulnerable_not_detected(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        vulns = self.kb.get('retirejs', 'js')
+
+        self.assertEqual(len(vulns), 0, vulns)
+
+
 class TestRetireJS(PluginTest):
 
     target_url = 'http://httpretty'
@@ -40,7 +83,8 @@ class TestRetireJS(PluginTest):
                       MockResponse('http://httpretty/js/jquery.js',
                                    body=file(JQUERY_VULN).read(),
                                    method='GET',
-                                   status=200),
+                                   status=200,
+                                   content_type='application/javascript'),
                       ]
 
     _run_configs = {

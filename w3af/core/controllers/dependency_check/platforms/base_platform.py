@@ -60,6 +60,7 @@ class Platform(object):
         if retirejs_is_installed():
             return []
 
-        return ['npm install -g retire']
+        return ['npm install -g retire',
+                'npm update -g retire']
 
     EXTERNAL_COMMAND_HANDLERS = [retirejs_handler]
