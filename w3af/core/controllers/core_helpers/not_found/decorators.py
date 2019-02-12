@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import hashlib
+import zlib
 import threading
 import functools
 
@@ -53,8 +53,7 @@ class LRUCache404(Decorator):
 
         # The performance impact of storing many items in the cached
         # (in memory) part of the CachedDiskDict is low. The keys for
-        # this cache are md5 hashes (in binary form, 128-bit) and the
-        # values are booleans
+        # this cache are hashes and the values are booleans
         self._is_404_by_url_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
         self._is_404_by_body_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
 
@@ -105,20 +104,16 @@ class LRUCache404(Decorator):
         return False
 
     @staticmethod
-    def get_md5_hash(data):
-        uri = smart_str_ignore(data)
-
-        m = hashlib.md5()
-        m.update(uri)
-
-        return m.digest()
+    def _quick_hash(text):
+        text = smart_str_ignore(text)
+        return '%s%s' % (hash(text), zlib.adler32(text))
 
     def get_url_cache_key(self, http_response):
         """
         :param http_response: The http response
         :return: md5 hash of the HTTP response URI (binary form)
         """
-        return self.get_md5_hash(http_response.get_uri().url_string)
+        return self._quick_hash(http_response.get_uri().url_string)
 
     def get_body_cache_key(self, http_response):
         """
@@ -129,11 +124,12 @@ class LRUCache404(Decorator):
         #
         # The response body A might be an indicator of 404 in one path
         # but an indicator of a file that exists in another path
-        path = smart_str_ignore(http_response.get_uri().get_path_without_file())
-        body = smart_str_ignore(http_response.get_body())
-        path_body = '%s%s' % (path, body)
+        parts = [FourOhFourResponse.normalize_path(http_response.get_uri()),
+                 http_response.get_body()]
+        parts = [smart_str_ignore(p) for p in parts]
+        path_body = ''.join(parts)
 
-        return self.get_md5_hash(path_body)
+        return self._quick_hash(path_body)
 
 
 class PreventMultipleThreads(Decorator):
