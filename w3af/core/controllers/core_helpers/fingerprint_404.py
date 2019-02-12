@@ -29,7 +29,7 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.url.helpers import NO_CONTENT_MSG
 from w3af.core.data.db.cached_disk_dict import CachedDiskDict
 
-from w3af.core.controllers.misc.diff import diff
+from w3af.core.controllers.misc.diff import chunked_diff
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal, MAX_FUZZY_LENGTH
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
 from w3af.core.controllers.core_helpers.not_found.generate_404 import send_request_generate_404
@@ -341,12 +341,12 @@ class Fingerprint404(object):
                                                     debugging_id,
                                                     exclude=[known_404_1.url])
 
-            known_404_1.diff, _ = diff(known_404_1.body, known_404_2.body)
+            known_404_1.diff, _ = chunked_diff(known_404_1.body, known_404_2.body)
             known_404_1.diff_with_id = known_404_2.id
             self._404_responses[query.normalized_path] = known_404_1
 
         diff_x = known_404_1.diff
-        _, diff_y = diff(known_404_1.body, query.body)
+        _, diff_y = chunked_diff(known_404_1.body, query.body)
 
         is_fuzzy_equal = fuzzy_equal_for_diff(diff_x, diff_y, IS_EQUAL_RATIO)
 

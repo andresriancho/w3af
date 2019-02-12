@@ -118,7 +118,7 @@ class LRUCache404(Decorator):
     def get_body_cache_key(self, http_response):
         """
         :param http_response: The http response
-        :return: md5 hash of the HTTP response body
+        :return: hash of the HTTP response body
         """
         # Note that here the path is used to reduce any false positives
         #
