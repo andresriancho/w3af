@@ -56,6 +56,7 @@ class FourOhFourResponse(object):
             * /abc/         -> /path/
             * /abc/def/     -> /abc/path/
             * /abc/def/x.do -> /abc/def/filename.do
+            * /abc?id=1     -> /filename
 
         :return: The normalized path
         """
@@ -78,6 +79,7 @@ class FourOhFourResponse(object):
 
         url = url.copy()
         url.set_file_name(filename)
+        url.set_querystring('')
         return url.url_string
 
     def __repr__(self):

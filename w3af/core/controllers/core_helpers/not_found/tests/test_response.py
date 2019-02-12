@@ -26,8 +26,30 @@ from w3af.core.data.parsers.doc.url import URL
 
 
 class TestFourOhFourResponse(unittest.TestCase):
-    def test_normalize_path(self):
+    def test_normalize_path_paths(self):
         url = URL('https://w3af.org/a/b/c/')
         normalized_path = FourOhFourResponse.normalize_path(url)
 
         self.assertEqual(normalized_path, 'https://w3af.org/a/b/path/')
+
+    def test_normalize_path_filenames(self):
+        url_0 = URL('https://w3af.org/assets/uploads/2015/09/index.php')
+        normalized_path_0 = FourOhFourResponse.normalize_path(url_0)
+
+        url_1 = URL('https://w3af.org/assets/uploads/2015/09/nidex.php')
+        normalized_path_1 = FourOhFourResponse.normalize_path(url_1)
+
+        url_2 = URL('https://w3af.org/assets/uploads/2015/09/hppvresion.php')
+        normalized_path_2 = FourOhFourResponse.normalize_path(url_2)
+
+        self.assertEqual(normalized_path_0, normalized_path_1)
+        self.assertEqual(normalized_path_1, normalized_path_2)
+
+    def test_normalize_path_with_querystring(self):
+        url_0 = URL('https://w3af.org/index.php?id=1')
+        normalized_path_0 = FourOhFourResponse.normalize_path(url_0)
+
+        url_1 = URL('https://w3af.org/test.php?id=3')
+        normalized_path_1 = FourOhFourResponse.normalize_path(url_1)
+
+        self.assertEqual(normalized_path_0, normalized_path_1)
