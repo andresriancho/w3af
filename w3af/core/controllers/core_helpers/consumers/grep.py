@@ -90,7 +90,7 @@ class grep(BaseConsumer):
         self._consumer_plugin_dict = dict((plugin.get_name(), plugin) for plugin in self._consumer_plugins)
         self._first_plugin_name = self._consumer_plugin_dict.keys()[0]
 
-        self._request_response_lru = SynchronizedLRUDict(30)
+        self._request_response_lru = SynchronizedLRUDict(thread_pool_size * 3)
         self._request_response_processes = dict()
 
     def get_name(self):
@@ -362,10 +362,6 @@ class grep(BaseConsumer):
         # or some other value that changes a lot, this issue was reduced by
         # using EXCLUDE_HEADERS_FOR_HASH
         #
-
-        # Maybe flip these checks? First the one with the URI and then the
-        # one with the whole body? That way we could improve performance
-        # a little bit?
         response_hash = response.get_hash(exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
 
         if not self._already_analyzed_body.add(response_hash):
@@ -378,8 +374,9 @@ class grep(BaseConsumer):
         # break the filter we have implemented above (it uses an md5 hash for
         # the response headers and body).
         #
-        # This filter is less effective, but will reduce some HTTP requests and
-        # responses from making it to the grep plugins
+        # This filter is less effective, mainly during the audit phase where the
+        # plugins are heavily changing the query-string, but will prevent some HTTP
+        # requests and responses from making it to the grep plugins
         #
         if not self._already_analyzed_url.add(response.get_uri()):
             return False
