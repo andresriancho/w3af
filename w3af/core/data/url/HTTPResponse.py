@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import zlib
 import copy
 import httplib
 import hashlib
@@ -312,33 +313,23 @@ class HTTPResponse(DiskItem):
     def get_code(self):
         return self._code
 
+    def _quick_hash(self, text):
+        return '%s%s' % (hash(text), zlib.adler32(text))
+
     def get_body_hash(self):
         body = smart_str_ignore(self.get_body())
-
-        m = hashlib.md5()
-        m.update(body)
-
-        return m.hexdigest()
+        return self._quick_hash(body)
 
     def get_hash(self, exclude_headers=None):
         exclude_headers = [] or exclude_headers
 
-        body = self.body
-
-        # Images, pdf and binary responses in general are never decoded
-        # to unicode
-        if isinstance(body, unicode):
-            body = body.encode(self.charset, 'replace')
-
         headers = self.dump_response_head(exclude_headers=exclude_headers)
+        body = smart_str_ignore(self.get_body())
 
-        args = (headers, CRLF, body)
-        dump = '%s%s%s' % args
+        args = (headers, body)
+        dump = '%s%s' % args
 
-        m = hashlib.md5()
-        m.update(dump)
-
-        return m.hexdigest()
+        return self._quick_hash(dump)
 
     def get_body(self):
         with self._body_lock:
@@ -758,10 +749,11 @@ class HTTPResponse(DiskItem):
         :return: a str representation of the headers.
         """
         exclude_headers = exclude_headers or []
-        headers = dict((k, v) for (k, v) in self.headers.items() if k.lower() not in exclude_headers)
 
         if self.headers:
-            return CRLF.join('%s: %s' % (h, hv) for h, hv in headers.iteritems()) + CRLF
+            return CRLF.join('%s: %s' % (h, hv) for
+                             (h, hv) in self.headers.items()
+                             if h.lower() not in exclude_headers) + CRLF
         else:
             return ''
 
