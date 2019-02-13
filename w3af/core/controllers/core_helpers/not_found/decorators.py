@@ -29,7 +29,9 @@ from darts.lib.utils.lru import SynchronizedLRUDict
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.controllers.misc.decorators import memoized
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
+from w3af.core.data.misc.xml_bones import get_xml_bones
 from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.fuzzer.utils import rand_alnum
 
@@ -72,21 +74,22 @@ class LRUCache404(Decorator):
 
         result = self._is_404_by_url_lru.get(url_cache_key, None)
 
-        if result:
+        if result is not None:
             self._log_success(http_response, result, 'URL')
             return result
 
-        body_cache_key = self.get_body_cache_key(query)
+        body_cache_key = self.get_body_cache_key(http_response, query)
 
         result = self._is_404_by_body_lru.get(body_cache_key, None)
 
-        if result:
+        if result is not None:
             self._log_success(http_response, result, 'body')
             return result
 
         # Run the real is_404 function
         args = list(args)
         args = tuple(args[1:])
+
         result = self._function(*args, **kwargs)
 
         # Save the result to both caches
@@ -132,14 +135,56 @@ class LRUCache404(Decorator):
         """
         return self._quick_hash(http_response.get_uri().url_string)
 
-    def get_body_cache_key(self, query):
+    def _should_use_xml_bones(self, http_response):
+        # Ignore small responses (the bones for this document is not so
+        # representative)
+        if len(http_response.get_body()) < 256:
+            return False
+
+        # Ignore large responses (might break lxml parser)
+        if len(http_response.get_body()) > 1024 * 1024:
+            return False
+
+        # Check that this document is xml / html
+        has_expected_content_type = False
+
+        for content_type in ('xml', 'html'):
+            if content_type in http_response.content_type:
+                has_expected_content_type = True
+
+        if not has_expected_content_type:
+            return False
+
+        # Check that it actually has tags
+        if http_response.get_body().count('<') < 20:
+            return False
+
+        return True
+
+    def get_body_cache_key(self, http_response, query):
         """
+        Note: query.body has been cleaned by get_clean_body()
+
+        :param http_response: The HTTP response we want to know if is 404
         :param query: The FourOhFourResponse associated with the HTTPResponse
                       passed as parameter
         :return: hash of the HTTP response body
         """
-        # Note: query.body has been cleaned by get_clean_body()
-        return self._quick_hash(query.body)
+        if self._should_use_xml_bones(http_response):
+            body = cached_get_xml_bones(query.body)
+        else:
+            body = http_response.get_body()
+
+        key = '%s%s%s' % (http_response.get_code(),
+                          smart_str_ignore(query.normalized_path),
+                          smart_str_ignore(body))
+
+        return self._quick_hash(key)
+
+
+@memoized
+def cached_get_xml_bones(body):
+    return get_xml_bones(body)
 
 
 class PreventMultipleThreads(Decorator):
