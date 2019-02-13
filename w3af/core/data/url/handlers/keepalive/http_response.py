@@ -265,7 +265,7 @@ class HTTPResponse(httplib.HTTPResponse):
             return ''
 
         if self._multiread is None:
-            #read all
+            # read all
             self._multiread = self._raw_read()
 
         if amt is not None:
