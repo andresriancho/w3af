@@ -225,10 +225,10 @@ class HTTPResponse(httplib.HTTPResponse):
         """
         length = self.msg.getheader('content-length')
 
-        if not length:
+        if length is None:
             # This is a response where there is no content-length header,
             # most likely a chunked response
-            return 0
+            return None
 
         split = length.split(',')
         split = [int(cl) for cl in split]
