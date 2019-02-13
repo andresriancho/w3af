@@ -122,10 +122,18 @@ class SSLSocket(object):
     def recv(self, *args, **kwargs):
         try:
             data = self.ssl_conn.recv(*args, **kwargs)
+        except OpenSSL.SSL.ZeroReturnError:
+            # empty string signalling that the other side has closed the
+            # connection or that some kind of error happen and no more reads
+            # should be done on this socket
+            return ''
         except OpenSSL.SSL.WantReadError:
             rd, wd, ed = select.select([self.sock], [], [], self.sock.gettimeout())
             if not rd:
-                raise socket.timeout('The read operation timed out')
+                # empty string signalling that the other side has closed the
+                # connection or that some kind of error happen and no more reads
+                # should be done on this socket
+                return ''
             else:
                 return self.recv(*args, **kwargs)
         else:
