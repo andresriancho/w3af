@@ -232,7 +232,9 @@ class w3afCore(object):
             else:
                 raise
 
-        except IOError as (error_id, error_msg):
+        except IOError as io_err:
+            (error_id, error_msg) = io_err.args
+
             # https://github.com/andresriancho/w3af/issues/9653
             # IOError: [Errno 28] No space left on device
             if error_id == errno.ENOSPC:
