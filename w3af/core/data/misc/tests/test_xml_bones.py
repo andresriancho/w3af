@@ -43,3 +43,6 @@ class TestXMLBones(unittest.TestCase):
 
     def test_nested(self):
         self.assertEqual(get_xml_bones('<a><b>hello</b></a>'), 'htmlbodyab/b/a/body/html')
+
+    def test_just_text(self):
+        self.assertEqual(get_xml_bones('hello world (); foobar'), 'htmlbodyp/p/body/html')
