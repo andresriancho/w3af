@@ -173,7 +173,7 @@ class LRUCache404(Decorator):
         if self._should_use_xml_bones(http_response):
             body = cached_get_xml_bones(query.body)
         else:
-            body = http_response.get_body()
+            body = query.body
 
         key = '%s%s%s' % (http_response.get_code(),
                           smart_str_ignore(query.normalized_path),
