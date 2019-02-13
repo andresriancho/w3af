@@ -30,10 +30,22 @@ class TestXMLBones(unittest.TestCase):
         self.assertEqual(get_xml_bones(''), '')
 
     def test_simple(self):
-        self.assertEqual(get_xml_bones('<xml>hello</xml>'), 'htmlbodyxml/xml/body/html')
+        self.assertEqual(get_xml_bones('<xml>hello</xml>'), 'htmlbodyxml0/xml/body/html')
+
+    def test_large(self):
+        self.assertEqual(get_xml_bones('<xml>hello world 123 123</xml>'), 'htmlbodyxml20/xml/body/html')
+
+    def test_extra_large_1(self):
+        self.assertEqual(get_xml_bones('<xml>%s</xml>' % ('A' * 30,)),
+                         'htmlbodyxml40/xml/body/html')
+
+    def test_extra_large_2(self):
+        # Just adding one more char to the end
+        self.assertEqual(get_xml_bones('<xml>%s</xml>' % ('A' * 41,)),
+                         'htmlbodyxml40/xml/body/html')
 
     def test_attr(self):
-        self.assertEqual(get_xml_bones('<xml id=1>hello</xml>'), 'htmlbodyxmlid/xml/body/html')
+        self.assertEqual(get_xml_bones('<xml id=1>hello</xml>'), 'htmlbodyxmlid00/xml/body/html')
 
     def test_broken_1(self):
         self.assertEqual(get_xml_bones('<xml '), 'htmlbodyxml/body/html')
@@ -42,7 +54,7 @@ class TestXMLBones(unittest.TestCase):
         self.assertEqual(get_xml_bones('<xml>'), 'htmlbodyxml/xml/body/html')
 
     def test_nested(self):
-        self.assertEqual(get_xml_bones('<a><b>hello</b></a>'), 'htmlbodyab/b/a/body/html')
+        self.assertEqual(get_xml_bones('<a><b>hello</b></a>'), 'htmlbodyab0/b/a/body/html')
 
     def test_just_text(self):
-        self.assertEqual(get_xml_bones('hello world (); foobar'), 'htmlbodyp/p/body/html')
+        self.assertEqual(get_xml_bones('hello world (); foobar'), 'htmlbodyp20/p/body/html')

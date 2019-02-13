@@ -25,6 +25,13 @@ from cStringIO import StringIO
 from w3af.core.data.misc.encoding import smart_str_ignore
 
 
+ROUND = 20.0
+
+
+def round_N(num):
+    return int(round(num / ROUND) * ROUND)
+
+
 def get_xml_bones(document):
     """
     This function returns the "bones" of an XML document, extracting all the
@@ -57,14 +64,15 @@ class BoneCollector(object):
     def start(self, tag, attrib):
         self.bones.append(tag)
 
-        for attr in attrib:
-            self.bones.append(attr)
+        for attr, value in attrib.iteritems():
+            args = (attr, round_N(len(value)))
+            self.bones.append('%s%s' % args)
 
     def end(self, tag):
         self.bones.append('/%s' % tag)
 
     def data(self, data):
-        pass
+        self.bones.append('%s' % round_N(len(data)))
 
     def comment(self, text):
         pass
