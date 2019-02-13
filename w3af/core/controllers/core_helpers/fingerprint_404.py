@@ -68,8 +68,6 @@ class Fingerprint404(object):
         self._404_responses = CachedDiskDict(max_in_memory=MAX_404_IN_MEMORY,
                                              table_prefix='is_404')
 
-    @PreventMultipleThreads
-    @LRUCache404
     def is_404(self, http_response):
         """
         All of my previous versions of is_404 were very complex and tried to
@@ -133,8 +131,11 @@ class Fingerprint404(object):
         # The user configured setting. "If this string is in the response,
         # then it is a 404"
         #
-        if cf.cf.get('string_match_404') and cf.cf.get('string_match_404') in http_response:
-            return True
+        string_match_404 = cf.cf.get('string_match_404')
+
+        if string_match_404:
+            if string_match_404 in http_response:
+                return True
 
         #
         # This is the most simple case, we don't even have to think about this
@@ -169,24 +170,31 @@ class Fingerprint404(object):
 
         return False
 
+    @PreventMultipleThreads
     def _is_404_complex(self, http_response):
-        """
-        Verifies if the response is a 404 by comparing it with other responses
-        which are known to be 404s, potentially sends HTTP requests to the
-        server.
-
-        :param http_response: The HTTP response
-        :return: True if the HTTP response is a 404
-        """
-        response_did = http_response.get_debugging_id()
-        debugging_id = response_did if response_did is not None else rand_alnum(8)
-
         # 404_body stored in the DB was cleaned when creating the
         # FourOhFourResponse class.
         #
         # Clean the body received as parameter in order to have a fair
         # comparison
         query = FourOhFourResponse(http_response)
+
+        return self._is_404_complex_impl(self, http_response, query)
+
+    @LRUCache404
+    def _is_404_complex_impl(self, http_response, query):
+        """
+        Verifies if the response is a 404 by comparing it with other responses
+        which are known to be 404s, potentially sends HTTP requests to the
+        server.
+
+        :param http_response: The HTTP response
+        :param query: The HTTP response in FourOhFourResponse form (normalized
+                      URL, clean body, etc.)
+        :return: True if the HTTP response is a 404
+        """
+        response_did = http_response.get_debugging_id()
+        debugging_id = response_did if response_did is not None else rand_alnum(8)
 
         #
         # Compare query with a known 404 from the DB (or a generated one

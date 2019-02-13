@@ -47,6 +47,7 @@ class LRUCache404(Decorator):
     """
 
     MAX_IN_MEMORY_RESULTS = 5000
+    STATS_EVERY = 50
 
     def __init__(self, _function):
         self._function = _function
@@ -57,26 +58,35 @@ class LRUCache404(Decorator):
         self._is_404_by_url_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
         self._is_404_by_body_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
 
+        self._stats_from_cache = 0.0
+        self._stats_total = 0.0
+
     def __call__(self, *args, **kwargs):
-        http_response = args[1]
+        http_response = args[2]
+        query = args[3]
+
+        self._stats_total += 1
+        self._log_stats(http_response)
 
         url_cache_key = self.get_url_cache_key(http_response)
 
         result = self._is_404_by_url_lru.get(url_cache_key, None)
 
         if result:
-            self.log_result(http_response, result, 'URL')
+            self._log_success(http_response, result, 'URL')
             return result
 
-        body_cache_key = self.get_body_cache_key(http_response)
+        body_cache_key = self.get_body_cache_key(query)
 
         result = self._is_404_by_body_lru.get(body_cache_key, None)
 
         if result:
-            self.log_result(http_response, result, 'body')
+            self._log_success(http_response, result, 'body')
             return result
 
         # Run the real is_404 function
+        args = list(args)
+        args = tuple(args[1:])
         result = self._function(*args, **kwargs)
 
         # Save the result to both caches
@@ -85,7 +95,14 @@ class LRUCache404(Decorator):
 
         return result
 
-    def log_result(self, http_response, result, cache_name):
+    def _log_stats(self, http_response):
+        if self._stats_total % self.STATS_EVERY == 0:
+            rate = self._stats_from_cache / self._stats_total * 100
+            om.out.debug('The 404 cache has a %.2f %% hit rate' % rate)
+
+    def _log_success(self, http_response, result, cache_name):
+        self._stats_from_cache += 1
+
         response_did = http_response.get_debugging_id()
         debugging_id = response_did if response_did is not None else rand_alnum(8)
 
@@ -115,21 +132,14 @@ class LRUCache404(Decorator):
         """
         return self._quick_hash(http_response.get_uri().url_string)
 
-    def get_body_cache_key(self, http_response):
+    def get_body_cache_key(self, query):
         """
-        :param http_response: The http response
+        :param query: The FourOhFourResponse associated with the HTTPResponse
+                      passed as parameter
         :return: hash of the HTTP response body
         """
-        # Note that here the path is used to reduce any false positives
-        #
-        # The response body A might be an indicator of 404 in one path
-        # but an indicator of a file that exists in another path
-        parts = [FourOhFourResponse.normalize_path(http_response.get_uri()),
-                 http_response.get_body()]
-        parts = [smart_str_ignore(p) for p in parts]
-        path_body = ''.join(parts)
-
-        return self._quick_hash(path_body)
+        # Note: query.body has been cleaned by get_clean_body()
+        return self._quick_hash(query.body)
 
 
 class PreventMultipleThreads(Decorator):
