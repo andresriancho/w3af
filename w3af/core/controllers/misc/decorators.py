@@ -136,12 +136,6 @@ class memoized(object):
         self.cache = SynchronizedLRUDict(lru_size)
 
     def __call__(self, *args, **kwargs):
-        if not isinstance(args, collections.Hashable) or\
-        not isinstance(tuple(kwargs.items()), collections.Hashable):
-            # uncacheable. a list, for instance.
-            # better to not cache than blow up.
-            return self.func(*args, **kwargs)
-
         try:
             return self.cache[(args, tuple(kwargs.items()))]
         except KeyError:
