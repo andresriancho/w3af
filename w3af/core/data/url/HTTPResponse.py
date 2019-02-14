@@ -332,13 +332,15 @@ class HTTPResponse(DiskItem):
         return self._quick_hash(dump)
 
     def get_body(self):
-        with self._body_lock:
-            if self._body is None:
-                self._body, self._charset = self._charset_handling()
+        if self._body is not None:
+            return self._body
 
-                # The user wants the raw body, without any modifications / decoding?
-                if not self._binary_response:
-                    self._raw_body = None
+        with self._body_lock:
+            self._body, self._charset = self._charset_handling()
+
+            # The user wants the raw body, without any modifications / decoding?
+            if not self._binary_response:
+                self._raw_body = None
 
             return self._body
 
