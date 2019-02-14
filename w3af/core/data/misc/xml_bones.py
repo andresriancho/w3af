@@ -34,14 +34,16 @@ def round_N(num):
 
 def get_xml_bones(document):
     """
-    This function returns the "bones" of an XML document, extracting all the
-    text-data and attribute values.
+    This function returns the "bones" of an XML document, replacing all the
+    text-data and attribute values with a round(length)
 
     For example:
 
-        <xml></xml>                  --->    xml/xml
-        <xml>hello</xml>             --->    xml/xml
-        <xml attr=123>hello</xml>    --->    xmlattr/xml
+        <xml></xml>                  --->    xml0/xml
+        <xml>hello</xml>             --->    xml0/xml
+        <xml attr=123>hello</xml>    --->    xmlattr00/xml
+
+    See test_xml_bones for more examples.
 
     :param document: An XML document as a string
     :return: The bones of the XML document, which is commonly used as an input
