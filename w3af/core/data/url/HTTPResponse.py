@@ -23,7 +23,6 @@ import re
 import zlib
 import copy
 import httplib
-import hashlib
 import urllib2
 import threading
 from itertools import imap
@@ -313,7 +312,8 @@ class HTTPResponse(DiskItem):
     def get_code(self):
         return self._code
 
-    def _quick_hash(self, text):
+    @staticmethod
+    def _quick_hash(text):
         return '%s%s' % (hash(text), zlib.adler32(text))
 
     def get_body_hash(self):
