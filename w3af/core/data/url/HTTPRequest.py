@@ -34,7 +34,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def __init__(self, url,
                  data=None,
-                 headers=Headers(),
+                 headers=None,
                  origin_req_host=None,
                  unverifiable=False,
                  cookies=True,
@@ -57,6 +57,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         :param method: None means choose the default (POST if data is not None)
         :param data: The post_data as a string
         """
+        headers = headers or Headers()
         #
         # Save some information for later access in an easier way
         #
