@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-
 from w3af.core.data.misc.xml_bones import get_xml_bones
 
 
@@ -30,31 +29,36 @@ class TestXMLBones(unittest.TestCase):
         self.assertEqual(get_xml_bones(''), '')
 
     def test_simple(self):
-        self.assertEqual(get_xml_bones('<xml>hello</xml>'), 'htmlbodyxml0/xml/body/html')
+        self.assertEqual(get_xml_bones('<xml>hello</xml>'),
+                         'htmlbodyxml0xmlbodyhtml')
 
     def test_large(self):
-        self.assertEqual(get_xml_bones('<xml>hello world 123 123</xml>'), 'htmlbodyxml20/xml/body/html')
+        self.assertEqual(get_xml_bones('<xml>hello world 123 123</xml>'),
+                         'htmlbodyxml20xmlbodyhtml')
 
     def test_extra_large_1(self):
         self.assertEqual(get_xml_bones('<xml>%s</xml>' % ('A' * 30,)),
-                         'htmlbodyxml40/xml/body/html')
+                         'htmlbodyxml40xmlbodyhtml')
 
     def test_extra_large_2(self):
         # Just adding one more char to the end
         self.assertEqual(get_xml_bones('<xml>%s</xml>' % ('A' * 41,)),
-                         'htmlbodyxml40/xml/body/html')
+                         'htmlbodyxml40xmlbodyhtml')
 
     def test_attr(self):
-        self.assertEqual(get_xml_bones('<xml id=1>hello</xml>'), 'htmlbodyxmlid00/xml/body/html')
+        self.assertEqual(get_xml_bones('<xml id=1>hello</xml>'),
+                         'htmlbodyxmlid00xmlbodyhtml')
 
     def test_broken_1(self):
-        self.assertEqual(get_xml_bones('<xml '), 'htmlbodyxml/body/html')
+        self.assertEqual(get_xml_bones('<xml '), 'htmlbodyxmlbodyhtml')
 
     def test_broken_2(self):
-        self.assertEqual(get_xml_bones('<xml>'), 'htmlbodyxml/xml/body/html')
+        self.assertEqual(get_xml_bones('<xml>'), 'htmlbodyxmlxmlbodyhtml')
 
     def test_nested(self):
-        self.assertEqual(get_xml_bones('<a><b>hello</b></a>'), 'htmlbodyab0/b/a/body/html')
+        self.assertEqual(get_xml_bones('<a><b>hello</b></a>'),
+                         'htmlbodyab0babodyhtml')
 
     def test_just_text(self):
-        self.assertEqual(get_xml_bones('hello world (); foobar'), 'htmlbodyp20/p/body/html')
+        self.assertEqual(get_xml_bones('hello world (); foobar'),
+                         'htmlbodyp20pbodyhtml')

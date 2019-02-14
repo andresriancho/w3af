@@ -23,6 +23,7 @@ from lxml import etree
 from cStringIO import StringIO
 
 from w3af.core.data.misc.encoding import smart_str_ignore
+from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 
 
 ROUND = 20.0
@@ -51,15 +52,21 @@ def get_xml_bones(document):
     """
     parser = etree.HTMLParser(target=BoneCollector(),
                               no_network=True,
-                              recover=True)
+                              recover=True,
+                              encoding=DEFAULT_ENCODING,
+                              remove_comments=True,
+                              remove_pis=True)
 
-    document = smart_str_ignore(document)
+    document = smart_str_ignore(document, encoding=DEFAULT_ENCODING)
     etree.parse(StringIO(document), parser)
 
     return ''.join(parser.target.bones)
 
 
 class BoneCollector(object):
+
+    __slots__ = ('bones',)
+
     def __init__(self):
         self.bones = []
 
@@ -71,7 +78,7 @@ class BoneCollector(object):
             self.bones.append('%s%s' % args)
 
     def end(self, tag):
-        self.bones.append('/%s' % tag)
+        self.bones.append(tag)
 
     def data(self, data):
         self.bones.append('%s' % round_N(len(data)))
@@ -80,4 +87,54 @@ class BoneCollector(object):
         pass
 
     def close(self):
+        return None
+
+
+def get_xml_bones_iterparse(document, _round_N=round_N):
+    """
+    This is the iterparse version of get_xml_bones()
+
+    Reading some documents on lxml performance it felt like a good idea to
+    implement it using iterparse... measured... and this is actually slower
+
+    Leaving here as a reference and reminder that get_xml_bones() can not
+    be improved this way.
+
+    :param document: An XML document as a string
+    :return: The bones of the XML document, which is commonly used as an input
+             for a hash function, which is then used as a key for an LRU.
+    """
+    if not document:
         return ''
+
+    output = []
+    append = output.append
+
+    document = smart_str_ignore(document, encoding=DEFAULT_ENCODING)
+    document_io = StringIO(document)
+    events = {'start', 'end'}
+
+    context = etree.iterparse(document_io,
+                              events=events,
+                              remove_comments=True,
+                              remove_pis=True,
+                              html=True,
+                              recover=True,
+                              encoding=DEFAULT_ENCODING,
+                              huge_tree=False,
+                              resolve_entities=False)
+
+    for event, elem in context:
+        if event == 'start':
+            append(elem.tag)
+
+            for attr, value in elem.attrib.iteritems():
+                append('%s%s' % (attr, _round_N(len(value))))
+
+            if elem.text is not None:
+                append('%s' % _round_N(len(elem.text)))
+
+        else:
+            append('/%s' % elem.tag)
+
+    return ''.join(output)
