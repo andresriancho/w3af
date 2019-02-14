@@ -35,6 +35,7 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.misc.response_cache_key import get_response_cache_key
 
 
 class grep(BaseConsumer):
@@ -44,14 +45,17 @@ class grep(BaseConsumer):
     """
 
     LOG_QUEUE_SIZES_EVERY = 25
-    EXCLUDE_HEADERS_FOR_HASH = {'date',
-                                'expires',
-                                'last-modified',
-                                'etag',
-                                'x-request-id',
-                                'x-content-duration',
-                                'x-execution-time',
-                                'x-requestid'}
+    EXCLUDE_HEADERS_FOR_HASH = tuple(['date',
+                                      'expires',
+                                      'last-modified',
+                                      'etag',
+                                      'x-request-id',
+                                      'x-content-duration',
+                                      'x-execution-time',
+                                      'x-requestid',
+                                      'content-length',
+                                      'cf-ray',
+                                      'set-cookie'])
 
     def __init__(self, grep_plugins, w3af_core):
         """
@@ -347,9 +351,10 @@ class grep(BaseConsumer):
         # HTTP requests. Based on these facts it was possible to add these
         # lines to prevent the same HTTP response from being analyzed twice.
         #
-        # One of the options I had was to use get_body_hash() below, to prevent
-        # double processing of HTTP response bodies, but that strategy had
-        # more chances of "hiding" some HTTP responses from grep plugins:
+        # One of the options I had was to use get_response_cache_key() below,
+        # to prevent double processing of HTTP response bodies, but that
+        # strategy had more chances of "hiding" some HTTP responses from grep
+        # plugins:
         #
         #   * HTTP response A contains header set X and body Y. It will be
         #     processed because it is the first time body Y is seen.
@@ -362,7 +367,13 @@ class grep(BaseConsumer):
         # or some other value that changes a lot, this issue was reduced by
         # using EXCLUDE_HEADERS_FOR_HASH
         #
-        response_hash = response.get_hash(exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
+        # Also note that using cached_get_response_cache_key() below would not
+        # yield any performance improvement, because the cache key is (HTTP
+        # response ID, exclude_headers). The ID changes for each call to
+        # grep() thus no result is ever returned from the cache
+        #
+        response_hash = get_response_cache_key(response,
+                                               exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
 
         if not self._already_analyzed_body.add(response_hash):
             return False

@@ -1,5 +1,5 @@
 """
-body_cache_key.py
+response_cache_key.py
 
 Copyright 2019 Andres Riancho
 
@@ -21,15 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import zlib
 
-from w3af.core.controllers.misc.decorators import memoized
+# pylint: disable=E0401
+from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
+
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
 from w3af.core.data.misc.xml_bones import get_xml_bones
 from w3af.core.data.misc.encoding import smart_str_ignore
 
 
-def get_body_cache_key(http_response,
-                       clean_response=None,
-                       exclude_headers=None):
+def get_response_cache_key(http_response,
+                           clean_response=None,
+                           exclude_headers=None):
     """
     Note: query.body has been cleaned by get_clean_body()
 
@@ -47,12 +50,6 @@ def get_body_cache_key(http_response,
     :return: Hash of the HTTP response body
     """
     #
-    # If the clean_response was not provided, we need to create one
-    #
-    if clean_response is None:
-        clean_response = FourOhFourResponse(http_response)
-
-    #
     # If exclude_headers is specified, use it to calculate the hash, otherwise
     # just use an empty string
     #
@@ -61,22 +58,31 @@ def get_body_cache_key(http_response,
 
     if exclude_headers:
         headers = http_response.dump_headers(exclude_headers=exclude_headers)
+        headers = smart_str_ignore(headers)
 
     #
     # Only some HTTP responses benefit from the XML-bones signature
     #
     if _should_use_xml_bones(http_response):
-        body = cached_get_xml_bones(clean_response.body)
+        body = get_xml_bones(http_response.get_body())
+        normalized_path = FourOhFourResponse.normalize_path(http_response.get_uri())
     else:
+        #
+        # Get a clean_response if it was not provided
+        #
+        if clean_response is None:
+            clean_response = FourOhFourResponse(http_response)
+
         body = clean_response.body
+        normalized_path = clean_response.normalized_path
 
     #
     # Calculate the hash using all the captured information
     #
-    key = '%s%s%s%s' % (http_response.get_code(),
-                        smart_str_ignore(clean_response.normalized_path),
-                        smart_str_ignore(headers),
-                        smart_str_ignore(body))
+    key = ''.join([str(http_response.get_code()),
+                   smart_str_ignore(normalized_path),
+                   headers,
+                   smart_str_ignore(body)])
 
     return quick_hash(key)
 
@@ -113,6 +119,23 @@ def quick_hash(text):
     return '%s%s' % (hash(text), zlib.adler32(text))
 
 
-@memoized
-def cached_get_xml_bones(body):
-    return get_xml_bones(body)
+CACHE = SynchronizedLRUDict(200)
+
+
+def cached_get_response_cache_key(http_response,
+                                  clean_response=None,
+                                  exclude_headers=None):
+
+    cache_key = (http_response.id, exclude_headers)
+    result = CACHE.get(cache_key, None)
+
+    if result is not None:
+        return result
+
+    result = get_response_cache_key(http_response,
+                                    clean_response=clean_response,
+                                    exclude_headers=exclude_headers)
+
+    CACHE[cache_key] = result
+
+    return result

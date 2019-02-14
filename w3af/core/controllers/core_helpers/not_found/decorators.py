@@ -29,7 +29,7 @@ from darts.lib.utils.lru import SynchronizedLRUDict
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
-from w3af.core.data.misc.body_cache_key import quick_hash, get_body_cache_key
+from w3af.core.data.misc.response_cache_key import quick_hash, cached_get_response_cache_key
 from w3af.core.data.fuzzer.utils import rand_alnum
 
 
@@ -75,7 +75,8 @@ class LRUCache404(Decorator):
             self._log_success(http_response, result, 'URL')
             return result
 
-        body_cache_key = get_body_cache_key(http_response, query)
+        body_cache_key = cached_get_response_cache_key(http_response,
+                                                       clean_response=query)
 
         result = self._is_404_by_body_lru.get(body_cache_key, None)
 
