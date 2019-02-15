@@ -70,7 +70,7 @@ def get_response_cache_key(http_response,
     #
     key = ''.join([str(http_response.get_code()),
                    smart_str_ignore(normalized_path),
-                   headers,
+                   str(headers),
                    smart_str_ignore(body)])
 
     return quick_hash(key)
