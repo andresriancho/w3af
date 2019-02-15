@@ -11,7 +11,6 @@ from data.bruteforce import get_bruteforce_data
 from data.http_requests import get_total_http_requests
 from data.http_errors import get_http_errors
 from data.dbms_queue_size_exceeded import get_dbms_queue_size_exceeded
-from data.grep_plugin_performance import get_grep_plugin_performance
 from data.known_problems import get_known_problems
 from data.freeze_locations import get_freeze_locations
 from data.wall_time import (get_audit_time,
@@ -64,7 +63,6 @@ def get_console_functions():
         draw_queue_size_crawl,
         get_dbms_queue_size_exceeded,
         #show_progress_delta,                   ######
-        get_grep_plugin_performance,
         get_bruteforce_data,
         get_parser_errors_summary,
         draw_parser_errors,
@@ -106,7 +104,6 @@ def get_json_functions():
         get_queue_size_crawl_data,
         get_dbms_queue_size_exceeded,
         #show_progress_delta,       ######
-        get_grep_plugin_performance,
         get_bruteforce_data,
         get_parser_errors_summary,
         get_parser_errors_data,
