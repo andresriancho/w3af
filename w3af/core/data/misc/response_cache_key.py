@@ -32,7 +32,7 @@ from w3af.core.data.misc.encoding import smart_str_ignore
 
 def get_response_cache_key(http_response,
                            clean_response=None,
-                           exclude_headers=None):
+                           headers=None):
     """
     Note: query.body has been cleaned by get_clean_body()
 
@@ -42,23 +42,12 @@ def get_response_cache_key(http_response,
                            passed as parameter (optional, will be calculated if not
                            provided)
 
-    :param exclude_headers: A list of headers to exclude while creating the hash.
-                            When this parameter is not None, the hash will include
-                            the http response headers (keys and values) except the
-                            ones in the list.
+    :param headers: A string containing the HTTP response headers that have to be
+                    used to calculate the hash
 
     :return: Hash of the HTTP response body
     """
-    #
-    # If exclude_headers is specified, use it to calculate the hash, otherwise
-    # just use an empty string
-    #
-    exclude_headers = [] or exclude_headers
-    headers = ''
-
-    if exclude_headers:
-        headers = http_response.dump_headers(exclude_headers=exclude_headers)
-        headers = smart_str_ignore(headers)
+    headers = '' or headers
 
     #
     # Only some HTTP responses benefit from the XML-bones signature
@@ -119,14 +108,29 @@ def quick_hash(text):
     return '%s%s' % (hash(text), zlib.adler32(text))
 
 
+#
+# The memory impact of having 200 items in this cache is really low, both the
+# keys and the values are short strings (the result of quick_hash)
+#
 CACHE = SynchronizedLRUDict(200)
 
 
 def cached_get_response_cache_key(http_response,
                                   clean_response=None,
-                                  exclude_headers=None):
+                                  headers=None):
 
-    cache_key = (http_response.id, exclude_headers)
+    # When the clean response is available, use that body to calculate the
+    # cache key. It has been cleaned (removed request paths and QS parameters)
+    # so it has a higher chance of being equal to other responses / being
+    # already in the cache
+    if clean_response is not None:
+        body = clean_response.body
+    else:
+        body = http_response.body
+
+    cache_key = '%s%s' % (smart_str_ignore(body), headers)
+    cache_key = quick_hash(cache_key)
+
     result = CACHE.get(cache_key, None)
 
     if result is not None:
@@ -134,7 +138,7 @@ def cached_get_response_cache_key(http_response,
 
     result = get_response_cache_key(http_response,
                                     clean_response=clean_response,
-                                    exclude_headers=exclude_headers)
+                                    headers=headers)
 
     CACHE[cache_key] = result
 

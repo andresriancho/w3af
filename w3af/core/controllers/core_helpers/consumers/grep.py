@@ -35,7 +35,8 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.misc.response_cache_key import get_response_cache_key
+from w3af.core.data.misc.response_cache_key import cached_get_response_cache_key
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 
 class grep(BaseConsumer):
@@ -367,13 +368,17 @@ class grep(BaseConsumer):
         # or some other value that changes a lot, this issue was reduced by
         # using EXCLUDE_HEADERS_FOR_HASH
         #
-        # Also note that using cached_get_response_cache_key() below would not
-        # yield any performance improvement, because the cache key is (HTTP
-        # response ID, exclude_headers). The ID changes for each call to
-        # grep() thus no result is ever returned from the cache
+        headers = response.dump_headers(exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
+        headers = smart_str_ignore(headers)
+
         #
-        response_hash = get_response_cache_key(response,
-                                               exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
+        # Note that using cached_get_response_cache_key() here gives a performance
+        # boost, this cache uses the HTTP response body and headers (at least some)
+        # as a key. In initial tests using this cache strategy made the
+        # `test_should_grep_speed` unittest go from 26 to 9 seconds.
+        #
+        response_hash = cached_get_response_cache_key(response,
+                                                      headers=headers)
 
         if not self._already_analyzed_body.add(response_hash):
             return False
