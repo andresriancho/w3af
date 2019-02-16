@@ -108,7 +108,6 @@ def diff_difflib(a, b):
 
     return a, b
 
-
 def chunked_diff(a, b):
     """
     This is a performance hack around diff() which was required due to the large
@@ -126,9 +125,10 @@ def chunked_diff(a, b):
     if a == b:
         return '', ''
 
-    a_chunks, b_chunks = diff_difflib(split_by_sep(a),
-                                      split_by_sep(b))
+    a_split = split_by_sep(a)
+    b_split = split_by_sep(b)
 
+    a_chunks, b_chunks = diff_difflib(a_split, b_split)
     return ''.join(a_chunks), ''.join(b_chunks)
 
 
