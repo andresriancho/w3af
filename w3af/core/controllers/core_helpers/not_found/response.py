@@ -23,7 +23,8 @@ from w3af.core.controllers.core_helpers.not_found.get_clean_body import get_clea
 
 
 class FourOhFourResponse(object):
-    __slots__ = ('body',
+    __slots__ = ('_http_response',
+                 '_clean_body',
                  'doc_type',
                  'path',
                  'normalized_path',
@@ -34,7 +35,9 @@ class FourOhFourResponse(object):
                  'code')
 
     def __init__(self, http_response):
-        self.body = get_clean_body(http_response)
+        self._http_response = http_response
+        self._clean_body = None
+
         self.doc_type = http_response.doc_type
         self.path = http_response.get_url().get_domain_path().url_string
         self.normalized_path = FourOhFourResponse.normalize_path(http_response.get_url())
@@ -45,6 +48,14 @@ class FourOhFourResponse(object):
         # These two are used in _handle_large_http_responses()
         self.diff = None
         self.diff_with_id = None
+
+    @property
+    def body(self):
+        if self._clean_body is not None:
+            return self._clean_body
+
+        self._clean_body = get_clean_body(self._http_response)
+        self._http_response = None
 
     @staticmethod
     def normalize_path(url):
