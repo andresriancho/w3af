@@ -26,7 +26,6 @@ class FourOhFourResponse(object):
     __slots__ = ('_http_response',
                  '_clean_body',
                  'doc_type',
-                 'path',
                  'normalized_path',
                  'url',
                  'diff',
@@ -38,9 +37,8 @@ class FourOhFourResponse(object):
         self._http_response = http_response
         self._clean_body = None
 
+        self.normalized_path = self.normalize_path(http_response.get_url())
         self.doc_type = http_response.doc_type
-        self.path = http_response.get_url().get_domain_path().url_string
-        self.normalized_path = FourOhFourResponse.normalize_path(http_response.get_url())
         self.url = http_response.get_url().url_string
         self.id = http_response.id
         self.code = http_response.get_code()
@@ -56,6 +54,7 @@ class FourOhFourResponse(object):
 
         self._clean_body = get_clean_body(self._http_response)
         self._http_response = None
+        return self._clean_body
 
     @staticmethod
     def normalize_path(url):
@@ -68,14 +67,19 @@ class FourOhFourResponse(object):
             * /abc/def/     -> /abc/path/
             * /abc/def/x.do -> /abc/def/filename.do
             * /abc?id=1     -> /filename
+            * /?id=1        -> /
 
         :return: The normalized path
         """
-        filename = url.get_file_name()
+        url = url.copy()
+        url.set_querystring('')
+
         path = url.get_path()
 
         if path == '/':
             return url.url_string
+
+        filename = url.get_file_name()
 
         if not filename:
             relative_url = '../path/'
@@ -88,9 +92,7 @@ class FourOhFourResponse(object):
         else:
             filename = 'filename'
 
-        url = url.copy()
         url.set_file_name(filename)
-        url.set_querystring('')
         return url.url_string
 
     def __repr__(self):

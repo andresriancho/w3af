@@ -53,3 +53,12 @@ class TestFourOhFourResponse(unittest.TestCase):
         normalized_path_1 = FourOhFourResponse.normalize_path(url_1)
 
         self.assertEqual(normalized_path_0, normalized_path_1)
+
+    def test_normalize_path_with_querystring_no_filename(self):
+        url_0 = URL('https://w3af.org/?id=1')
+        normalized_path_0 = FourOhFourResponse.normalize_path(url_0)
+
+        url_1 = URL('https://w3af.org/?id=3')
+        normalized_path_1 = FourOhFourResponse.normalize_path(url_1)
+
+        self.assertEqual(normalized_path_0, normalized_path_1)
