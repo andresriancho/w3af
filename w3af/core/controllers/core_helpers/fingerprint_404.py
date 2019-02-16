@@ -179,7 +179,7 @@ class Fingerprint404(object):
         # comparison
         query = FourOhFourResponse(http_response)
 
-        return self._is_404_complex_impl(self, http_response, query)
+        return self._is_404_complex_impl(http_response, query)
 
     @LRUCache404
     def _is_404_complex_impl(self, http_response, query):

@@ -61,8 +61,8 @@ class LRUCache404(Decorator):
         self._stats_total = 0.0
 
     def __call__(self, *args, **kwargs):
-        http_response = args[2]
-        query = args[3]
+        http_response = args[1]
+        query = args[2]
 
         self._stats_total += 1
         self._log_stats(http_response)
@@ -85,9 +85,6 @@ class LRUCache404(Decorator):
             return result
 
         # Run the real is_404 function
-        args = list(args)
-        args = tuple(args[1:])
-
         result = self._function(*args, **kwargs)
 
         # Save the result to both caches

@@ -36,6 +36,7 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.core_helpers.fingerprint_404 import Fingerprint404
 from w3af.core.controllers.misc.fuzzy_string_cmp import MAX_FUZZY_LENGTH
 from w3af.core.data.db.dbms import clear_default_temp_db_instance
+from w3af.core.data.misc.response_cache_key import clear_cache
 
 
 class Generic404Test(unittest.TestCase):
@@ -60,6 +61,8 @@ class Generic404Test(unittest.TestCase):
         return body
 
     def setUp(self):
+        clear_cache()
+
         self.urllib = ExtendedUrllib()
 
         self.fingerprint_404 = Fingerprint404()
