@@ -143,3 +143,7 @@ def cached_get_response_cache_key(http_response,
     CACHE[cache_key] = result
 
     return result
+
+
+def clear_cache():
+    CACHE.clear()
