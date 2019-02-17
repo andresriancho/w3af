@@ -27,7 +27,7 @@ from w3af.core.controllers.core_helpers.not_found.get_clean_body import get_clea
 class FourOhFourResponse(object):
     __slots__ = ('_http_response',
                  '_clean_body',
-                 'doc_type',
+                 'content_type',
                  'normalized_path',
                  'url',
                  'diff',
@@ -39,7 +39,7 @@ class FourOhFourResponse(object):
                  http_response=None,
                  clean_body=None,
                  normalized_path=None,
-                 doc_type=None,
+                 content_type=None,
                  url=None,
                  _id=None,
                  code=None,
@@ -50,7 +50,7 @@ class FourOhFourResponse(object):
         self._clean_body = clean_body
 
         self.normalized_path = normalized_path
-        self.doc_type = doc_type
+        self.content_type = content_type
         self.url = url
         self.id = _id
         self.code = code
@@ -66,7 +66,7 @@ class FourOhFourResponse(object):
         return cls(http_response=http_response,
                    clean_body=None,
                    normalized_path=normalized_path,
-                   doc_type=http_response.doc_type,
+                   content_type=http_response.content_type,
                    url=http_response.get_url().url_string,
                    _id=http_response.id,
                    code=http_response.get_code(),
@@ -100,7 +100,7 @@ class FourOhFourResponse(object):
 
     def to_dict(self):
         return {'clean_body': self.body,
-                'doc_type': self.doc_type,
+                'content_type': self.content_type,
                 'normalized_path': self.normalized_path,
                 'url': self.url,
                 'id': self.id,
@@ -113,7 +113,7 @@ class FourOhFourResponse(object):
         return cls(http_response=None,
                    clean_body=response_as_dict['clean_body'],
                    normalized_path=response_as_dict['normalized_path'],
-                   doc_type=response_as_dict['doc_type'],
+                   content_type=response_as_dict['content_type'],
                    url=response_as_dict['url'],
                    _id=response_as_dict['id'],
                    code=response_as_dict['code'],

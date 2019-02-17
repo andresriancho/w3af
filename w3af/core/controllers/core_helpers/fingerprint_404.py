@@ -218,7 +218,7 @@ class Fingerprint404(object):
         # Since the fuzzy_equal function is CPU-intensive we want to
         # avoid calling it for cases where we know it won't match, for
         # example in comparing an image and an html
-        if query.doc_type != known_404.doc_type:
+        if query.content_type != known_404.content_type:
             msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
                    ' [document type mismatch with known 404 with ID %s]')
             args = (http_response.get_url(),
