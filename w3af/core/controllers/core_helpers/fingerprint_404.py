@@ -177,7 +177,7 @@ class Fingerprint404(object):
         #
         # Clean the body received as parameter in order to have a fair
         # comparison
-        query = FourOhFourResponse(http_response)
+        query = FourOhFourResponse.from_http_response(http_response)
 
         return self._is_404_complex_impl(http_response, query)
 
@@ -351,7 +351,7 @@ class Fingerprint404(object):
 
             known_404_1.diff, _ = chunked_diff(known_404_1.body, known_404_2.body)
             known_404_1.diff_with_id = known_404_2.id
-            self._404_responses[query.normalized_path] = known_404_1
+            self._404_responses[query.normalized_path] = known_404_1.dumps()
 
         diff_x = known_404_1.diff
         _, diff_y = chunked_diff(known_404_1.body, query.body)
@@ -401,15 +401,16 @@ class Fingerprint404(object):
                     with a randomly generated path or name to force a 404,
                     save the data to the DB and then return it.
         """
-        known_404 = self._404_responses.get(query.normalized_path, None)
-        if known_404 is not None:
-            return known_404
+        serialized_known_404 = self._404_responses.get(query.normalized_path, None)
+
+        if serialized_known_404 is not None:
+            return FourOhFourResponse.loads(serialized_known_404)
 
         known_404 = send_request_generate_404(self._uri_opener,
                                               http_response,
                                               debugging_id)
 
-        self._404_responses[query.normalized_path] = known_404
+        self._404_responses[query.normalized_path] = known_404.dumps()
         return known_404
 
 

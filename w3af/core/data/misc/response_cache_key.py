@@ -60,7 +60,7 @@ def get_response_cache_key(http_response,
         # Get a clean_response if it was not provided
         #
         if clean_response is None:
-            clean_response = FourOhFourResponse(http_response)
+            clean_response = FourOhFourResponse.from_http_response(http_response)
 
         body = clean_response.body
         normalized_path = clean_response.normalized_path

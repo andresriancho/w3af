@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import msgpack
+
 from w3af.core.controllers.core_helpers.not_found.get_clean_body import get_clean_body
 
 
@@ -33,19 +35,43 @@ class FourOhFourResponse(object):
                  'id',
                  'code')
 
-    def __init__(self, http_response):
-        self._http_response = http_response
-        self._clean_body = None
+    def __init__(self,
+                 http_response=None,
+                 clean_body=None,
+                 normalized_path=None,
+                 doc_type=None,
+                 url=None,
+                 _id=None,
+                 code=None,
+                 diff=None,
+                 diff_with_id=None):
 
-        self.normalized_path = self.normalize_path(http_response.get_url())
-        self.doc_type = http_response.doc_type
-        self.url = http_response.get_url().url_string
-        self.id = http_response.id
-        self.code = http_response.get_code()
+        self._http_response = http_response
+        self._clean_body = clean_body
+
+        self.normalized_path = normalized_path
+        self.doc_type = doc_type
+        self.url = url
+        self.id = _id
+        self.code = code
 
         # These two are used in _handle_large_http_responses()
-        self.diff = None
-        self.diff_with_id = None
+        self.diff = diff
+        self.diff_with_id = diff_with_id
+
+    @classmethod
+    def from_http_response(cls, http_response):
+        normalized_path = FourOhFourResponse.normalize_path(http_response.get_url())
+
+        return cls(http_response=http_response,
+                   clean_body=None,
+                   normalized_path=normalized_path,
+                   doc_type=http_response.doc_type,
+                   url=http_response.get_url().url_string,
+                   _id=http_response.id,
+                   code=http_response.get_code(),
+                   diff=None,
+                   diff_with_id=None)
 
     @property
     def body(self):
@@ -55,6 +81,44 @@ class FourOhFourResponse(object):
         self._clean_body = get_clean_body(self._http_response)
         self._http_response = None
         return self._clean_body
+
+    def __eq__(self, other):
+        for attr in self.__slots__:
+            if self.__getattribute__(attr) != other.__getattribute__(attr):
+                return False
+
+        return True
+
+    def dumps(self):
+        return msgpack.dumps(self.to_dict(),
+                             use_bin_type=True)
+
+    @classmethod
+    def loads(cls, serialized_response):
+        data = msgpack.loads(serialized_response, raw=False)
+        return cls.from_dict(data)
+
+    def to_dict(self):
+        return {'clean_body': self.body,
+                'doc_type': self.doc_type,
+                'normalized_path': self.normalized_path,
+                'url': self.url,
+                'id': self.id,
+                'code': self.code,
+                'diff': self.diff,
+                'diff_with_id': self.diff_with_id}
+
+    @classmethod
+    def from_dict(cls, response_as_dict):
+        return cls(http_response=None,
+                   clean_body=response_as_dict['clean_body'],
+                   normalized_path=response_as_dict['normalized_path'],
+                   doc_type=response_as_dict['doc_type'],
+                   url=response_as_dict['url'],
+                   _id=response_as_dict['id'],
+                   code=response_as_dict['code'],
+                   diff=response_as_dict['diff'],
+                   diff_with_id=response_as_dict['diff_with_id'])
 
     @staticmethod
     def normalize_path(url):

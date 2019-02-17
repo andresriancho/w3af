@@ -263,7 +263,7 @@ def send_request_generate_404(uri_opener, http_response, debugging_id, exclude=N
             break
 
     response_404 = send_404(uri_opener, url_404, debugging_id=debugging_id)
-    return FourOhFourResponse(response_404)
+    return FourOhFourResponse.from_http_response(response_404)
 
 
 def get_url_for_404_request(http_response, seed=1):
