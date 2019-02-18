@@ -179,35 +179,7 @@ class Fingerprint404(object):
         # comparison
         query = FourOhFourResponse.from_http_response(http_response)
 
-        if self._has_404_fingerprint(query):
-            if self._matches_known_404(query):
-                return True
-
         return self._is_404_complex_impl(http_response, query)
-
-    def _has_404_fingerprint(self, query):
-        """
-        :param query: The FourOhFourResponse associated with the HTTP request
-                      received as parameter (the one we want to know if it is
-                      a 404 response)
-        :return: True if the DB has enough fingerprint data to return
-                 an answer for this query
-        """
-        # Check if the DB has more than N entries associated with
-        # query.normalized_path, if so return True
-        raise NotImplementedError
-
-    def _matches_known_404(self, query):
-        """
-        :param query: The FourOhFourResponse associated with the HTTP request
-                      received as parameter (the one we want to know if it is
-                      a 404 response)
-        :return: True if the DB has enough fingerprint data to return
-                 an answer for this query
-        """
-        # Check if the DB has more than N entries associated with
-        # query.normalized_path, if so return True
-        raise NotImplementedError
 
     @LRUCache404
     def _is_404_complex_impl(self, http_response, query):
