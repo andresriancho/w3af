@@ -360,7 +360,7 @@ class form_auth(BruteforcePlugin):
         # At some point this method was implemented as follows:
         #
         #   strings_to_replace_list = [username, password]
-        #   return get_clean_body_impl(http_response, strings_to_replace_list)
+        #   return get_clean_body_impl(http_response.body, strings_to_replace_list)
         #
         # There is a complex interaction between cleaning the response body
         # and the diff() in FailedLoginPage.matches(). The problem is that the
