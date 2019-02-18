@@ -19,17 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
 import threading
 import functools
 
 # pylint: disable=E0401
-from darts.lib.utils.lru import SynchronizedLRUDict
+from darts.lib.utils.lru import LRUDict
 # pylint: enable=E0401
 
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
-from w3af.core.data.misc.response_cache_key import quick_hash, cached_get_response_cache_key
+from w3af.core.data.misc.response_cache_key import quick_hash, ResponseCacheKeyCache
 from w3af.core.data.fuzzer.utils import rand_alnum
 
 
@@ -54,11 +55,20 @@ class LRUCache404(Decorator):
         # The performance impact of storing many items in the cached
         # (in memory) part of the CachedDiskDict is low. The keys for
         # this cache are hashes and the values are booleans
-        self._is_404_by_url_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
-        self._is_404_by_body_lru = SynchronizedLRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
+        #
+        # Using the LRUDict instead of SynchronizedLRUDict because this decorator
+        # is run wrapped around PreventMultipleThreads, and also because we're
+        # consuming it in a way where thread-generated race condition errors can
+        # be ignored (they do not generate a big impact)
+        #
+        # LRUDict is faster than SynchronizedLRUDict because there are no locks
+        self._is_404_by_url_lru = LRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
+        self._is_404_by_body_lru = LRUDict(capacity=self.MAX_IN_MEMORY_RESULTS)
 
         self._stats_from_cache = 0.0
         self._stats_total = 0.0
+
+        self._response_cache_key_cache = ResponseCacheKeyCache()
 
     def __call__(self, *args, **kwargs):
         http_response = args[1]
@@ -75,8 +85,8 @@ class LRUCache404(Decorator):
             self._log_success(http_response, result, 'URL')
             return result
 
-        body_cache_key = cached_get_response_cache_key(http_response,
-                                                       clean_response=query)
+        body_cache_key = self._response_cache_key_cache.get_response_cache_key(http_response,
+                                                                               clean_response=query)
 
         result = self._is_404_by_body_lru.get(body_cache_key, None)
 
@@ -133,28 +143,21 @@ class PreventMultipleThreads(Decorator):
     is running with parameter X, and new one call is made to is_404() with the
     same parameter (*), then the decorator forces the second caller to wait until
     the first execution is completed.
-
     (*) The way we compare parameters for is_404() here is not by string equals,
         we normalize the paths of each HTTP response and then compare them.
-
         This makes sure that we don't send unnecessary HTTP requests when
         running is_404() on an HTTP response for http://foo.com/phpinfo.php
         and another for http://foo.com/test.php
-
     The second execution will then run, query the cache, and get the result.
-
     Without this decorator two executions would run, consume CPU, in some cases
     send HTTP requests, and finally both were going to write the same result
     to the cache.
-
     This issue could be seen in the debug logs as:
-
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/SP8Bund2/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/KKJCnk08/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/PfOoZiAF/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/Pg6Uuid1/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/y4FeR1lB/ returned HTTP code "404" ...
-
     Notice the same timestamp in each line, and the 8 random chars being sent in the
     directory, which is part of the is_404() algorithm.
     """

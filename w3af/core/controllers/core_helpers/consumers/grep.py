@@ -35,7 +35,7 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.misc.response_cache_key import cached_get_response_cache_key
+from w3af.core.data.misc.response_cache_key import ResponseCacheKeyCache
 from w3af.core.data.misc.encoding import smart_str_ignore
 
 
@@ -97,6 +97,7 @@ class grep(BaseConsumer):
 
         self._request_response_lru = SynchronizedLRUDict(thread_pool_size * 3)
         self._request_response_processes = dict()
+        self._response_cache_key_cache = ResponseCacheKeyCache()
 
     def get_name(self):
         return 'Grep'
@@ -127,6 +128,7 @@ class grep(BaseConsumer):
 
         self._consumer_plugins = dict()
         self._consumer_plugin_dict = dict()
+        self._response_cache_key_cache.clear_cache()
 
         om.out.debug('Finished Grep consumer _teardown()')
 
@@ -377,8 +379,8 @@ class grep(BaseConsumer):
         # as a key. In initial tests using this cache strategy made the
         # `test_should_grep_speed` unittest go from 26 to 9 seconds.
         #
-        response_hash = cached_get_response_cache_key(response,
-                                                      headers=headers)
+        response_hash = self._response_cache_key_cache.get_response_cache_key(response,
+                                                                              headers=headers)
 
         if not self._already_analyzed_body.add(response_hash):
             return False

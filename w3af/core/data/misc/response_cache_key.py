@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import zlib
 
 # pylint: disable=E0401
-from darts.lib.utils.lru import SynchronizedLRUDict
+from darts.lib.utils.lru import LRUDict
 # pylint: enable=E0401
 
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
@@ -108,42 +108,49 @@ def quick_hash(text):
     return '%s%s' % (hash(text), zlib.adler32(text))
 
 
-#
-# The memory impact of having 200 items in this cache is really low, both the
-# keys and the values are short strings (the result of quick_hash)
-#
-CACHE = SynchronizedLRUDict(200)
+class ResponseCacheKeyCache(object):
+    #
+    # The memory impact of having a large number of items in this cache is
+    # really low, both the keys and the values are short strings (the result of
+    # quick_hash)
+    #
+    MAX_SIZE = 2000
 
+    def __init__(self):
+        # Note that I'm not using SynchronizedLRUDict, there is no need for all
+        # the locking here. The way this LRU is used allows us to just ignore
+        # some errors that might appear during thread race conditions
+        self._cache = LRUDict(self.MAX_SIZE)
 
-def cached_get_response_cache_key(http_response,
-                                  clean_response=None,
-                                  headers=None):
+    def get_response_cache_key(self,
+                               http_response,
+                               clean_response=None,
+                               headers=None):
 
-    # When the clean response is available, use that body to calculate the
-    # cache key. It has been cleaned (removed request paths and QS parameters)
-    # so it has a higher chance of being equal to other responses / being
-    # already in the cache
-    if clean_response is not None:
-        body = clean_response.body
-    else:
-        body = http_response.body
+        # When the clean response is available, use that body to calculate the
+        # cache key. It has been cleaned (removed request paths and QS parameters)
+        # so it has a higher chance of being equal to other responses / being
+        # already in the cache
+        if clean_response is not None:
+            body = clean_response.body
+        else:
+            body = http_response.body
 
-    cache_key = '%s%s' % (smart_str_ignore(body), headers)
-    cache_key = quick_hash(cache_key)
+        cache_key = '%s%s' % (smart_str_ignore(body), headers)
+        cache_key = quick_hash(cache_key)
 
-    result = CACHE.get(cache_key, None)
+        result = self._cache.get(cache_key, None)
 
-    if result is not None:
+        if result is not None:
+            return result
+
+        result = get_response_cache_key(http_response,
+                                        clean_response=clean_response,
+                                        headers=headers)
+
+        self._cache[cache_key] = result
+
         return result
 
-    result = get_response_cache_key(http_response,
-                                    clean_response=clean_response,
-                                    headers=headers)
-
-    CACHE[cache_key] = result
-
-    return result
-
-
-def clear_cache():
-    CACHE.clear()
+    def clear_cache(self):
+        self._cache.clear()
