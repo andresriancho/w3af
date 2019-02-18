@@ -143,21 +143,28 @@ class PreventMultipleThreads(Decorator):
     is running with parameter X, and new one call is made to is_404() with the
     same parameter (*), then the decorator forces the second caller to wait until
     the first execution is completed.
+
     (*) The way we compare parameters for is_404() here is not by string equals,
         we normalize the paths of each HTTP response and then compare them.
+
         This makes sure that we don't send unnecessary HTTP requests when
         running is_404() on an HTTP response for http://foo.com/phpinfo.php
         and another for http://foo.com/test.php
+
     The second execution will then run, query the cache, and get the result.
+
     Without this decorator two executions would run, consume CPU, in some cases
     send HTTP requests, and finally both were going to write the same result
     to the cache.
+
     This issue could be seen in the debug logs as:
+
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/SP8Bund2/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/KKJCnk08/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/PfOoZiAF/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/Pg6Uuid1/ returned HTTP code "404" ...
         [Thu Oct 11 10:18:24 2018 - debug] GET https://host/y4FeR1lB/ returned HTTP code "404" ...
+
     Notice the same timestamp in each line, and the 8 random chars being sent in the
     directory, which is part of the is_404() algorithm.
     """
@@ -171,6 +178,7 @@ class PreventMultipleThreads(Decorator):
 
     def __call__(self, *args, **kwargs):
         http_response = args[1]
+
         call_key = self.get_call_key(http_response)
 
         event = self._404_call_events.get(call_key, None)
@@ -193,7 +201,18 @@ class PreventMultipleThreads(Decorator):
         else:
             # Another thread is already running is_404 on the same URL path
             # we better wait for a while
+            start = time.time()
+
             wait_result = event.wait(timeout=self.TIMEOUT)
+
+            spent = time.time() - start
+
+            response_did = http_response.get_debugging_id()
+            msg_args = (spent, id(event), call_key, response_did)
+            msg = ('Waited %.2f seconds in PreventMultipleThreads for event %s'
+                   ' and normalized path %s (did:%s)')
+            om.out.debug(msg % msg_args)
+
             if not wait_result:
                 # Something really bad happen. The is_404() function should
                 # never take more than TIMEOUT seconds to process one HTTP
