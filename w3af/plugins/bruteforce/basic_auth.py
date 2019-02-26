@@ -71,6 +71,8 @@ class basic_auth(BruteforcePlugin):
 
         self._bruteforce(domain_path, up_generator, debugging_id)
 
+        self._configure_credentials_in_opener()
+
         # Finished!
         took_str = epoch_to_string(start)
         msg = 'Finished basic authentication bruteforce on "%s" (spent %s)'
@@ -113,27 +115,27 @@ class basic_auth(BruteforcePlugin):
             om.out.debug(msg % w3)
             return
 
-        # GET was OK
-        if response.get_code() != 401:
-            self._found = True
+        if response.get_code() == 401:
+            return
 
-            desc = ('Found authentication credentials to: "%s".'
-                    ' A valid user and password combination is: %s/%s .')
-            desc %= (url, user, passwd)
-            v = Vuln('Guessable credentials', desc,
-                     severity.HIGH, response.id, self.get_name())
-            v.set_url(url)
+        # Found credentials!
+        self._found = True
 
-            v['user'] = user
-            v['pass'] = passwd
-            v['response'] = response
-            v['request'] = fr
+        desc = ('Found authentication credentials to: "%s".'
+                ' A valid user and password combination is: %s/%s .')
+        desc %= (url, user, passwd)
+        v = Vuln('Guessable credentials', desc,
+                 severity.HIGH, response.id, self.get_name())
+        v.set_url(url)
 
-            kb.kb.append(self, 'auth', v)
-            om.out.vulnerability(v.get_desc(),
-                                 severity=v.get_severity())
+        v['user'] = user
+        v['pass'] = passwd
+        v['response'] = response
+        v['request'] = fr
 
-            self._configure_credentials_in_opener()
+        kb.kb.append(self, 'auth', v)
+        om.out.vulnerability(v.get_desc(),
+                             severity=v.get_severity())
 
     def _configure_credentials_in_opener(self):
         """
