@@ -29,10 +29,19 @@ from w3af.core.data.url.handlers.cache import SQLCachedResponse
 
 
 class HTTPGzipProcessor(urllib2.BaseHandler):
-    handler_order = 200  # response processing before HTTPEquivProcessor
+
+    # response processing before HTTPEquivProcessor
+    handler_order = 200
+
+    def __init__(self):
+        self._decompression_methods = [
+            self._gzip_0,
+            self._zlib_0,
+            self._zlib_1
+        ]
 
     def http_request(self, request):
-        request.add_header("Accept-encoding", "gzip, deflate")
+        request.add_header('Accept-encoding', 'gzip, deflate')
         return request
 
     def http_response(self, request, response):
@@ -48,28 +57,73 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
         #
         # post-process response
         #
-        enc_hdrs = response.info().getheaders("Content-encoding")
-        for enc_hdr in enc_hdrs:
-            try:
-                # Decompress
-                if ("gzip" in enc_hdr) or ("compress" in enc_hdr):
-                    body = response.read()
-                    data = gzip.GzipFile(fileobj=StringIO(body)).read()
-                elif "deflate" in enc_hdr:
-                    body = response.read()
-                    data = zlib.decompress(body)
-                else:
-                    data = response.read()
-            except:
-                # I get here when the HTTP response body is corrupt
-                # return the same thing that I got... can't do magic yet!
-                return response
-            else:
-                # The response was successfully unzipped
-                response.set_body(data)
-                return response
+        if self._should_decompress(response):
+            response = self._decompress(response)
 
         return response
+
+    def _gzip_0(self, body):
+        return gzip.GzipFile(fileobj=StringIO(body)).read()
+
+    def _zlib_0(self, body):
+        # RFC 1950
+        return zlib.decompress(body)
+
+    def _zlib_1(self, body):
+        # RFC 1951
+        return zlib.decompress(body, -zlib.MAX_WBITS)
+
+    def _decompress(self, response):
+        """
+        :param response: HTTP response
+        :return: HTTP response with decompressed body
+        """
+        body = response.read()
+
+        decompressed_body = None
+        decompression_method = None
+
+        for decompression_method in self._decompression_methods:
+            try:
+                decompressed_body = decompression_method(body)
+            except:
+                continue
+            else:
+                break
+
+        if decompressed_body is not None:
+            # The response was successfully decompressed
+            response.set_body(decompressed_body)
+
+            # The decompression method that worked should be moved to the
+            # beginning of the list (if not there yet)
+            if self._decompression_methods.index(decompression_method) != 0:
+            
+                dm_temp = self._decompression_methods[:]
+                dm_temp.remove(decompression_method)
+                dm_temp.insert(0, decompression_method)
+
+                self._decompression_methods = dm_temp
+
+        return response
+
+    def _should_decompress(self, response):
+        """
+        :param response: The HTTP response
+        :return: True if the HTTP response contains headers that indicate the
+                 content is compressed and this handler should decompress it
+        """
+        for enc_hdr in response.info().getheaders('Content-encoding'):
+            if 'gzip' in enc_hdr:
+                return True
+
+            if 'compress' in enc_hdr:
+                return True
+
+            if 'deflate' in enc_hdr:
+                return True
+
+        return False
 
     https_request = http_request
     https_response = http_response
