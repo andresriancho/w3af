@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import w3af.core.data.kb.knowledge_base as kb
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.sql_tools.blind_sqli_response_diff import BlindSqliResponseDiff
@@ -84,17 +85,46 @@ class blind_sqli(AuditPlugin):
         :return: A vulnerability or None
         """
         vuln = bsqli_resp_diff.is_injectable(mutant, statement_type)
+        self._conditionally_save_vuln(mutant, vuln)
 
-        if self._has_sql_injection(mutant):
-            return
+    def _conditionally_save_vuln(self, mutant, vuln):
+        """
+        Save the vulnerability to the KB iff ...
 
-        if self._has_bug(mutant):
-            return
-
+        :param mutant: The mutant that triggered the vulnerability
+        :param vuln: The vulnerability instance
+        :return: None. Vuln is saved to KB on success.
+        """
         if vuln is None:
             return
 
-        self.kb_append_uniq(self, 'blind_sqli', vuln)
+        if self._has_sql_injection(mutant):
+            msg = ('There is already a SQL injection vulnerability in the'
+                   ' KB for this blind SQL injection. Will not save the'
+                   ' blind SQL injection (%s) to avoid duplicates.')
+            args = (vuln,)
+            om.out.debug(msg % args)
+            return
+
+        if self._has_bug(mutant):
+            msg = ('There is already a Blind SQL injection vulnerability '
+                   ' in the KB with the same URL and parameter combination.'
+                   ' Will not save blind SQL injection (%s) to avoid'
+                   ' duplicates.')
+            args = (vuln,)
+            om.out.debug(msg % args)
+            return
+
+        added_to_kb = self.kb_append_uniq(self, 'blind_sqli', vuln)
+
+        if not added_to_kb:
+            msg = ('The kb_append_uniq() returned false. The blind SQL '
+                   ' injection vulnerability was NOT saved to the KB because'
+                   ' another vulnerability (uniq) was stored there before.'
+                   ' The blind SQL injection vulnerability that was ignored'
+                   ' is: %s.')
+            args = (vuln,)
+            om.out.debug(msg % args)
 
     def _generate_response_diff_tests(self, freq, bsqli_resp_diff):
         for mutant in create_mutants(freq, ['', ]):
@@ -140,17 +170,7 @@ class blind_sqli(AuditPlugin):
         :return: A vulnerability or None
         """
         vuln = bsqli_time_delay.is_injectable(mutant, delay_obj)
-
-        if self._has_sql_injection(mutant):
-            return
-
-        if self._has_bug(mutant):
-            return
-
-        if vuln is None:
-            return
-
-        self.kb_append_uniq(self, 'blind_sqli', vuln)
+        self._conditionally_save_vuln(mutant, vuln)
 
     def _has_sql_injection(self, mutant):
         """
