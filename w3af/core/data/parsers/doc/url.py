@@ -189,7 +189,6 @@ class URL(DiskItem):
                  '_netloc',
                  '_path',
                  '_params',
-                 '_hostname',
 
                  # Internals
                  '_cache',
@@ -201,8 +200,7 @@ class URL(DiskItem):
                  'path',
                  'params',
                  'querystring',
-                 'fragment',
-                 'hostname',)
+                 'fragment',)
 
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         """
@@ -220,7 +218,6 @@ class URL(DiskItem):
         self._netloc = None
         self._path = None
         self._params = None
-        self._hostname = None
 
         # Internal attributes
         self._cache = {}
@@ -243,7 +240,7 @@ class URL(DiskItem):
         if parsed.scheme == parsed.netloc == '' and not parsed.path.startswith(u'/'):
             # By default we set the protocol to "http"
             scheme = u'http'
-            netloc = path
+            netloc = parsed.path
             path = u''
         else:
             scheme = parsed.scheme
@@ -256,7 +253,6 @@ class URL(DiskItem):
         self.params = parsed.params or u''
         self.querystring = parsed.query or u''
         self.fragment = parsed.fragment or u''
-        self.hostname = parsed.hostname or u''
 
         if not self.netloc and self.scheme != 'file':
             # The URL is invalid, we don't have a netloc!
@@ -574,16 +570,17 @@ class URL(DiskItem):
         :return: Returns a boolean that indicates if self.netloc domain is valid
         """        
         # check if domain name valid
-        if not self.RE_DOMAIN.match(self.hostname):
+        hostname = self.netloc.split(':')[0]  # split away port
+        if not self.RE_DOMAIN.match(hostname):
             # not a valid domain - maybe an IP address
             # Check IPv4
             try:
                 # Check IPv4
-                socket.inet_aton(parsed_url.hostname)
+                socket.inet_aton(hostname)
             except socket.error:
                 # not ipv4
                 try:
-                    socket.inet_pton(socket.AF_INET6, parsed_url.hostname)
+                    socket.inet_pton(socket.AF_INET6, hostname)
                 except socket.error:
                     # neither IPv6
                     return False
