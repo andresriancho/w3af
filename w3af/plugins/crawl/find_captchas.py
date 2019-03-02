@@ -58,7 +58,6 @@ class find_captchas(CrawlPlugin):
             return
 
         for captcha in captchas:
-
             desc = 'Found a CAPTCHA image at: "%s".' % captcha.img_src
             response_ids = [response.id for response in captcha.http_responses]
 
@@ -88,35 +87,37 @@ class find_captchas(CrawlPlugin):
 
         # If the number of images in each response is different, don't even
         # bother to perform any analysis since our simplistic approach will fail
+        #
         # TODO: Add something more advanced.
-        if len(images_1) == len(images_2):
+        if len(images_1) != len(images_2):
+            return
 
-            not_in_2 = []
+        not_in_2 = []
 
-            for img_src_1, img_hash_1, http_response_1 in images_1:
-                for _, img_hash_2, http_response_2 in images_2:
-                    if img_hash_1 == img_hash_2:
-                        # The image is in both lists, can't be a CAPTCHA
-                        break
-                else:
-                    not_in_2.append((img_src_1, img_hash_1, [http_response_1, http_response_2]))
+        for img_src_1, img_hash_1, http_response_1 in images_1:
+            for _, img_hash_2, http_response_2 in images_2:
+                if img_hash_1 == img_hash_2:
+                    # The image is in both lists, can't be a CAPTCHA
+                    break
+            else:
+                not_in_2.append((img_src_1, img_hash_1, [http_response_1, http_response_2]))
 
-            # Results
-            #
-            # TODO: This allows for more than one CAPTCHA in the same page. Does
-            #       that make sense? When that's found, should I simply declare
-            #       defeat and don't report anything?
-            for img_src, _, http_responses in not_in_2:
+        # Results
+        #
+        # TODO: This allows for more than one CAPTCHA in the same page. Does
+        #       that make sense? When that's found, should I simply declare
+        #       defeat and don't report anything?
+        for img_src, _, http_responses in not_in_2:
 
-                CaptchaInfo = namedtuple('CaptchaInfo', ['img_src',
-                                                         'http_responses'])
-                img_src = img_src.uri2url()
-                
-                if img_src not in self._captchas_found:
-                    self._captchas_found.add(img_src)
-                    found_captcha = True
-                    
-                    captchas.append(CaptchaInfo(img_src, http_responses))
+            CaptchaInfo = namedtuple('CaptchaInfo', ['img_src',
+                                                     'http_responses'])
+            img_src = img_src.uri2url()
+
+            if img_src not in self._captchas_found:
+                self._captchas_found.add(img_src)
+                found_captcha = True
+
+                captchas.append(CaptchaInfo(img_src, http_responses))
                     
         return found_captcha, captchas
         
@@ -137,7 +138,9 @@ class find_captchas(CrawlPlugin):
         else:
             # Do not use parser_cache here, it's not good since CAPTCHA implementations
             # *might* change the image name for each request of the HTML
-            #dp = parser_cache.dpc.get_document_parser_for( response )
+            #
+            # dp = parser_cache.dpc.get_document_parser_for( response )
+            #
             try:
                 document_parser = DocumentParser.DocumentParser(response)
             except BaseFrameworkException:

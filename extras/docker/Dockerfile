@@ -50,13 +50,15 @@ RUN pip install --upgrade pip
 #
 #tblib==0.2.0
 #
-RUN pip install clamd==1.0.1 PyGithub==1.21.0 GitPython==2.1.3 pybloomfiltermmap==0.3.14 \
-        esmre==0.3.1 phply==0.9.1 nltk==3.0.1 chardet==2.1.1 pdfminer==20140328 \
-        futures==2.1.5 pyOpenSSL==18.0.0 scapy-real==2.2.0-dev guess-language==0.2 cluster==1.1.1b3 \
-        msgpack-python==0.4.4 python-ntlm==1.0.1 halberd==0.2.4 darts.util.lru==0.5 \
-        ndg-httpsclient==0.4.0 pyasn1==0.1.7 Jinja2==2.7.3 \
-        vulndb==0.0.17 markdown==2.6.1 psutil==2.2.1 mitmproxy==0.12.1 \
-        ruamel.ordereddict==0.4.8 Flask==0.10.1 PyYAML==3.11
+RUN pip install pyClamd==0.4.0 PyGithub==1.21.0 GitPython==2.1.3 pybloomfiltermmap==0.3.14 \
+        esmre==0.3.1 phply==0.9.1 nltk==3.0.1 chardet==3.0.4 pdfminer==20140328 \
+        futures==3.2.0 pyOpenSSL==18.0.0 scapy-real==2.4.0 guess-language==0.2 cluster==1.1.1b3 \
+        msgpack-python==0.5.6 python-ntlm==1.0.1 halberd==0.2.4 darts.util.lru==0.5 \
+        ndg-httpsclient==0.4.0 pyasn1==0.4.2 Jinja2==2.7.3 \
+        vulndb==0.1.0 markdown==2.6.1 psutil==2.2.1 mitmproxy==0.12.1 \
+        ruamel.ordereddict==0.4.8 Flask==0.10.1 PyYAML==3.12 \
+        ds-store==1.1.2 termcolor==1.1.0 tldextract==1.7.2 pebble==4.3.8 \
+        acora==2.1 diff-match-patch==20121119 bravado-core==5.0.2 lz4==1.1.0 vulners==1.3.0
 
 # Install w3af
 ADD . /home/w3af/w3af

@@ -6,7 +6,7 @@ from utils.output import ListOutput, ListOutputItem
 NEW_URL_FOUND = re.compile('New URL found by (.*?) plugin')
 
 
-def show_crawling_stats(scan_log_filename, scan):
+def get_crawling_stats(scan_log_filename, scan):
     FOUND = 'A new form was found!'
     IGNORING = 'Ignoring form'
     FUZZABLE = 'New fuzzable request identified'

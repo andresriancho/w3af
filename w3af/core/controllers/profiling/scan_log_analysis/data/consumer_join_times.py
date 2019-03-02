@@ -5,7 +5,7 @@ from utils.output import KeyValueOutput
 JOIN_TIMES = re.compile('(.*?) took (.*?) seconds to join\(\)')
 
 
-def show_consumer_join_times(scan_log_filename, scan):
+def get_consumer_join_times(scan_log_filename, scan):
     scan.seek(0)
 
     join_times = []

@@ -54,7 +54,7 @@ class audit(BaseConsumer):
         return 'Auditor'
 
     def _teardown(self):
-        msg = 'Starting Audit consumer _teardown() with %s plugins.'
+        msg = 'Starting Audit consumer _teardown() with %s plugins'
         om.out.debug(msg % len(self._consumer_plugins))
 
         for plugin in self._consumer_plugins:
@@ -176,7 +176,9 @@ class audit(BaseConsumer):
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
         except Exception, e:
-            self.handle_exception('audit', plugin.get_name(),
-                                  fuzzable_request, e)
+            self.handle_exception('audit',
+                                  plugin.get_name(),
+                                  fuzzable_request,
+                                  e)
 
         took_line.send()

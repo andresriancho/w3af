@@ -23,7 +23,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
-from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
+from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.data.kb.info import Info
@@ -84,17 +84,33 @@ class urllist_txt(CrawlPlugin):
         :return: True if the body is a urllist.txt
         """
         is_urllist = 5
+
         for line in body.split('\n'):
 
             line = line.strip()
 
-            if not line.startswith('#') and line:
-                try:
-                    base_url.url_join(line)
-                except:
-                    is_urllist -= 1
+            if line.startswith('#'):
+                is_urllist += 1
+                continue
 
-        return bool(is_urllist)
+            if not line:
+                is_urllist += 1
+                continue
+
+            if line.startswith('<'):
+                is_urllist -= 1
+                continue
+
+            if line.endswith('>'):
+                is_urllist -= 1
+                continue
+
+            try:
+                base_url.url_join(line)
+            except ValueError:
+                is_urllist -= 1
+
+        return is_urllist > 5
 
     def _extract_urls_generator(self, base_url, body):
         """
@@ -105,13 +121,18 @@ class urllist_txt(CrawlPlugin):
 
             line = line.strip()
 
-            if not line.startswith('#') and line:
-                try:
-                    url = base_url.url_join(line)
-                except:
-                    pass
-                else:
-                    yield url
+            if line.startswith('#'):
+                continue
+
+            if not line:
+                continue
+
+            try:
+                url = base_url.url_join(line)
+            except ValueError:
+                pass
+            else:
+                yield url
 
     def get_long_desc(self):
         """

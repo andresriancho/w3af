@@ -37,6 +37,7 @@ class click_jacking(GrepPlugin):
     """
 
     MAX_SAMPLES = 25
+    DO_NOT_FRAME = {301, 302, 303, 307, 400, 403, 404, 500}
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -50,7 +51,22 @@ class click_jacking(GrepPlugin):
         """
         Check x-frame-options header
         """
+        # Can not iframe a POST, PUT, etc.
+        if request.get_method() != 'GET':
+            return
+
+        if response.get_code() in self.DO_NOT_FRAME:
+            return
+
         if not response.is_text_or_html():
+            return
+
+        # An attacker will never run a clickjacking attack on an empty response
+        # Empty responses are common in redirects, 400 and 500 errors, etc.
+        if not response.get_body():
+            return
+
+        if not self._response_will_be_rendered(response):
             return
 
         if is_404(response):
@@ -63,13 +79,33 @@ class click_jacking(GrepPlugin):
 
         self._add_response_to_findings(response)
 
+    def _response_will_be_rendered(self, response):
+        """
+        Browsers will never render responses with application/javascript
+        content-type, so it doesn't make sense for an attacker to do a
+        click-jacking attack on these.
+
+        :param response: An HTTP response
+        :return: True if the response has javascript content type
+        """
+        if 'javascript' in response.content_type:
+            return False
+
+        if 'css' in response.content_type:
+            return False
+
+        if 'application/xml' in response.content_type:
+            return False
+
+        return True
+
     def _add_response_to_findings(self, response):
         self._vuln_count += 1
 
         if len(self._vuln_urls) >= self.MAX_SAMPLES:
             return
 
-        self._vuln_urls.add(response.get_url())
+        self._vuln_urls.add(response.get_uri())
         self._vuln_ids.add(response.id)
 
     def _is_protected_against_clickjacking(self, request, response):
@@ -137,8 +173,13 @@ class click_jacking(GrepPlugin):
         #   Content-Security-Policy: frame-ancestors '*';
         #   Content-Security-Policy: frame-ancestors 'https://*';
         #
+        insecure_ancestors = ('*',
+                              'http', 'https',
+                              'http://', 'https://',
+                              'http://*', 'https://*')
+
         for policy in frame_ancestors:
-            if policy.lower() in ('*', 'http', 'https', 'http://', 'https://', 'http://*', 'https://*'):
+            if policy.lower() in insecure_ancestors:
                 return False
 
         # Content-Security-Policy: frame-ancestors 'self';

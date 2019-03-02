@@ -26,19 +26,19 @@ import datetime
 def epoch_to_string(start_time):
     """
     :return: A string that represents in weeks/days/hours/minutes/seconds
-    how much time the scan lasted.
+             how much time the scan lasted.
 
     >>> import time
     >>> now = time.time()
 
     >>> epoch_to_string(now - 1)
-    '1 second.'
+    '1 second'
 
     >>> epoch_to_string(now - 60)
-    '1 minute .'
+    '1 minute'
 
     >>> epoch_to_string(now - 61)
-    '1 minute 1 second.'
+    '1 minute 1 second'
 
     """
     time_diff = time.time() - start_time
@@ -52,7 +52,7 @@ def epoch_to_string(start_time):
     msg = ''
 
     if weeks == days == hours == minutes == seconds == 0:
-        msg += '0 seconds.'
+        msg += '0 seconds'
     else:
         if weeks:
             msg += str(weeks) + ' week%s ' % ('s' if weeks > 1 else '')
@@ -66,6 +66,5 @@ def epoch_to_string(start_time):
         if seconds:
             msg += str(
                 seconds) + ' second%s' % ('s' if seconds > 1 else '')
-        msg += '.'
 
     return msg

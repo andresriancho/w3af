@@ -76,11 +76,11 @@ class grep(BaseConsumer):
         """
         Handle POISON_PILL
         """
-        msg = 'Starting Grep consumer _teardown() with %s plugins.'
+        msg = 'Starting Grep consumer _teardown() with %s plugins'
         om.out.debug(msg % len(self._consumer_plugins))
 
         for plugin in self._consumer_plugins:
-            om.out.debug('Calling %s.end().' % plugin.get_name())
+            om.out.debug('Calling %s.end()' % plugin.get_name())
             start_time = time.time()
 
             try:
@@ -92,11 +92,11 @@ class grep(BaseConsumer):
                 continue
 
             spent_time = time.time() - start_time
-            msg = 'Spent %.2f seconds running %s.end().'
+            msg = 'Spent %.2f seconds running %s.end()'
             args = (spent_time, plugin.get_name())
             om.out.debug(msg % args)
 
-        om.out.debug('Finished Grep consumer _teardown().')
+        om.out.debug('Finished Grep consumer _teardown()')
 
     def _get_request_response_from_work_unit(self, work_unit):
         """

@@ -19,33 +19,33 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import socket
+import ipaddress
 
 
-def is_private_site(domain_or_IP_address):
+def is_private_site(domain_or_ip_address):
     """
-    :param domain_or_IP_address: The domain or IP address that we want to check
+    :param domain_or_ip_address: The domain or IP address that we want to check
     :return: Get the IP address of the domain, return True if its a private address.
     """
-    if re.match('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\
-    re.match('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\
-    re.match('(192\.168\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\
-    re.match('(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address):
+    if matches_private_ip(domain_or_ip_address):
         return True
-    else:
-        addrinfo = None
-        try:
-            addrinfo = socket.getaddrinfo(domain_or_IP_address, 0)
-        except socket.gaierror:
-            # If I can't resolve this DNS name, then it's a private domain
+
+    try:
+        ip_address = socket.gethostbyname(domain_or_ip_address)
+    except socket.gaierror, se:
+        # raises exception when it's not found
+        if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
             return True
-        else:
-            ip_address_list = [info[4][0] for info in addrinfo]
-            for ip_address in ip_address_list:
-                if re.match('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', ip_address) or\
-                re.match('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', ip_address) or\
-                re.match('(192\.168\.\d?\d?\d?\.\d?\d?\d?)', ip_address) or\
-                re.match('(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', ip_address):
-                    return True
+    else:
+        if matches_private_ip(ip_address):
+            return True
+
     return False
+
+
+def matches_private_ip(ip_address):
+    try:
+        return ipaddress.ip_address(ip_address).is_private
+    except:
+        return False

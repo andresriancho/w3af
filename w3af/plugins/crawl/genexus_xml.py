@@ -41,8 +41,7 @@ class genexus_xml(CrawlPlugin):
     :url: http://caceriadespammers.com.ar
     """
 
-    def __init__(self):
-        CrawlPlugin.__init__(self)
+    GENEXUS_DB = ('execute.xml', 'DeveloperMenu.xml')
 
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request):
@@ -54,7 +53,7 @@ class genexus_xml(CrawlPlugin):
         """
         base_url = fuzzable_request.get_url().base_url()
         
-        for file_name in ('execute.xml', 'DeveloperMenu.xml'):
+        for file_name in self.GENEXUS_DB:
             genexus_url = base_url.url_join(file_name)
             http_response = self._uri_opener.GET(genexus_url, cache=True)
             
@@ -65,10 +64,10 @@ class genexus_xml(CrawlPlugin):
                 return
 
             # Save it to the kb!
-            desc = 'The "%s" file was found at: "%s", this file might'\
-                   ' expose private URLs and requires a manual review. The'\
-                   ' scanner will add all URLs listed in this file to the'\
-                   ' crawl queue.'
+            desc = ('The "%s" file was found at: "%s", this file might'
+                    ' expose private URLs and requires a manual review. The'
+                    ' scanner will add all URLs listed in this file to the'
+                    ' crawl queue.')
             desc = desc % (file_name, genexus_url)
             title_info = 'GeneXus "%s" file' % file_name
 
@@ -88,27 +87,29 @@ class genexus_xml(CrawlPlugin):
         om.out.debug('Parsing xml file with xml.dot.minidom.')
         try:
             dom = xml.dom.minidom.parseString(http_response.get_body())
-        except:
-            msg = 'Error while parsing "%s"'
-            raise BaseFrameworkException(msg % file_name)
-        else:
-            raw_url_list = dom.getElementsByTagName("ObjLink")
-            parsed_url_list = []
+        except Exception, e:
+            msg = 'Error while parsing "%s": "%s"'
+            args = (http_response.get_url(), e)
+            om.out.debug(msg % args)
+            return
 
-            for url in raw_url_list:
-                try:
-                    url = url.childNodes[0].data
-                    url = base_url.url_join(url)
-                except ValueError, ve:
-                    msg = '"%s" file had an invalid URL "%s"'
-                    om.out.debug(msg % (file_name, ve))
-                except:
-                    msg = '"%s" file had an invalid format'
-                    om.out.debug(msg % file_name)
-                else:
-                    parsed_url_list.append(url)
+        raw_url_list = dom.getElementsByTagName("ObjLink")
+        parsed_url_list = []
 
-            self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
+        for url in raw_url_list:
+            try:
+                url = url.childNodes[0].data
+                url = base_url.url_join(url)
+            except ValueError, ve:
+                msg = '"%s" file had an invalid URL "%s"'
+                om.out.debug(msg % (file_name, ve))
+            except:
+                msg = '"%s" file had an invalid format'
+                om.out.debug(msg % file_name)
+            else:
+                parsed_url_list.append(url)
+
+        self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
 
     def get_long_desc(self):
         """

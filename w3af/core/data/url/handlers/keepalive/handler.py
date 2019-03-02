@@ -90,12 +90,14 @@ class KeepAliveHandler(object):
         no error occurs if there is no connection to that host.
         """
         for conn in self._cm.get_all(host):
-            self._cm.remove_connection(conn, host, reason='close connection')
+            self._cm.remove_connection(conn, reason='close connection')
 
     def close_all(self):
         """
         Close all open connections
         """
+        debug('Closing all connections')
+
         for conn in self._cm.get_all():
             self._cm.remove_connection(conn, reason='close all connections')
 
@@ -107,8 +109,8 @@ class KeepAliveHandler(object):
         debug('Add %s to free-to-use connection list' % connection)
         self._cm.free_connection(connection)
 
-    def _remove_connection(self, host, conn):
-        self._cm.remove_connection(conn, host, reason='remove connection')
+    def _remove_connection(self, conn):
+        self._cm.remove_connection(conn, reason='remove connection')
 
     def do_open(self, req):
         """
@@ -145,24 +147,24 @@ class KeepAliveHandler(object):
 
         except socket.timeout:
             # We better discard this connection
-            self._cm.remove_connection(conn, host, reason='socket timeout')
+            self._cm.remove_connection(conn, reason='socket timeout')
             raise URLTimeoutError()
 
         except OpenSSL.SSL.ZeroReturnError:
             # According to the pyOpenSSL docs ZeroReturnError means that the
             # SSL connection has been closed cleanly
-            self._cm.remove_connection(conn, host, reason='ZeroReturnError')
+            self._cm.remove_connection(conn, reason='ZeroReturnError')
             raise
 
         except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
             # We better discard this connection
-            self._cm.remove_connection(conn, host, reason='socket error')
+            self._cm.remove_connection(conn, reason='socket error')
             raise
 
         except Exception, e:
             # We better discard this connection, we don't even know what happen!
             reason = 'unexpected exception "%s"' % e
-            self._cm.remove_connection(conn, host, reason=reason)
+            self._cm.remove_connection(conn, reason=reason)
             raise
 
         # How many requests were sent with this connection?
@@ -171,7 +173,7 @@ class KeepAliveHandler(object):
         # If not a persistent connection, or the user specified that he wanted
         # a new connection for this specific request, don't try to reuse it
         if resp.will_close or req.new_connection:
-            self._cm.remove_connection(conn, host, reason='will close')
+            self._cm.remove_connection(conn, reason='will close')
 
         # This response seems to be fine
         resp._handler = self
@@ -190,12 +192,12 @@ class KeepAliveHandler(object):
             # better understand it.
             #
             # https://github.com/andresriancho/w3af/issues/2074
-            self._cm.remove_connection(conn, host, reason='http connection died')
+            self._cm.remove_connection(conn, reason='http connection died')
             raise HTTPRequestException('The HTTP connection died')
         except Exception, e:
             # We better discard this connection, we don't even know what happen!
             reason = 'unexpected exception while reading "%s"' % e
-            self._cm.remove_connection(conn, host, reason=reason)
+            self._cm.remove_connection(conn, reason=reason)
             raise
 
         # We measure time here because it's the best place we know of
@@ -237,13 +239,13 @@ class KeepAliveHandler(object):
             # note: just because we got something back doesn't mean it
             # worked.  We'll check the version below, too.
         except (socket.error, httplib.HTTPException), e:
-            self._cm.remove_connection(conn, host, reason='socket error')
+            self._cm.remove_connection(conn, reason='socket error')
             resp = None
             reason = e
         except OpenSSL.SSL.ZeroReturnError, e:
             # According to the pyOpenSSL docs ZeroReturnError means that the
             # SSL connection has been closed cleanly
-            self._cm.remove_connection(conn, host, reason='ZeroReturnError')
+            self._cm.remove_connection(conn, reason='ZeroReturnError')
             resp = None
             reason = e
         except OpenSSL.SSL.SysCallError, e:
@@ -253,7 +255,7 @@ class KeepAliveHandler(object):
             #
             # A new connection will be created and the scan should continue without
             # problems
-            self._cm.remove_connection(conn, host, reason='OpenSSL.SSL.SysCallError')
+            self._cm.remove_connection(conn, reason='OpenSSL.SSL.SysCallError')
             resp = None
             reason = e
         except Exception, e:
@@ -267,7 +269,7 @@ class KeepAliveHandler(object):
             msg = 'Unexpected exception "%s" - closing %s to %s)'
             error(msg % (e, conn, host))
 
-            self._cm.remove_connection(conn, host, reason='unexpected %s' % e)
+            self._cm.remove_connection(conn, reason='unexpected %s' % e)
             raise
 
         if resp is None or resp.version == 9:
@@ -306,6 +308,7 @@ class KeepAliveHandler(object):
         The real workhorse.
         """
         self._update_socket_timeout(conn, req)
+
         try:
             conn.putrequest(req.get_method(), req.get_selector(),
                             skip_host=1, skip_accept_encoding=1)

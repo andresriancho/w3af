@@ -26,6 +26,7 @@ from itertools import izip, repeat
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af import ROOT_PATH
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, STRING, INPUT_FILE, INT
 from w3af.core.data.options.option_list import OptionList
@@ -89,11 +90,14 @@ class BruteforcePlugin(AuditPlugin):
         p_bf.passwd_file = self._passwd_file
         return p_bf.generator()
 
-    def audit(self, freq):
+    def audit(self, freq, debugging_id=None):
         """
         This method MUST be implemented on every plugin.
 
         :param freq: A FuzzableRequest that is going to be modified and sent.
+        :param debugging_id: The ID to use in the logs to be able to track this
+                             call to audit(). Plugins need to send this ID to
+                             the ExtendedUrllib to get improved logging.
         """
         msg = 'Plugin is not implementing required method audit'
         raise NotImplementedError(msg)
@@ -104,7 +108,10 @@ class BruteforcePlugin(AuditPlugin):
         :return: A list with FuzzableRequests (if we were able to bruteforce
                  any forms/basic auth present in fuzzable_request).
         """
-        self.audit(safe_deepcopy(fuzzable_request))
+        debugging_id = rand_alnum(8)
+
+        self.audit(safe_deepcopy(fuzzable_request),
+                   debugging_id=debugging_id)
 
         res = []
 
@@ -116,26 +123,32 @@ class BruteforcePlugin(AuditPlugin):
 
         return res
 
-    def _bruteforce(self, url, combinations):
+    def _bruteforce(self, url, combinations, debugging_id):
         """
         :param url: A string representation of an URL
         :param combinations: A generator with tuples that contain (user,pass)
+        :param debugging_id: The ID to use in the logs to be able to track this
+                             call to audit(). Plugins need to send this ID to
+                             the ExtendedUrllib to get improved logging.
         """
-        args_iter = izip(repeat(url), combinations)
+        args_iter = izip(repeat(url),
+                         combinations,
+                         repeat(debugging_id))
 
-        self.worker_pool.map_multi_args(self._brute_worker, args_iter,
+        self.worker_pool.map_multi_args(self._brute_worker,
+                                        args_iter,
                                         chunksize=100)
 
     def end(self):
         raise NotImplementedError('Bruteforce plugins MUST override the'
                                   ' end() method.')
 
-    def _brute_worker(self, url, combination):
+    def _brute_worker(self, url, combination, debugging_id):
         """
         This is the method that sends the request to the remote server.
 
         :param url: A string representation of an URL
-        :param combinations: A list of tuples with (user,pass)
+        :param combination: A list of tuples with (user,pass)
         """
         raise NotImplementedError('Bruteforce plugins MUST override method'
                                   ' _bruteWorker.')

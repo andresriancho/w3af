@@ -83,11 +83,13 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
 
         return new_request
 
-    # Implementation note: To avoid the server sending us into an
-    # infinite loop, the request object needs to track what URLs we
-    # have already seen.  Do this by adding a handler-specific
-    # attribute to the Request object.
     def do_follow_redirect(self, req, fp, code, msg, headers):
+        """
+        Implementation note: To avoid the server sending us into an
+        infinite loop, the request object needs to track what URLs we
+        have already seen.  Do this by adding a handler-specific
+        attribute to the Request object.
+        """
 
         # Check if we can redirect according to the RFC
         if not self.redirect_allowed_by_rfc(req, code):

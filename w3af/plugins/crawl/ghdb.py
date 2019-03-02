@@ -66,12 +66,14 @@ class ghdb(CrawlPlugin):
         """
         # Get the domain and set some parameters
         domain = fuzzable_request.get_url().get_domain()
+
         if is_private_site(domain):
-            msg = 'There is no point in searching google for "site:%s".' \
-                  ' Google doesn\'t index private pages.'
+            msg = ('There is no point in searching google for "site:%s".'
+                   ' Google does not index private pages.')
             om.out.information(msg % domain)
-        else:
-            self._do_clasic_GHDB(domain)
+            return
+
+        self._do_clasic_GHDB(domain)
 
     def _do_clasic_GHDB(self, domain):
         """
@@ -103,10 +105,10 @@ class ghdb(CrawlPlugin):
             # I found a vuln in the site!
             response = self._uri_opener.GET(result.URL, cache=True)
             if not is_404(response):
-                desc = 'ghdb plugin found a vulnerability at URL: "%s".' \
-                       ' According to GHDB the vulnerability description'\
-                       ' is "%s".'
-                desc = desc % (response.get_url(), gh.desc)
+                desc = ('ghdb plugin found a vulnerability at URL: "%s".'
+                        ' According to GHDB the vulnerability description'
+                        ' is "%s".')
+                desc %= (response.get_url(), gh.desc)
                 
                 v = Vuln('Google hack database match', desc,
                          severity.MEDIUM, response.id, self.get_name())
@@ -141,8 +143,8 @@ class ghdb(CrawlPlugin):
 
         for signature in dom.getElementsByTagName("signature"):
             if len(signature.childNodes) != 6:
-                msg = 'There is a corrupt signature in the GHDB. The error was'\
-                      ' found in the following XML code: "%s".'
+                msg = ('There is a corrupt signature in the GHDB. The error was'
+                       ' found in the following XML code: "%s".')
                 om.out.debug(msg % signature.toxml())
                 continue
 
@@ -150,8 +152,8 @@ class ghdb(CrawlPlugin):
                 query_string = signature.childNodes[4].childNodes[0].data
 
             except Exception, e:
-                msg = 'There is a corrupt signature in the GHDB. No query '\
-                      ' string was found in the following XML code: "%s".'
+                msg = ('There is a corrupt signature in the GHDB. No query '
+                       ' string was found in the following XML code: "%s".')
                 om.out.debug(msg % signature.toxml())
                 continue
 

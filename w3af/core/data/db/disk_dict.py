@@ -135,7 +135,7 @@ class DiskDict(object):
 
         raise KeyError()
 
-    def pop(self, key):
-        value = self.get(key)
+    def pop(self, key, default=-456):
+        value = self.get(key, default=default)
         del self[key]
         return value

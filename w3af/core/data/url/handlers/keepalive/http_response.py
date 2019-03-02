@@ -124,7 +124,7 @@ class HTTPResponse(httplib.HTTPResponse):
             self._handler._request_closed(self._connection)
 
     def close_connection(self):
-        self._handler._remove_connection(self._host, self._connection)
+        self._handler._remove_connection(self._connection)
         self.close()
 
     def info(self):
