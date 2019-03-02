@@ -107,7 +107,7 @@ class AuditPlugin(Plugin):
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
         
-        super(AuditPlugin, self).kb_append_uniq(location_a, location_b, info)
+        return super(AuditPlugin, self).kb_append_uniq(location_a, location_b, info)
         
     def kb_append(self, location_a, location_b, info):
         """
