@@ -161,20 +161,28 @@ class xss(AuditPlugin):
         if self._check_persistent_xss:
             self._xss_mutants.append((trivial_mutant, response.id))
 
-        # This is something I've seen in as a false positive during my
-        # assessments and is better explained in this stackoverflow question
-        # https://goo.gl/BgXVJY
-        ct_options, _ = response.get_headers().iget('X-Content-Type-Options')
-        content_type, _ = response.get_headers().iget('Content-Type')
-
-        if content_type == 'application/json' and ct_options == 'nosniff':
-            # No luck exploiting this JSON XSS
+        if self._is_json_response(response):
             return False
 
         if payload in response.get_body().lower():
             self._report_vuln(mutant, response, payload)
             return True
         
+        return False
+
+    def _is_json_response(self, response):
+        """
+        This is something I've seen in as a false positive during my
+        assessments and is better explained in this stackoverflow question
+        https://goo.gl/BgXVJY
+        """
+        ct_options, _ = response.get_headers().iget('X-Content-Type-Options')
+        content_type, _ = response.get_headers().iget('Content-Type')
+
+        if 'application/json' in content_type and 'nosniff' in ct_options:
+            # No luck exploiting this JSON XSS
+            return True
+
         return False
 
     def _search_xss(self, mutant, debugging_id):
@@ -283,6 +291,9 @@ class xss(AuditPlugin):
         """
         msg = 'Analyzing HTTP response %s to verify if XSS token was persisted'
         om.out.debug(msg % response.get_uri())
+
+        if self._is_json_response(response):
+            return
 
         body = response.get_body()
 
