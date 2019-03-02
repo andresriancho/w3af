@@ -358,6 +358,13 @@ class w3afCore(object):
         # Stop the parser subprocess
         parser_cache.dpc.clear()
 
+        # Remove the xurllib cache, bloom filters, DiskLists, etc.
+        #
+        # This needs to be done here and not in stop() because we want to keep
+        # these files (mostly the HTTP request/response data) for the user to
+        # analyze in the GUI after the scan has finished
+        remove_temp_dir(ignore_errors=True)
+
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
         # timeout and other configs to remain configured as he did it the first
