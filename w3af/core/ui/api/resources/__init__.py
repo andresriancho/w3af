@@ -8,3 +8,4 @@ from . import exceptions
 from . import log
 from . import urls
 from . import fuzzable_requests
+from . import state
