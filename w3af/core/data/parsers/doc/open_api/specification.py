@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-requests.py
+specification.py
 
 Copyright 2017 Andres Riancho
 
@@ -50,13 +50,42 @@ for to_silence in SILENCE:
 
 
 class SpecificationHandler(object):
+
     def __init__(self, http_response, no_validation=False):
         self.http_response = http_response
-        self.spec = None
         self.no_validation = no_validation
+        self.spec = None
 
     def get_http_response(self):
         return self.http_response
+
+    def shallow_copy(self):
+        """
+        :return: A copy of the SpecificationHandler
+                 which doesn't contain a Spec instance.
+        """
+        return SpecificationHandler(self.http_response, self.no_validation)
+
+    def get_spec(self):
+        """
+        :return: An instance of Spec (Bravado)
+                 which was created by this SpecificationHandler.
+        """
+        return self.spec
+
+    def parse(self):
+        """
+        Parse an API specification provided in the HTTP response.
+
+        :return: An instance of Spec (Bravado).
+        """
+        spec_dict = self._load_spec_dict()
+        if spec_dict is None:
+            return None
+
+        self.spec = self._parse_spec_from_dict(spec_dict)
+
+        return self.spec
 
     def get_api_information(self):
         """
@@ -65,13 +94,10 @@ class SpecificationHandler(object):
         :yield: All the information we were able to collect about each API endpoint
                 This includes the specification, parameters, URL, etc.
         """
-        spec_dict = self._load_spec_dict()
+        if not self.spec:
+            self.parse()
 
-        if spec_dict is None:
-            return
-
-        self.spec = self._parse_spec_from_dict(spec_dict)
-        if self.spec is None:
+        if not self.spec:
             return
 
         for api_resource_name, resource in self.spec.resources.items():

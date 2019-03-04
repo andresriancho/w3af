@@ -1,0 +1,69 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: Users
+  description: A sample API for a user directory
+host: w3af.org
+basePath: /api
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-API-Key
+  basicAuth:
+    type: basic
+security:
+  - basicAuth: []
+paths:
+  /users:
+    get:
+      description: Returns all users
+      operationId: findUsers
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          type: integer
+          format: int32
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  User:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      address:
+        type: string
+
+  Error:
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string

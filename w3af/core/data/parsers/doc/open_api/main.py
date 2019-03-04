@@ -45,6 +45,11 @@ class OpenAPI(BaseParser):
     The parser only returns interesting results for get_forms(), where all
     FuzzableRequests associated with REST API calls are returned.
 
+    The parser stores a couple of things to the kb which then can be used by other plugins:
+      * An instance of SpecificationHandler which provides the API specification.
+      * A mapping { method, url -> operation id } which allows to find the operation
+        which is associated with a fuzzable request.
+
     [0] https://www.openapis.org/
     [1] https://github.com/Yelp/bravado-core
 
@@ -67,6 +72,8 @@ class OpenAPI(BaseParser):
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
+        self.specification_handler = None
+        self.request_to_operation_id = {}
 
     @staticmethod
     def content_type_match(http_resp):
@@ -136,6 +143,18 @@ class OpenAPI(BaseParser):
         # sure until we really parse it in OpenAPI.parse()
         return True
 
+    def get_specification_handler(self):
+        """
+        :return: An instance of SpecificationHandler which was used by the parser.
+        """
+        return self.specification_handler
+
+    def get_request_to_operation_id(self):
+        """
+        :return: A mapping { method, url -> operation id }
+        """
+        return self.request_to_operation_id
+
     def parse(self):
         """
         Extract all the API endpoints using the bravado Open API parser.
@@ -143,13 +162,17 @@ class OpenAPI(BaseParser):
         The method also looks for all parameters which are passed to endpoints via headers,
         and stores them in to the fuzzable request
         """
-        specification_handler = SpecificationHandler(self.get_http_response(),
-                                                     self.no_validation)
+        self.specification_handler = SpecificationHandler(self.get_http_response(),
+                                                          self.no_validation)
 
-        for data in specification_handler.get_api_information():
+        self.request_to_operation_id = {}
+        for data in self.specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
                 fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
+
+                key = '%s|%s' % (fuzzable_request.get_method(), fuzzable_request.get_url())
+                self.request_to_operation_id[key] = data[4].operation_id
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
@@ -180,7 +203,8 @@ class OpenAPI(BaseParser):
 
                 self.api_calls.append(fuzzable_request)
 
-    def _should_audit(self, fuzzable_request):
+    @staticmethod
+    def _should_audit(fuzzable_request):
         """
         We want to make sure that w3af doesn't delete all the items from the
         REST API, so we ignore DELETE calls.
