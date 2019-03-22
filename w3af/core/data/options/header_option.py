@@ -40,6 +40,8 @@ class HeaderOption(BaseOption):
         self._value = self.validate(value)
 
     def validate(self, value):
+        if isinstance(value, Headers):
+            return value
         try:
             return Headers.from_string(value)
         except Exception:
