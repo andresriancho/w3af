@@ -41,7 +41,9 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
 
 
 class TestRequests(unittest.TestCase):
-    def generate_response(self, specification_as_string):
+
+    @staticmethod
+    def generate_response(specification_as_string):
         url = URL('http://www.w3af.com/swagger.json')
         headers = Headers([('content-type', 'application/json')])
         return HTTPResponse(200, specification_as_string, headers,
@@ -380,3 +382,4 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
         self.assertEqual(fuzzable_request.get_headers(), e_headers)
         self.assertEqual(fuzzable_request.get_data(), e_data)
+

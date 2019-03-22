@@ -26,7 +26,12 @@ from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (IntParamQueryString,
                                                                               NestedModel,
+                                                                              PetstoreModel,
                                                                               PetstoreSimpleModel)
+
+
+def by_path(fra, frb):
+    return cmp(fra.get_url().url_string, frb.get_url().url_string)
 
 
 class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
@@ -74,9 +79,6 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
         fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/swagger.json', '/')]
 
         # Order them to be able to easily assert things
-        def by_path(fra, frb):
-            return cmp(fra.get_url().url_string, frb.get_url().url_string)
-
         fuzzable_requests.sort(by_path)
 
         #
@@ -127,6 +129,7 @@ class TestOpenAPINestedModelSpec(PluginTest):
     }
 
     class SQLIMockResponse(MockResponse):
+
         def get_response(self, http_request, uri, response_headers):
             basic = http_request.headers.get('Basic', '')
             if basic != TestOpenAPINestedModelSpec.BEARER:
@@ -178,9 +181,6 @@ class TestOpenAPINestedModelSpec(PluginTest):
         fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/openapi.json', '/')]
 
         # Order them to be able to easily assert things
-        def by_path(fra, frb):
-            return cmp(fra.get_url().url_string, frb.get_url().url_string)
-
         fuzzable_requests.sort(by_path)
 
         self.assertEqual(len(fuzzable_requests), 1)
@@ -202,6 +202,79 @@ class TestOpenAPINestedModelSpec(PluginTest):
 
         vulns = self.kb.get('sqli', 'sqli')
         self.assertEqual(len(vulns), 2)
+
+
+class TestOpenAPIFuzzAuthHeaders(PluginTest):
+
+    api_key = 'zzz'
+    target_url = 'http://petstore.swagger.io/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api',
+
+                                               ('header_auth',
+                                                'api_key: %s' % api_key,
+                                                PluginConfig.HEADER),
+
+                                               ),),
+                        'audit': (PluginConfig('sqli'),)}
+        }
+    }
+
+    class SQLIMockResponse(MockResponse):
+
+        def get_response(self, http_request, uri, response_headers):
+            api_key = http_request.headers.get('api_key', '')
+
+            for payload in sqli.SQLI_STRINGS:
+                if payload in api_key:
+                    return self.status, response_headers, 'PostgreSQL query failed:'
+
+            if api_key != TestOpenAPIFuzzAuthHeaders.api_key:
+                return 401, response_headers, ''
+
+            return self.status, response_headers, 'Sunny outside'
+
+    MOCK_RESPONSES = [MockResponse('http://petstore.swagger.io/openapi.json',
+                                   PetstoreModel().get_specification(),
+                                   content_type='application/json'),
+
+                      SQLIMockResponse(re.compile('http://petstore.swagger.io/v2/.*'),
+                                       body=None,
+                                       method='GET',
+                                       status=200),
+
+                      SQLIMockResponse(re.compile('http://petstore.swagger.io/v2/.*'),
+                                       body=None,
+                                       method='POST',
+                                       status=200),
+
+                      SQLIMockResponse(re.compile('http://petstore.swagger.io/v2/.*'),
+                                       body=None,
+                                       method='PUT',
+                                       status=200)
+                      ]
+
+    def test_fuzz_auth_header_only_once(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        #
+        # Since we configured authentication we should only get one of the Info
+        #
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 1, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
+        vulns = self.kb.get('sqli', 'sqli')
+        self.assertEqual(len(vulns), 1)
+
+        vuln = vulns[0]
+        self.assertEquals('SQL injection', vuln.get_name())
 
 
 class TestOpenAPIRaisesWarningIfNoAuth(PluginTest):

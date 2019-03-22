@@ -24,6 +24,8 @@ import yaml
 
 from yaml import load
 
+import w3af.core.data.kb.knowledge_base as kb
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
@@ -149,7 +151,7 @@ class OpenAPI(BaseParser):
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
-                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
+                fuzzable_request = request_factory.get_fuzzable_request()
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
@@ -178,9 +180,62 @@ class OpenAPI(BaseParser):
                 if not self._should_audit(fuzzable_request):
                     continue
 
+                operation = data[4]
+                headers = self._get_parameter_headers(operation)
+                if self.discover_fuzzable_headers:
+                    fuzzable_request.set_force_fuzzing_headers(headers)
+
+                # TODO move it to a separate method
+                # TODO should it expect multiple specs?
+                auth_headers = kb.kb.raw_read('http_data', 'auth_headers')
+                if not isinstance(auth_headers, set):
+                    auth_headers = set()
+
+                for header in headers:
+                    if OpenAPI._is_auth_header(header, operation.swagger_spec):
+                        auth_headers.add(header)
+
+                kb.kb.raw_write('http_data', 'auth_headers', auth_headers)
+
                 self.api_calls.append(fuzzable_request)
 
-    def _should_audit(self, fuzzable_request):
+    @staticmethod
+    def _get_parameter_headers(operation):
+        """
+        Looks for all parameters which are passed to the endpoint via headers.
+
+        :param operation: An instance of Operation class
+                          which represents the API endpoint.
+        :return: A list of unique header names.
+        """
+        parameter_headers = set()
+        for parameter_name, parameter in operation.params.iteritems():
+            if parameter.location == 'header':
+                parameter_headers.add(parameter.name)
+                om.out.debug('Found a parameter header for %s endpoint: %s'
+                             % (operation.path_name, parameter.name))
+
+        return list(parameter_headers)
+
+    @staticmethod
+    def _is_auth_header(name, spec):
+        """
+        TODO
+        :param name: Header name.
+        :param spec: API specification.
+        :return: True if this is an auth header, False otherwise.
+        """
+        for key, auth in spec.security_definitions.iteritems():
+            if not hasattr(auth, 'location') or not hasattr(auth, 'name'):
+                continue
+
+            if auth.location == 'header' and auth.name == name:
+                return True
+
+        return False
+
+    @staticmethod
+    def _should_audit(fuzzable_request):
         """
         We want to make sure that w3af doesn't delete all the items from the
         REST API, so we ignore DELETE calls.

@@ -20,9 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.data.fuzzer.mutants.mutant import Mutant
+import w3af.core.data.kb.knowledge_base as kb
 
 
 class HeadersMutant(Mutant):
+
+    # TODO describe
+    fuzzed_auth_headers = set()
+
     """
     This class is a headers mutant.
     """
@@ -55,6 +60,8 @@ class HeadersMutant(Mutant):
         """
         fuzzable_headers = fuzzer_config['fuzzable_headers'] + freq.get_force_fuzzing_headers()
 
+        fuzzable_headers = HeadersMutant._exclude_fuzzed_auth_headers(fuzzable_headers)
+
         if not fuzzable_headers:
             return []
 
@@ -64,3 +71,23 @@ class HeadersMutant(Mutant):
         return cls._create_mutants_worker(freq, cls, mutant_str_list,
                                           fuzzable_param_list,
                                           append, fuzzer_config)
+
+    @classmethod
+    def _exclude_fuzzed_auth_headers(cls, fuzzable_headers):
+        """
+        TODO
+        :param fuzzable_headers:
+        :return:
+        """
+        auth_headers = kb.kb.raw_read('http_data', 'auth_headers')
+        updated_fuzzable_headers = []
+        for fuzzable_header in fuzzable_headers:
+            if fuzzable_header in auth_headers:
+                if fuzzable_header in cls.fuzzed_auth_headers:
+                    continue
+
+                cls.fuzzed_auth_headers.add(fuzzable_header)
+
+            updated_fuzzable_headers.append(fuzzable_header)
+
+        return updated_fuzzable_headers

@@ -56,13 +56,10 @@ class RequestFactory(object):
         self.operation = operation
         self.parameters = parameters
 
-    def get_fuzzable_request(self, discover_fuzzable_headers=False):
+    def get_fuzzable_request(self):
         """
         Creates a fuzzable request by querying different parts of the spec
         parameters, operation, etc.
-
-        :param discover_fuzzable_headers: If it's set to true,
-                                          then all fuzzable headers will be added to the fuzzable request.
         :return: A fuzzable request.
         """
         method = self.get_method()
@@ -70,31 +67,10 @@ class RequestFactory(object):
         headers = self.get_headers()
         data_container = self.get_data_container(headers)
 
-        fuzzable_request = FuzzableRequest(uri,
-                                           headers=headers,
-                                           post_data=data_container,
-                                           method=method)
-
-        if discover_fuzzable_headers:
-            fuzzable_request.set_force_fuzzing_headers(self._get_parameter_headers())
-
-        return fuzzable_request
-
-    def _get_parameter_headers(self):
-        """
-        Looks for all parameters which are passed to the endpoint via headers.
-
-        :return: A list of unique header names.
-        """
-        parameter_headers = set()
-        for parameter_name in self.parameters:
-            parameter = self.parameters[parameter_name]
-            if parameter.location == 'header':
-                parameter_headers.add(parameter.name)
-                om.out.debug('Found a parameter header for %s endpoint: %s'
-                             % (self.operation.path_name, parameter.name))
-
-        return list(parameter_headers)
+        return FuzzableRequest(uri,
+                               headers=headers,
+                               post_data=data_container,
+                               method=method)
 
     def _bravado_construct_request(self):
         """

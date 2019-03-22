@@ -30,6 +30,8 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 
+from w3af.core.data.parsers.doc.open_api.tests.example_specifications import PetstoreModel
+
 
 # Order them to be able to easily assert things
 def by_path(fra, frb):
@@ -434,7 +436,8 @@ class TestOpenAPIMain(unittest.TestCase):
         http_resp = self.generate_response('"', 'image/jpeg')
         self.assertFalse(OpenAPI.is_valid_json_or_yaml(http_resp))
 
-    def generate_response(self, specification_as_string, content_type='application/json'):
+    @staticmethod
+    def generate_response(specification_as_string, content_type='application/json'):
         url = URL('http://www.w3af.com/swagger.json')
         headers = Headers([('content-type', content_type)])
         return HTTPResponse(200, specification_as_string, headers,
