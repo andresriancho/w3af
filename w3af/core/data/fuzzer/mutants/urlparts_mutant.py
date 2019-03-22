@@ -118,6 +118,53 @@ class URLPartsMutant(Mutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
+
+        forced_parts = freq.get_force_fuzzing_url_parts()
+        if forced_parts:
+            return cls._create_mutants_forced_parts(freq, mutant_str_list, fuzzable_param_list,
+                                                    append, fuzzer_config, forced_parts)
+
+        return cls._create_mutants_all_parts(freq, mutant_str_list, fuzzable_param_list,
+                                             append, fuzzer_config)
+
+    @classmethod
+    def _create_mutants_forced_parts(cls, freq, mutant_str_list, fuzzable_param_list,
+                                     append, fuzzer_config, forced_parts):
+        res = []
+        path_sep = '/'
+        for idx, part in enumerate(forced_parts):
+            p_chunk, is_variable = part
+
+            if not p_chunk or not is_variable:
+                continue
+
+            for mutant_str in mutant_str_list:
+                url_start = ''.join((pc for pc, _ in forced_parts[:idx]))
+                url_end = ''.join((pc for pc, _ in forced_parts[idx + 1:]))
+                url_token = (p_chunk if append else '') + mutant_str
+
+                url_parts_container = URLPartsContainer(url_start, url_token,
+                                                        url_end)
+
+                freq_copy = copy.deepcopy(freq)
+                m = cls(freq_copy)
+                m.set_dc(url_parts_container)
+                res.append(m)
+
+                # Same URLs but with different types of encoding!
+                freq_copy = copy.deepcopy(freq)
+                m2 = cls(freq_copy)
+                m2.set_dc(url_parts_container)
+                m2.set_double_encoding(True)
+
+                if m2.get_url() != m.get_url():
+                    res.append(m2)
+
+        return res
+
+    @classmethod
+    def _create_mutants_all_parts(cls, freq, mutant_str_list, fuzzable_param_list,
+                                  append, fuzzer_config):
         if not fuzzer_config['fuzz_url_parts']:
             return []
 

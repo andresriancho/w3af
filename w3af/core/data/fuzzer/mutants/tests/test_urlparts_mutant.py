@@ -129,3 +129,22 @@ class TestURLPartsMutant(unittest.TestCase):
         generated_urls = set([m.get_url().url_string for m in generated_mutants])
 
         self.assertEqual(set(expected_urls), generated_urls)
+
+    def test_forced_url_parts(self):
+        freq = FuzzableRequest(URL('http://www.w3af.com/static/foo/bar.ext'))
+        freq.set_force_fuzzing_url_parts([
+            ('/static/', False), ('foo', True), ('/bar.', False), ('ext', True)
+        ])
+
+        generated_mutants = URLPartsMutant.create_mutants(
+            freq, self.payloads, [],
+            False, self.fuzzer_config)
+
+        expected_urls = ['http://www.w3af.com/static/abc/bar.ext',
+                         'http://www.w3af.com/static/def/bar.ext',
+                         'http://www.w3af.com/static/foo/bar.abc',
+                         'http://www.w3af.com/static/foo/bar.def']
+
+        generated_urls = set([m.get_url().url_string for m in generated_mutants])
+
+        self.assertEqual(set(expected_urls), generated_urls)

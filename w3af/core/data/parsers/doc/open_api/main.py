@@ -62,11 +62,13 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True):
+    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True,
+                 discover_fuzzable_url_parts=True):
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
+        self.discover_fuzzable_url_parts = discover_fuzzable_url_parts
 
     @staticmethod
     def content_type_match(http_resp):
@@ -149,7 +151,8 @@ class OpenAPI(BaseParser):
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
-                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
+                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers,
+                                                                        self.discover_fuzzable_url_parts)
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
