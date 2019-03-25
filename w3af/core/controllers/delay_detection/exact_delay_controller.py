@@ -110,6 +110,7 @@ class ExactDelayController(object):
                 self._log_failure(delay, response)
                 return False, []
 
+            original_response = response
             #
             # The delay was successful, BUT... let's try one more thing to
             # reduce false positives: send the payload reversed, so if the
@@ -140,8 +141,10 @@ class ExactDelayController(object):
                 self._log_failure_with_reverse(delay, response)
                 return False, []
 
-            self._log_success(delay, response)
-            responses.append(response)
+            # NOTE: log the original responses here, the reversed ones
+            # don't make sense to show the report reader
+            self._log_success(delay, original_response)
+            responses.append(original_response)
 
         return True, responses
 
