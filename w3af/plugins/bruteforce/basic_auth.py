@@ -122,7 +122,6 @@ class basic_auth(BruteforcePlugin):
         self._found = True
 
         password_for_report = self._get_password_for_report(passwd)
-        print password_for_report
 
         desc = ('Found authentication credentials to: "%s".'
                 ' A valid user and password combination is: %s/%s .')
@@ -160,25 +159,25 @@ class basic_auth(BruteforcePlugin):
         This plugin bruteforces basic authentication endpoints.
 
         Nine configurable parameters exist:
-            - usersFile
-            - stopOnFirst
-            - passwdFile
-            - passEqUser
-            - useLeetPasswd
-            - useSvnUsers
-            - useEmails
-            - useProfiling
-            - profilingNumber
+            - users_file
+            - stop_on_first
+            - passwd_file
+            - pass_eq_user
+            - use_leet_password
+            - use_svn_users
+            - use_emails
+            - use_profiling
+            - profiling_number
 
-        This plugin will take users from the file pointed by "usersFile", mail
-        users found on the site and email addresses (if "useEmails" is set to True)
-        and svn users found on the site ( if "useSvnUsers" is set to True ).
+        This plugin will take users from the file pointed by "users_file", mail
+        users found on the site and email addresses (if "use_emails" is set to True)
+        and svn users found on the site ( if "use_svn_users" is set to True ).
 
-        This plugin will take passwords from the file pointed by "passwdFile" and
-        the result of the password profiling plugin (if "useProfiling" is set to
-        True). The profilingNumber sets the number of results from the password
+        This plugin will take passwords from the file pointed by "passwd_file" and
+        the result of the password profiling plugin (if "use_profiling" is set to
+        True). The profiling_number sets the number of results from the password
         profiling plugin to use in the password field.
 
-        The "stopOnFirst" parameter indicates if the bruteforce will stop when
+        The "stop_on_first" parameter indicates if the bruteforce will stop when
         finding the first valid credentials or not.
         """
