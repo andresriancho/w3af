@@ -139,7 +139,22 @@ class ResponseCacheKeyCache(object):
         cache_key = '%s%s' % (smart_str_ignore(body), headers)
         cache_key = quick_hash(cache_key)
 
-        result = self._cache.get(cache_key, None)
+        try:
+            result = self._cache.get(cache_key, None)
+        except AssertionError:
+            # This is a rare race conditions which happens when another
+            # thread modifies the cache and changes the __first item in
+            # the cache.
+            #
+            # Just ignore and continue, the only downside of this is that
+            # the cache_key is NOT moved to the beginning of the LRU and
+            # might be removed before the "right time".
+            #
+            # Another solution was to use a locked LRU, which will never
+            # raise this exception, BUT the race condition is so rare and
+            # all the locking is so restrictive that I decided to use this
+            # solution
+            result = None
 
         if result is not None:
             return result
@@ -148,7 +163,22 @@ class ResponseCacheKeyCache(object):
                                         clean_response=clean_response,
                                         headers=headers)
 
-        self._cache[cache_key] = result
+        try:
+            self._cache[cache_key] = result
+        except AssertionError:
+            # This is a rare race conditions which happens when another
+            # thread modifies the cache and changes the __first item in
+            # the cache.
+            #
+            # Just ignore and continue, the only downside of this is that
+            # the cache_key is NOT moved to the beginning of the LRU and
+            # might be removed before the "right time".
+            #
+            # Another solution was to use a locked LRU, which will never
+            # raise this exception, BUT the race condition is so rare and
+            # all the locking is so restrictive that I decided to use this
+            # solution
+            pass
 
         return result
 
