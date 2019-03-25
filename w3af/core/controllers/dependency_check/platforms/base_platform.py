@@ -19,8 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import platform
 from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_PACKAGES, CORE, GUI
 from ..external.retirejs import retirejs_is_installed
+from ..external.npmjs import npmjs_is_installed
 
 
 class Platform(object):
@@ -56,10 +58,21 @@ class Platform(object):
         return instructions
 
     @staticmethod
-    def retirejs_handler():
-        if retirejs_is_installed():
+    def npmjs_handler():
+        if npmjs_is_installed():
             return []
+        dist_name, dist_version, _ = platform.dist() 
+        # See official doc on https://github.com/nodesource/distributions
+        if dist_name == 'debian' or dist_name == 'ubuntu':
+            return ['curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -;sudo apt-get install -y nodejs']
+        if dist_name == 'fedora' or 'openbsd' in platform.system().lower() or 'SuSE' in dist_name or 'redhat' in dist_name:
+            return ['curl -sL https://deb.nodesource.com/setup_11.x | bash -']
+        return ['echo "please install npm pakage and using npm install retire']
 
+    @staticmethod
+    def retirejs_handler():
+        if npmjs_is_installed() and retirejs_is_installed():
+            return []
         return ['npm install -g retire']
 
-    EXTERNAL_COMMAND_HANDLERS = [retirejs_handler]
+    EXTERNAL_COMMAND_HANDLERS = [npmjs_handler, retirejs_handler]
