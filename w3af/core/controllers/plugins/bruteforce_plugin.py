@@ -30,6 +30,7 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import BOOL, STRING, INPUT_FILE, INT
 from w3af.core.data.options.option_list import OptionList
+from w3af.core.data.misc.mask_password import mask_password_string
 from w3af.core.controllers.misc.safe_deepcopy import safe_deepcopy
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.bruteforce.bruteforcer import (UserPasswordBruteforcer,
@@ -62,6 +63,7 @@ class BruteforcePlugin(AuditPlugin):
         self._use_profiling = True
         self._profiling_number = 50
         self._stop_on_first = True
+        self._mask_password_in_report = False
 
         # Internal vars
         self._found = False
@@ -153,6 +155,13 @@ class BruteforcePlugin(AuditPlugin):
         raise NotImplementedError('Bruteforce plugins MUST override method'
                                   ' _bruteWorker.')
 
+    def _get_password_for_report(self, passwd):
+        password_for_report = passwd
+        if self._mask_password_in_report:
+            password_for_report = mask_password_string(passwd)
+
+        return password_for_report
+
     def get_options(self):
         """
         :return: A list of option objects for this plugin.
@@ -195,7 +204,11 @@ class BruteforcePlugin(AuditPlugin):
         o = opt_factory('profilingNumber', self._profiling_number, d, INT)
         ol.add(o)
 
-        d = 'Combo of username and passord, file to use in bruteforcing'
+        d = 'Mask valid passwords found via brute-force with * when writing to report'
+        o = opt_factory('mask_password_report', self._mask_password_in_report, d, BOOL)
+        ol.add(o)
+
+        d = 'Combo of username and password, file to use in bruteforcing'
         o = opt_factory('comboFile', self._combo_file, d, INPUT_FILE)
         ol.add(o)
 

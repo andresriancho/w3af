@@ -460,17 +460,18 @@ class form_auth(BruteforcePlugin):
         freq_url = mutant.get_url()
         self._found.add(freq_url)
 
+        password_for_report = self._get_password_for_report(password)
         user_token, pass_token = form.get_login_tokens()
 
         if user_token is not None:
             desc = ('Found authentication credentials to: "%s". A correct'
                     ' user and password combination is: %s/%s')
-            desc %= (freq_url, user, password)
+            desc %= (freq_url, user, password_for_report)
         else:
             # There is no user field!
             desc = ('Found authentication credentials to: "%s". The correct'
                     ' password is: "%s".')
-            desc %= (freq_url, password)
+            desc %= (freq_url, password_for_report)
 
         v = Vuln.from_mutant('Guessable credentials', desc, severity.HIGH,
                              resp.id, self.get_name(), mutant)

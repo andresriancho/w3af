@@ -121,9 +121,12 @@ class basic_auth(BruteforcePlugin):
         # Found credentials!
         self._found = True
 
+        password_for_report = self._get_password_for_report(passwd)
+        print password_for_report
+
         desc = ('Found authentication credentials to: "%s".'
                 ' A valid user and password combination is: %s/%s .')
-        desc %= (url, user, passwd)
+        desc %= (url, user, password_for_report)
         v = Vuln('Guessable credentials', desc,
                  severity.HIGH, response.id, self.get_name())
         v.set_url(url)
