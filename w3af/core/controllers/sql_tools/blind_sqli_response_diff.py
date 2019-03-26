@@ -117,11 +117,13 @@ class BlindSqliResponseDiff(object):
             if confirmations == self.CONFIRMATION_ROUNDS:
                 return vuln
 
-    def _get_statements(self, mutant, exclude_numbers=[]):
+    def _get_statements(self, mutant, exclude_numbers=None):
         """
         Returns a list of statement tuples.
         """
         res = {}
+        exclude_numbers = exclude_numbers or []
+
         rnd_num = int(rand_number(2, exclude_numbers))
         rnd_num_plus_one = rnd_num + 1
 
