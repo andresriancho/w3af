@@ -30,7 +30,7 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.misc.encoding import smart_str
+from w3af.core.data.misc.encoding import smart_str, smart_unicode
 from w3af.core.controllers.daemons.proxy.templates.utils import render
 
 
@@ -132,9 +132,12 @@ class ProxyHandler(Master):
         :param exception: The exception instance
         :return: A mitmproxy response object ready to send to the flow
         """
-        context = {'exception_message': str(exception),
+        context = {'exception_message': exception,
                    'http_request': request.dump(),
-                   'traceback': trace.replace('\n', '<br/>') if trace else None}
+                   'traceback': trace.replace('\n', '<br/>') if trace else ''}
+
+        for key, value in context.iteritems():
+            context[key] = smart_unicode(value, errors='ignore')
 
         content = render('error.html', context)
 
