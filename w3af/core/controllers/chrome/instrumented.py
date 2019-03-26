@@ -496,14 +496,106 @@ class InstrumentedChrome(object):
         return self.get_js_variable_value('window.errors')
 
     def get_js_set_timeouts(self):
-        return self.get_js_variable_value('window._DOMAnalyzer.set_timeouts')
+        return list(self.get_js_set_timeouts_iter())
+
+    def get_js_set_timeouts_iter(self):
+        """
+        :return: An iterator that can be used to read all the set interval handlers
+        """
+        for event in self._paginate(self.get_js_set_timeouts_paginated):
+            yield event
+
+    def get_js_set_timeouts_paginated(self,
+                                      start=0,
+                                      count=PAGINATION_PAGE_COUNT):
+        """
+        :param start: The index where to start the current batch at. This is
+                      used for pagination purposes. The initial value is zero.
+
+        :param count: The number of events to return in the result. The default
+                      value is low, it is preferred to keep this number low in
+                      order to avoid large websocket messages flowing from
+                      chrome to the python code.
+
+        :return: The event listeners
+        """
+        start = int(start)
+        count = int(count)
+
+        cmd = 'window._DOMAnalyzer.getSetTimeouts(%i, %i)'
+        args = (start, count)
+
+        return self.get_js_variable_value(cmd % args)
 
     def get_js_set_intervals(self):
-        return self.get_js_variable_value('window._DOMAnalyzer.set_intervals')
+        return list(self.get_js_set_intervals_iter())
+
+    def get_js_set_intervals_iter(self):
+        """
+        :return: An iterator that can be used to read all the set interval handlers
+        """
+        for event in self._paginate(self.get_js_set_intervals_paginated):
+            yield event
+
+    def get_js_set_intervals_paginated(self,
+                                       start=0,
+                                       count=PAGINATION_PAGE_COUNT):
+        """
+        :param start: The index where to start the current batch at. This is
+                      used for pagination purposes. The initial value is zero.
+
+        :param count: The number of events to return in the result. The default
+                      value is low, it is preferred to keep this number low in
+                      order to avoid large websocket messages flowing from
+                      chrome to the python code.
+
+        :return: The event listeners
+        """
+        start = int(start)
+        count = int(count)
+
+        cmd = 'window._DOMAnalyzer.getSetIntervals(%i, %i)'
+        args = (start, count)
+
+        return self.get_js_variable_value(cmd % args)
 
     def get_js_event_listeners(self):
-        # TODO: Paginate
-        return self.get_js_variable_value('window._DOMAnalyzer.event_listeners')
+        """
+        get_js_event_listeners_iter() should be used in most scenarios to prevent
+        huge json blobs from being sent from the browser to w3af
+
+        :return: A list of event listeners
+        """
+        return list(self.get_js_event_listeners_iter())
+
+    def get_js_event_listeners_iter(self):
+        """
+        :return: An iterator that can be used to read all the event listeners
+        """
+        for event in self._paginate(self.get_js_event_listeners_paginated):
+            yield event
+
+    def get_js_event_listeners_paginated(self,
+                                         start=0,
+                                         count=PAGINATION_PAGE_COUNT):
+        """
+        :param start: The index where to start the current batch at. This is
+                      used for pagination purposes. The initial value is zero.
+
+        :param count: The number of events to return in the result. The default
+                      value is low, it is preferred to keep this number low in
+                      order to avoid large websocket messages flowing from
+                      chrome to the python code.
+
+        :return: The event listeners
+        """
+        start = int(start)
+        count = int(count)
+
+        cmd = 'window._DOMAnalyzer.getEventListeners(%i, %i)'
+        args = (start, count)
+
+        return self.get_js_variable_value(cmd % args)
 
     def get_html_event_listeners_iter(self,
                                       event_filter=None,
@@ -523,18 +615,20 @@ class InstrumentedChrome(object):
 
         :return: The DOM events that match the filters
         """
+        for event in self._paginate(self.get_html_event_listeners_paginated,
+                                    event_filter=event_filter,
+                                    tag_name_filter=tag_name_filter):
+            yield event
+
+    def _paginate(self, functor, *args, **kwargs):
         start = 0
 
         while True:
-
             page_items = 0
 
-            for event in self.get_html_event_listeners_paginated(start,
-                                                                 self.PAGINATION_PAGE_COUNT,
-                                                                 event_filter=event_filter,
-                                                                 tag_name_filter=tag_name_filter):
+            for result in functor(start, self.PAGINATION_PAGE_COUNT, *args, **kwargs):
                 page_items += 1
-                yield event
+                yield result
 
             if page_items < self.PAGINATION_PAGE_COUNT:
                 break

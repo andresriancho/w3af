@@ -399,6 +399,39 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
+     * Get event listeners in a paginated manner
+     *
+     * @param  {number}  start            Result index to start at when returning events
+     * @param  {number}  count            How many events to return
+     *
+     */
+    getEventListeners: function (start, count) {
+        return _DOMAnalyzer.event_listeners.slice(start, start + count);
+    },
+
+    /**
+     * Get set timeouts in a paginated manner
+     *
+     * @param  {number}  start            Result index to start at when returning events
+     * @param  {number}  count            How many events to return
+     *
+     */
+    getSetTimeouts: function (start, count) {
+        return _DOMAnalyzer.set_timeouts.slice(start, start + count);
+    },
+
+    /**
+     * Get set intervals in a paginated manner
+     *
+     * @param  {number}  start            Result index to start at when returning events
+     * @param  {number}  count            How many events to return
+     *
+     */
+    getSetIntervals: function (start, count) {
+        return _DOMAnalyzer.set_intervals.slice(start, start + count);
+    },
+
+    /**
      * Get elements with event handlers
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result

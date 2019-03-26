@@ -111,6 +111,25 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
                                                              u'event_type': u'click',
                                                              u'use_capture': False}])
 
+    def test_onclick_event_listener_iter(self):
+        self._unittest_setup(OnClickEventRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+
+        result = []
+        expected = [{u'tag_name': u'table',
+                     u'node_type': 1,
+                     u'selector': u'#outside',
+                     u'event_type': u'click',
+                     u'use_capture': False}]
+        _iter = self.ic.get_js_event_listeners_iter()
+
+        for i in _iter:
+            result.append(i)
+
+        self.assertEqual(result, expected)
+
     def test_onclick_anonymous_event_listener(self):
         self._unittest_setup(OnClickEventAnonymousRequestHandler)
 
