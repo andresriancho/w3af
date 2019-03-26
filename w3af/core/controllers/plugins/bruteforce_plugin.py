@@ -236,6 +236,7 @@ class BruteforcePlugin(AuditPlugin):
         self._profiling_number = options_list['profiling_number'].get_value()
         self._combo_file = options_list['combo_file'].get_value()
         self._combo_separator = options_list['combo_separator'].get_value()
+        self._mask_password_in_report = options_list['mask_password_report'].get_value()
 
     def get_plugin_deps(self):
         """
