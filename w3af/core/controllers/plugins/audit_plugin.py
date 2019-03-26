@@ -180,9 +180,7 @@ class AuditPlugin(Plugin):
         query_location_tuple = (varname, mutant.get_url())
 
         with self._plugin_lock:
-            vulns = kb.kb.get(pname, kb_varname)
-
-            for vuln in vulns:
+            for vuln in kb.kb.get_iter(pname, kb_varname):
                 vuln_location_tuple = (vuln.get_token_name(), vuln.get_url())
 
                 if vuln_location_tuple == query_location_tuple:
