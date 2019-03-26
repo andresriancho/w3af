@@ -55,6 +55,9 @@ class ChromeProcess(object):
              '--ignore-certificate-errors',
              '--reduce-security-for-testing',
              '--allow-running-insecure-content',
+
+             # Not supported at proxy
+             '--disable-http2',
     ]
 
     DEVTOOLS_PORT_RE = re.compile('DevTools listening on ws://127.0.0.1:(\d*?)/devtools/')
@@ -99,6 +102,10 @@ class ChromeProcess(object):
 
         if self.proxy_port and self.proxy_host:
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
+
+            # Route HTTP requests that go to loopback via proxy
+            # https://github.com/chromium/chromium/commit/da790f920bbc169a6805a4fb83b4c2ab09532d91
+            flags.append('--proxy-bypass-list=<-loopback>')
 
         return self.get_chrome_path(), flags
 
