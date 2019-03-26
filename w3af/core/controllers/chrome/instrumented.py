@@ -701,11 +701,10 @@ class InstrumentedChrome(object):
         return self.get_js_variable_value(cmd % args)
 
     def get_all_event_listeners(self):
-        # TODO: Paginate
-        for event_listener in self.get_js_event_listeners():
+        for event_listener in self.get_js_event_listeners_iter():
             yield event_listener
 
-        for event_listener in self.get_html_event_listeners():
+        for event_listener in self.get_html_event_listeners_iter():
             yield event_listener
 
     def _is_valid_event_type(self, event_type):
