@@ -84,6 +84,27 @@ class blind_sqli(AuditPlugin):
         :param statement_type: The type of statement (string single, string double, int)
         :return: A vulnerability or None
         """
+        #
+        # These tests were already made in _generate_response_diff_tests() but
+        # between the mutant generation and the time it is about to be sent the
+        # framework might have found more vulnerabilities
+        #
+        if self._has_sql_injection(mutant):
+            #
+            # If sqli.py was enabled and already detected a vulnerability
+            # in this parameter, then it makes no sense to test it again
+            # and report a duplicate to the user
+            #
+            return
+
+        if self._has_bug(mutant):
+            #
+            # If we already identified a blind SQL injection in this
+            # mutant, maybe using response diff, then do not try to
+            # identify the issue again using time delays
+            #
+            return
+
         vuln = bsqli_resp_diff.is_injectable(mutant, statement_type)
         self._conditionally_save_vuln(mutant, vuln)
 
@@ -107,7 +128,7 @@ class blind_sqli(AuditPlugin):
             return
 
         if self._has_bug(mutant):
-            msg = ('There is already a Blind SQL injection vulnerability '
+            msg = ('There is already a Blind SQL injection vulnerability'
                    ' in the KB with the same URL and parameter combination.'
                    ' Will not save blind SQL injection (%s) to avoid'
                    ' duplicates.')
@@ -118,7 +139,7 @@ class blind_sqli(AuditPlugin):
         added_to_kb = self.kb_append_uniq(self, 'blind_sqli', vuln)
 
         if not added_to_kb:
-            msg = ('The kb_append_uniq() returned false. The blind SQL '
+            msg = ('The kb_append_uniq() returned false. The blind SQL'
                    ' injection vulnerability was NOT saved to the KB because'
                    ' another vulnerability (uniq) was stored there before.'
                    ' The blind SQL injection vulnerability that was ignored'
@@ -143,7 +164,7 @@ class blind_sqli(AuditPlugin):
                 # mutant, maybe using response diff, then do not try to
                 # identify the issue again using time delays
                 #
-                return
+                continue
 
             for statement_type in bsqli_resp_diff.get_statement_types():
                 yield bsqli_resp_diff, mutant, statement_type
@@ -159,6 +180,14 @@ class blind_sqli(AuditPlugin):
                 #
                 continue
 
+            if self._has_bug(mutant):
+                #
+                # If we already identified a blind SQL injection in this
+                # mutant, maybe using response diff, then do not try to
+                # identify the issue again using time delays
+                #
+                continue
+
             for delay_obj in bsqli_time_delay.get_delays():
                 yield bsqli_time_delay, mutant, delay_obj
 
@@ -169,6 +198,27 @@ class blind_sqli(AuditPlugin):
         :param delay_obj: The exact delay object
         :return: A vulnerability or None
         """
+        #
+        # These tests were already made in _generate_delay_tests() but
+        # between the mutant generation and the time it is about to be sent the
+        # framework might have found more vulnerabilities
+        #
+        if self._has_sql_injection(mutant):
+            #
+            # If sqli.py was enabled and already detected a vulnerability
+            # in this parameter, then it makes no sense to test it again
+            # and report a duplicate to the user
+            #
+            return
+
+        if self._has_bug(mutant):
+            #
+            # If we already identified a blind SQL injection in this
+            # mutant, maybe using response diff, then do not try to
+            # identify the issue again using time delays
+            #
+            return
+
         vuln = bsqli_time_delay.is_injectable(mutant, delay_obj)
         self._conditionally_save_vuln(mutant, vuln)
 
@@ -177,9 +227,7 @@ class blind_sqli(AuditPlugin):
         :return: True if there IS a reported SQL injection for this
                  URL/parameter combination.
         """
-        sql_injection_list = kb.kb.get('sqli', 'sqli')
-
-        for sql_injection in sql_injection_list:
+        for sql_injection in kb.kb.get_iter('sqli', 'sqli'):
             if sql_injection.get_url() != mutant.get_url():
                 continue
 
