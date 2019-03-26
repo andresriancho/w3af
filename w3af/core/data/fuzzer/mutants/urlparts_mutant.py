@@ -95,7 +95,23 @@ class URLPartsMutant(Mutant):
                                          self._url_parts_dc.url_end))
         return domain_path
 
-    get_uri = get_url
+    def get_uri(self):
+        """
+        :return: The URI, as modified by "set_token_value()"
+        """
+        # Please note that this double encoding is needed if we want to work
+        # with mod_rewrite
+        encoded = urllib.quote_plus(self._url_parts_dc[TOKEN].get_value(),
+                                    self._safe_encode_chars)
+        if self._double_encoding:
+            encoded = urllib.quote_plus(encoded, safe=self._safe_encode_chars)
+
+        path = '%s%s%s' % (self._url_parts_dc.url_start,
+                           encoded,
+                           self._url_parts_dc.url_end)
+        modified_uri = self._freq.get_uri().copy()
+        modified_uri.path = path
+        return modified_uri
 
     def set_url(self, u):
         msg = "You can't change the value of the URL in a URLPartsMutant"\
