@@ -170,5 +170,5 @@ class TestProxy(unittest.TestCase):
         headers = dict(resp.headers)
         content_encoding = headers.get('content-encoding')
 
-        self.assertIn('"gzipped":true', resp.read())
+        self.assertIn('"gzipped": true', resp.read())
         self.assertEqual('identity', content_encoding)
