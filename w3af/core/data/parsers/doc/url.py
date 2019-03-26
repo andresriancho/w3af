@@ -22,7 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 import copy
+import socket
 import urllib
+
 import urlparse
 
 from functools import wraps
@@ -174,7 +176,9 @@ class URL(DiskItem):
 
     SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
 
-    IS_VALID_DOMAIN_RE = re.compile('[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$')
+    DOMAIN_LABEL_PATTERN = r'(?![0-9]+$)(?!-)[a-zA-Z0-9_-]{1,63}(?<!-)'
+    DOMAIN_PATTERN = r'^({label})(\.{label})*\.?$'.format(label=DOMAIN_LABEL_PATTERN)
+    RE_DOMAIN = re.compile(DOMAIN_PATTERN)
     SET_DOMAIN_RE = re.compile('[a-z0-9-.]+([a-z0-9-]+)*$')
 
     __slots__ = (
@@ -196,7 +200,7 @@ class URL(DiskItem):
                  'path',
                  'params',
                  'querystring',
-                 'fragment')
+                 'fragment',)
 
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         """
@@ -228,23 +232,27 @@ class URL(DiskItem):
             msg = 'Invalid encoding "%s" when creating URL.'
             raise ValueError(msg % encoding)
 
-        scheme, netloc, path, params, qs, fragment = urlparse.urlparse(data)
+        parsed = urlparse.urlparse(data)
         #
         # This is the case when someone creates a URL like
         # this: URL('www.w3af.com')
         #
-        if scheme == netloc == '' and not path.startswith(u'/'):
+        if parsed.scheme == parsed.netloc == '' and not parsed.path.startswith(u'/'):
             # By default we set the protocol to "http"
             scheme = u'http'
-            netloc = path
+            netloc = parsed.path
             path = u''
+        else:
+            scheme = parsed.scheme
+            netloc = parsed.netloc
+            path = parsed.path
 
         self.scheme = scheme or u''
         self.netloc = netloc or u''
         self.path = path or u'/'
-        self.params = params or u''
-        self.querystring = qs or u''
-        self.fragment = fragment or u''
+        self.params = parsed.params or u''
+        self.querystring = parsed.query or u''
+        self.fragment = parsed.fragment or u''
 
         if not self.netloc and self.scheme != 'file':
             # The URL is invalid, we don't have a netloc!
@@ -560,8 +568,23 @@ class URL(DiskItem):
     def is_valid_domain(self):
         """
         :return: Returns a boolean that indicates if self.netloc domain is valid
-        """
-        return self.IS_VALID_DOMAIN_RE.match(self.netloc) is not None
+        """        
+        # check if domain name valid
+        hostname = self.netloc.split(':')[0]  # split away port
+        if not self.RE_DOMAIN.match(hostname):
+            # not a valid domain - maybe an IP address
+            # Check IPv4
+            try:
+                # Check IPv4
+                socket.inet_aton(hostname)
+            except socket.error:
+                # not ipv4
+                try:
+                    socket.inet_pton(socket.AF_INET6, hostname)
+                except socket.error:
+                    # neither IPv6
+                    return False
+        return True
 
     def get_net_location(self):
         """

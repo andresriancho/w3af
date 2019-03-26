@@ -145,8 +145,8 @@ class Plugin(Configurable):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
-        raise NotImplementedError(
-            'Plugin is not implementing required method get_long_desc')
+        msg = 'Plugin is not implementing required method get_long_desc'
+        raise NotImplementedError(msg)
 
     def kb_append_uniq(self, location_a, location_b, info, filter_by='VAR'):
         """
@@ -159,6 +159,8 @@ class Plugin(Configurable):
 
         if added_to_kb:
             om.out.report_finding(info)
+
+        return added_to_kb
 
     def kb_append_uniq_group(self, location_a, location_b, info,
                              group_klass=InfoSet):

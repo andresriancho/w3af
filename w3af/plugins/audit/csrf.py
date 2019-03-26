@@ -76,11 +76,14 @@ class csrf(AuditPlugin):
         if not self._is_suitable(freq, orig_response):
             return
 
+        #
         # Referer / Origin check
         #
         # IMPORTANT NOTE: I'm aware that checking for the referer header does
         # NOT protect the application against all cases of CSRF, but it's a
-        # very good first step. In order to exploit a CSRF in an application
+        # very good first step.
+        #
+        # In order to exploit a CSRF in an application
         # that protects using this method an intruder would have to identify
         # other vulnerabilities, such as XSS or open redirects, in the same
         # domain.
@@ -102,14 +105,16 @@ class csrf(AuditPlugin):
         
         self.kb_append_uniq(self, 'csrf', v)
 
-    def _is_resp_equal(self, res1, res2):
+    def _is_resp_equal(self, response_1, response_2):
         """
-        @see: unittest for this method in test_csrf.py
+        :param response_1: HTTP response 1
+        :param response_2: HTTP response 2
+        :see: unittest for this method in test_csrf.py
         """
-        if res1.get_code() != res2.get_code():
+        if response_1.get_code() != response_2.get_code():
             return False
 
-        if not fuzzy_equal(res1.body, res2.body, self._equal_limit):
+        if not fuzzy_equal(response_1.body, response_2.body, self._equal_limit):
             return False
 
         return True
@@ -121,14 +126,16 @@ class csrf(AuditPlugin):
 
         :return: True if the request can have a CSRF vulnerability
         """
+        #
         # Does the application send cookies?
         #
-        # By checking like this we're loosing the opportunity to detect any
+        # By performing this check we lose the opportunity to detect any
         # CSRF vulnerabilities in non-authenticated parts of the application
         #
         # Also note that the application running on freq.get_url().get_domain()
         # might be just sending us a google tracking cookie (no real session
         # cookie) and we might be returning true here.
+        #
         for cookie in self._uri_opener.get_cookies():
             if freq.get_url().get_domain() in cookie.domain:
                 break
@@ -144,11 +151,13 @@ class csrf(AuditPlugin):
         if content_type in ('text/css', 'application/javascript'):
             return False
 
+        #
         # Does the request have a payload?
         #
-        # By checking like this we're loosing the opportunity to find CSRF
+        # By performing this check we lose the opportunity to find CSRF
         # vulnerabilities in applications that use mod_rewrite. Example: A CSRF
         # in this URL: http://host.tld/users/remove/id/123
+        #
         if not freq.get_uri().has_query_string() and not freq.get_raw_data():
             return False
 

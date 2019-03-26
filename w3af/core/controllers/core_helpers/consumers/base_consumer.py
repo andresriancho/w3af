@@ -203,17 +203,18 @@ class BaseConsumer(Process):
                 self.out_queue.qsize())
         om.out.debug(msg % args)
 
-        msg = 'The %s consumer has %s tasks in progress'
-        args = (self._thread_name, len(self._tasks_in_progress))
-        om.out.debug(msg % args)
+        if len(self._tasks_in_progress):
+            msg = 'The %s consumer has %s tasks in progress'
+            args = (self._thread_name, len(self._tasks_in_progress))
+            om.out.debug(msg % args)
 
         if self._threadpool is not None:
 
             msg = ('The %s consumer pool has %s tasks in the input queue'
                    ' and %s tasks in the output queue')
             args = (self._thread_name,
-                    self._threadpool._inqueue.qsize(),
-                    self._threadpool._outqueue.qsize())
+                    self._threadpool.get_inqueue().qsize(),
+                    self._threadpool.get_outqueue().qsize())
             om.out.debug(msg % args)
 
     def _process_poison_pill(self):
@@ -523,6 +524,9 @@ class BaseConsumer(Process):
         :return: The first result from the output Queue.
         """
         return self._out_queue.get(timeout=timeout)
+
+    def get_result_nowait(self):
+        return self._out_queue.get_nowait()
 
     def handle_exception(self, phase, plugin_name, fuzzable_request, _exception):
         """

@@ -136,7 +136,7 @@ class BasicKnowledgeBase(object):
             if saved_vuln.get_url() != info_inst.get_url():
                 continue
 
-            msg = ('[filter_var] Is preventing "%s" from being written to the'
+            msg = ('[filter_var] Preventing "%s" from being written to the'
                    ' KB because "%s" has the same token (%s) and URL (%s).')
             args = (info_inst.get_desc(),
                     saved_vuln.get_desc(),
@@ -543,7 +543,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             query = 'SELECT pickle FROM %s WHERE location_a = ?'
             params = (location_a,)
         else:
-            query = 'SELECT pickle FROM %s WHERE location_a = ?'\
+            query = 'SELECT pickle FROM %s WHERE location_a = ?' \
                                            ' and location_b = ?'
             params = (location_a, location_b)
 

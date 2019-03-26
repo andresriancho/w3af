@@ -39,4 +39,4 @@ docker-compose==1.2.0
 
 # Testing open api parser
 apispec==0.31.0
-marshmallow==2.15.0
+marshmallow>=2.15.1

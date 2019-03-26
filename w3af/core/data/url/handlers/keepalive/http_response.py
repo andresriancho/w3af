@@ -1,5 +1,10 @@
 import httplib
 
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
+
 from .utils import debug
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.kb.config import cf
@@ -21,9 +26,12 @@ def close_on_error(read_meth):
 
 class HTTPResponse(httplib.HTTPResponse):
     # we need to subclass HTTPResponse in order to
+    #
     # 1) add readline() and readlines() methods
     # 2) add close_connection() methods
     # 3) add info() and geturl() methods
+    # 4) handle cases where the remote server returns two content-length
+    #    headers
 
     # in order to add readline(), read must be modified to deal with a
     # buffer.  example: readline must read a buffer and then spit back
@@ -117,6 +125,115 @@ class HTTPResponse(httplib.HTTPResponse):
 
         return s
 
+    def begin(self):
+        if self.msg is not None:
+            # we've already started reading the response
+            return
+
+        # read until we get a non-100 response
+        while True:
+            version, status, reason = self._read_status()
+            if status != httplib.CONTINUE:
+                break
+            # skip the header from the 100 response
+            while True:
+                skip = self.fp.readline(httplib._MAXLINE + 1)
+                if len(skip) > httplib._MAXLINE:
+                    raise httplib.LineTooLong("header line")
+                skip = skip.strip()
+                if not skip:
+                    break
+                if self.debuglevel > 0:
+                    print "header:", skip
+
+        self.status = status
+        self.reason = reason.strip()
+        if version == 'HTTP/1.0':
+            self.version = 10
+        elif version.startswith('HTTP/1.'):
+            self.version = 11   # use HTTP/1.1 code for HTTP/1.x where x>=1
+        elif version == 'HTTP/0.9':
+            self.version = 9
+        else:
+            raise httplib.UnknownProtocol(version)
+
+        if self.version == 9:
+            self.length = None
+            self.chunked = 0
+            self.will_close = 1
+            self.msg = httplib.HTTPMessage(StringIO())
+            return
+
+        self.msg = httplib.HTTPMessage(self.fp, 0)
+        if self.debuglevel > 0:
+            for hdr in self.msg.headers:
+                print "header:", hdr,
+
+        # don't let the msg keep an fp
+        self.msg.fp = None
+
+        # are we using the chunked-style of transfer encoding?
+        tr_enc = self.msg.getheader('transfer-encoding')
+        if tr_enc and tr_enc.lower() == "chunked":
+            self.chunked = 1
+            self.chunk_left = None
+        else:
+            self.chunked = 0
+
+        # will the connection close at the end of the response?
+        self.will_close = self._check_close()
+
+        # do we have a Content-Length?
+        # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is "chunked"
+        length = self._get_content_length()
+        if length and not self.chunked:
+            try:
+                self.length = int(length)
+            except ValueError:
+                self.length = None
+            else:
+                if self.length < 0:  # ignore nonsensical negative lengths
+                    self.length = None
+        else:
+            self.length = None
+
+        # does the body have a fixed length? (of zero)
+        if (status == NO_CONTENT or status == httplib.NOT_MODIFIED or
+            100 <= status < 200 or      # 1xx codes
+            self._method == 'HEAD'):
+            self.length = 0
+
+        # if the connection remains open, and we aren't using chunked, and
+        # a content-length was not provided, then assume that the connection
+        # WILL close.
+        if not self.will_close and \
+           not self.chunked and \
+           self.length is None:
+            self.will_close = 1
+
+    def _get_content_length(self):
+        """
+        Some very strange sites will return two content-length headers. By
+        default urllib2 will concatenate the two values using commas. Then
+        when the value needs to be used... everything fails.
+
+        This method tries to solve the issue by returning the lower value
+        from the list. Sadly some bytes might be ignored, but it is much
+        better than raising exceptions.
+
+        :return: The content length (as integer)
+        """
+        length = self.msg.getheader('content-length')
+
+        if length is None:
+            # This is a response where there is no content-length header,
+            # most likely a chunked response
+            return None
+
+        split = length.split(',')
+        split = [int(cl) for cl in split]
+        return min(split)
+
     def close(self):
         # First call parent's close()
         httplib.HTTPResponse.close(self)
@@ -148,10 +265,10 @@ class HTTPResponse(httplib.HTTPResponse):
             return ''
 
         if self._multiread is None:
-            #read all
+            # read all
             self._multiread = self._raw_read()
 
-        if not amt is None:
+        if amt is not None:
             L = len(self._rbuf)
             if amt > L:
                 amt -= L

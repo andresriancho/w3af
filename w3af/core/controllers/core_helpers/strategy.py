@@ -433,15 +433,14 @@ class CoreStrategy(object):
         them properly.
         """
         for other_consumer in _other:
-            try:
-                result_item = other_consumer.get_result(timeout=0.2)
-            except TimeoutError:
-                pass
-            except Queue.Empty:
-                pass
-            else:
-                if isinstance(result_item, ExceptionData):
-                    self._handle_consumer_exception(result_item)
+            while True:
+                try:
+                    result_item = other_consumer.get_result_nowait()
+                except Queue.Empty:
+                    break
+                else:
+                    if isinstance(result_item, ExceptionData):
+                        self._handle_consumer_exception(result_item)
 
     def _handle_consumer_exception(self, exception_data):
         """

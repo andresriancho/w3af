@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, LOREM
 from w3af.plugins.audit.csrf import csrf
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.doc.url import URL, parse_qs
@@ -263,11 +263,7 @@ class TestLowLevelCSRF(unittest.TestCase):
         self.assertFalse(self.csrf_plugin.is_csrf_token('secret', u'áÄé'))
 
     def test_is_csrf_token_false_case05(self):
-        lorem = ('Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-                 ' Curabitur at eros elit, rhoncus feugiat libero. Praesent'
-                 ' lobortis ultricies est gravida tempor. Sed tortor mi,'
-                 ' euismod at interdum quis, hendrerit vitae risus. Sed')
-        self.assertTrue(self.csrf_plugin.is_csrf_token('secret', lorem))
+        self.assertTrue(self.csrf_plugin.is_csrf_token('secret', LOREM))
 
     def test_is_csrf_token_false_case06(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('token', 'f842e'))

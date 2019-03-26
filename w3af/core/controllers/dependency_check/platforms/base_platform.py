@@ -60,7 +60,8 @@ class Platform(object):
         if retirejs_is_installed():
             return []
 
-        return ['npm install -g retire']
+        return ['npm install -g retire',
+                'npm update -g retire']
 
     def chrome_handler(self):
         if chrome_is_installed():

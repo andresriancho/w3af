@@ -232,7 +232,9 @@ class w3afCore(object):
             else:
                 raise
 
-        except IOError as (error_id, error_msg):
+        except IOError as io_err:
+            (error_id, error_msg) = io_err.args
+
             # https://github.com/andresriancho/w3af/issues/9653
             # IOError: [Errno 28] No space left on device
             if error_id == errno.ENOSPC:
@@ -357,6 +359,13 @@ class w3afCore(object):
 
         # Stop the parser subprocess
         parser_cache.dpc.clear()
+
+        # Remove the xurllib cache, bloom filters, DiskLists, etc.
+        #
+        # This needs to be done here and not in stop() because we want to keep
+        # these files (mostly the HTTP request/response data) for the user to
+        # analyze in the GUI after the scan has finished
+        remove_temp_dir(ignore_errors=True)
 
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,

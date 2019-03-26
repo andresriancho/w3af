@@ -28,7 +28,7 @@ class LogSink(object):
     them over a multiprocessing queue to the main process where they are handled
     by the output manager => output plugins.
     """
-    METHODS = (
+    ALLOWED_METHODS = {
         'debug',
         'information',
         'error',
@@ -36,11 +36,14 @@ class LogSink(object):
         'console',
         'log_http',
         'log_crash',
-    )
+    }
+
+    METHODS = None
 
     def __init__(self, om_queue):
         super(LogSink, self).__init__()
         self.om_queue = om_queue
+        self.METHODS = dict((method, functools.partial(self._add_to_queue, method)) for method in self.ALLOWED_METHODS)
 
     def report_finding(self, info_inst):
         """
@@ -73,8 +76,10 @@ class LogSink(object):
         @see: http://docs.python.org/library/functools.html for help on partial.
         @see: METHODS defined at the top of this class
         """
-        if name in self.METHODS:
-            return functools.partial(self._add_to_queue, name)
-        else:
+        method = self.METHODS.get(name, None)
+
+        if method is None:
             msg = "'LogSink' object has no attribute '%s'"
             raise AttributeError(msg % name)
+
+        return method
