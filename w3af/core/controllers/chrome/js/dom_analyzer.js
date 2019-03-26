@@ -399,7 +399,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
-     * Get elements with events
+     * Get elements with event handlers
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
      * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
@@ -442,6 +442,11 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             let element_events_paginated = element_events.slice();
 
             while( true ){
+                if (element_events_paginated.length === 0){
+                    // This element has no more events
+                    break
+                }
+
                 if (ignored_events < start){
                     element_events_paginated.splice(0, 1);
                     ignored_events += 1;

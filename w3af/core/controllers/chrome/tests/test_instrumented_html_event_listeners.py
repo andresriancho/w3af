@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pprint
 import Queue
 import unittest
 
@@ -101,7 +102,6 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
 
         event_listeners = self.ic.get_html_event_listeners(event_filter=['click'])
-        self._print_all_console_messages()
 
         self.assertEqual(event_listeners, [{u'tag_name': u'table',
                                             u'handler': u'modifyText();',
@@ -190,7 +190,7 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
 
         self.assertEqual(len(event_listeners),
                          InstrumentedChrome.PAGINATION_PAGE_COUNT,
-                         event_listeners)
+                         pprint.pformat(event_listeners))
 
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
