@@ -141,7 +141,7 @@ class ResponseCacheKeyCache(object):
 
         try:
             result = self._cache.get(cache_key, None)
-        except AssertionError:
+        except (AssertionError, KeyError) as _:
             # This is a rare race conditions which happens when another
             # thread modifies the cache and changes the __first item in
             # the cache.
@@ -165,7 +165,7 @@ class ResponseCacheKeyCache(object):
 
         try:
             self._cache[cache_key] = result
-        except AssertionError:
+        except (AssertionError, KeyError) as _:
             # This is a rare race conditions which happens when another
             # thread modifies the cache and changes the __first item in
             # the cache.
