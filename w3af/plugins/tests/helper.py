@@ -22,7 +22,6 @@ from __future__ import print_function
 
 import os
 import re
-import copy
 import time
 import pprint
 import urllib2
