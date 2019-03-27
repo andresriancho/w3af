@@ -595,7 +595,8 @@ class InstrumentedChrome(object):
         cmd = 'window._DOMAnalyzer.getEventListeners(%i, %i)'
         args = (start, count)
 
-        return self.get_js_variable_value(cmd % args)
+        for event_listener in self.get_js_variable_value(cmd % args):
+            yield EventListener(event_listener)
 
     def get_html_event_listeners_iter(self,
                                       event_filter=None,
@@ -698,7 +699,8 @@ class InstrumentedChrome(object):
         cmd = 'window._DOMAnalyzer.getElementsWithEventHandlers(%s, %s, %i, %i)'
         args = (event_filter, tag_name_filter, start, count)
 
-        return self.get_js_variable_value(cmd % args)
+        for event_listener in self.get_js_variable_value(cmd % args):
+            yield EventListener(event_listener)
 
     def get_all_event_listeners(self):
         for event_listener in self.get_js_event_listeners_iter():
@@ -873,3 +875,34 @@ def all_logging_disabled(highest_level=logging.CRITICAL):
     finally:
         logging.disable(previous_level)
 
+
+class EventListener(object):
+    def __init__(self, event_as_dict):
+        self._event_as_dict = event_as_dict
+
+    def __getitem__(self, item):
+        return self._event_as_dict[item]
+
+    def get(self, item):
+        return self._event_as_dict.get(item)
+
+    def __setitem__(self, key, value):
+        self._event_as_dict[key] = value
+
+    def __eq__(self, other):
+        if len(other) != len(self._event_as_dict):
+            return False
+
+        for key, value in self._event_as_dict.iteritems():
+            other_value = other.get(key)
+
+            if value != other_value:
+                return False
+
+        return True
+
+    def __len__(self):
+        return len(self._event_as_dict)
+
+    def __repr__(self):
+        return 'EventListener(%r)' % self._event_as_dict
