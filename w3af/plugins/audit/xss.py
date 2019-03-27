@@ -176,8 +176,8 @@ class xss(AuditPlugin):
         assessments and is better explained in this stackoverflow question
         https://goo.gl/BgXVJY
         """
-        ct_options, _ = response.get_headers().iget('X-Content-Type-Options')
-        content_type, _ = response.get_headers().iget('Content-Type')
+        ct_options, _ = response.get_headers().iget('X-Content-Type-Options', '')
+        content_type, _ = response.get_headers().iget('Content-Type', '')
 
         if 'application/json' in content_type and 'nosniff' in ct_options:
             # No luck exploiting this JSON XSS
