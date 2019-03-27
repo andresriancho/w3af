@@ -18,14 +18,21 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import os
 import Queue
 import unittest
+import tempfile
 
+import w3af.core.controllers.output_manager as om
+
+from w3af.core.controllers.output_manager import manager
 from w3af.core.controllers.chrome.crawler import ChromeCrawler
 from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
+from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.fuzzer.utils import rand_alnum
 
 
 class TestChromeCrawlerClick(unittest.TestCase):
@@ -46,6 +53,30 @@ class TestChromeCrawlerClick(unittest.TestCase):
 
         self.crawler = ChromeCrawler(self.uri_opener)
 
+        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
+            self._set_debugging_in_output_manager()
+
+    def _set_debugging_in_output_manager(self):
+        w3af_core = w3afCore()
+        text_file_inst = w3af_core.plugins.get_plugin_inst('output', 'text_file')
+
+        output_dir = tempfile.gettempdir()
+        rnd = rand_alnum(6)
+
+        text_output = os.path.join(output_dir, 'output-%s.txt' % rnd)
+        http_output = os.path.join(output_dir, 'output-http-%s.txt' % rnd)
+
+        default_opts = text_file_inst.get_options()
+        default_opts['output_file'].set_value(text_output)
+        default_opts['http_output_file'].set_value(http_output)
+        default_opts['verbose'].set_value(True)
+        text_file_inst.set_options(default_opts)
+
+        om.manager.set_output_plugin_inst(text_file_inst)
+        om.manager.start()
+
+        print('Logging to %s' % text_output)
+
     def tearDown(self):
         while not self.http_traffic_queue.empty():
             self.http_traffic_queue.get()
@@ -54,11 +85,13 @@ class TestChromeCrawlerClick(unittest.TestCase):
         self.server.shutdown()
         self.server_thread.join()
 
+        manager.process_all_messages()
+
     def test_crawl_xmlhttprequest(self):
         self._unittest_setup(XmlHttpRequestHandler)
         root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        self.crawler.crawl(root_url, self.http_traffic_queue)
+        self.crawler.crawl(root_url, self.http_traffic_queue, debug=True)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
