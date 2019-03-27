@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import time
 import Queue
 import unittest
 import tempfile
@@ -26,7 +27,7 @@ import tempfile
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.output_manager import manager
-from w3af.core.controllers.chrome.crawler import ChromeCrawler
+from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
 from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.w3afCore import w3afCore
@@ -79,13 +80,23 @@ class TestChromeCrawlerClick(unittest.TestCase):
 
     def tearDown(self):
         while not self.http_traffic_queue.empty():
-            self.http_traffic_queue.get()
+            self.http_traffic_queue.get_nowait()
 
         self.crawler.terminate()
         self.server.shutdown()
         self.server_thread.join()
 
-        manager.process_all_messages()
+        self.wait_for_output_manager_messages()
+
+    def wait_for_output_manager_messages(self):
+        start = time.time()
+
+        while not manager.in_queue.empty():
+            time.sleep(0.1)
+            spent = time.time() - start
+
+            if spent > 2.0:
+                break
 
     def test_crawl_xmlhttprequest(self):
         self._unittest_setup(XmlHttpRequestHandler)
@@ -96,12 +107,12 @@ class TestChromeCrawlerClick(unittest.TestCase):
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get_nowait()
         self.assertEqual(request.get_url().url_string, root_url)
 
         # The second request is the one sent using XMLHttpRequest which
         # is triggered when clicking on the div tag
-        request, _ = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get_nowait()
 
         root_url = URL(root_url)
         server_url = root_url.url_join('/server')
@@ -119,11 +130,11 @@ class TestChromeCrawlerClick(unittest.TestCase):
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get_nowait()
         self.assertEqual(request.get_url().url_string, root_url)
 
         # The second request is the one triggered after clicking on the div tag
-        request, _ = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get_nowait()
         self.assertEqual(request.get_url().url_string, root_url + 'after-click')
 
     def test_crawl_full_page_reload_and_xmlhttprequest(self):
@@ -135,17 +146,17 @@ class TestChromeCrawlerClick(unittest.TestCase):
         self.assertEqual(self.http_traffic_queue.qsize(), 3)
 
         # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get_nowait()
         self.assertEqual(request.get_url().url_string, root_url)
 
         # The second request is the one triggered after clicking on the div tag
         # that does a full page reload
-        request, _ = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get_nowait()
         self.assertEqual(request.get_url().url_string, root_url + 'after-click')
 
         # The third request is the one sent using XMLHttpRequest which
         # is triggered when clicking on the div tag
-        request, _ = self.http_traffic_queue.get()
+        request, _ = self.http_traffic_queue.get_nowait()
 
         root_url = URL(root_url)
         server_url = root_url.url_join('/server')

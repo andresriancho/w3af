@@ -31,7 +31,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.chrome.crawler import ChromeCrawler, ChromeCrawlerException
+from w3af.core.controllers.chrome.crawler.main import ChromeCrawler, ChromeCrawlerException
 from w3af.core.controllers.chrome.pool import ChromePool
 
 from w3af.core.data.parsers.utils.header_link_extract import headers_url_generator
