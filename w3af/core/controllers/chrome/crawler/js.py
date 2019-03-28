@@ -33,7 +33,8 @@ class ChromeCrawlerJS(object):
     the page using chrome
     """
 
-    EVENTS_TO_DISPATCH = {'click'}
+    EVENTS_TO_DISPATCH = {'click',
+                          'dblclick'}
 
     MAX_BROWSER_BACK = 50
     EQUAL_RATIO_AFTER_BACK = 0.9
