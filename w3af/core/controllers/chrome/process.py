@@ -48,11 +48,31 @@ class ChromeProcess(object):
              # Initial page load performance
              '--homepage=about:blank',
 
-             # Do not load image
+             # Do not load images
              '--blink-settings=imagesEnabled=false',
+
+             # Reduce memory usage
+             # Run the JS garbage collector when reaching 500mb
+             #
+             # https://news.ycombinator.com/item?id=14103503
+             '--js-flags="--max-old-space-size=500"',
+
+             # https://peter.sh/experiments/chromium-command-line-switches/
+             '--disable-default-apps',
+             '--disable-extensions',
+             '--disable-sync',
+             '--disable-translate',
+             '--hide-scrollbars',
+             '--metrics-recording-only',
+             '--mute-audio',
+             '--no-first-run',
+
+             '--safebrowsing-disable-auto-update',
 
              # Disable some security features
              '--ignore-certificate-errors',
+             '--ignore-ssl-errors',
+             '--ignore-certificate-errors-spki-list',
              '--reduce-security-for-testing',
              '--allow-running-insecure-content',
              '--no-sandox',
