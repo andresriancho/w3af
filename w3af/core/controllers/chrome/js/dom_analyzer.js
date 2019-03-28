@@ -159,13 +159,21 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             original_document_addEventListener.apply(document, Array.prototype.slice.call(arguments));
         };
 
-        // Override Node.prototype.addEventListener
+        //
+        // Override Node.prototype.addEventListener, this allows us to intercept
+        // calls to addEventListener when invoked without window or document object,
+        // for example:
+        //
+        // var el = document.getElementById("outside");
+        // el.addEventListener("click", modifyText, false);
+        //
         let original_node_addEventListener = Node.prototype.addEventListener;
 
         Node.prototype.addEventListener = function (type, listener, useCapture) {
             _DOMAnalyzer.storeEventListenerData(this, type, listener, useCapture);
             original_node_addEventListener.apply(this, Array.prototype.slice.call(arguments));
         };
+
     },
 
     /**
