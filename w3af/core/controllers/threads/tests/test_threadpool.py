@@ -134,10 +134,11 @@ class TestWorkerPool(unittest.TestCase):
         # Let the worker get the task
         time.sleep(0.3)
 
+        func_name, func_args = worker_pool._pool[0].worker.get_real_func_name_args()
         # Got it?
         self.assertFalse(worker_pool._pool[0].worker.is_idle())
-        self.assertEqual(worker_pool._pool[0].worker.get_real_func_name(), 'sleep')
-        self.assertEqual(worker_pool._pool[0].worker.args, args)
+        self.assertEqual(func_name, 'sleep')
+        self.assertEqual(func_args, args)
         self.assertEqual(worker_pool._pool[0].worker.kwargs, kwds)
         self.assertGreater(worker_pool._pool[0].worker.job, 1)
 
