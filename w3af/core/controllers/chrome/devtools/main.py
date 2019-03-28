@@ -36,7 +36,9 @@ from websocket import WebSocketTimeoutException, WebSocketConnectionClosedExcept
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.tests.running_tests import is_running_tests
-from w3af.core.controllers.chrome.devtools.event_handlers import proxy_connection_failed_handler, generic_error_handler
+from w3af.core.controllers.chrome.devtools.event_handlers import (proxy_connection_failed_handler,
+                                                                  generic_error_handler,
+                                                                  inspector_crash_handler)
 from w3af.core.controllers.chrome.devtools.console_message import ConsoleMessage
 from w3af.core.controllers.chrome.devtools.command_result import CommandResult
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
@@ -96,6 +98,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
 
     def set_default_event_handlers(self):
         self.set_event_handler(proxy_connection_failed_handler)
+        self.set_event_handler(inspector_crash_handler)
         self.set_event_handler(generic_error_handler)
         self.set_event_handler(self.console_api_handler)
         self.set_event_handler(self.javascript_dialog_handler)

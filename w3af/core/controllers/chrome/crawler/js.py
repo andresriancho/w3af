@@ -24,6 +24,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.misc.xml_bones import get_xml_bones
 from w3af.core.controllers.chrome.instrumented import EventException
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
+from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 
 
 class ChromeCrawlerJS(object):
@@ -47,6 +48,31 @@ class ChromeCrawlerJS(object):
               url,
               debug=False,
               debugging_id=None):
+        """
+        Get all event listeners and click on them.
+
+        :param chrome: The chrome browser where the page is loaded
+        :param debugging_id: Debugging ID for easier tracking in logs
+        :return: None, all the information is sent to the core via HTTP traffic
+                 captured by the browser's proxy
+        """
+        try:
+            self._crawl_impl(chrome,
+                             url,
+                             debug=debug,
+                             debugging_id=debugging_id)
+        except ChromeInterfaceException as cie:
+            msg = ('The JS crawler generated an exception in the chrome'
+                   ' interface while crawling %s and will now exit.'
+                   ' The exception was: "%s"')
+            args = (url, cie)
+            om.out.debug(msg % args)
+
+    def _crawl_impl(self,
+                    chrome,
+                    url,
+                    debug=False,
+                    debugging_id=None):
         """
         Get all event listeners and click on them.
 

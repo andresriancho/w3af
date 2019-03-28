@@ -40,3 +40,11 @@ def generic_error_handler(message):
     else:
         message = 'Unexpected error received from Chrome: "%s"'
         raise ChromeInterfaceException(message % str(message))
+
+
+def inspector_crash_handler(message):
+    if 'method' not in message:
+        return
+
+    if 'Inspector.targetCrashed' == message['method']:
+        raise ChromeInterfaceException('The remote inspector crashed!')
