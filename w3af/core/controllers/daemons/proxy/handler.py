@@ -100,7 +100,7 @@ class ProxyHandler(Master):
                                         headers,
                                         body)
 
-    def _send_http_request(self, http_request, grep=True):
+    def _send_http_request(self, http_request, grep=True, debugging_id=None):
         """
         Send a w3af HTTP request to the web server using w3af's HTTP lib
 
@@ -114,13 +114,17 @@ class ProxyHandler(Master):
                            data=http_request.get_data(),
                            headers=http_request.get_headers(),
                            grep=grep,
+                           debugging_id=debugging_id,
                            # This is an important one, which needs to be
-                           # properly documented. What happens here is that
-                           # libmproxy receives a request from xurllib
-                           # configured to send requests via proxy, and then
-                           # another xurllib with the same proxy config tries
-                           # to forward the request. Since it has a proxy config
-                           # it will enter a "proxy request routing loop"
+                           # properly documented.
+                           #
+                           # What happens here is that libmproxy receives a
+                           # request from xurllib configured to send requests
+                           # via a proxy, and then another xurllib with the same
+                           # proxy config tries to forward the request.
+                           #
+                           # Since it has a proxy config it will enter a "proxy
+                           # request routing loop" if use_proxy is not set to False
                            use_proxy=False)
 
     def _create_error_response(self, request, response, exception, trace=None):

@@ -70,6 +70,7 @@ class LoggingHandler(ProxyHandler):
         :return: The response
         """
         domain = http_request.get_uri().get_domain()
+
         if is_private_site(domain) and not self._target_is_private_site():
             msg = ('The target site (which is in a public IP address range) is'
                    ' trying to load a resource from a private IP address range.'
@@ -82,7 +83,9 @@ class LoggingHandler(ProxyHandler):
             om.out.debug(msg)
             return self._create_error_response(http_request, None, msg)
 
-        http_response = super(LoggingHandler, self)._send_http_request(http_request, grep=grep)
+        http_response = super(LoggingHandler, self)._send_http_request(http_request,
+                                                                       grep=grep,
+                                                                       debugging_id=self.parent_process.debugging_id)
 
         # Remove security headers to reduce runtime security
         self._remove_security_headers(http_response)
