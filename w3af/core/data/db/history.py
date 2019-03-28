@@ -56,11 +56,21 @@ class HistoryItem(object):
     _db = None
     _DATA_TABLE = 'history_items'
     _COLUMNS = [
-        ('id', 'INTEGER'), ('url', 'TEXT'), ('code', 'INTEGER'),
-        ('tag', 'TEXT'), ('mark', 'INTEGER'), ('info', 'TEXT'),
-        ('time', 'FLOAT'), ('msg', 'TEXT'), ('content_type', 'TEXT'),
-        ('charset', 'TEXT'), ('method', 'TEXT'), ('response_size', 'INTEGER'),
-        ('codef', 'INTEGER'), ('alias', 'TEXT'), ('has_qs', 'INTEGER')
+        ('id', 'INTEGER'),
+        ('url', 'TEXT'),
+        ('code', 'INTEGER'),
+        ('tag', 'TEXT'),
+        ('mark', 'INTEGER'),
+        ('info', 'TEXT'),
+        ('time', 'FLOAT'),
+        ('msg', 'TEXT'),
+        ('content_type', 'TEXT'),
+        ('charset', 'TEXT'),
+        ('method', 'TEXT'),
+        ('response_size', 'INTEGER'),
+        ('codef', 'INTEGER'),
+        ('alias', 'TEXT'),
+        ('has_qs', 'INTEGER')
     ]
     _PRIMARY_KEY_COLUMNS = ('id',)
     _INDEX_COLUMNS = ('alias',)
