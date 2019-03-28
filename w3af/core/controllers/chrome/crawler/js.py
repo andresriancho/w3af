@@ -135,7 +135,7 @@ class ChromeCrawlerJS(object):
             else:
                 event_types[event_type] = 1
 
-        msg = ('Processing event %s out of (N) for %s.'
+        msg = ('Processing event %s out of (unknown) for %s.'
                ' Already processed %s events with types: %r')
         args = (event_i, url, len(processed_events), event_types)
 
