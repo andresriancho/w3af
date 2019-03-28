@@ -51,14 +51,14 @@ class InstrumentedChrome(object):
 
     PROXY_HOST = '127.0.0.1'
     CHROME_HOST = '127.0.0.1'
-    PAGE_LOAD_TIMEOUT = 20
+    PAGE_LOAD_TIMEOUT = 10
     PAGE_WILL_CHANGE_TIMEOUT = 1
 
     PAGE_STATE_NONE = 0
     PAGE_STATE_LOADING = 1
     PAGE_STATE_LOADED = 2
 
-    PAGINATION_PAGE_COUNT = 50
+    PAGINATION_PAGE_COUNT = 20
 
     JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
     JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
