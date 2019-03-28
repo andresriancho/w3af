@@ -55,6 +55,7 @@ class ChromeProcess(object):
              '--ignore-certificate-errors',
              '--reduce-security-for-testing',
              '--allow-running-insecure-content',
+             '--no-sandox',
 
              # Not supported at proxy
              '--disable-http2',
