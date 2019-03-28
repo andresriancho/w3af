@@ -34,6 +34,7 @@ class ChromeCrawlerJS(object):
     """
 
     EVENTS_TO_DISPATCH = {'click'}
+
     MAX_BROWSER_BACK = 50
     EQUAL_RATIO_AFTER_BACK = 0.9
 
@@ -46,7 +47,6 @@ class ChromeCrawlerJS(object):
     def crawl(self,
               chrome,
               url,
-              debug=False,
               debugging_id=None):
         """
         Get all event listeners and click on them.
@@ -59,7 +59,6 @@ class ChromeCrawlerJS(object):
         try:
             self._crawl_impl(chrome,
                              url,
-                             debug=debug,
                              debugging_id=debugging_id)
         except ChromeInterfaceException as cie:
             msg = ('The JS crawler generated an exception in the chrome'
@@ -71,7 +70,6 @@ class ChromeCrawlerJS(object):
     def _crawl_impl(self,
                     chrome,
                     url,
-                    debug=False,
                     debugging_id=None):
         """
         Get all event listeners and click on them.

@@ -77,7 +77,7 @@ class TestChromeCrawlerClick(unittest.TestCase):
         self._unittest_setup(XmlHttpRequestHandler)
         root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        self.crawler.crawl(root_url, self.http_traffic_queue, debug=True)
+        self.crawler.crawl(root_url, self.http_traffic_queue)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 

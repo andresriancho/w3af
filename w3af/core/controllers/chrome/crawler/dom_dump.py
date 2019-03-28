@@ -63,7 +63,6 @@ class ChromeCrawlerDOMDump(object):
     def crawl(self,
               chrome,
               url,
-              debug=False,
               debugging_id=None):
         """
         Parses the DOM that is loaded into Chrome using DocumentParser.

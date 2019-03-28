@@ -27,18 +27,12 @@ import w3af.core.controllers.output_manager as om
 
 class TookLine(object):
 
-    def __init__(self, msg_fmt, debug=False):
+    def __init__(self, msg_fmt):
         self._start = None
         self._msg_fmt = msg_fmt
-        self._debug = debug
-
-        if debug:
-            self._start = time.time()
+        self._start = time.time()
 
     def send(self):
-        if not self._debug:
-            return
-
         spent = time.time() - self._start
         spent = round(spent, 2)
 
