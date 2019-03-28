@@ -61,8 +61,10 @@ class ChromeCrawler(object):
 
         self._pool = ChromePool(self._uri_opener, max_instances=max_instances)
 
-        self._crawl_strategies = [ChromeCrawlerDOMDump(self._pool, web_spider),
-                                  ChromeCrawlerJS(self._pool)]
+        self._crawl_strategies = [ChromeCrawlerJS(self._pool)]
+
+        if web_spider is not None:
+            self._crawl_strategies.append(ChromeCrawlerDOMDump(self._pool, web_spider))
 
     def crawl(self, url, http_traffic_queue, debug=False):
         """
@@ -79,29 +81,19 @@ class ChromeCrawler(object):
         """
         debugging_id = rand_alnum(8)
 
-        crawler_http_traffic_queue, zero_took_line, chrome = self._initial_page_load(url,
-                                                                                     http_traffic_queue,
-                                                                                     debug=debug,
-                                                                                     debugging_id=debugging_id)
-
         try:
-            self._crawl(chrome,
-                        url,
+            self._crawl(url,
+                        http_traffic_queue,
                         debug=debug,
                         debugging_id=debugging_id)
-        finally:
-            self._cleanup(url,
-                          crawler_http_traffic_queue,
-                          chrome,
-                          zero_took_line,
-                          debug=debug,
-                          debugging_id=debugging_id)
+        except Exception, e:
+            msg = 'Call to ChromeCrawler._crawl() raised an exception: "%s" (did: %s)'
+            args = (e, debugging_id)
+            om.out.debug(msg % args)
 
     def _cleanup(self,
                  url,
-                 crawler_http_traffic_queue,
                  chrome,
-                 zero_took_line,
                  debug=False,
                  debugging_id=None):
         #
@@ -126,46 +118,68 @@ class ChromeCrawler(object):
         # Success! Return the chrome instance to the pool
         self._pool.free(chrome)
 
-        args = (crawler_http_traffic_queue.count, url, chrome, debugging_id)
-        msg = 'Extracted %s new HTTP requests from %s seconds using %s (did: %s)'
+        args = (chrome.http_traffic_queue.count, url, chrome, debugging_id)
+        msg = 'Extracted %s new HTTP requests from %s using %s (did: %s)'
         om.out.debug(msg % args)
 
-        zero_took_line.send()
         took_line.send()
 
         return True
 
-    def _crawl(self, chrome, url, debug=False, debugging_id=None):
+    def _crawl(self, url, http_traffic_queue, debug=False, debugging_id=None):
         """
         Use all the crawling strategies to extract links from the loaded page.
 
         :return:
         """
         for crawl_strategy in self._crawl_strategies:
+            try:
+                chrome = self._initial_page_load(url,
+                                                 http_traffic_queue,
+                                                 debug=debug,
+                                                 debugging_id=debugging_id)
+            except Exception, e:
+                msg = ('Failed to perform the initial page load of %s in'
+                       ' chrome crawler: "%s" (did: %s)')
+                args = (url, e, debugging_id)
+                om.out.debug(msg % args)
+                continue
+
             args = (crawl_strategy.get_name(), url)
             msg = 'Spent %%.2f seconds in crawl strategy %s for %s' % args
             took_line = TookLine(msg, debug)
 
-            crawl_strategy.crawl(chrome,
-                                 url,
-                                 debug=debug,
-                                 debugging_id=debugging_id)
+            try:
+                crawl_strategy.crawl(chrome,
+                                     url,
+                                     debug=debug,
+                                     debugging_id=debugging_id)
+            except Exception, e:
+                msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
+                args = (url, chrome, e, debugging_id)
+                om.out.debug(msg % args)
+
+                took_line.send()
+
+                self._pool.remove(chrome)
+
+                continue
+
+            try:
+                self._cleanup(url,
+                              chrome,
+                              debug=debug,
+                              debugging_id=debugging_id)
+            except ChromeCrawlerException:
+                took_line.send()
+                continue
 
             took_line.send()
 
-    def _initial_page_load(self, url, http_traffic_queue, debug=False, debugging_id=None):
-        """
-        Get a chrome instance from the pool and load the initial URL
-
-        :return: A chrome instance which has the initial URL loaded and is
-                 ready to be used during crawling.
-        """
+    def _get_chrome_from_pool(self, url, http_traffic_queue, debug, debugging_id):
         args = (url, debugging_id)
-        msg = 'Starting chrome crawler for %s (did: %s)'
+        msg = 'Getting chrome crawler from pool for %s (did: %s)'
         om.out.debug(msg % args)
-
-        msg = 'Spent %%.2f seconds crawling URL %s in chrome' % url
-        zero_took_line = TookLine(msg, debug)
 
         took_line = TookLine('Spent %.2f seconds getting a chrome instance', debug)
 
@@ -182,6 +196,20 @@ class ChromeCrawler(object):
             raise ChromeCrawlerException('Failed to get a chrome instance: "%s"' % e)
 
         took_line.send()
+
+        return chrome
+
+    def _initial_page_load(self, url, http_traffic_queue, debug=False, debugging_id=None):
+        """
+        Get a chrome instance from the pool and load the initial URL
+
+        :return: A chrome instance which has the initial URL loaded and is
+                 ready to be used during crawling.
+        """
+        chrome = self._get_chrome_from_pool(url,
+                                            http_traffic_queue,
+                                            debug,
+                                            debugging_id)
 
         args = (chrome, url, debugging_id)
         om.out.debug('Using %s to load %s (did: %s)' % args)
@@ -261,7 +289,7 @@ class ChromeCrawler(object):
 
         took_line.send()
 
-        return crawler_http_traffic_queue, zero_took_line, chrome
+        return chrome
 
     def terminate(self):
         self._pool.terminate()

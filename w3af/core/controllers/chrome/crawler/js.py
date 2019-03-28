@@ -126,8 +126,19 @@ class ChromeCrawlerJS(object):
                 break
 
     def _print_stats(self, event_i, processed_events, url):
-        msg = 'Processing event %s out of (N) for %s. Already processed %s events.'
-        args = (event_i, url, len(processed_events))
+        event_types = {}
+
+        for processed_event in processed_events:
+            event_type = processed_event['event_type']
+            if event_type in event_types:
+                event_types[event_type] += 1
+            else:
+                event_types[event_type] = 1
+
+        msg = ('Processing event %s out of (N) for %s.'
+               ' Already processed %s events with types: %r')
+        args = (event_i, url, len(processed_events), event_types)
+
         om.out.debug(msg % args)
 
     def _dispatch_event(self, chrome, event, url, debugging_id):
