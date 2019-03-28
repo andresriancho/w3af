@@ -208,7 +208,7 @@ class OnClickEventWithChildrenRequestHandler(ExtendedHttpRequestHandler):
                             <span id="2">Allowed to click</span>
                         </div>
                         
-                        <div>tag to force more complex selector</>
+                        <div>tag to force more complex selector</div>
 
                         <script>
                             function manualToggle(e) {
