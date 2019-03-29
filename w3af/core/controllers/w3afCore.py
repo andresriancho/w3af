@@ -53,7 +53,8 @@ from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.controllers.misc.home_dir import (create_home_dir,
-                                                 verify_dir_has_perm, HOME_DIR)
+                                                 verify_dir_has_perm,
+                                                 get_home_dir)
 from w3af.core.controllers.misc.temp_dir import (create_temp_dir,
                                                  remove_temp_dir,
                                                  TEMP_DIR)
@@ -540,18 +541,20 @@ class w3afCore(object):
         Handle all the work related to creating/managing the home directory.
         :return: None
         """
+        home_dir = get_home_dir()
+
         # Start by trying to create the home directory (linux: /home/user/.w3af/)
         if not create_home_dir():
-            print('Failed to create the w3af home directory "%s".' % HOME_DIR)
+            print('Failed to create the w3af home directory "%s".' % home_dir)
             sys.exit(-3)            
 
         # If this fails, maybe it is because the home directory doesn't exist
         # or simply because it ain't writable|readable by this user
-        if not verify_dir_has_perm(HOME_DIR, perm=os.W_OK | os.R_OK, levels=1):
+        if not verify_dir_has_perm(home_dir, perm=os.W_OK | os.R_OK, levels=1):
             print('Either the w3af home directory "%s" or its contents are not'
                   ' writable or readable. Please set the correct permissions'
                   ' and ownership. This usually happens when running w3af as'
-                  ' root using "sudo".' % HOME_DIR)
+                  ' root using "sudo".' % home_dir)
             sys.exit(-3)
 
     def _tmp_directory(self):
