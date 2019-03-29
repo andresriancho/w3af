@@ -226,10 +226,10 @@ class Worker(object):
             current_args = current_args[0][1:]
 
         if isinstance(current_func, return_args):
-            return current_func.func_orig.__name__
+            return current_func.func_orig.__name__, current_args
 
         if isinstance(current_func, one_to_many):
-            return current_func.func_orig.__name__
+            return current_func.func_orig.__name__, current_args
 
         if current_func is None:
             return None, None
