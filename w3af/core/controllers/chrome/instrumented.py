@@ -595,7 +595,14 @@ class InstrumentedChrome(object):
         cmd = 'window._DOMAnalyzer.getEventListeners(%i, %i)'
         args = (start, count)
 
-        for event_listener in self.get_js_variable_value(cmd % args):
+        event_listeners = self.get_js_variable_value(cmd % args)
+
+        if event_listeners is None:
+            # Something happen here... potentially a bug in the instrumented
+            # chrome or the dom_analyzer.js code
+            return
+
+        for event_listener in event_listeners:
             yield EventListener(event_listener)
 
     def get_html_event_listeners_iter(self,
@@ -699,7 +706,14 @@ class InstrumentedChrome(object):
         cmd = 'window._DOMAnalyzer.getElementsWithEventHandlers(%s, %s, %i, %i)'
         args = (event_filter, tag_name_filter, start, count)
 
-        for event_listener in self.get_js_variable_value(cmd % args):
+        event_listeners = self.get_js_variable_value(cmd % args)
+
+        if event_listeners is None:
+            # Something happen here... potentially a bug in the instrumented
+            # chrome or the dom_analyzer.js code
+            return
+
+        for event_listener in event_listeners:
             yield EventListener(event_listener)
 
     def get_all_event_listeners(self):
