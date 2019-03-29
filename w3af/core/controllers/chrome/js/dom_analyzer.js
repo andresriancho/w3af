@@ -548,12 +548,31 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     /**
      * Get event listeners in a paginated manner
      *
+     * @param  {Array}   event_filter     If non-empty, only return these events in the result
+     * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
      * @param  {number}  start            Result index to start at when returning events
      * @param  {number}  count            How many events to return
      *
      */
-    getEventListeners: function (start, count) {
-        return _DOMAnalyzer.event_listeners.slice(start, start + count);
+    getEventListeners: function (event_filter, tag_name_filter, start, count) {
+        let filtered_event_listeners = [];
+
+        for(let elem_it = 0; elem_it < _DOMAnalyzer.event_listeners.length; elem_it++) {
+            let event_listener = _DOMAnalyzer.event_listeners[elem_it];
+
+            let tag_name = event_listener["tag_name"];
+            let event_type = event_listener["event_type"];
+
+            // Filter events by tag name (a, div, etc.)
+            if( tag_name_filter.length > 0 && !tag_name_filter.includes(tag_name) ) continue;
+
+            // Filter events by tag name (a, div, etc.)
+            if( event_filter.length > 0 && !event_filter.includes(event_type) ) continue;
+
+            filtered_event_listeners.push(event_listener);
+        }
+
+        return filtered_event_listeners.slice(start, start + count);
     },
 
     /**

@@ -559,25 +559,34 @@ class InstrumentedChrome(object):
 
         return self.get_js_variable_value(cmd % args)
 
-    def get_js_event_listeners(self):
+    def get_js_event_listeners(self,
+                               event_filter=None,
+                               tag_name_filter=None):
         """
         get_js_event_listeners_iter() should be used in most scenarios to prevent
         huge json blobs from being sent from the browser to w3af
 
         :return: A list of event listeners
         """
-        return list(self.get_js_event_listeners_iter())
+        return list(self.get_js_event_listeners_iter(event_filter=event_filter,
+                                                     tag_name_filter=tag_name_filter))
 
-    def get_js_event_listeners_iter(self):
+    def get_js_event_listeners_iter(self,
+                                    event_filter=None,
+                                    tag_name_filter=None):
         """
         :return: An iterator that can be used to read all the event listeners
         """
-        for event in self._paginate(self.get_js_event_listeners_paginated):
+        for event in self._paginate(self.get_js_event_listeners_paginated,
+                                    event_filter=event_filter,
+                                    tag_name_filter=tag_name_filter):
             yield event
 
     def get_js_event_listeners_paginated(self,
                                          start=0,
-                                         count=PAGINATION_PAGE_COUNT):
+                                         count=PAGINATION_PAGE_COUNT,
+                                         event_filter=None,
+                                         tag_name_filter=None):
         """
         :param start: The index where to start the current batch at. This is
                       used for pagination purposes. The initial value is zero.
@@ -592,8 +601,16 @@ class InstrumentedChrome(object):
         start = int(start)
         count = int(count)
 
-        cmd = 'window._DOMAnalyzer.getEventListeners(%i, %i)'
-        args = (start, count)
+        event_filter = event_filter or []
+        event_filter = list(event_filter)
+        event_filter = repr(event_filter)
+
+        tag_name_filter = tag_name_filter or []
+        tag_name_filter = list(tag_name_filter)
+        tag_name_filter = repr(tag_name_filter)
+
+        cmd = 'window._DOMAnalyzer.getEventListeners(%s, %s, %i, %i)'
+        args = (event_filter, tag_name_filter, start, count)
 
         event_listeners = self.get_js_variable_value(cmd % args)
 
@@ -716,11 +733,16 @@ class InstrumentedChrome(object):
         for event_listener in event_listeners:
             yield EventListener(event_listener)
 
-    def get_all_event_listeners(self):
-        for event_listener in self.get_js_event_listeners_iter():
+    def get_all_event_listeners(self,
+                                event_filter=None,
+                                tag_name_filter=None):
+
+        for event_listener in self.get_js_event_listeners_iter(event_filter=event_filter,
+                                                               tag_name_filter=tag_name_filter):
             yield event_listener
 
-        for event_listener in self.get_html_event_listeners_iter():
+        for event_listener in self.get_html_event_listeners_iter(event_filter=event_filter,
+                                                                 tag_name_filter=tag_name_filter):
             yield event_listener
 
     def _is_valid_event_type(self, event_type):

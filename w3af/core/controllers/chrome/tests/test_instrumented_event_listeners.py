@@ -111,6 +111,46 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
                                                              u'event_type': u'click',
                                                              u'use_capture': False}])
 
+    def test_onclick_event_listener_filter_positive(self):
+        self._unittest_setup(OnClickEventRequestHandler)
+
+        expected_response = [{u'tag_name': u'table',
+                              u'node_type': 1,
+                              u'selector': u'#outside',
+                              u'event_type': u'click',
+                              u'use_capture': False}]
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+
+        self.assertEqual(self.ic.get_js_event_listeners(event_filter=['click']),
+                         expected_response)
+
+        self.assertEqual(self.ic.get_js_event_listeners(tag_name_filter=['table']),
+                         expected_response)
+
+        self.assertEqual(self.ic.get_js_event_listeners(event_filter=['click'],
+                                                        tag_name_filter=['table']),
+                         expected_response)
+
+    def test_onclick_event_listener_filter_negative(self):
+        self._unittest_setup(OnClickEventRequestHandler)
+
+        expected_response = []
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+
+        self.assertEqual(self.ic.get_js_event_listeners(event_filter=['load']),
+                         expected_response)
+
+        self.assertEqual(self.ic.get_js_event_listeners(tag_name_filter=['a']),
+                         expected_response)
+
+        self.assertEqual(self.ic.get_js_event_listeners(event_filter=['load'],
+                                                        tag_name_filter=['a']),
+                         expected_response)
+
     def test_onclick_event_listener_iter(self):
         self._unittest_setup(OnClickEventRequestHandler)
 
