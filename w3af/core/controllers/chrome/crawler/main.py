@@ -287,3 +287,18 @@ class ChromeCrawler(object):
         self._uri_opener = None
         self._web_spider = None
 
+    def print_all_console_messages(self):
+        """
+        This method will get the first chrome instance from the pool and print
+        all the console.log() messages that it has.
+
+        The method should only be used during unittests, when there is only one
+        chrome instance in the pool!
+
+        :return: None, output is written to stdout
+        """
+        assert len(self._pool._free) == 1
+
+        instrumented_chrome = list(self._pool._free)[0]
+        for console_message in instrumented_chrome.get_console_messages():
+            print(console_message)
