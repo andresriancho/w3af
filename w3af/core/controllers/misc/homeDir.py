@@ -99,7 +99,7 @@ def create_home_dir():
 def get_home_dir():
     """
     :return: The location of the w3af directory inside the home directory of
-        the current user.
+             the current user.
     """
     return HOME_DIR
 
