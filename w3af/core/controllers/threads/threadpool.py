@@ -232,7 +232,7 @@ class Worker(object):
             return current_func.func_orig.__name__
 
         if current_func is None:
-            return None
+            return None, None
 
         return current_func.__name__, current_args
 
