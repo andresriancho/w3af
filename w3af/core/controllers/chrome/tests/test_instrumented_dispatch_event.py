@@ -23,6 +23,8 @@ import Queue
 import unittest
 
 from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.tests.test_instrumented_event_listeners import (EventListenerInDocument,
+                                                                                  EventListenerInWindow)
 from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -148,6 +150,68 @@ class TestChromeCrawlerDispatchEvents(unittest.TestCase):
                                                              u'event_type': u'click',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside'}])
+
+    def test_dispatch_click_event_to_document(self):
+        self._unittest_setup(EventListenerInDocument)
+
+        # The event was recorded
+        event_listeners = self.ic.get_js_event_listeners()
+
+        self.assertEqual(event_listeners, [{u'event_type': u'click',
+                                            u'tag_name': u'!document',
+                                            u'node_type': 9,
+                                            u'selector': u'!document'}])
+
+        dom_before = self.ic.get_dom()
+
+        event_listener = event_listeners[0]
+        selector = event_listener['selector']
+        event_type = event_listener['event_type']
+
+        # dispatch the event
+        self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
+
+        dom_after = self.ic.get_dom()
+
+        self.assertNotEqual(dom_after, dom_before)
+        self.assertIn('Hello World!2', dom_after)
+
+        # The event is still in there
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
+                                                             u'tag_name': u'!document',
+                                                             u'node_type': 9,
+                                                             u'selector': u'!document'}])
+
+    def test_dispatch_click_event_to_window(self):
+        self._unittest_setup(EventListenerInWindow)
+
+        # The event was recorded
+        event_listeners = self.ic.get_js_event_listeners()
+
+        self.assertEqual(event_listeners, [{u'event_type': u'click',
+                                            u'tag_name': u'!window',
+                                            u'node_type': -1,
+                                            u'selector': u'!window'}])
+
+        dom_before = self.ic.get_dom()
+
+        event_listener = event_listeners[0]
+        selector = event_listener['selector']
+        event_type = event_listener['event_type']
+
+        # dispatch the event
+        self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
+
+        dom_after = self.ic.get_dom()
+
+        self.assertNotEqual(dom_after, dom_before)
+        self.assertIn('Hello World!2', dom_after)
+
+        # The event is still in there
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
+                                                             u'tag_name': u'!window',
+                                                             u'node_type': -1,
+                                                             u'selector': u'!window'}])
 
 
 class OnClickEventRequestHandler(ExtendedHttpRequestHandler):

@@ -154,13 +154,23 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
 
     def test_click_on_document(self):
         self._unittest_setup(EventListenerInDocument)
-        self._print_all_console_messages()
+
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
         self.assertEqual(self.ic.get_js_set_intervals(), [])
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
                                                              u'tag_name': u'!document',
                                                              u'node_type': 9,
                                                              u'selector': u'!document'}])
+
+    def test_click_on_window(self):
+        self._unittest_setup(EventListenerInWindow)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
+                                                             u'tag_name': u'!window',
+                                                             u'node_type': -1,
+                                                             u'selector': u'!window'}])
 
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
@@ -273,10 +283,36 @@ class EventListenerInDocument(ExtendedHttpRequestHandler):
                         
                         <script>
                         document.addEventListener("click", function(){
-                          document.getElementById("demo").innerHTML = "Hello World!";
+                          document.getElementById("demo").innerHTML = "Hello World!" + (1+1);
                         });
                         </script>
                         
+                        </body>
+                        </html>
+                        ''')
+
+
+class EventListenerInWindow(ExtendedHttpRequestHandler):
+    # https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_document_addeventlistener
+    RESPONSE_BODY = ('''<!DOCTYPE html>
+                        <html>
+                        <body>
+
+                        <p>This example uses the addEventListener() method to attach a click event to the document.</p>
+
+                        <p>Click anywhere in the document.</p>
+
+                        <p><strong>Note:</strong> The addEventListener() method is not supported in Internet Explorer 8 
+                        and earlier versions.</p>
+
+                        <p id="demo"></p>
+
+                        <script>
+                        window.addEventListener("click", function(){
+                          document.getElementById("demo").innerHTML = "Hello World!" + (1+1);
+                        });
+                        </script>
+
                         </body>
                         </html>
                         ''')

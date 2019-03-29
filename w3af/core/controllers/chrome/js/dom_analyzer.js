@@ -243,6 +243,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
         let tag_name;
         let selector;
+        let node_type;
 
         // TODO: This is a hack. I found not better way to create a "selector"
         //       or "tag_name" to represent the window and document instances
@@ -253,13 +254,16 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if (element === window){
             tag_name = "!window";
             selector = "!window";
+            node_type = -1;
         } else {
             tag_name = "!document";
             selector = "!document";
+            node_type = element.nodeType;
         }
 
+        // node_type is https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType#Node_type_constants
         _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
-                                           "node_type": element.nodeType,
+                                           "node_type": node_type,
                                            "selector": selector,
                                            "event_type": type,
                                            "use_capture": useCapture});
@@ -284,11 +288,40 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
         let selector = _DOMAnalyzer.selector_generator.getSelector(element);
 
+        // node_type is https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType#Node_type_constants
         _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
                                            "node_type": element.nodeType,
                                            "selector": selector,
                                            "event_type": type,
                                            "use_capture": useCapture});
+    },
+
+    /**
+     * Get the element, window or document from the selector.
+     *
+     * Note that the selector parameter is a regular CSS selector BUT:
+     *
+     *   - When the window object should be returned !window is used
+     *   - When the document object should be returned !document is used
+     *
+     * @param selector          string           CSS selector (with extras)
+     */
+    getObjectFromSelectorPlus: function (selector) {
+
+        if (selector === "!window"){
+            return window
+        }
+
+        if (selector === "!document") {
+            return document;
+        }
+
+        let element = document.querySelector(selector);
+
+        // The element might be hidden from the user's view
+        if (_DOMAnalyzer.elementIsHidden(element)) return null;
+
+        return element;
     },
 
     /**
@@ -299,13 +332,10 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      */
     dispatchCustomEvent: function (selector, event_type) {
 
-        let element = document.querySelector(selector);
+        let element = _DOMAnalyzer.getObjectFromSelectorPlus(selector);
 
-        // The element might not exist anymore
+        // The element might not exist anymore or be hidden from the user's view
         if (element == null) return false;
-
-        // The element might be hidden from the user's view
-        if (_DOMAnalyzer.elementIsHidden(element)) return false;
 
         let event = document.createEvent("Events");
         event.initEvent(event_type, true, true);
