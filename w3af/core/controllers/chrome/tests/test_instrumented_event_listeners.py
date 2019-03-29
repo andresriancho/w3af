@@ -152,6 +152,16 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
                                                              u'event_type': u'click',
                                                              u'use_capture': False}])
 
+    def test_click_on_document(self):
+        self._unittest_setup(EventListenerInDocument)
+        self._print_all_console_messages()
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
+                                                             u'tag_name': u'!document',
+                                                             u'node_type': 9,
+                                                             u'selector': u'!document'}])
+
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = ''
@@ -245,3 +255,28 @@ class OnClickEventArrowRequestHandler(ExtendedHttpRequestHandler):
                         </script>
                         ''')
 
+
+class EventListenerInDocument(ExtendedHttpRequestHandler):
+    # https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_document_addeventlistener
+    RESPONSE_BODY = ('''<!DOCTYPE html>
+                        <html>
+                        <body>
+                        
+                        <p>This example uses the addEventListener() method to attach a click event to the document.</p>
+                        
+                        <p>Click anywhere in the document.</p>
+                        
+                        <p><strong>Note:</strong> The addEventListener() method is not supported in Internet Explorer 8 
+                        and earlier versions.</p>
+                        
+                        <p id="demo"></p>
+                        
+                        <script>
+                        document.addEventListener("click", function(){
+                          document.getElementById("demo").innerHTML = "Hello World!";
+                        });
+                        </script>
+                        
+                        </body>
+                        </html>
+                        ''')

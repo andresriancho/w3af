@@ -97,6 +97,28 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         ]
     },
 
+    // window and document nodes allow only some events
+    window_and_document_valid_events: [
+        'blur',
+        'change',
+        'click',
+        'dblclick',
+        'focus',
+        'input',
+        'keydown',
+        'keypress',
+        'keyup',
+        'load',
+        'mousedown',
+        'mousemove',
+        'mouseout',
+        'mouseover',
+        'mouseup',
+        'reset',
+        'select',
+        'submit'
+    ],
+
     initialize: function () {
         if(_DOMAnalyzer.initialized) return;
 
@@ -138,7 +160,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
-     * Override window.addEventListener and Node.prototype.addEventListener
+     * Override (window|document).addEventListener and Node.prototype.addEventListener
      *
      * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
      */
@@ -155,7 +177,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         let original_document_addEventListener = document.addEventListener;
 
         document.addEventListener = function (type, listener, useCapture) {
-            _DOMAnalyzer.storeEventListenerData(document, event, listener, useCapture);
+            _DOMAnalyzer.storeEventListenerData(document, type, listener, useCapture);
             original_document_addEventListener.apply(document, Array.prototype.slice.call(arguments));
         };
 
@@ -179,6 +201,16 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     /**
      * Store event listener data
      *
+     * The method handles two very different scenarios:
+     *
+     *      - element is window / document
+     *
+     *      - element is any other node
+     *
+     * window and document instances don't have tagName nor selector, and will
+     * never return `false` for _DOMAnalyzer.elementIsHidden(element), thus
+     * handling is completely different.
+     *
      * @param element          element           window, document, node
      * @param type             string            The event type, eg. click
      * @param listener         function          The function that handles the event
@@ -188,10 +220,71 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *
      */
     storeEventListenerData: function (element, type, listener, useCapture) {
+        if (element.tagName){
+            // Handle regular elements
+            return _DOMAnalyzer.storeEventListenerDataForElement(element, type, listener, useCapture);
+        } else {
+            // Handle window or document
+            return _DOMAnalyzer.storeEventListenerDataForWindowDocument(element, type, listener, useCapture);
+        }
+    },
+
+    /**
+     * See docs in storeEventListenerData()
+     *
+     * @param element          element           window, document, node
+     * @param type             string            The event type, eg. click
+     * @param listener         function          The function that handles the event
+     * @param useCapture       boolean           As defined in the addEventListener docs
+     * @returns {boolean}
+     */
+    storeEventListenerDataForWindowDocument: function (element, type, listener, useCapture) {
+        if( !_DOMAnalyzer.eventIsValidForWindowDocument( type ) ) return false;
+
+        let tag_name;
+        let selector;
+
+        // TODO: This is a hack. I found not better way to create a "selector"
+        //       or "tag_name" to represent the window and document instances
+        //       without overlapping with real tags that are names the same.
+        //
+        //       If you're reading this and know a better way to do it, I would
+        //       love to hear about it
+        if (element === window){
+            tag_name = "!window";
+            selector = "!window";
+        } else {
+            tag_name = "!document";
+            selector = "!document";
+        }
+
+        _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
+                                           "node_type": element.nodeType,
+                                           "selector": selector,
+                                           "event_type": type,
+                                           "use_capture": useCapture});
+    },
+
+    /**
+     * See docs in storeEventListenerData()
+     *
+     * @param element          element           window, document, node
+     * @param type             string            The event type, eg. click
+     * @param listener         function          The function that handles the event
+     * @param useCapture       boolean           As defined in the addEventListener docs
+     * @returns {boolean}
+     */
+    storeEventListenerDataForElement: function (element, type, listener, useCapture) {
+        // The element might be hidden from the user's view
+        if (_DOMAnalyzer.elementIsHidden(element)) return false;
+
+        let tag_name = element.tagName.toLowerCase();
+
+        if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, type ) ) return false;
 
         let selector = _DOMAnalyzer.selector_generator.getSelector(element);
 
-        _DOMAnalyzer.event_listeners.push({"tag_name": element.tagName.toLowerCase(),
+        _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
                                            "node_type": element.nodeType,
                                            "selector": selector,
                                            "event_type": type,
@@ -261,6 +354,22 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if (!_DOMAnalyzer.valid_events_per_element.hasOwnProperty(tag_name)) return false;
 
         return _DOMAnalyzer.valid_events_per_element[tag_name].includes(attr_name);
+    },
+
+     /**
+     * Not all events are valid for `window` and `document`. This function returns
+     * true when the event is valid for the element.
+     *
+     * Important note!
+     *
+     *      This function is filtering lots of potentially invalid events
+     *      that the browser might (or not) handle.
+     *
+     *      Events that do not pass this filter will be ignored in the rest
+     *      of the process!
+     */
+    eventIsValidForWindowDocument: function ( event_type ) {
+        return _DOMAnalyzer.window_and_document_valid_events.includes(event_type);
     },
 
     /**
