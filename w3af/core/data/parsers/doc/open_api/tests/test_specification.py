@@ -43,7 +43,8 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               NestedModel,
                                                                               NestedLoopModel,
                                                                               ArrayModelItems,
-                                                                              MultiplePathsAndHeaders)
+                                                                              MultiplePathsAndHeaders,
+                                                                              Templated)
 
 
 class TestSpecification(unittest.TestCase):
@@ -585,6 +586,47 @@ class TestSpecification(unittest.TestCase):
         http_response = self.generate_response(specification_as_string)
         handler = SpecificationHandler(http_response)
         self.check_parameter_setting(handler)
+
+    def test_templated_operation(self):
+        specification_as_string = Templated().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification contains two templates for the operation, each
+        # with a single required parameter
+        self.assertEqual(len(data), 2)
+
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'getPetBy')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json'])
+        self.assertEqual(operation.path_name, '/pets')
+
+        # Now we check the parameters for the operation
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('name')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'query')
+        self.assertEqual(param.param_spec['type'], 'string')
+        self.assertEqual(param.fill, 'Rover')
+
+        # And check the second one too
+        (spec, api_resource_name, resource,
+         operation_name, operation, parameters) = data[1]
+
+        self.assertEqual(len(operation.params), 1)
+
+        param = operation.params.get('owner')
+        self.assertEqual(param.param_spec['required'], True)
+        self.assertEqual(param.param_spec['in'], 'query')
+        self.assertEqual(param.param_spec['type'], 'string')
+        self.assertEqual(param.fill, 'John Smith')
 
     def check_parameter_setting(self, spec_handler):
         data = [d for d in spec_handler.get_api_information()]

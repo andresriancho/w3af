@@ -79,6 +79,11 @@ class MultiplePathsAndHeaders(object):
         return file('%s/data/multiple_paths_and_headers.json' % CURRENT_PATH).read()
 
 
+class Templated(object):
+    def get_specification(self):
+        return file('%s/data/templated.json' % CURRENT_PATH).read()
+
+
 class PetstoreSimpleModel(object):
 
     @staticmethod
