@@ -111,6 +111,17 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
                                                              u'event_type': u'click',
                                                              u'use_capture': False}])
 
+    def test_onclick_assign_to_onclick_event_listener(self):
+        self._unittest_setup(OnClickEventSetOnClickRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+        self.assertEqual(self.ic.get_js_event_listeners(), [])
+
+        # This case is handled in test_onclick_event_set_attribute
+        # so it is OK for the get_js_event_listeners() to return an empty
+        # list
+
     def test_onclick_event_listener_filter_positive(self):
         self._unittest_setup(OnClickEventRequestHandler)
 
@@ -260,6 +271,31 @@ class OnClickEventRequestHandler(ExtendedHttpRequestHandler):
                             // add event listener to table
                             var el = document.getElementById("outside");
                             el.addEventListener("click", modifyText, false);
+                        </script>
+                        ''')
+
+
+class OnClickEventSetOnClickRequestHandler(ExtendedHttpRequestHandler):
+    # https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Add_a_simple_listener
+    RESPONSE_BODY = ('''<table id="outside">
+                            <tr><td id="t1">one</td></tr>
+                            <tr><td id="t2">two</td></tr>
+                        </table>
+
+                        <script>
+                            // Function to change the content of t2
+                            function modifyText() {
+                              var t2 = document.getElementById("t2");
+                              if (t2.firstChild.nodeValue == "three") {
+                                t2.firstChild.nodeValue = "two";
+                              } else {
+                                t2.firstChild.nodeValue = "three";
+                              }
+                            }
+
+                            // add event listener to table
+                            var el = document.getElementById("outside");
+                            el.onclick = modifyText;
                         </script>
                         ''')
 

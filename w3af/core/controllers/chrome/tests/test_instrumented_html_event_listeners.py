@@ -23,6 +23,7 @@ import Queue
 import unittest
 
 from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.tests.test_instrumented_event_listeners import OnClickEventSetOnClickRequestHandler
 from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -79,6 +80,17 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         event_listeners = self.ic.get_html_event_listeners()
 
         self.assertEqual(event_listeners, [])
+
+    def test_onclick_event_set_attribute(self):
+        self._unittest_setup(OnClickEventSetOnClickRequestHandler)
+
+        event_listeners = self.ic.get_html_event_listeners()
+        self._print_all_console_messages()
+        self.assertEqual(event_listeners, [{u'event_type': u'click',
+                                            u'tag_name': u'table',
+                                            u'handler': {},
+                                            u'node_type': 1,
+                                            u'selector': u'#outside'}])
 
     def test_onclick_event_listener_children_that_do_not_inherit(self):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)

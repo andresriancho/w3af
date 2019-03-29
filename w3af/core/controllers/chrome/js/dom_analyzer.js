@@ -16,6 +16,7 @@
  *    along with w3af; if not, write to the Free Software
  *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 var _DOMAnalyzer = _DOMAnalyzer || {
     /**
      *   Browser-side code that overrides addEventListener and setTimeout to store
@@ -403,19 +404,30 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
-     * Extract the events and handlers from the element attributes
+     * Extract the events and handlers from the element attributes and properties
      *
-     * This function extracts ("click", "x()") from:
+     * This function extracts event listeners from attributes:
      *
      *      <div onclick="x()">...</div>
+     *
+     * And properties:
+     *
+     *      var el = document.getElementById("selector");
+     *      el.onclick = someFunction;
+     *
      */
-    extractEventsFromAttributes: function (tag_name, element) {
-        let attributes  = element.attributes;
-        let attr_length = attributes.length;
+    extractEventsFromAttributesAndProperties: function (tag_name, element) {
         let events = [];
+        let event_types = [];
         let selector = _DOMAnalyzer.selector_generator.getSelector(element);
 
-        for( var attr_it = 0; attr_it < attr_length; attr_it++ ){
+        //
+        //  First extract from attributes
+        //
+        let attributes  = element.attributes;
+        let attr_length = attributes.length;
+
+        for( let attr_it = 0; attr_it < attr_length; attr_it++ ){
             let attr_name = attributes[attr_it].nodeName;
 
             // Remove the 'on' from 'onclick'. This will also remove the first
@@ -431,6 +443,38 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 "selector": selector,
                 "event_type": attr_name,
                 "handler": attributes[attr_it].nodeValue
+            };
+
+            events.push(edata);
+            event_types.push(attr_name);
+        }
+
+        //
+        //  And then from properties
+        //
+        for( let property_name in element ) {
+
+            let property_value = element[property_name];
+
+            if (!property_value) continue;
+
+            // Remove the 'on' from 'onclick'. This will also remove the first
+            // two chars from any attribute name, but it will simply not pass
+            // the eventIsValidForTagName filter below
+            property_name = property_name.substr(2);
+
+            // Prevent duplicates in some rare scenarios
+            if ( event_types.includes(property_name) ) continue;
+
+            // Make sure that the event type is valid
+            if ( !_DOMAnalyzer.eventIsValidForTagName( tag_name, property_name ) ) continue;
+
+            let edata = {
+                "tag_name": tag_name,
+                "node_type": element.nodeType,
+                "selector": selector,
+                "event_type": property_name,
+                "handler": property_value
             };
 
             events.push(edata)
@@ -508,7 +552,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         for( let ancestor_it = 0; ancestor_it < ancestors.length; ancestor_it++ ){
             let ancestor_elem = ancestors[ancestor_it];
             let ancestor_tag_name = ancestor_elem.tagName.toLowerCase();
-            let ancestor_attribute_events = _DOMAnalyzer.extractEventsFromAttributes(ancestor_tag_name, ancestor_elem);
+            let ancestor_attribute_events = _DOMAnalyzer.extractEventsFromAttributesAndProperties(ancestor_tag_name, ancestor_elem);
 
             if (!ancestor_attribute_events.length) continue;
 
@@ -623,7 +667,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if( tag_name_filter.length > 0 && !tag_name_filter.includes(tag_name) ) continue;
 
             // Get the element events
-            let attribute_events = _DOMAnalyzer.extractEventsFromAttributes(tag_name, element);
+            let attribute_events = _DOMAnalyzer.extractEventsFromAttributesAndProperties(tag_name, element);
             let inherited_events = _DOMAnalyzer.extractInheritedEvents(tag_name, element);
 
             // Merge and unique
