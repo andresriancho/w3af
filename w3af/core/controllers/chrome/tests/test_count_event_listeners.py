@@ -101,9 +101,9 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
             else:
                 event_types[event_type] = 1
 
-        print(url)
-        pprint.pprint(event_types)
-        print()
+        # print(url)
+        # pprint.pprint(event_types)
+        # print()
 
     def _count_event_listeners(self, url, min_event_count):
         ic = self._load_url(url)
