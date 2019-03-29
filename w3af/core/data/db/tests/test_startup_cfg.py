@@ -24,7 +24,7 @@ from datetime import date, timedelta
 from mock import Mock
 
 from w3af.core.data.db.startup_cfg import StartUpConfig
-from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.home_dir import get_home_dir
 
 
 class TestStartUpConfig(unittest.TestCase):

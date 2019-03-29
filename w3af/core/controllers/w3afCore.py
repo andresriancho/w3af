@@ -33,7 +33,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.threads.threadpool import Pool
-from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.home_dir import get_home_dir
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version_minimal
 from w3af.core.controllers.core_helpers.profiles import CoreProfiles
 from w3af.core.controllers.core_helpers.plugins import CorePlugins
@@ -52,8 +52,8 @@ from w3af.core.controllers.profiling import start_profiling, stop_profiling
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
-from w3af.core.controllers.misc.homeDir import (create_home_dir,
-                                                verify_dir_has_perm, HOME_DIR)
+from w3af.core.controllers.misc.home_dir import (create_home_dir,
+                                                 verify_dir_has_perm, HOME_DIR)
 from w3af.core.controllers.misc.temp_dir import (create_temp_dir,
                                                  remove_temp_dir,
                                                  TEMP_DIR)

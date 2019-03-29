@@ -27,7 +27,7 @@ from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_file_list import get_file_list
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.misc.homeDir import HOME_DIR
+from w3af.core.controllers.misc.home_dir import HOME_DIR
 from w3af.core.data.profile.profile import profile as profile
 
 

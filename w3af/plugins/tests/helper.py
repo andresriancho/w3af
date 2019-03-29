@@ -38,7 +38,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
-from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+from w3af.core.controllers.misc.home_dir import W3AF_LOCAL_PATH
 from w3af.core.controllers.misc.decorators import retry
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory

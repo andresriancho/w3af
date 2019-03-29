@@ -1,5 +1,5 @@
 """
-homeDir.py
+home_dir.py
 
 Copyright 2008 Andres Riancho
 
