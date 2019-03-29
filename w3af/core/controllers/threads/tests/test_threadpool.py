@@ -119,6 +119,9 @@ class TestWorkerPool(unittest.TestCase):
 
     def test_worker_stats_idle(self):
         worker_pool = Pool(processes=1, worker_names='WorkerThread')
+        func_name, func_args = worker_pool._pool[0].worker.get_real_func_name_args()
+        self.assertIsNone(func_name)
+        self.assertIsNone(func_args)
         self.assertTrue(worker_pool._pool[0].worker.is_idle())
 
     def test_worker_stats_not_idle(self):
