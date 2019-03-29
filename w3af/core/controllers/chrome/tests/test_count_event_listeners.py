@@ -47,7 +47,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
 
     TESTS = OrderedDict([
         ('https://google.com/', 20),
-        ('https://www.google.com/search?q=w3af', 115),
+        ('https://www.google.com/search?q=w3af', 80),
 
         ('https://www.bing.com/', 80),
         ('https://www.bing.com/search?q=w3af', 200),
