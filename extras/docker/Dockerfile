@@ -24,7 +24,7 @@ RUN apt-get dist-upgrade -y
 RUN apt-get install -y python-pip build-essential libxslt1-dev libxml2-dev libsqlite3-dev \
                        libyaml-dev openssh-server python-dev git python-lxml wget libssl-dev \
                        xdot python-gtk2 python-gtksourceview2 ubuntu-artwork dmz-cursor-theme \
-                       ca-certificates libffi-dev
+                       ca-certificates libffi-dev python-webkit
 
 # Add the w3af user
 # TODO - actually use the w3af user instead of running everything as root

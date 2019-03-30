@@ -12,6 +12,14 @@ DOCKER_RUN = ('docker run'
               ' -p 44444:44444'
               ' andresriancho/w3af')
 
+DOCKER_RUN_GUI = ('docker run'
+                  ' -d'
+                  ' -v ~/.w3af:/root/.w3af'
+                  ' -v ~/w3af-shared:/root/w3af-shared'
+                  ' -v /tmp/.X11-unix:/tmp/.X11-unix'
+                  ' -e DISPLAY=unix$DISPLAY'
+                  ' -p 44444:44444'
+                  ' andresriancho/w3af')
 
 def start_container(tag, command=DOCKER_RUN):
     """
@@ -132,7 +140,7 @@ def restore_file_ownership():
         # will run w3af inside docker: sudo w3af_console_docker
         uid = int(os.getenv('SUDO_UID'))
         gid = int(os.getenv('SUDO_GID'))
-    except ValueError:
+    except (ValueError, TypeError):
         # TODO: More things to be implemented here
         return False
 
