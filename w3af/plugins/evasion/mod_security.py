@@ -60,7 +60,8 @@ class mod_security(EvasionPlugin):
 
                 request = HTTPRequest(request.url_object, data, headers_copy,
                                       request.get_origin_req_host(),
-                                      retries=request.retries_left)
+                                      retries=request.retries_left,
+                                      timeout=request.timeout)
 
         return request
 
