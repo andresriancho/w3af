@@ -32,10 +32,6 @@ class mod_security(EvasionPlugin):
 
     :author: Francisco Amato ( famato |at| infobyte.com.ar )
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -78,12 +74,14 @@ class mod_security(EvasionPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This evasion plugin performs a bypass for mod_security version 2.1.0 or less here:
+        This evasion plugin performs a bypass for mod_security version 2.1.0.
+        More information about the vulnerability can be found at:
+        
             - http://www.php-security.org/MOPB/BONUS-12-2007.html
 
         Important: The evasion only works for postdata.
 
         Example:
-            Post-data Input:      'a=b'
-            Post-data Output :    '\\x00a=b'
+            Input post-data:      'a=b'
+            Output post-data:     '\\x00a=b'
         """
