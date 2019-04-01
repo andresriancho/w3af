@@ -31,10 +31,6 @@ class rnd_hex_encode(EvasionPlugin):
     Add random hex encoding.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request

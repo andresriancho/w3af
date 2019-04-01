@@ -32,10 +32,6 @@ class full_width_encode(EvasionPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -106,5 +102,5 @@ class full_width_encode(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/b%uFF61r/%uFF66oo.asp'
+            Output:     '/b%uFF61r/%uFF66oo.asp'
         """

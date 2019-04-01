@@ -32,9 +32,6 @@ class rnd_param(EvasionPlugin):
     Add a random parameter.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -99,5 +96,5 @@ class rnd_param(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/bar/foo.asp?alsfkj=f09'
+            Output:     '/bar/foo.asp?alsfkj=f09'
         """

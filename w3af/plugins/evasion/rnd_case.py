@@ -31,10 +31,6 @@ class rnd_case(EvasionPlugin):
     Change the case of random letters.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -101,5 +97,5 @@ class rnd_case(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/BAr/foO.Asp'
+            Output:     '/BAr/foO.Asp'
         """

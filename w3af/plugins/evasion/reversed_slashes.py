@@ -28,10 +28,6 @@ class reversed_slashes(EvasionPlugin):
     Change the slashes from / to \\
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -71,5 +67,5 @@ class reversed_slashes(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '\bar\foo.asp'
+            Output:     '\bar\foo.asp'
         """

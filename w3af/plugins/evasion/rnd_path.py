@@ -31,10 +31,6 @@ class rnd_path(EvasionPlugin):
     Add a random path to the URI.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request

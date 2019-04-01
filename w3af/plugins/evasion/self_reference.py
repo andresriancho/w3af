@@ -28,10 +28,6 @@ class self_reference(EvasionPlugin):
     Add a directory self reference.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
