@@ -99,6 +99,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     def with_binary_response(self):
         return self._binary_response
 
+    def set_data(self, data):
+        self.data = data
+
     def add_header(self, key, val):
         """
         Override mostly to avoid having header values of DataToken type
@@ -127,6 +130,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def get_uri(self):
         return self.url_object
+
+    def set_uri(self, url_object):
+        self.url_object = url_object
     
     def get_headers(self):
         headers = Headers(self.headers.items())

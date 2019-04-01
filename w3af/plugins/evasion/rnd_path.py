@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
-from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from w3af.core.data.fuzzer.utils import rand_alnum
 
 
@@ -50,9 +49,8 @@ class rnd_path(EvasionPlugin):
         new_url.set_path(path)
 
         # Finally, we set all the mutants to the request in order to return it
-        new_req = HTTPRequest(new_url, request.data, request.headers,
-                              request.get_origin_req_host(),
-                              retries=request.retries_left)
+        new_req = request.copy()
+        new_req.set_uri(new_url)
 
         return new_req
 
@@ -74,5 +72,5 @@ class rnd_path(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/aflsasfasfkn/../bar/foo.asp'
+            Output:     '/aflsasfasfkn/../bar/foo.asp'
         """

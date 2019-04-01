@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from random import randint
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
-from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from w3af.core.data.parsers.doc.url import parse_qs
 
 
@@ -59,9 +58,9 @@ class rnd_case(EvasionPlugin):
             else:
                 data = self._mutate(data)
 
-        new_req = HTTPRequest(new_url, data, request.headers,
-                              request.get_origin_req_host(),
-                              retries=request.retries_left)
+        new_req = request.copy()
+        new_req.set_uri(new_url)
+        new_req.set_data(data)
 
         return new_req
 
