@@ -23,11 +23,27 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 
 
+NET_ERRORS = {'net::ERR_EMPTY_RESPONSE',
+              'net::ERR_ABORTED',
+              'net::ERR_CONNECTION_RESET',
+              'net::ERR_NETWORK_CHANGED',
+              'net::ERR_INTERNET_DISCONNECTED',
+              'net::ERR_CONNECTION_TIMED_OUT'}
+
+
 def proxy_connection_failed_handler(message):
     error_code = message.get('result', {}).get('errorText', '')
 
     if error_code == 'net::ERR_PROXY_CONNECTION_FAILED':
         raise ChromeInterfaceException('Chrome failed to connect to proxy server')
+
+
+def net_errors_handler(message):
+    error_code = message.get('result', {}).get('errorText', '')
+
+    if error_code in NET_ERRORS:
+        msg = 'Chrome failed to connect to target host: "%s"'
+        raise ChromeInterfaceException(msg % error_code)
 
 
 def generic_error_handler(message):

@@ -37,6 +37,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.chrome.tests.helpers import debugging_is_configured_in_output_manager
 from w3af.core.controllers.chrome.devtools.event_handlers import (proxy_connection_failed_handler,
+                                                                  net_errors_handler,
                                                                   generic_error_handler,
                                                                   inspector_crash_handler)
 from w3af.core.controllers.chrome.devtools.console_message import ConsoleMessage
@@ -98,6 +99,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
 
     def set_default_event_handlers(self):
         self.set_event_handler(proxy_connection_failed_handler)
+        self.set_event_handler(net_errors_handler)
         self.set_event_handler(inspector_crash_handler)
         self.set_event_handler(generic_error_handler)
         self.set_event_handler(self.console_api_handler)
