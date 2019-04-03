@@ -103,6 +103,7 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
 
         found_uris = self._get_found_urls(http_traffic_queue)
 
+        crawler.print_all_console_messages()
         self.assertEqual(crawler.get_js_errors(), [])
 
         self.assertGreaterEqual(len(found_uris),
