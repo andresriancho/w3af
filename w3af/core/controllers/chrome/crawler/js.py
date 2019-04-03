@@ -144,7 +144,7 @@ class ChromeCrawlerJS(object):
         selector = event['selector']
         event_type = event['event_type']
 
-        msg = 'Dispatching %s on CSS selector "%s" at page %s (did: %s)'
+        msg = 'Dispatching "%s" on CSS selector "%s" at page %s (did: %s)'
         args = (event_type, selector, url, debugging_id)
         om.out.debug(msg % args)
 
