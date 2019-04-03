@@ -24,7 +24,6 @@ import re
 import time
 import logging
 
-from contextlib import contextmanager
 from requests import ConnectionError
 
 import w3af.core.controllers.output_manager as om
@@ -33,6 +32,7 @@ from w3af import ROOT_PATH
 from w3af.core.controllers.tests.running_tests import is_running_tests
 from w3af.core.controllers.profiling.utils.ps_mem import get_memory_usage
 from w3af.core.controllers.chrome.devtools import DebugChromeInterface
+from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 from w3af.core.controllers.chrome.process import ChromeProcess
 from w3af.core.controllers.chrome.proxy import LoggingProxy
 from w3af.core.data.fuzzer.utils import rand_alnum
@@ -308,9 +308,7 @@ class InstrumentedChrome(object):
         """
         self._page_state = self.PAGE_STATE_LOADING
 
-        # Then we load the URL
-        url = str(url)
-        self.chrome_conn.Page.navigate(url=url,
+        self.chrome_conn.Page.navigate(url=str(url),
                                        timeout=self.PAGE_LOAD_TIMEOUT)
 
     def load_about_blank(self):
@@ -767,6 +765,14 @@ class InstrumentedChrome(object):
         """
         return text.replace('"', '\\"')
 
+    def capture_screenshot(self):
+        """
+        :return: The base64 encoded bytes of the captured image
+        """
+        response = self.chrome_conn.Page.captureScreenshot()
+
+        return response['result']['data']
+
     def dispatch_js_event(self, selector, event_type):
         """
         Dispatch a new event in the browser
@@ -813,7 +819,7 @@ class InstrumentedChrome(object):
             om.out.debug(msg % args)
 
         try:
-            with all_logging_disabled:
+            with AllLoggingDisabled():
                 self.chrome_conn.close()
         except Exception, e:
             msg = 'Failed to close chrome connection, exception: "%s" (did: %s)'
@@ -888,28 +894,33 @@ class EventException(Exception):
     pass
 
 
-@contextmanager
-def all_logging_disabled(highest_level=logging.CRITICAL):
+class AllLoggingDisabled(object):
     """
     A context manager that will prevent any logging messages
     triggered during the body from being processed.
-
-    :param highest_level: The maximum logging level in use.
-                          This would only need to be changed if a custom level
-                          greater than CRITICAL is defined.
     """
-    # two kind-of hacks here:
-    #    * can't get the highest logging level in effect => delegate to the user
-    #    * can't get the current module-level override => use an undocumented
-    #       (but non-private!) interface
-    previous_level = logging.root.manager.disable
+    def __init__(self):
+        self.previous_level = logging.INFO
 
-    logging.disable(highest_level)
+    def __enter__(self, highest_level=logging.CRITICAL):
+        """
+        :param highest_level: The maximum logging level in use.
+                              This would only need to be changed if a custom level
+                              greater than CRITICAL is defined.
+        :return: None
+        """
+        # two kind-of hacks here:
+        #    * can't get the highest logging level in effect => delegate to the user
+        #    * can't get the current module-level override => use an undocumented
+        #       (but non-private!) interface
+        self.previous_level = logging.root.manager.disable
+        logging.disable(highest_level)
 
-    try:
-        yield
-    finally:
-        logging.disable(previous_level)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        logging.disable(self.previous_level)
+
+        # If we returned True here, any exception would be suppressed!
+        return False
 
 
 class EventListener(object):
