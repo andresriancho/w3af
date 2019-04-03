@@ -60,7 +60,7 @@ def get_xml_bones(document):
     document = smart_str_ignore(document, encoding=DEFAULT_ENCODING)
     etree.parse(StringIO(document), parser)
 
-    return ''.join(parser.target.bones)
+    return '\n'.join(parser.target.bones)
 
 
 class BoneCollector(object):

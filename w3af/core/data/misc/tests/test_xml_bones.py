@@ -30,35 +30,37 @@ class TestXMLBones(unittest.TestCase):
 
     def test_simple(self):
         self.assertEqual(get_xml_bones('<xml>hello</xml>'),
-                         'htmlbodyxml0xmlbodyhtml')
+                        'html\nbody\nxml\n0\nxml\nbody\nhtml')
 
     def test_large(self):
         self.assertEqual(get_xml_bones('<xml>hello world 123 123</xml>'),
-                         'htmlbodyxml20xmlbodyhtml')
+                         'html\nbody\nxml\n20\nxml\nbody\nhtml')
 
     def test_extra_large_1(self):
         self.assertEqual(get_xml_bones('<xml>%s</xml>' % ('A' * 30,)),
-                         'htmlbodyxml40xmlbodyhtml')
+                         'html\nbody\nxml\n40\nxml\nbody\nhtml')
 
     def test_extra_large_2(self):
         # Just adding one more char to the end
         self.assertEqual(get_xml_bones('<xml>%s</xml>' % ('A' * 41,)),
-                         'htmlbodyxml40xmlbodyhtml')
+                         'html\nbody\nxml\n40\nxml\nbody\nhtml')
 
     def test_attr(self):
         self.assertEqual(get_xml_bones('<xml id=1>hello</xml>'),
-                         'htmlbodyxmlid00xmlbodyhtml')
+                         'html\nbody\nxml\nid0\n0\nxml\nbody\nhtml')
 
     def test_broken_1(self):
-        self.assertEqual(get_xml_bones('<xml '), 'htmlbodyxmlbodyhtml')
+        self.assertEqual(get_xml_bones('<xml '),
+                         'html\nbody\nxml\nbody\nhtml')
 
     def test_broken_2(self):
-        self.assertEqual(get_xml_bones('<xml>'), 'htmlbodyxmlxmlbodyhtml')
+        self.assertEqual(get_xml_bones('<xml>'),
+                         'html\nbody\nxml\nxml\nbody\nhtml')
 
     def test_nested(self):
         self.assertEqual(get_xml_bones('<a><b>hello</b></a>'),
-                         'htmlbodyab0babodyhtml')
+                         'html\nbody\na\nb\n0\nb\na\nbody\nhtml')
 
     def test_just_text(self):
         self.assertEqual(get_xml_bones('hello world (); foobar'),
-                         'htmlbodyp20pbodyhtml')
+                         'html\nbody\np\n20\np\nbody\nhtml')
