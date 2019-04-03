@@ -54,6 +54,7 @@ class ChromeCrawlerJS(object):
 
         :param chrome: The chrome browser where the page is loaded
         :param debugging_id: Debugging ID for easier tracking in logs
+        :param url: The URL to crawl
         :return: None, all the information is sent to the core via HTTP traffic
                  captured by the browser's proxy
         """
