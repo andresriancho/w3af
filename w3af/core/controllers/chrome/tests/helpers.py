@@ -52,6 +52,10 @@ def set_debugging_in_output_manager():
     print('Logging to %s' % text_output)
 
 
+def debugging_is_configured_in_output_manager():
+    return bool(om.manager.get_output_plugin_inst())
+
+
 class ExtendedHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     RESPONSE_BODY = '<body>Hello world</body>'

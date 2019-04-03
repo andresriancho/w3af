@@ -35,7 +35,7 @@ from websocket import WebSocketTimeoutException, WebSocketConnectionClosedExcept
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.tests.running_tests import is_running_tests
+from w3af.core.controllers.chrome.tests.helpers import debugging_is_configured_in_output_manager
 from w3af.core.controllers.chrome.devtools.event_handlers import (proxy_connection_failed_handler,
                                                                   generic_error_handler,
                                                                   inspector_crash_handler)
@@ -66,7 +66,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
     """
     message_counter = 0
 
-    DEBUG = os.environ.get('DEBUG', '0') == '1'
+    DEBUG = os.environ.get('DEVTOOLS_DEBUG', '0') == '1'
 
     def __init__(self,
                  host='localhost',
@@ -330,12 +330,11 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         if not self.DEBUG:
             return
 
-        message = '(did: %s)[%s] %s' % (time.time(), self.debugging_id, message)
+        if not debugging_is_configured_in_output_manager():
+            return
 
-        if is_running_tests():
-            print(message)
-        else:
-            om.out.debug(message)
+        message = '(did: %s)[%s] %s' % (time.time(), self.debugging_id, message)
+        om.out.debug(message)
 
     def read_console_message(self):
         """
