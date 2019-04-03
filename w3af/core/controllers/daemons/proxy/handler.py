@@ -73,7 +73,7 @@ class ProxyHandler(Master):
 
     def _to_libmproxy_response(self, request, response):
         """
-        Convert w3af.core.data.url.HTTPResponse.HTTPResponse  to
+        Convert w3af.core.data.url.HTTPResponse.HTTPResponse to
         libmproxy.http.HTTPResponse
         """
         charset = response.charset
@@ -150,8 +150,11 @@ class ProxyHandler(Master):
             ('Content-type', 'text/html'),
         ))
 
-        http_response = HTTPResponse(500, content.encode('utf-8'), headers,
-                                     request.get_uri(), request.get_uri(),
+        http_response = HTTPResponse(500,
+                                     content.encode('utf-8'),
+                                     headers,
+                                     request.get_uri(),
+                                     request.get_uri(),
                                      msg='Server error')
         return http_response
 
@@ -189,7 +192,9 @@ class ProxyHandler(Master):
             http_response = self._send_http_request(http_request)
         except Exception, e:
             trace = str(traceback.format_exc())
-            http_response = self._create_error_response(http_request, None, e,
+            http_response = self._create_error_response(http_request,
+                                                        None,
+                                                        e,
                                                         trace=trace)
 
         # Send the response (success|error) to the browser
