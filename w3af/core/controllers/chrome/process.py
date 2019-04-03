@@ -205,7 +205,7 @@ class ChromeProcess(object):
         wait = self.START_TIMEOUT_SEC / tries
 
         for _ in xrange(tries):
-            if self.get_devtools_port():
+            if self.get_devtools_port() != 0:
                 return True
 
             time.sleep(wait)
