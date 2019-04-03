@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import re
 import threading
 
 import w3af.core.controllers.output_manager as om
@@ -35,6 +36,8 @@ class LoggingHandler(ProxyHandler):
                         'Public-Key-Pins',
                         'Content-Security-Policy',
                         'Upgrade-Insecure-Requests']
+
+    HEADLESS_RE = re.compile('HeadlessChrome/.*? ')
 
     def _target_is_private_site(self):
         """
@@ -83,12 +86,17 @@ class LoggingHandler(ProxyHandler):
             om.out.debug(msg)
             return self._create_error_response(http_request, None, msg)
 
+        self._remove_user_agent_headless(http_request)
+
         http_response = super(LoggingHandler, self)._send_http_request(http_request,
                                                                        grep=grep,
                                                                        debugging_id=self.parent_process.debugging_id)
 
         # Remove security headers to reduce runtime security
         self._remove_security_headers(http_response)
+
+        # Mangle content-encoding
+        self._set_content_encoding(http_response)
 
         # Send the request upstream
         fuzzable_request = FuzzableRequest.from_http_request(http_request)
@@ -97,11 +105,62 @@ class LoggingHandler(ProxyHandler):
         self.parent_process.set_first_request_response(fuzzable_request, http_response)
 
         # Logging for better debugging
-        args = (http_request.get_uri(), self.parent_process.debugging_id)
-        msg = 'Chrome proxy received HTTP response for %s (did: %s)'
+        args = (http_request.get_uri(),
+                http_response.get_code(),
+                len(http_response.get_body()),
+                self.parent_process.debugging_id)
+        msg = 'Chrome proxy received HTTP response for %s (code: %s, len: %s, did: %s)'
         om.out.debug(msg % args)
 
         return http_response
+
+    def _remove_user_agent_headless(self, http_request):
+        headers = http_request.get_headers()
+
+        stored_header_value, stored_header_name = headers.iget('user-agent')
+
+        if not stored_header_name:
+            return
+
+        mo = self.HEADLESS_RE.search(stored_header_value)
+        if not mo:
+            return
+
+        headless_part = mo.group(0)
+
+        without_headless = stored_header_value.replace(headless_part, '')
+        headers[stored_header_name] = without_headless
+
+        http_request.set_headers(headers)
+
+    def _set_content_encoding(self, http_response):
+        """
+        This is an important step! The ExtendedUrllib will gunzip the body
+        for us, which is great, but we need to change the content-encoding
+        for the response in order to match the decoded body and avoid the
+        HTTP client using the proxy from failing
+
+        :param http_response: The HTTP response to modify
+        """
+        headers = http_response.get_headers()
+
+        #
+        # Remove this one...
+        #
+        _, stored_header_name = headers.iget('transfer-encoding')
+
+        if stored_header_name is not None:
+            headers.pop(stored_header_name)
+
+        #
+        # Replace this one...
+        #
+        _, stored_header_name = headers.iget('content-encoding')
+
+        if stored_header_name is not None:
+            headers.pop(stored_header_name)
+
+        headers['content-encoding'] = 'identity'
 
     def _remove_security_headers(self, http_response):
         """
