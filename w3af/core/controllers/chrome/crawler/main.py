@@ -302,3 +302,18 @@ class ChromeCrawler(object):
         instrumented_chrome = list(self._pool._free)[0]
         for console_message in instrumented_chrome.get_console_messages():
             print(console_message)
+
+    def get_js_errors(self):
+        """
+        This method will get the first chrome instance from the pool and return
+        the captured JS errors.
+
+        The method should only be used during unittests, when there is only one
+        chrome instance in the pool!
+
+        :return: A list of JS errors
+        """
+        assert len(self._pool._free) == 1
+
+        instrumented_chrome = list(self._pool._free)[0]
+        return instrumented_chrome.get_js_errors()

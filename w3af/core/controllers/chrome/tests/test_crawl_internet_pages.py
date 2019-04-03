@@ -76,7 +76,6 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
     ('https://web.whatsapp.com/', 100),
     """
 
-
     def _get_crawler(self):
         uri_opener = ExtendedUrllib()
         http_traffic_queue = Queue.Queue()
@@ -104,8 +103,10 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
 
         found_uris = self._get_found_urls(http_traffic_queue)
 
-        self.assertGreaterEqual(min_event_count,
-                                len(found_uris),
+        self.assertEqual(crawler.get_js_errors(), [])
+
+        self.assertGreaterEqual(len(found_uris),
+                                min_event_count,
                                 pprint.pformat(found_uris))
 
     def test_count_event_listeners(self):
