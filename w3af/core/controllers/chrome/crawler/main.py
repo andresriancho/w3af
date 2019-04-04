@@ -23,12 +23,14 @@ import time
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.chrome.pool import ChromePool
+from w3af.core.controllers.chrome.pool import ChromePool, ChromePoolException
 from w3af.core.controllers.chrome.crawler.dom_dump import ChromeCrawlerDOMDump
 from w3af.core.controllers.chrome.crawler.js import ChromeCrawlerJS
 from w3af.core.controllers.chrome.crawler.exceptions import ChromeCrawlerException
 from w3af.core.controllers.chrome.crawler.queue import CrawlerHTTPTrafficQueue
 from w3af.core.controllers.chrome.utils.took_line import TookLine
+from w3af.core.controllers.chrome.devtools.exceptions import (ChromeInterfaceException,
+                                                              ChromeInterfaceTimeout)
 
 from w3af.core.data.fuzzer.utils import rand_alnum
 
@@ -78,14 +80,9 @@ class ChromeCrawler(object):
         """
         debugging_id = rand_alnum(8)
 
-        try:
-            self._crawl(url,
-                        http_traffic_queue,
-                        debugging_id=debugging_id)
-        except Exception, e:
-            msg = 'Call to ChromeCrawler._crawl() raised an exception: "%s" (did: %s)'
-            args = (e, debugging_id)
-            om.out.debug(msg % args)
+        self._crawl(url,
+                    http_traffic_queue,
+                    debugging_id=debugging_id)
 
     def _cleanup(self,
                  url,
@@ -99,9 +96,9 @@ class ChromeCrawler(object):
 
         try:
             chrome.load_about_blank()
-        except Exception, e:
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
             msg = 'Failed to load about:blank page in chrome browser %s: "%s" (did: %s)'
-            args = (chrome, e, debugging_id)
+            args = (chrome, cie, debugging_id)
             om.out.debug(msg % args)
 
             # Since we got an error we remove this chrome instance from the
@@ -137,7 +134,10 @@ class ChromeCrawler(object):
                        ' chrome crawler: "%s" (did: %s)')
                 args = (url, e, debugging_id)
                 om.out.debug(msg % args)
-                continue
+
+                # We want to raise exceptions in order for them to reach
+                # the framework's exception handler
+                raise
 
             args = (crawl_strategy.get_name(), url)
             msg = 'Spent %%.2f seconds in crawl strategy %s for %s' % args
@@ -156,15 +156,24 @@ class ChromeCrawler(object):
 
                 self._pool.remove(chrome)
 
-                continue
+                # We want to raise exceptions in order for them to reach
+                # the framework's exception handler
+                raise
 
             try:
                 self._cleanup(url,
                               chrome,
                               debugging_id=debugging_id)
-            except ChromeCrawlerException:
+            except Exception, e:
+                msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
+                args = (url, chrome, e, debugging_id)
+                om.out.debug(msg % args)
+
                 took_line.send()
-                continue
+
+                # We want to raise exceptions in order for them to reach
+                # the framework's exception handler
+                raise
 
             took_line.send()
 
@@ -180,12 +189,12 @@ class ChromeCrawler(object):
 
         try:
             chrome = self._pool.get(http_traffic_queue=crawler_http_traffic_queue)
-        except Exception, e:
-            args = (e, debugging_id)
+        except ChromePoolException as cpe:
+            args = (cpe, debugging_id)
             msg = 'Failed to get a chrome instance: "%s" (did: %s)'
             om.out.debug(msg % args)
 
-            raise ChromeCrawlerException('Failed to get a chrome instance: "%s"' % e)
+            raise ChromeCrawlerException('Failed to get a chrome instance: "%s"' % cpe)
 
         took_line.send()
 
@@ -213,8 +222,8 @@ class ChromeCrawler(object):
 
         try:
             chrome.load_url(url)
-        except Exception, e:
-            args = (url, chrome, e, debugging_id)
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
+            args = (url, chrome, cie, debugging_id)
             msg = 'Failed to load %s using %s: "%s" (did: %s)'
             om.out.debug(msg % args)
 
@@ -222,18 +231,18 @@ class ChromeCrawler(object):
             # it might be in an error state
             self._pool.remove(chrome)
 
-            args = (url, chrome, e)
+            args = (url, chrome, cie)
             raise ChromeCrawlerException('Failed to load %s using %s: "%s"' % args)
 
         try:
             successfully_loaded = chrome.wait_for_load()
-        except Exception, e:
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
             #
             # Note: Even if we get here, the InstrumentedChrome might have sent
             # a few HTTP requests. Those HTTP requests are immediately sent to
             # the output queue.
             #
-            args = (url, chrome, e, debugging_id)
+            args = (url, chrome, cie, debugging_id)
             msg = ('Exception raised while waiting for page load of %s '
                    'using %s: "%s" (did: %s)')
             om.out.debug(msg % args)
@@ -242,7 +251,7 @@ class ChromeCrawler(object):
             # it might be in an error state
             self._pool.remove(chrome)
 
-            args = (url, chrome, e)
+            args = (url, chrome, cie)
             msg = ('Exception raised while waiting for page load of %s '
                    'using %s: "%s"')
             raise ChromeCrawlerException(msg % args)
@@ -252,7 +261,8 @@ class ChromeCrawler(object):
             # Just log the fact that the page is not done loading yet
             #
             spent = time.time() - start
-            msg = 'Chrome did not successfully load %s in %.2f seconds (did: %s)'
+            msg = ('Chrome did not successfully load %s in %.2f seconds '
+                   'but will try to use the loaded DOM anyway (did: %s)')
             args = (url, spent, debugging_id)
             om.out.debug(msg % args)
 
@@ -267,9 +277,9 @@ class ChromeCrawler(object):
         #
         try:
             chrome.stop()
-        except Exception, e:
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
             msg = 'Failed to stop chrome browser %s: "%s" (did: %s)'
-            args = (chrome, e, debugging_id)
+            args = (chrome, cie, debugging_id)
             om.out.debug(msg % args)
 
             # Since we got an error we remove this chrome instance from the

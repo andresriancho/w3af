@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.chrome.crawler.exceptions import ChromeCrawlerException
+from w3af.core.controllers.chrome.devtools.exceptions import (ChromeInterfaceException,
+                                                              ChromeInterfaceTimeout)
 
 
 class ChromeCrawlerDOMDump(object):
@@ -79,9 +81,9 @@ class ChromeCrawlerDOMDump(object):
         try:
             dom = chrome.get_dom()
             assert dom is not None, 'DOM was None'
-        except Exception, e:
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
             msg = 'Failed to get the DOM from chrome browser %s: "%s" (did: %s)'
-            args = (chrome, e, debugging_id)
+            args = (chrome, cie, debugging_id)
             om.out.debug(msg % args)
 
             # Since we got an error we remove this chrome instance from the

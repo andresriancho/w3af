@@ -407,6 +407,10 @@ class web_spider(CrawlPlugin):
             args = (uri, cce)
             msg = 'Failed to crawl %s using chrome crawler: "%s"'
             om.out.debug(msg % args)
+        except Exception:
+            # Any other exception will be raised here and handled by the
+            # framework's exception handler
+            raise
 
     def _verify_reference(self, reference, original_request,
                           original_response, possibly_broken,
