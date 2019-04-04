@@ -48,10 +48,12 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        #('https://www.google.com/', 100),
-        ('https://www.google.com/search?q=w3af', 100),
+        ('https://www.bing.com/', 100),
     ])
     """
+    ('https://www.google.com/', 100),
+    ('https://www.google.com/search?q=w3af', 100),
+        
     ('https://www.bing.com/', 100),
     ('https://www.bing.com/search?q=w3af', 100),
 
@@ -110,7 +112,7 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
                                 min_event_count,
                                 pprint.pformat(found_uris))
 
-    def test_count_event_listeners(self):
+    def test_crawl_all_common_pages(self):
         set_debugging_in_output_manager()
 
         for url, min_found_urls in self.TESTS.iteritems():
