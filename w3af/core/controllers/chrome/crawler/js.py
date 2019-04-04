@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.misc.xml_bones import get_xml_bones
-from w3af.core.controllers.chrome.instrumented import EventException
+from w3af.core.controllers.chrome.instrumented import EventException, EventTimeout
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 
@@ -39,8 +39,12 @@ class ChromeCrawlerJS(object):
     MAX_BROWSER_BACK = 50
     EQUAL_RATIO_AFTER_BACK = 0.9
 
+    MAX_EVENT_DISPATCH_ERRORS = 10
+
     def __init__(self, pool):
         self._pool = pool
+
+        self._event_dispatch_errors = 0
 
     def get_name(self):
         return 'JS events'
@@ -93,6 +97,9 @@ class ChromeCrawlerJS(object):
             if not self._should_dispatch_event(event, processed_events):
                 continue
 
+            if self._too_many_errors(url, debugging_id):
+                break
+
             self._print_stats(event_i, processed_events, url)
 
             # Prevent duplicated processing
@@ -125,6 +132,21 @@ class ChromeCrawlerJS(object):
                 om.out.debug(msg % args)
                 break
 
+    def _too_many_errors(self, url, debugging_id):
+        """
+        :return: True when the crawling process at _crawl_impl() has found
+                 too many errors and should stop.
+        """
+        if self._event_dispatch_errors > self.MAX_EVENT_DISPATCH_ERRORS:
+            msg = ('Too many event dispatch errors were found while crawling %s,'
+                   ' the crawling process will stop now (did: %s)')
+            args = (url, debugging_id)
+            om.out.debug(msg % args)
+
+            return True
+
+        return False
+
     def _print_stats(self, event_i, processed_events, url):
         event_types = {}
 
@@ -136,8 +158,13 @@ class ChromeCrawlerJS(object):
                 event_types[event_type] = 1
 
         msg = ('Processing event %s out of (unknown) for %s.'
+               ' Event dispatch error count is %s.'
                ' Already processed %s events with types: %r')
-        args = (event_i, url, len(processed_events), event_types)
+        args = (event_i,
+                url,
+                self._event_dispatch_errors,
+                len(processed_events),
+                event_types)
 
         om.out.debug(msg % args)
 
@@ -152,11 +179,27 @@ class ChromeCrawlerJS(object):
         try:
             chrome.dispatch_js_event(selector, event_type)
         except EventException:
-            msg = ('The %s event on CSS selector "%s" at page %s failed'
+            msg = ('The "%s" event on CSS selector "%s" at page %s failed'
                    ' to run because the element does not exist anymore'
                    ' (did: %s)')
             args = (event_type, selector, url, debugging_id)
             om.out.debug(msg % args)
+
+            self._event_dispatch_errors += 1
+
+            return False
+
+        except EventTimeout:
+            msg = ('The "%s" event on CSS selector "%s" at page %s failed'
+                   ' to run in the given time (did: %s)')
+            args = (event_type, selector, url, debugging_id)
+            om.out.debug(msg % args)
+
+            self._event_dispatch_errors += 1
+
+            return False
+
+        return True
 
     def _handle_event_trigger_side_effects(self,
                                            chrome,
