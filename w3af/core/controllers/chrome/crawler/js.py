@@ -100,7 +100,7 @@ class ChromeCrawlerJS(object):
             if self._too_many_errors(url, debugging_id):
                 break
 
-            self._print_stats(event_i, processed_events, url)
+            self._print_stats(event_i, processed_events, url, debugging_id)
 
             # Prevent duplicated processing
             processed_events.append(event)
@@ -147,7 +147,7 @@ class ChromeCrawlerJS(object):
 
         return False
 
-    def _print_stats(self, event_i, processed_events, url):
+    def _print_stats(self, event_i, processed_events, url, debugging_id):
         event_types = {}
 
         for processed_event in processed_events:
@@ -159,12 +159,13 @@ class ChromeCrawlerJS(object):
 
         msg = ('Processing event %s out of (unknown) for %s.'
                ' Event dispatch error count is %s.'
-               ' Already processed %s events with types: %r')
+               ' Already processed %s events with types: %r. (did: %s)')
         args = (event_i,
                 url,
                 self._event_dispatch_errors,
                 len(processed_events),
-                event_types)
+                event_types,
+                debugging_id)
 
         om.out.debug(msg % args)
 
