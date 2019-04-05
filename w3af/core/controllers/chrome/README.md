@@ -2,23 +2,23 @@
 
 ## Introduction
 
-JavaScript crawling in w3af was implemented using headless chrome. The main
+JavaScript crawling in w3af was implemented using headless Chrome. The main
 components for the solution are:
 
- * `process.py`: runs the headless chrome process with very specific flags,
- allows the developer to capture stdout and kill the process.
+ * `process.py`: runs the headless chrome process with very specific command line
+ flags, allows the developer to capture stdout and kill the process.
  
  * `proxy.py`: a specially crafted HTTP proxy which handles all the traffic for
- chrome browsers. The main goal of this proxy is to capture the traffic generated
- by the browser and send it to the w3af core. 
+ Chrome browsers. The main goal of this proxy is to capture the traffic generated
+ by the browser while events are handled and send it to the w3af core. 
  
  * `devtools.py`: implements the communication between w3af main process and
  the chrome process using the devtools protocol.
  
  * `instrumented.py`: an abstraction around process, proxy and devtools. It starts
  the proxy, then the process, and finally connects to the browser using devtools.
- This abstraction allows the user to load a URL in the browser and capture all
- the generated traffic using the proxy.
+ This abstraction allows the user to load a URL in the browser, capture all
+ the generated traffic using the proxy, and dispatch events (eg. clicks).
  
  * `pool.py`: holds free and in-use instrumented chrome instances which are
  spawned and killed when needed. 
@@ -36,7 +36,7 @@ There are different processes in this solution:
  * `w3af` main process: runs the scan, `crawl.web_spider`, etc.
  * `chrome` processes: are run by `process.py` and referenced from the pool.
  
-Multiple processes were used to prevent issues with a hanging chrome instance
+Multiple processes were used to prevent issues with a hanging Chrome instance
 breaking the scan.
 
 ## Crawling
@@ -45,33 +45,38 @@ There are multiple definitions of JavaScript crawling, for `w3af` crawling inclu
 all of the following steps:
 
  * **Loading a page in a browser**: this will load any external resources such as JS and
- CSS to render the page.
+ CSS to render the page. This step might also send `XmlHttpRequest`s to REST APIs to retrieve
+ information that is then displayed in the view.
  
- * **Extracting links from the page**: once the page has loaded use a tool such as JQuery
- to extract links (`a[href]`) from the page. Send these links to the browser controller.
+ * **Extracting links from the page**: once the page has finished loading the DOM, dump
+ it and perform HTML parsing on it. Note that the loaded DOM and the HTTP response body
+ can be **very different**, thus it makes sense to HTML-parse the loaded DOM.
  
- * **Firing events**: once the page has loaded fire all the events on all DOM nodes.
+ * **Firing events**: once the page has loaded dispatch events on all DOM nodes.
  This should trigger all the actions which are commonly performed by a user when
- browsing the site, such as: browsing to another page, typing on an input, choosing one 
+ browsing the site, such as: clicking on an element, typing on an input, choosing one 
  option in a select tag, submitting a form, etc. 
 
  Pseudo-code for this feature looks like:
 
 ```python
-dom = browser.get_dom()
-for event in EVENTS:
-    for elem in dom.get_all_children():
-        if not has_event_handler(elem, event):
-            continue
-        if has_changed(dom, browser.get_dom()):
-            browser.set_dom(dom)
-       browser.send_event(elem, event)
-       browser.wait_until_done() 
+events = browser.get_events()
+for event in events:
+    if not should_dispatch(event):
+        continue
+           
+   browser.send_event(event)
+   browser.wait_until_done()
+   
+   if browser.navigated_to_different_page():
+       browser.back(dom) 
 ```
 
-## Debugging the JS crawler
+If you're interested in reading the real implementation take a look at [ChromeCrawlerJS._crawl_impl](https://github.com/andresriancho/w3af/blob/feature/js/w3af/core/controllers/chrome/crawler/js.py#L75)
 
-Use a simple crawling script:
+## Testing the JS crawler
+
+Create a simple crawling script named `crawl-js.txt`:
 
 ```
 http-settings
@@ -100,22 +105,24 @@ start
 exit
 ```
 
-Run the scan with debugging information:
+Run the scan:
 
 ```
-rm -rf /tmp/w3af-*psutil ; W3AF_PSUTILS=1 DEBUG=1 ./w3af_console -s crawl-js.txt
+./w3af_console -s crawl-js.txt
 ```
 
-Analyze the results:
+Manually analyze the results by reading the log `/tmp/crawl-js.txt`. 
+Some interesting searches for you to make in the file are:
+
+ * `Processing event`
+ * ` on CSS selector `
+ * `seconds in crawl strategy JS events`
+ * `new HTTP requests from`
+
+You can also analyze the results in an automated way using `w3af`'s scan
+log analysis tool. This will show you **a lot of information**, much of it
+is not related with JS crawling:
 
 ```
-rm -rf crawl-js
-mkdir crawl-js
-mv /tmp/w3af-*psutil crawl-js/
-
-wget https://gist.githubusercontent.com/andresriancho/08e5110043b1f9fac57dc985f98aa77d/raw/664663e4683fff970a041ef6771fa78ac7d07691/analyze-memory-usage.py
-
-python analyze-memory-usage.py crawl-js/
-
-reset; python w3af/core/controllers/profiling/scan_log_analysis.py /tmp/crawl-js.txt 
+python w3af/core/controllers/profiling/scan_log_analysis.py /tmp/crawl-js.txt 
 ```
