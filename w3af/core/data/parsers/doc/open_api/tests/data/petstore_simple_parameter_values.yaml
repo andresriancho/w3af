@@ -1,0 +1,19 @@
+- path: /pets
+  parameters:
+  - name: limit
+    values:
+      - 1
+      - 5
+  - name: tags
+    values:
+    - ['Buddy']
+  - name: pet
+    values:
+    - {"tag": "17",  "name": "Joe"}
+    - {"tag": "123", "name": "Jan"}
+- path: /pets/{id}
+  parameters:
+  - name: id
+    values:
+    - 3333
+    - 4444

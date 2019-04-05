@@ -57,3 +57,80 @@ HTTP requests into ``w3af``:
     requests captured by the proxy. The steps where the user teaches ``w3af``
     about all the API endpoints and parameters is key to the success
     of the security audit.
+
+Providing custom parameter values for API endpoints
+---------------------------------------------------
+
+The ``crawl.open_api`` plugin tries to guess valid values for parameters of API endpoints.
+The plugin takes into account types of parameters and other info from the API specification,
+and then tries its best to find acceptable parameter values.
+But these values may highly depend on the context.
+For example, if an API endpoint takes an numeric user ID as a parameter,
+then most probably the plugin will use a number for this parameter,
+although most likely it's going to be an invalid user ID.
+As a result, the chance that the endpoint will reject such requests is quite high
+because there is no user with such ID. If the plugin knew a valid user ID for testing,
+it might increase chances to catch a vulnerability
+which might exist after that check for a valid user ID.
+
+If users have some knowledge about correct values which may be used for testing,
+they can tell the plugin about them via ``parameter_values_file`` configuration parameter.
+The parameter specifies a path to a YAML config which contains values
+which should be used by the plugin to fill out parameters in HTTP requests.
+
+Here is an example of such a YAML config:
+
+::
+
+    - path: /users/{user-id}
+      parameters:
+      - name: user-id
+        values:
+        - 1234567
+      - name: X-First-Name
+        values:
+        - John
+        - Bill
+      - path: /users
+        parameters:
+        - name: user-id
+          values:
+          - 1234567
+        - name: X-Birth-Date
+          values:
+          - 2000-01-02
+
+The configuration above tells the ``crawl.open_api`` plugin the following:
+
+ * For the ``/users/{user-id}`` endpoint, use ``1234567`` number for ``user-id`` parameter,
+   and ``John`` and ``Bill`` strings for ``X-First-Name`` parameter.
+ * For the ``/users`` endpoint, use ``1234567`` number for ``user-id`` parameter,
+   and ``2000-01-02`` date for ``X-Birth-Date`` parameter.
+
+If a user provides multiple values for parameters, then the plugin tries to enumerate
+all possible combinations of parameters. With the configuration above,
+the plugin is going to generate at least three HTTP requests
+which are going to look like the following:
+
+::
+
+    GET /users/1234567
+    X-First-Name: John
+    ...
+
+    GET /users/1234567
+    X-First-Name: Bill
+    ...
+
+    POST /users?user-id=1234567
+    X-Birth-Date: 200-01-02
+    ...
+
+In this example, we made several assumptions about the API specification for the endpoints:
+
+ * Both ``X-First-Name`` and ``X-Birth-Data`` are headers
+ * ``user-id`` is a parameter in query string for the ``/users`` endpoint.
+ * The ``/users/{user-id}`` endpoint accepts GET requests.
+ * The ``/users`` endpoint accepts POST requests.
+
+Note that the plugin doesn't currently take parameter types into account.

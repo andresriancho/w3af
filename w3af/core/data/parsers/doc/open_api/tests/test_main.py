@@ -20,12 +20,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import datetime
 import os
 import unittest
 
 from w3af import ROOT_PATH
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.json_container import JSONContainer
+from w3af.core.data.parsers.doc.open_api.parameters import (ParameterValues,
+                                                            ParameterValueParsingError)
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.url.HTTPResponse import HTTPResponse
@@ -46,6 +49,10 @@ class TestOpenAPIMain(unittest.TestCase):
     NOT_VALID_SPEC = os.path.join(DATA_PATH, 'not_quite_valid_petstore_simple.json')
     CUSTOM_CONTENT_TYPE = os.path.join(DATA_PATH, 'custom_content_type.json')
     UNKNOWN_CONTENT_TYPE = os.path.join(DATA_PATH, 'unknown_content_type.json')
+
+    PARAMETER_VALUES = os.path.join(DATA_PATH, 'parameter_values.yaml')
+    MULTIPLE_HEADERS_PARAMETER_VALUES = os.path.join(DATA_PATH, 'multiple_headers_parameter_values.yaml')
+    PETSTORE_SIMPLE_PARAMETER_VALUES = os.path.join(DATA_PATH, 'petstore_simple_parameter_values.yaml')
 
     def test_json_pet_store(self):
         # http://petstore.swagger.io/v2/swagger.json
@@ -434,7 +441,163 @@ class TestOpenAPIMain(unittest.TestCase):
         http_resp = self.generate_response('"', 'image/jpeg')
         self.assertFalse(OpenAPI.is_valid_json_or_yaml(http_resp))
 
-    def generate_response(self, specification_as_string, content_type='application/json'):
+    def test_loading_parameter_values(self):
+        values = ParameterValues()
+        values.load_from_file(self.PARAMETER_VALUES)
+        self.assertIsNotNone(values)
+        self.assertEquals(values.get('/users/{user-id}', 'user-id'), [1234567])
+        self.assertEquals(values.get('/users/{user-id}', 'X-First-Name'), ['John', 'Bill'])
+        self.assertEquals(values.get('/users', 'user-id'), [1234567])
+        self.assertEquals(values.get('/users', 'birth-date'), [datetime.date(2000, 1, 2)])
+        self.assertEquals(values.get('/does_not_exist', 'user-id'), [])
+        self.assertEquals(values.get('/users', 'does-not-exist'), [])
+
+        values.set('/users/{user-id}', 'last-name', ['Python'])
+        self.assertEquals(values.get('/users/{user-id}', 'last-name'), ['Python'])
+        values.set('/new', 'foo-bar', ['bar', 'foo'])
+        self.assertEquals(values.get('/new', 'foo-bar'), ['bar', 'foo'])
+
+        with self.assertRaises(ValueError):
+            values.set('/foo', 'bar', 'wrong')
+
+    def test_loading_invalid_parameter_values(self):
+        values = ParameterValues()
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('{}')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('"')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('\\')
+
+        with self.assertRaises(ParameterValueParsingError):
+            values.load_from_string('-path: {')
+
+    def test_petstore_simple_with_parameter_values(self):
+        body = file(self.PETSTORE_SIMPLE).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+        values = ParameterValues()
+        values.load_from_file(self.PETSTORE_SIMPLE_PARAMETER_VALUES)
+
+        parser = OpenAPI(response, custom_parameter_values=values)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        api_calls.sort(by_path)
+
+        self.assertEqual(len(api_calls), 7)
+
+        e_pets_headers_1 = Headers([
+            ('Content-Type', 'application/json')])
+
+        e_body_1 = '{"pet": {"tag": "17", "name": "Joe"}}'
+        e_body_2 = '{"pet": {"tag": "123", "name": "Jan"}}'
+
+        e_pets_force_fuzzing_headers = []
+
+        url_root = 'http://petstore.swagger.io/api'
+
+        e_api_calls = [
+            ('GET',  '/pets',                       e_pets_headers_1, e_pets_force_fuzzing_headers, ''),
+            ('GET',  '/pets?limit=1&tags=Buddy',    e_pets_headers_1, e_pets_force_fuzzing_headers, ''),
+            ('GET',  '/pets?limit=5&tags=Buddy',    e_pets_headers_1, e_pets_force_fuzzing_headers, ''),
+            ('POST', '/pets',                       e_pets_headers_1, e_pets_force_fuzzing_headers, e_body_1),
+            ('POST', '/pets',                       e_pets_headers_1, e_pets_force_fuzzing_headers, e_body_2),
+            ('GET',  '/pets/3333',                  e_pets_headers_1, e_pets_force_fuzzing_headers, ''),
+            ('GET',  '/pets/4444',                  e_pets_headers_1, e_pets_force_fuzzing_headers, '')
+        ]
+
+        for api_call in api_calls:
+            method = api_call.get_method()
+            headers = api_call.get_headers()
+            force_fuzzing_headers = api_call.get_force_fuzzing_headers()
+            data = api_call.get_data()
+
+            uri = api_call.get_uri().url_string
+            uri = uri.replace(url_root, '')
+
+            data = (method, uri, headers, force_fuzzing_headers, data)
+
+            self.assertIn(data, e_api_calls)
+
+    def test_json_multiple_paths_and_headers_with_parameter_values(self):
+        body = file(self.MULTIPLE_PATHS_AND_HEADERS).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+        values = ParameterValues()
+        values.load_from_file(self.MULTIPLE_HEADERS_PARAMETER_VALUES)
+
+        parser = OpenAPI(response, custom_parameter_values=values)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        api_calls.sort(by_path)
+
+        self.assertEqual(len(api_calls), 9)
+
+        e_cats_headers_1 = Headers([
+            ('X-Awesome-Header', '2017'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+        e_cats_headers_2 = Headers([
+            ('X-Awesome-Header', '2018'),
+            ('X-Foo-Header', 'foo'),
+            ('Content-Type', 'application/json')])
+        e_pets_headers_1 = Headers([
+            ('X-Foo-Header', '10101'),
+            ('Content-Type', 'application/json')])
+        e_pets_headers_2 = Headers([
+            ('X-Bar-Header', 'cat'),
+            ('X-Foo-Header', '10101'),
+            ('Content-Type', 'application/json')])
+        e_pets_headers_3 = Headers([
+            ('X-Bar-Header', 'dog'),
+            ('X-Foo-Header', '10101'),
+            ('Content-Type', 'application/json')])
+
+        e_cats_force_fuzzing_headers = ['X-Awesome-Header', 'X-Foo-Header']
+        e_pets_force_fuzzing_headers = ['X-Bar-Header', 'X-Foo-Header']
+
+        url_root = 'http://w3af.org/api'
+
+        e_api_calls = [
+            ('GET', '/cats', e_cats_headers_1, e_cats_force_fuzzing_headers),
+            ('GET', '/cats', e_cats_headers_2, e_cats_force_fuzzing_headers),
+            ('GET', '/cats?limit=1', e_cats_headers_1, e_cats_force_fuzzing_headers),
+            ('GET', '/cats?limit=1', e_cats_headers_2, e_cats_force_fuzzing_headers),
+            ('GET', '/cats?limit=1000', e_cats_headers_1, e_cats_force_fuzzing_headers),
+            ('GET', '/cats?limit=1000', e_cats_headers_2, e_cats_force_fuzzing_headers),
+            ('GET', '/pets', e_pets_headers_1, e_pets_force_fuzzing_headers),
+            ('GET', '/pets', e_pets_headers_2, e_pets_force_fuzzing_headers),
+            ('GET', '/pets', e_pets_headers_3, e_pets_force_fuzzing_headers),
+        ]
+
+        for api_call in api_calls:
+            method = api_call.get_method()
+            headers = api_call.get_headers()
+            force_fuzzing_headers = api_call.get_force_fuzzing_headers()
+
+            uri = api_call.get_uri().url_string
+            uri = uri.replace(url_root, '')
+
+            data = (method, uri, headers, force_fuzzing_headers)
+
+            self.assertIn(data, e_api_calls)
+
+    @staticmethod
+    def generate_response(specification_as_string, content_type='application/json'):
         url = URL('http://www.w3af.com/swagger.json')
         headers = Headers([('content-type', content_type)])
         return HTTPResponse(200, specification_as_string, headers,

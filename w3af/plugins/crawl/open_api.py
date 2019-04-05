@@ -24,9 +24,11 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
 
 from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterValues
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.options.option_types import QUERY_STRING, HEADER, BOOL, INPUT_FILE
+from w3af.core.data.options.option_types import (QUERY_STRING, HEADER, BOOL,
+                                                 INPUT_FILE, YAML_INPUT_FILE)
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.db.disk_set import DiskSet
@@ -74,8 +76,9 @@ class open_api(CrawlPlugin):
         self._query_string_auth = ''
         self._header_auth = ''
         self._no_spec_validation = False
-        self._custom_spec_location = ''
+        self._custom_spec_file = ''
         self._discover_fuzzable_headers = True
+        self._parameter_values_file = ''
 
     def crawl(self, fuzzable_request):
         """
@@ -86,7 +89,7 @@ class open_api(CrawlPlugin):
                                 (among other things) the URL to test.
         """
         self._enable_file_name_fuzzing()
-        if self._has_custom_spec_location():
+        if self._has_custom_spec_file():
             self._analyze_custom_spec()
         else:
             self._analyze_common_paths(fuzzable_request)
@@ -170,9 +173,14 @@ class open_api(CrawlPlugin):
         if not OpenAPI.can_parse(http_response):
             return
 
+        context_parameter_values = ParameterValues()
+        if self._parameter_values_file:
+            context_parameter_values.load_from_file(self._parameter_values_file)
+
         parser = OpenAPI(http_response,
                          self._no_spec_validation,
-                         self._discover_fuzzable_headers)
+                         self._discover_fuzzable_headers,
+                         context_parameter_values)
         parser.parse()
 
         self._report_to_kb_if_needed(http_response, parser)
@@ -333,14 +341,14 @@ class open_api(CrawlPlugin):
             self._spec_url_generator_current_path(fuzzable_request)
         )
 
-    def _has_custom_spec_location(self):
+    def _has_custom_spec_file(self):
         """
         Checks if the plugin is configured to use a custom API specification
         from a local file.
 
         :return: True if the plugin is configured to read a custom API spec
         """
-        return self._custom_spec_location != ''
+        return self._custom_spec_file != ''
 
     def _analyze_custom_spec(self):
         """
@@ -352,15 +360,15 @@ class open_api(CrawlPlugin):
             return
         self._first_run = False
 
-        url = URL('file://%s' % os.path.abspath(self._custom_spec_location))
+        url = URL('file://%s' % os.path.abspath(self._custom_spec_file))
 
-        ext = os.path.splitext(self._custom_spec_location)[1][1:].lower()
+        ext = os.path.splitext(self._custom_spec_file)[1][1:].lower()
         if ext not in ('yaml', 'json'):
             om.out.error('Skip loading custom API spec '
                          'because of unknown file extension: %s' % ext)
             return
 
-        with open(self._custom_spec_location, 'r') as f:
+        with open(self._custom_spec_file, 'r') as f:
             custom_spec_as_string = f.read()
 
         headers = Headers([('content-type', 'application/%s' % ext)])
@@ -400,7 +408,7 @@ class open_api(CrawlPlugin):
              ' but sometimes applications do not provide an API specification.'
              ' Set this parameter to specify a local path to the API specification.'
              ' The file must have .json or .yaml extension.')
-        o = opt_factory('custom_spec_location', self._custom_spec_location, d, INPUT_FILE, help=h)
+        o = opt_factory('custom_spec_file', self._custom_spec_file, d, INPUT_FILE, help=h)
         ol.add(o)
 
         d = 'Automatic HTTP header discovery for further testing'
@@ -409,6 +417,13 @@ class open_api(CrawlPlugin):
              ' Set this options to False if you would like to disable this feature.'
              ' You can also set `misc-settings.fuzzable_headers` option to test only specific headers.')
         o = opt_factory('discover_fuzzable_headers', self._discover_fuzzable_headers, d, BOOL, help=h)
+        ol.add(o)
+
+        d = 'Path to a file with parameter values.'
+        h = ('This option sets a path to a YAML file which contains parameter values'
+             ' which should be used in testing API endpoints. If no parameter values are provided,'
+             ' the plugin tries to guess them.')
+        o = opt_factory('parameter_values_file', self._parameter_values_file, d, YAML_INPUT_FILE, help=h)
         ol.add(o)
 
         return ol
@@ -424,8 +439,9 @@ class open_api(CrawlPlugin):
         self._query_string_auth = options_list['query_string_auth'].get_value()
         self._header_auth = options_list['header_auth'].get_value()
         self._no_spec_validation = options_list['no_spec_validation'].get_value()
-        self._custom_spec_location = options_list['custom_spec_location'].get_value()
+        self._custom_spec_file = options_list['custom_spec_file'].get_value()
         self._discover_fuzzable_headers = options_list['discover_fuzzable_headers'].get_value()
+        self._parameter_values_file = options_list['parameter_values_file'].get_value()
 
     def get_long_desc(self):
         """
@@ -443,7 +459,7 @@ class open_api(CrawlPlugin):
 
         To provide the required information, the user can also set
         the Open API specification URL as the scan target,
-        or set 'custom_spec_location' configuration parameter
+        or set 'custom_spec_file' configuration parameter
         to provide a path to a local file which contains the specification.
         
         Most APIs require authentication, this plugin supports authentication
@@ -452,10 +468,18 @@ class open_api(CrawlPlugin):
             * query_string_auth
             * header_auth
 
-        By default, the plugin validates Open API specification.
-        The validation may be disabled by 'no_spec_validation' configuration parameter.
+        By default, the plugin validates Open API specification. The validation
+        may be disabled by 'no_spec_validation' configuration parameter.
 
         During parsing an Open API specification, the plugin looks for parameters
-        which are passed to endpoints via HTTP headers, and enables them for further testing.
-        This behavior may be disabled by setting 'discover_fuzzable_headers' configuration parameter to False.
+        which are passed to endpoints via HTTP headers, and enables them
+        for further testing. This behavior may be disabled by setting
+        'discover_fuzzable_headers' configuration parameter to False.
+
+        The plugin tries to guess valid values for parameters of API endpoints
+        but the values highly depend on the context. If users have some knowledge
+        about correct values which may be used with the API endpoints, they can tell
+        the plugin about them via 'parameter_values_file' configuration parameter.
+        The parameter sets a path to a YAML file which contains custom parameter values.
+        Please read the documentation for more information and examples about this feature.
         """

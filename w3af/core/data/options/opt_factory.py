@@ -40,8 +40,9 @@ from w3af.core.data.options.form_id_list_option import FormIDListOption
 
 from w3af.core.data.options.option_types import (
     BOOL, INT, POSITIVE_INT, FLOAT, STRING, URL, IPPORT,
-    LIST, REGEX, COMBO, INPUT_FILE, QUERY_STRING, HEADER,
+    LIST, REGEX, COMBO, INPUT_FILE, YAML_INPUT_FILE, QUERY_STRING, HEADER,
     OUTPUT_FILE, PORT, IP, URL_LIST, FORM_ID_LIST)
+from w3af.core.data.options.yaml_file_option import YamlFileOption
 
 
 def opt_factory(name, default_value, desc, _type, help='', tabid=''):
@@ -64,6 +65,7 @@ def opt_factory(name, default_value, desc, _type, help='', tabid=''):
         REGEX: RegexOption,
         COMBO: ComboOption,
         INPUT_FILE: InputFileOption,
+        YAML_INPUT_FILE: YamlFileOption,
         OUTPUT_FILE: OutputFileOption,
         PORT: PortOption,
         IP: IPOption,

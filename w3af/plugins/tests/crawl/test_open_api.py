@@ -19,14 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import json
+import os
 import re
 
+from w3af import ROOT_PATH
 from w3af.plugins.audit.sqli import sqli
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (IntParamQueryString,
                                                                               NestedModel,
                                                                               PetstoreSimpleModel)
+
+
+def by_path(fra, frb):
+    return cmp(fra.get_url().url_string, frb.get_url().url_string)
 
 
 class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
@@ -74,9 +80,6 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
         fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/swagger.json', '/')]
 
         # Order them to be able to easily assert things
-        def by_path(fra, frb):
-            return cmp(fra.get_url().url_string, frb.get_url().url_string)
-
         fuzzable_requests.sort(by_path)
 
         #
@@ -178,9 +181,6 @@ class TestOpenAPINestedModelSpec(PluginTest):
         fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/openapi.json', '/')]
 
         # Order them to be able to easily assert things
-        def by_path(fra, frb):
-            return cmp(fra.get_url().url_string, frb.get_url().url_string)
-
         fuzzable_requests.sort(by_path)
 
         self.assertEqual(len(fuzzable_requests), 1)
@@ -358,3 +358,191 @@ class TestOpenAPIFuzzURLParts(PluginTest):
         vuln = vulns[0]
         self.assertEquals(vuln.get_method(), 'GET')
         self.assertEquals(vuln.get_url().url_string, TestOpenAPIFuzzURLParts.vulnerable_url)
+
+
+class TestOpenAPICustomSpec(PluginTest):
+
+    target_url = 'http://petstore.swagger.io/'
+    spec_file = os.path.relpath(os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
+                                             'open_api', 'tests', 'data', 'simple.json'))
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api',
+
+                                               ('header_auth',
+                                                'Authorization: Bearer zzz',
+                                                PluginConfig.HEADER),
+
+                                               ('custom_spec_file',
+                                                spec_file,
+                                                PluginConfig.YAML_INPUT_FILE),
+
+                                               ),)}
+        }
+    }
+
+    def test_valid_custom_spec(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 1, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
+        fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() != '/']
+
+        self.assertEqual(len(fuzzable_requests), 1)
+
+        fuzzable_request = fuzzable_requests[0]
+
+        e_method = 'POST'
+        e_url = 'http://petstore.swagger.io/api/pets'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer zzz')])
+        e_data = '{"pets": {"tag": "7", "name": "John"}}'
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)
+
+
+class TestOpenAPICustomParameterValues(PluginTest):
+
+    api_key = 'xxx'
+    target_url = 'http://petstore.swagger.io/'
+    custom_values_file = os.path.relpath(os.path.join(ROOT_PATH, 'core', 'data', 'parsers',
+                                                      'doc', 'open_api', 'tests', 'data',
+                                                      'petstore_simple_parameter_values.yaml'))
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api',
+
+                                               ('header_auth',
+                                                'Authorization: Bearer xxx',
+                                                PluginConfig.HEADER),
+
+                                               ('parameter_values_file',
+                                                custom_values_file,
+                                                PluginConfig.YAML_INPUT_FILE),
+
+                                               ),)}
+        }
+    }
+
+    MOCK_RESPONSES = [MockResponse('http://petstore.swagger.io/openapi.json',
+                                   PetstoreSimpleModel().get_specification(),
+                                   content_type='application/json')]
+
+    def test_custom_parameter_values(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 1, infos)
+
+        info_i = infos[0]
+        self.assertEqual(info_i.get_name(), 'Open API specification found')
+
+        fuzzable_requests = self.kb.get_all_known_fuzzable_requests()
+        fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/openapi.json', '/')]
+
+        self.assertEqual(len(fuzzable_requests), 7)
+
+        fuzzable_request = fuzzable_requests[0]
+
+        e_method = 'GET'
+        e_url = 'http://petstore.swagger.io/api/pets'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer xxx')])
+        e_data = ''
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)
+
+        fuzzable_request = fuzzable_requests[1]
+
+        e_method = 'GET'
+        e_url = 'http://petstore.swagger.io/api/pets?limit=1&tags=Buddy'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer xxx')])
+        e_data = ''
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)
+
+        fuzzable_request = fuzzable_requests[2]
+
+        e_method = 'GET'
+        e_url = 'http://petstore.swagger.io/api/pets?limit=5&tags=Buddy'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer xxx')])
+        e_data = ''
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)
+
+        fuzzable_request = fuzzable_requests[3]
+
+        e_method = 'GET'
+        e_url = 'http://petstore.swagger.io/api/pets/3333'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer xxx')])
+        e_data = ''
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)
+
+        fuzzable_request = fuzzable_requests[4]
+
+        e_method = 'GET'
+        e_url = 'http://petstore.swagger.io/api/pets/4444'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer xxx')])
+        e_data = ''
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)
+
+        fuzzable_request = fuzzable_requests[5]
+
+        e_method = 'POST'
+        e_url = 'http://petstore.swagger.io/api/pets'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer xxx')])
+        e_data = '{"pet": {"tag": "17", "name": "Joe"}}'
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)
+
+        fuzzable_request = fuzzable_requests[6]
+
+        e_method = 'POST'
+        e_url = 'http://petstore.swagger.io/api/pets'
+        e_headers = Headers([('Content-Type', 'application/json'),
+                             ('Authorization', 'Bearer xxx')])
+        e_data = '{"pet": {"tag": "123", "name": "Jan"}}'
+
+        self.assertEqual(fuzzable_request.get_method(), e_method)
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), e_data)

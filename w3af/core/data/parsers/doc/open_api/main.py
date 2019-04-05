@@ -24,6 +24,8 @@ import yaml
 
 from yaml import load
 
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterValues
+
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
@@ -62,11 +64,25 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True):
+    def __init__(self, http_response,
+                 no_validation=False,
+                 discover_fuzzable_headers=True,
+                 custom_parameter_values=ParameterValues()):
+        """
+        Initialize OpenAPI plugin.
+        :param http_response: An HTTP response with an OpenAPI specification.
+        :param no_validation: Turns on/off validation of the OpenAPI spec.
+        :param discover_fuzzable_headers: Turns on/off discovering HTTP headers
+                                          which are used by API endpoints
+                                          and which can then be used for testing/fuzzing.
+        :param custom_parameter_values: Sets context-specific values for parameters
+                                        used by the API endpoints.
+        """
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
+        self.custom_parameter_values = custom_parameter_values
 
     @staticmethod
     def content_type_match(http_resp):
@@ -144,7 +160,8 @@ class OpenAPI(BaseParser):
         and stores them in to the fuzzable request
         """
         specification_handler = SpecificationHandler(self.get_http_response(),
-                                                     self.no_validation)
+                                                     self.no_validation,
+                                                     self.custom_parameter_values)
 
         for data in specification_handler.get_api_information():
             try:
@@ -180,7 +197,8 @@ class OpenAPI(BaseParser):
 
                 self.api_calls.append(fuzzable_request)
 
-    def _should_audit(self, fuzzable_request):
+    @staticmethod
+    def _should_audit(fuzzable_request):
         """
         We want to make sure that w3af doesn't delete all the items from the
         REST API, so we ignore DELETE calls.

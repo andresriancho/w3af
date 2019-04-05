@@ -34,8 +34,7 @@ except ImportError:
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler
-
+from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler, ParameterValues
 
 # Silence please.
 SILENCE = ('bravado_core.resource',
@@ -50,10 +49,21 @@ for to_silence in SILENCE:
 
 
 class SpecificationHandler(object):
-    def __init__(self, http_response, no_validation=False):
+
+    def __init__(self, http_response,
+                 no_validation=False,
+                 custom_parameter_values=ParameterValues()):
+        """
+        Initialize an new instance of SpecificationHandler.
+        :param http_response: An HTTP response with an API specification.
+        :param no_validation: Turns on/off validation of the OpenAPI spec.
+        :param custom_parameter_values: Sets context-specific values for parameters
+                                        used by the API endpoints.
+        """
         self.http_response = http_response
         self.spec = None
         self.no_validation = no_validation
+        self.custom_parameter_values = custom_parameter_values
 
     def get_http_response(self):
         return self.http_response
@@ -76,7 +86,8 @@ class SpecificationHandler(object):
 
         for api_resource_name, resource in self.spec.resources.items():
             for operation_name, operation in resource.operations.items():
-                operations = self._set_operation_params(operation)
+                operations = self._set_operation_params(operation,
+                                                        self.custom_parameter_values)
 
                 for _operation in operations:
                     data = (self.spec,
@@ -87,24 +98,36 @@ class SpecificationHandler(object):
                             _operation.params)
                     yield data
 
-    def _set_operation_params(self, operation):
+    def _set_operation_params(self, operation, custom_parameter_values):
         """
         Takes all of the information associated with an operation and fills the
         parameters with some values in order to have a non-empty REST API call
         which will increase our chances of finding vulnerabilities.
 
+        While filling out the operation, the method considers the following cases:
+         * The operation only contains values for the required fields
+         * The operation contains values for both required and optional fields
+
+        A caller can provide context-specific values for parameters used by the operation.
+        If such context-specific values were provided, the method prefers them
+        while filling out the parameters of the operation.
+        If the caller provided multiple values for parameters,
+        then the method tries to enumerate all possible combinations of parameters.
+
         :param operation: Data associated with the operation
-        :return: Two instances of the operation instance:
-                    * One only containing values for the required fields
-                    * One containing values for the required and optional fields
+        :param custom_parameter_values: Context-specific values for parameters
+                                        of the operation.
+        :return: A number of operations with assigned values for their parameters.
         """
         parameter_handler = ParameterHandler(self.spec, operation)
         has_optional = parameter_handler.operation_has_optional_params()
 
         for optional in {False, has_optional}:
-            op = parameter_handler.set_operation_params(optional=optional)
-            if op is not None:
-                yield op
+            operations = parameter_handler.set_operation_params(optional,
+                                                                custom_parameter_values)
+            if operations is not None:
+                for op in operations:
+                    yield op
 
     def _parse_spec_from_dict(self, spec_dict, retry=True):
         """
