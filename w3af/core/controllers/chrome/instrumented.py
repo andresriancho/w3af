@@ -926,6 +926,10 @@ class EventListener(object):
     def __init__(self, event_as_dict):
         self._event_as_dict = event_as_dict
 
+    def get_type_selector(self):
+        return (self._event_as_dict['event_type'],
+                self._event_as_dict['selector'],)
+
     def __getitem__(self, item):
         return self._event_as_dict[item]
 

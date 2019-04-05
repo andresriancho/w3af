@@ -94,7 +94,7 @@ class ChromeCrawlerJS(object):
         event_listeners = chrome.get_all_event_listeners(event_filter=self.EVENTS_TO_DISPATCH)
 
         for event_i, event in enumerate(event_listeners):
-            if not self._should_dispatch_event(event, processed_events):
+            if not self._should_dispatch_event(url, event, processed_events, debugging_id):
                 continue
 
             if self._too_many_errors(url, debugging_id):
@@ -277,20 +277,30 @@ class ChromeCrawlerJS(object):
         chrome.navigate_to_history_index(navigation_index)
         chrome.wait_for_load()
 
-    def _should_dispatch_event(self, event, processed_events):
+    def _should_dispatch_event(self, url, event, processed_events, debugging_id):
         """
         :param event: The event to analyze
         :return: True if this event should be dispatched to the browser
         """
+        current_event_type = event['event_type']
+        current_event_key = event.get_type_selector()
+
         # Do not dispatch the same event twice
         for processed_event in processed_events:
-            if processed_event == event:
+            if current_event_key == processed_event.get_type_selector():
+                msg = ('Ignoring "%s" event on selector "%s" and URL "%s"'
+                       ' because it was already sent. This happens when the'
+                       ' application attaches more than one event listener'
+                       ' to the same event and element. (did: %s)')
+                args = (current_event_type,
+                        event['selector'],
+                        url,
+                        debugging_id)
+                om.out.debug(msg % args)
                 return False
 
         # Only dispatch events if type in EVENTS_TO_DISPATCH
-        event_type = event['event_type']
-
-        if event_type in self.EVENTS_TO_DISPATCH:
+        if current_event_type in self.EVENTS_TO_DISPATCH:
             return True
 
         return False
