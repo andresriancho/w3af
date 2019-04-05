@@ -102,9 +102,6 @@ class ChromeCrawlerJS(object):
 
             self._print_stats(event_i, processed_events, url)
 
-            if len(processed_events) > 1:
-                break
-
             # Prevent duplicated processing
             processed_events.append(event)
 
