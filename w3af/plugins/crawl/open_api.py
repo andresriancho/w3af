@@ -458,4 +458,33 @@ class open_api(CrawlPlugin):
         During parsing an Open API specification, the plugin looks for parameters
         which are passed to endpoints via HTTP headers, and enables them for further testing.
         This behavior may be disabled by setting 'discover_fuzzable_headers' configuration parameter to False.
+
+        To allow for testing of complex REST APIs, this plugin supports an extension to the Open API
+        specification: If an extension field named `x-w3af-request-templates` exists on an operation,
+        this plugin will use the contents to create multiple requests for the operation, each configured
+        in a specific way. The `x-w3af-request-templates` field is structured as a list of dicts, each of
+        which contains overrides to the operation it appears on. For each item in the list, the plugin
+        will create a separate URL to test, configured according to the overrides in that item. For example,
+        the following fragment would produce two URLs for testing:
+
+        ...
+        "x-w3af-request-templates": [
+            {
+                "parameters": [
+                    {"name": "foo", "in": "query", "default": "value1"},
+                ]
+            },
+            {
+                "parameters": [
+                    {"name": "bar", "in": "query", "default": "value2"},
+                ]
+            }
+        ]
+        ...
+
+        If the original operation was http://www.w3af.org/api/test?foo=&bar=,
+        then this configuration would produce for testing the URLs
+        http://www.w3af.org/api/test?foo=value1
+        http://www.w3af.org/api/test?bar=value2
+
         """

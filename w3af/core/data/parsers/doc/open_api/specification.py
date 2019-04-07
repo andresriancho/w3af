@@ -26,6 +26,7 @@ import logging
 
 from yaml import load
 from bravado_core.spec import Spec
+from bravado_core.operation import Operation
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -98,13 +99,28 @@ class SpecificationHandler(object):
                     * One only containing values for the required fields
                     * One containing values for the required and optional fields
         """
-        parameter_handler = ParameterHandler(self.spec, operation)
-        has_optional = parameter_handler.operation_has_optional_params()
+        spec = operation.op_spec
+        templates = [{}]
+        if 'x-w3af-request-templates' in spec:
+            templates = spec['x-w3af-request-templates']
 
-        for optional in {False, has_optional}:
-            op = parameter_handler.set_operation_params(optional=optional)
-            if op is not None:
-                yield op
+        for template in templates:
+            spec_copy = dict(spec)
+            for k, v in template.items():
+                spec_copy[k] = v
+            templated_operation = Operation.from_spec(
+                self.spec,
+                operation.path_name,
+                operation.http_method,
+                spec_copy
+            )
+            parameter_handler = ParameterHandler(self.spec, templated_operation)
+            has_optional = parameter_handler.operation_has_optional_params()
+
+            for optional in {False, has_optional}:
+                op = parameter_handler.set_operation_params(optional=optional)
+                if op is not None:
+                    yield op
 
     def _parse_spec_from_dict(self, spec_dict, retry=True):
         """
