@@ -133,7 +133,10 @@ class TestURLPartsMutant(unittest.TestCase):
     def test_forced_url_parts(self):
         freq = FuzzableRequest(URL('http://www.w3af.com/static/foo/bar.ext'))
         freq.set_force_fuzzing_url_parts([
-            ('/static/', False), ('foo', True), ('/bar.', False), ('ext', True)
+            ('/static/', False),
+            ('foo', True),
+            ('/bar.', False),
+            ('ext', True)
         ])
 
         generated_mutants = URLPartsMutant.create_mutants(
@@ -152,7 +155,10 @@ class TestURLPartsMutant(unittest.TestCase):
     def test_forced_url_parts_qs(self):
         freq = FuzzableRequest(URL('http://www.w3af.com/static/foo/bar.ext?foo=bar'))
         freq.set_force_fuzzing_url_parts([
-            ('/static/', False), ('foo', True), ('/bar.', False), ('ext', True)
+            ('/static/', False),
+            ('foo', True),
+            ('/bar.', False),
+            ('ext', True)
         ])
 
         generated_mutants = URLPartsMutant.create_mutants(

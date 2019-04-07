@@ -414,15 +414,17 @@ class open_api(CrawlPlugin):
         ol.add(o)
 
         d = 'Automatic path parameter discovery for further testing'
-        h = ('By default, URLs discovered by this plugin allow for allow other plugins'
-             ' to inject content into the path only at locations declared as path parameters'
-             ' in the Open API specification.'
+        h = ('By default, URLs discovered by this plugin allow other plugins'
+             ' to inject content into the path only at locations declared as path'
+             ' parameters in the Open API specification.'
+             '\n'
              ' For example, if the Open API specification declares an endpoint with the path'
-             ' `/store/product-{productID}`, only the `{productID}` part of the URL will be modified'
-             ' during fuzzing.'
-             ' Set this option to False if you would like to disable this feature, and instead'
-             ' fuzz all path segments.'
-             ' If this option is set to False, the plugin will automatically set `misc-settings.fuzz_url_parts`'
+             ' `/store/product-{productID}`, only the `{productID}` part of the URL will be'
+             ' modified during fuzzing.'
+             '\n'
+             ' Set this option to False if you would like to disable this feature,'
+             ' and instead fuzz all path segments. If this option is set to False,'
+             ' the plugin will automatically set `misc-settings.fuzz_url_parts`'
              ' and `misc-settings.fuzz_url_filenames` to True')
         o = opt_factory('discover_fuzzable_url_parts', self._discover_fuzzable_url_parts, d, BOOL, help=h)
         ol.add(o)
@@ -474,5 +476,6 @@ class open_api(CrawlPlugin):
 
         During parsing an Open API specification, the plugin looks for parameters
         which are passed to endpoints via HTTP headers, and enables them for further testing.
-        This behavior may be disabled by setting 'discover_fuzzable_headers' configuration parameter to False.
+        This behavior may be disabled by setting 'discover_fuzzable_headers' configuration
+        parameter to False.
         """

@@ -62,7 +62,10 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True,
+    def __init__(self,
+                 http_response,
+                 no_validation=False,
+                 discover_fuzzable_headers=True,
                  discover_fuzzable_url_parts=True):
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []

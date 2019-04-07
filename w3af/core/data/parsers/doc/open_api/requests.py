@@ -38,6 +38,7 @@ import w3af.core.controllers.output_manager as om
 class RequestFactory(object):
 
     DEFAULT_CONTENT_TYPE = JSONContainer.JSON_CONTENT_TYPE
+    URL_PARTS_RE = re.compile('({[^}]+})')
 
     def __init__(self, spec, api_resource_name, resource, operation_name,
                  operation, parameters):
@@ -58,7 +59,8 @@ class RequestFactory(object):
         self.operation = operation
         self.parameters = parameters
 
-    def get_fuzzable_request(self, discover_fuzzable_headers=False,
+    def get_fuzzable_request(self,
+                             discover_fuzzable_headers=False,
                              discover_fuzzable_url_parts=False):
         """
         Creates a fuzzable request by querying different parts of the spec
@@ -110,9 +112,10 @@ class RequestFactory(object):
         Builds a forced url parts string based in 
         """
         path = self.operation.path_name
-        segments = re.split('({[^}]+})', path)
+        segments = self.URL_PARTS_RE.split(path)
         params = self._get_filled_parameters()
         parts = []
+
         for seg in segments:
             if seg.startswith('{') and seg.endswith('}'):
                 name = seg[1:-1]
@@ -120,8 +123,8 @@ class RequestFactory(object):
                 parts.append((val, True))
             else:
                 parts.append((seg, False))
-        return parts
 
+        return parts
 
     def _bravado_construct_request(self):
         """
