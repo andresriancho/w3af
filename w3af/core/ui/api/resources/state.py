@@ -42,7 +42,6 @@ def get_current_state(scan_id):
         finding = finding_to_json(finding, scan_id, finding_id, detailed=True)
         kb_list.append(finding)
     result['kb'] = kb_list
-    scan_info = get_scan_info_from_id(scan_id)
     if scan_info is None:
         abort(404, 'Scan not found')
     exc = scan_info.exception
