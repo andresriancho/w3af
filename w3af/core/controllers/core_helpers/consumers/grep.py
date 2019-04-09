@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import sys
 import time
 import threading
 
@@ -31,6 +32,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from w3af.core.controllers.core_helpers.status import CoreStatus
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.db.history import HistoryItem
 from w3af.core.data.dc.headers import Headers
@@ -115,10 +117,23 @@ class grep(BaseConsumer):
 
             try:
                 plugin.end()
-            except Exception, e:
+            except Exception as exception:
                 msg = 'An exception was found while running %s.end(): "%s"'
-                args = (plugin.get_name(), e)
-                om.out.error(msg % args)
+                args = (plugin.get_name(), exception)
+                om.out.debug(msg % args)
+
+                status = FakeStatus(self._w3af_core)
+                status.set_current_fuzzable_request('grep', 'n/a')
+                status.set_running_plugin('grep',
+                                          plugin.get_name(),
+                                          log=True)
+
+                exec_info = sys.exc_info()
+                enabled_plugins = 'n/a'
+                self._w3af_core.exception_handler.handle(status,
+                                                         exception,
+                                                         exec_info,
+                                                         enabled_plugins)
                 continue
 
             spent_time = time.time() - start_time
@@ -421,3 +436,7 @@ class grep(BaseConsumer):
 
         # Send to the parent class so the data gets saved
         return super(grep, self).in_queue_put(response.id)
+
+
+class FakeStatus(CoreStatus):
+    pass
