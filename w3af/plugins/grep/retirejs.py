@@ -350,17 +350,33 @@ class retirejs(GrepPlugin):
 
         # retirejs will return code != 0 when a vulnerability is found
         # we use this to decide when we need to parse the output
-        json_doc = []
+        if process.returncode == 0:
+            self._remove_file(json_file.name)
+            return dict()
 
-        if process.returncode != 0:
-            try:
-                json_doc = json.loads(file(json_file.name).read())
-            except Exception, e:
-                msg = 'Failed to parse retirejs output. Exception: "%s"'
-                om.out.debug(msg % e)
+        try:
+            file_contents = file(json_file.name).read()
+        except Exception:
+            msg = 'Failed to read retirejs output file at %s'
+            om.out.debug(msg % json_file.name)
 
-        self._remove_file(json_file.name)
-        return json_doc
+            self._remove_file(json_file.name)
+            return dict()
+
+        try:
+            json_doc = json.loads(file_contents)
+        except Exception, e:
+            msg = ('Failed to parse retirejs output as JSON.'
+                   ' Exception is "%s" and file content: "%s..."')
+            args = (e, file_contents[:20])
+            om.out.debug(msg % args)
+
+            self._remove_file(json_file.name)
+            return dict()
+        else:
+
+            self._remove_file(json_file.name)
+            return json_doc
 
     def _remove_file(self, response_file):
         """
