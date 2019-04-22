@@ -74,7 +74,7 @@ class InstrumentedChromeUnittest(unittest.TestCase):
         self.assertEqual(response.get_url().url_string, url)
 
         self.assertEqual(response.get_body(), ExtendedHttpRequestHandler.RESPONSE_BODY)
-        self.assertIn('Chrome', request.get_headers().get('User-agent'))
+        self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
 
 
 class TestInstrumentedChrome(InstrumentedChromeUnittest):
@@ -200,7 +200,7 @@ class TestInstrumentedChromeWithDialogDismiss(InstrumentedChromeUnittest):
         self.assertEqual(response.get_url().url_string, url)
 
         self.assertEqual(response.get_body(), CreateAlertHandler.RESPONSE_BODY)
-        self.assertIn('Chrome', request.get_headers().get('User-agent'))
+        self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
 
 
 class TestInstrumentedChromeWith401(InstrumentedChromeUnittest):
@@ -227,7 +227,7 @@ class TestInstrumentedChromeWith401(InstrumentedChromeUnittest):
         self.assertEqual(response.get_url().url_string, url)
 
         self.assertEqual(response.get_body(), BasicAuthRequestHandler.BASIC_AUTH)
-        self.assertIn('Chrome', request.get_headers().get('User-agent'))
+        self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
 
         #
         # Load the second URL
