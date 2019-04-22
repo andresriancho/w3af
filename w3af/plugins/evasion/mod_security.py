@@ -23,7 +23,6 @@ import copy
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 from w3af.core.data.parsers.doc.url import parse_qs
-from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class mod_security(EvasionPlugin):
@@ -40,23 +39,24 @@ class mod_security(EvasionPlugin):
                         the evasion plugin
         :return: The modified request
         """
-        # Mangle the postdata
         data = str(request.get_data())
-        if data:
 
-            try:
-                # Only mangle the postdata if it is a url encoded string
-                parse_qs(data)
-            except:
-                pass
-            else:
-                data = '\x00' + data
-                headers_copy = copy.deepcopy(request.headers)
-                headers_copy['content-length'] = str(len(data))
+        if not data:
+            return request
 
-                request = HTTPRequest(request.url_object, data, headers_copy,
-                                      request.get_origin_req_host(),
-                                      retries=request.retries_left)
+        # Only mangle the postdata if it is a url encoded string
+        try:
+            parse_qs(data)
+        except:
+            return request
+
+        data = '\x00' + data
+        headers_copy = copy.deepcopy(request.headers)
+        headers_copy['content-length'] = str(len(data))
+
+        new_req = request.copy()
+        new_req.set_headers(headers_copy)
+        new_req.set_data(data)
 
         return request
 

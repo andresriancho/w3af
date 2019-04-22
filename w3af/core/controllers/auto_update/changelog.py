@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import git
 
-from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+from w3af.core.controllers.misc.home_dir import W3AF_LOCAL_PATH
 
 ACTIONS = {'Added': 'A',
            'Deleted': 'D',

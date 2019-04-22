@@ -76,6 +76,7 @@ class open_api(CrawlPlugin):
         self._no_spec_validation = False
         self._custom_spec_location = ''
         self._discover_fuzzable_headers = True
+        self._discover_fuzzable_url_parts = True
 
     def crawl(self, fuzzable_request):
         """
@@ -104,7 +105,7 @@ class open_api(CrawlPlugin):
 
         :return: None
         """
-        if self._first_run:
+        if self._first_run and not self._discover_fuzzable_url_parts:
             cf.cf.save('fuzz_url_filenames', True)
             cf.cf.save('fuzz_url_parts', True)
 
@@ -172,7 +173,8 @@ class open_api(CrawlPlugin):
 
         parser = OpenAPI(http_response,
                          self._no_spec_validation,
-                         self._discover_fuzzable_headers)
+                         self._discover_fuzzable_headers,
+                         self._discover_fuzzable_url_parts)
         parser.parse()
 
         self._report_to_kb_if_needed(http_response, parser)
@@ -411,6 +413,22 @@ class open_api(CrawlPlugin):
         o = opt_factory('discover_fuzzable_headers', self._discover_fuzzable_headers, d, BOOL, help=h)
         ol.add(o)
 
+        d = 'Automatic path parameter discovery for further testing'
+        h = ('By default, URLs discovered by this plugin allow other plugins'
+             ' to inject content into the path only at locations declared as path'
+             ' parameters in the Open API specification.'
+             '\n'
+             ' For example, if the Open API specification declares an endpoint with the path'
+             ' `/store/product-{productID}`, only the `{productID}` part of the URL will be'
+             ' modified during fuzzing.'
+             '\n'
+             ' Set this option to False if you would like to disable this feature,'
+             ' and instead fuzz all path segments. If this option is set to False,'
+             ' the plugin will automatically set `misc-settings.fuzz_url_parts`'
+             ' and `misc-settings.fuzz_url_filenames` to True')
+        o = opt_factory('discover_fuzzable_url_parts', self._discover_fuzzable_url_parts, d, BOOL, help=h)
+        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -426,6 +444,7 @@ class open_api(CrawlPlugin):
         self._no_spec_validation = options_list['no_spec_validation'].get_value()
         self._custom_spec_location = options_list['custom_spec_location'].get_value()
         self._discover_fuzzable_headers = options_list['discover_fuzzable_headers'].get_value()
+        self._discover_fuzzable_url_parts = options_list['discover_fuzzable_url_parts'].get_value()
 
     def get_long_desc(self):
         """
@@ -457,5 +476,6 @@ class open_api(CrawlPlugin):
 
         During parsing an Open API specification, the plugin looks for parameters
         which are passed to endpoints via HTTP headers, and enables them for further testing.
-        This behavior may be disabled by setting 'discover_fuzzable_headers' configuration parameter to False.
+        This behavior may be disabled by setting 'discover_fuzzable_headers' configuration
+        parameter to False.
         """

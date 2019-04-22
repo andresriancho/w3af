@@ -20,6 +20,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import re
+
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.dc.json_container import JSONContainer
@@ -36,6 +38,7 @@ import w3af.core.controllers.output_manager as om
 class RequestFactory(object):
 
     DEFAULT_CONTENT_TYPE = JSONContainer.JSON_CONTENT_TYPE
+    URL_PARTS_RE = re.compile('({[^}]+})')
 
     def __init__(self, spec, api_resource_name, resource, operation_name,
                  operation, parameters):
@@ -56,13 +59,18 @@ class RequestFactory(object):
         self.operation = operation
         self.parameters = parameters
 
-    def get_fuzzable_request(self, discover_fuzzable_headers=False):
+    def get_fuzzable_request(self,
+                             discover_fuzzable_headers=False,
+                             discover_fuzzable_url_parts=False):
         """
         Creates a fuzzable request by querying different parts of the spec
         parameters, operation, etc.
 
         :param discover_fuzzable_headers: If it's set to true,
                                           then all fuzzable headers will be added to the fuzzable request.
+        :param discover_fuzzable_url_parts: If it's set to true,
+                                            then all fuzzable url parts will be added to the fuzzable request.
+
         :return: A fuzzable request.
         """
         method = self.get_method()
@@ -77,6 +85,9 @@ class RequestFactory(object):
 
         if discover_fuzzable_headers:
             fuzzable_request.set_force_fuzzing_headers(self._get_parameter_headers())
+
+        if discover_fuzzable_url_parts:
+            fuzzable_request.set_force_fuzzing_url_parts(self._get_url_parts())
 
         return fuzzable_request
 
@@ -95,6 +106,25 @@ class RequestFactory(object):
                              % (self.operation.path_name, parameter.name))
 
         return list(parameter_headers)
+
+    def _get_url_parts(self):
+        """
+        Builds a forced url parts string based in 
+        """
+        path = self.operation.path_name
+        segments = self.URL_PARTS_RE.split(path)
+        params = self._get_filled_parameters()
+        parts = []
+
+        for seg in segments:
+            if seg.startswith('{') and seg.endswith('}'):
+                name = seg[1:-1]
+                val = '{}'.format(params.get(name, seg))
+                parts.append((val, True))
+            else:
+                parts.append((seg, False))
+
+        return parts
 
     def _bravado_construct_request(self):
         """

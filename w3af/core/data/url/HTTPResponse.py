@@ -398,10 +398,16 @@ class HTTPResponse(DiskItem):
             return
 
     def get_charset(self):
-        if not self._charset:
+        if self._charset:
+            return self._charset
+
+        with self._body_lock:
             self._body, self._charset = self._charset_handling()
-            # Free 'raw_body'
-            self._raw_body = None
+
+            # The user wants the raw body, without any modifications / decoding?
+            if not self._binary_response:
+                self._raw_body = None
+
         return self._charset
 
     def set_charset(self, charset):
@@ -602,39 +608,39 @@ class HTTPResponse(DiskItem):
 
         Note: If the body is already a unicode string return it as it is.
         """
+        charset = self._charset
+        raw_body = self._raw_body
         headers = self.get_headers()
         content_type, _ = headers.iget(CONTENT_TYPE, None)
-        charset = self._charset
-        rawbody = self._raw_body
 
         # Only try to decode <str> strings. Skip <unicode> strings
-        if type(rawbody) is unicode:
-            _body = rawbody
+        if type(raw_body) is unicode:
+            _body = raw_body
             assert charset is not None, ("HTTPResponse objects containing "
                                          "unicode body must have an associated "
                                          "charset")
         elif content_type is None:
-            _body = rawbody
+            _body = raw_body
             charset = DEFAULT_CHARSET
 
-            if len(_body):
+            if _body:
                 msg = ('The remote web server failed to send the CONTENT_TYPE'
                        ' header in HTTP response with id %s')
                 om.out.debug(msg % self.id)
 
         elif not self.is_text_or_html():
             # Not text, save as it is.
-            _body = rawbody
+            _body = raw_body
             charset = charset or DEFAULT_CHARSET
         else:
             # Figure out charset to work with
             if not charset:
-                charset = self.guess_charset(rawbody, headers)
+                charset = self.guess_charset(raw_body, headers)
 
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
-                _body = smart_unicode(rawbody,
+                _body = smart_unicode(raw_body,
                                       charset,
                                       errors=ESCAPED_CHAR,
                                       on_error_guess=False)
@@ -647,14 +653,14 @@ class HTTPResponse(DiskItem):
 
                 # Forcing it to use the default
                 charset = DEFAULT_CHARSET
-                _body = smart_unicode(rawbody,
+                _body = smart_unicode(raw_body,
                                       charset,
                                       errors=ESCAPED_CHAR,
                                       on_error_guess=False)
 
         return _body, charset
 
-    def guess_charset(self, rawbody, headers):
+    def guess_charset(self, raw_body, headers):
         # Start with the headers
         content_type, _ = headers.iget(CONTENT_TYPE, None)
         charset_mo = CHARSET_EXTRACT_RE.search(content_type, re.I)
@@ -663,7 +669,7 @@ class HTTPResponse(DiskItem):
             charset = charset_mo.groups()[0].lower().strip()
         else:
             # Continue with the body's meta tag
-            charset_mo = CHARSET_META_RE.search(rawbody, re.IGNORECASE)
+            charset_mo = CHARSET_META_RE.search(raw_body, re.IGNORECASE)
             if charset_mo:
                 charset = charset_mo.groups()[0].lower().strip()
             else:

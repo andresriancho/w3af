@@ -27,7 +27,7 @@ from w3af.core.ui.gui import confpanel, entries, helpers
 from w3af.core.ui.gui.pluginEditor import pluginEditor
 from w3af.core.ui.gui.misc.text_wrap_label import WrapLabel
 
-from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.home_dir import get_home_dir
 
             
 class OptionsPanel(gtk.VBox):

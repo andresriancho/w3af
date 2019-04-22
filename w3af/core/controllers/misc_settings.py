@@ -116,7 +116,10 @@ class MiscSettings(Configurable):
         # Fuzzer parameters
         #
         d = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
-        opt = opt_factory('fuzz_cookies', cf.cf.get('fuzz_cookies'), d, BOOL,
+        opt = opt_factory('fuzz_cookies',
+                          cf.cf.get('fuzz_cookies'),
+                          d,
+                          BOOL,
                           tabid='Fuzzer parameters')
         ol.add(opt)
 
@@ -125,8 +128,12 @@ class MiscSettings(Configurable):
         h = ('If enabled, and multipart/post forms with files are found, w3af'
              'will fill those file inputs with pseudo-files containing the'
              'payloads required to identify vulnerabilities.')
-        opt = opt_factory('fuzz_form_files', cf.cf.get('fuzz_form_files'), d,
-                          BOOL, tabid='Fuzzer parameters', help=h)
+        opt = opt_factory('fuzz_form_files',
+                          cf.cf.get('fuzz_form_files'),
+                          d,
+                          BOOL,
+                          tabid='Fuzzer parameters',
+                          help=h)
         ol.add(opt)
 
         d = ('Indicates if w3af plugins will send fuzzed file names in order to'
@@ -136,8 +143,12 @@ class MiscSettings(Configurable):
              ' other things: http://test/file\'a\'a\'name.php in order to'
              ' find SQL injections. This type of vulns are getting more '
              ' common every day!')
-        opt = opt_factory('fuzz_url_filenames', cf.cf.get('fuzz_url_filenames'),
-                          d, BOOL, help=h, tabid='Fuzzer parameters')
+        opt = opt_factory('fuzz_url_filenames',
+                          cf.cf.get('fuzz_url_filenames'),
+                          d,
+                          BOOL,
+                          help=h,
+                          tabid='Fuzzer parameters')
         ol.add(opt)
 
         desc = ('Indicates if w3af plugins will send fuzzed URL parts in order'
@@ -146,19 +157,28 @@ class MiscSettings(Configurable):
              ' and fuzz_url_parts is enabled, w3af will request among other '
              ' things: http://test/bar/<script>alert(document.cookie)</script>'
              ' in order to find XSS.')
-        opt = opt_factory('fuzz_url_parts', cf.cf.get('fuzz_url_parts'), desc,
-                          BOOL, help=h, tabid='Fuzzer parameters')
+        opt = opt_factory('fuzz_url_parts',
+                          cf.cf.get('fuzz_url_parts'),
+                          desc,
+                          BOOL,
+                          help=h,
+                          tabid='Fuzzer parameters')
         ol.add(opt)
 
         desc = 'Indicates the extension to use when fuzzing file content'
         opt = opt_factory('fuzzed_files_extension',
-                          cf.cf.get('fuzzed_files_extension'), desc, STRING,
+                          cf.cf.get('fuzzed_files_extension'),
+                          desc,
+                          STRING,
                           tabid='Fuzzer parameters')
         ol.add(opt)
 
         desc = 'A list with all fuzzable header names'
-        opt = opt_factory('fuzzable_headers', cf.cf.get('fuzzable_headers'),
-                          desc, LIST, tabid='Fuzzer parameters')
+        opt = opt_factory('fuzzable_headers',
+                          cf.cf.get('fuzzable_headers'),
+                          desc,
+                          LIST,
+                          tabid='Fuzzer parameters')
         ol.add(opt)
 
         d = ('Indicates what HTML form combo values w3af plugins will use:'
@@ -168,7 +188,11 @@ class MiscSettings(Configurable):
              ' values), tmb (top, middle and bottom values), t (top values), b'
              ' (bottom values).')
         options = ['tmb', 'all', 'tb', 't', 'b']
-        opt = opt_factory('form_fuzzing_mode', options, d, COMBO, help=h,
+        opt = opt_factory('form_fuzzing_mode',
+                          options,
+                          d,
+                          COMBO,
+                          help=h,
                           tabid='Fuzzer parameters')
         ol.add(opt)
 
@@ -182,7 +206,10 @@ class MiscSettings(Configurable):
              ' exception handling from w3af\'s core.')
         opt = opt_factory('stop_on_first_exception',
                           cf.cf.get('stop_on_first_exception'),
-                          desc, BOOL, help=h, tabid='Core settings')
+                          desc,
+                          BOOL,
+                          help=h,
+                          tabid='Core settings')
         ol.add(opt)
 
         desc = 'Maximum crawl time (minutes)'
@@ -190,15 +217,23 @@ class MiscSettings(Configurable):
              ' knowing what they are and the potential time they will take'
              ' to run. By using this parameter, users will be able to set'
              ' the maximum amount of time the crawl phase will run.')
-        opt = opt_factory('max_discovery_time', cf.cf.get('max_discovery_time'),
-                          desc, INT, help=h, tabid='Core settings')
+        opt = opt_factory('max_discovery_time',
+                          cf.cf.get('max_discovery_time'),
+                          desc,
+                          INT,
+                          help=h,
+                          tabid='Core settings')
         ol.add(opt)
 
         desc = 'Maximum scan time (minutes)'
         h = ('Sets the maximum number of minutes for the scan to run. Use'
              ' zero to remove the limit.')
-        opt = opt_factory('max_scan_time', cf.cf.get('max_scan_time'),
-                          desc, INT, help=h, tabid='Core settings')
+        opt = opt_factory('max_scan_time',
+                          cf.cf.get('max_scan_time'),
+                          desc,
+                          INT,
+                          help=h,
+                          tabid='Core settings')
         ol.add(opt)
 
         desc = 'Limit requests for each URL sub-path'
@@ -209,7 +244,10 @@ class MiscSettings(Configurable):
              ' /product/1 and /product/2 will be crawled.')
         opt = opt_factory('path_max_variants',
                           cf.cf.get('path_max_variants'),
-                          desc, INT, help=h, tabid='Core settings')
+                          desc,
+                          INT,
+                          help=h,
+                          tabid='Core settings')
         ol.add(opt)
 
         desc = 'Limit requests for each URL and parameter set'
@@ -220,7 +258,10 @@ class MiscSettings(Configurable):
              ' /product?id=1 and /product?id=2 will crawled.')
         opt = opt_factory('params_max_variants',
                           cf.cf.get('params_max_variants'),
-                          desc, INT, help=h, tabid='Core settings')
+                          desc,
+                          INT,
+                          help=h,
+                          tabid='Core settings')
         ol.add(opt)
 
         desc = 'Limit requests for similar forms'
@@ -230,7 +271,10 @@ class MiscSettings(Configurable):
              ' actions then only the configured number of forms are crawled.')
         opt = opt_factory('max_equal_form_variants',
                           cf.cf.get('max_equal_form_variants'),
-                          desc, INT, help=h, tabid='Core settings')
+                          desc,
+                          INT,
+                          help=h,
+                          tabid='Core settings')
         ol.add(opt)
 
         #
@@ -238,13 +282,19 @@ class MiscSettings(Configurable):
         #
         desc = ('Local interface name to use when sniffing, doing reverse'
                 ' connections, etc.')
-        opt = opt_factory('interface', cf.cf.get('interface'), desc,
-                          STRING, tabid='Network settings')
+        opt = opt_factory('interface',
+                          cf.cf.get('interface'),
+                          desc,
+                          STRING,
+                          tabid='Network settings')
         ol.add(opt)
 
         desc = 'Local IP address to use when doing reverse connections'
-        opt = opt_factory('local_ip_address', cf.cf.get('local_ip_address'),
-                          desc, STRING, tabid='Network settings')
+        opt = opt_factory('local_ip_address',
+                          cf.cf.get('local_ip_address'),
+                          desc,
+                          STRING,
+                          tabid='Network settings')
         ol.add(opt)
 
         #
@@ -252,8 +302,12 @@ class MiscSettings(Configurable):
         #
         desc = 'A comma separated list of URLs that w3af should ignore'
         h = 'No HTTP requests will be sent to these URLs'
-        opt = opt_factory('non_targets', cf.cf.get('non_targets'), desc,
-                          URL_LIST, help=h, tabid='Exclusions')
+        opt = opt_factory('non_targets',
+                          cf.cf.get('non_targets'),
+                          desc,
+                          URL_LIST,
+                          help=h,
+                          tabid='Exclusions')
         ol.add(opt)
 
         desc = 'Filter forms to scan using form IDs'
@@ -263,8 +317,12 @@ class MiscSettings(Configurable):
              ' and can be used to define this setting for new scans.\n\n'
              'Find more about form IDs in the "Advanced use cases" section'
              'of the w3af documentation.')
-        opt = opt_factory('form_id_list', cf.cf.get('form_id_list'), desc,
-                          FORM_ID_LIST, help=h, tabid='Exclusions')
+        opt = opt_factory('form_id_list',
+                          cf.cf.get('form_id_list'),
+                          desc,
+                          FORM_ID_LIST,
+                          help=h,
+                          tabid='Exclusions')
         ol.add(opt)
 
         desc = 'Define the form_id_list filter behaviour'
@@ -277,8 +335,12 @@ class MiscSettings(Configurable):
         tmp_list.remove(cf.cf.get('form_id_action'))
         tmp_list.insert(0, cf.cf.get('form_id_action'))
 
-        opt = opt_factory('form_id_action', tmp_list, desc,
-                          COMBO, help=h, tabid='Exclusions')
+        opt = opt_factory('form_id_action',
+                          tmp_list,
+                          desc,
+                          COMBO,
+                          help=h,
+                          tabid='Exclusions')
         ol.add(opt)
 
         #
@@ -286,8 +348,11 @@ class MiscSettings(Configurable):
         #
         desc = ('Full path of Metasploit framework binary directory (%s in '
                 'most linux installs)' % cf.cf.get('msf_location'))
-        opt = opt_factory('msf_location', cf.cf.get('msf_location'),
-                          desc, STRING, tabid='Metasploit')
+        opt = opt_factory('msf_location',
+                          cf.cf.get('msf_location'),
+                          desc,
+                          STRING,
+                          tabid='Metasploit')
         ol.add(opt)
 
         #
@@ -300,7 +365,11 @@ class MiscSettings(Configurable):
              ' can be in many languages. Use this setting to choose the language'
              ' in which the information will be displayed and stored in reports.')
         options = DBVuln.get_all_languages()
-        opt = opt_factory('vulndb_language', options, d, COMBO, help=h,
+        opt = opt_factory('vulndb_language',
+                          options,
+                          d,
+                          COMBO,
+                          help=h,
                           tabid='Language')
         ol.add(opt)
 
@@ -318,14 +387,26 @@ class MiscSettings(Configurable):
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
-        to_save = ('fuzz_cookies', 'fuzz_form_files', 'fuzz_url_filenames',
-                   'fuzz_url_parts', 'fuzzed_files_extension',
-                   'form_fuzzing_mode', 'max_discovery_time',
-                   'max_scan_time', 'fuzzable_headers', 'interface',
-                   'local_ip_address', 'msf_location', 'stop_on_first_exception',
-                   'non_targets', 'form_id_action', 'form_id_list',
-                   'path_max_variants', 'params_max_variants',
-                   'max_equal_form_variants', 'vulndb_language')
+        to_save = ('fuzz_cookies',
+                   'fuzz_form_files',
+                   'fuzz_url_filenames',
+                   'fuzz_url_parts',
+                   'fuzzed_files_extension',
+                   'form_fuzzing_mode',
+                   'max_discovery_time',
+                   'max_scan_time',
+                   'fuzzable_headers',
+                   'interface',
+                   'local_ip_address',
+                   'msf_location',
+                   'stop_on_first_exception',
+                   'non_targets',
+                   'form_id_action',
+                   'form_id_list',
+                   'path_max_variants',
+                   'params_max_variants',
+                   'max_equal_form_variants',
+                   'vulndb_language')
 
         for name in to_save:
             cf.cf.save(name, options_list[name].get_value())

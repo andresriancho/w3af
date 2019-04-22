@@ -23,7 +23,7 @@ from datetime import date
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+from w3af.core.controllers.misc.home_dir import W3AF_LOCAL_PATH
 from w3af.core.controllers.auto_update.git_client import GitClient, GitClientError
 from w3af.core.data.db.startup_cfg import StartUpConfig
 from w3af.core.controllers.auto_update.utils import (to_short_id,

@@ -391,6 +391,14 @@ class CorePlugins(object):
                                                        plugin_name)
                 if plugin_instance not in self.plugins[plugin_type]:
                     self.plugins[plugin_type].append(plugin_instance)
+                else:
+                    # Ensure that the latest settings are applied to the instance
+                    # that will be used for execution
+                    for existing_inst in self.plugins[plugin_type]:
+                        if existing_inst.get_name() == plugin_name and plugin_name in self._plugins_options[plugin_type].keys():
+                            custom_options = self._plugins_options[plugin_type][plugin_name]
+                            existing_inst.set_options(custom_options)
+
 
     def plugin_factory(self):
         """
