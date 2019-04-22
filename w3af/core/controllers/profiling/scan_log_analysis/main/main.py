@@ -7,6 +7,7 @@ from data.errors import get_errors
 from data.consumer_join_times import get_consumer_join_times
 from data.scan_finished_in import get_scan_finished_in
 from data.crawling_stats import get_crawling_stats
+from data.js_crawling_stats import get_js_crawling_stats
 from data.bruteforce import get_bruteforce_data
 from data.http_requests import get_total_http_requests
 from data.http_errors import get_http_errors
@@ -63,6 +64,7 @@ def get_console_functions():
         draw_connection_pool_wait,
         draw_http_requests_over_time,
         get_crawling_stats,
+        get_js_crawling_stats,
         #generate_crawl_graph,                  ######
         draw_queue_size_grep,
         draw_queue_size_audit,
@@ -107,6 +109,7 @@ def get_json_functions():
         get_time_waited_by_workers,
         get_http_requests_over_time_data,
         get_crawling_stats,
+        get_js_crawling_stats,
         #generate_crawl_graph,      ######
         get_queue_size_grep_data,
         get_queue_size_audit_data,
