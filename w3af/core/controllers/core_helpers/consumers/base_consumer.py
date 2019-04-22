@@ -534,6 +534,7 @@ class BaseConsumer(Process):
         then, the strategy will get the items from the output queue and
         handle the exceptions.
 
+        :param phase: audit, grep, crawl, etc.
         :param plugin_name: The plugin that generated the exception
         :param fuzzable_request: The fuzzable request that was sent as input to
                                  the plugin when the exception was raised
