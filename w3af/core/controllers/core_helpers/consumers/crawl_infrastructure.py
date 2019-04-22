@@ -533,8 +533,10 @@ class CrawlInfrastructure(BaseConsumer):
             # exception
             self._remove_discovery_plugin(plugin)
         except Exception, e:
-            self.handle_exception(plugin.get_type(), plugin.get_name(),
-                                  fuzzable_request, e)
+            self.handle_exception(plugin.get_type(),
+                                  plugin.get_name(),
+                                  fuzzable_request,
+                                  e)
         else:
             # The plugin output is retrieved and analyzed by the
             # _route_plugin_results method, here we just verify that the plugin
@@ -543,7 +545,9 @@ class CrawlInfrastructure(BaseConsumer):
             if result is not None:
                 msg = 'The %s plugin did NOT return None.' % plugin.get_name()
                 ve = ValueError(msg)
-                self.handle_exception(plugin.get_type(), plugin.get_name(),
-                                      fuzzable_request, ve)
+                self.handle_exception(plugin.get_type(),
+                                      plugin.get_name(),
+                                      fuzzable_request,
+                                      ve)
 
         took_line.send()

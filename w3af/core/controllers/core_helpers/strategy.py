@@ -399,6 +399,7 @@ class CoreStrategy(object):
 
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
+
                 else:
                     _, _, fuzzable_request_inst = result_item
 
