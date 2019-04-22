@@ -335,7 +335,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         if not debugging_is_configured_in_output_manager():
             return
 
-        message = '(did: %s)[%s] %s' % (time.time(), self.debugging_id, message)
+        message = '(did: %s) %s' % (self.debugging_id, message)
         om.out.debug(message)
 
     def read_console_message(self):
