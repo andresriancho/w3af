@@ -283,7 +283,10 @@ class ChromeProcess(object):
         self.devtools_port = int(devtools_port)
 
     def get_parent_pid(self):
-        return self.proc.pid if self.proc is not None else None
+        try:
+            return self.proc.pid
+        except:
+            return None
 
     def get_children_pids(self):
         parent_pid = self.get_parent_pid()

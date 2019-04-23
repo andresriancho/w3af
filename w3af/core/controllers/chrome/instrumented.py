@@ -868,18 +868,22 @@ class InstrumentedChrome(object):
         self._page_state = self.PAGE_STATE_NONE
 
     def get_pid(self):
-        return self.chrome_process.get_parent_pid() if self.chrome_process is not None else None
+        try:
+            return self.chrome_process.get_parent_pid()
+        except:
+            return None
 
     def get_memory_usage(self):
         """
         :return: The memory usage for the chrome process (parent) and all its
                  children (chrome uses various processes for rendering HTML)
         """
-        parent = self.chrome_process.get_parent_pid()
-        children = self.chrome_process.get_children_pids()
+        parent = self.get_pid()
 
         if parent is None:
             return None, None
+
+        children = self.chrome_process.get_children_pids()
 
         _all = [parent]
         _all.extend(children)
