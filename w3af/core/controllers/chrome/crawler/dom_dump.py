@@ -80,10 +80,20 @@ class ChromeCrawlerDOMDump(object):
 
         try:
             dom = chrome.get_dom()
-            assert dom is not None, 'DOM was None'
         except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
             msg = 'Failed to get the DOM from chrome browser %s: "%s" (did: %s)'
             args = (chrome, cie, debugging_id)
+            om.out.debug(msg % args)
+
+            # Since we got an error we remove this chrome instance from the
+            # pool, it might be in an error state
+            self._pool.remove(chrome)
+
+            raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
+
+        if dom is None:
+            msg = 'Chrome returned a null DOM (did: %s)'
+            args = (debugging_id,)
             om.out.debug(msg % args)
 
             # Since we got an error we remove this chrome instance from the
