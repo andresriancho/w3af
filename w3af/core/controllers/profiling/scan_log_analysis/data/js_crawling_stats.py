@@ -230,7 +230,7 @@ def crawl_time_by_strategy_handler(context, match_object):
 
     url = match_object.group(3)
 
-    if strategy == 'js':
+    if strategy == 'JS events':
         context.js_crawl_strategy_times.append((seconds, url))
     else:
         context.dom_dump_crawl_strategy_times.append((seconds, url))
