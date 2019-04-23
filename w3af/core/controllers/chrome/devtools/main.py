@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import sys
 import json
-import time
 import errno
 import socket
 import logging
@@ -44,6 +43,7 @@ from w3af.core.controllers.chrome.devtools.console_message import ConsoleMessage
 from w3af.core.controllers.chrome.devtools.command_result import CommandResult
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 from w3af.core.controllers.chrome.devtools.js_dialogs import dialog_handler
+from w3af.core.controllers.chrome.utils.multi_json_doc import parse_multi_json_docs
 
 #
 # Disable all the annoying logging from the urllib3 and requests libraries
@@ -250,18 +250,14 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
             raise
 
         except Exception, e:
+            if self.ws is None:
+                raise WebSocketConnectionClosedException('WebSocket does not exist anymore')
+
             msg = 'Unexpected error while reading from Chrome socket: "%s"'
             raise ChromeInterfaceException(msg % e)
 
-        self.debug('Received message from Chrome: %s' % data)
-
-        try:
-            message = json.loads(data)
-        except Exception, e:
-            msg = 'Failed to parse JSON response from Chrome: "%s"'
-            raise ChromeInterfaceException(msg % e)
-
-        return message
+        self.debug('Received (raw) message from Chrome: %s' % data)
+        return data
 
     def close(self):
         try:
@@ -296,7 +292,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         while self.ws:
             try:
                 # The recv() will lock for 1 second waiting for data
-                message = self.recv()
+                data = self.recv()
             except WebSocketTimeoutException:
                 # And raise an exception if there is no data in the buffer
                 continue
@@ -315,7 +311,11 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
                 # set to None. Just exit the thread.
                 break
 
-            self._call_event_handlers(message)
+            # The data we receive from the wire can contain more than one
+            # JSON document, we use parse_multi_json_docs() to parse all of
+            # those messages and return them one by one
+            for message in parse_multi_json_docs(data):
+                self._call_event_handlers(message)
 
     def _save_exc_info(self):
         self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
