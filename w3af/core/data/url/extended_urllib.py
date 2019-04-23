@@ -674,7 +674,7 @@ class ExtendedUrllib(object):
 
         return res
 
-    def GET(self, uri, data=None, headers=Headers(), cache=False,
+    def GET(self, uri, data=None, headers=None, cache=False,
             grep=True, cookies=True, session=None,
             respect_size_limit=True, new_connection=False,
             error_handling=True, timeout=None, follow_redirects=False,
@@ -702,6 +702,8 @@ class ExtendedUrllib(object):
 
         :return: An HTTPResponse object.
         """
+        headers = headers or Headers()
+
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.GET() must be'
                             ' of url.URL type.')
@@ -716,13 +718,19 @@ class ExtendedUrllib(object):
         host = uri.get_domain()
         timeout = self.get_timeout(host) if timeout is None else timeout
 
-        req = HTTPRequest(uri, cookies=cookies, session=session,
-                          cache=cache, data=data,
-                          error_handling=error_handling, method='GET',
+        req = HTTPRequest(uri,
+                          cookies=cookies,
+                          session=session,
+                          cache=cache,
+                          data=data,
+                          error_handling=error_handling,
+                          method='GET',
                           retries=self.settings.get_max_retrys(),
-                          timeout=timeout, new_connection=new_connection,
+                          timeout=timeout,
+                          new_connection=new_connection,
                           follow_redirects=follow_redirects,
-                          use_basic_auth=use_basic_auth, use_proxy=use_proxy,
+                          use_basic_auth=use_basic_auth,
+                          use_proxy=use_proxy,
                           debugging_id=debugging_id,
                           binary_response=binary_response)
         req = self.add_headers(req, headers)
@@ -730,7 +738,7 @@ class ExtendedUrllib(object):
         with raise_size_limit(respect_size_limit):
             return self.send(req, grep=grep)
 
-    def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
+    def POST(self, uri, data='', headers=None, grep=True, cache=False,
              cookies=True, session=None, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
              debugging_id=None, new_connection=False,
@@ -747,6 +755,8 @@ class ExtendedUrllib(object):
         :see: The GET() for documentation on the other parameters
         :return: An HTTPResponse object.
         """
+        headers = headers or Headers()
+
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.POST() must'
                             ' be of url.URL type. Got %s instead.' % type(uri))
@@ -827,7 +837,7 @@ class ExtendedUrllib(object):
         :param method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         """
-        def any_method(uri_opener, method, uri, data=None, headers=Headers(),
+        def any_method(uri_opener, method, uri, data=None, headers=None,
                        cache=False, grep=True, cookies=True, session=None,
                        error_handling=True, timeout=None, use_basic_auth=True,
                        use_proxy=True,
@@ -840,6 +850,8 @@ class ExtendedUrllib(object):
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
             """
+            headers = headers or Headers()
+
             if not isinstance(uri, URL):
                 raise TypeError('The uri parameter of any_method must be'
                                 ' of url.URL type.')
@@ -907,10 +919,12 @@ class ExtendedUrllib(object):
 
         return self._rtt_sum_debugging_id.get(debugging_id, default=None)
 
-    def add_headers(self, req, headers=Headers()):
+    def add_headers(self, req, headers=None):
         """
         Add all custom Headers() if they exist
         """
+        headers = headers or Headers()
+
         for h, v in self.settings.header_list:
             req.add_header(h, v)
 
