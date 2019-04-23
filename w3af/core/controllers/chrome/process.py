@@ -31,7 +31,7 @@ import psutil
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.home_dir import get_home_dir
 from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path, get_chrome_version
 
 
