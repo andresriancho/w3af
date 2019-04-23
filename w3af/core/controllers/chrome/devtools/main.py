@@ -29,8 +29,12 @@ import threading
 import functools
 
 from collections import deque
+
+from requests.adapters import ConnectionError
 from PyChromeDevTools import GenericElement, ChromeInterface, TIMEOUT
-from websocket import WebSocketTimeoutException, WebSocketConnectionClosedException
+from websocket import (WebSocketTimeoutException,
+                       WebSocketConnectionClosedException,
+                       WebSocketProtocolException)
 
 import w3af.core.controllers.output_manager as om
 
@@ -228,6 +232,9 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         self.dialog_handler = dialog_handler
 
     def send(self, data):
+        if self.ws is None:
+            raise ChromeInterfaceException('The connection is closed')
+
         self.debug('Sending message to Chrome: %s' % data)
         return self.ws.send(data)
 
@@ -240,19 +247,34 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         except WebSocketTimeoutException:
             # The websocket raises this exception when there is no data to be read
             raise
+
         except socket.error:
             # [Errno 11] Resource temporarily unavailable
             #
             # The socket has no data to be read
             raise
+
         except WebSocketConnectionClosedException:
             # The connection has been closed
             raise
 
-        except Exception, e:
-            if self.ws is None:
-                raise WebSocketConnectionClosedException('WebSocket does not exist anymore')
+        except AttributeError:
+            # self.None.recv() raises AttributeError
+            raise WebSocketConnectionClosedException('WebSocket does not exist anymore')
 
+        except WebSocketProtocolException:
+            # Usually from websocket/_abnf.py:
+            # raise WebSocketProtocolException("Illegal frame")
+            raise
+
+        except TypeError:
+            # Handling of TypeError which is raised when this happens:
+            #
+            # https://github.com/websocket-client/websocket-client/issues/548
+            #
+            raise
+
+        except Exception, e:
             msg = 'Unexpected error while reading from Chrome socket: "%s"'
             raise ChromeInterfaceException(msg % e)
 
@@ -296,26 +318,90 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
             except WebSocketTimeoutException:
                 # And raise an exception if there is no data in the buffer
                 continue
+
             except socket.error as se:
                 # [Errno 11] Resource temporarily unavailable
                 # The socket has no data to be read, try again
                 if se.errno == errno.EAGAIN:
                     continue
 
-                # Not sure what this error is, raise in the next call
-                # See comment below to understand how this works
-                self._save_exc_info()
+                # Not sure what this error is, close the connection because
+                # it can't be used anymore and create a new one
+                self.reconnect()
                 continue
-            except WebSocketConnectionClosedException:
-                # The connection has been closed, but self.ws is still not
-                # set to None. Just exit the thread.
+
+            except WebSocketProtocolException as e:
+                # The websocket connection received an invalid message, need
+                # to close the connection and create a new one. The chrome
+                # instance might still be usable
+                self.reconnect()
+
+                message = 'Handled WebSocketProtocolException: "%s" (did: %s)'
+                args = (e, self.debugging_id,)
+                om.out.debug(message % args)
+
+                continue
+
+            except WebSocketConnectionClosedException as e:
+                # The websocket connection has been closed, try to connect again
+                # to the existing chrome instance which might still be usable.
+                self.reconnect()
+
+                message = 'Handled WebSocketConnectionClosedException: "%s" (did: %s)'
+                args = (e, self.debugging_id,)
+                om.out.debug(message % args)
+
+                continue
+
+            except TypeError as e:
+                # Handling of TypeError which is raised when this happens:
+                #
+                # https://github.com/websocket-client/websocket-client/issues/548
+                #
+                # The websocket connection is in an invalid state, close the
+                # current connection and try to connect again to the existing
+                # chrome instance which might still be usable.
+                self.reconnect()
+
+                message = 'Handled TypeError: "%s" (did: %s)'
+                args = (e, self.debugging_id,)
+                om.out.debug(message % args)
+
+                continue
+
+            except Exception:
+                # Save the exception data and raise in the next call to any
+                # of the connection attributes (conn.Page, conn.Runtime, etc.).
+                self._save_exc_info()
+                self.close()
                 break
 
-            # The data we receive from the wire can contain more than one
-            # JSON document, we use parse_multi_json_docs() to parse all of
-            # those messages and return them one by one
-            for message in parse_multi_json_docs(data):
-                self._call_event_handlers(message)
+            else:
+                # The data we receive from the wire can contain more than one
+                # JSON document, we use parse_multi_json_docs() to parse all of
+                # those messages and return them one by one
+                for message in parse_multi_json_docs(data):
+                    self._call_event_handlers(message)
+
+    def reconnect(self):
+        """
+        In some cases it is possible to close the current websocket connection
+        to the Chrome instance, create a new one, and continue working without
+        any issues.
+
+        This method attempts to do just that, and if it fails it closes the
+        old connection and exits.
+
+        :return: None, the new connection is in self.ws
+        """
+        try:
+            self.connect()
+        except ConnectionError as e:
+            msg = 'Tried to reconnect to the websocket and received: "%s" (did: %s)'
+            args = (e, self.debugging_id)
+            om.out.debug(msg % args)
+
+            self.close()
 
     def _save_exc_info(self):
         self.exc_type, self.exc_value, self.exc_traceback = sys.exc_info()
