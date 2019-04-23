@@ -70,6 +70,7 @@ class InstrumentedChrome(object):
         self._frame_stopped_loading_event = None
         self._frame_scheduled_navigation = None
         self._network_almost_idle_event = None
+        self._execution_context_created = None
         self._page_state = self.PAGE_STATE_NONE
 
         self.uri_opener = uri_opener
@@ -257,8 +258,11 @@ class InstrumentedChrome(object):
 
         if message['method'] == 'Page.frameScheduledNavigation':
             self._frame_scheduled_navigation = True
+
             self._frame_stopped_loading_event = False
             self._network_almost_idle_event = False
+            self._execution_context_created = False
+
             self._page_state = self.PAGE_STATE_LOADING
             return
 
@@ -294,7 +298,11 @@ class InstrumentedChrome(object):
                 self._frame_scheduled_navigation = False
                 self._network_almost_idle_event = True
 
-        if self._network_almost_idle_event and self._frame_stopped_loading_event:
+        elif message['method'] == 'Runtime.executionContextCreated':
+            self._frame_scheduled_navigation = False
+            self._execution_context_created = True
+
+        if self._network_almost_idle_event and self._frame_stopped_loading_event and self._execution_context_created:
             self._page_state = self.PAGE_STATE_LOADED
 
     def load_url(self, url):
@@ -380,7 +388,7 @@ class InstrumentedChrome(object):
         return result['result']['result']['value']
 
     def get_dom(self):
-        result = self.chrome_conn.Runtime.evaluate(expression='document.body.outerHTML')
+        result = self.chrome_conn.Runtime.evaluate(expression='document.documentElement.outerHTML')
 
         # This is a rare case where the DOM is not present
         if result is None:

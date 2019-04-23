@@ -58,7 +58,7 @@ def debugging_is_configured_in_output_manager():
 
 class ExtendedHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
-    RESPONSE_BODY = '<body>Hello world</body>'
+    RESPONSE_BODY = u'<html><head></head><body>Hello world</body></html>'
 
     def get_code_body(self, request_path):
         """

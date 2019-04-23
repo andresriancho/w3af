@@ -153,7 +153,7 @@ class TwoPagesRequestHandler(ExtendedHttpRequestHandler):
                                  }                           
                              </script>''')
 
-    RESPONSE_BODY_CHANGED = '<body><p>DOM changed</p></body>'
+    RESPONSE_BODY_CHANGED = u'<html><head></head><body><p>DOM changed</p></body></html>'
 
     def get_code_body(self, request_path):
         if request_path == '/':

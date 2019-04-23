@@ -259,8 +259,8 @@ class CreateAlertHandler(ExtendedHttpRequestHandler):
 
 class BasicAuthRequestHandler(ExtendedHttpRequestHandler):
 
-    SUCCESS = '<body>Hello world</body>'
-    BASIC_AUTH = '<body></body>'
+    SUCCESS = u'<html><head></head><body>Hello world</body></html>'
+    BASIC_AUTH = u'<html><head></head><body></body></html>'
 
     def get_code_body(self, request_path):
         if request_path == '/':
