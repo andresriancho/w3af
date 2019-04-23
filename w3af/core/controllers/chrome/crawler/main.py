@@ -129,9 +129,20 @@ class ChromeCrawler(object):
                 chrome = self._initial_page_load(url,
                                                  http_traffic_queue,
                                                  debugging_id=debugging_id)
-            except Exception, e:
+            except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
                 msg = ('Failed to perform the initial page load of %s in'
-                       ' chrome crawler: "%s" (did: %s)')
+                       ' chrome crawler: "%s". Will skip this crawl strategy'
+                       ' and try the next one. (did: %s)')
+                args = (url, cie, debugging_id)
+                om.out.debug(msg % args)
+
+                # These are soft exceptions, just skip this crawl strategy
+                # and continue with the next one
+                continue
+
+            except Exception, e:
+                msg = ('Unhandled exception while trying to perform the initial'
+                       ' page load of %s in chrome crawler: "%s" (did: %s)')
                 args = (url, e, debugging_id)
                 om.out.debug(msg % args)
 
@@ -147,6 +158,17 @@ class ChromeCrawler(object):
                 crawl_strategy.crawl(chrome,
                                      url,
                                      debugging_id=debugging_id)
+            except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
+                msg = ('Failed to crawl %s using chrome crawler: "%s"'
+                       ' Will skip this crawl strategy and try the next one.'
+                       ' (did: %s)')
+                args = (url, cie, debugging_id)
+                om.out.debug(msg % args)
+
+                # These are soft exceptions, just skip this crawl strategy
+                # and continue with the next one
+                continue
+
             except Exception, e:
                 msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
                 args = (url, chrome, e, debugging_id)
@@ -164,6 +186,18 @@ class ChromeCrawler(object):
                 self._cleanup(url,
                               chrome,
                               debugging_id=debugging_id)
+            except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
+                msg = ('Failed to cleanup after crawling: "%s". Will skip this'
+                       ' phase and continue. (did: %s)')
+                args = (cie, debugging_id)
+                om.out.debug(msg % args)
+
+                took_line.send()
+
+                # These are soft exceptions, just skip this crawl strategy
+                # and continue with the next one
+                continue
+
             except Exception, e:
                 msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
                 args = (url, chrome, e, debugging_id)
