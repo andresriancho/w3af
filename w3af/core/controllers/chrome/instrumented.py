@@ -439,7 +439,30 @@ class InstrumentedChrome(object):
         index = navigation_history['currentIndex']
         return entries[index]['id']
 
+    def navigate_back(self):
+        navigation_history = self.get_navigation_history()
+        entries = navigation_history['entries']
+        current_index = navigation_history['currentIndex']
+
+        previous_index = current_index - 1
+        previous_index = max(previous_index, len(entries))
+        entry = entries[previous_index]
+
+        return entry['id']
+
     def navigate_to_history_index(self, index):
+        """
+        Navigate to an index in the browser history
+
+        This method does NOT guarantee that the index will exist.
+
+        :param index: An index from Page.getNavigationHistory(), note that when
+                      we talk about index in the navigation history it is the
+                      value of the `id` attribute inside an item in `entries`
+
+        :return: None
+        """
+        self.get_navigation_history()
         self._page_state = self.PAGE_STATE_LOADING
         self.chrome_conn.Page.navigateToHistoryEntry(entryId=index)
 
