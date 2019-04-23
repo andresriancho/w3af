@@ -139,8 +139,8 @@ class ChromeCrawler(object):
                 # the framework's exception handler
                 raise
 
-            args = (crawl_strategy.get_name(), url)
-            msg = 'Spent %%.2f seconds in crawl strategy %s for %s' % args
+            args = (crawl_strategy.get_name(), url, debugging_id)
+            msg = 'Spent %%.2f seconds in crawl strategy %s for %s (did: %s)' % args
             took_line = TookLine(msg)
 
             try:
