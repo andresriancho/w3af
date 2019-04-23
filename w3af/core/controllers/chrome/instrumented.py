@@ -462,7 +462,6 @@ class InstrumentedChrome(object):
 
         :return: None
         """
-        self.get_navigation_history()
         self._page_state = self.PAGE_STATE_LOADING
         self.chrome_conn.Page.navigateToHistoryEntry(entryId=index)
 
