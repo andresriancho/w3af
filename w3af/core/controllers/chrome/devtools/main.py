@@ -24,6 +24,7 @@ import sys
 import json
 import errno
 import socket
+import random
 import logging
 import threading
 import functools
@@ -69,8 +70,6 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
     and since this class is very generic, it shouldn't require any changes
     to be able to consume all features.
     """
-    message_counter = 0
-
     DEBUG = os.environ.get('DEVTOOLS_DEBUG', '0') == '1'
 
     def __init__(self,
@@ -100,6 +99,8 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         self.exc_type = None
         self.exc_value = None
         self.exc_traceback = None
+
+        self.message_counter = MessageIdentifierGenerator()
 
     def set_default_event_handlers(self):
         self.set_event_handler(proxy_connection_failed_handler)
@@ -468,23 +469,45 @@ class DebugGenericElement(GenericElement):
         func_name = '{}.{}'.format(self.name, attr)
 
         def generic_function(**kwargs):
-            self.parent.pop_messages()
-            self.parent.message_counter += 1
-
             timeout = kwargs.pop('timeout', 20)
             timeout = timeout or self.parent.timeout
 
-            message_id = self.parent.message_counter
+            self.parent.message_counter.new()
 
-            call_obj = {'id': message_id,
+            call_obj = {'id': self.parent.message_counter.get(),
                         'method': func_name,
                         'params': kwargs}
             call_str = json.dumps(call_obj)
 
-            result = self.parent.get_command_result(message_id)
+            result = self.parent.get_command_result(self.parent.message_counter.get())
 
             self.parent.send(call_str)
 
             return result.get(timeout)
 
         return generic_function
+
+
+class MessageIdentifierGenerator(object):
+    """
+    Generates message identifiers which are more unique than incrementing an
+    integer, which is useful for debugging.
+
+    Before all chrome connections were starting from 0 and incrementing, there
+    were multiple messages with the same ID. Now the errors (if any) look like:
+
+        "Timeout waiting for message ID 4138851"
+
+    It is easier to grep for that ID, which will be most likely unique.
+    """
+    def __init__(self):
+        self.message_identifier = None
+
+    def get(self):
+        if self.message_identifier is None:
+            self.new()
+
+        return self.message_identifier
+
+    def new(self):
+        self.message_identifier = random.randint(100000, 10000000)

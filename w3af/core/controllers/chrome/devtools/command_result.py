@@ -45,7 +45,7 @@ class CommandResult(object):
         self._raise_exception_if_exists()
 
         if not was_set:
-            raise ChromeInterfaceTimeout('Timeout')
+            raise ChromeInterfaceTimeout('Timeout waiting for message ID %s' % self.message_id)
 
         return self.message
 
