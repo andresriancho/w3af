@@ -29,6 +29,7 @@ import resource
 import threading
 import multiprocessing
 
+from setproctitle import setproctitle
 from concurrent.futures import TimeoutError
 from tblib.decorators import Error
 from pebble import ProcessPool
@@ -393,6 +394,7 @@ def init_worker(log_queue, mem_limit):
     log_sink_factory(log_queue)
     start_profiling_no_core()
     limit_memory_usage(mem_limit)
+    setproctitle('html-parser')
 
 
 def limit_memory_usage(mem_limit):
