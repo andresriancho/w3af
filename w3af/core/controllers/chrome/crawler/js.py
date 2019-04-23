@@ -83,7 +83,6 @@ class ChromeCrawlerJS(object):
         :return: None, all the information is sent to the core via HTTP traffic
                  captured by the browser's proxy
         """
-        zeroth_navigation_index = chrome.get_navigation_history_index()
         url = chrome.get_url()
 
         initial_dom = chrome.get_dom()
@@ -113,7 +112,6 @@ class ChromeCrawlerJS(object):
                                                                      event,
                                                                      url,
                                                                      debugging_id,
-                                                                     zeroth_navigation_index,
                                                                      back_button_press_count,
                                                                      initial_dom,
                                                                      initial_bones_xml)
@@ -207,7 +205,6 @@ class ChromeCrawlerJS(object):
                                            event,
                                            url,
                                            debugging_id,
-                                           zeroth_navigation_index,
                                            back_button_press_count,
                                            initial_dom,
                                            initial_bones_xml):
@@ -234,8 +231,7 @@ class ChromeCrawlerJS(object):
         chrome.wait_for_load()
 
         # And now we go back to the initial URL that was loaded in chrome
-        self._browser_back(chrome,
-                           zeroth_navigation_index)
+        self._browser_back(chrome, url)
 
         back_button_press_count += 1
 
@@ -271,11 +267,19 @@ class ChromeCrawlerJS(object):
                            current_bones_xml,
                            self.EQUAL_RATIO_AFTER_BACK), initial_bones_xml
 
-    def _browser_back(self, chrome, navigation_index):
-        # Now click on the history "back" button and wait for the page
-        # to finish loading (for a second time, this is a completely
-        # different page than in the line above)
-        chrome.navigate_to_history_index(navigation_index)
+    def _browser_back(self, chrome, url):
+        """
+        This is not really "Clicking the history back button", but because of
+        this [0] strange behaviour in Google Chrome I had to improvise and
+        change the algorithm to load the initial URL again.
+
+        [0] https://groups.google.com/forum/#!topic/chrome-debugging-protocol/Ilww5M1b6mI
+
+        :param chrome: The Chrome instance
+        :param url: The URL to load
+        :return: None
+        """
+        chrome.load_url(url)
         chrome.wait_for_load()
 
     def _should_dispatch_event(self, url, event, processed_events, debugging_id):
