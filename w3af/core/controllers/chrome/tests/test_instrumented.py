@@ -180,6 +180,12 @@ class TestInstrumentedChrome(InstrumentedChromeUnittest):
         self.ic.wait_for_load()
         self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
 
+    def test_websocket_call_triggers_error_in_chrome(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
+
+        self.assertRaises(ChromeInterfaceException,
+                          self.ic.navigate_to_history_index, 300)
+
 
 class TestInstrumentedChromeWithDialogDismiss(InstrumentedChromeUnittest):
 
