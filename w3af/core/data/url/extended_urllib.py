@@ -972,6 +972,7 @@ class ExtendedUrllib(object):
         except (socket.error,
                 URLTimeoutError,
                 ConnectionPoolException,
+                OpenSSL.SSL.Error,
                 OpenSSL.SSL.SysCallError,
                 OpenSSL.SSL.ZeroReturnError,
                 BadStatusLine), e:
@@ -1091,7 +1092,9 @@ class ExtendedUrllib(object):
         """
         self._increase_timeout_on_error(req, exception)
 
-        return self._generic_send_error_handler(req, exception, grep,
+        return self._generic_send_error_handler(req,
+                                                exception,
+                                                grep,
                                                 original_url)
         
     def _handle_send_urllib_error(self, req, exception, grep, original_url):
@@ -1100,7 +1103,9 @@ class ExtendedUrllib(object):
         also possible when a proxy is configured and not available
         also possible when auth credentials are wrong for the URI
         """
-        return self._generic_send_error_handler(req, exception, grep,
+        return self._generic_send_error_handler(req,
+                                                exception,
+                                                grep,
                                                 original_url)
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):

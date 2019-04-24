@@ -25,7 +25,6 @@ import sys
 import re
 import Queue
 import webkit
-import pprint
 import webbrowser
 
 from multiprocessing.dummy import Process, Event
@@ -259,6 +258,7 @@ class KBBrowser(entries.RememberingHPaned):
 
     def get_notebook_description(self):
         # Make the HTML viewable area
+
         self.description = webkit.WebView()
 
         # Disable the plugins for the webview

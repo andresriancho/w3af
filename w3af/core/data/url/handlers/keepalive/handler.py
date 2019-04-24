@@ -156,6 +156,26 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, reason='ZeroReturnError')
             raise
 
+        except OpenSSL.SSL.SysCallError:
+            # We better discard this connection
+            self._cm.remove_connection(conn, reason='socket error')
+            raise
+
+        except OpenSSL.SSL.Error:
+            #
+            # OpenSSL.SSL.Error: [('SSL routines',
+            #                      'ssl3_get_record',
+            #                      'decryption failed or bad record mac')]
+            #
+            # Or something similar.
+            #
+            # Note that OpenSSL.SSL.Error is the base class for all the
+            # OpenSSL exceptions, so we're catching quite a lot of things here
+            # and the except order matters.
+            #
+            self._cm.remove_connection(conn, reason='OpenSSL.SSL.Error')
+            raise
+
         except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
             # We better discard this connection
             self._cm.remove_connection(conn, reason='socket error')
