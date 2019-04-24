@@ -840,27 +840,30 @@ class InstrumentedChrome(object):
     def terminate(self):
         om.out.debug('Terminating %s (did: %s)' % (self, self.debugging_id))
 
-        try:
-            self.proxy.stop()
-        except Exception, e:
-            msg = 'Failed to stop proxy server, exception: "%s" (did: %s)'
-            args = (e, self.debugging_id)
-            om.out.debug(msg % args)
+        if self.proxy is not None:
+            try:
+                self.proxy.stop()
+            except Exception, e:
+                msg = 'Failed to stop proxy server, exception: "%s" (did: %s)'
+                args = (e, self.debugging_id)
+                om.out.debug(msg % args)
 
-        try:
-            with AllLoggingDisabled():
-                self.chrome_conn.close()
-        except Exception, e:
-            msg = 'Failed to close chrome connection, exception: "%s" (did: %s)'
-            args = (e, self.debugging_id)
-            om.out.debug(msg % args)
+        if self.chrome_conn is not None:
+            try:
+                with AllLoggingDisabled():
+                    self.chrome_conn.close()
+            except Exception, e:
+                msg = 'Failed to close chrome connection, exception: "%s" (did: %s)'
+                args = (e, self.debugging_id)
+                om.out.debug(msg % args)
 
-        try:
-            self.chrome_process.terminate()
-        except Exception, e:
-            msg = 'Failed to terminate chrome process, exception: "%s" (did: %s)'
-            args = (e, self.debugging_id)
-            om.out.debug(msg % args)
+        if self.chrome_process is not None:
+            try:
+                self.chrome_process.terminate()
+            except Exception, e:
+                msg = 'Failed to terminate chrome process, exception: "%s" (did: %s)'
+                args = (e, self.debugging_id)
+                om.out.debug(msg % args)
 
         self.proxy = None
         self.chrome_process = None
