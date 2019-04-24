@@ -521,6 +521,31 @@ class HistoryItem(object):
                                             self._COMPRESSED_EXTENSION)
         compressed_filename = os.path.join(session_dir, compressed_filename)
 
+        #
+        # I run some tests with tarfile to check if tar + gzip or tar + bzip2
+        # were faster / better suited for this task. This is what I got when
+        # running test_save_load_compressed():
+        #
+        #   zip
+        #       150 request - responses compressed in: 125 k
+        #       Unittest run time: 0.3 seconds
+        #
+        #   tar.gz
+        #       150 request - responses compressed in: 15 k
+        #       Unittest run time: 1.6 seconds
+        #
+        #
+        #   tar.bz2
+        #       150 request - responses compressed in: 9 k
+        #       Unittest run time: 7.0 seconds
+        #
+        # Note that the unittest forces compression of 150 requests and then
+        # reads each of those compressed requests one by one from the
+        # compressed archive.
+        #
+        # Summary: If you want to change the compression algorithm make sure
+        #          that it is better than `zip`.
+        #
         _zip = zipfile.ZipFile(file=compressed_filename,
                                mode='w',
                                compression=zipfile.ZIP_DEFLATED)
