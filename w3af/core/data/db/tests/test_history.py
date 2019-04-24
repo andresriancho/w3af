@@ -138,13 +138,13 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_save_load_compressed(self):
         force_compression_count = HistoryItem._UNCOMPRESSED_FILES + HistoryItem._COMPRESSED_FILE_BATCH
-        force_compression_count += 10
+        force_compression_count += 150
 
         url = URL('http://w3af.com/a/b/c.php')
         headers = Headers([('Content-Type', 'text/html')])
         body = '<html>' + LOREM * 20
 
-        for i in xrange(force_compression_count):
+        for i in xrange(1, force_compression_count):
             request = HTTPRequest(url, data='a=%s' % i)
 
             response = HTTPResponse(200, body, headers, url, url)
@@ -155,10 +155,10 @@ class TestHistoryItem(unittest.TestCase):
             h.response = response
             h.save()
 
-        compressed_file = os.path.join(h.get_session_dir(), '0-149.zip')
+        compressed_file = os.path.join(h.get_session_dir(), '1-150.zip')
         self.assertTrue(os.path.exists(compressed_file))
 
-        expected_files = ['%s.trace' % i for i in range(HistoryItem._COMPRESSED_FILE_BATCH)]
+        expected_files = ['%s.trace' % i for i in range(1, HistoryItem._COMPRESSED_FILE_BATCH + 1)]
 
         _zip = zipfile.ZipFile(compressed_file, mode='r')
         self.assertEqual(_zip.namelist(), expected_files)

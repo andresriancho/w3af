@@ -512,8 +512,8 @@ class HistoryItem(object):
             #
             session_dir = self._session_dir
 
-            files = [os.path.join(session_dir, f) for f in os.listdir(session_dir)]
-            files = [f for f in files if f.endswith(self._EXTENSION)]
+            files = [f for f in os.listdir(session_dir) if f.endswith(self._EXTENSION)]
+            files = [os.path.join(session_dir, f) for f in files]
 
             if len(files) <= HistoryItem._MIN_FILE_COUNT:
                 return
@@ -525,6 +525,7 @@ class HistoryItem(object):
             #
             files.sort(key=lambda trace_file: get_trace_id(trace_file))
             files = files[:-self._UNCOMPRESSED_FILES]
+
             #
             # Compress in 150 file batches, and making sure that the filenames
             # are numerically ordered. We need this order to have 1, 2, ... 150 in
