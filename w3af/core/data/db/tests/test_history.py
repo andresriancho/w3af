@@ -18,6 +18,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import zipfile
 import random
 import unittest
 import os.path
@@ -25,6 +26,7 @@ import os.path
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.knowledge_base as kb
+
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from w3af.core.data.db.dbms import get_default_temp_db_instance
@@ -34,6 +36,7 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.HTTPRequest import HTTPRequest
+from w3af.plugins.tests.helper import LOREM
 
 
 @attr('smoke')
@@ -133,6 +136,41 @@ class TestHistoryItem(unittest.TestCase):
         self.assertEqual(h1.request, h2.request)
         self.assertEqual(h1.response.body, h2.response.body)
 
+    def test_save_load_compressed(self):
+        force_compression_count = HistoryItem._UNCOMPRESSED_FILES + HistoryItem._COMPRESSED_FILE_BATCH
+        force_compression_count += 10
+
+        url = URL('http://w3af.com/a/b/c.php')
+        headers = Headers([('Content-Type', 'text/html')])
+        body = '<html>' + LOREM * 20
+
+        for i in xrange(force_compression_count):
+            request = HTTPRequest(url, data='a=%s' % i)
+
+            response = HTTPResponse(200, body, headers, url, url)
+            response.set_id(i)
+
+            h = HistoryItem()
+            h.request = request
+            h.response = response
+            h.save()
+
+        compressed_file = os.path.join(h.get_session_dir(), '0-149.zip')
+        self.assertTrue(os.path.exists(compressed_file))
+
+        expected_files = ['%s.trace' % i for i in range(HistoryItem._COMPRESSED_FILE_BATCH)]
+
+        _zip = zipfile.ZipFile(compressed_file, mode='r')
+        self.assertEqual(_zip.namelist(), expected_files)
+
+        for i in xrange(1, 100):
+            h = HistoryItem()
+            h.load(i)
+
+            self.assertEqual(h.request.get_uri(), url)
+            self.assertEqual(h.response.get_headers(), headers)
+            self.assertEqual(h.response.get_body(), body)
+
     def test_delete(self):
         i = random.randint(1, 499)
         
@@ -147,7 +185,7 @@ class TestHistoryItem(unittest.TestCase):
         h1.response = res
         h1.save()
         
-        fname = h1._get_fname_for_id(i)
+        fname = h1._get_trace_filename_for_id(i)
         self.assertTrue(os.path.exists(fname))
         
         h1.delete(i)
