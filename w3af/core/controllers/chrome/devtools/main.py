@@ -161,7 +161,8 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         # send it to Chrome
         dismiss, response_message = self.dialog_handler(_type, message)
         self.Page.handleJavaScriptDialog(accept=dismiss,
-                                         promptText=response_message)
+                                         promptText=response_message,
+                                         ignore_result=True)
 
     def _result_id_match_handler(self, command_result, message):
         if self.exc_type is not None:
@@ -472,6 +473,8 @@ class DebugGenericElement(GenericElement):
             timeout = kwargs.pop('timeout', 20)
             timeout = timeout or self.parent.timeout
 
+            ignore_result = kwargs.pop('ignore_result', False)
+
             self.parent.message_counter.new()
 
             call_obj = {'id': self.parent.message_counter.get(),
@@ -479,10 +482,26 @@ class DebugGenericElement(GenericElement):
                         'params': kwargs}
             call_str = json.dumps(call_obj)
 
+            if ignore_result:
+                #
+                # In some rare cases, like the javascript dialog event handler,
+                # we want to ignore the result of our websocket message
+                #
+                # The javascript dialog event handler is a rare case because it
+                # has to listen for events all the time, and when a dialog appears
+                # send a "please close" message. All this is done in the main
+                # thread run(). If we wait in run() for the result then we're
+                # not actually processing any other messages and we dead-lock
+                #
+                # Lesson: No event handler should send a websocket message and
+                #         wait for the response (at least with the current
+                #         architecture)
+                #
+                self.parent.send(call_str)
+                return None
+
             result = self.parent.get_command_result(self.parent.message_counter.get())
-
             self.parent.send(call_str)
-
             return result.get(timeout)
 
         return generic_function
