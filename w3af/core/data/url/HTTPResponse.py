@@ -80,7 +80,8 @@ class HTTPResponse(DiskItem):
                  '_alias',
                  '_doc_type',
                  '_body_lock',
-                 '_debugging_id')
+                 '_debugging_id',
+                 '_warned_no_content_type')
 
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
@@ -118,6 +119,7 @@ class HTTPResponse(DiskItem):
 
         self._charset = charset
         self._headers = None
+        self._warned_no_content_type = False
 
         if set_body and isinstance(read, unicode):
             # We use this case for deserialization via from_dict()
@@ -623,7 +625,8 @@ class HTTPResponse(DiskItem):
             _body = raw_body
             charset = DEFAULT_CHARSET
 
-            if _body:
+            if _body and not self._warned_no_content_type:
+                self._warned_no_content_type = True
                 msg = ('The remote web server failed to send the CONTENT_TYPE'
                        ' header in HTTP response with id %s')
                 om.out.debug(msg % self.id)
