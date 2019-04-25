@@ -19,7 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import re
 import logging
+
+
+EVENT_TYPE_RE = re.compile('[a-zA-Z.]+')
 
 
 class AllLoggingDisabled(object):
@@ -50,3 +54,26 @@ class AllLoggingDisabled(object):
         # If we returned True here, any exception would be suppressed!
         return False
 
+
+def escape_js_string(text):
+    """
+    Escapes any double quotes that exist in text. Prevents specially crafted
+    pages from injecting JS into functions like dispatch_js_event() that
+    generate code that is then eval'ed.
+
+    :param text: The javascript double quoted string to escape
+    :return: The string with any double quotes escaped with \
+    """
+    return text.replace('"', '\\"')
+
+
+def is_valid_event_type(event_type):
+    """
+    Validation function to make sure that a specially crafted page can not
+    inject JS into dispatch_js_event() and other functions that generate code
+    that is then eval'ed
+
+    :param event_type: an event type (eg. click)
+    :return: True if valid
+    """
+    return bool(EVENT_TYPE_RE.match(event_type))

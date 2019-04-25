@@ -19,13 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import time
 
 from w3af.core.controllers.chrome.instrumented.instrumented_base import InstrumentedChromeBase
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
+from w3af.core.controllers.chrome.instrumented.page_state import PageState
 from w3af.core.controllers.chrome.instrumented.paginate import paginate, PAGINATION_PAGE_COUNT
-from w3af.core.controllers.chrome.instrumented.exceptions import EventTimeout, EventException
+from w3af.core.controllers.chrome.instrumented.utils import escape_js_string, is_valid_event_type
+from w3af.core.controllers.chrome.instrumented.exceptions import (EventTimeout,
+                                                                  EventException,
+                                                                  InstrumentedChromeException)
 
 
 class InstrumentedChrome(InstrumentedChromeBase):
@@ -39,104 +42,16 @@ class InstrumentedChrome(InstrumentedChromeBase):
     More features to be implemented later.
     """
 
-    PAGE_STATE_NONE = 0
-    PAGE_STATE_LOADING = 1
-    PAGE_STATE_LOADED = 2
-
     PAGE_LOAD_TIMEOUT = 10
     PAGE_WILL_CHANGE_TIMEOUT = 1
-
-    EVENT_TYPE_RE = re.compile('[a-zA-Z.]+')
 
     def __init__(self, uri_opener, http_traffic_queue):
         super(InstrumentedChrome, self).__init__(uri_opener, http_traffic_queue)
 
-        # These keep the internal state of the page based on received events
-        self._frame_stopped_loading_event = None
-        self._frame_scheduled_navigation = None
-        self._network_almost_idle_event = None
-        self._execution_context_created = None
-        self._page_state = self.PAGE_STATE_NONE
+        self.page_state = PageState()
 
         # Set the handler that will maintain the page state
-        self.chrome_conn.set_event_handler(self._page_state_handler)
-
-    def _page_state_handler(self, message):
-        """
-        This handler defines the current page state:
-            * Null: Nothing has been loaded yet
-            * Loading: Chrome is loading the page
-            * Done: Chrome has completed loading the page
-
-        :param message: The message as received from chrome
-        :return: None
-        """
-        self._navigation_started_handler(message)
-        self._load_url_finished_handler(message)
-
-    def _navigation_started_handler(self, message):
-        """
-        The handler identifies events which are related to a new page being
-        loaded in the browser (Page.Navigate or clicking on an element).
-
-        :param message: The message from chrome
-        :return: None
-        """
-        method = message.get('method', None)
-
-        navigator_started_methods = ('Page.frameScheduledNavigation',
-                                     'Page.frameStartedLoading',
-                                     'Page.frameNavigated')
-
-        if method in navigator_started_methods:
-            self._frame_scheduled_navigation = True
-
-            self._frame_stopped_loading_event = False
-            self._network_almost_idle_event = False
-            self._execution_context_created = False
-
-            self._page_state = self.PAGE_STATE_LOADING
-            return
-
-    def _load_url_finished_handler(self, message):
-        """
-        Knowing when a page has completed loading is difficult
-
-        This handler will wait for these chrome events:
-            * Page.frameStoppedLoading
-            * Page.lifecycleEvent with name networkIdle
-
-        And set the corresponding flags so that wait_for_load() can return.
-
-        :param message: The message from chrome
-        :return: True when the two events were received
-                 False when one or none of the events were received
-        """
-        if 'method' not in message:
-            return
-
-        elif message['method'] == 'Page.frameStoppedLoading':
-            self._frame_stopped_loading_event = True
-
-        elif message['method'] == 'Page.lifecycleEvent':
-            if 'params' not in message:
-                return
-
-            if 'name' not in message['params']:
-                return
-
-            if message['params']['name'] == 'networkAlmostIdle':
-                self._network_almost_idle_event = True
-
-        elif message['method'] == 'Runtime.executionContextCreated':
-            self._execution_context_created = True
-
-        received_all = all([self._network_almost_idle_event,
-                            self._frame_stopped_loading_event,
-                            self._execution_context_created])
-
-        if received_all:
-            self._page_state = self.PAGE_STATE_LOADED
+        self.chrome_conn.set_event_handler(self.page_state.page_state_handler)
 
     def load_url(self, url):
         """
@@ -146,6 +61,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         :return: This method returns immediately, even if the browser is not
                  able to load the URL and an error was raised.
         """
+        self._force_page_loading_state()
         self.chrome_conn.Page.navigate(url=str(url),
                                        timeout=self.PAGE_LOAD_TIMEOUT)
 
@@ -171,7 +87,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         start = time.time()
 
         while True:
-            if self._page_state == self.PAGE_STATE_LOADING:
+            if self.page_state.get() == PageState.PAGE_STATE_LOADING:
                 return True
 
             if time.time() - start > timeout:
@@ -197,7 +113,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         start = time.time()
 
         while True:
-            if self._page_state == self.PAGE_STATE_LOADED:
+            if self.page_state.get() == PageState.PAGE_STATE_LOADED:
                 return True
 
             if time.time() - start > timeout:
@@ -211,7 +127,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :return:
         """
-        self._page_state = self.PAGE_STATE_LOADED
+        self.page_state.force(PageState.PAGE_STATE_LOADED)
         self.chrome_conn.Page.stopLoading()
 
     def get_url(self):
@@ -276,10 +192,11 @@ class InstrumentedChrome(InstrumentedChromeBase):
         current_index = navigation_history['currentIndex']
 
         previous_index = current_index - 1
-        previous_index = max(previous_index, len(entries))
+        if previous_index < 0:
+            raise InstrumentedChromeException('Invalid history index')
 
         entry = entries[previous_index]
-        return entry['id']
+        self.navigate_to_history_index(entry['id'])
 
     def navigate_to_history_index(self, index):
         """
@@ -293,7 +210,84 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :return: None
         """
+        self._force_page_loading_state()
         self.chrome_conn.Page.navigateToHistoryEntry(entryId=index)
+
+    def dispatch_js_event(self, selector, event_type):
+        """
+        Dispatch a new event in the browser
+        :param selector: CSS selector for the element where the event is dispatched
+        :param event_type: click, hover, etc.
+        :return: Exceptions are raised on timeout and unknown events.
+                 True is returned on success
+        """
+        # Perform input validation
+        assert is_valid_event_type(event_type)
+        selector = escape_js_string(selector)
+
+        # Dispatch the event that will potentially trigger _navigation_started_handler()
+        cmd = 'window._DOMAnalyzer.dispatchCustomEvent("%s", "%s")'
+        args = (selector, event_type)
+
+        self._force_PAGE_MIGHT_NAVIGATE_state()
+        result = self._js_runtime_evaluate(cmd % args)
+
+        if result is None:
+            raise EventTimeout('The event execution timed out')
+
+        elif result is False:
+            # This happens when the element associated with the event is not in
+            # the DOM anymore
+            raise EventException('The event was not run')
+
+        return True
+
+    def _force_page_loading_state(self):
+        """
+        During testing it was possible to identify cases where the code was
+        doing the right thing:
+
+            ic.navigate_to_history_index(index_before)
+            ic.wait_for_load()
+            ic.get_dom()
+
+        Starting navigation, waiting for the page to load, and then reading
+        the DOM. The problem was that:
+
+            * navigate_to_history_index started navigation and returned
+              a result in the websocket
+
+            * the messages indicating that the navigation had started
+              did not arrive quickly enough, so the wait_for_load()
+              method returned: the page was already loaded
+
+            * page loading started and life cycle events arrived
+
+            * (page loading is incomplete) and get_dom() is called
+
+            * TypeError: Cannot read property 'outerHTML' of null
+              was returned by Chrome, because the 'document' did not
+              exist yet.
+
+        The solution to this issue was to:
+
+            * Force the page state to PAGE_STATE_LOADING when we know that
+              the action we're performing (eg. navigate_to_history_index)
+              was going to trigger a load. This is performed in this method
+
+            * Set the page state to PAGE_STATE_MIGHT_LOAD when the action
+              we took (eg. dispatching an event) might or might not trigger a
+              page load.
+
+        :return: None
+        """
+        self.page_state.force(PageState.PAGE_STATE_LOADING)
+
+    def _force_PAGE_MIGHT_NAVIGATE_state(self):
+        """
+        :see: Documentation at _force_page_loading_state().
+        """
+        self.page_state.force(PageState.PAGE_MIGHT_NAVIGATE)
 
     def _js_runtime_evaluate(self, expression, timeout=5):
         """
@@ -587,63 +581,13 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                                                  tag_name_filter=tag_name_filter):
             yield event_listener
 
-    def _is_valid_event_type(self, event_type):
-        """
-        Validation function to make sure that a specially crafted page can not
-        inject JS into dispatch_js_event() and other functions that generate code
-        that is then eval'ed
-
-        :param event_type: an event type (eg. click)
-        :return: True if valid
-        """
-        return bool(self.EVENT_TYPE_RE.match(event_type))
-
-    def _escape_js_string(self, text):
-        """
-        Escapes any double quotes that exist in text. Prevents specially crafted
-        pages from injecting JS into functions like dispatch_js_event() that
-        generate code that is then eval'ed.
-
-        :param text: The javascript double quoted string to escape
-        :return: The string with any double quotes escaped with \
-        """
-        return text.replace('"', '\\"')
-
-    def capture_screenshot(self):
+    def get_screenshot(self):
         """
         :return: The base64 encoded bytes of the captured image
         """
         response = self.chrome_conn.Page.captureScreenshot()
 
         return response['result']['data']
-
-    def dispatch_js_event(self, selector, event_type):
-        """
-        Dispatch a new event in the browser
-        :param selector: CSS selector for the element where the event is dispatched
-        :param event_type: click, hover, etc.
-        :return: Exceptions are raised on timeout and unknown events.
-                 True is returned on success
-        """
-        # Perform input validation
-        assert self._is_valid_event_type(event_type)
-        selector = self._escape_js_string(selector)
-
-        # Dispatch the event that will potentially trigger _navigation_started_handler()
-        cmd = 'window._DOMAnalyzer.dispatchCustomEvent("%s", "%s")'
-        args = (selector, event_type)
-
-        result = self._js_runtime_evaluate(cmd % args)
-
-        if result is None:
-            raise EventTimeout('The event execution timed out')
-
-        elif result is False:
-            # This happens when the element associated with the event is not in
-            # the DOM anymore
-            raise EventException('The event was not run')
-
-        return True
 
     def get_console_messages(self):
         console_message = self.chrome_conn.read_console_message()
@@ -654,4 +598,4 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
     def terminate(self):
         super(InstrumentedChrome, self).terminate()
-        self._page_state = self.PAGE_STATE_NONE
+        self.page_state.force(PageState.PAGE_STATE_NONE)

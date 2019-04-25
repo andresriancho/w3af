@@ -18,53 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os
-import Queue
-import unittest
-
-from w3af.core.controllers.chrome.instrumented.tests.test_instrumented import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
-from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
-from w3af.core.controllers.chrome.tests.helpers import set_debugging_in_output_manager
-from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.controllers.chrome.instrumented.tests.base import BaseInstrumentedUnittest
+from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 
 
-class TestChromeCrawlerDOMChanges(unittest.TestCase):
-    SERVER_HOST = '127.0.0.1'
-    SERVER_ROOT_PATH = '/tmp/'
-
-    def _unittest_setup(self, request_handler_klass):
-        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
-            set_debugging_in_output_manager()
-
-        self.uri_opener = ExtendedUrllib()
-        self.http_traffic_queue = Queue.Queue()
-
-        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
-                                                webroot=self.SERVER_ROOT_PATH,
-                                                handler=request_handler_klass)
-
-        self.server_thread = t
-        self.server = s
-        self.server_port = p
-
-        self.ic = InstrumentedChrome(self.uri_opener, self.http_traffic_queue)
-
-        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
-        self.ic.load_url(url)
-
-        self.ic.wait_for_load()
-
-    def tearDown(self):
-        while not self.http_traffic_queue.empty():
-            self.http_traffic_queue.get()
-
-        self.assertEqual(self.ic.get_js_errors(), [])
-
-        self.ic.terminate()
-        self.server.shutdown()
-        self.server_thread.join()
-
+class TestChromeCrawlerDOMChanges(BaseInstrumentedUnittest):
     def test_onclick_change_location_detect_dom_change(self):
         """
         The goal of this test is to make sure these steps work:
@@ -141,7 +99,9 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
         # we know that a page load will happen. After a call to dispatch_js_event()
         # the page load is only a possibility
         self.ic.navigate_to_history_index(index_before)
-        self.ic.wait_for_load()
+
+        wait_for_load = self.ic.wait_for_load()
+        self.assertTrue(wait_for_load)
 
         dom_after_2 = self.ic.get_dom()
 

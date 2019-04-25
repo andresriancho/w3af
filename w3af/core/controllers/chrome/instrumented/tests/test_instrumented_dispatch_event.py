@@ -19,54 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
-import Queue
-import unittest
 
-from w3af.core.controllers.chrome.instrumented.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.instrumented.tests.base import BaseInstrumentedUnittest
+from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.instrumented.tests.test_instrumented_event_listeners import (EventListenerInDocument,
                                                                                                EventListenerInWindow)
-from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
-from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
-from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
-class TestChromeCrawlerDispatchEvents(unittest.TestCase):
-    SERVER_HOST = '127.0.0.1'
-    SERVER_ROOT_PATH = '/tmp/'
-
-    def _unittest_setup(self, request_handler_klass):
-        self.uri_opener = ExtendedUrllib()
-        self.http_traffic_queue = Queue.Queue()
-
-        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
-                                                webroot=self.SERVER_ROOT_PATH,
-                                                handler=request_handler_klass)
-
-        self.server_thread = t
-        self.server = s
-        self.server_port = p
-
-        self.ic = InstrumentedChrome(self.uri_opener, self.http_traffic_queue)
-
-        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
-        self.ic.load_url(url)
-
-        self.ic.wait_for_load()
-
-    def tearDown(self):
-        while not self.http_traffic_queue.empty():
-            self.http_traffic_queue.get()
-
-        self.assertEqual(self.ic.get_js_errors(), [])
-
-        self.ic.terminate()
-        self.server.shutdown()
-        self.server_thread.join()
-
-    def _print_all_console_messages(self):
-        for console_message in self.ic.get_console_messages():
-            print(console_message)
-
+class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
     def test_dispatch_click_event(self):
         self._unittest_setup(OnClickEventRequestHandler)
 
