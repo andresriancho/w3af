@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import Queue
 import unittest
 
-from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 

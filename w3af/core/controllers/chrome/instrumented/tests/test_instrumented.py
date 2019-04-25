@@ -25,8 +25,9 @@ import unittest
 from websocket import WebSocketConnectionClosedException
 
 from w3af import ROOT_PATH
-from w3af.core.controllers.chrome.instrumented import InstrumentedChrome, InstrumentedChromeException
-from w3af.core.controllers.chrome.devtools import ChromeInterfaceException, ChromeInterfaceTimeout
+from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented.exceptions import InstrumentedChromeException
+from w3af.core.controllers.chrome.devtools import ChromeInterfaceException
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib

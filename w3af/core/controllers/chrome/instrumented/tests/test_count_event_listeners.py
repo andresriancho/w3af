@@ -22,13 +22,12 @@ from __future__ import print_function
 
 import Queue
 import unittest
-import pprint
 
 from collections import OrderedDict
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
-from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
@@ -47,10 +46,10 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
 
     TESTS = OrderedDict([
         ('https://google.com/', 20),
-        ('https://www.google.com/search?q=w3af', 80),
+        ('https://www.google.com/search?q=w3af', 70),
 
         ('https://www.bing.com/', 80),
-        ('https://www.bing.com/search?q=w3af', 200),
+        ('https://www.bing.com/search?q=w3af', 150),
 
         ('https://facebook.com/', 50),
         ('https://www.facebook.com/local/lists/350492278720904/', 5),

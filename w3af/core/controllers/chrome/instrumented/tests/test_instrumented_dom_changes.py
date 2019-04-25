@@ -18,13 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import time
+import os
 import Queue
 import unittest
 
-from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
+from w3af.core.controllers.chrome.tests.helpers import set_debugging_in_output_manager
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
@@ -33,6 +34,9 @@ class TestChromeCrawlerDOMChanges(unittest.TestCase):
     SERVER_ROOT_PATH = '/tmp/'
 
     def _unittest_setup(self, request_handler_klass):
+        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
+            set_debugging_in_output_manager()
+
         self.uri_opener = ExtendedUrllib()
         self.http_traffic_queue = Queue.Queue()
 

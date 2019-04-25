@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.misc.xml_bones import get_xml_bones
-from w3af.core.controllers.chrome.instrumented import EventException, EventTimeout
+from w3af.core.controllers.chrome.instrumented.exceptions import EventException, EventTimeout
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 

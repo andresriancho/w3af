@@ -26,7 +26,7 @@ import w3af.core.data.kb.config as cf
 from w3af.core.controllers.output_manager import manager
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
-from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.instrumented.tests.test_instrumented import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from w3af.core.data.url.extended_urllib import ExtendedUrllib

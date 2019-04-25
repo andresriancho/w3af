@@ -24,7 +24,7 @@ import itertools
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 
 
 class ChromePool(object):

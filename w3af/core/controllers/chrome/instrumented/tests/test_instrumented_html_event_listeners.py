@@ -22,9 +22,10 @@ import pprint
 import Queue
 import unittest
 
-from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.tests.test_instrumented_event_listeners import OnClickEventSetOnClickRequestHandler
-from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.instrumented.paginate import PAGINATION_PAGE_COUNT
+from w3af.core.controllers.chrome.instrumented.tests.test_instrumented_event_listeners import OnClickEventSetOnClickRequestHandler
+from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
@@ -183,7 +184,7 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         event_listeners = self.ic.get_html_event_listeners()
 
         self.assertEqual(len(event_listeners),
-                         InstrumentedChrome.PAGINATION_PAGE_COUNT - 1,
+                         PAGINATION_PAGE_COUNT - 1,
                          event_listeners)
 
     def test_events_more_than_count(self):
@@ -192,7 +193,7 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         event_listeners = self.ic.get_html_event_listeners()
 
         self.assertEqual(len(event_listeners),
-                         InstrumentedChrome.PAGINATION_PAGE_COUNT + 1,
+                         PAGINATION_PAGE_COUNT + 1,
                          event_listeners)
 
     def test_events_equal_count(self):
@@ -201,7 +202,7 @@ class TestChromeCrawlerGetHTMLEventListeners(unittest.TestCase):
         event_listeners = self.ic.get_html_event_listeners()
 
         self.assertEqual(len(event_listeners),
-                         InstrumentedChrome.PAGINATION_PAGE_COUNT,
+                         PAGINATION_PAGE_COUNT,
                          pprint.pformat(event_listeners))
 
 
@@ -281,12 +282,12 @@ class TwoOnClickRequestHandler(ExtendedHttpRequestHandler):
 
 
 class EventsEqualToCountHandler(ExtendedHttpRequestHandler):
-    RESPONSE_BODY = '<div onclick="def();">x</div>' * InstrumentedChrome.PAGINATION_PAGE_COUNT
+    RESPONSE_BODY = '<div onclick="def();">x</div>' * PAGINATION_PAGE_COUNT
 
 
 class EventsLessThanCountHandler(ExtendedHttpRequestHandler):
-    RESPONSE_BODY = '<div onclick="def();">x</div>' * (InstrumentedChrome.PAGINATION_PAGE_COUNT - 1)
+    RESPONSE_BODY = '<div onclick="def();">x</div>' * (PAGINATION_PAGE_COUNT - 1)
 
 
 class EventsMoreThanCountHandler(ExtendedHttpRequestHandler):
-    RESPONSE_BODY = '<div onclick="def();">x</div>' * (InstrumentedChrome.PAGINATION_PAGE_COUNT + 1)
+    RESPONSE_BODY = '<div onclick="def();">x</div>' * (PAGINATION_PAGE_COUNT + 1)

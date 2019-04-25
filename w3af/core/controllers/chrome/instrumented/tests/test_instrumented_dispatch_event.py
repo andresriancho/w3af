@@ -22,10 +22,10 @@ import time
 import Queue
 import unittest
 
-from w3af.core.controllers.chrome.tests.test_instrumented import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.tests.test_instrumented_event_listeners import (EventListenerInDocument,
-                                                                                  EventListenerInWindow)
-from w3af.core.controllers.chrome.instrumented import InstrumentedChrome
+from w3af.core.controllers.chrome.instrumented.tests.test_instrumented import ExtendedHttpRequestHandler
+from w3af.core.controllers.chrome.instrumented.tests.test_instrumented_event_listeners import (EventListenerInDocument,
+                                                                                               EventListenerInWindow)
+from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 

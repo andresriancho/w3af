@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import print_function
 
+import os
 import Queue
 import unittest
 import pprint
@@ -113,7 +114,8 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
                                 pprint.pformat(found_uris))
 
     def test_crawl_all_common_pages(self):
-        set_debugging_in_output_manager()
+        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
+            set_debugging_in_output_manager()
 
         for url, min_found_urls in self.TESTS.iteritems():
             self._crawl(url, min_found_urls)
