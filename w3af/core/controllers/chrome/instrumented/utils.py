@@ -23,7 +23,7 @@ import re
 import logging
 
 
-EVENT_TYPE_RE = re.compile('[a-zA-Z.]+')
+EVENT_TYPE_RE = re.compile('[a-zA-Z.:-]+')
 
 
 class AllLoggingDisabled(object):
