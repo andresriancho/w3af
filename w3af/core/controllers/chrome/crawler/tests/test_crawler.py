@@ -164,11 +164,10 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
 
         self.crawler.crawl(target_url, self.http_traffic_queue)
 
-        # There is only one request in the traffic queue: Load the main page
-        self.assertEqual(self.http_traffic_queue.qsize(), 1)
-
-        request, _ = self.http_traffic_queue.get()
-        self.assertEqual(request.get_url(), target_url)
+        # The crawler sends a few requests to the target URL
+        while not self.http_traffic_queue.empty():
+            request, _ = self.http_traffic_queue.get()
+            self.assertEqual(request.get_url(), target_url)
 
         # But the links to the dynamically generated <a> tags should be in
         # the web_spider output queue

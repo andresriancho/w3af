@@ -102,7 +102,7 @@ class TestChromeCrawlerClick(unittest.TestCase):
 
         self.crawler.crawl(root_url, self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 2)
+        self.assertEqual(self.http_traffic_queue.qsize(), 3)
 
         # The first request is to load the main page
         request, _ = self.http_traffic_queue.get_nowait()
@@ -118,27 +118,26 @@ class TestChromeCrawlerClick(unittest.TestCase):
 
         self.crawler.crawl(root_url, self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 3)
+        self.assertEqual(self.http_traffic_queue.qsize(), 4)
 
-        # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get_nowait()
-        self.assertEqual(request.get_url().url_string, root_url)
+        requested_urls = set()
+        requested_data = set()
 
-        # The second request is the one triggered after clicking on the div tag
-        # that does a full page reload
-        request, _ = self.http_traffic_queue.get_nowait()
-        self.assertEqual(request.get_url().url_string, root_url + 'after-click')
+        while not self.http_traffic_queue.empty():
+            request, _ = self.http_traffic_queue.get_nowait()
 
-        # The third request is the one sent using XMLHttpRequest which
-        # is triggered when clicking on the div tag
-        request, _ = self.http_traffic_queue.get_nowait()
+            requested_urls.add(request.get_url().url_string)
+            requested_data.add(request.get_data())
 
-        root_url = URL(root_url)
-        server_url = root_url.url_join('/server')
-        data = 'foo=bar&lorem=ipsum'
+        expected_urls = {root_url,
+                         root_url + 'after-click',
+                         root_url + 'server'}
 
-        self.assertEqual(request.get_uri().url_string, server_url.url_string)
-        self.assertEqual(request.get_data(), data)
+        expected_data = {'',
+                         'foo=bar&lorem=ipsum'}
+
+        self.assertEqual(requested_urls, expected_urls)
+        self.assertEqual(requested_data, expected_data)
 
 
 class XmlHttpRequestHandler(ExtendedHttpRequestHandler):

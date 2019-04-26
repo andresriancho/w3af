@@ -23,7 +23,7 @@ import pprint
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.instrumented.paginate import PAGINATION_PAGE_COUNT
 from w3af.core.controllers.chrome.instrumented.tests.test_instrumented_event_listeners import OnClickEventSetOnClickRequestHandler
-from w3af.core.controllers.chrome.instrumented.tests.base import BaseInstrumentedUnittest
+from w3af.core.controllers.chrome.tests.base import BaseInstrumentedUnittest
 
 
 class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):

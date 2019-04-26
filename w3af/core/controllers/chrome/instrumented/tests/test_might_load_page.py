@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.instrumented.tests.base import BaseInstrumentedUnittest
+from w3af.core.controllers.chrome.tests.base import BaseInstrumentedUnittest
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
 from w3af.core.controllers.chrome.instrumented.page_state import PageState
 

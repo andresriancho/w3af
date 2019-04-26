@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
+from urlparse import urlparse
+
 from websocket import WebSocketConnectionClosedException
 
 from w3af import ROOT_PATH
@@ -27,7 +29,7 @@ from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.chrome.instrumented.exceptions import InstrumentedChromeException
 from w3af.core.controllers.chrome.devtools import ChromeInterfaceException
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.instrumented.tests.base import BaseInstrumentedUnittest
+from w3af.core.controllers.chrome.tests.base import BaseInstrumentedUnittest
 from w3af.core.data.url.tests.helpers.ssl_daemon import SSLServer
 
 
@@ -239,6 +241,17 @@ class TestInstrumentedChromeWith401(BaseInstrumentedUnittest):
         self.assertEqual(self.ic.get_dom(), BasicAuthRequestHandler.SUCCESS)
 
 
+class TestInstrumentedChromeWith301Redirect(BaseInstrumentedUnittest):
+
+    def test_load_page_with_redirect_301(self):
+        self._unittest_setup(RedirectRequestHandler, load_url=False)
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        # Just load the URL and assert that no exceptions were raised
+        self.ic.load_url(url)
+        self.ic.wait_for_load()
+
+
 class TestInstrumentedChromeReadJSVariables(BaseInstrumentedUnittest):
 
     def test_load_page_read_js_variable(self):
@@ -277,3 +290,38 @@ class JSVariablesHandler(ExtendedHttpRequestHandler):
                      '        "bar" : "baz"'
                      '    }'
                      '</script>')
+
+
+class RedirectRequestHandler(ExtendedHttpRequestHandler):
+
+    SUCCESS = u'<html><head></head><body>Hello world</body></html>'
+
+    def do_GET(self):
+        request_path = urlparse(self.path).path
+
+        if request_path == '/':
+            code = 301
+            body = ''
+            headers = {
+                'Location': '/redirected',
+            }
+
+        elif request_path == '/redirected':
+            code = 200
+            body = RedirectRequestHandler.SUCCESS
+            headers = {
+                'Content-Type': 'text/html',
+                'Content-Length': len(body),
+                'Content-Encoding': 'identity'
+            }
+
+        else:
+            code = 404
+            body = 'Not found'
+            headers = {
+                'Content-Type': 'text/html',
+                'Content-Length': len(body),
+                'Content-Encoding': 'identity'
+            }
+
+        self.send_response_to_client(code, body, headers)

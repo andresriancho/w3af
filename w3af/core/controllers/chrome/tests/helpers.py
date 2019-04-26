@@ -80,14 +80,22 @@ class ExtendedHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """
         request_path = urlparse(self.path).path
         code, body = self.get_code_body(request_path)
-        self.send_response_to_client(code, body)
 
-    def send_response_to_client(self, code, body):
+        headers = {
+            'Content-Type': 'text/html',
+            'Content-Length': len(body),
+            'Content-Encoding': 'identity'
+        }
+
+        self.send_response_to_client(code, body, headers)
+
+    def send_response_to_client(self, code, body, headers):
         try:
             self.send_response(code)
-            self.send_header('Content-Type', 'text/html')
-            self.send_header('Content-Length', len(body))
-            self.send_header('Content-Encoding', 'identity')
+
+            for name, value in headers.iteritems():
+                self.send_header(name, value)
+
             self.end_headers()
             self.wfile.write(body)
         except Exception, e:

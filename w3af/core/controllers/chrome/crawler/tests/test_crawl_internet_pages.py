@@ -49,8 +49,8 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://www.bing.com/', 100),
     ])
+
     """
     ('https://www.google.com/', 100),
     ('https://www.google.com/search?q=w3af', 100),
