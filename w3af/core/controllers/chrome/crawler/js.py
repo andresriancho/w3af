@@ -180,6 +180,22 @@ class ChromeCrawlerJS(object):
                 raise MaxPageReload()
 
         #
+        # All events were dispatched without hitting:
+        #   * NEW_STATE_FOUND
+        #   * TOO_MANY_PAGE_RELOAD
+        #
+        # But there is one more thing we need to take care of! Some events
+        # might have failed to run.
+        #
+        # See comment in _should_dispatch_event() for a detailed explanation
+        # of how this works.
+        #
+        if self._get_total_dispatch_error_count():
+            om.out.debug('%s errors found while dispatching events. Going'
+                         ' to call crawl one state again' % self._get_total_dispatch_error_count())
+            return False
+
+        #
         # We were able to send all events to initial state and no more states
         # were identified nor need testing
         #
@@ -383,6 +399,54 @@ class ChromeCrawlerJS(object):
 
     def _should_dispatch_event(self, event):
         """
+        Filters the event listeners returned from the browser using the
+        event dispatch log to:
+
+            * Prevent duplicated events from being sent
+
+            * Retry failed events
+
+        At the beginning all the events are returned as they arrive from the
+        browser, but after a few events are dispatched the event dispatch log
+        starts to filter which events will be returned.
+
+        Use cases this covers:
+
+            1. Simple page: There are 10 event listeners, in the first call
+                            to _crawl_one_state() we're able to successfully
+                            dispatch all events.
+
+                            None of the tags that had event listeners at the
+                            moment of calling get_all_event_listeners() were
+                            removed from the DOM after dispatching one of
+                            those 10 events.
+
+                            We got 100% test coverage in the first call to
+                            _crawl_one_state().
+
+            2. Complex page: There are 10 event listeners, in the first call
+                             to _crawl_one_state() two of the dispatched events
+                             fail to run: the selectors were unable to find the
+                             tag which was associated with the event.
+
+                             This is most likely because one of the 8 events that
+                             was dispatched modified the DOM and removed that
+                             tag.
+
+                             The first call to _crawl_one_state() finishes with
+                             80% test coverage (2 out of 10 were not triggered).
+
+                             A new call to _crawl_one_state() is made. In this
+                             second call we check the event dispatch log and make
+                             sure that the events that failed in the previous
+                             call are run (if they still exist in the current
+                             DOM).
+
+                             The second call to _crawl_one_state() will run the
+                             2 missing events, achieving 100% test coverage, and
+                             then run any new event that is yield by
+                             get_all_event_listeners().
+
         :param event: The event to analyze
         :return: True if this event should be dispatched to the browser
         """
