@@ -214,6 +214,9 @@ class ChromePool(object):
         self.log_stats(force=True)
         raise ChromePoolException('Timed out waiting for a chrome instance')
 
+    def get_free_instances(self):
+        return self._free
+
     def free(self, chrome):
         chrome.free_count += 1
 

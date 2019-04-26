@@ -128,7 +128,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
                                 msg % args)
 
     def test_count_event_listeners(self):
-        raise unittest.skip()
+        raise unittest.skip('Manual testing')
 
         if int(os.getenv('CHROME_DEBUG', 0)) == 1:
             set_debugging_in_output_manager()

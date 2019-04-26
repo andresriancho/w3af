@@ -341,10 +341,10 @@ class ChromeCrawler(object):
 
         :return: None, output is written to stdout
         """
-        msg = 'Chrome pool has %s instances, one is required' % len(self._pool._free)
-        assert len(self._pool._free) == 1, msg
+        msg = 'Chrome pool has %s instances, one is required' % len(self._pool.get_free_instances())
+        assert len(self._pool.get_free_instances()) == 1, msg
 
-        instrumented_chrome = list(self._pool._free)[0]
+        instrumented_chrome = list(self._pool.get_free_instances())[0]
         for console_message in instrumented_chrome.get_console_messages():
             print(console_message)
 
@@ -358,8 +358,8 @@ class ChromeCrawler(object):
 
         :return: A list of JS errors
         """
-        msg = 'Chrome pool has %s instances, one is required' % len(self._pool._free)
-        assert len(self._pool._free) == 1, msg
+        msg = 'Chrome pool has %s instances, one is required' % len(self._pool.get_free_instances())
+        assert len(self._pool.get_free_instances()) == 1, msg
 
-        instrumented_chrome = list(self._pool._free)[0]
+        instrumented_chrome = list(self._pool.get_free_instances())[0]
         return instrumented_chrome.get_js_errors()
