@@ -63,10 +63,11 @@ class ChromeCrawler(object):
 
         self._pool = ChromePool(self._uri_opener, max_instances=max_instances)
 
-        self._crawl_strategies = [ChromeCrawlerJS(self._pool)]
+    def get_crawl_strategy_instances(self, debugging_id):
+        yield ChromeCrawlerJS(self._pool, debugging_id)
 
-        if web_spider is not None:
-            self._crawl_strategies.append(ChromeCrawlerDOMDump(self._pool, web_spider))
+        if self._web_spider is not None:
+            yield ChromeCrawlerDOMDump(self._pool, self._web_spider, debugging_id)
 
     def crawl(self, url, http_traffic_queue):
         """
@@ -124,7 +125,7 @@ class ChromeCrawler(object):
 
         :return:
         """
-        for crawl_strategy in self._crawl_strategies:
+        for crawl_strategy in self.get_crawl_strategy_instances(debugging_id):
             try:
                 chrome = self._initial_page_load(url,
                                                  http_traffic_queue,
@@ -156,8 +157,7 @@ class ChromeCrawler(object):
 
             try:
                 crawl_strategy.crawl(chrome,
-                                     url,
-                                     debugging_id=debugging_id)
+                                     url)
             except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
                 msg = ('Failed to crawl %s using chrome crawler: "%s"'
                        ' Will skip this crawl strategy and try the next one.'

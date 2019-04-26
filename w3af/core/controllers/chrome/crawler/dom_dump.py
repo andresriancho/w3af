@@ -36,9 +36,10 @@ class ChromeCrawlerDOMDump(object):
 
     RENDERED_VS_RAW_RATIO = 0.1
 
-    def __init__(self, pool, web_spider):
+    def __init__(self, pool, web_spider, debugging_id):
         self._pool = pool
         self._web_spider = web_spider
+        self._debugging_id = debugging_id
 
     def get_name(self):
         return 'DOM dump'
@@ -64,8 +65,7 @@ class ChromeCrawlerDOMDump(object):
 
     def crawl(self,
               chrome,
-              url,
-              debugging_id=None):
+              url):
         """
         Parses the DOM that is loaded into Chrome using DocumentParser.
 
@@ -82,7 +82,7 @@ class ChromeCrawlerDOMDump(object):
             dom = chrome.get_dom()
         except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
             msg = 'Failed to get the DOM from chrome browser %s: "%s" (did: %s)'
-            args = (chrome, cie, debugging_id)
+            args = (chrome, cie, self._debugging_id)
             om.out.debug(msg % args)
 
             # Since we got an error we remove this chrome instance from the
@@ -93,7 +93,7 @@ class ChromeCrawlerDOMDump(object):
 
         if dom is None:
             msg = 'Chrome returned a null DOM (did: %s)'
-            args = (debugging_id,)
+            args = (self._debugging_id,)
             om.out.debug(msg % args)
 
             # Since we got an error we remove this chrome instance from the
@@ -105,13 +105,13 @@ class ChromeCrawlerDOMDump(object):
         first_http_response = chrome.get_first_response()
         if first_http_response is None:
             msg = 'The %s browser first HTTP response is None (did: %s)'
-            args = (chrome, debugging_id)
+            args = (chrome, self._debugging_id)
             om.out.debug(msg % args)
             return
 
         if not self._should_parse_dom(dom, first_http_response.get_body()):
             msg = 'Decided not to parse the DOM (did: %s)'
-            args = (debugging_id,)
+            args = (self._debugging_id,)
             om.out.debug(msg % args)
             return
 
