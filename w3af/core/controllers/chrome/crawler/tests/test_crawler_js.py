@@ -118,8 +118,6 @@ class TestChromeCrawlerClick(unittest.TestCase):
 
         self.crawler.crawl(root_url, self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 4)
-
         requested_urls = set()
         requested_data = set()
 
@@ -138,6 +136,69 @@ class TestChromeCrawlerClick(unittest.TestCase):
 
         self.assertEqual(requested_urls, expected_urls)
         self.assertEqual(requested_data, expected_data)
+
+    def test_multiple_xmlhttprequest_actions(self):
+        self._unittest_setup(MultipleXmlHttpRequestHandler)
+        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        self.crawler.crawl(root_url, self.http_traffic_queue)
+
+        requested_urls = set()
+        requested_data = set()
+
+        while not self.http_traffic_queue.empty():
+            request, _ = self.http_traffic_queue.get_nowait()
+
+            requested_urls.add(request.get_url().url_string)
+            requested_data.add(request.get_data())
+
+        expected_urls = {root_url}
+        for i in xrange(15):
+            expected_urls.add('%sserver_%s' % (root_url, i))
+
+        expected_data = {'',
+                         'foo=bar&lorem=ipsum'}
+
+        self.assertEqual(requested_urls, expected_urls)
+        self.assertEqual(requested_data, expected_data)
+
+
+class MultipleXmlHttpRequestHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = '''<html>
+                       <script>
+                           function sendRequest(n) {
+                               var xhr = new XMLHttpRequest();
+                               xhr.open("POST", '/server_' + n, true);
+
+                               //Send the proper header information along with the request
+                               xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                               xhr.onreadystatechange = function() {//Call a function when the state changes.
+                                   if(this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                                       // Request finished. Do processing here.
+                                   }
+                               }
+                               xhr.send("foo=bar&lorem=ipsum");
+                           } 
+                       </script>
+
+                       <div onclick="sendRequest(0);">Click me</div>
+                       <div onclick="sendRequest(1);">Click me</div>
+                       <div onclick="sendRequest(2);">Click me</div>
+                       <div onclick="sendRequest(3);">Click me</div>
+                       <div onclick="sendRequest(4);">Click me</div>
+                       <div onclick="sendRequest(5);">Click me</div>
+                       <div onclick="sendRequest(6);">Click me</div>
+                       <div onclick="sendRequest(7);">Click me</div>
+                       <div onclick="sendRequest(8);">Click me</div>
+                       <div onclick="sendRequest(9);">Click me</div>
+                       <div onclick="sendRequest(10);">Click me</div>
+                       <div onclick="sendRequest(11);">Click me</div>
+                       <div onclick="sendRequest(12);">Click me</div>
+                       <div onclick="sendRequest(13);">Click me</div>
+                       <div onclick="sendRequest(14);">Click me</div>
+
+                       </html>'''
 
 
 class XmlHttpRequestHandler(ExtendedHttpRequestHandler):
