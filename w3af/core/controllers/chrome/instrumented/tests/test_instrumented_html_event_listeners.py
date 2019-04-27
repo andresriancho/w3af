@@ -62,7 +62,7 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'handler': u'modifyText();',
                                             u'event_type': u'click',
                                             u'node_type': 1,
-                                            u'selector': u'#outside'}])
+                                            u'selector': u'[onclick]'}])
 
     def test_html_events_filter_out_click(self):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
@@ -80,7 +80,7 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'handler': u'modifyText();',
                                             u'event_type': u'click',
                                             u'node_type': 1,
-                                            u'selector': u'#outside'}])
+                                            u'selector': u'[onclick]'}])
 
     def test_html_events_filter_out_table(self):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
@@ -98,7 +98,7 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'handler': u'modifyText();',
                                             u'event_type': u'click',
                                             u'node_type': 1,
-                                            u'selector': u'#outside'}])
+                                            u'selector': u'[onclick]'}])
 
     def test_onclick_event_listener_with_children(self):
         self._unittest_setup(OnClickEventWithChildrenRequestHandler)
@@ -108,17 +108,17 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
         expected = [{u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
-                     u'selector': u'body > :nth-child(1)',
+                     u'selector': u'[onclick]',
                      u'tag_name': u'div'},
                     {u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
-                     u'selector': u'body > :nth-child(1) > :nth-child(1)',
+                     u'selector': u'[id="1"]',
                      u'tag_name': u'span'},
                     {u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
-                     u'selector': u'body > :nth-child(1) > :nth-child(2)',
+                     u'selector': u'[id="2"]',
                      u'tag_name': u'span'}]
 
         self.assertEqual(event_listeners, expected)
@@ -136,7 +136,7 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'handler': u'def();',
                                             u'event_type': u'click',
                                             u'node_type': 1,
-                                            u'selector': u'#double'}])
+                                            u'selector': u'[onclick]'}])
 
     def test_events_less_than_count(self):
         self._unittest_setup(EventsLessThanCountHandler)

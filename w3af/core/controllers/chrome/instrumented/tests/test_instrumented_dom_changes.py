@@ -44,7 +44,7 @@ class TestChromeCrawlerDOMChanges(BaseInstrumentedUnittest):
         event_listeners = self.ic.get_html_event_listeners()
         self.assertEqual(event_listeners, [{u'tag_name': u'div',
                                             u'node_type': 1,
-                                            u'selector': u'div',
+                                            u'selector': u'[onclick]',
                                             u'event_type': u'click',
                                             u'handler': u'goto();'}])
 

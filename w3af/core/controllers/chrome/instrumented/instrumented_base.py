@@ -53,7 +53,7 @@ class InstrumentedChromeBase(object):
 
     JS_ONERROR_HANDLER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/onerror.js')
     JS_DOM_ANALYZER = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/dom_analyzer.js')
-    JS_SELECTOR_GENERATOR = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/css-selector-generator.js')
+    JS_SELECTOR_GENERATOR = os.path.join(ROOT_PATH, 'core/controllers/chrome/js/optimal-select.min.js')
 
     def __init__(self, uri_opener, http_traffic_queue):
         self.uri_opener = uri_opener

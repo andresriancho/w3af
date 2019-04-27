@@ -31,8 +31,6 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     set_intervals: [],
     event_listeners: [],
 
-    selector_generator: new CssSelectorGenerator,
-
     universally_valid_events: [
         "click",
         "dblclick",
@@ -287,7 +285,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
         if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, type ) ) return false;
 
-        let selector = _DOMAnalyzer.selector_generator.getSelector(element);
+        let selector = OptimalSelect.select(element);
 
         // node_type is https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType#Node_type_constants
         _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
@@ -419,7 +417,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     extractEventsFromAttributesAndProperties: function (tag_name, element) {
         let events = [];
         let event_types = [];
-        let selector = _DOMAnalyzer.selector_generator.getSelector(element);
+        let selector = OptimalSelect.select(element);
 
         //
         //  First extract from attributes
@@ -563,7 +561,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 let ancestor_event = ancestor_attribute_events[event_it];
 
                 ancestor_event.tag_name = tag_name;
-                ancestor_event.selector = _DOMAnalyzer.selector_generator.getSelector(element);
+                ancestor_event.selector = OptimalSelect.select(element);
                 ancestor_event.node_type = element.nodeType;
 
                 events.push(ancestor_event);

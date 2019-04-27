@@ -209,6 +209,24 @@ class ChromeCrawlerJS(object):
         return True
 
     def _conditional_wait_for_load(self):
+        """
+        This method handles the following case:
+
+            * Dispatched event forces browser to navigate to URL A
+            * URL A was never seen before
+            * We want to wait for the browser to load it in order to
+              gain as much information as possible from the HTTP requests
+              it generates
+
+            ... many other actions ...
+
+            * Dispatched event forces browser to navigate to URL A
+            * URL A was seen before
+            * Don't wait for the page to load, we already gathered this
+              information before
+
+        :return: None
+        """
         potentially_new_url = self._chrome.get_url()
 
         if potentially_new_url in self._visited_urls:
@@ -281,12 +299,24 @@ class ChromeCrawlerJS(object):
         # The DOM did change! Something bad happen!
         #
         if not self._bones_xml_are_equal(self._initial_bones_xml, current_bones_xml):
-            msg = ('The JS crawler reloaded the initial URL and noticed'
-                   ' a big change in the DOM. This usually happens when'
-                   ' the application changes state. This happen while'
-                   ' crawling %s, the process will stop (did: %s)')
+            msg = ('The JS crawler noticed a big change in the DOM.'
+                   ' This usually happens when the application changes state or'
+                   ' when the dispatched events heavily modify the DOM.'
+                   ' This happen while crawling %s, the algorithm will'
+                   ' load a new DOM and continue from there (did: %s)')
             args = (self._url, self._debugging_id)
             om.out.debug(msg % args)
+
+            #
+            # Before returning NEW_STATE_FOUND we'll load the base URL in order
+            # to "set the new state" in the chrome browser so that the next
+            # call to _crawl_one_state() has a good start.
+            #
+            # Having this responsibility here is bad, but found no better way
+            # to do it without adding complexity
+            #
+            self._reload_base_url()
+
             return NEW_STATE_FOUND
 
         #
