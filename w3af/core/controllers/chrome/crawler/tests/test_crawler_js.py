@@ -162,6 +162,60 @@ class TestChromeCrawlerClick(unittest.TestCase):
         self.assertEqual(requested_urls, expected_urls)
         self.assertEqual(requested_data, expected_data)
 
+    def test_xmlhttprequest_with_dom_modifications(self):
+        self._unittest_setup(ModifyDOMHandler)
+        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        self.crawler.crawl(root_url, self.http_traffic_queue)
+
+        requested_urls = set()
+        requested_data = set()
+
+        while not self.http_traffic_queue.empty():
+            request, _ = self.http_traffic_queue.get_nowait()
+
+            requested_urls.add(request.get_url().url_string)
+            requested_data.add(request.get_data())
+
+        expected_urls = {root_url,
+                         root_url + 'server_1'}
+
+        expected_data = {'',
+                         'foo=bar&lorem=ipsum'}
+
+        self.assertEqual(requested_urls, expected_urls)
+        self.assertEqual(requested_data, expected_data)
+
+
+class ModifyDOMHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = '''<html>
+                       <script>
+                           function sendRequest(n) {
+                               var xhr = new XMLHttpRequest();
+                               xhr.open("POST", '/server_' + n, true);
+
+                               //Send the proper header information along with the request
+                               xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                               xhr.onreadystatechange = function() {//Call a function when the state changes.
+                                   if(this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                                       // Request finished. Do processing here.
+                                   }
+                               }
+                               xhr.send("foo=bar&lorem=ipsum");
+                           } 
+                           
+                           function removeElement(){
+                               var elem = document.getElementById('div-01');
+                               elem.parentNode.removeChild(elem);
+                           }
+                       </script>
+
+                       <div onclick="removeElement();">Click me</div>
+                       <div onclick="sendRequest(1);" id="div-01">Click me</div>
+
+                       </html>'''
+
 
 class MultipleXmlHttpRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = '''<html>
