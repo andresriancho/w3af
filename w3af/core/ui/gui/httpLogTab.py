@@ -324,14 +324,14 @@ class httpLogTab(RememberingHPaned):
         """Find entries (req/res)."""
         searchText = self._searchText.get_text()
         searchText = searchText.strip()
-        searchData = []
+        search_data = []
         #
         #  Search part
         #
         if searchText:
             likePieces = [('url', "%" + searchText + "%", 'like'),
                           ('tag', "%" + searchText + "%", 'like')]
-            searchData.append((likePieces, 'OR'))
+            search_data.append((likePieces, 'OR'))
         #
         # Filter part
         #
@@ -342,7 +342,7 @@ class httpLogTab(RememberingHPaned):
             if opt.get_value():
                 codef = opt.get_name()
                 filterCodes.append(('codef', int(codef[0]), '='))
-        searchData.append((filterCodes, 'OR'))
+        search_data.append((filterCodes, 'OR'))
         # IDs
         try:
             minId = int(self.pref.get_value('trans_id', 'min'))
@@ -353,38 +353,38 @@ class httpLogTab(RememberingHPaned):
         except:
             maxId = 0
         if maxId > 0:
-            searchData.append(('id', maxId, "<"))
+            search_data.append(('id', maxId, "<"))
         if minId > 0:
-            searchData.append(('id', minId, ">"))
+            search_data.append(('id', minId, ">"))
         if refresh:
-            searchData.append(('id', self._lastId, ">"))
+            search_data.append(('id', self._lastId, ">"))
         # Sizes
         if self.pref.get_value('sizes', 'resp_size'):
-            searchData.append(('response_size', 0, ">"))
+            search_data.append(('response_size', 0, ">"))
         # Tags
         if self.pref.get_value('misc', 'tag'):
-            searchData.append(('tag', '', "!="))
+            search_data.append(('tag', '', "!="))
         # has_query_string
         if self.pref.get_value('misc', 'has_qs'):
-            searchData.append(('has_qs', 0, ">"))
+            search_data.append(('has_qs', 0, ">"))
         # Content type
         filterTypes = []
         for filterType in self._filterTypes:
             if self.pref.get_value('types', filterType[0]):
                 filterTypes.append(
                     ('content_type', "%" + filterType[0] + "%", 'like'))
-        searchData.append((filterTypes, 'OR'))
+        search_data.append((filterTypes, 'OR'))
         # Method
         filterMethods = []
         for method in self._filterMethods:
             if self.pref.get_value('methods', method[0]):
                 filterTypes.append(('method', method[0], '='))
-        searchData.append((filterMethods, 'OR'))
+        search_data.append((filterMethods, 'OR'))
 
         try:
             # Please see the 5000 below
-            searchResultObjects = self._historyItem.find(searchData,
-                                                         result_limit=5001, orderData=[("id", "")])
+            searchResultObjects = self._historyItem.find(search_data,
+                                                         result_limit=5001, order_data=[("id", "")])
         except BaseFrameworkException, w3:
             self._empty_results()
             return

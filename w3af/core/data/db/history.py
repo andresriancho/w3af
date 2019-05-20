@@ -52,7 +52,9 @@ def verify_has_db(meth):
 
 
 class HistoryItem(object):
-    """Represents history item."""
+    """
+    Represents history item
+    """
 
     _db = None
     _DATA_TABLE = 'history_items'
@@ -90,6 +92,7 @@ class HistoryItem(object):
     _latest_compression_job_end = 0
 
     id = None
+    url = None
     _request = None
     _response = None
     info = None
@@ -101,6 +104,7 @@ class HistoryItem(object):
     msg = 'OK'
     code = 200
     time = 0.2
+    charset = None
 
     history_lock = threading.RLock()
     compression_lock = threading.RLock()
@@ -163,40 +167,45 @@ class HistoryItem(object):
     request = property(get_request, set_request)
     
     @verify_has_db
-    def find(self, searchData, result_limit=-1, orderData=[], full=False):
+    def find(self, search_data, result_limit=-1, order_data=None):
         """
         Make complex search.
             search_data = {name: (value, operator), ...}
-            orderData = [(name, direction)]
+            order_data = [(name, direction)]
         """
+        order_data = order_data or []
         result = []
+
         sql = 'SELECT * FROM ' + self._DATA_TABLE
-        where = WhereHelper(searchData)
+        where = WhereHelper(search_data)
         sql += where.sql()
-        orderby = ""
+
+        order_by = ''
         #
         # TODO we need to move SQL code to parent class
         #
-        for item in orderData:
-            orderby += item[0] + " " + item[1] + ","
-        orderby = orderby[:-1]
+        for item in order_data:
+            order_by += item[0] + ' ' + item[1] + ','
+        order_by = order_by[:-1]
 
-        if orderby:
-            sql += " ORDER BY " + orderby
+        if order_by:
+            sql += ' ORDER BY ' + order_by
 
         sql += ' LIMIT ' + str(result_limit)
         try:
             for row in self._db.select(sql, where.values()):
                 item = self.__class__()
-                item._load_from_row(row, full)
+                item._load_from_row(row)
                 result.append(item)
         except DBException:
             msg = 'You performed an invalid search. Please verify your syntax.'
             raise DBException(msg)
         return result
 
-    def _load_from_row(self, row, full=True):
-        """Load data from row with all columns."""
+    def _load_from_row(self, row):
+        """
+        Load data from row with all columns
+        """
         self.id = row[0]
         self.url = row[1]
         self.code = row[2]
@@ -269,7 +278,7 @@ class HistoryItem(object):
         #
         for _ in xrange(int(1 / wait_time)):
             try:
-                self._load_from_trace_file(_id)
+                return self._load_from_trace_file(_id)
             except TraceReadException as e:
                 args = (_id, e)
                 msg = 'Failed to read trace file %s: "%s"'
@@ -364,8 +373,10 @@ class HistoryItem(object):
             pass
 
     @verify_has_db
-    def load(self, _id=None, full=True, retry=True):
-        """Load data from DB by ID."""
+    def load(self, _id=None, retry=True):
+        """
+        Load data from DB by ID
+        """
         if _id is None:
             _id = self.id
 
@@ -376,36 +387,40 @@ class HistoryItem(object):
             msg = ('An unexpected error occurred while searching for id "%s"'
                    ' in table "%s". Original exception: "%s".')
             raise DBException(msg % (_id, self._DATA_TABLE, dbe))
-        else:
-            if row is not None:
-                self._load_from_row(row, full)
-            else:
-                # The request/response with 'id' == id is not in the DB!
-                # Lets do some "error handling" and try again!
 
-                if retry:
-                    #    TODO:
-                    #    According to sqlite3 documentation this db.commit()
-                    #    might fix errors like
-                    #    https://sourceforge.net/apps/trac/w3af/ticket/164352 ,
-                    #    but it can degrade performance due to disk IO
-                    #
-                    self._db.commit()
-                    self.load(_id=_id, full=full, retry=False)
-                else:
-                    # This is the second time load() is called and we end up
-                    # here, raise an exception and finish our pain.
-                    msg = ('An internal error occurred while searching for '
-                           'id "%s", even after commit/retry' % _id)
-                    raise DBException(msg)
+        if row is not None:
+            self._load_from_row(row)
+            return True
 
-        return True
+        if not retry:
+            #
+            # This is the second time load() is called and we end up
+            # here, raise an exception and finish our pain.
+            #
+            msg = ('An internal error occurred while searching for id "%s",'
+                   ' even after commit/retry')
+            raise DBException(msg % _id)
+
+        #
+        # The request/response with _id is not in the DB!
+        # Lets do some error handling and try again!
+        #
+        # According to sqlite3 documentation this db.commit()
+        # might fix errors like [0] but it can degrade performance due
+        # to disk IO
+        #
+        # [0] https://sourceforge.net/apps/trac/w3af/ticket/164352 ,
+        #
+        self._db.commit()
+        return self.load(_id=_id, retry=False)
 
     @verify_has_db
-    def read(self, _id, full=True):
-        """Return item by ID."""
+    def read(self, _id):
+        """
+        Return item by ID
+        """
         result_item = self.__class__()
-        result_item.load(_id, full)
+        result_item.load(_id)
         return result_item
 
     def save(self):
@@ -691,6 +706,9 @@ class HistoryItem(object):
         rmtree(self._session_dir, ignore_errors=True)
         
         return True
+
+    def __repr__(self):
+        return '<HistoryItem %s %s>' % (self.method, self.url)
 
 
 def get_trace_id(trace_file):

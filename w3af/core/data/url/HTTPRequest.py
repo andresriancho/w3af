@@ -201,7 +201,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         cookies = udict['cookies']
         session = udict['session']
         cache = udict['cache']
-        timeout = socket._GLOBAL_DEFAULT_TIMEOUT if udict['timeout'] is None else udict['timeout']
+        timeout = socket.getdefaulttimeout() if udict['timeout'] is None else udict['timeout']
         new_connection = udict['new_connection']
         follow_redirects = udict['follow_redirects']
         use_basic_auth = udict['use_basic_auth']

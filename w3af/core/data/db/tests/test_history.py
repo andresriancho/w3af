@@ -86,7 +86,7 @@ class TestHistoryItem(unittest.TestCase):
         self.assertEqual(len(h2.find([('mark', 1, '=')])), 1)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')])), 500)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
-        results = h2.find([('has_qs', 1, '=')], result_limit=1, orderData=[('id', 'desc')])
+        results = h2.find([('has_qs', 1, '=')], result_limit=1, order_data=[('id', 'desc')])
         self.assertEqual(results[0].id, 499)
         search_data = [('id', find_id + 1, "<"),
                        ('id', find_id - 1, ">")]
@@ -133,7 +133,7 @@ class TestHistoryItem(unittest.TestCase):
         h2 = HistoryItem()
         h2.load(i)
 
-        self.assertEqual(h1.request, h2.request)
+        self.assertEqual(h1.request.to_dict(), h2.request.to_dict())
         self.assertEqual(h1.response.body, h2.response.body)
 
     def test_load_not_exists(self):
@@ -281,6 +281,6 @@ class TestHistoryItem(unittest.TestCase):
         h2 = HistoryItem()
         h2.load(1)
 
-        self.assertEqual(h1.request, h2.request)
+        self.assertEqual(h1.request.to_dict(), h2.request.to_dict())
         self.assertEqual(h1.response.body, h2.response.body)
         self.assertEqual(h1.request.url_object, h2.request.url_object)
