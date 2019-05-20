@@ -683,32 +683,44 @@ class CoreStrategy(object):
             self._grep_consumer.start()
 
     def _teardown_grep(self):
+        om.out.debug('Called strategy._teardown_grep()')
+
         if self._grep_consumer is not None:
             self._grep_consumer.join()
             self._grep_consumer = None
 
     def _teardown_audit(self):
+        om.out.debug('Called strategy._teardown_audit()')
+
         if self._audit_consumer is not None:
             # Wait for all the in_queue items to get() from the queue
             self._audit_consumer.join()
             self._audit_consumer = None
 
     def _teardown_auth(self):
+        om.out.debug('Called strategy._teardown_auth()')
+
         if self._auth_consumer is not None:
             self._auth_consumer.join()
             self._auth_consumer = None
 
     def _teardown_bruteforce(self):
+        om.out.debug('Called strategy._teardown_bruteforce()')
+
         if self._bruteforce_consumer is not None:
             self._bruteforce_consumer.join()
             self._bruteforce_consumer = None
 
     def _teardown_crawl_infrastructure(self):
+        om.out.debug('Called strategy._teardown_crawl_infrastructure()')
+
         if self._discovery_consumer is not None:
             self._discovery_consumer.join()
             self._discovery_consumer = None
 
     def _teardown_observers(self):
+        om.out.debug('Called strategy._teardown_observers()')
+
         for observer in self._observers:
             observer.end()
 
