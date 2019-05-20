@@ -30,7 +30,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from w3af.core.data.db.dbms import get_default_temp_db_instance
-from w3af.core.data.db.history import HistoryItem
+from w3af.core.data.db.history import HistoryItem, TraceReadException
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.doc.url import URL
@@ -135,6 +135,10 @@ class TestHistoryItem(unittest.TestCase):
 
         self.assertEqual(h1.request, h2.request)
         self.assertEqual(h1.response.body, h2.response.body)
+
+    def test_load_not_exists(self):
+        h = HistoryItem()
+        self.assertRaises(DBException, h.load, 1)
 
     def test_save_load_compressed(self):
         force_compression_count = HistoryItem._UNCOMPRESSED_FILES + HistoryItem._COMPRESSED_FILE_BATCH

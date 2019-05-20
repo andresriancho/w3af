@@ -30,6 +30,8 @@ import msgpack
 from functools import wraps
 from shutil import rmtree
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.data.db.where_helper import WhereHelper
@@ -222,7 +224,7 @@ class HistoryItem(object):
         file_name = self._get_trace_filename_for_id(_id)
 
         if not os.path.exists(file_name):
-            raise TraceReadException()
+            raise TraceReadException('Trace file %s does not exist' % file_name)
 
         # The file exists, but the contents might not be all on-disk yet
         serialized_req_res = open(file_name, 'rb').read()
@@ -234,19 +236,19 @@ class HistoryItem(object):
         except ValueError:
             # ValueError: Extra data. returned when msgpack finds invalid
             # data in the file
-            raise TraceReadException()
+            raise TraceReadException('Failed to load %s' % serialized_req_res)
 
         try:
             request_dict, response_dict, canary = data
         except TypeError:
             # https://github.com/andresriancho/w3af/issues/1101
             # 'NoneType' object is not iterable
-            raise TraceReadException()
+            raise TraceReadException('Not all components found in %s' % serialized_req_res)
 
         if not canary == self._MSGPACK_CANARY:
             # read failed, most likely because the file write is not
             # complete but for some reason it was a valid msgpack file
-            raise TraceReadException()
+            raise TraceReadException('Invalid canary in %s' % serialized_req_res)
 
         request = HTTPRequest.from_dict(request_dict)
         response = HTTPResponse.from_dict(response_dict)
@@ -268,7 +270,11 @@ class HistoryItem(object):
         for _ in xrange(int(1 / wait_time)):
             try:
                 self._load_from_trace_file(_id)
-            except TraceReadException:
+            except TraceReadException as e:
+                args = (_id, e)
+                msg = 'Failed to read trace file %s: "%s"'
+                om.out.debug(msg % args)
+
                 time.sleep(wait_time)
 
         else:
@@ -302,7 +308,11 @@ class HistoryItem(object):
         #
         try:
             return self._load_from_zip(_id)
-        except TraceReadException:
+        except TraceReadException as e:
+            msg = 'Failed to load trace %s from zip file: "%s"'
+            args = (_id, e)
+            om.out.debug(msg % args)
+
             #
             # Give the .trace file a last chance, it might be possible that when
             # we checked for os.path.exists(file_name) at the beginning of this
@@ -320,6 +330,8 @@ class HistoryItem(object):
             if start <= _id <= end:
                 return self._load_from_zip_file(_id, zip_file)
 
+        raise TraceReadException('No zip file contains %s' % _id)
+
     def _load_from_zip_file(self, _id, zip_file):
         _zip = zipfile.ZipFile(os.path.join(self.get_session_dir(), zip_file))
 
@@ -327,7 +339,9 @@ class HistoryItem(object):
             serialized_req_res = _zip.read('%s.%s' % (_id, self._EXTENSION))
         except KeyError:
             # We get here when the zip file doesn't contain the trace file
-            raise TraceReadException()
+            msg = 'Zip file %s does not contain ID %s'
+            args = (zip_file, _id)
+            raise TraceReadException(msg % args)
 
         return self._load_from_string(serialized_req_res)
 
