@@ -25,7 +25,7 @@ import time
 import signal
 import select
 import threading
-import subprocess
+import subprocess32 as subprocess
 
 import psutil
 
