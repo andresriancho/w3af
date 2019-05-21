@@ -182,6 +182,8 @@ class open_api(CrawlPlugin):
         self._report_to_kb_if_needed(http_response, parser)
         self._send_spec_to_core(spec_url)
 
+        om.out.debug('OpenAPI parser identified %s API calls' % len(parser.get_api_calls()))
+
         for api_call in parser.get_api_calls():
             if not self._is_target_domain(api_call):
                 continue
