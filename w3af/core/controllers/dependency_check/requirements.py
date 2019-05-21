@@ -92,7 +92,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('diff_match_patch', 'diff-match-patch', '20121119'),
 
                      # OpenAPI documentation parser
-                     PIPDependency('bravado_core', 'bravado-core', '5.0.2'),
+                     PIPDependency('bravado_core', 'bravado-core', '5.12.1'),
 
                      # Fast compression library
                      PIPDependency('lz4', 'lz4', '1.1.0'),
@@ -104,6 +104,11 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('vulners', 'vulners', '1.3.0'),
 
                      PIPDependency('ipaddresses', 'ipaddresses', '0.0.2'),
+
+                     # subprocess32 "it is guaranteed to be reliable when used
+                     # in threaded applications". Needed this to fix issues in
+                     # retirejs that spawns processes from threads
+                     PIPDependency('subprocess32', 'subprocess32', '3.5.4'),
 
                      PIPDependency('setproctitle', 'setproctitle', '1.1.10')
                      ]

@@ -43,6 +43,7 @@ class QueryStringOption(BaseOption):
     def validate(self, value):
         if isinstance(value, QueryString):
             return value
+
         try:
             return parse_qs(value)
         except Exception:

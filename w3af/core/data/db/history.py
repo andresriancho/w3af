@@ -30,6 +30,8 @@ import msgpack
 from functools import wraps
 from shutil import rmtree
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.data.db.where_helper import WhereHelper
@@ -50,7 +52,9 @@ def verify_has_db(meth):
 
 
 class HistoryItem(object):
-    """Represents history item."""
+    """
+    Represents history item
+    """
 
     _db = None
     _DATA_TABLE = 'history_items'
@@ -88,6 +92,7 @@ class HistoryItem(object):
     _latest_compression_job_end = 0
 
     id = None
+    url = None
     _request = None
     _response = None
     info = None
@@ -99,6 +104,7 @@ class HistoryItem(object):
     msg = 'OK'
     code = 200
     time = 0.2
+    charset = None
 
     history_lock = threading.RLock()
     compression_lock = threading.RLock()
@@ -161,40 +167,45 @@ class HistoryItem(object):
     request = property(get_request, set_request)
     
     @verify_has_db
-    def find(self, searchData, result_limit=-1, orderData=[], full=False):
+    def find(self, search_data, result_limit=-1, order_data=None):
         """
         Make complex search.
             search_data = {name: (value, operator), ...}
-            orderData = [(name, direction)]
+            order_data = [(name, direction)]
         """
+        order_data = order_data or []
         result = []
+
         sql = 'SELECT * FROM ' + self._DATA_TABLE
-        where = WhereHelper(searchData)
+        where = WhereHelper(search_data)
         sql += where.sql()
-        orderby = ""
+
+        order_by = ''
         #
         # TODO we need to move SQL code to parent class
         #
-        for item in orderData:
-            orderby += item[0] + " " + item[1] + ","
-        orderby = orderby[:-1]
+        for item in order_data:
+            order_by += item[0] + ' ' + item[1] + ','
+        order_by = order_by[:-1]
 
-        if orderby:
-            sql += " ORDER BY " + orderby
+        if order_by:
+            sql += ' ORDER BY ' + order_by
 
         sql += ' LIMIT ' + str(result_limit)
         try:
             for row in self._db.select(sql, where.values()):
                 item = self.__class__()
-                item._load_from_row(row, full)
+                item._load_from_row(row)
                 result.append(item)
         except DBException:
             msg = 'You performed an invalid search. Please verify your syntax.'
             raise DBException(msg)
         return result
 
-    def _load_from_row(self, row, full=True):
-        """Load data from row with all columns."""
+    def _load_from_row(self, row):
+        """
+        Load data from row with all columns
+        """
         self.id = row[0]
         self.url = row[1]
         self.code = row[2]
@@ -222,7 +233,7 @@ class HistoryItem(object):
         file_name = self._get_trace_filename_for_id(_id)
 
         if not os.path.exists(file_name):
-            raise TraceReadException()
+            raise TraceReadException('Trace file %s does not exist' % file_name)
 
         # The file exists, but the contents might not be all on-disk yet
         serialized_req_res = open(file_name, 'rb').read()
@@ -234,19 +245,19 @@ class HistoryItem(object):
         except ValueError:
             # ValueError: Extra data. returned when msgpack finds invalid
             # data in the file
-            raise TraceReadException()
+            raise TraceReadException('Failed to load %s' % serialized_req_res)
 
         try:
             request_dict, response_dict, canary = data
         except TypeError:
             # https://github.com/andresriancho/w3af/issues/1101
             # 'NoneType' object is not iterable
-            raise TraceReadException()
+            raise TraceReadException('Not all components found in %s' % serialized_req_res)
 
         if not canary == self._MSGPACK_CANARY:
             # read failed, most likely because the file write is not
             # complete but for some reason it was a valid msgpack file
-            raise TraceReadException()
+            raise TraceReadException('Invalid canary in %s' % serialized_req_res)
 
         request = HTTPRequest.from_dict(request_dict)
         response = HTTPResponse.from_dict(response_dict)
@@ -267,8 +278,12 @@ class HistoryItem(object):
         #
         for _ in xrange(int(1 / wait_time)):
             try:
-                self._load_from_trace_file(_id)
-            except TraceReadException:
+                return self._load_from_trace_file(_id)
+            except TraceReadException as e:
+                args = (_id, e)
+                msg = 'Failed to read trace file %s: "%s"'
+                om.out.debug(msg % args)
+
                 time.sleep(wait_time)
 
         else:
@@ -302,7 +317,11 @@ class HistoryItem(object):
         #
         try:
             return self._load_from_zip(_id)
-        except TraceReadException:
+        except TraceReadException as e:
+            msg = 'Failed to load trace %s from zip file: "%s"'
+            args = (_id, e)
+            om.out.debug(msg % args)
+
             #
             # Give the .trace file a last chance, it might be possible that when
             # we checked for os.path.exists(file_name) at the beginning of this
@@ -320,6 +339,8 @@ class HistoryItem(object):
             if start <= _id <= end:
                 return self._load_from_zip_file(_id, zip_file)
 
+        raise TraceReadException('No zip file contains %s' % _id)
+
     def _load_from_zip_file(self, _id, zip_file):
         _zip = zipfile.ZipFile(os.path.join(self.get_session_dir(), zip_file))
 
@@ -327,7 +348,9 @@ class HistoryItem(object):
             serialized_req_res = _zip.read('%s.%s' % (_id, self._EXTENSION))
         except KeyError:
             # We get here when the zip file doesn't contain the trace file
-            raise TraceReadException()
+            msg = 'Zip file %s does not contain ID %s'
+            args = (zip_file, _id)
+            raise TraceReadException(msg % args)
 
         return self._load_from_string(serialized_req_res)
 
@@ -350,8 +373,10 @@ class HistoryItem(object):
             pass
 
     @verify_has_db
-    def load(self, _id=None, full=True, retry=True):
-        """Load data from DB by ID."""
+    def load(self, _id=None, retry=True):
+        """
+        Load data from DB by ID
+        """
         if _id is None:
             _id = self.id
 
@@ -362,36 +387,40 @@ class HistoryItem(object):
             msg = ('An unexpected error occurred while searching for id "%s"'
                    ' in table "%s". Original exception: "%s".')
             raise DBException(msg % (_id, self._DATA_TABLE, dbe))
-        else:
-            if row is not None:
-                self._load_from_row(row, full)
-            else:
-                # The request/response with 'id' == id is not in the DB!
-                # Lets do some "error handling" and try again!
 
-                if retry:
-                    #    TODO:
-                    #    According to sqlite3 documentation this db.commit()
-                    #    might fix errors like
-                    #    https://sourceforge.net/apps/trac/w3af/ticket/164352 ,
-                    #    but it can degrade performance due to disk IO
-                    #
-                    self._db.commit()
-                    self.load(_id=_id, full=full, retry=False)
-                else:
-                    # This is the second time load() is called and we end up
-                    # here, raise an exception and finish our pain.
-                    msg = ('An internal error occurred while searching for '
-                           'id "%s", even after commit/retry' % _id)
-                    raise DBException(msg)
+        if row is not None:
+            self._load_from_row(row)
+            return True
 
-        return True
+        if not retry:
+            #
+            # This is the second time load() is called and we end up
+            # here, raise an exception and finish our pain.
+            #
+            msg = ('An internal error occurred while searching for id "%s",'
+                   ' even after commit/retry')
+            raise DBException(msg % _id)
+
+        #
+        # The request/response with _id is not in the DB!
+        # Lets do some error handling and try again!
+        #
+        # According to sqlite3 documentation this db.commit()
+        # might fix errors like [0] but it can degrade performance due
+        # to disk IO
+        #
+        # [0] https://sourceforge.net/apps/trac/w3af/ticket/164352 ,
+        #
+        self._db.commit()
+        return self.load(_id=_id, retry=False)
 
     @verify_has_db
-    def read(self, _id, full=True):
-        """Return item by ID."""
+    def read(self, _id):
+        """
+        Return item by ID
+        """
         result_item = self.__class__()
-        result_item.load(_id, full)
+        result_item.load(_id)
         return result_item
 
     def save(self):
@@ -512,8 +541,8 @@ class HistoryItem(object):
             #
             session_dir = self._session_dir
 
-            files = [os.path.join(session_dir, f) for f in os.listdir(session_dir)]
-            files = [f for f in files if f.endswith(self._EXTENSION)]
+            files = [f for f in os.listdir(session_dir) if f.endswith(self._EXTENSION)]
+            files = [os.path.join(session_dir, f) for f in files]
 
             if len(files) <= HistoryItem._MIN_FILE_COUNT:
                 return
@@ -525,6 +554,7 @@ class HistoryItem(object):
             #
             files.sort(key=lambda trace_file: get_trace_id(trace_file))
             files = files[:-self._UNCOMPRESSED_FILES]
+
             #
             # Compress in 150 file batches, and making sure that the filenames
             # are numerically ordered. We need this order to have 1, 2, ... 150 in
@@ -676,6 +706,9 @@ class HistoryItem(object):
         rmtree(self._session_dir, ignore_errors=True)
         
         return True
+
+    def __repr__(self):
+        return '<HistoryItem %s %s>' % (self.method, self.url)
 
 
 def get_trace_id(trace_file):

@@ -46,6 +46,7 @@ class TestOpenAPIMain(unittest.TestCase):
     NOT_VALID_SPEC = os.path.join(DATA_PATH, 'not_quite_valid_petstore_simple.json')
     CUSTOM_CONTENT_TYPE = os.path.join(DATA_PATH, 'custom_content_type.json')
     UNKNOWN_CONTENT_TYPE = os.path.join(DATA_PATH, 'unknown_content_type.json')
+    LARGE_MANY_ENDPOINTS = os.path.join(DATA_PATH, 'large_many_endpoints.json')
 
     def test_json_pet_store(self):
         # http://petstore.swagger.io/v2/swagger.json
@@ -275,6 +276,30 @@ class TestOpenAPIMain(unittest.TestCase):
         parser.parse()
         api_calls = parser.get_api_calls()
         self.assertEquals(api_calls, [])
+
+    # Check if the OpenAPI parser can extract all api calls from a rather
+    # large swagger file
+    def test_large_many_endpoints(self):
+        body = file(self.LARGE_MANY_ENDPOINTS).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        expected_api_calls = 161
+        self.assertEqual(expected_api_calls, len(api_calls))
+
+        first_api_call = api_calls[0]
+        uri = first_api_call.get_uri().url_string
+
+        expected_uri = 'https://target.com/api/Partners/3419/Agreement?performedBy=56'
+
+        self.assertEqual(expected_uri, uri)
 
     def test_disabling_headers_discovery(self):
         body = file(self.MULTIPLE_PATHS_AND_HEADERS).read()

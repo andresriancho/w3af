@@ -24,7 +24,8 @@ import sys
 import time
 import base64
 import jinja2
-import subprocess
+
+import subprocess32 as subprocess
 
 import lz4.frame
 
@@ -43,7 +44,7 @@ from w3af.core.controllers.misc import get_w3af_version
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.data.db.url_tree import URLTree
-from w3af.core.data.db.history import HistoryItem
+from w3af.core.data.db.history import HistoryItem, TraceReadException
 from w3af.core.data.db.disk_list import DiskList
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
@@ -793,7 +794,7 @@ class Finding(XMLNode):
         for transaction in info.get_id():
             try:
                 xml = HTTPTransaction(self._jinja2_env, transaction).to_string()
-            except DBException, e:
+            except (DBException, TraceReadException) as e:
                 msg = 'Failed to retrieve request with id %s from DB: "%s"'
                 om.out.error(msg % (transaction, e))
                 continue

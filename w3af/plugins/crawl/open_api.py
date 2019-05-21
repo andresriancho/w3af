@@ -34,6 +34,7 @@ from w3af.core.data.kb.info import Info
 from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.query_string import QueryString
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 import os.path
@@ -71,8 +72,8 @@ class open_api(CrawlPlugin):
         self._already_analyzed = DiskSet(table_prefix='open_api')
 
         # User configured variables
-        self._query_string_auth = ''
-        self._header_auth = ''
+        self._query_string_auth = QueryString()
+        self._header_auth = Headers()
         self._no_spec_validation = False
         self._custom_spec_location = ''
         self._discover_fuzzable_headers = True
@@ -151,7 +152,26 @@ class open_api(CrawlPlugin):
 
         :return: None
         """
-        http_response = self._uri_opener.GET(spec_url, cache=True)
+        #
+        # Merge the user-configured authentication query string (if any)
+        # with the spec_url query string
+        #
+        qs = spec_url.get_querystring()
+
+        for key, values in self._query_string_auth.iteritems():
+            qs[key] = values
+
+        spec_url.set_querystring(qs)
+
+        #
+        # Also add the authentication headers to the request (if any)
+        #
+        # Disable the cache because we're sending auth headers which might
+        # confuse the cache implementation
+        #
+        http_response = self._uri_opener.GET(spec_url,
+                                             headers=self._header_auth,
+                                             cache=False)
 
         if is_404(http_response):
             return
@@ -171,6 +191,8 @@ class open_api(CrawlPlugin):
         if not OpenAPI.can_parse(http_response):
             return
 
+        om.out.debug('OpenAPI parser is about to parse %s' % spec_url)
+
         parser = OpenAPI(http_response,
                          self._no_spec_validation,
                          self._discover_fuzzable_headers,
@@ -179,6 +201,8 @@ class open_api(CrawlPlugin):
 
         self._report_to_kb_if_needed(http_response, parser)
         self._send_spec_to_core(spec_url)
+
+        om.out.debug('OpenAPI parser identified %s API calls' % len(parser.get_api_calls()))
 
         for api_call in parser.get_api_calls():
             if not self._is_target_domain(api_call):

@@ -117,7 +117,9 @@ class SpecificationHandler(object):
         :return: A Spec instance which holds all the dict information in an
                  accessible way.
         """
-        config = {'use_models': False}
+        config = {'use_models': False,
+                  'use_spec_url_for_base_path': False}
+
         if self.no_validation:
             om.out.debug('Open API spec validation disabled')
             config.update({

@@ -24,9 +24,7 @@ import json
 import shlex
 import hashlib
 import tempfile
-import subprocess
-
-from threading import Timer
+import subprocess32 as subprocess
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
@@ -113,9 +111,11 @@ class retirejs(GrepPlugin):
         with self._plugin_lock:
             batch = self._add_response_to_batch(response)
 
-            if self._should_analyze_batch(batch):
-                self._analyze_batch(batch)
-                self._remove_batch(batch)
+            if not self._should_analyze_batch(batch):
+                return
+
+            self._analyze_batch(batch)
+            self._remove_batch(batch)
 
     def _remove_batch(self, batch):
         for url, response_id, filename in batch:
@@ -225,20 +225,30 @@ class retirejs(GrepPlugin):
     def _get_is_valid_retire_version(self):
         cmd = shlex.split(self.RETIRE_CMD_VERSION)
 
+        retire_version_fd = tempfile.NamedTemporaryFile(prefix='retirejs-version-',
+                                                        suffix='.out',
+                                                        delete=False,
+                                                        mode='w')
+
         try:
-            current_retire_version = subprocess.check_output(cmd)
+            subprocess.check_call(cmd,
+                                  stderr=subprocess.DEVNULL,
+                                  stdout=retire_version_fd)
         except subprocess.CalledProcessError:
             msg = 'Unexpected retire.js exit code. Disabling grep.retirejs plugin.'
             om.out.error(msg)
             return False
 
-        else:
-            if current_retire_version.startswith(self.RETIRE_VERSION):
-                om.out.debug('Using a supported retirejs version')
-                return True
+        retire_version_fd.close()
+        current_retire_version = open(retire_version_fd.name).read()
+        self._remove_file(retire_version_fd.name)
 
-            om.out.error('Please install a supported retirejs version (2.x)')
-            return False
+        if current_retire_version.startswith(self.RETIRE_VERSION):
+            om.out.debug('Using a supported retirejs version')
+            return True
+
+        om.out.error('Please install a supported retirejs version (2.x)')
+        return False
 
     def _retire_smoke_test(self):
         check_file = tempfile.NamedTemporaryFile(prefix='retirejs-check-',
@@ -257,9 +267,16 @@ class retirejs(GrepPlugin):
         args = (output_file.name, check_file.name)
         cmd = self.RETIRE_CMD % args
 
-        try:
-            subprocess.check_output(shlex.split(cmd))
-        except subprocess.CalledProcessError:
+        process = subprocess.Popen(shlex.split(cmd),
+                                   stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL)
+
+        process.wait()
+
+        self._remove_file(output_file.name)
+        self._remove_file(check_file.name)
+
+        if process.returncode != 0:
             msg = 'Unexpected retire.js exit code. Disabling grep.retirejs plugin.'
             om.out.error(msg)
             return False
@@ -267,10 +284,6 @@ class retirejs(GrepPlugin):
         else:
             om.out.debug('retire.js returned the expected exit code.')
             return True
-
-        finally:
-            self._remove_file(output_file.name)
-            self._remove_file(check_file.name)
 
     def _should_analyze(self, response):
         """
@@ -336,21 +349,19 @@ class retirejs(GrepPlugin):
                 self._get_js_temp_directory())
         cmd = self.RETIRE_CMD_JSREPO % args
 
-        process = subprocess.Popen(shlex.split(cmd))
-
-        # This will terminate the retirejs process in case it hangs
-        t = Timer(self.RETIRE_TIMEOUT, kill, [process])
-        t.start()
-
-        # Wait for the retirejs process to complete
-        process.wait()
-
-        # Cancel the timer if it wasn't run
-        t.cancel()
+        try:
+            returncode = subprocess.call(shlex.split(cmd),
+                                         stdout=subprocess.DEVNULL,
+                                         stderr=subprocess.DEVNULL,
+                                         timeout=self.RETIRE_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            # The process timed out and the returncode was never set
+            om.out.debug('The retirejs process for batch %s timeout out' % batch)
+            return dict()
 
         # retirejs will return code != 0 when a vulnerability is found
         # we use this to decide when we need to parse the output
-        if process.returncode == 0:
+        if returncode == 0:
             self._remove_file(json_file.name)
             return dict()
 
@@ -374,7 +385,6 @@ class retirejs(GrepPlugin):
             self._remove_file(json_file.name)
             return dict()
         else:
-
             self._remove_file(json_file.name)
             return json_doc
 
@@ -576,11 +586,3 @@ class RetireJSVulnerability(object):
         self.severity = vuln_severity
         self.summary = summary
         self.info_urls = info_urls
-
-
-def kill(process):
-    try:
-        process.terminate()
-    except OSError:
-        # ignore
-        pass

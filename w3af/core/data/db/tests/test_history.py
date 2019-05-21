@@ -30,7 +30,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.exceptions import DBException
 from w3af.core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from w3af.core.data.db.dbms import get_default_temp_db_instance
-from w3af.core.data.db.history import HistoryItem
+from w3af.core.data.db.history import HistoryItem, TraceReadException
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.doc.url import URL
@@ -86,7 +86,7 @@ class TestHistoryItem(unittest.TestCase):
         self.assertEqual(len(h2.find([('mark', 1, '=')])), 1)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')])), 500)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
-        results = h2.find([('has_qs', 1, '=')], result_limit=1, orderData=[('id', 'desc')])
+        results = h2.find([('has_qs', 1, '=')], result_limit=1, order_data=[('id', 'desc')])
         self.assertEqual(results[0].id, 499)
         search_data = [('id', find_id + 1, "<"),
                        ('id', find_id - 1, ">")]
@@ -133,18 +133,22 @@ class TestHistoryItem(unittest.TestCase):
         h2 = HistoryItem()
         h2.load(i)
 
-        self.assertEqual(h1.request, h2.request)
+        self.assertEqual(h1.request.to_dict(), h2.request.to_dict())
         self.assertEqual(h1.response.body, h2.response.body)
+
+    def test_load_not_exists(self):
+        h = HistoryItem()
+        self.assertRaises(DBException, h.load, 1)
 
     def test_save_load_compressed(self):
         force_compression_count = HistoryItem._UNCOMPRESSED_FILES + HistoryItem._COMPRESSED_FILE_BATCH
-        force_compression_count += 10
+        force_compression_count += 150
 
         url = URL('http://w3af.com/a/b/c.php')
         headers = Headers([('Content-Type', 'text/html')])
         body = '<html>' + LOREM * 20
 
-        for i in xrange(force_compression_count):
+        for i in xrange(1, force_compression_count):
             request = HTTPRequest(url, data='a=%s' % i)
 
             response = HTTPResponse(200, body, headers, url, url)
@@ -155,10 +159,10 @@ class TestHistoryItem(unittest.TestCase):
             h.response = response
             h.save()
 
-        compressed_file = os.path.join(h.get_session_dir(), '0-149.zip')
+        compressed_file = os.path.join(h.get_session_dir(), '1-150.zip')
         self.assertTrue(os.path.exists(compressed_file))
 
-        expected_files = ['%s.trace' % i for i in range(HistoryItem._COMPRESSED_FILE_BATCH)]
+        expected_files = ['%s.trace' % i for i in range(1, HistoryItem._COMPRESSED_FILE_BATCH + 1)]
 
         _zip = zipfile.ZipFile(compressed_file, mode='r')
         self.assertEqual(_zip.namelist(), expected_files)
@@ -277,6 +281,6 @@ class TestHistoryItem(unittest.TestCase):
         h2 = HistoryItem()
         h2.load(1)
 
-        self.assertEqual(h1.request, h2.request)
+        self.assertEqual(h1.request.to_dict(), h2.request.to_dict())
         self.assertEqual(h1.response.body, h2.response.body)
         self.assertEqual(h1.request.url_object, h2.request.url_object)

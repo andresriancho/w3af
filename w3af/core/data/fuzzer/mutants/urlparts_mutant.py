@@ -134,8 +134,8 @@ class URLPartsMutant(Mutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-
         forced_parts = freq.get_force_fuzzing_url_parts()
+
         if forced_parts:
             return cls._create_mutants_forced_parts(freq, mutant_str_list, fuzzable_param_list,
                                                     append, fuzzer_config, forced_parts)

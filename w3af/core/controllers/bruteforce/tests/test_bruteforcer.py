@@ -24,13 +24,13 @@ import unittest
 
 from nose.plugins.attrib import attr
 
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.controllers.bruteforce.bruteforcer import (PasswordBruteforcer,
-                                                     UserPasswordBruteforcer)
-from w3af.core.data.parsers.doc.url import URL
+                                                          UserPasswordBruteforcer)
 
 
-class test_PasswordBruteforcer(unittest.TestCase):
+class TestPasswordBruteforcer(unittest.TestCase):
 
     @attr('smoke')
     def test_contains(self):
@@ -43,7 +43,7 @@ class test_PasswordBruteforcer(unittest.TestCase):
         self.assertTrue('12345' in pwd_bf.generator())
 
 
-class test_UserPasswordBruteforcer(unittest.TestCase):
+class TestUserPasswordBruteforcer(unittest.TestCase):
 
     def setUp(self):
         self.temp_dir = create_temp_dir()

@@ -158,7 +158,8 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
         return item
 
     def join(self):
-        """Blocks until all items in the Queue have been gotten and processed.
+        """
+        Blocks until all items in the Queue have been gotten and processed.
 
         The count of unfinished tasks goes up whenever an item is added to the
         queue. The count goes down whenever a consumer thread calls task_done()
@@ -173,6 +174,11 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
         self.all_tasks_done.acquire()
         try:
             while self.unfinished_tasks:
-                self.all_tasks_done.wait()
+                result = self.all_tasks_done.wait(timeout=5)
+
+                if result is None:
+                    msg = 'Still have %s unfinished tasks in %s join()'
+                    args = (self.unfinished_tasks, self.name)
+                    om.out.debug(msg % args)
         finally:
             self.all_tasks_done.release()

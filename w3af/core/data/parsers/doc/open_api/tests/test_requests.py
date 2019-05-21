@@ -60,7 +60,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/random'
+        e_url = 'http://www.w3af.com/random'
         e_headers = Headers()
 
         self.assertEqual(fuzzable_request.get_method(), 'GET')
@@ -152,7 +152,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets/42'
+        e_url = 'http://www.w3af.com/pets/42'
         e_headers = Headers([('Content-Type', 'application/json')])
 
         self.assertEqual(fuzzable_request.get_method(), 'GET')
@@ -248,7 +248,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets'
+        e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ('{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
                   ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'
@@ -334,7 +334,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets/John'
+        e_url = 'http://www.w3af.com/pets/John'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ''
 
@@ -351,7 +351,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets'
+        e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ''
 
@@ -368,7 +368,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets'
+        e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ('{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
                   ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'

@@ -104,8 +104,21 @@ class LRUCache404(Decorator):
         result = self._function(*args, **kwargs)
 
         # Save the result to both caches
-        self._is_404_by_url_lru[url_cache_key] = result
-        self._is_404_by_body_lru[body_cache_key] = result
+        try:
+            self._is_404_by_body_lru[body_cache_key] = result
+        except (AttributeError, AssertionError, KeyError) as _:
+            # This is a rare race conditions which happens when another
+            # thread modifies the cache and changes the __first item in
+            # the cache.
+            pass
+
+        try:
+            self._is_404_by_url_lru[url_cache_key] = result
+        except (AttributeError, AssertionError, KeyError) as _:
+            # This is a rare race conditions which happens when another
+            # thread modifies the cache and changes the __first item in
+            # the cache.
+            pass
 
         return result
 
