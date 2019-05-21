@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import urlparse
+
 from six import iteritems
 from six import itervalues
 
@@ -36,7 +38,8 @@ def construct_request(operation, request_options, **op_kwargs):
 
     :return: request in dict form
     """
-    url = operation.swagger_spec.api_url.rstrip('/') + operation.path_name
+    url = urlparse.urljoin(operation.swagger_spec.api_url, operation.path_name)
+
     request = {
         'method': str(operation.http_method.upper()),
         'url': url,
