@@ -42,6 +42,7 @@ class HeaderOption(BaseOption):
     def validate(self, value):
         if isinstance(value, Headers):
             return value
+
         try:
             return Headers.from_string(value)
         except Exception:
