@@ -51,6 +51,12 @@ class ChromeCrawlerJS(object):
 
     MAX_INITIAL_STATES = 3
 
+    #
+    # After clicking on a tag the browser might navigate to a different URL
+    # wait WAIT_FOR_LOAD_TIMEOUT seconds (max) until the URL has loaded
+    #
+    WAIT_FOR_LOAD_TIMEOUT = 2
+
     def __init__(self, pool, debugging_id):
         """
         :param pool: Chrome pool
@@ -233,7 +239,7 @@ class ChromeCrawlerJS(object):
             return
 
         self._visited_urls.add(potentially_new_url)
-        self._chrome.wait_for_load(timeout=1)
+        self._chrome.wait_for_load(timeout=self.WAIT_FOR_LOAD_TIMEOUT)
 
     def _handle_event_dispatch_side_effects(self):
         """
