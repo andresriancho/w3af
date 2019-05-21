@@ -57,6 +57,13 @@ class ChromeCrawlerJS(object):
     #
     WAIT_FOR_LOAD_TIMEOUT = 2
 
+    #
+    # Only dispatch MAX_SIMILAR_EVENT_DISPATCH similar events and ignore the rest.
+    #
+    # They are similar when they match EventListener.fuzzy_matches()
+    #
+    MAX_SIMILAR_EVENT_DISPATCH = 5
+
     def __init__(self, pool, debugging_id):
         """
         :param pool: Chrome pool
@@ -438,7 +445,8 @@ class ChromeCrawlerJS(object):
         Filters the event listeners returned from the browser using the
         event dispatch log to:
 
-            * Prevent duplicated events from being sent
+            * Prevent duplicated events (exactly equal and fuzzy matching)
+              from being sent
 
             * Retry failed events
 
@@ -488,36 +496,51 @@ class ChromeCrawlerJS(object):
         :return: True if this event should be dispatched to the browser
         """
         current_event_type = event['event_type']
-        current_event_key = event.get_type_selector()
 
+        #
         # Only dispatch events if type in EVENTS_TO_DISPATCH
+        #
         if current_event_type not in self.EVENTS_TO_DISPATCH:
             self._ignore_event(event)
             return False
 
-        # Do not dispatch the same event twice
+        #
+        # Do not dispatch similar events more than MAX_SIMILAR_EVENT_DISPATCH
+        # times, and don't dispatch the exact same event twice
+        #
+        similar_successfully_dispatched = 0
+
         for event_dispatch_log_unit in self._event_dispatch_log:
-            if current_event_key != event_dispatch_log_unit.event.get_type_selector():
+            if event_dispatch_log_unit.state in (EventDispatchLogUnit.FAILED,
+                                                 EventDispatchLogUnit.IGNORED):
                 continue
 
-            # Unless the first time we tried to dispatch it we failed
-            if event_dispatch_log_unit.state == EventDispatchLogUnit.FAILED:
-                return True
+            if event_dispatch_log_unit.event == event:
+                break
 
-            msg = ('Ignoring "%s" event on selector "%s" and URL "%s"'
-                   ' because it was already sent. This happens when the'
-                   ' application attaches more than one event listener'
-                   ' to the same event and element. (did: %s)')
-            args = (current_event_type,
-                    event['selector'],
-                    self._url,
-                    self._debugging_id)
-            om.out.debug(msg % args)
+            if event_dispatch_log_unit.event.fuzzy_matches(event):
+                similar_successfully_dispatched += 1
 
-            self._ignore_event(event)
-            return False
+            if similar_successfully_dispatched >= self.MAX_SIMILAR_EVENT_DISPATCH:
+                break
+        else:
+            # Was able to complete the whole for loop without hitting the "break"
+            # clause, this means that there are no similar events in the log and
+            # the current event should be dispatched
+            return True
 
-        return True
+        msg = ('Ignoring "%s" event on selector "%s" and URL "%s"'
+               ' because it was already sent. This happens when the'
+               ' application attaches more than one event listener'
+               ' to the same event and element. (did: %s)')
+        args = (current_event_type,
+                event['selector'],
+                self._url,
+                self._debugging_id)
+        om.out.debug(msg % args)
+
+        self._ignore_event(event)
+        return False
 
 
 class EventDispatchLogUnit(object):
@@ -530,6 +553,20 @@ class EventDispatchLogUnit(object):
 
         self.state = state
         self.event = event
+
+    def get_state_as_string(self):
+        if self.state == EventDispatchLogUnit.IGNORED:
+            return 'IGNORED'
+
+        if self.state == EventDispatchLogUnit.SUCCESS:
+            return 'SUCCESS'
+
+        if self.state == EventDispatchLogUnit.FAILED:
+            return 'FAILED'
+
+    def __repr__(self):
+        state = self.get_state_as_string()
+        return '<EventDispatchLogUnit %s %s>' % (state, self.event)
 
 
 class MaxPageReload(Exception):

@@ -28,6 +28,7 @@ from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.tests.helpers import set_debugging_in_output_manager
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
+from w3af.core.controllers.chrome.crawler.js import ChromeCrawlerJS
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
 
@@ -152,8 +153,20 @@ class TestChromeCrawlerClick(unittest.TestCase):
             requested_urls.add(request.get_url().url_string)
             requested_data.add(request.get_data())
 
+        #
+        # Note that the MultipleXmlHttpRequestHandler has 15 event handlers
+        # attached to <div> tags, but in here we're only expecting
+        # ChromeCrawlerJS.MAX_SIMILAR_EVENT_DISPATCH of those to be clicked
+        #
+        # This is a performance improvement to prevent us from clicking on tags
+        # which are very similar and will:
+        #
+        #   * Slow the crawler down
+        #
+        #   * Not (most likely) not find any new information
+        #
         expected_urls = {root_url}
-        for i in xrange(15):
+        for i in xrange(ChromeCrawlerJS.MAX_SIMILAR_EVENT_DISPATCH):
             expected_urls.add('%sserver_%s' % (root_url, i))
 
         expected_data = {'',
