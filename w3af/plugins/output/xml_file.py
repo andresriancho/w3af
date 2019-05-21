@@ -24,7 +24,8 @@ import sys
 import time
 import base64
 import jinja2
-import subprocess
+
+import subprocess32 as subprocess
 
 import lz4.frame
 
