@@ -110,7 +110,10 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      # retirejs that spawns processes from threads
                      PIPDependency('subprocess32', 'subprocess32', '3.5.4'),
 
-                     PIPDependency('setproctitle', 'setproctitle', '1.1.10')
+                     PIPDependency('setproctitle', 'setproctitle', '1.1.10'),
+
+                     # Calculate distances between two strings
+                     PIPDependency('Levenshtein', 'python-Levenshtein', '1.1.10'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
