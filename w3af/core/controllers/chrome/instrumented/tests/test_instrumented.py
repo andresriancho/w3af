@@ -66,7 +66,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
     def test_get_pid(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
         pid = self.ic.get_pid()
-        self.assertIsInstance(pid, int)
+        self.assertIsInstance(pid, (int, long))
 
     def test_get_memory_usage(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
