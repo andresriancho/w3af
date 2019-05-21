@@ -34,6 +34,7 @@ class EventListener(object):
     """
 
     MAX_HANDLER_EDIT_DISTANCE = 2
+    MAX_SELECTOR_EDIT_DISTANCE = 5
 
     def __init__(self, event_as_dict):
         self._event_as_dict = event_as_dict
@@ -49,6 +50,7 @@ class EventListener(object):
             * The event_type is the same
             * The tag_name is the same
             * The handler attribute needs to be similar
+            * The selector attribute needs to be similar
 
         :param other: Another instance of EventListener
         :return: True if the events are similar
@@ -63,6 +65,12 @@ class EventListener(object):
                                              other.get('handler'))
 
         if edit_distance > self.MAX_HANDLER_EDIT_DISTANCE:
+            return False
+
+        edit_distance = Levenshtein.distance(self.get('selector'),
+                                             other.get('selector'))
+
+        if edit_distance > self.MAX_SELECTOR_EDIT_DISTANCE:
             return False
 
         return True
