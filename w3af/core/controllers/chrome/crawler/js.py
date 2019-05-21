@@ -192,7 +192,7 @@ class ChromeCrawlerJS(object):
         #
         if self._get_total_dispatch_error_count():
             om.out.debug('%s errors found while dispatching events. Going'
-                         ' to call crawl one state again' % self._get_total_dispatch_error_count())
+                         ' to call crawl_one_state again' % self._get_total_dispatch_error_count())
             return False
 
         #
@@ -470,7 +470,8 @@ class ChromeCrawlerJS(object):
                              second call we check the event dispatch log and make
                              sure that the events that failed in the previous
                              call are run (if they still exist in the current
-                             DOM).
+                             DOM) and the ones that were successfully sent in the
+                             past are NOT.
 
                              The second call to _crawl_one_state() will run the
                              2 missing events, achieving 100% test coverage, and
@@ -493,7 +494,7 @@ class ChromeCrawlerJS(object):
             if current_event_key != event_dispatch_log_unit.event.get_type_selector():
                 continue
 
-            # Unless the first time we tries to dispatch it we failed
+            # Unless the first time we tried to dispatch it we failed
             if event_dispatch_log_unit.state == EventDispatchLogUnit.FAILED:
                 return True
 
