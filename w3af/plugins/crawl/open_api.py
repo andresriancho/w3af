@@ -171,6 +171,8 @@ class open_api(CrawlPlugin):
         if not OpenAPI.can_parse(http_response):
             return
 
+        om.out.debug('OpenAPI parser is about to parse %s' % spec_url)
+
         parser = OpenAPI(http_response,
                          self._no_spec_validation,
                          self._discover_fuzzable_headers,
