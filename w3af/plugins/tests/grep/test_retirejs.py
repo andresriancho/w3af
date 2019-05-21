@@ -19,9 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
+import unittest
 
-from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af import ROOT_PATH
+from w3af.core.controllers.misc.temp_dir import create_temp_dir
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.plugins.grep.retirejs import retirejs
 
 
 class TestRetireJSNotAnalyzeHTMLContentType(PluginTest):
@@ -65,6 +68,16 @@ class TestRetireJSNotAnalyzeHTMLContentType(PluginTest):
         vulns = self.kb.get('retirejs', 'js')
 
         self.assertEqual(len(vulns), 0, vulns)
+
+
+EXPECTED_VULN_DESC = '''\
+A JavaScript library with known vulnerabilities was identified at http://httpretty/js/jquery.js. The library was identified as "jquery" version 1.11.0 and has these known vulnerabilities:
+
+ - 3rd party CORS request may execute
+ - parseHTML() executes scripts in event handlers
+ - jQuery before 3.4.0, as used in Drupal, Backdrop CMS, and other products, mishandles jQuery.extend(true, {}, ...) because of Object.prototype pollution
+
+Consider updating to the latest stable release of the affected library.'''
 
 
 class TestRetireJS(PluginTest):
@@ -113,16 +126,17 @@ class TestRetireJS(PluginTest):
 
         self.assertEqual(vuln.get_name(), 'Vulnerable JavaScript library in use')
         self.assertEqual(vuln.get_url().url_string, 'http://httpretty/js/jquery.js')
+        self.assertEqual(vuln.get_desc(with_id=False), EXPECTED_VULN_DESC)
 
-        expected_desc = (u'A JavaScript library with known vulnerabilities was'
-                         u' identified at http://httpretty/js/jquery.js. The'
-                         u' library was identified as "jquery" version 1.11.0'
-                         u' and has these known vulnerabilities:\n'
-                         u'\n'
-                         u' - 3rd party CORS request may execute\n'
-                         u' - parseHTML() executes scripts in event handlers\n'
-                         u'\n'
-                         u'Consider updating to the latest stable release of the'
-                         u' affected library.')
-        self.assertEqual(vuln.get_desc(with_id=False), expected_desc)
 
+class TestRetireJSClass(unittest.TestCase):
+    def setUp(self):
+        create_temp_dir()
+
+    def test_version_check(self):
+        rjs = retirejs()
+        self.assertTrue(rjs._get_is_valid_retire_version())
+
+    def test_retire_smoke_test(self):
+        rjs = retirejs()
+        self.assertTrue(rjs._retire_smoke_test())
