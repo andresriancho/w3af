@@ -71,7 +71,7 @@ class TestOpenAPIMain(unittest.TestCase):
         url_root = 'http://petstore.swagger.io/v2'
 
         expected_body_1 = ('{"body": {"category": {"id": 42, "name": "John"},'
-                           ' "status": "available", "name": "John",'
+                           ' "status": "available", "name": "doggie",'
                            ' "tags": [{"id": 42, "name": "John"}],'
                            ' "photoUrls": ["56"], "id": 42}}')
 
@@ -87,27 +87,27 @@ class TestOpenAPIMain(unittest.TestCase):
 
         expected_body_4 = ('{"body": {"status": "placed",'
                            ' "shipDate": "2017-06-30T23:59:45",'
-                           ' "complete": true, "petId": 42, "id": 42, "quantity": 42}}')
+                           ' "complete": false, "petId": 42, "id": 42, "quantity": 42}}')
 
         e_api_calls = [
-            ('GET',  '/pet/findByStatus?status=available', json_headers, ''),
+            ('GET', '/pet/findByStatus?status=available', json_headers, ''),
             ('POST', '/pet/42/uploadImage', multipart_headers, ''),
             ('POST', '/pet/42', url_encoded_headers, ''),
             ('POST', '/pet', json_headers, expected_body_1),
-            ('GET',  '/pet/42', json_headers, ''),
-            ('GET',  '/pet/42', json_api_headers, ''),
-            ('GET',  '/pet/findByTags?tags=56', json_headers, ''),
-            ('PUT',  '/pet', json_headers, expected_body_1),
-            ('PUT',  '/user/John8212', json_headers, expected_body_2),
+            ('GET', '/pet/42', json_headers, ''),
+            ('GET', '/pet/42', json_api_headers, ''),
+            ('GET', '/pet/findByTags?tags=56', json_headers, ''),
+            ('PUT', '/pet', json_headers, expected_body_1),
+            ('PUT', '/user/John8212', json_headers, expected_body_2),
             ('POST', '/user/createWithList', json_headers, expected_body_3),
             ('POST', '/user', json_headers, expected_body_2),
-            ('GET',  '/user/John8212', json_headers, ''),
-            ('GET',  '/user/login?username=John8212&password=FrAmE30.', json_headers, ''),
-            ('GET',  '/user/logout', Headers(), ''),
+            ('GET', '/user/John8212', json_headers, ''),
+            ('GET', '/user/login?username=John8212&password=FrAmE30.', json_headers, ''),
+            ('GET', '/user/logout', Headers(), ''),
             ('POST', '/user/createWithArray', json_headers, expected_body_3),
-            ('GET',  '/store/order/2', json_headers, ''),
-            ('GET',  '/store/inventory', json_headers, ''),
-            ('GET',  '/store/inventory', json_api_headers, ''),
+            ('GET', '/store/order/2', json_headers, ''),
+            ('GET', '/store/inventory', json_headers, ''),
+            ('GET', '/store/inventory', json_api_headers, ''),
             ('POST', '/store/order', json_headers, expected_body_4),
         ]
 
@@ -427,83 +427,85 @@ class TestOpenAPIMain(unittest.TestCase):
         parser.parse()
         api_calls = parser.get_api_calls()
 
-        e_api_calls = [
-            ('GET',
-             u'https://w3af.org/bankid/tokens/w3af%40email.com',
-             Headers([(u'Content-Type', u'application/json')]),
-             ''),
-            ('POST',
-             u'https://w3af.org/bankid/tokens',
-             Headers([(u'Content-Type', u'application/json')]),
-             '{"body": null}'),
-            ('POST',
-             u'https://w3af.org/bankid/orders',
-             Headers([(u'Content-Type', u'application/json')]),
-             '{"body": null}'),
-            ('POST',
-             u'https://w3af.org/bankid/orders',
-             Headers([(u'Content-Type', u'application/json')]),
-             '{"body": {"pid": "3419"}}'),
-            ('GET',
-             u'https://w3af.org/persons/3419/partners',
-             Headers([(u'Content-Type', u'application/json')]),
-             ''),
-            ('GET',
-             u'https://w3af.org/persons/3419/partners',
-             Headers([(u'Authorization', u'FrAmE30.'), (u'Content-Type', u'application/json')]),
-             ''),
-            ('GET',
-             u'https://w3af.org/persons/3419/partners/3419',
-             Headers([(u'Content-Type', u'application/json')]),
-             ''),
-            ('GET',
-             u'https://w3af.org/persons/3419/partners/3419',
-             Headers([(u'Authorization', u'FrAmE30.'), (u'Content-Type', u'application/json')]),
-             ''),
-            ('GET',
-             u'https://w3af.org/persons/3419',
-             Headers([(u'Content-Type', u'application/json')]),
-             ''),
-            ('GET',
-             u'https://w3af.org/persons/3419',
-             Headers([(u'Authorization', u'FrAmE30.'), (u'Content-Type', u'application/json')]),
-             ''),
-            ('POST',
-             u'https://w3af.org/persons/3419/partners',
-             Headers([(u'Content-Type', u'application/json')]),
-             '{"body": null}'),
-            ('POST',
-             u'https://w3af.org/persons/3419/partners',
-             Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
-             '{"body": {"partner": "56", "termsAccepted": true}}'),
-            ('PATCH',
-             u'https://w3af.org/persons/3419',
-             Headers([(u'Content-Type', u'application/json')]),
-             '{"body": null}'),
-            ('PATCH',
-             u'https://w3af.org/persons/3419',
-             Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
-             '{"body": {"termsAccepted": true}}'),
-            ('PUT',
-             u'https://w3af.org/persons/3419/partners/3419',
-             Headers([(u'Content-Type', u'application/json')]),
-             '{"body": null}'),
-            ('PUT',
-             u'https://w3af.org/persons/3419/partners/3419',
-             Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
-             '{"body": {"partner": "56", "termsAccepted": true}}'),
-            ('POST',
-             u'https://w3af.org/events',
-             Headers([(u'Content-Type', u'application/json')]),
-             '{"body": null}'),
-            ('POST',
-             u'https://w3af.org/events',
-             Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
-             '{"body": {"event": "56"}}')
+        e_api_calls = [('GET',
+                        u'https://w3af.org/bankid/tokens/4271a25e-7211-4306-b527-46196eb2af28',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        ''),
+                       ('POST',
+                        u'https://w3af.org/bankid/tokens',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        '{"body": null}'),
+                       ('POST',
+                        u'https://w3af.org/bankid/tokens',
+                        Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
+                        '{"body": {"orderRef": "e475f288-4e9b-43ea-966c-d3912e7a25b2"}}'),
+                       ('POST',
+                        u'https://w3af.org/bankid/orders',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        '{"body": null}'),
+                       ('POST',
+                        u'https://w3af.org/bankid/orders',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        '{"body": {"pid": "191212121212"}}'),
+                       ('GET',
+                        u'https://w3af.org/persons/3419/partners',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        ''),
+                       ('GET',
+                        u'https://w3af.org/persons/3419/partners',
+                        Headers([(u'Authorization', u'FrAmE30.'), (u'Content-Type', u'application/json')]),
+                        ''),
+                       ('GET',
+                        u'https://w3af.org/persons/3419/partners/3419',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        ''),
+                       ('GET',
+                        u'https://w3af.org/persons/3419/partners/3419',
+                        Headers([(u'Authorization', u'FrAmE30.'), (u'Content-Type', u'application/json')]),
+                        ''),
+                       ('GET',
+                        u'https://w3af.org/persons/3419',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        ''),
+                       ('GET',
+                        u'https://w3af.org/persons/3419',
+                        Headers([(u'Authorization', u'FrAmE30.'), (u'Content-Type', u'application/json')]),
+                        ''),
+                       ('POST',
+                        u'https://w3af.org/persons/3419/partners',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        '{"body": null}'),
+                       ('POST',
+                        u'https://w3af.org/persons/3419/partners',
+                        Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
+                        '{"body": {"partner": "19101010****", "termsAccepted": false}}'),
+                       ('PATCH',
+                        u'https://w3af.org/persons/3419',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        '{"body": null}'),
+                       ('PATCH',
+                        u'https://w3af.org/persons/3419',
+                        Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
+                        '{"body": {"termsAccepted": false}}'),
+                       ('PUT',
+                        u'https://w3af.org/persons/3419/partners/3419',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        '{"body": null}'),
+                       ('PUT',
+                        u'https://w3af.org/persons/3419/partners/3419',
+                        Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
+                        '{"body": {"partner": "19101010****", "termsAccepted": false}}'),
+                       ('POST',
+                        u'https://w3af.org/events',
+                        Headers([(u'Content-Type', u'application/json')]),
+                        '{"body": null}'),
+                       ('POST',
+                        u'https://w3af.org/events',
+                        Headers([(u'Content-Type', u'application/json'), (u'Authorization', u'FrAmE30.')]),
+                        '{"body": {"event": "start doktor24"}}')
+                       ]
 
-        ]
-
-        self.assertEqual(18, len(api_calls))
+        self.assertEqual(19, len(api_calls))
 
         for api_call in api_calls:
             method = api_call.get_method()
@@ -512,8 +514,8 @@ class TestOpenAPIMain(unittest.TestCase):
 
             uri = api_call.get_uri().url_string
 
-            data = (method, uri, headers, data)
-            self.assertIn(data, e_api_calls)
+            _tuple = (method, uri, headers, data)
+            self.assertIn(_tuple, e_api_calls)
 
     def test_can_parse_content_type_no_keywords(self):
         # JSON content type
