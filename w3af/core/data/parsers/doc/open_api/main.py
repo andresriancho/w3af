@@ -36,6 +36,9 @@ from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.open_api.requests import RequestFactory
 
+# Apply the monkey-patching by importing the module
+from w3af.core.data.parsers.doc.open_api.operation_mp import build_params_monkey_patch
+
 
 class OpenAPI(BaseParser):
     """
