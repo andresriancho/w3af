@@ -25,7 +25,6 @@ import yaml
 import logging
 
 from yaml import load
-from bravado_core.spec import Spec
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -35,6 +34,7 @@ except ImportError:
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.parsers.doc.open_api.parameters import ParameterHandler
+from w3af.core.data.parsers.doc.open_api.relaxed_spec import RelaxedSpec
 
 
 # Silence please.
@@ -131,9 +131,9 @@ class SpecificationHandler(object):
         url_string = self.http_response.get_url().url_string
 
         try:
-            self.spec = Spec.from_dict(spec_dict,
-                                       origin_url=url_string,
-                                       config=config)
+            self.spec = RelaxedSpec.from_dict(spec_dict,
+                                              origin_url=url_string,
+                                              config=config)
         except Exception, e:
             msg = ('The document at "%s" is not a valid Open API specification.'
                    ' The following exception was raised while parsing the dict'

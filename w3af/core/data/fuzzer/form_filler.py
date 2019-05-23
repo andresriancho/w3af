@@ -89,7 +89,9 @@ PARAM_NAME_KNOWLEDGE = {
 
     '127.0.0.1': ['ip', 'ipaddress', 'host', 'server', 'servidor'],
     '255.255.255.0': ['netmask', 'mask', 'mascara'],
-    'www.w3af.org': ['domain', 'dominio']
+    'www.w3af.org': ['domain', 'dominio'],
+
+    '4271a25e-7211-4306-b527-46196eb2af28': ['token', 'uuid', 'unique-id', 'random']
 }
 
 FILE_NAME_KNOWLEDGE = {

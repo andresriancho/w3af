@@ -94,7 +94,13 @@ class LRUCache404(Decorator):
         body_cache_key = self._response_cache_key_cache.get_response_cache_key(http_response,
                                                                                clean_response=query)
 
-        result = self._is_404_by_body_lru.get(body_cache_key, None)
+        try:
+            result = self._is_404_by_body_lru.get(body_cache_key, None)
+        except (AttributeError, AssertionError, KeyError) as _:
+            # This is a rare race conditions which happens when another
+            # thread modifies the cache and changes the __first item in
+            # the cache.
+            result = None
 
         if result is not None:
             self._log_success(http_response, result, 'body')
