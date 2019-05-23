@@ -47,6 +47,7 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
 
         event_listeners = self.ic.get_html_event_listeners()
         self._print_all_console_messages()
+
         self.assertEqual(event_listeners, [{u'event_type': u'click',
                                             u'tag_name': u'table',
                                             u'handler': {},
@@ -105,7 +106,6 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'text_content': u'one'}])
 
     def test_onclick_event_listener_with_children(self):
-        self.maxDiff = None
         self._unittest_setup(OnClickEventWithChildrenRequestHandler)
 
         event_listeners = self.ic.get_html_event_listeners()
