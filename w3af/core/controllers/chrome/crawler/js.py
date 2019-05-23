@@ -569,6 +569,11 @@ class EventDispatchLogUnit(object):
     SUCCESS = 1
     FAILED = 2
 
+    __slots__ = (
+        'state',
+        'event'
+    )
+
     def __init__(self, event, state):
         assert state in (self.IGNORED, self.SUCCESS, self.FAILED), 'Invalid state'
 

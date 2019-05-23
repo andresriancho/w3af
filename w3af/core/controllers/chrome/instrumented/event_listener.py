@@ -36,6 +36,10 @@ class EventListener(object):
     MAX_HANDLER_EDIT_DISTANCE = 2
     MAX_SELECTOR_EDIT_DISTANCE = 5
 
+    __slots__ = (
+        '_event_as_dict'
+    )
+
     def __init__(self, event_as_dict):
         self._event_as_dict = event_as_dict
 
