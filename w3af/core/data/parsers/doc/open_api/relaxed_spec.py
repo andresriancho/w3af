@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 """
-requests.py
+relaxed_spec.py
 
-Copyright 2017 Andres Riancho
+Copyright 2019 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
