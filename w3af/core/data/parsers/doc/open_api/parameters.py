@@ -388,8 +388,8 @@ class ParameterHandler(object):
         if value is not None:
             return value
 
-        # We should never reach here! The parameter.fill value was never
-        # modified!
+        # We parameter.fill was not set because this is not a primitive
+        # this parameter will be handled later
         return None
 
     def _get_param_value_for_array(self, param_spec):
@@ -554,7 +554,7 @@ class ParameterHandler(object):
 
     def _create_object(self, param_spec):
         """
-        Takes the output of a swagger_spec.deref() cal and creates an object.
+        Takes the output of a swagger_spec.deref() call and creates an object.
 
         The output of swagger_spec.deref looks like:
 
