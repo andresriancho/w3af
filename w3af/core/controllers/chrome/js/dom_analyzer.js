@@ -292,7 +292,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                                            "node_type": element.nodeType,
                                            "selector": selector,
                                            "event_type": type,
-                                           "use_capture": useCapture});
+                                           "use_capture": useCapture,
+                                           "text_content": _DOMAnalyzer.superTrim(element.textContent)});
     },
 
     /**
@@ -417,7 +418,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     extractEventsFromAttributesAndProperties: function (tag_name, element) {
         let events = [];
         let event_types = [];
-        let selector = OptimalSelect.select(element);
+        let selector = null;
 
         //
         //  First extract from attributes
@@ -435,12 +436,15 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, attr_name ) ) continue;
 
+            if( selector === null) { selector = OptimalSelect.select(element) }
+
             let edata = {
                 "tag_name": tag_name,
                 "node_type": element.nodeType,
                 "selector": selector,
                 "event_type": attr_name,
-                "handler": attributes[attr_it].nodeValue
+                "handler": attributes[attr_it].nodeValue,
+                "text_content": _DOMAnalyzer.superTrim(element.textContent)
             };
 
             events.push(edata);
@@ -452,9 +456,11 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         //
         for( let property_name in element ) {
 
+            if ( !element.hasOwnProperty(property_name) ) continue;
+
             let property_value = element[property_name];
 
-            if (!property_value) continue;
+            if ( !property_value ) continue;
 
             // Remove the 'on' from 'onclick'. This will also remove the first
             // two chars from any attribute name, but it will simply not pass
@@ -467,18 +473,33 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             // Make sure that the event type is valid
             if ( !_DOMAnalyzer.eventIsValidForTagName( tag_name, property_name ) ) continue;
 
+            if( selector === null) { selector = OptimalSelect.select(element) }
+
             let edata = {
                 "tag_name": tag_name,
                 "node_type": element.nodeType,
                 "selector": selector,
                 "event_type": property_name,
-                "handler": property_value
+                "handler": property_value,
+                "text_content": _DOMAnalyzer.superTrim(element.textContent)
             };
 
             events.push(edata)
         }
 
         return events;
+    },
+
+    /**
+     * Removes all new lines, tabs and spaces from the string.
+     *
+     * @param  {String}   string_to_trim     The string to super-trim
+     * @return {String}                      String without new lines nor spaces
+     *
+     */
+    superTrim: function ( string_to_trim ) {
+        string_to_trim = string_to_trim.trim();
+        return string_to_trim.replace(/[\r\n\t ]+/g,"");
     },
 
     /**
@@ -563,6 +584,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 ancestor_event.tag_name = tag_name;
                 ancestor_event.selector = OptimalSelect.select(element);
                 ancestor_event.node_type = element.nodeType;
+                ancestor_event.text_content = _DOMAnalyzer.superTrim(element.textContent);
 
                 events.push(ancestor_event);
             }

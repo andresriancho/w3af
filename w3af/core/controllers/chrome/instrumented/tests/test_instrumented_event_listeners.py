@@ -67,7 +67,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
                                                              u'event_type': u'click',
-                                                             u'use_capture': False}])
+                                                             u'use_capture': False,
+                                                             u'text_content': u'onetwo'}])
 
     def test_onclick_assign_to_onclick_event_listener(self):
         self._unittest_setup(OnClickEventSetOnClickRequestHandler)
@@ -87,7 +88,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                               u'node_type': 1,
                               u'selector': u'#outside',
                               u'event_type': u'click',
-                              u'use_capture': False}]
+                              u'use_capture': False,
+                              u'text_content': u'onetwo'}]
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
         self.assertEqual(self.ic.get_js_set_intervals(), [])
@@ -131,7 +133,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                      u'node_type': 1,
                      u'selector': u'#outside',
                      u'event_type': u'click',
-                     u'use_capture': False}]
+                     u'use_capture': False,
+                     u'text_content': u'onetwo'}]
         _iter = self.ic.get_js_event_listeners_iter()
 
         for i in _iter:
@@ -148,7 +151,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
                                                              u'event_type': u'click',
-                                                             u'use_capture': False}])
+                                                             u'use_capture': False,
+                                                             u'text_content': u'onetwo'}])
 
     def test_onclick_arrow_event_listener(self):
         self._unittest_setup(OnClickEventArrowRequestHandler)
@@ -159,27 +163,40 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
                                                              u'event_type': u'click',
-                                                             u'use_capture': False}])
+                                                             u'use_capture': False,
+                                                             u'text_content': u'onetwo'}])
 
     def test_click_on_document(self):
         self._unittest_setup(EventListenerInDocument)
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
         self.assertEqual(self.ic.get_js_set_intervals(), [])
-        self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
-                                                             u'tag_name': u'!document',
-                                                             u'node_type': 9,
-                                                             u'selector': u'!document'}])
+
+        event_listeners = [el for el in self.ic.get_js_event_listeners()]
+        self.assertEqual(len(event_listeners), 1)
+
+        el = event_listeners[0]
+
+        self.assertEqual(el.event_type, 'click')
+        self.assertEqual(el.node_type, 9)
+        self.assertEqual(el.selector, '!document')
+        self.assertEqual(el.tag_name, '!document')
 
     def test_click_on_window(self):
         self._unittest_setup(EventListenerInWindow)
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
         self.assertEqual(self.ic.get_js_set_intervals(), [])
-        self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
-                                                             u'tag_name': u'!window',
-                                                             u'node_type': -1,
-                                                             u'selector': u'!window'}])
+
+        event_listeners = [el for el in self.ic.get_js_event_listeners()]
+        self.assertEqual(len(event_listeners), 1)
+
+        el = event_listeners[0]
+
+        self.assertEqual(el.event_type, 'click')
+        self.assertEqual(el.node_type, -1)
+        self.assertEqual(el.selector, '!window')
+        self.assertEqual(el.tag_name, '!window')
 
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):

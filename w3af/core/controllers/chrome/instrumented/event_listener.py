@@ -78,6 +78,12 @@ class EventListener(object):
     def __getitem__(self, item):
         return self._event_as_dict[item]
 
+    def __getattr__(self, item):
+        try:
+            return self._event_as_dict[item]
+        except KeyError:
+            raise AttributeError('%s is not a known attribute' % item)
+
     def get(self, item):
         return self._event_as_dict.get(item)
 

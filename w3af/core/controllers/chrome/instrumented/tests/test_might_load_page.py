@@ -54,12 +54,14 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
                                                           u'tag_name': u'div',
                                                           u'handler': u'goto();',
                                                           u'node_type': 1,
-                                                          u'selector': u'[onclick="goto\\(\\)\\;"]'}),
+                                                          u'selector': u'[onclick="goto\\(\\)\\;"]',
+                                                          u'text_content': u'Thiscanbeclicked'}),
                                            EventListener({u'event_type': u'click',
                                                           u'tag_name': u'div',
                                                           u'handler': u'noop();',
                                                           u'node_type': 1,
-                                                          u'selector': u'[onclick="noop\\(\\)\\;"]'})])
+                                                          u'selector': u'[onclick="noop\\(\\)\\;"]',
+                                                          u'text_content': u'Thiscanbeclicked'})])
 
         # Choose the one that navigates to a different page
         event_listener = event_listeners[0]
@@ -122,12 +124,14 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
                                                           u'tag_name': u'div',
                                                           u'handler': u'goto();',
                                                           u'node_type': 1,
-                                                          u'selector': u'[onclick="goto\\(\\)\\;"]'}),
+                                                          u'selector': u'[onclick="goto\\(\\)\\;"]',
+                                                          u'text_content': u'Thiscanbeclicked'}),
                                            EventListener({u'event_type': u'click',
                                                           u'tag_name': u'div',
                                                           u'handler': u'noop();',
                                                           u'node_type': 1,
-                                                          u'selector': u'[onclick="noop\\(\\)\\;"]'})])
+                                                          u'selector': u'[onclick="noop\\(\\)\\;"]',
+                                                          u'text_content': u'Thiscanbeclicked'})])
 
         # Choose the one that does nothing, no new navigation is started
         event_listener = event_listeners[1]

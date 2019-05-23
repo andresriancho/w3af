@@ -37,7 +37,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                             u'tag_name': u'table',
                                             u'event_type': u'click',
                                             u'node_type': 1,
-                                            u'selector': u'#outside'}])
+                                            u'selector': u'#outside',
+                                            u'text_content': u'onetwo'}])
 
         dom_before = self.ic.get_dom()
 
@@ -62,7 +63,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                                              u'tag_name': u'table',
                                                              u'event_type': u'click',
                                                              u'node_type': 1,
-                                                             u'selector': u'#outside'}])
+                                                             u'selector': u'#outside',
+                                                             u'text_content': u'onetwo'}])
 
     def test_dispatch_click_event_is_async(self):
         self._unittest_setup(OnClickEventTimeoutRequestHandler)
@@ -73,7 +75,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                             u'tag_name': u'table',
                                             u'event_type': u'click',
                                             u'node_type': 1,
-                                            u'selector': u'#outside'}])
+                                            u'selector': u'#outside',
+                                            u'text_content': u'onetwo'}])
 
         dom_before = self.ic.get_dom()
 
@@ -109,7 +112,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                                              u'tag_name': u'table',
                                                              u'event_type': u'click',
                                                              u'node_type': 1,
-                                                             u'selector': u'#outside'}])
+                                                             u'selector': u'#outside',
+                                                             u'text_content': u'onetwo'}])
 
     def test_dispatch_click_event_to_document(self):
         self._unittest_setup(EventListenerInDocument)
