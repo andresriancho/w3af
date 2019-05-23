@@ -456,8 +456,17 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         //
         for( let property_name in element ) {
 
-            if ( !element.hasOwnProperty(property_name) ) continue;
-
+            //
+            // PyCharm SCA recommends you add this check, and highlights all
+            // usages of `property_name` with a warning unless you do.
+            //
+            // Adding this check will break test_onclick_event_set_attribute()
+            // because hasOwnProperty() only returns `true` when the property
+            // is in the class, not in a parent.
+            //
+            // if ( !element.hasOwnProperty(property_name) ) continue;
+            //
+            // noinspection JSUnfilteredForInLoop
             let property_value = element[property_name];
 
             if ( !property_value ) continue;
@@ -465,16 +474,23 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             // Remove the 'on' from 'onclick'. This will also remove the first
             // two chars from any attribute name, but it will simply not pass
             // the eventIsValidForTagName filter below
+            //
+            // noinspection JSUnfilteredForInLoop
             property_name = property_name.substr(2);
 
             // Prevent duplicates in some rare scenarios
+            //
+            // noinspection JSUnfilteredForInLoop
             if ( event_types.includes(property_name) ) continue;
 
             // Make sure that the event type is valid
+            //
+            // noinspection JSUnfilteredForInLoop
             if ( !_DOMAnalyzer.eventIsValidForTagName( tag_name, property_name ) ) continue;
 
             if( selector === null) { selector = OptimalSelect.select(element) }
 
+            // noinspection JSUnfilteredForInLoop
             let edata = {
                 "tag_name": tag_name,
                 "node_type": element.nodeType,
