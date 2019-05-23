@@ -27,8 +27,9 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.misc.xml_bones import get_xml_bones
 from w3af.core.controllers.chrome.instrumented.exceptions import EventException, EventTimeout
-from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
+from w3af.core.controllers.chrome.crawler.state import CrawlerState
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
+from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 
 NEW_STATE_FOUND = 0
 TOO_MANY_PAGE_RELOAD = 1
@@ -64,22 +65,38 @@ class ChromeCrawlerJS(object):
     #
     MAX_SIMILAR_EVENT_DISPATCH = 5
 
-    def __init__(self, pool, debugging_id):
+    def __init__(self, pool, crawler_state, debugging_id):
         """
         :param pool: Chrome pool
+        :param crawler_state: Crawler state instance used to share information across
+                              multiple instances of ChromeCrawlerJS
         :param debugging_id: Debugging ID for easier tracking in logs
         """
         self._pool = pool
         self._debugging_id = debugging_id
 
         self._chrome = None
-        self._event_dispatch_log = []
         self._url = None
         self._initial_dom = None
         self._initial_bones_xml = None
         self._reloaded_base_url_count = 0
         self._visited_urls = set()
         self._cached_xml_bones = SynchronizedLRUDict(2)
+
+        #
+        # There are two different instances of CrawlerState:
+        #
+        #   * Local: Stores information about the current execution and events
+        #            being dispatched to the browser. Useful for understanding
+        #            if the dispatched events are failing because of DOM changes,
+        #            stats and logging.
+        #
+        #   * Global: Stores information across ChromeCrawlerJS, useful to prevent
+        #             clicking on the same HTML tag that is shown in all footers
+        #             of all HTML responses in a site.
+        #
+        self._local_crawler_state = CrawlerState()
+        self._global_crawler_state = crawler_state
 
     def get_name(self):
         return 'JS events'
@@ -342,7 +359,7 @@ class ChromeCrawlerJS(object):
             om.out.debug(msg % args)
             return TOO_MANY_PAGE_RELOAD
 
-        last_dispatch_results = self._event_dispatch_log[:self.MAX_CONSECUTIVE_EVENT_DISPATCH_ERRORS]
+        last_dispatch_results = self._local_crawler_state[:self.MAX_CONSECUTIVE_EVENT_DISPATCH_ERRORS]
         last_dispatch_results = [el.state for el in last_dispatch_results]
 
         all_failed = True
@@ -368,7 +385,7 @@ class ChromeCrawlerJS(object):
     def _print_stats(self, event_i):
         event_types = {}
 
-        for event_dispatch_log_unit in self._event_dispatch_log:
+        for event_dispatch_log_unit in self._local_crawler_state:
             event_type = event_dispatch_log_unit.event['event_type']
             if event_type in event_types:
                 event_types[event_type] += 1
@@ -388,10 +405,10 @@ class ChromeCrawlerJS(object):
         om.out.debug(msg % args)
 
     def _get_total_dispatch_error_count(self):
-        return len([i for i in self._event_dispatch_log if i.state == EventDispatchLogUnit.FAILED])
+        return len([i for i in self._local_crawler_state if i.state == EventDispatchLogUnit.FAILED])
 
     def _get_total_dispatch_count(self):
-        return len([i for i in self._event_dispatch_log if i.state != EventDispatchLogUnit.IGNORED])
+        return len([i for i in self._local_crawler_state if i.state != EventDispatchLogUnit.IGNORED])
 
     def _dispatch_event(self, event):
         selector = event['selector']
@@ -411,7 +428,7 @@ class ChromeCrawlerJS(object):
             om.out.debug(msg % args)
 
             event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.FAILED)
-            self._event_dispatch_log.append(event_dispatch_log_unit)
+            self._append_event_to_logs(event_dispatch_log_unit)
 
             return False
 
@@ -422,14 +439,18 @@ class ChromeCrawlerJS(object):
             om.out.debug(msg % args)
 
             event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.FAILED)
-            self._event_dispatch_log.append(event_dispatch_log_unit)
+            self._append_event_to_logs(event_dispatch_log_unit)
 
             return False
 
         event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.SUCCESS)
-        self._event_dispatch_log.append(event_dispatch_log_unit)
+        self._append_event_to_logs(event_dispatch_log_unit)
 
         return True
+
+    def _append_event_to_logs(self, event_dispatch_log_unit):
+        self._local_crawler_state.append_event_to_log(event_dispatch_log_unit)
+        self._global_crawler_state.append_event_to_log(event_dispatch_log_unit)
 
     def _reload_base_url(self):
         self._reloaded_base_url_count += 1
@@ -438,7 +459,7 @@ class ChromeCrawlerJS(object):
 
     def _ignore_event(self, event):
         event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.IGNORED)
-        self._event_dispatch_log.append(event_dispatch_log_unit)
+        self._append_event_to_logs(event_dispatch_log_unit)
 
     def _should_dispatch_event(self, event):
         """
@@ -510,7 +531,7 @@ class ChromeCrawlerJS(object):
         #
         similar_successfully_dispatched = 0
 
-        for event_dispatch_log_unit in self._event_dispatch_log:
+        for event_dispatch_log_unit in self._local_crawler_state:
             if event_dispatch_log_unit.state in (EventDispatchLogUnit.FAILED,
                                                  EventDispatchLogUnit.IGNORED):
                 continue

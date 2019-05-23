@@ -26,6 +26,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.chrome.pool import ChromePool, ChromePoolException
 from w3af.core.controllers.chrome.crawler.dom_dump import ChromeCrawlerDOMDump
 from w3af.core.controllers.chrome.crawler.js import ChromeCrawlerJS
+from w3af.core.controllers.chrome.crawler.state import CrawlerState
 from w3af.core.controllers.chrome.crawler.exceptions import ChromeCrawlerException
 from w3af.core.controllers.chrome.crawler.queue import CrawlerHTTPTrafficQueue
 from w3af.core.controllers.chrome.utils.took_line import TookLine
@@ -63,8 +64,10 @@ class ChromeCrawler(object):
 
         self._pool = ChromePool(self._uri_opener, max_instances=max_instances)
 
+        self._crawler_state = CrawlerState()
+
     def get_crawl_strategy_instances(self, debugging_id):
-        yield ChromeCrawlerJS(self._pool, debugging_id)
+        yield ChromeCrawlerJS(self._pool, self._crawler_state, debugging_id)
 
         if self._web_spider is not None:
             yield ChromeCrawlerDOMDump(self._pool, self._web_spider, debugging_id)
