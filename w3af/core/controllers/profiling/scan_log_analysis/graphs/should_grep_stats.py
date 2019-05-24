@@ -60,7 +60,7 @@ def draw_should_grep(scan_log_filename, scan):
     last_data = should_grep_data[-1]
     total = sum(v for k, v in last_data.iteritems())
     total = float(total)
-    data_percent = dict((k, (v / total) * 100) for k, v in last_data.iteritems())
+    data_percent = dict((k, round((v / total) * 100)) for k, v in last_data.iteritems())
     print('    Latest should_grep() percentages: %r' % data_percent)
     print('')
 
