@@ -29,6 +29,7 @@ from graphs.worker_pool_size import draw_worker_pool_size, get_worker_pool_size_
 from graphs.timeout import draw_timeout, get_timeout_data
 from graphs.rtt_histogram import draw_rtt_histogram, get_rtt_histogram_data
 from graphs.rtt import draw_rtt, get_rtt_data
+from graphs.should_grep_stats import draw_should_grep, get_should_grep_data
 from graphs.not_found_requests import get_not_found_requests_over_time_data, draw_not_found_requests_over_time
 from graphs.not_found_cache_rate import get_not_found_cache_rate_data, draw_not_found_cache_rate_over_time
 from graphs.progress_delta import show_progress_delta
@@ -64,6 +65,7 @@ def get_console_functions():
         draw_http_requests_over_time,
         get_crawling_stats,
         #generate_crawl_graph,                  ######
+        draw_should_grep,
         draw_queue_size_grep,
         draw_queue_size_audit,
         draw_queue_size_crawl,
@@ -108,6 +110,7 @@ def get_json_functions():
         get_http_requests_over_time_data,
         get_crawling_stats,
         #generate_crawl_graph,      ######
+        get_should_grep_data,
         get_queue_size_grep_data,
         get_queue_size_audit_data,
         get_queue_size_crawl_data,
