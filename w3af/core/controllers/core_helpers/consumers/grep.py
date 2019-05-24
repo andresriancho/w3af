@@ -48,6 +48,8 @@ class grep(BaseConsumer):
     """
 
     LOG_QUEUE_SIZES_EVERY = 25
+    REPORT_GREP_STATS_EVERY = 25
+
     EXCLUDE_HEADERS_FOR_HASH = tuple(['date',
                                       'expires',
                                       'last-modified',
@@ -100,6 +102,13 @@ class grep(BaseConsumer):
         self._request_response_lru = SynchronizedLRUDict(thread_pool_size * 3)
         self._request_response_processes = dict()
         self._response_cache_key_cache = ResponseCacheKeyCache()
+
+        self._should_grep_stats = {
+            'accept': 0,
+            'reject-seen-body': 0,
+            'reject-seen-url': 0,
+            'reject-out-of-scope': 0,
+        }
 
     def get_name(self):
         return 'Grep'
@@ -352,6 +361,8 @@ class grep(BaseConsumer):
         if not self._consumer_plugins:
             return False
 
+        self._print_should_grep_stats()
+
         # This cache is here to avoid a query to the cf each time a request
         # goes to a grep plugin. Given that in the future the cf will be a
         # sqlite database, this is an important improvement.
@@ -359,6 +370,22 @@ class grep(BaseConsumer):
             self._target_domains = cf.cf.get('target_domains')
 
         if response.get_url().get_domain() not in self._target_domains:
+            self._should_grep_stats['reject-out-of-scope'] += 1
+            return False
+
+        #
+        # This prevents responses for the same URL from being analyze twice
+        #
+        # Sometimes the HTTP responses vary in one byte, which will completely
+        # break the filter we have implemented below (it uses a hash for
+        # the response headers and xml-bones body).
+        #
+        # This filter is less effective, mainly during the audit phase where the
+        # plugins are heavily changing the query-string, but will prevent some HTTP
+        # requests and responses from making it to the grep plugins
+        #
+        if not self._already_analyzed_url.add(response.get_uri()):
+            self._should_grep_stats['reject-seen-url'] += 1
             return False
 
         #
@@ -398,23 +425,24 @@ class grep(BaseConsumer):
                                                                               headers=headers)
 
         if not self._already_analyzed_body.add(response_hash):
+            self._should_grep_stats['reject-seen-body'] += 1
             return False
 
-        #
-        # This prevents responses for the same URL from being analyze twice
-        #
-        # Sometimes the HTTP responses vary in one byte, which will completely
-        # break the filter we have implemented above (it uses an md5 hash for
-        # the response headers and body).
-        #
-        # This filter is less effective, mainly during the audit phase where the
-        # plugins are heavily changing the query-string, but will prevent some HTTP
-        # requests and responses from making it to the grep plugins
-        #
-        if not self._already_analyzed_url.add(response.get_uri()):
-            return False
-
+        self._should_grep_stats['accept'] += 1
         return True
+
+    def _print_should_grep_stats(self):
+        total = 0
+
+        for key in self._should_grep_stats:
+            total += self._should_grep_stats[key]
+
+        if (total % self.REPORT_GREP_STATS_EVERY) != 0:
+            return
+
+        msg = 'Grep consumer should_grep() stats: %r'
+        args = (self._should_grep_stats,)
+        om.out.debug(msg % args)
 
     def grep(self, request, response):
         """

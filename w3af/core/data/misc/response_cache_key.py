@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import zlib
 
 # pylint: disable=E0401
-from darts.lib.utils.lru import LRUDict
+from darts.lib.utils.lru import SynchronizedLRUDict
 # pylint: enable=E0401
 
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
@@ -117,10 +117,7 @@ class ResponseCacheKeyCache(object):
     MAX_SIZE = 2000
 
     def __init__(self):
-        # Note that I'm not using SynchronizedLRUDict, there is no need for all
-        # the locking here. The way this LRU is used allows us to just ignore
-        # some errors that might appear during thread race conditions
-        self._cache = LRUDict(self.MAX_SIZE)
+        self._cache = SynchronizedLRUDict(self.MAX_SIZE)
 
     def get_response_cache_key(self,
                                http_response,
@@ -139,22 +136,7 @@ class ResponseCacheKeyCache(object):
         cache_key = '%s%s' % (smart_str_ignore(body), headers)
         cache_key = quick_hash(cache_key)
 
-        try:
-            result = self._cache.get(cache_key, None)
-        except (AttributeError, AssertionError, KeyError) as _:
-            # This is a rare race conditions which happens when another
-            # thread modifies the cache and changes the __first item in
-            # the cache.
-            #
-            # Just ignore and continue, the only downside of this is that
-            # the cache_key is NOT moved to the beginning of the LRU and
-            # might be removed before the "right time".
-            #
-            # Another solution was to use a locked LRU, which will never
-            # raise this exception, BUT the race condition is so rare and
-            # all the locking is so restrictive that I decided to use this
-            # solution
-            result = None
+        result = self._cache.get(cache_key, None)
 
         if result is not None:
             return result
@@ -163,23 +145,7 @@ class ResponseCacheKeyCache(object):
                                         clean_response=clean_response,
                                         headers=headers)
 
-        try:
-            self._cache[cache_key] = result
-        except (AttributeError, AssertionError, KeyError) as _:
-            # This is a rare race conditions which happens when another
-            # thread modifies the cache and changes the __first item in
-            # the cache.
-            #
-            # Just ignore and continue, the only downside of this is that
-            # the cache_key is NOT moved to the beginning of the LRU and
-            # might be removed before the "right time".
-            #
-            # Another solution was to use a locked LRU, which will never
-            # raise this exception, BUT the race condition is so rare and
-            # all the locking is so restrictive that I decided to use this
-            # solution
-            pass
-
+        self._cache[cache_key] = result
         return result
 
     def clear_cache(self):
