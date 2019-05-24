@@ -35,6 +35,7 @@ class EventListener(object):
 
     MAX_HANDLER_EDIT_DISTANCE = 2
     MAX_SELECTOR_EDIT_DISTANCE = 5
+    MAX_TEXT_CONTENT_EDIT_DISTANCE = 3
 
     __slots__ = (
         '_event_as_dict'
@@ -65,19 +66,33 @@ class EventListener(object):
         if self.get('tag_name') != other.get('tag_name'):
             return False
 
-        edit_distance = Levenshtein.distance(self.get('handler'),
-                                             other.get('handler'))
-
-        if edit_distance > self.MAX_HANDLER_EDIT_DISTANCE:
+        if not self._are_similar(self.get('handler', default=''),
+                                 other.get('handler', default=''),
+                                 self.MAX_HANDLER_EDIT_DISTANCE):
             return False
 
-        edit_distance = Levenshtein.distance(self.get('selector'),
-                                             other.get('selector'))
+        if not self._are_similar(self.get('selector', default=''),
+                                 other.get('selector', default=''),
+                                 self.MAX_SELECTOR_EDIT_DISTANCE):
+            return False
 
-        if edit_distance > self.MAX_SELECTOR_EDIT_DISTANCE:
+        if not self._are_similar(self.get('text_content', default=''),
+                                 other.get('text_content', default=''),
+                                 self.MAX_TEXT_CONTENT_EDIT_DISTANCE):
             return False
 
         return True
+
+    def _are_similar(self, str_a, str_b, max_edit_distance):
+        if str_a == str_b:
+            return True
+
+        edit_distance = Levenshtein.distance(str_a, str_b)
+
+        if edit_distance <= max_edit_distance:
+            return True
+
+        return False
 
     def __getitem__(self, item):
         return self._event_as_dict[item]
@@ -88,8 +103,8 @@ class EventListener(object):
         except KeyError:
             raise AttributeError('%s is not a known attribute' % item)
 
-    def get(self, item):
-        return self._event_as_dict.get(item)
+    def get(self, item, default=None):
+        return self._event_as_dict.get(item) or default
 
     def __setitem__(self, key, value):
         self._event_as_dict[key] = value

@@ -48,6 +48,9 @@ class CrawlerState(object):
             # The deque does not support slices (eg. abc[1:2])
             return list(self._event_dispatch_log)[val]
 
+    def __len__(self):
+        return len(self._event_dispatch_log)
+
     def __iter__(self):
         for event_dispatch_log_unit in self._event_dispatch_log:
             yield event_dispatch_log_unit

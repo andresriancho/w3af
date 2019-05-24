@@ -427,8 +427,7 @@ class ChromeCrawlerJS(object):
             args = (event_type, selector, self._url, self._debugging_id)
             om.out.debug(msg % args)
 
-            event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.FAILED)
-            self._append_event_to_logs(event_dispatch_log_unit)
+            self._append_event_to_logs(event, EventDispatchLogUnit.FAILED)
 
             return False
 
@@ -438,17 +437,18 @@ class ChromeCrawlerJS(object):
             args = (event_type, selector, self._url, self._debugging_id)
             om.out.debug(msg % args)
 
-            event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.FAILED)
-            self._append_event_to_logs(event_dispatch_log_unit)
+            self._append_event_to_logs(event, EventDispatchLogUnit.FAILED)
 
             return False
 
-        event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.SUCCESS)
-        self._append_event_to_logs(event_dispatch_log_unit)
+        self._append_event_to_logs(event, EventDispatchLogUnit.SUCCESS)
 
         return True
 
-    def _append_event_to_logs(self, event_dispatch_log_unit):
+    def _append_event_to_logs(self, event, state):
+        url = self._url.copy()
+        event_dispatch_log_unit = EventDispatchLogUnit(event, state, url)
+
         self._local_crawler_state.append_event_to_log(event_dispatch_log_unit)
         self._global_crawler_state.append_event_to_log(event_dispatch_log_unit)
 
@@ -458,8 +458,7 @@ class ChromeCrawlerJS(object):
         return self._chrome.wait_for_load()
 
     def _ignore_event(self, event):
-        event_dispatch_log_unit = EventDispatchLogUnit(event, EventDispatchLogUnit.IGNORED)
-        self._append_event_to_logs(event_dispatch_log_unit)
+        self._append_event_to_logs(event, EventDispatchLogUnit.IGNORED)
 
     def _should_dispatch_event(self, event):
         """
@@ -531,12 +530,14 @@ class ChromeCrawlerJS(object):
         #
         similar_successfully_dispatched = 0
 
-        for event_dispatch_log_unit in self._local_crawler_state:
+        # Iterate in reverse, similar events were most likely sent a few seconds
+        # ago by this or other crawler instance
+        for event_dispatch_log_unit in reversed(self._global_crawler_state):
             if event_dispatch_log_unit.state in (EventDispatchLogUnit.FAILED,
                                                  EventDispatchLogUnit.IGNORED):
                 continue
 
-            if event_dispatch_log_unit.event == event:
+            if event_dispatch_log_unit.event == event and event_dispatch_log_unit.uri == self._url:
                 break
 
             if event_dispatch_log_unit.event.fuzzy_matches(event):
@@ -550,10 +551,9 @@ class ChromeCrawlerJS(object):
             # the current event should be dispatched
             return True
 
-        msg = ('Ignoring "%s" event on selector "%s" and URL "%s"'
-               ' because it was already sent. This happens when the'
-               ' application attaches more than one event listener'
-               ' to the same event and element. (did: %s)')
+        msg = ('Ignoring "%s" event on selector "%s" and URL "%s" because'
+               ' the same event, or a very similar one, was already'
+               ' dispatched (did: %s)')
         args = (current_event_type,
                 event['selector'],
                 self._url,
@@ -571,14 +571,16 @@ class EventDispatchLogUnit(object):
 
     __slots__ = (
         'state',
-        'event'
+        'event',
+        'uri'
     )
 
-    def __init__(self, event, state):
+    def __init__(self, event, state, uri):
         assert state in (self.IGNORED, self.SUCCESS, self.FAILED), 'Invalid state'
 
         self.state = state
         self.event = event
+        self.uri = uri
 
     def get_state_as_string(self):
         if self.state == EventDispatchLogUnit.IGNORED:
