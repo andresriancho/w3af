@@ -195,6 +195,19 @@ class ChromeProcess(object):
                 else:
                     self.store_stderr(data)
 
+        #
+        # Read one last time to prevent some data to be lost
+        # Also prevents zombie processes
+        #
+        if self.proc is not None:
+            try:
+                stdoutdata, stderrdata = self.proc.communicate(timeout=3)
+            except:
+                pass
+            else:
+                self.store_stdout(stdoutdata)
+                self.store_stderr(stderrdata)
+
         os.close(stdout_r)
         os.close(stdout_w)
         os.close(stderr_r)
@@ -223,7 +236,13 @@ class ChromeProcess(object):
                 # will try to kill a process that doesn't exist anymore
                 pass
             finally:
-                self.proc = None
+                # Before the code contained:
+                #
+                # self.proc = None
+                #
+                # But doing that prevented me to read the last bytes from the
+                # chrome process in run()
+                pass
 
         if self.thread is not None:
             self.thread.join()
