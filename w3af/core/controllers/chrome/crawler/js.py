@@ -42,8 +42,18 @@ class ChromeCrawlerJS(object):
     the page using chrome
     """
 
-    EVENTS_TO_DISPATCH = {'click',
-                          'dblclick'}
+    #
+    # The max number of events to dispatch for a given page that has been loaded
+    #
+    MAX_EVENTS_TO_DISPATCH = 150
+
+    #
+    # The event types to dispatch, the order in this list is important because
+    # we read from the DOM filtering by type (in this order) until
+    # MAX_EVENTS_TO_DISPATCH is reached
+    #
+    EVENTS_TO_DISPATCH = ['click',
+                          'dblclick']
 
     MAX_PAGE_RELOAD = 50
     EQUAL_RATIO_AFTER_BACK = 0.9
@@ -166,6 +176,27 @@ class ChromeCrawlerJS(object):
             self._cached_xml_bones[dom_str] = xml_bones
             return xml_bones
 
+    def _get_event_listeners(self):
+        """
+        Get event listeners from the DOM.
+
+        This method yields at most MAX_EVENTS_TO_DISPATCH events and returns
+        them in the order specified in EVENTS_TO_DISPATCH.
+
+        :return: Yields EventListener instances
+        """
+        total = 0
+
+        for event_type in self.EVENTS_TO_DISPATCH:
+            event_listeners = self._chrome.get_all_event_listeners(event_filter=[event_type])
+
+            for event in event_listeners:
+                yield event
+
+                total += 1
+                if total == self.MAX_EVENTS_TO_DISPATCH:
+                    return
+
     def _crawl_one_state(self):
         """
         Dispatch events in one state (DOM) until the state changes enough that
@@ -179,9 +210,7 @@ class ChromeCrawlerJS(object):
         self._initial_dom = self._chrome.get_dom()
         self._initial_bones_xml = self._cached_get_xml_bones(self._initial_dom)
 
-        event_listeners = self._chrome.get_all_event_listeners(event_filter=self.EVENTS_TO_DISPATCH)
-
-        for event_i, event in enumerate(event_listeners):
+        for event_i, event in enumerate(self._get_event_listeners()):
 
             if not self._should_dispatch_event(event):
                 continue
