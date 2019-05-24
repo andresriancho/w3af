@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import Levenshtein
 
+from w3af.core.data.misc.encoding import smart_str_ignore
+
 
 class EventListener(object):
     """
@@ -87,6 +89,9 @@ class EventListener(object):
         if str_a == str_b:
             return True
 
+        str_a = smart_str_ignore(str_a)
+        str_b = smart_str_ignore(str_b)
+        
         edit_distance = Levenshtein.distance(str_a, str_b)
 
         if edit_distance <= max_edit_distance:
