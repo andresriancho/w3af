@@ -446,7 +446,7 @@ class ChromeCrawlerJS(object):
         return True
 
     def _append_event_to_logs(self, event, state):
-        url = self._url.copy()
+        url = self._url[:]
         event_dispatch_log_unit = EventDispatchLogUnit(event, state, url)
 
         self._local_crawler_state.append_event_to_log(event_dispatch_log_unit)
