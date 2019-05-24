@@ -26,6 +26,7 @@ import w3af.core.data.kb.config as cf
 from w3af.core.controllers.output_manager import manager
 from w3af.core.controllers.threads.threadpool import Pool
 from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
+from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
@@ -35,34 +36,11 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.plugins.crawl.web_spider import web_spider
 
 
-class TestChromeCrawler(unittest.TestCase):
-
-    SERVER_HOST = '127.0.0.1'
-    SERVER_ROOT_PATH = '/tmp/'
-
-    def setUp(self):
-        self.uri_opener = ExtendedUrllib()
-        self.http_traffic_queue = Queue.Queue()
-
-        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
-                                                webroot=self.SERVER_ROOT_PATH,
-                                                handler=ExtendedHttpRequestHandler)
-
-        self.server_thread = t
-        self.server = s
-        self.server_port = p
-
-        self.crawler = ChromeCrawler(self.uri_opener)
-
-    def tearDown(self):
-        while not self.http_traffic_queue.empty():
-            self.http_traffic_queue.get()
-
-        self.crawler.terminate()
-        self.server.shutdown()
-        self.server_thread.join()
+class TestChromeCrawler(BaseChromeCrawlerTest):
 
     def test_crawl_one_url(self):
+        self._unittest_setup(ExtendedHttpRequestHandler)
+
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
         self.crawler.crawl(url, self.http_traffic_queue)
 
@@ -73,13 +51,7 @@ class TestChromeCrawler(unittest.TestCase):
         self.assertEqual(request.get_url().url_string, url)
 
     def test_crawl_xmlhttprequest(self):
-        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
-                                                webroot=self.SERVER_ROOT_PATH,
-                                                handler=XmlHttpRequestHandler)
-
-        self.server_thread = t
-        self.server = s
-        self.server_port = p
+        self._unittest_setup(XmlHttpRequestHandler)
 
         root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
         self.crawler.crawl(root_url, self.http_traffic_queue)
