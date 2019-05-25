@@ -25,6 +25,7 @@ import itertools
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
+from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 
 
 class ChromePool(object):
@@ -41,6 +42,17 @@ class ChromePool(object):
     """
     # Max number of InstrumentedChrome instances
     MAX_INSTANCES = 20
+
+    #
+    # Min number of InstrumentedChrome instances
+    #
+    # If the number of threads running web_spider (crawl plugin, handled by
+    # crawl_infrastructure that inherits from BaseConsumer) is greater than the
+    # number of InstrumentedChrome instances then the web_spider calls will
+    # start to wait too long and potentially timeout because there is no free
+    # InstrumentedChrome
+    #
+    MIN_INSTANCES = BaseConsumer.THREAD_POOL_SIZE
 
     # Max number of tasks per instance, after this the instance is killed
     # and a new one is spawned.
@@ -62,6 +74,12 @@ class ChromePool(object):
 
         self.log_counter = 0
         self.max_instances_configured = max_instances or self.MAX_INSTANCES
+
+        min_error_message = ('The number of instances in the ChromePool needs'
+                             ' to be greater than %s in order to prevent timeouts'
+                             ' and dead-locks in the web_spider plugin')
+        min_error_message %= (self.MIN_INSTANCES - 1,)
+        assert self.max_instances_configured >= self.MIN_INSTANCES, min_error_message
 
     def log_stats(self, force=False):
         """

@@ -594,7 +594,9 @@ class web_spider(CrawlPlugin):
         d = 'Control the number of concurrent Chrome (or Chromium) processes'
         h = ('More Chrome processes will increase the crawling speed, but will'
              ' also consume more resources (mainly memory).')
-        o = opt_factory('chrome_processes', self._chrome_processes, d, INT, help=h)
+        opt = {'max': ChromePool.MAX_INSTANCES * 3,
+               'min': ChromePool.MIN_INSTANCES}
+        o = opt_factory('chrome_processes', self._chrome_processes, d, INT, help=h, options=opt)
         ol.add(o)
 
         return ol
