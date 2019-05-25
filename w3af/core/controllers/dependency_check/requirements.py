@@ -113,7 +113,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('setproctitle', 'setproctitle', '1.1.10'),
 
                      # Calculate distances between two strings
-                     PIPDependency('Levenshtein', 'python-Levenshtein', '1.1.10'),
+                     PIPDependency('Levenshtein', 'python-Levenshtein', '0.12.0'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
