@@ -87,6 +87,7 @@ class LoggingHandler(ProxyHandler):
             return self._create_error_response(http_request, None, msg)
 
         self._remove_user_agent_headless(http_request)
+        self._add_language_header(http_request)
 
         http_response = super(LoggingHandler, self)._send_http_request(http_request,
                                                                        grep=grep,
@@ -114,7 +115,44 @@ class LoggingHandler(ProxyHandler):
 
         return http_response
 
+    def _add_language_header(self, http_request):
+        """
+        Some sites require the accept-language header to be sent in the HTTP
+        request.
+
+        https://github.com/GoogleChrome/puppeteer/issues/665
+        https://github.com/GoogleChrome/puppeteer/issues/665#issuecomment-356634721
+
+        Also, some sites use this header to identify headless chrome and change
+        the behavior to (in most cases) prevent scrapping.
+
+        This method adds the accept-language header if it is not already set.
+
+        :param http_request: HTTP request
+        :return: HTTP request with the header
+        """
+        headers = http_request.get_headers()
+
+        stored_header_value, stored_header_name = headers.iget('accept-language')
+
+        if stored_header_name:
+            # Already set, just return
+            return
+
+        headers[stored_header_name] = 'en-GB,en-US;q=0.9,en;q=0.8'
+        http_request.set_headers(headers)
+
     def _remove_user_agent_headless(self, http_request):
+        """
+        Remove the HeadlessChrome part of the user agent string.
+
+        Some sites detect this and block it.
+
+        https://github.com/GoogleChrome/puppeteer/issues/665
+
+        :param http_request: HTTP request
+        :return: HTTP request
+        """
         headers = http_request.get_headers()
 
         stored_header_value, stored_header_name = headers.iget('user-agent')
