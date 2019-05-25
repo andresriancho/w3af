@@ -33,24 +33,27 @@ class ComboOption(BaseOption):
 
     _type = COMBO
 
-    def __init__(self, name, default_value, desc, _help='', tabid=''):
+    def __init__(self, name, default_value, desc, _help='', tabid='', options=None):
         """
         :param name: The name of the ComboOption
         :param default_value: The default value of the ComboOption;
                              it is a list of the options that the
                              user can choose from.
         :param desc: The description of the ComboOption
-        :param help: The help of the ComboOption; a large description
+        :param _help: The help of the ComboOption; a large description
                      of the ComboOption
         :param tabid: The tab id of the ComboOption
         """
         self._value = default_value[0]
         self._default_value = default_value[0]
         self._combo_options = default_value
-        self._name = name
-        self._desc = desc
-        self._help = _help
-        self._tabid = tabid
+
+        super(ComboOption, self).__init__(name,
+                                          default_value[0],
+                                          desc,
+                                          _help=_help,
+                                          tabid=tabid,
+                                          options=options)
 
     def get_combo_options(self):
         return self._combo_options
