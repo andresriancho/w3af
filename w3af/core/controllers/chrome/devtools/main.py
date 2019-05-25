@@ -521,6 +521,7 @@ class MessageIdentifierGenerator(object):
     """
     def __init__(self):
         self.message_identifier = None
+        self._rand = random.Random(1)
 
     def get(self):
         if self.message_identifier is None:
@@ -529,4 +530,4 @@ class MessageIdentifierGenerator(object):
         return self.message_identifier
 
     def new(self):
-        self.message_identifier = random.randint(100000, 10000000)
+        self.message_identifier = self._rand.randint(100000, 10000000)
