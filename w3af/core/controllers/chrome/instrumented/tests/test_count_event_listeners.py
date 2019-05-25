@@ -47,11 +47,15 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        #('https://google.com/', 20),
-        #('https://www.google.com/search?q=w3af', 70),
+        ('https://www.bbc.com/news/uk-politics-47729773', 1444),
+    ])
 
-        #('https://www.bing.com/', 80),
-        #('https://www.bing.com/search?q=w3af', 100),
+    """
+        ('https://google.com/', 20),
+        ('https://www.google.com/search?q=w3af', 70),
+
+        ('https://www.bing.com/', 80),
+        ('https://www.bing.com/search?q=w3af', 100),
 
         ('https://facebook.com/', 50),
         ('https://www.facebook.com/', 50),
@@ -73,7 +77,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://github.com/andresriancho/w3af', 0),
 
         ('https://web.whatsapp.com/', 0),
-    ])
+    """
 
     def _load_url(self, url):
         uri_opener = ExtendedUrllib()
@@ -120,8 +124,11 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
 
         self._print_summary(url, all_event_listeners)
 
-        msg = '%s has %s event listeners and should have at least %s'
-        args = (url, len(all_event_listeners), min_event_count)
+        all_el_str = '\n'.join(' - %s' % i for i in all_event_listeners)
+
+        msg = ('%s has %s event listeners and should have at least %s.'
+               ' The complete list of identified event listeners is:\n%s')
+        args = (url, len(all_event_listeners), min_event_count, all_el_str)
 
         self.assertGreaterEqual(len(all_event_listeners),
                                 min_event_count,
