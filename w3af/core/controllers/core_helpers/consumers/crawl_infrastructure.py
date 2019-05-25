@@ -47,7 +47,9 @@ class CrawlInfrastructure(BaseConsumer):
     again for continuing with the discovery process.
     """
 
-    def __init__(self, crawl_infrastructure_plugins, w3af_core,
+    def __init__(self,
+                 crawl_infrastructure_plugins,
+                 w3af_core,
                  max_discovery_time):
         """
         :param crawl_infrastructure_plugins: Instances of CrawlInfrastructure
