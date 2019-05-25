@@ -21,8 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import sys
 import platform
-
-import subprocess32 as subprocess
+import subprocess
 
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 from w3af.core.controllers.dependency_check.platforms.base_platform import Platform
