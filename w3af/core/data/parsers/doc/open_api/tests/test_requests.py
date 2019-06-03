@@ -33,6 +33,7 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (No
                                                                               StringParamQueryString,
                                                                               StringParamHeader,
                                                                               IntParamJson,
+                                                                              IntParamWithExampleJson,
                                                                               ArrayStringItemsQueryString,
                                                                               ComplexDereferencedNestedModel,
                                                                               DereferencedPetStore,
@@ -60,7 +61,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/random'
+        e_url = 'http://www.w3af.com/random'
         e_headers = Headers()
 
         self.assertEqual(fuzzable_request.get_method(), 'GET')
@@ -152,7 +153,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets/42'
+        e_url = 'http://www.w3af.com/pets/42'
         e_headers = Headers([('Content-Type', 'application/json')])
 
         self.assertEqual(fuzzable_request.get_method(), 'GET')
@@ -232,6 +233,30 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(fuzzable_request.get_headers(), e_headers)
         self.assertEqual(fuzzable_request.get_data(), '{"pet": {"count": 42}}')
 
+    def test_model_with_int_param_json_example_value(self):
+        specification_as_string = IntParamWithExampleJson().get_specification()
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+
+        data = [d for d in handler.get_api_information()]
+
+        # The specification says that this query string parameter is
+        # required and there is only one parameter, so there is no second
+        # operation with the optional parameters filled in.
+        self.assertEqual(len(data), 1)
+        data_i = data[0]
+
+        factory = RequestFactory(*data_i)
+        fuzzable_request = factory.get_fuzzable_request()
+
+        e_url = 'http://petstore.swagger.io/api/pets'
+        e_headers = Headers([('Content-Type', 'application/json')])
+
+        self.assertEqual(fuzzable_request.get_method(), 'POST')
+        self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
+        self.assertEqual(fuzzable_request.get_headers(), e_headers)
+        self.assertEqual(fuzzable_request.get_data(), '{"pet": {"count": 666999}}')
+
     def test_no_model_json_object_complex_nested_in_body(self):
         specification_as_string = ComplexDereferencedNestedModel().get_specification()
         http_response = self.generate_response(specification_as_string)
@@ -248,7 +273,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets'
+        e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ('{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
                   ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'
@@ -334,7 +359,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets/John'
+        e_url = 'http://www.w3af.com/pets/John'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ''
 
@@ -351,7 +376,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets'
+        e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ''
 
@@ -368,7 +393,7 @@ class TestRequests(unittest.TestCase):
         factory = RequestFactory(*data_i)
         fuzzable_request = factory.get_fuzzable_request()
 
-        e_url = 'http://www.w3af.com/swagger.json/pets'
+        e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
         e_data = ('{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
                   ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'

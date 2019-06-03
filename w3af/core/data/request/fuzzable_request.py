@@ -83,7 +83,8 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                  '_uri',
                  '_url',
                  '_sent_info_comp',
-                 '_force_fuzzing_headers')
+                 '_force_fuzzing_headers',
+                 '_force_fuzzing_url_parts')
 
     def __init__(self, uri, method='GET', headers=None, cookie=None,
                  post_data=None):
@@ -117,6 +118,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Set the headers which we want to fuzz explicitly (empty by default)
         self._force_fuzzing_headers = set()
+
+        # Set a path template explicitly (empty by default)
+        self._force_fuzzing_url_parts = tuple()
 
     def __getstate__(self):
         state = {k: getattr(self, k) for k in self.__slots__}
@@ -453,6 +457,26 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         :return: A list of header names.
         """
         return list(self._force_fuzzing_headers)
+
+    def set_force_fuzzing_url_parts(self, url_parts):
+        """
+        Sets a list of url parts which should be fuzzed.
+        :param url_parts: An iterable of (path part, is variable) tuples.
+        """
+        if url_parts is None:
+            raise TypeError('url_parts should not be null')
+
+        if not isinstance(url_parts, collections.Iterable):
+            raise TypeError(TYPE_ERROR % ('_force_fuzzing_url_parts', 'iterable'))
+
+        self._force_fuzzing_url_parts = tuple(url_parts)
+
+    def get_force_fuzzing_url_parts(self):
+        """
+        Returns a list of url parts which should be fuzzed.
+        :return: A tuple of (path part, is variable) tuples.`
+        """
+        return list(self._force_fuzzing_url_parts)
 
     def set_referer(self, referer):
         self._headers['Referer'] = str(referer)

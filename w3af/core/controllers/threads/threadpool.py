@@ -203,7 +203,7 @@ class Worker(object):
     def is_idle(self):
         return self.func is None
 
-    def get_real_func_name(self):
+    def get_real_func_name_args(self):
         """
         Because of various levels of abstraction the function name is not always in
         self.func.__name__, this method "unwraps" the abstractions and shows us
@@ -211,30 +211,36 @@ class Worker(object):
 
         :return: The function name
         """
-        if self.func is None:
-            return None
 
-        if self.func is mapstar:
-            self.func = self.args[0][0]
-            self.args = self.args[0][1:]
+        # self.func/self.args could change over the execution of this method, so take
+        # a copy here.
+        current_func = self.func
+        current_args = self.args
 
-        if self.func is apply_with_return_error:
-            self.func = self.args[0][0]
-            self.args = self.args[0][1:]
+        if current_func is mapstar:
+            current_func = current_args[0][0]
+            current_args = current_args[0][1:]
 
-        if isinstance(self.func, return_args):
-            return self.func.func_orig.__name__
+        if current_func is apply_with_return_error:
+            current_func = current_args[0][0]
+            current_args = current_args[0][1:]
 
-        if isinstance(self.func, one_to_many):
-            return self.func.func_orig.__name__
+        if isinstance(current_func, return_args):
+            return current_func.func_orig.__name__, current_args
 
-        return self.func.__name__
+        if isinstance(current_func, one_to_many):
+            return current_func.func_orig.__name__, current_args
+
+        if current_func is None:
+            return None, None
+
+        return current_func.__name__, current_args
 
     def get_state(self):
-        func_name = self.get_real_func_name()
+        func_name, func_args = self.get_real_func_name_args()
 
         return {'func_name': func_name,
-                'args': self.args,
+                'args': func_args,
                 'kwargs': self.kwargs,
                 'start_time': self.start_time,
                 'idle': self.is_idle(),
@@ -406,6 +412,9 @@ class Pool(ThreadPool):
 
     def get_inqueue(self):
         return self._inqueue
+
+    def get_outqueue(self):
+        return self._outqueue
 
     def get_running_task_count(self):
         # Cheating here a little bit because the task queued in _inqueue will

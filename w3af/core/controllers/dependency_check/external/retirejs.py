@@ -24,6 +24,9 @@ import subprocess
 from w3af.core.controllers.misc.which import which
 
 
+SUPPORTED_RETIREJS = '2.'
+
+
 def retirejs_is_installed():
     """
     :return: True if retirejs is installed and we were able to parse the version.
@@ -44,6 +47,9 @@ def retirejs_is_installed():
 
     # Just check that the version has the format 1.6.0
     if len(version_split) != 3:
+        return False
+
+    if not version.startswith(SUPPORTED_RETIREJS):
         return False
 
     return True

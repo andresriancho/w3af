@@ -48,6 +48,7 @@ class x_forwarded_for(EvasionPlugin):
         """
         if not request.has_header('X-forwarded-for'):
             request.add_header('X-forwarded-for', self.get_random_ip())
+
         return request
     
     def get_random_ip(self):

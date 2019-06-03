@@ -48,7 +48,7 @@ class ConnectionManager(object):
         # Just make sure we don't leak open connections
         try:
             conn.close()
-        except OpenSSL.SSL.SysCallError:
+        except (AttributeError, OpenSSL.SSL.SysCallError):
             # This exception is raised when the remote end closes the connection
             # before we do. We continue as if nothing happen, because our goal
             # is to have a closed connection, and we already got that.

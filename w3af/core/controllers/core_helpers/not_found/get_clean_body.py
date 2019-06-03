@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.url.helpers import get_clean_body_impl
 
 
@@ -39,16 +40,37 @@ def get_clean_body(response):
     :return: A string that represents the "cleaned" response body of the
              response.
     """
-    body = response.body
+    return get_clean_body_from_parts(response.body,
+                                     response.get_uri(),
+                                     response.doc_type)
 
-    if not response.is_text_or_html():
+
+def get_clean_body_from_parts(body, uri, doc_type):
+    """
+    Definition of clean in this method:
+        - input:
+            - response.get_url() == http://host.tld/aaaaaaa/
+            - response.get_body() == 'spam aaaaaaa eggs'
+
+        - output:
+            - self._clean_body( response ) == 'spam  eggs'
+
+    The same works with file names.
+    All of them, are removed url-decoded and "as is".
+
+    :return: A string that represents the "cleaned" response body of the
+             response.
+    """
+    if not doc_type == HTTPResponse.DOC_TYPE_TEXT_OR_HTML:
         return body
 
+    url = uri.uri2url()
+
     # Do some real work...
-    base_urls = [response.get_url(),
-                 response.get_url().switch_protocol(),
-                 response.get_uri(),
-                 response.get_uri().switch_protocol()]
+    base_urls = [url,
+                 url.switch_protocol(),
+                 uri,
+                 uri.switch_protocol()]
 
     to_replace = []
 
@@ -64,4 +86,4 @@ def get_clean_body(response):
     to_replace = [trs for trs in to_replace if len(trs) > 6]
     to_replace = list(set(to_replace))
 
-    return get_clean_body_impl(response, to_replace, multi_encode=False)
+    return get_clean_body_impl(body, to_replace, multi_encode=False)

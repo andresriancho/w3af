@@ -33,7 +33,6 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.threads.threadpool import Pool
-from w3af.core.controllers.misc.homeDir import get_home_dir
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version_minimal
 from w3af.core.controllers.core_helpers.profiles import CoreProfiles
 from w3af.core.controllers.core_helpers.plugins import CorePlugins
@@ -52,8 +51,9 @@ from w3af.core.controllers.profiling import start_profiling, stop_profiling
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.misc.dns_cache import enable_dns_cache
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
-from w3af.core.controllers.misc.homeDir import (create_home_dir,
-                                                verify_dir_has_perm, HOME_DIR)
+from w3af.core.controllers.misc.home_dir import (create_home_dir,
+                                                 verify_dir_has_perm,
+                                                 get_home_dir)
 from w3af.core.controllers.misc.temp_dir import (create_temp_dir,
                                                  remove_temp_dir,
                                                  TEMP_DIR)
@@ -232,7 +232,9 @@ class w3afCore(object):
             else:
                 raise
 
-        except IOError as (error_id, error_msg):
+        except IOError as io_err:
+            (error_id, error_msg) = io_err.args
+
             # https://github.com/andresriancho/w3af/issues/9653
             # IOError: [Errno 28] No space left on device
             if error_id == errno.ENOSPC:
@@ -355,6 +357,13 @@ class w3afCore(object):
 
         # Stop the parser subprocess
         parser_cache.dpc.clear()
+
+        # Remove the xurllib cache, bloom filters, DiskLists, etc.
+        #
+        # This needs to be done here and not in stop() because we want to keep
+        # these files (mostly the HTTP request/response data) for the user to
+        # analyze in the GUI after the scan has finished
+        remove_temp_dir(ignore_errors=True)
 
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
@@ -531,18 +540,20 @@ class w3afCore(object):
         Handle all the work related to creating/managing the home directory.
         :return: None
         """
+        home_dir = get_home_dir()
+
         # Start by trying to create the home directory (linux: /home/user/.w3af/)
         if not create_home_dir():
-            print('Failed to create the w3af home directory "%s".' % HOME_DIR)
+            print('Failed to create the w3af home directory "%s".' % home_dir)
             sys.exit(-3)            
 
         # If this fails, maybe it is because the home directory doesn't exist
         # or simply because it ain't writable|readable by this user
-        if not verify_dir_has_perm(HOME_DIR, perm=os.W_OK | os.R_OK, levels=1):
+        if not verify_dir_has_perm(home_dir, perm=os.W_OK | os.R_OK, levels=1):
             print('Either the w3af home directory "%s" or its contents are not'
                   ' writable or readable. Please set the correct permissions'
                   ' and ownership. This usually happens when running w3af as'
-                  ' root using "sudo".' % HOME_DIR)
+                  ' root using "sudo".' % home_dir)
             sys.exit(-3)
 
     def _tmp_directory(self):

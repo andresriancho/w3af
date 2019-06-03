@@ -98,3 +98,6 @@ w3af/core/data/parsers/tests/data/huge.html
 # Helpers to create deserialization payloads
 ysoserial-0.0.6-SNAPSHOT-all.jar
 node_modules/
+
+# Ignore scan logs
+scan-logs/

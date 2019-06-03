@@ -39,15 +39,15 @@ class GenericFormAuthTest(PluginTest):
         'crawl': (PluginConfig('web_spider',
                                ('only_forward', True, PluginConfig.BOOL),),),
         'bruteforce': (PluginConfig('form_auth',
-                                    ('usersFile',
+                                    ('users_file',
                                      small_users_positive,
                                      PluginConfig.STR),
 
-                                    ('passwdFile',
+                                    ('passwd_file',
                                      small_passwords,
                                      PluginConfig.INPUT_FILE),
 
-                                    ('useProfiling',
+                                    ('use_profiling',
                                      False,
                                      PluginConfig.BOOL),),),
     }
@@ -69,15 +69,15 @@ class FormAuthTest(GenericFormAuthTest):
                               ('only_forward', True, PluginConfig.BOOL),),),
         'bruteforce': (PluginConfig('form_auth',
 
-                                    ('usersFile',
+                                    ('users_file',
                                      GenericFormAuthTest.small_users_negative,
                                      PluginConfig.STR),
 
-                                    ('passwdFile',
+                                    ('passwd_file',
                                      GenericFormAuthTest.small_passwords,
                                      PluginConfig.INPUT_FILE),
 
-                                    ('useProfiling',
+                                    ('use_profiling',
                                      False,
                                      PluginConfig.BOOL),),)
     }

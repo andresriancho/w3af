@@ -34,7 +34,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def __init__(self, url,
                  data=None,
-                 headers=Headers(),
+                 headers=None,
                  origin_req_host=None,
                  unverifiable=False,
                  cookies=True,
@@ -57,6 +57,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         :param method: None means choose the default (POST if data is not None)
         :param data: The post_data as a string
         """
+        headers = headers or Headers()
         #
         # Save some information for later access in an easier way
         #
@@ -98,6 +99,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     def with_binary_response(self):
         return self._binary_response
 
+    def set_data(self, data):
+        self.data = data
+
     def add_header(self, key, val):
         """
         Override mostly to avoid having header values of DataToken type
@@ -126,6 +130,9 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def get_uri(self):
         return self.url_object
+
+    def set_uri(self, url_object):
+        self.url_object = url_object
     
     def get_headers(self):
         headers = Headers(self.headers.items())
@@ -194,7 +201,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         cookies = udict['cookies']
         session = udict['session']
         cache = udict['cache']
-        timeout = socket._GLOBAL_DEFAULT_TIMEOUT if udict['timeout'] is None else udict['timeout']
+        timeout = socket.getdefaulttimeout() if udict['timeout'] is None else udict['timeout']
         new_connection = udict['new_connection']
         follow_redirects = udict['follow_redirects']
         use_basic_auth = udict['use_basic_auth']

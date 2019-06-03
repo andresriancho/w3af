@@ -151,7 +151,7 @@ class xxe(AuditPlugin):
 
         return False
 
-    def _create_payloads(self, original_value):
+    def _create_payloads(self, param_name, original_value):
         """
         Use the class attributes to create all the payloads, yield them using
         an iterator.
@@ -178,9 +178,13 @@ class xxe(AuditPlugin):
 
         #
         # Now we parse the original value using our XML parser, and modify that
-        # XML in order to inject the payloads there
+        # XML in order to inject the payloads there. In order to do that, we
+        # need the original value to be an xml document
         #
-        xml_root = self._parse_xml(original_value)
+        if not original_value:
+            return
+
+        xml_root = self._parse_xml(param_name, original_value)
         if xml_root is not None:
             for payload in self._create_xml_payloads(xml_root):
                 yield payload
@@ -222,10 +226,11 @@ class xxe(AuditPlugin):
             if xml_mutant_count > self.MAX_XML_PARAM_MUTANTS:
                 break
 
-    def _parse_xml(self, original_value):
+    def _parse_xml(self, param_name, original_value):
         """
         Parse the XML into an object
 
+        :param param_name: The name of the parameter as seen by the HTML parser
         :param original_value: The XML as sent by the application
         :return: The XML object or None if parsing failed
         """
@@ -235,16 +240,27 @@ class xxe(AuditPlugin):
         if len(original_value) > 1024 * 1024:
             return None
 
+        try:
+            original_value_str = smart_str_ignore(original_value)
+        except Exception, e:
+            msg = ('Failed to encode unicode original value to string'
+                   ' in _parse_xml(). Exception: "%s"')
+            om.out.debug(msg % e)
+            return None
+
         # Secure, don't introduce XXE in our XXE detection plugin ;-)
         parser = etree.XMLParser(load_dtd=False,
                                  no_network=True,
                                  resolve_entities=False)
 
         try:
-            xml_root = etree.fromstring(smart_str_ignore(original_value), parser=parser)
+            xml_root = etree.fromstring(original_value_str, parser=parser)
         except Exception, e:
-            msg = 'Failed to parse XML to inject XXE tests. Exception was: "%s"'
-            om.out.debug(msg % e)
+            msg = ('Failed to parse "%s..." as XML to inject XXE tests.'
+                   ' The parameter name where injection failed was "%s".'
+                   ' Exception: "%s"')
+            args = (original_value[:25], param_name, e)
+            om.out.debug(msg % args)
             return None
 
         return xml_root
@@ -262,7 +278,7 @@ class xxe(AuditPlugin):
             if not self._should_inject_parameter(param_name, original_value):
                 continue
 
-            for payload in self._create_payloads(original_value):
+            for payload in self._create_payloads(param_name, original_value):
                 m = mutant.copy()
                 m.set_token_value(payload)
                 yield m

@@ -37,6 +37,7 @@ def construct_request(operation, request_options, **op_kwargs):
     :return: request in dict form
     """
     url = operation.swagger_spec.api_url.rstrip('/') + operation.path_name
+
     request = {
         'method': str(operation.http_method.upper()),
         'url': url,

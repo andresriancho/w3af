@@ -225,12 +225,12 @@ def get_clean_body(mutant, response, max_escape_count=500):
         return response.body
 
     strings_to_replace_list = [mutant.get_token_value()]
-    return get_clean_body_impl(response,
+    return get_clean_body_impl(response.body,
                                strings_to_replace_list,
                                max_escape_count=max_escape_count)
 
 
-def get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
+def get_clean_body_impl(body, strings_to_replace_list, multi_encode=True,
                         max_escape_count=None):
     """
     This is a low level function which allows me to use all the improvements
@@ -240,7 +240,7 @@ def get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
     different parameters, do some preparation work, and then call this function
     to really do the replacements.
 
-    :param response: HTTP response object
+    :param body: HTTP response body
     :param strings_to_replace_list: A list of strings to replace. These can be
                                     byte strings or unicode, we'll handle both
                                     internally.
@@ -258,7 +258,6 @@ def get_clean_body_impl(response, strings_to_replace_list, multi_encode=True,
                              have missed.
     :return: The body as a unicode with all strings to replace removed.
     """
-    body = response.body
     body_lower = body.lower()
     body_len = len(body)
     unicodes_to_replace_set = set()

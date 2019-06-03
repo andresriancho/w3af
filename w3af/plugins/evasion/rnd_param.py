@@ -24,7 +24,6 @@ import copy
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.parsers.doc.url import parse_qs
-from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class rnd_param(EvasionPlugin):
@@ -32,9 +31,6 @@ class rnd_param(EvasionPlugin):
     Add a random parameter.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -52,20 +48,19 @@ class rnd_param(EvasionPlugin):
         new_url.querystring = qs
 
         # Mangle the postdata
-        post_data = request.get_data()
-        if post_data:
-
+        data = request.get_data()
+        if data:
             try:
                 # Only mangle the postdata if it is a url encoded string
-                post_data = parse_qs(post_data)
+                post_data = parse_qs(data)
             except:
                 pass
             else:
-                post_data = str(self._mutate(post_data))
+                data = str(self._mutate(post_data))
 
-        new_req = HTTPRequest(new_url, post_data, request.headers,
-                              request.get_origin_req_host(),
-                              retries=request.retries_left)
+        new_req = request.copy()
+        new_req.set_uri(new_url)
+        new_req.set_data(data)
 
         return new_req
 
@@ -99,5 +94,5 @@ class rnd_param(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/bar/foo.asp?alsfkj=f09'
+            Output:     '/bar/foo.asp?alsfkj=f09'
         """

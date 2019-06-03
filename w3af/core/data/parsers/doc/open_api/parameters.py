@@ -102,6 +102,7 @@ class ParameterHandler(object):
         self._fix_string_format()
         self._fix_string_with_invalid_format()
         self._fix_bad_default_for_number_type()
+        self._fix_bad_example_for_number_type()
 
     def _fix_string_format(self):
         """
@@ -202,6 +203,46 @@ class ParameterHandler(object):
 
             parameter.param_spec['default'] = 0
 
+    def _fix_bad_example_for_number_type(self):
+        """
+        Sometimes developers set the example value to something that is not
+        valid for the type / format they specify.
+
+            {
+                "example": "",              <--------- THIS
+                "type": "string",
+                "name": "fields[Users]",
+                "in": "query",
+                "format": "int64",          <--------- THIS
+                "required": false,
+                "description": "Fields to be selected (csv)"
+            }
+
+        >>> long('')
+        ValueError: invalid literal for long() with base 10: ''
+
+        Just set a default value of zero if an empty string is specified.
+
+        :return: None
+        """
+        fix_formats = ['double', 'float', 'int32', 'int64']
+
+        for parameter_name, parameter in self.operation.params.iteritems():
+
+            param_format = parameter.param_spec.get('format', None)
+            param_example = parameter.param_spec.get('example', None)
+
+            if param_format not in fix_formats:
+                continue
+
+            if not isinstance(param_example, basestring):
+                continue
+
+            if param_example.isdigit():
+                continue
+
+            parameter.param_spec['example'] = 0
+
     def _set_param_value(self, parameter):
         """
         If the parameter has a default value, then we use that. If there is
@@ -213,13 +254,6 @@ class ParameterHandler(object):
         :param parameter: The parameter for which we need to set a value
         :return: True if we were able to set the parameter value
         """
-        #
-        #   Easiest case, the parameter already has a default value
-        #
-        if parameter.default is not None:
-            parameter.fill = parameter.default
-            return True
-
         param_spec = parameter.param_spec
 
         value = self._get_param_value(param_spec)
@@ -256,7 +290,18 @@ class ParameterHandler(object):
         :param parameter_spec: The parameter spec
         :return: The parameter value
         """
-        parameter_name = parameter_spec.get('name', None)
+        #
+        # Easiest cases, the parameter already has a default or example value
+        #
+        default_value = parameter_spec.get('default', None)
+
+        if default_value is not None:
+            return default_value
+
+        example_value = parameter_spec.get('example', None)
+
+        if example_value is not None:
+            return example_value
 
         # This handles the case where the value is an enum and can only be selected
         # from a predefined option list
@@ -288,6 +333,8 @@ class ParameterHandler(object):
         default_value = self.DEFAULT_VALUES_BY_TYPE.get(parameter_type, None)
         if default_value is not None:
             return default_value
+
+        parameter_name = parameter_spec.get('name', None)
 
         if parameter_type == 'string':
             parameter_name = 'unknown' if parameter_name is None else parameter_name
@@ -341,8 +388,8 @@ class ParameterHandler(object):
         if value is not None:
             return value
 
-        # We should never reach here! The parameter.fill value was never
-        # modified!
+        # We parameter.fill was not set because this is not a primitive
+        # this parameter will be handled later
         return None
 
     def _get_param_value_for_array(self, param_spec):
@@ -507,7 +554,7 @@ class ParameterHandler(object):
 
     def _create_object(self, param_spec):
         """
-        Takes the output of a swagger_spec.deref() cal and creates an object.
+        Takes the output of a swagger_spec.deref() call and creates an object.
 
         The output of swagger_spec.deref looks like:
 

@@ -79,7 +79,9 @@ class generic(AuthPlugin):
             return True
 
     def logout(self):
-        """User login."""
+        """
+        User logout
+        """
         return None
 
     def is_logged(self):

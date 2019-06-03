@@ -28,6 +28,8 @@ from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (In
                                                                               NestedModel,
                                                                               PetstoreSimpleModel)
 
+API_KEY = '0x12345'
+
 
 class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
 
@@ -39,14 +41,14 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
             'plugins': {'crawl': (PluginConfig('open_api',
 
                                                ('query_string_auth',
-                                                'api_key=0x12345',
+                                                'api_key=%s' % API_KEY,
                                                 PluginConfig.QUERY_STRING),
 
                                                ),)}
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('http://w3af.org/swagger.json',
+    MOCK_RESPONSES = [MockResponse('http://w3af.org/swagger.json?api_key=%s' % API_KEY,
                                    IntParamQueryString().get_specification(),
                                    content_type='application/json')]
 
@@ -106,6 +108,27 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
         self.assertEqual(fuzzable_request.get_data(), '')
 
 
+class HeaderAuthenticatedMockResponse(MockResponse):
+    def get_response(self, http_request, uri, response_headers):
+        """
+        Authenticated using request headers and API key
+
+        :return: A response containing:
+                    * HTTP status code
+                    * Headers dict
+                    * Response body string
+        """
+        bearer = http_request.headers.get('Basic', '')
+
+        if bearer != TestOpenAPINestedModelSpec.BEARER:
+            response_headers.update({'status': 401})
+            return 401, response_headers, 'Missing authentication'
+
+        return super(HeaderAuthenticatedMockResponse, self).get_response(http_request,
+                                                                         uri,
+                                                                         response_headers)
+
+
 class TestOpenAPINestedModelSpec(PluginTest):
 
     BEARER = 'bearer 0x12345'
@@ -145,9 +168,9 @@ class TestOpenAPINestedModelSpec(PluginTest):
 
             return self.status, response_headers, response_body
 
-    MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
-                                   NestedModel().get_specification(),
-                                   content_type='application/json'),
+    MOCK_RESPONSES = [HeaderAuthenticatedMockResponse('http://w3af.org/openapi.json',
+                                                      NestedModel().get_specification(),
+                                                      content_type='application/json'),
 
                       SQLIMockResponse(re.compile('http://w3af.org/api/pets.*'),
                                        body=None,

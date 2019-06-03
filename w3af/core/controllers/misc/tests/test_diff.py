@@ -20,123 +20,120 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import os
-import time
+import re
 import unittest
 
-from w3af import ROOT_PATH
-from w3af.core.controllers.misc.diff import diff
+from w3af.core.controllers.misc.diff import chunked_diff, diff_dmp, split_by_sep
 
 
-class TestDiff(unittest.TestCase):
+class TestChunkedDiff(unittest.TestCase):
 
-    DATA = os.path.join(ROOT_PATH, 'core', 'controllers', 'misc', 'tests', 'data')
+    def test_equal(self):
+        self.assertEqual(chunked_diff('123456', '123456'), ('', ''))
 
-    def test_middle(self):
-        self.assertEqual(diff('123456', '123a56'),
-                         ('4', 'a'))
+    def test_middle_0(self):
+        self.assertEqual(chunked_diff('123456', '123a56'),
+                         ('123456', '123a56'))
 
-    def test_start(self):
-        self.assertEqual(diff('yes 123abc', 'no 123abc'),
-                         ('yes', 'no'))
+    def test_middle_1(self):
+        a = 'A\nB\nC'
+        b = 'A\nX\nC'
+        self.assertEqual(chunked_diff(a, b), ('B', 'X'))
+
+    def test_start_0(self):
+        self.assertEqual(chunked_diff('yes 123abc', 'no 123abc'),
+                         ('yes 123abc', 'no 123abc'))
+
+    def test_start_1(self):
+        a = 'X\nB\nC'
+        b = 'A\nB\nC'
+        self.assertEqual(chunked_diff(a, b), ('X', 'A'))
 
     def test_end(self):
-        self.assertEqual(diff('123abc yes', '123abc no'),
+        self.assertEqual(chunked_diff('123abc\nyes', '123abc\nno'),
                          ('yes', 'no'))
 
     def test_nono(self):
-        self.assertEqual(diff('123abc yes', 'no 123abc no'),
-                         ('yes', 'no \nno'))
-
-    def test_xml(self):
-        """
-        Before using https://pypi.org/project/diff-match-patch/ this test took
-        around 2 seconds to run. Now it only takes 0.0056 sec!
-
-        nosetests --with-timer -s -v -x w3af/core/controllers/misc/tests/test_diff.py
-        """
-        a = file(os.path.join(self.DATA, 'source.xml')).read()
-        b = file(os.path.join(self.DATA, 'target.xml')).read()
-
-        start = time.time()
-
-        diff(a, b)
-
-        spent = time.time() - start
-        self.assertGreater(15.0, spent)
-
-    def test_diff_large_different_responses(self):
-        """
-        Same here, this test took 8 seconds to run, and now it takes 0.4704s!
-        """
-        large_file_1 = ''
-        large_file_2 = ''
-        _max = 10000
-
-        for i in xrange(_max):
-            large_file_1 += 'A' * i
-            large_file_1 += '\n'
-
-        for i in xrange(_max):
-            if i == _max - 3:
-                large_file_2 += 'B' * i
-            else:
-                large_file_2 += 'A' * i
-
-            large_file_2 += '\n'
-
-        start = time.time()
-
-        body1, body2 = diff(large_file_1, large_file_2)
-
-        spent = time.time() - start
-        self.assertGreater(1.0, spent)
-
-        self.assertEqual(body1, 'A' * (_max - 3))
-        self.assertEqual(body2, 'B' * (_max - 3))
-
-    def test_middle(self):
-        a = 'A\nB\nC'
-        b = 'A\nX\nC'
-        self.assertEqual(diff(a, b), ('B', 'X'))
+        self.assertEqual(chunked_diff('123abc\nyes', 'no\n123abc\nno'),
+                         ('yes', 'nono'))
 
     def test_all_no_sep(self):
         a = 'ABC'
         b = 'AXC'
-        self.assertEqual(diff(a, b), ('B', 'X'))
+        self.assertEqual(chunked_diff(a, b), ('ABC', 'AXC'))
 
     def test_middle_not_aligned(self):
         a = 'A\nB\nC'
         b = 'A\nXY\nC'
-        self.assertEqual(diff(a, b), ('B', 'XY'))
+        self.assertEqual(chunked_diff(a, b), ('B', 'XY'))
 
     def test_empty(self):
-        self.assertEqual(diff('', ''), ('', ''))
-
-    def test_start(self):
-        a = 'X\nB\nC'
-        b = 'A\nB\nC'
-        self.assertEqual(diff(a, b), ('X', 'A'))
+        self.assertEqual(chunked_diff('', ''), ('', ''))
 
     def test_special_chars(self):
         a = 'X\tB\nC'
         b = 'A<B\nC'
-        self.assertEqual(diff(a, b), ('X\t', 'A<'))
+        self.assertEqual(chunked_diff(a, b), ('X', 'A'))
 
-    def test_large_equal_responses(self):
-        large_file = ''
 
-        for i in xrange(10000):
-            large_file += 'A' * i
-            large_file += '\n'
+class TestDiffDMP(unittest.TestCase):
 
-        start = time.time()
+    def test_equal(self):
+        self.assertEqual(diff_dmp('123456', '123456'), ('', ''))
 
-        body1, body2 = diff(large_file, large_file)
+    def test_middle_0(self):
+        self.assertEqual(diff_dmp('123456', '123a56'),
+                         ('4', 'a'))
 
-        self.assertEqual(body1, '')
-        self.assertEqual(body2, '')
+    def test_middle_1(self):
+        a = 'A\nB\nC'
+        b = 'A\nX\nC'
+        self.assertEqual(diff_dmp(a, b), ('B', 'X'))
 
-        spent = time.time() - start
-        self.assertGreater(1.0, spent)
+    def test_start_0(self):
+        self.assertEqual(diff_dmp('yes 123abc', 'no 123abc'),
+                         ('yes', 'no'))
 
+    def test_start_1(self):
+        a = 'X\nB\nC'
+        b = 'A\nB\nC'
+        self.assertEqual(diff_dmp(a, b), ('X', 'A'))
+
+    def test_end(self):
+        self.assertEqual(diff_dmp('123abc yes', '123abc no'),
+                         ('yes', 'no'))
+
+    def test_nono(self):
+        self.assertEqual(diff_dmp('123abc yes', 'no 123abc no'),
+                         ('yes', 'no \nno'))
+
+    def test_all_no_sep(self):
+        a = 'ABC'
+        b = 'AXC'
+        self.assertEqual(diff_dmp(a, b), ('B', 'X'))
+
+    def test_middle_not_aligned(self):
+        a = 'A\nB\nC'
+        b = 'A\nXY\nC'
+        self.assertEqual(diff_dmp(a, b), ('B', 'XY'))
+
+    def test_empty(self):
+        self.assertEqual(diff_dmp('', ''), ('', ''))
+
+    def test_special_chars(self):
+        a = 'X\tB\nC'
+        b = 'A<B\nC'
+        self.assertEqual(diff_dmp(a, b), ('X\t', 'A<'))
+
+
+class TestSplitBySep(unittest.TestCase):
+    def test_split_by_sep_perf(self):
+        loops = 1000
+        inputs = [unittest.__doc__,
+                  re.__doc__,
+                  '',
+                  'hello world<bye bye!']
+
+        for _ in xrange(loops):
+            for _input in inputs:
+                split_by_sep(_input)

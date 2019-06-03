@@ -30,41 +30,54 @@ class TestFuzzerUtils(unittest.TestCase):
         x = rand_number(length=1)
         self.assertIn(int(x), range(10))
 
-        x = rand_number( length=2 )
+        x = rand_number(length=2)
         self.assertIn(int(x), range(100))
     
-        x = rand_number( length=3 )
+        x = rand_number(length=3)
         self.assertIn(int(x), range(1000))
 
-        x = rand_number( length=5 )
-        y = rand_number( length=5 )
-        z = rand_number( length=5 )
-        w = rand_number( length=5 )
+        x = rand_number(length=5)
+        y = rand_number(length=5)
+        z = rand_number(length=5)
+        w = rand_number(length=5)
         self.assertTrue(x != y != z != w)
     
     def test_rand_alnum(self):
         x = rand_alnum(length=10)
         self.assertEqual(len(x), 10)
         
-        x = rand_alnum( length=20 )
+        x = rand_alnum(length=20)
         self.assertEqual(len(x), 20)
         
-        x = rand_alnum( length=5 )
-        y = rand_alnum( length=5 )
-        z = rand_alnum( length=5 )
-        w = rand_alnum( length=5 )
+        x = rand_alnum(length=5)
+        y = rand_alnum(length=5)
+        z = rand_alnum(length=5)
+        w = rand_alnum(length=5)
         self.assertTrue(x != y != z != w)
 
     def test_rand_alpha(self):
-        x = rand_alpha( length=10 )
+        x = rand_alpha(length=10)
         self.assertEqual(len(x), 10)
         
-        x = rand_alpha( length=20 )
+        x = rand_alpha(length=20)
         self.assertEqual(len(x), 20)
         
-        x = rand_alpha( length=5 )
-        y = rand_alpha( length=5 )
-        z = rand_alpha( length=5 )
-        w = rand_alpha( length=5 )
+        x = rand_alpha(length=5)
+        y = rand_alpha(length=5)
+        z = rand_alpha(length=5)
+        w = rand_alpha(length=5)
         self.assertTrue(x != y != z != w)
-        
+
+    def test_rand_alpha_with_seed(self):
+        x = rand_alpha(length=10, seed=1)
+        self.assertEqual(len(x), 10)
+
+        y = rand_alpha(length=10, seed=1)
+        self.assertEqual(len(y), 10)
+
+        self.assertEqual(x, y)
+
+        z = rand_alpha(length=10, seed=2)
+        self.assertEqual(len(z), 10)
+
+        self.assertNotEqual(y, z)

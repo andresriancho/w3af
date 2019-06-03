@@ -156,6 +156,26 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, reason='ZeroReturnError')
             raise
 
+        except OpenSSL.SSL.SysCallError:
+            # We better discard this connection
+            self._cm.remove_connection(conn, reason='socket error')
+            raise
+
+        except OpenSSL.SSL.Error:
+            #
+            # OpenSSL.SSL.Error: [('SSL routines',
+            #                      'ssl3_get_record',
+            #                      'decryption failed or bad record mac')]
+            #
+            # Or something similar.
+            #
+            # Note that OpenSSL.SSL.Error is the base class for all the
+            # OpenSSL exceptions, so we're catching quite a lot of things here
+            # and the except order matters.
+            #
+            self._cm.remove_connection(conn, reason='OpenSSL.SSL.Error')
+            raise
+
         except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
             # We better discard this connection
             self._cm.remove_connection(conn, reason='socket error')
@@ -169,11 +189,6 @@ class KeepAliveHandler(object):
 
         # How many requests were sent with this connection?
         conn.inc_req_count()
-
-        # If not a persistent connection, or the user specified that he wanted
-        # a new connection for this specific request, don't try to reuse it
-        if resp.will_close or req.new_connection:
-            self._cm.remove_connection(conn, reason='will close')
 
         # This response seems to be fine
         resp._handler = self
@@ -199,6 +214,13 @@ class KeepAliveHandler(object):
             reason = 'unexpected exception while reading "%s"' % e
             self._cm.remove_connection(conn, reason=reason)
             raise
+
+        # If not a persistent connection, or the user specified that he wanted
+        # a new connection for this specific request, don't try to reuse it
+        if resp.will_close:
+            self._cm.remove_connection(conn, reason='will close')
+        elif req.new_connection:
+            self._cm.remove_connection(conn, reason='new connection')
 
         # We measure time here because it's the best place we know of
         elapsed = time.time() - start

@@ -36,6 +36,14 @@ from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
 from w3af.core.data.parsers.doc.open_api.requests import RequestFactory
 
+#
+# Apply the monkey-patching by importing the module
+#
+# Removing the import will break things!
+#
+from w3af.core.data.parsers.doc.open_api.operation_mp import build_params_monkey_patch
+_ = build_params_monkey_patch
+
 
 class OpenAPI(BaseParser):
     """
@@ -62,11 +70,16 @@ class OpenAPI(BaseParser):
                 'swagger',
                 'paths')
 
-    def __init__(self, http_response, no_validation=False, discover_fuzzable_headers=True):
+    def __init__(self,
+                 http_response,
+                 no_validation=False,
+                 discover_fuzzable_headers=True,
+                 discover_fuzzable_url_parts=True):
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
         self.no_validation = no_validation
         self.discover_fuzzable_headers = discover_fuzzable_headers
+        self.discover_fuzzable_url_parts = discover_fuzzable_url_parts
 
     @staticmethod
     def content_type_match(http_resp):
@@ -149,7 +162,8 @@ class OpenAPI(BaseParser):
         for data in specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
-                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers)
+                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers,
+                                                                        self.discover_fuzzable_url_parts)
             except Exception, e:
                 #
                 # This is a strange situation because parsing of the OpenAPI

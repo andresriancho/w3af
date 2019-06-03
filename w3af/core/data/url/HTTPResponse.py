@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import zlib
 import copy
 import httplib
 import urllib2
@@ -30,8 +31,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.misc.decorators import memoized
-from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
+from w3af.core.data.misc.encoding import smart_unicode, smart_str_ignore, ESCAPED_CHAR
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
@@ -140,6 +140,7 @@ class HTTPResponse(DiskItem):
         # Set the info
         self._info = headers
         # Set code
+        self._code = None
         self.set_code(code)
 
         # Set the URL variables
@@ -310,14 +311,35 @@ class HTTPResponse(DiskItem):
     def get_code(self):
         return self._code
 
-    def get_body(self):
-        with self._body_lock:
-            if self._body is None:
-                self._body, self._charset = self._charset_handling()
+    @staticmethod
+    def _quick_hash(text):
+        return '%s%s' % (hash(text), zlib.adler32(text))
 
-                # The user wants the raw body, without any modifications / decoding?
-                if not self._binary_response:
-                    self._raw_body = None
+    def get_body_hash(self):
+        body = smart_str_ignore(self.get_body())
+        return self._quick_hash(body)
+
+    def get_hash(self, exclude_headers=None):
+        exclude_headers = [] or exclude_headers
+
+        headers = self.dump_response_head(exclude_headers=exclude_headers)
+        body = smart_str_ignore(self.get_body())
+
+        args = (headers, body)
+        dump = '%s%s' % args
+
+        return self._quick_hash(dump)
+
+    def get_body(self):
+        if self._body is not None:
+            return self._body
+
+        with self._body_lock:
+            self._body, self._charset = self._charset_handling()
+
+            # The user wants the raw body, without any modifications / decoding?
+            if not self._binary_response:
+                self._raw_body = None
 
             return self._body
 
@@ -376,10 +398,16 @@ class HTTPResponse(DiskItem):
             return
 
     def get_charset(self):
-        if not self._charset:
+        if self._charset:
+            return self._charset
+
+        with self._body_lock:
             self._body, self._charset = self._charset_handling()
-            # Free 'raw_body'
-            self._raw_body = None
+
+            # The user wants the raw body, without any modifications / decoding?
+            if not self._binary_response:
+                self._raw_body = None
+
         return self._charset
 
     def set_charset(self, charset):
@@ -461,7 +489,6 @@ class HTTPResponse(DiskItem):
 
     headers = property(get_headers, set_headers)
 
-    @memoized
     def get_lower_case_headers(self):
         """
         If the original headers were:
@@ -581,39 +608,39 @@ class HTTPResponse(DiskItem):
 
         Note: If the body is already a unicode string return it as it is.
         """
+        charset = self._charset
+        raw_body = self._raw_body
         headers = self.get_headers()
         content_type, _ = headers.iget(CONTENT_TYPE, None)
-        charset = self._charset
-        rawbody = self._raw_body
 
         # Only try to decode <str> strings. Skip <unicode> strings
-        if type(rawbody) is unicode:
-            _body = rawbody
+        if type(raw_body) is unicode:
+            _body = raw_body
             assert charset is not None, ("HTTPResponse objects containing "
                                          "unicode body must have an associated "
                                          "charset")
         elif content_type is None:
-            _body = rawbody
+            _body = raw_body
             charset = DEFAULT_CHARSET
 
-            if len(_body):
+            if _body:
                 msg = ('The remote web server failed to send the CONTENT_TYPE'
                        ' header in HTTP response with id %s')
                 om.out.debug(msg % self.id)
 
         elif not self.is_text_or_html():
             # Not text, save as it is.
-            _body = rawbody
+            _body = raw_body
             charset = charset or DEFAULT_CHARSET
         else:
             # Figure out charset to work with
             if not charset:
-                charset = self.guess_charset(rawbody, headers)
+                charset = self.guess_charset(raw_body, headers)
 
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
-                _body = smart_unicode(rawbody,
+                _body = smart_unicode(raw_body,
                                       charset,
                                       errors=ESCAPED_CHAR,
                                       on_error_guess=False)
@@ -626,14 +653,14 @@ class HTTPResponse(DiskItem):
 
                 # Forcing it to use the default
                 charset = DEFAULT_CHARSET
-                _body = smart_unicode(rawbody,
+                _body = smart_unicode(raw_body,
                                       charset,
                                       errors=ESCAPED_CHAR,
                                       on_error_guess=False)
 
         return _body, charset
 
-    def guess_charset(self, rawbody, headers):
+    def guess_charset(self, raw_body, headers):
         # Start with the headers
         content_type, _ = headers.iget(CONTENT_TYPE, None)
         charset_mo = CHARSET_EXTRACT_RE.search(content_type, re.I)
@@ -642,7 +669,7 @@ class HTTPResponse(DiskItem):
             charset = charset_mo.groups()[0].lower().strip()
         else:
             # Continue with the body's meta tag
-            charset_mo = CHARSET_META_RE.search(rawbody, re.IGNORECASE)
+            charset_mo = CHARSET_META_RE.search(raw_body, re.IGNORECASE)
             if charset_mo:
                 charset = charset_mo.groups()[0].lower().strip()
             else:
@@ -690,7 +717,7 @@ class HTTPResponse(DiskItem):
         """
         return self.doc_type == HTTPResponse.DOC_TYPE_IMAGE
 
-    def dump_response_head(self):
+    def dump_response_head(self, exclude_headers=None):
         """
         :return: A byte-string, as we would send to the wire, containing:
 
@@ -699,8 +726,9 @@ class HTTPResponse(DiskItem):
             Header2: Value2
 
         """
+        exclude_headers = exclude_headers or []
         status_line = self.get_status_line()
-        dumped_headers = self.dump_headers()
+        dumped_headers = self.dump_headers(exclude_headers=exclude_headers)
 
         dump_head = '%s%s' % (status_line, dumped_headers)
 
@@ -720,14 +748,18 @@ class HTTPResponse(DiskItem):
         if isinstance(body, unicode):
             body = body.encode(self.charset, 'replace')
 
-        return "%s%s%s" % (self.dump_response_head(), CRLF, body)
+        return '%s%s%s' % (self.dump_response_head(), CRLF, body)
 
-    def dump_headers(self):
+    def dump_headers(self, exclude_headers=None):
         """
         :return: a str representation of the headers.
         """
+        exclude_headers = exclude_headers or []
+
         if self.headers:
-            return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF
+            return CRLF.join('%s: %s' % (h, hv) for
+                             (h, hv) in self.headers.items()
+                             if h.lower() not in exclude_headers) + CRLF
         else:
             return ''
 

@@ -30,6 +30,7 @@ from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
+from w3af.core.data.options.output_file_option import DEV_NULL
 from w3af.core.data.options.option_list import OptionList
 
 
@@ -58,7 +59,7 @@ class text_file(OutputPlugin):
         self._initialized = False
 
         # File handlers
-        self._file = None
+        self._log = None
         self._http = None
 
         # XXX Only set '_show_caller' to True for debugging purposes. It
@@ -74,7 +75,7 @@ class text_file(OutputPlugin):
         self._http_file_name = os.path.expanduser(self._http_file_name)
         
         try:
-            self._file = open(self._output_file_name,  'w')
+            self._log = open(self._output_file_name,  'w')
         except IOError, io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._output_file_name), io.strerror)
@@ -83,6 +84,10 @@ class text_file(OutputPlugin):
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._output_file_name), e)
             raise BaseFrameworkException(msg % args)
+
+        if self._http_file_name == DEV_NULL:
+            # The user wants to ignore output to this file
+            return
 
         try:
             # Images aren't ascii, so this file that logs every request/response,
@@ -103,22 +108,22 @@ class text_file(OutputPlugin):
 
         :param msg: The text to write.
         """
-        if self._file is None:
+        if self._log is None:
             return
         
         try:
-            self._file.write(msg)
+            self._log.write(msg)
         except Exception, e:
-            self._file = None
+            self._log = None
             msg = ('An exception was raised while trying to write to the output'
                    ' file "%s", error: "%s". Disabling output to this file.')
             om.out.error(msg % (self._output_file_name, e),
                          ignore_plugins={self.get_name()})
 
-        if flush and self._file is not None:
-            self._file.flush()
+        if flush and self._log is not None:
+            self._log.flush()
 
-    def _write_to_HTTP_log(self, msg):
+    def _write_to_http_log(self, msg):
         """
         Write to the HTTP log file.
 
@@ -142,8 +147,8 @@ class text_file(OutputPlugin):
         flush() the cache disk
         :return: None
         """
-        if self._file is not None:
-            self._file.flush()
+        if self._log is not None:
+            self._log.flush()
 
         if self._http is not None:
             self._http.flush()
@@ -263,8 +268,8 @@ class text_file(OutputPlugin):
         if self._http is not None:
             self._http.close()
 
-        if self._file is not None:
-            self._file.close()
+        if self._log is not None:
+            self._log.close()
 
     def set_options(self, option_list):
         """
@@ -309,18 +314,31 @@ class text_file(OutputPlugin):
         :param request: A fuzzable request object
         :param response: A HTTPResponse object
         """
+        if self._http_file_name == DEV_NULL:
+            # We could open() /dev/null, write to that file, and leave the code
+            # as-is (without this if statement).
+            #
+            # But that would require w3af to dump() request and response,
+            # serialize all that into strings, and write them to /dev/null
+            #
+            # After all the CPU effort, that data will be discarded... a complete
+            # waste of time!
+            #
+            # So we just check if the output is /dev/null and return
+            return
+
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
 
         request_hdr = REQUEST_HEADER_FMT % (response.id, the_time)
-        self._write_to_HTTP_log(request_hdr)
-        self._write_to_HTTP_log(request.dump())
+        self._write_to_http_log(request_hdr)
+        self._write_to_http_log(request.dump())
         
         response_hdr = RESPONSE_HEADER_FMT % (response.id, the_time)
-        self._write_to_HTTP_log(response_hdr)
-        self._write_to_HTTP_log(response.dump())
+        self._write_to_http_log(response_hdr)
+        self._write_to_http_log(response.dump())
 
-        self._write_to_HTTP_log('\n' + '=' * (len(request_hdr) - 1) + '\n')
+        self._write_to_http_log('\n' + '=' * (len(request_hdr) - 1) + '\n')
 
     def get_long_desc(self):
         """
@@ -329,8 +347,11 @@ class text_file(OutputPlugin):
         return """
         This plugin writes the framework messages to a text file.
 
-        Four configurable parameters exist:
+        Three configurable parameters exist:
             - output_file
             - http_output_file
             - verbose
+        
+        Use `dev/null` as the value for any of the output file options to
+        disable writing to that log.
         """
