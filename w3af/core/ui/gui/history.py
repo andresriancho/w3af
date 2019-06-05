@@ -59,7 +59,7 @@ class HistorySuggestion(object):
                     # the next time the user executes the GUI
                     #
                     self.history = {}
-                    msgpack.dump(file(filename, 'wb'), {})
+                    msgpack.dump({}, file(filename, 'wb'))
                 else:
                     #
                     # We were able to read using pickle, migrate the file to
