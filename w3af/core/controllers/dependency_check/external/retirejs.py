@@ -24,7 +24,7 @@ import subprocess
 from w3af.core.controllers.misc.which import which
 
 
-SUPPORTED_RETIREJS = '2.'
+SUPPORTED_RETIREJS = '1.'
 
 
 def retirejs_is_installed():
