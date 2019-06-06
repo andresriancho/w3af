@@ -66,7 +66,7 @@ class HistorySuggestion(object):
                     # msgpack to prevent deserialization issues
                     # https://github.com/andresriancho/w3af/issues/17807
                     #
-                    msgpack.dump(file(filename, 'wb'), self.history)
+                    msgpack.dump(self.history, file(filename, 'wb'))
 
     def get_texts(self):
         """Provides the texts, ordered by relevance.
