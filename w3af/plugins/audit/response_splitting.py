@@ -50,9 +50,6 @@ class response_splitting(AuditPlugin):
         'Header may not contain more than a single header, new line detected',
         'Cannot modify header information - headers already sent')
 
-    def __init__(self):
-        AuditPlugin.__init__(self)
-
     def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for response splitting vulnerabilities.
@@ -75,32 +72,36 @@ class response_splitting(AuditPlugin):
         if self._has_bug(mutant):
             return
 
-        if self._header_was_injected(mutant, response):
-            desc = 'Response splitting was found at: %s' % mutant.found_at()
+        self._report_php_errors(mutant, response)
 
-            v = Vuln.from_mutant('Response splitting vulnerability', desc,
-                                 severity.MEDIUM, response.id,
-                                 self.get_name(), mutant)
+        if not self._header_was_injected(mutant, response):
+            return
 
-            self.kb_append_uniq(self, 'response_splitting', v)
+        desc = 'Response splitting was found at: %s' % mutant.found_at()
+        v = Vuln.from_mutant('Response splitting vulnerability', desc,
+                             severity.MEDIUM, response.id,
+                             self.get_name(), mutant)
 
-        # When trying to send a response splitting to php 5.1.2 I get :
+        self.kb_append_uniq(self, 'response_splitting', v)
+
+    def _report_php_errors(self, mutant, response):
+        # When trying to send a response splitting to PHP 5.1.2 I get:
         # Header may not contain more than a single header, new line detected
         for error in self.HEADER_ERRORS:
+            if error not in response:
+                continue
 
-            if error in response:
-                desc = ('The variable "%s" at URL "%s" modifies the HTTP'
-                        ' response headers, but this error was sent while'
-                        ' testing for response splitting: "%s".')
-                args = (mutant.get_token_name(), mutant.get_url(), error)
-                desc = desc % args
-                i = Info.from_mutant('Parameter modifies response headers',
-                                     desc, response.id, self.get_name(),
-                                     mutant)
+            desc = ('The variable "%s" at URL "%s" modifies the HTTP'
+                    ' response headers, but this error was sent while'
+                    ' testing for response splitting: "%s".')
+            args = (mutant.get_token_name(), mutant.get_url(), error)
+            desc %= args
+            i = Info.from_mutant('Parameter modifies response headers',
+                                 desc, response.id, self.get_name(),
+                                 mutant)
 
-                self.kb_append_uniq(self, 'response_splitting', i)
-
-                return
+            self.kb_append_uniq(self, 'response_splitting', i)
+            break
 
     def _header_was_injected(self, mutant, response):
         """
@@ -111,27 +112,29 @@ class response_splitting(AuditPlugin):
                          header.
         :return: True / False
         """
-        # Get the lower case headers
-        headers = response.get_lower_case_headers()
+        headers = response.get_headers()
 
-        # Analyze injection
-        for header, value in headers.items():
-            if HEADER_NAME in header and value.lower() == HEADER_VALUE:
+        for header, value in headers.iteritems():
+            if HEADER_NAME not in header.lower():
+                continue
+
+            if HEADER_VALUE in value.lower():
                 return True
 
-            elif HEADER_NAME in header and value.lower() != HEADER_VALUE:
-                msg = ('The vulnerable header was added to the HTTP response,'
-                       ' but the value is not what w3af expected (%s: %s).'
-                       ' Please verify manually.')
-                msg = msg % (HEADER_NAME, HEADER_VALUE)
-                om.out.information(msg)
+            #
+            # This is a case where we have a partial header injection
+            #
+            msg = ('The vulnerable header was added to the HTTP response,'
+                   ' but the value is not what w3af expected (%s: %s).'
+                   ' Please verify manually.')
+            msg %= (HEADER_NAME, HEADER_VALUE)
+            om.out.information(msg)
 
-                i = Info.from_mutant('Parameter modifies response headers',
-                                     msg, response.id, self.get_name(),
-                                     mutant)
-                
-                self.kb_append_uniq(self, 'response_splitting', i)
-                return False
+            i = Info.from_mutant('Parameter modifies response headers',
+                                 msg, response.id, self.get_name(),
+                                 mutant)
+
+            self.kb_append_uniq(self, 'response_splitting', i)
 
         return False
 
@@ -140,9 +143,9 @@ class response_splitting(AuditPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin will find response splitting vulnerabilities.
+        This plugin identifies response splitting vulnerabilities.
 
-        The detection is done by sending "w3af\\r\\nVulnerable: Yes" to every
-        injection point, and reading the response headers searching for a header
-        with name "Vulnerable" and value "Yes".
+        Detection is performed by sending "w3af\\r\\nvulnerable073b: ae5cw3af" to
+        every injection point, and reading the response headers searching for a
+        header with name "vulnerable073b" and value "ae5cw3af".
         """
