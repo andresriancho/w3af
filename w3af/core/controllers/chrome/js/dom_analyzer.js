@@ -285,7 +285,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
         if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, type ) ) return false;
 
-        let selector = OptimalSelect.select(element);
+        let selector = OptimalSelect.getSingleSelector(element);
 
         // node_type is https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType#Node_type_constants
         _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
@@ -424,9 +424,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         //  First extract from attributes
         //
         let attributes  = element.attributes;
-        let attr_length = attributes.length;
 
-        for( let attr_it = 0; attr_it < attr_length; attr_it++ ){
+        for( let attr_it = 0; attr_it < attributes.length; attr_it++ ){
             let attr_name = attributes[attr_it].nodeName;
 
             // Remove the 'on' from 'onclick'. This will also remove the first
@@ -436,7 +435,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, attr_name ) ) continue;
 
-            if( selector === null) { selector = OptimalSelect.select(element) }
+            if( selector === null) { selector = OptimalSelect.getSingleSelector(element) }
 
             let edata = {
                 "tag_name": tag_name,
@@ -488,7 +487,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             // noinspection JSUnfilteredForInLoop
             if ( !_DOMAnalyzer.eventIsValidForTagName( tag_name, property_name ) ) continue;
 
-            if( selector === null) { selector = OptimalSelect.select(element) }
+            if( selector === null) { selector = OptimalSelect.getSingleSelector(element) }
 
             // noinspection JSUnfilteredForInLoop
             let edata = {
@@ -598,7 +597,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 let ancestor_event = ancestor_attribute_events[event_it];
 
                 ancestor_event.tag_name = tag_name;
-                ancestor_event.selector = OptimalSelect.select(element);
+                ancestor_event.selector = OptimalSelect.getSingleSelector(element);
                 ancestor_event.node_type = element.nodeType;
                 ancestor_event.text_content = _DOMAnalyzer.superTrim(element.textContent);
 
