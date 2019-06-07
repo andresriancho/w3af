@@ -398,7 +398,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         """
         try:
             self.connect()
-        except ConnectionError as e:
+        except (ConnectionError, IndexError) as e:
             msg = 'Tried to reconnect to the websocket and received: "%s" (did: %s)'
             args = (e, self.debugging_id)
             om.out.debug(msg % args)
