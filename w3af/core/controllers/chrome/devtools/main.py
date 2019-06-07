@@ -286,7 +286,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
 
         return data
 
-    def _remove_text_content(self, data):
+    def _remove_text_content(self, raw_data):
         """
         The `text_content` field floods the debug log and makes it really
         difficult to inspect it. This code replaces the `text_content` with
@@ -295,14 +295,17 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         :return: The message with the `text_content` replaced with a hash
         """
         try:
-            data = json.loads(data)
+            data = json.loads(raw_data)
         except ValueError:
             # failed to load as JSON, unable to remove the text_content
-            return data
+            return raw_data
 
         result = data.get('result', {})
         result = result.get('result', {})
         value = result.get('value', [])
+
+        if not isinstance(value, list):
+            return json.dumps(data)
 
         for value_item in value:
             if not isinstance(value_item, dict):
