@@ -135,11 +135,11 @@ class LoggingHandler(ProxyHandler):
 
         stored_header_value, stored_header_name = headers.iget('accept-language')
 
-        if stored_header_name:
+        if stored_header_name is not None:
             # Already set, just return
             return
 
-        headers[stored_header_name] = 'en-GB,en-US;q=0.9,en;q=0.8'
+        headers['Accept-Language'] = 'en-GB,en-US;q=0.9,en;q=0.8'
         http_request.set_headers(headers)
 
     def _remove_user_agent_headless(self, http_request):
