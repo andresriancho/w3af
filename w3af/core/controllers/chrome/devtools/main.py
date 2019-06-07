@@ -28,6 +28,7 @@ import random
 import logging
 import threading
 import functools
+import hashlib
 
 from collections import deque
 
@@ -280,8 +281,44 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
             msg = 'Unexpected error while reading from Chrome socket: "%s"'
             raise ChromeInterfaceException(msg % e)
 
-        self.debug('Received (raw) message from Chrome: %s' % data)
+        data_without_text_content = self._remove_text_content(data)
+        self.debug('Received (raw) message from Chrome: %s' % data_without_text_content)
+
         return data
+
+    def _remove_text_content(self, data):
+        """
+        The `text_content` field floods the debug log and makes it really
+        difficult to inspect it. This code replaces the `text_content` with
+        the hash of that content just for showing it in the logs.
+
+        :return: The message with the `text_content` replaced with a hash
+        """
+        try:
+            data = json.loads(data)
+        except ValueError:
+            # failed to load as JSON, unable to remove the text_content
+            return data
+
+        result = data.get('result', {})
+        result = result.get('result', {})
+        value = result.get('value', [])
+
+        for value_item in value:
+            if not isinstance(value_item, dict):
+                continue
+
+            text_content = value_item.get('text_content', '')
+            if not text_content:
+                continue
+
+            m = hashlib.md5()
+            m.update(text_content)
+            digest = m.hexdigest()
+
+            value_item['text_content'] = digest
+
+        return json.dumps(data)
 
     def close(self):
         try:
