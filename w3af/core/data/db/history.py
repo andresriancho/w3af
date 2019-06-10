@@ -342,7 +342,16 @@ class HistoryItem(object):
         raise TraceReadException('No zip file contains %s' % _id)
 
     def _load_from_zip_file(self, _id, zip_file):
-        _zip = zipfile.ZipFile(os.path.join(self.get_session_dir(), zip_file))
+        try:
+            _zip = zipfile.ZipFile(os.path.join(self.get_session_dir(), zip_file))
+        except zipfile.BadZipfile:
+            # We get here when the zip file has an invalid format
+            #
+            # This is most likely because one thread is writing to disk and
+            # another is trying to read from it
+            msg = 'Zip file %s has an invalid format'
+            args = (zip_file,)
+            raise TraceReadException(msg % args)
 
         try:
             serialized_req_res = _zip.read('%s.%s' % (_id, self._EXTENSION))
