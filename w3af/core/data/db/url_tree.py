@@ -28,6 +28,12 @@ class OrderedIterDefaultDict(defaultdict):
         for k in sorted(self.keys()):
             yield k, self[k]
 
+    def __repr__(self):
+        _repr = dict()
+        for k, v in self.iteritems():
+            _repr[k] = v
+        return repr(_repr)
+
 
 def url_tree_factory():
     return OrderedIterDefaultDict(url_tree_factory)
