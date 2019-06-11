@@ -43,6 +43,9 @@ from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ConnectionPoolException)
 
 
+DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded'
+
+
 class URLTimeoutError(urllib2.URLError):
     """
     Our own URLError timeout exception. Basically a wrapper for socket.timeout.
@@ -331,42 +334,41 @@ class KeepAliveHandler(object):
         """
         self._update_socket_timeout(conn, req)
 
-        try:
-            conn.putrequest(req.get_method(), req.get_selector(),
-                            skip_host=1, skip_accept_encoding=1)
+        conn.putrequest(req.get_method(),
+                        req.get_selector(),
+                        skip_host=1,
+                        skip_accept_encoding=1)
 
-            # We're always sending HTTP/1.1, which makes connection keep alive a
-            # default, BUT since the browsers (Chrome at least) send this header
-            # in their HTTP/1.1 requests we're going to do the same just to make
-            # sure we behave like a browser
-            if not req.has_header('Connection'):
-                conn.putheader('Connection', 'keep-alive')
+        # We're always sending HTTP/1.1, which makes connection keep alive a
+        # default, BUT since the browsers (Chrome at least) send this header
+        # in their HTTP/1.1 requests we're going to do the same just to make
+        # sure we behave like a browser
+        if not req.has_header('Connection'):
+            conn.putheader('Connection', 'keep-alive')
 
-            data = req.get_data()
-            if data is not None:
-                data = str(data)
+        data = req.get_data()
+        if data is not None:
+            data = str(data)
 
-                if not req.has_header('Content-type'):
-                    conn.putheader('Content-type',
-                                   'application/x-www-form-urlencoded')
+            if not req.has_header('Content-type'):
+                conn.putheader('Content-type', DEFAULT_CONTENT_TYPE)
 
-                if not req.has_header('Content-length'):
-                    conn.putheader('Content-length', '%d' % len(data))
-        except (socket.error, httplib.HTTPException):
-            raise
-        else:
-            # Add headers
-            header_dict = dict(self.parent.addheaders)
-            header_dict.update(req.headers)
-            header_dict.update(req.unredirected_hdrs)
+            if not req.has_header('Content-length'):
+                conn.putheader('Content-length', '%d' % len(data))
 
-            for k, v in header_dict.iteritems():
-                conn.putheader(to_utf8_raw(k),
-                               to_utf8_raw(v))
-            conn.endheaders()
+        # Add headers
+        header_dict = dict(self.parent.addheaders)
+        header_dict.update(req.headers)
+        header_dict.update(req.unredirected_hdrs)
 
-            if data is not None:
-                conn.send(data)
+        for k, v in header_dict.iteritems():
+            conn.putheader(to_utf8_raw(k),
+                           to_utf8_raw(v))
+
+        conn.endheaders()
+
+        if data is not None:
+            conn.send(data)
 
     def get_connection(self, host):
         """
