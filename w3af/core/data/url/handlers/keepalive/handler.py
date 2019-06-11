@@ -26,13 +26,15 @@ modifications are:
     reads, and added a hack for the HEAD method.
   - SNI support for SSL
 """
-import threading
+import time
+import socket
 import urllib2
 import httplib
-import socket
-import time
-
 import OpenSSL
+import threading
+
+from email.base64mime import header_encode
+from httplib import _is_legal_header_name, _is_illegal_header_value
 
 from .utils import debug, error, to_utf8_raw
 from .connection_manager import ConnectionManager
@@ -362,8 +364,50 @@ class KeepAliveHandler(object):
         header_dict.update(req.unredirected_hdrs)
 
         for k, v in header_dict.iteritems():
-            conn.putheader(to_utf8_raw(k),
-                           to_utf8_raw(v))
+            #
+            # Handle case where the key or value is None (strange but could happen)
+            #
+            if k is None:
+                continue
+
+            if v is None:
+                v = ''
+
+            #
+            # Encode the key and value as UTF-8 and try to send them to the wire
+            #
+            k = to_utf8_raw(k)
+            v = to_utf8_raw(v)
+
+            try:
+                conn.putheader(k, v)
+            except ValueError:
+                #
+                # The httplib adds some restrictions to the characters which can
+                # be sent in header names and values (see putheader function
+                # definition).
+                #
+                # Sending non-ascii characters in HTTP header values is difficult,
+                # since servers usually ignore the encoding. From stackoverflow:
+                #
+                # Historically, HTTP has allowed field content with text in the
+                # ISO-8859-1 charset [ISO-8859-1], supporting other charsets only
+                # through use of [RFC2047] encoding. In practice, most HTTP header
+                # field values use only a subset of the US-ASCII charset [USASCII].
+                # Newly defined header fields SHOULD limit their field values to
+                # US-ASCII octets. A recipient SHOULD treat other octets in field
+                # content (obs-text) as opaque data.
+                #
+                # TL;DR: we use RFC2047 encoding here, knowing that it will only
+                #        work in 1% of the remote servers, but it is our best bet
+                #
+                if not _is_legal_header_name(k):
+                    k = header_encode(k, charset='utf-8', keep_eols=True)
+
+                if _is_illegal_header_value(v):
+                    v = header_encode(v, charset='utf-8', keep_eols=True)
+
+                conn.putheader(k, v)
 
         conn.endheaders()
 
