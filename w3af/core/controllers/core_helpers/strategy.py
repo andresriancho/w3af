@@ -165,6 +165,7 @@ class CoreStrategy(object):
 
     def stop(self):
         self.terminate()
+        om.out.debug('strategy.stop() completed')
         
     def pause(self, pause_yes_no):
         # FIXME: Consumers should have something to do with this, most likely

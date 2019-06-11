@@ -483,20 +483,31 @@ class w3afCore(object):
         """
         This method is called when the process ends normally or by an error.
         """
+        #
         # The scan has ended, and we've already joined() the consumer threads
         # from strategy (in a nice way, waiting for them to finish before
         # returning from strategy.start call), so this terminate and join call
         # should return really quick:
         #
+        om.out.debug('Calling worker_pool.terminate_join()')
         self.worker_pool.terminate_join()
 
+        om.out.debug('Stopping profiling threads')
+        stop_profiling(self)
+
+        om.out.debug('Stopping the parser cache')
+        parser_cache.dpc.clear()
+
         try:
+            #
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the
             # data from the history in their end() method.
             #
             # Also needs to be done before target.clear() because some plugins
             # need to access the target data stored in cf
+            #
+            om.out.debug('Calling end_output_plugins()')
             om.manager.end_output_plugins()
         except Exception:
             raise
@@ -507,16 +518,13 @@ class w3afCore(object):
             # Remove all references to plugins from memory
             self.plugins.zero_enabled_plugins()
             
-            # No targets to be scanned.
+            # No targets to be scanned
             self.target.clear()
 
-            # Finish the profiling
-            stop_profiling(self)
-
-            # Stop the parser subprocess
-            parser_cache.dpc.clear()
-
+            # Status
             self.status.stop()
+
+        om.out.debug('scan_end_hook() completed')
 
     def exploit_phase_prerequisites(self):
         """
@@ -524,6 +532,8 @@ class w3afCore(object):
         from the core during the exploitation phase. In other words, which
         internal objects do I need alive after a scan?
         """
+        om.out.debug('Setting exploit phase prerequisites')
+
         # We disable raising the exception, so we do this only once and don't
         # affect other parts of the tool such as the exploitation or manual HTTP
         # request sending from the GUI
