@@ -39,7 +39,7 @@ def get_response_unique_id(http_response, prepend=None):
     #       body before hashing
     uri_str = http_response.get_uri().url_string.encode('utf-8')
 
-    body_str = http_response.body
+    body_str = http_response.body or ''
     if isinstance(body_str, unicode):
         body_str = body_str.encode('utf-8', 'replace')
 
