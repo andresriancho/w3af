@@ -147,6 +147,9 @@ class ThreadStateObserver(StrategyObserver):
             internal_thread_data = pool.get_internal_thread_state()
             self.internal_thread_data_to_log(pool, name, internal_thread_data)
 
+            pool_queue_sizes = pool.get_pool_queue_sizes()
+            self.pool_queue_sizes_to_log(pool, name, pool_queue_sizes)
+
     def add_thread_stack(self, inspect_data):
         """
         When threads have been running for a long time, it is not enough to
@@ -212,6 +215,17 @@ class ThreadStateObserver(StrategyObserver):
         for thread in threading.enumerate():
             if thread.ident == thread_id:
                 return thread
+
+    def pool_queue_sizes_to_log(self, pool, name, pool_queue_sizes):
+        inqueue_size = pool_queue_sizes.get('inqueue_size', None)
+        outqueue_size = pool_queue_sizes.get('outqueue_size', None)
+
+        msg = '%s worker pool has %s tasks in inqueue and %s tasks in outqueue'
+        args = (name,
+                inqueue_size,
+                outqueue_size)
+
+        self.write_to_log(msg % args)
 
     def internal_thread_data_to_log(self, pool, name, internal_thread_data):
         worker_handler = internal_thread_data['worker_handler']
