@@ -65,6 +65,7 @@ class strange_parameters(GrepPlugin):
             return
 
         # Note:
+        #
         # - With parsed_references I'm 100% that it's really something in the
         #   HTML that the developer intended to add.
         #
@@ -87,7 +88,6 @@ class strange_parameters(GrepPlugin):
                     if analyzer(request, response, ref, token_name, token_value):
                         # Don't repeat findings
                         self._already_reported.add((ref.uri2url(), token_name))
-                        break
 
     def _analyze_strange(self, request, response, ref, token_name, token_value):
         if not self._is_strange(request, token_name, token_value):
@@ -114,11 +114,9 @@ class strange_parameters(GrepPlugin):
 
     def _analyze_SQL(self, request, response, ref, token_name, token_value):
         """
-        To find this kind of vulns
+        To find these kinds of vulnerabilities
 
-        http://thedailywtf.com/Articles/Oklahoma-
-            Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
-            Sensitive-Data.aspx
+        http://thedailywtf.com/Articles/Oklahoma-Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-Sensitive-Data.aspx
 
         :return: True if the parameter value contains SQL sentences
         """
