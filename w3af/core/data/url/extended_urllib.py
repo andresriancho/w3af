@@ -974,8 +974,9 @@ class ExtendedUrllib(object):
     def _decrease_worker_pool_size(self):
         w3af_core = self.get_w3af_core()
         worker_pool = w3af_core.worker_pool
+        min_workers = w3af_core.MIN_WORKER_THREADS
+
         error_rate = self.get_error_rate()
-        min_workers = 10
 
         # Note that we decrease by two here, and increase by one below
         new_worker_count = worker_pool.get_worker_count() - 2
@@ -994,8 +995,9 @@ class ExtendedUrllib(object):
     def _increase_worker_pool_size(self):
         w3af_core = self.get_w3af_core()
         worker_pool = w3af_core.worker_pool
+        max_workers = w3af_core.MAX_WORKER_THREADS
+
         error_rate = self.get_error_rate()
-        max_workers = 100
 
         # Note that we increase by one here, and decrease by two above
         new_worker_count = worker_pool.get_worker_count() + 1

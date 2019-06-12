@@ -93,6 +93,9 @@ class w3afCore(object):
     # mostly used for sending HTTP requests (which is the case
     # for the current w3af version).
     WORKER_THREADS = 30
+    MIN_WORKER_THREADS = 20
+    MAX_WORKER_THREADS = 100
+
     WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 20
     WORKER_MAX_TASKS = 20
 
