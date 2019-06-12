@@ -44,15 +44,17 @@ class ThreadStateObserver(StrategyObserver):
     def __init__(self):
         super(ThreadStateObserver, self).__init__()
 
+        self.should_stop = False
+
         self.audit_thread = None
+        self.grep_thread = None
         self.crawl_infra_thread = None
         self.worker_thread = None
 
-        self.should_stop = False
-
+        self._audit_lock = threading.RLock()
+        self._grep_lock = threading.RLock()
         self._crawl_infra_lock = threading.RLock()
         self._worker_thread_lock = threading.RLock()
-        self._audit_lock = threading.RLock()
 
     def end(self):
         self.should_stop = True
@@ -62,6 +64,9 @@ class ThreadStateObserver(StrategyObserver):
 
         if self.audit_thread is not None:
             self.audit_thread.join()
+
+        if self.grep_thread is not None:
+            self.grep_thread.join()
 
         if self.worker_thread is not None:
             self.worker_thread.join()
@@ -114,6 +119,27 @@ class ThreadStateObserver(StrategyObserver):
                                                  args=(pool, 'AuditorWorker'),
                                                  name='AuditPoolStateObserver')
             self.audit_thread.start()
+
+    def grep(self, consumer, *args):
+        """
+        Log the thread state for grep plugins
+
+        :param consumer: A grep consumer instance
+        :param args: Fuzzable requests that we don't care about
+        :return: None, everything is written to disk
+        """
+        if self.grep_thread is not None:
+            return
+
+        with self._grep_lock:
+            if self.grep_thread is not None:
+                return
+
+            pool = consumer.get_pool()
+            self.grep_thread = threading.Thread(target=self.thread_worker,
+                                                args=(pool, 'GrepWorker'),
+                                                name='GrepPoolStateObserver')
+            self.grep_thread.start()
 
     def thread_worker(self, pool, name):
         last_call = 0
