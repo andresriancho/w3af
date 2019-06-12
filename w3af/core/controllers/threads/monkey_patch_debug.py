@@ -26,12 +26,25 @@ import w3af.core.controllers.threads.pool276 as pool276
 
 
 def new_debug(msg, *args):
-    msg %= args
-    msg = '[threadpool] %s' % msg
-    om.out.debug(msg)
+    om_msg = msg % args
+    om_msg = '[threadpool] %s' % om_msg
+    om.out.debug(om_msg)
 
 
 def monkey_patch_debug():
+    multiprocessing.util.original_debug = multiprocessing.util.debug
+    threadpool.original_debug = new_debug
+    pool276.original_debug = new_debug
+
     multiprocessing.util.debug = new_debug
     threadpool.debug = new_debug
     pool276.debug = new_debug
+
+
+def remove_monkey_patch_debug():
+    if not hasattr(multiprocessing.util, 'original_debug'):
+        return
+
+    multiprocessing.util.debug = multiprocessing.util.original_debug
+    threadpool.debug = threadpool.original_debug
+    pool276.debug = pool276.original_debug
