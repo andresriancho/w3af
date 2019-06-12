@@ -97,8 +97,8 @@ class strange_parameters(GrepPlugin):
             return False
 
         desc = ('The URI: "%s" has a parameter named: "%s" with value:'
-                ' "%s", which is very uncommon. and requires manual'
-                ' verification.')
+                ' "%s", which is very uncommon and requires manual'
+                ' inspection.')
         args = (response.get_uri(), token_name, token_value)
         args = tuple(smart_str_ignore(i) for i in args)
         desc %= args
