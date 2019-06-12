@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import w3af.core.controllers.output_manager as om
+
 from .cpu_usage import start_cpu_profiling, stop_cpu_profiling
 from .memory_usage import start_memory_profiling, stop_memory_profiling
 from .core_stats import start_core_profiling, stop_core_profiling
@@ -43,8 +45,13 @@ def start_profiling_no_core():
 
 
 def stop_profiling(w3af_core):
-    stop_core_profiling(w3af_core)
-    stop_profiling_no_core()
+    om.out.debug('Called stop_profiling()')
+
+    try:
+        stop_core_profiling(w3af_core)
+        stop_profiling_no_core()
+    except Exception as e:
+        om.out.debug('Call to stop_profiling() failed with: "%s"' % e)
 
 
 def stop_profiling_no_core():
