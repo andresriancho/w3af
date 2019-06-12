@@ -284,13 +284,26 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         headers = smart_str_ignore(self.get_all_headers())
 
         haystacks = set()
+
+        # uris
+        uri_decoded = uri.url_decode()
+
         haystacks.add(smart_str_ignore(uri))
-        haystacks.add(smart_str_ignore(uri.url_decode()))
-        haystacks.add(self.make_comp(smart_str_ignore(uri.url_decode())))
+        haystacks.add(smart_str_ignore(uri_decoded))
+        haystacks.add(self.make_comp(smart_str_ignore(uri_decoded)))
+
+        # uris without encoding
+        haystacks.add(smart_str_ignore(uri.url_string))
+        haystacks.add(smart_str_ignore(uri_decoded.url_string))
+        haystacks.add(self.make_comp(smart_str_ignore(uri_decoded.url_string)))
+
+        # data
         haystacks.add(data)
         haystacks.add(unquote(data))
         haystacks.add(self.make_comp(data))
         haystacks.add(self.make_comp(unquote(data)))
+
+        # headers
         haystacks.add(headers)
         haystacks.add(unquote(headers))
 

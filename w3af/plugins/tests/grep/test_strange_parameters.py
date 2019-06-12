@@ -94,3 +94,16 @@ class TestStrangeParameters(unittest.TestCase):
         self.plugin.grep(self.request, response)
         vulns = kb.kb.get('strange_parameters', 'strange_parameters')
         self.assertEquals(len(vulns), 2, vulns)
+
+    def test_strange_parameters_sent_false_positive(self):
+        body = ('<link rel="amphtml" href="http://w3af.org/?searchsubmit='
+                'S%C3%B6k&#038;s=echo+str_repeat%28%27ruvkt%27%2C5%29%3B&#038;amp">')
+
+        url = URL('http://w3af.org/?searchsubmit=S%C3%B6k&s=echo%20str_repeat%28%27ruvkt%27%2C5%29%3B')
+        response = HTTPResponse(200, body, self.headers, url, url, _id=1)
+
+        request = FuzzableRequest(url)
+
+        self.plugin.grep(request, response)
+        self.assertEquals(len(kb.kb.get('strange_parameters',
+                                        'strange_parameters')), 0)
