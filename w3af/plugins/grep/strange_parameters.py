@@ -32,11 +32,6 @@ from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
 
-STRANGE_RE = re.compile(r'([a-zA-Z0-9. ]+)')
-SQL_RE = re.compile(r'(SELECT .*? FROM|'
-                    r'INSERT INTO .*? VALUES|'
-                    r'UPDATE .*? SET .*? WHERE)', re.IGNORECASE)
-
 
 class strange_parameters(GrepPlugin):
     """
@@ -44,6 +39,13 @@ class strange_parameters(GrepPlugin):
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
     """
+    STRANGE_RE_CHARS = re.compile(r'([a-zA-Z0-9. ]+)')
+
+    STRANGE_RE_LIST = [re.compile(r'\w+\(.*?\)')]
+
+    SQL_RE = re.compile(r'(SELECT .*? FROM|'
+                        r'INSERT INTO .*? VALUES|'
+                        r'UPDATE .*? SET .*? WHERE)', re.IGNORECASE)
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -120,7 +122,7 @@ class strange_parameters(GrepPlugin):
 
         :return: True if the parameter value contains SQL sentences
         """
-        for match in SQL_RE.findall(token_value):
+        for match in self.SQL_RE.findall(token_value):
             if request.sent(match):
                 continue
 
@@ -143,37 +145,46 @@ class strange_parameters(GrepPlugin):
         """
         :return: True if the parameter value is strange
         """
+        decoded_value = urllib.unquote(value)
         decoded_parameter = urllib.unquote(parameter)
 
-        # We don't care about URLs, these are most likely OK
-        if decoded_parameter.startswith('http://'):
+        #
+        # Parameters holding URLs will always be flagged as "strange" because
+        # they contain multiple "special characters", but we don't care about
+        # them enough to report them
+        #
+        if decoded_value.startswith('http://'):
             return False
 
-        if decoded_parameter.startswith('https://'):
+        if decoded_value.startswith('https://'):
             return False
 
+        #
+        # The wicket framework uses strange URLs like this by design:
+        #
+        # https://www.DOMAIN.com/
+        #     ?wicket:bookmarkablePage=:com.DOMAIN.web.pages.SignInPage
+        #     &wicket:interface=:0:signInForm::IFormSubmitListener::
+        #     ;jsessionid=7AC76A46A86BBC3F5253E374241BC892
+        #
+        # Which are strange in all cases, except from wicket!
+        #
         if 'wicket:' in parameter or 'wicket:' in decoded_parameter:
-            #
-            # The wicket framework uses, by default, strange URLs like this:
-            #
-            # https://www.DOMAIN.com/
-            #     ?wicket:bookmarkablePage=:com.DOMAIN.web.pages.SignInPage
-            #     &wicket:interface=:0:signInForm::IFormSubmitListener::
-            #     ;jsessionid=7AC76A46A86BBC3F5253E374241BC892
-            #
-            #   Which are strange in all cases, except from wicket!
-            #
             return False
 
-        # Seems to be a function
-        _strange_parameter_re = ['\w+\(.*?\)']
-
-        for regex in _strange_parameter_re:
-            for match in re.findall(regex, value):
+        #
+        # Match specific things such as function calls
+        #
+        for regex in self.STRANGE_RE_LIST:
+            for match in regex.findall(value):
                 if not request.sent(match):
                     return True
 
-        split_value = [x for x in STRANGE_RE.split(value) if x != '']
+        #
+        # Split the parameter by any character that is not A-Za-z0-9 and if
+        # the length is greater than X then report it
+        #
+        split_value = [x for x in self.STRANGE_RE_CHARS.split(value) if x != '']
         if len(split_value) > 4:
             if not request.sent(value):
                 return True
