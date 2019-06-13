@@ -66,7 +66,6 @@ for event in events:
         continue
            
    browser.send_event(event)
-   browser.wait_until_done()
    
    if browser.navigated_to_different_page():
        browser.back(dom) 
