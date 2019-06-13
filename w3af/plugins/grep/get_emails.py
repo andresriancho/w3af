@@ -49,7 +49,7 @@ class get_emails(GrepPlugin):
         Plugin entry point, get the emails and save them to the kb.
 
         :param request: The HTTP request
-        :param request: The HTTP response
+        :param response: The HTTP response
         :return: None
         """
         try:

@@ -162,6 +162,9 @@ class TestHistoryItem(unittest.TestCase):
         compressed_file = os.path.join(h.get_session_dir(), '1-150.zip')
         self.assertTrue(os.path.exists(compressed_file))
 
+        compressed_file_temp = os.path.join(h.get_session_dir(), '1-150.zip.tmp')
+        self.assertFalse(os.path.exists(compressed_file_temp))
+
         expected_files = ['%s.trace' % i for i in range(1, HistoryItem._COMPRESSED_FILE_BATCH + 1)]
 
         _zip = zipfile.ZipFile(compressed_file, mode='r')

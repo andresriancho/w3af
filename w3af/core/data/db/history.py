@@ -81,6 +81,8 @@ class HistoryItem(object):
     _EXTENSION = 'trace'
     _MSGPACK_CANARY = 'cute-and-yellow'
 
+    _TMP_EXTENSION = 'tmp'
+
     _COMPRESSED_EXTENSION = 'zip'
     _COMPRESSED_FILE_BATCH = 150
     _UNCOMPRESSED_FILES = 50
@@ -327,7 +329,10 @@ class HistoryItem(object):
             # we checked for os.path.exists(file_name) at the beginning of this
             # method the file wasn't there yet, but is on disk now
             #
-            return self._load_from_trace_file_concurrent(_id)
+            if os.path.exists(file_name):
+                return self._load_from_trace_file_concurrent(_id)
+
+            raise TraceReadException('No zip nor trace file for ID %s' % _id)
 
     def _load_from_zip(self, _id):
         files = os.listdir(self.get_session_dir())
@@ -342,7 +347,16 @@ class HistoryItem(object):
         raise TraceReadException('No zip file contains %s' % _id)
 
     def _load_from_zip_file(self, _id, zip_file):
-        _zip = zipfile.ZipFile(os.path.join(self.get_session_dir(), zip_file))
+        try:
+            _zip = zipfile.ZipFile(os.path.join(self.get_session_dir(), zip_file))
+        except zipfile.BadZipfile:
+            # We get here when the zip file has an invalid format
+            #
+            # This is most likely because one thread is writing to disk and
+            # another is trying to read from it
+            msg = 'Zip file %s has an invalid format'
+            args = (zip_file,)
+            raise TraceReadException(msg % args)
 
         try:
             serialized_req_res = _zip.read('%s.%s' % (_id, self._EXTENSION))
@@ -610,6 +624,12 @@ class HistoryItem(object):
                                             self._COMPRESSED_EXTENSION)
         compressed_filename = os.path.join(session_dir, compressed_filename)
 
+        # To prevent race conditions between a thread that is writing the zip
+        # file and another thread that is attempting to read from it, we first
+        # write the contents of the zip file to a .tmp file, and when all the
+        # contents have been written and flushed, rename the file to a zip file
+        compressed_filename_temp = '%s.%s' % (compressed_filename, self._TMP_EXTENSION)
+
         #
         # I run some tests with tarfile to check if tar + gzip or tar + bzip2
         # were faster / better suited for this task. This is what I got when
@@ -635,7 +655,7 @@ class HistoryItem(object):
         # Summary: If you want to change the compression algorithm make sure
         #          that it is better than `zip`.
         #
-        _zip = zipfile.ZipFile(file=compressed_filename,
+        _zip = zipfile.ZipFile(file=compressed_filename_temp,
                                mode='w',
                                compression=zipfile.ZIP_DEFLATED)
 
@@ -648,6 +668,12 @@ class HistoryItem(object):
                 continue
 
         _zip.close()
+
+        # Rename the file to .zip only after all the contents have been flushed
+        # to disk by .close().
+        #
+        # This prevents race conditions
+        os.rename(compressed_filename_temp, compressed_filename)
 
         #
         # And now remove the already compressed files

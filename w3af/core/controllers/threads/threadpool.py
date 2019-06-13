@@ -546,8 +546,8 @@ class Pool(ThreadPool):
 
         for _ in xrange(int(timeout / delay)):
             if (self._inqueue.qsize() == 0 and
-                self._outqueue.qsize() == 0 and
-                self._taskqueue.qsize() == 0):
+                    self._outqueue.qsize() == 0 and
+                    self._taskqueue.qsize() == 0):
                 break
 
             time.sleep(delay)
