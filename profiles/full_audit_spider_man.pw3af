@@ -53,8 +53,8 @@ persistent_xss = True
 [audit.csrf]
 
 [audit.ssl_certificate]
-minExpireDays = 30
-caFileName = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
+min_expire_days = 30
+ca_file_name = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
 
 [audit.xst]
 
