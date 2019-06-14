@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
 
+import w3af.core.controllers.output_manager as om
+
 
 class PageState(object):
     PAGE_STATE_NONE = 0
@@ -34,13 +36,18 @@ class PageState(object):
     def __init__(self):
         self._page_state = self.PAGE_STATE_NONE
         self._timestamp_set_page_might_nav = None
+
+        self._loader_id = None
+        self._frame_id = None
+        self._network_idle_event = None
+
         self._set_initial_load_handler_state()
 
     def _set_initial_load_handler_state(self):
         # These keep the internal state of the page based on received events
-        self._frame_stopped_loading_event = None
-        self._network_almost_idle_event = None
-        self._execution_context_created = None
+        self._network_idle_event = None
+        self._loader_id = None
+        self._frame_id = None
 
     def get(self):
         """
@@ -83,8 +90,89 @@ class PageState(object):
         :param message: The message as received from chrome
         :return: None
         """
+        self._track_frame_and_loader_handler(message)
         self._navigation_started_handler(message)
         self._load_url_finished_handler(message)
+
+    def _track_frame_and_loader_handler(self, message):
+        """
+        Track the frameId and loaderId for the main page. After sending the
+        Page.Navigate message:
+
+        {"params":
+            {"url": "https://react-shopping-cart-67954.firebaseapp.com/"},
+             "id": 7908361,
+             "method": "Page.navigate"}
+
+        Chrome sends:
+
+            {"id": 7908361,
+             "result": {"loaderId": "4571947E92ECA122DB51208E4353A210",
+                        "frameId": "EE10237F95DADA12389C2D63C5D05DA9"}}
+
+        We want to track the loaderId and frameId.
+
+        It is important to notice that many messages contain a loader and frame,
+        so we need to make sure that we're parsing the right message.
+
+        :param message: The JSON message received from the websocket
+        :return: None
+        """
+        if message.get('id', None) is None:
+            return
+
+        result = message.get('result', None)
+
+        if result is None:
+            return
+
+        if not isinstance(result, dict):
+            return
+
+        expected_keys = {'loaderId', 'frameId'}
+        if expected_keys != set(result.keys()):
+            return
+
+        loader_id = result.get('loaderId', None)
+        if loader_id is None:
+            return
+
+        frame_id = result.get('frameId', None)
+        if frame_id is None:
+            return
+
+        # Success!
+        self._frame_id = frame_id
+        self._loader_id = loader_id
+
+    def _message_is_for_tracked_frame_and_loader(self, message):
+        """
+        In some cases we only care about messages that are targeted to a
+        specific frameId.
+
+        This method checks if the message passed as parameter is targeted
+        to the `self._frame_id`.
+
+        :param message: The message received from the chrome websocket
+        :return: True if the message is for the tracked frameId
+        """
+        # PageState has not yet seen the messages to identify the current
+        # loaderId and frameId
+        if self._frame_id is None:
+            return False
+
+        if self._loader_id is None:
+            return False
+
+        message_str = str(message)
+
+        if self._frame_id not in message_str:
+            return False
+
+        if self._loader_id not in message_str:
+            return False
+
+        return True
 
     def _navigation_started_handler(self, message):
         """
@@ -96,15 +184,18 @@ class PageState(object):
         """
         method = message.get('method', None)
 
+        if method is None:
+            return
+
+        if not self._message_is_for_tracked_frame_and_loader(message):
+            return
+
         navigator_started_methods = ('Page.frameScheduledNavigation',
                                      'Page.frameStartedLoading',
                                      'Page.frameNavigated')
 
         if method in navigator_started_methods:
-            self._frame_stopped_loading_event = False
-            self._network_almost_idle_event = False
-            self._execution_context_created = False
-
+            self._network_idle_event = False
             self._page_state = self.PAGE_STATE_LOADING
 
     def _load_url_finished_handler(self, message):
@@ -123,24 +214,21 @@ class PageState(object):
         """
         method = message.get('method', None)
 
-        if method is None:
+        if method != 'Page.lifecycleEvent':
             return
 
-        elif method == 'Page.frameStoppedLoading':
-            self._frame_stopped_loading_event = True
+        if not self._message_is_for_tracked_frame_and_loader(message):
+            return
 
-        elif method == 'Runtime.executionContextCreated':
-            self._execution_context_created = True
+        param_name = message.get('params', {}).get('name', '')
 
-        elif method == 'Page.lifecycleEvent':
-            param_name = message.get('params', {}).get('name', '')
+        if param_name != 'networkIdle':
+            return
 
-            if param_name == 'networkAlmostIdle':
-                self._network_almost_idle_event = True
+        # Success!
+        self._network_idle_event = True
+        self._page_state = self.PAGE_STATE_LOADED
 
-        received_all = all([self._network_almost_idle_event,
-                            self._frame_stopped_loading_event,
-                            self._execution_context_created])
-
-        if received_all:
-            self._page_state = self.PAGE_STATE_LOADED
+        msg = 'Page state changed to LOADED for frame %s and loader %s'
+        args = (self._frame_id, self._loader_id)
+        om.out.debug(msg % args)

@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
 
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.chrome.instrumented.instrumented_base import InstrumentedChromeBase
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
 from w3af.core.controllers.chrome.instrumented.page_state import PageState
@@ -87,11 +89,11 @@ class InstrumentedChrome(InstrumentedChromeBase):
         start = time.time()
 
         while True:
-            if self.page_state.get() == PageState.PAGE_STATE_LOADING:
-                return True
-
             if time.time() - start > timeout:
                 return False
+
+            if self.page_state.get() == PageState.PAGE_STATE_LOADING:
+                return True
 
             time.sleep(0.1)
 
@@ -113,11 +115,12 @@ class InstrumentedChrome(InstrumentedChromeBase):
         start = time.time()
 
         while True:
+            if time.time() - start > timeout:
+                om.out.debug('(did: %s) wait_for_load() timeout out' % self.debugging_id)
+                return False
+
             if self.page_state.get() == PageState.PAGE_STATE_LOADED:
                 return True
-
-            if time.time() - start > timeout:
-                return False
 
             time.sleep(0.1)
 
