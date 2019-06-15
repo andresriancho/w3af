@@ -49,7 +49,15 @@ def set_debugging_in_output_manager():
     om.manager.set_output_plugin_inst(text_file_inst)
     om.manager.start()
 
-    print('Logging to %s' % text_output)
+    print('')
+    print('    Logging to %s' % text_output)
+
+    latest_output = os.path.join(tempfile.gettempdir(), 'latest-w3af-output.txt')
+    if os.path.exists(latest_output):
+        os.remove(latest_output)
+
+    os.symlink(text_output, latest_output)
+    print('    Symlink to log file created at %s' % latest_output)
 
 
 def debugging_is_configured_in_output_manager():
