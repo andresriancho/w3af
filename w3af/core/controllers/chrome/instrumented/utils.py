@@ -77,3 +77,4 @@ def is_valid_event_type(event_type):
     :return: True if valid
     """
     return bool(EVENT_TYPE_RE.match(event_type))
+
