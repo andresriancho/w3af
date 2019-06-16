@@ -28,6 +28,7 @@ from w3af.core.controllers.chrome.instrumented.event_listener import EventListen
 from w3af.core.controllers.chrome.instrumented.page_state import PageState
 from w3af.core.controllers.chrome.instrumented.paginate import paginate, PAGINATION_PAGE_COUNT
 from w3af.core.controllers.chrome.instrumented.utils import escape_js_string, is_valid_event_type
+from w3af.core.controllers.chrome.instrumented.frame_manager import FrameManager
 from w3af.core.controllers.chrome.instrumented.exceptions import (EventTimeout,
                                                                   EventException,
                                                                   InstrumentedChromeException)
@@ -50,10 +51,16 @@ class InstrumentedChrome(InstrumentedChromeBase):
     def __init__(self, uri_opener, http_traffic_queue):
         super(InstrumentedChrome, self).__init__(uri_opener, http_traffic_queue)
 
-        self.page_state = PageState()
+        self.frame_manager = FrameManager(self.debugging_id)
+        self.page_state = PageState(self.frame_manager, self.debugging_id)
 
-        # Set the handler that will maintain the page state
-        self.chrome_conn.set_event_handler(self.page_state.page_state_handler)
+        # Set the handler that will maintain the page and frame state
+        self.chrome_conn.set_event_handler(self.frame_manager.frame_manager_handler)
+
+        # Set the chrome settings after configuring the handlers, this is required
+        # to receive some of the messages which are sent early on during the
+        # initialization phase
+        self.set_chrome_settings()
 
     def load_url(self, url):
         """
@@ -83,7 +90,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         event does not appear in `timeout` seconds then False is returned.
 
         :param timeout: How many seconds to wait for the event
-        :return: True if the page state is PAGE_STATE_LOADING
+        :return: True if the page state is STATE_LOADING
         """
         timeout = timeout or self.PAGE_WILL_CHANGE_TIMEOUT
         start = time.time()
@@ -92,7 +99,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
             if time.time() - start > timeout:
                 return False
 
-            if self.page_state.get() == PageState.PAGE_STATE_LOADING:
+            if self.page_state.get() == PageState.STATE_LOADING:
                 return True
 
             time.sleep(0.1)
@@ -108,7 +115,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         the method will exit returning False
 
         :param timeout: Seconds to wait for the page state
-        :return: True when the page state has reached PAGE_STATE_LOADED
+        :return: True when the page state has reached STATE_LOADED
                  False when not
         """
         timeout = timeout or self.PAGE_LOAD_TIMEOUT
@@ -116,10 +123,10 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         while True:
             if time.time() - start > timeout:
-                om.out.debug('(did: %s) wait_for_load() timeout out' % self.debugging_id)
+                om.out.debug('(did: %s) wait_for_load() timed out' % self.debugging_id)
                 return False
 
-            if self.page_state.get() == PageState.PAGE_STATE_LOADED:
+            if self.page_state.get() == PageState.STATE_LOADED:
                 return True
 
             time.sleep(0.1)
@@ -130,7 +137,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :return:
         """
-        self.page_state.force(PageState.PAGE_STATE_LOADED)
+        self.page_state.force(PageState.STATE_LOADED)
         self.chrome_conn.Page.stopLoading()
 
     def get_url(self):
@@ -232,7 +239,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         cmd = 'window._DOMAnalyzer.dispatchCustomEvent("%s", "%s")'
         args = (selector, event_type)
 
-        self._force_PAGE_MIGHT_NAVIGATE_state()
+        self._force_might_navigate_state()
         result = self._js_runtime_evaluate(cmd % args)
 
         if result is None:
@@ -274,7 +281,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         The solution to this issue was to:
 
-            * Force the page state to PAGE_STATE_LOADING when we know that
+            * Force the page state to STATE_LOADING when we know that
               the action we're performing (eg. navigate_to_history_index)
               was going to trigger a load. This is performed in this method
 
@@ -284,13 +291,17 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :return: None
         """
-        self.page_state.force(PageState.PAGE_STATE_LOADING)
+        main_frame = self.frame_manager.get_main_frame()
+        if main_frame is not None:
+            main_frame.set_navigated()
 
-    def _force_PAGE_MIGHT_NAVIGATE_state(self):
+        self.page_state.force(PageState.STATE_LOADING)
+
+    def _force_might_navigate_state(self):
         """
         :see: Documentation at _force_page_loading_state().
         """
-        self.page_state.force(PageState.PAGE_MIGHT_NAVIGATE)
+        self.page_state.force(PageState.MIGHT_NAVIGATE)
 
     def _js_runtime_evaluate(self, expression, timeout=5):
         """
@@ -601,4 +612,4 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
     def terminate(self):
         super(InstrumentedChrome, self).terminate()
-        self.page_state.force(PageState.PAGE_STATE_NONE)
+        self.page_state.force(PageState.STATE_NONE)

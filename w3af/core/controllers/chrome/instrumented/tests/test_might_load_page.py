@@ -24,11 +24,12 @@ from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandle
 from w3af.core.controllers.chrome.tests.base import BaseInstrumentedUnittest
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
 from w3af.core.controllers.chrome.instrumented.page_state import PageState
+from w3af.core.controllers.chrome.instrumented.frame import Frame
 
 
 class TestMightLoadPage(BaseInstrumentedUnittest):
     """
-    This unittest asserts that all cases associated with PageState.PAGE_MIGHT_NAVIGATE
+    This unittest asserts that all cases associated with PageState.MIGHT_NAVIGATE
     are properly working.
 
     In order to do this, we load a page and then dispatch an event in the
@@ -36,7 +37,7 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
 
         * Dispatched DOM event does trigger a full DOM reload, and we assert
           that wait_for_load() and navigation_started() yield the expected
-          results because page state is not PageState.PAGE_MIGHT_NAVIGATE anymore.
+          results because page state is not PageState.MIGHT_NAVIGATE anymore.
 
         * Dispatched DOM event does NOT trigger a full DOM reload, and we
           want to make sure that wait_for_load() and navigation_started() yield
@@ -78,12 +79,12 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
 
         #
         # Click on the div tag and force a full dom reload, this will set the
-        # page state to PAGE_MIGHT_NAVIGATE (at least for 1ms) and then it will
+        # page state to MIGHT_NAVIGATE (at least for 1ms) and then it will
         # switch to PAGE_STATE_LOADING
         #
         self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
-        self.assertIn(self.ic.page_state.get(), [PageState.PAGE_MIGHT_NAVIGATE,
-                                                 PageState.PAGE_STATE_LOADING])
+        self.assertIn(self.ic.page_state.get(), [PageState.MIGHT_NAVIGATE,
+                                                 PageState.STATE_LOADING])
 
         #
         # Navigation has started
@@ -101,9 +102,9 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
         self.assertFalse(navigation_started)
 
         #
-        # And the page state must be PAGE_STATE_LOADED
+        # And the page state must be STATE_LOADED
         #
-        self.assertEqual(self.ic.page_state.get(), PageState.PAGE_STATE_LOADED)
+        self.assertEqual(self.ic.page_state.get(), PageState.STATE_LOADED)
 
         #
         # Assert that the event really changed the DOM
@@ -148,11 +149,11 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
 
         #
         # Click on the div tag, this will do nothing in the browser but we'll
-        # set the page state to PAGE_MIGHT_NAVIGATE because we have no way of
+        # set the page state to MIGHT_NAVIGATE because we have no way of
         # knowing beforehand
         #
         self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
-        self.assertEqual(self.ic.page_state.get(), PageState.PAGE_MIGHT_NAVIGATE)
+        self.assertEqual(self.ic.page_state.get(), PageState.MIGHT_NAVIGATE)
 
         #
         # Navigation has not started
@@ -168,9 +169,9 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
         self.assertFalse(wait_for_load)
 
         #
-        # And the page state is still PAGE_MIGHT_NAVIGATE
+        # And the page state is still MIGHT_NAVIGATE
         #
-        self.assertEqual(self.ic.page_state.get(), PageState.PAGE_MIGHT_NAVIGATE)
+        self.assertEqual(self.ic.page_state.get(), PageState.MIGHT_NAVIGATE)
 
         #
         # Assert that the event never changed the DOM
@@ -180,11 +181,11 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
 
         #
         # After some time the InstrumentedChrome realizes that the JS code will
-        # not actually navigate, so it changes the page state to PAGE_STATE_LOADED
+        # not actually navigate, so it changes the page state to STATE_LOADED
         #
-        time.sleep(PageState.MAX_SECONDS_IN_MIGHT_NAVIGATE)
+        time.sleep(Frame.MAX_SECONDS_IN_MIGHT_NAVIGATE)
 
-        self.assertEqual(self.ic.page_state.get(), PageState.PAGE_STATE_LOADED)
+        self.assertEqual(self.ic.page_state.get(), PageState.STATE_LOADED)
 
 
 class TwoPagesRequestHandler(ExtendedHttpRequestHandler):

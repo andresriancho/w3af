@@ -65,7 +65,6 @@ class InstrumentedChromeBase(object):
         self.proxy = self.start_proxy()
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
-        self.set_chrome_settings()
 
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
