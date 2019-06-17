@@ -48,12 +48,19 @@ class TestCountEventListeners(BaseEventListenerCountTest):
             '!document',
             '.bag--float-cart-closed .bag__quantity',
             '.bag--float-cart-closed',
-            '.buy-btn'
+            '.buy-btn',
+            '[data-sku="8552515751438644"]',
+            '[data-sku="8552515751438644"] .shelf-stopper',
+            '[data-sku="8552515751438644"] .installment span',
+            '[data-sku="8552515751438644"] .shelf-item__buy-btn',
+            '[data-sku="8552515751438644"] .val',
+            '[data-sku="8552515751438644"] .shelf-item__price',
+            '[data-sku="8552515751438644"] .shelf-item__thumb',
+            '[data-sku="8552515751438644"] .val span',
+            '[data-sku="8552515751438644"] .installment',
         }
 
         found_selectors = {el.selector for el in event_listeners}
-        self.assertEqual(found_selectors, expected_selectors)
 
-        self.assertEqual(event_listeners, {}, pprint.pformat(event_listeners))
-
-
+        for expected_selector in expected_selectors:
+            self.assertIn(expected_selector, found_selectors)
