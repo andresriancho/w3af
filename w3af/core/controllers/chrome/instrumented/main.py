@@ -75,11 +75,12 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                        timeout=self.PAGE_LOAD_TIMEOUT)
 
     def load_about_blank(self):
-        self.clear_frame_manager()
+        self.clear_state()
         self.load_url('about:blank')
 
-    def clear_frame_manager(self):
+    def clear_state(self):
         self.frame_manager = FrameManager(self.debugging_id)
+        self.page_state = PageState(self.frame_manager, self.debugging_id)
 
     def set_debugging_id(self, debugging_id):
         super(InstrumentedChrome, self).set_debugging_id(debugging_id)
@@ -628,3 +629,4 @@ class InstrumentedChrome(InstrumentedChromeBase):
     def terminate(self):
         super(InstrumentedChrome, self).terminate()
         self.page_state.force(PageState.STATE_NONE)
+        self.clear_state()
