@@ -31,6 +31,7 @@ import functools
 import hashlib
 
 from collections import deque
+from socket import error as SocketError
 
 from requests.adapters import ConnectionError
 from PyChromeDevTools import GenericElement, ChromeInterface, TIMEOUT
@@ -438,7 +439,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         """
         try:
             self.connect()
-        except (ConnectionError, IndexError) as e:
+        except (ConnectionError, IndexError, SocketError) as e:
             msg = 'Tried to reconnect to the websocket and received: "%s" (did: %s)'
             args = (e, self.debugging_id)
             om.out.debug(msg % args)
