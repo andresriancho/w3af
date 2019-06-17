@@ -60,7 +60,7 @@ class Frame(object):
         self._network_idle_event = False
         self._dom_content_loaded = False
 
-        if self._forced_state.get() == self.MIGHT_NAVIGATE:
+        if self._forced_state.get() in (self.MIGHT_NAVIGATE, self.STATE_LOADING):
             # The forced state is overwritten by the real state: Navigated!
             self._forced_state = VariableValueTimeout(value=None)
 
@@ -73,10 +73,15 @@ class Frame(object):
             self._forced_state = VariableValueTimeout(value=self.MIGHT_NAVIGATE,
                                                       timeout=self.MAX_SECONDS_IN_MIGHT_NAVIGATE,
                                                       after_timeout=None)
-        else:
-            # Other forced states are only kept for one second
+
+        elif state in (self.STATE_LOADED, self.STATE_NONE):
+            self._forced_state = VariableValueTimeout(value=state)
+
+        elif state == self.STATE_LOADING:
+            # This is used in load_url() to make sure that wait_for_load() does
+            # not exit
             self._forced_state = VariableValueTimeout(value=state,
-                                                      timeout=1,
+                                                      timeout=1.0,
                                                       after_timeout=None)
 
     def get_state(self):
@@ -119,26 +124,29 @@ class Frame(object):
 
             return forced_state
 
-        if not self.child_frames:
-            return self.get_state()
-
-        child_overall_states = set()
+        #
+        # Get all the frame states, including self and all child frames
+        #
+        all_states = {self.get_state()}
 
         for child in self.child_frames.itervalues():
-            child_overall_states.add(child.get_overall_state())
+            all_states.add(child.get_overall_state())
 
-        msg = 'Frame %s child_overall_states: %r'
-        args = (self.get_short_frame_id(),
-                list(child_overall_states))
+        msg = 'Frame %s all_states: %s'
+        args = (self.get_short_frame_id(), ', '.join(str(i) for i in all_states))
         om.out.debug(msg % args)
 
-        if self.STATE_NONE in child_overall_states:
+        #
+        # In order to be in STATE_LOADED we need all frames to be in that state
+        # anything different will yield STATE_NONE of STATE_LOADING
+        #
+        if self.STATE_NONE in all_states:
             return self.STATE_NONE
 
-        if self.STATE_LOADING in child_overall_states:
+        if self.STATE_LOADING in all_states:
             return self.STATE_LOADING
 
-        if {self.STATE_LOADED} == child_overall_states:
+        if {self.STATE_LOADED} == all_states:
             return self.STATE_LOADED
 
     def detach(self, frame_manager):
@@ -192,7 +200,7 @@ class Frame(object):
         if param_name == 'networkIdle':
             self._network_idle_event = True
 
-        if param_name == 'DOMContentLoaded':
+        elif param_name == 'DOMContentLoaded':
             self._dom_content_loaded = True
 
     def get_short_frame_id(self):
