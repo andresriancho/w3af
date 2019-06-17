@@ -50,7 +50,7 @@ class Frame(object):
     def __repr__(self):
         args = (self.get_short_frame_id(),
                 self.get_short_parent_frame_id(),
-                len(self.child_frames))
+                self.get_short_child_frame_ids())
 
         return '<Frame (id: %s, parent: %s, children: %s)>' % args
 
@@ -209,12 +209,15 @@ class Frame(object):
     def get_short_parent_frame_id(self):
         return self.parent_frame.frame_id[:5] if self.parent_frame else None
 
+    def get_short_child_frame_ids(self):
+        return [str(c.get_short_frame_id()) for c in self.child_frames.itervalues()]
+
     def _log_frame_state(self, state):
         msg = 'Frame %s state is: %s (did: %s, parent: %s, children: %s, oid: %s)'
         args = (self.get_short_frame_id(),
                 state,
                 self._debugging_id,
                 self.get_short_parent_frame_id(),
-                len(self.child_frames),
+                self.get_short_child_frame_ids(),
                 id(self))
         om.out.debug(msg % args)

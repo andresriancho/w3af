@@ -64,11 +64,11 @@ class PageState(object):
     def _log_page_state(self, state):
         main_frame = self._frame_manager.get_main_frame()
         main_frame_id = main_frame.frame_id[:5] if main_frame else None
-        children_count = len(main_frame.child_frames) if main_frame else None
+        children = main_frame.get_short_child_frame_ids() if main_frame else None
 
         msg = 'Main frame %s state is: %s (did: %s, children: %s)'
         args = (main_frame_id,
                 state,
                 self._debugging_id,
-                children_count)
+                children)
         om.out.debug(msg % args)
