@@ -166,7 +166,7 @@ class FrameManager(object):
             for child_frame_id, child_frame in frame.child_frames:
                 child_frame.detach(self)
 
-            self._main_frame.set_navigated()
+            frame.set_navigated()
 
         if is_main_frame and not frame:
             # This is the first time that this frame navigates, it has to
