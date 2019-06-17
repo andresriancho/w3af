@@ -46,7 +46,7 @@ class PageState(object):
         """
         if self._proxy.get_pending_http_request_count() > 0:
             return self.STATE_LOADING
-        
+
         main_frame = self._frame_manager.get_main_frame()
 
         if main_frame is None:

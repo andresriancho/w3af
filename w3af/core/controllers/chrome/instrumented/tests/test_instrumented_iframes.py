@@ -34,7 +34,8 @@ class TestInstrumentedChromeOneIframe(BaseInstrumentedUnittest):
 
         self.ic.load_url(url)
 
-        self.ic.wait_for_load()
+        loaded = self.ic.wait_for_load()
+        self.assertTrue(loaded)
 
         self.assertEqual(self.ic.get_dom(), IframeHandler.INDEX)
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
@@ -118,9 +119,10 @@ class TestInstrumentedChromeIframeWithDelay(BaseInstrumentedUnittest):
 
         self.ic.load_url(url)
 
-        self.ic.wait_for_load()
+        loaded = self.ic.wait_for_load()
+        self.assertTrue(loaded)
 
-        self.assertEqual(self.ic.get_dom(), IframeHandler.INDEX)
+        self.assertEqual(self.ic.get_dom(), IframeDelayHandler.INDEX)
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         #
@@ -131,7 +133,7 @@ class TestInstrumentedChromeIframeWithDelay(BaseInstrumentedUnittest):
         self.assertEqual(request.get_url().url_string, url)
         self.assertEqual(response.get_url().url_string, url)
 
-        self.assertEqual(response.get_body(), IframeHandler.INDEX)
+        self.assertEqual(response.get_body(), IframeDelayHandler.INDEX)
         self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
 
         #
@@ -143,7 +145,7 @@ class TestInstrumentedChromeIframeWithDelay(BaseInstrumentedUnittest):
         self.assertEqual(request.get_url().url_string, iframe_url)
         self.assertEqual(response.get_url().url_string, iframe_url)
 
-        self.assertEqual(response.get_body(), IframeHandler.IFRAME)
+        self.assertEqual(response.get_body(), IframeDelayHandler.IFRAME)
         self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
 
 
@@ -166,7 +168,7 @@ class IframeDelayHandler(ExtendedHttpRequestHandler):
 
         if request_path == '/':
             code = 200
-            body = IframeHandler.INDEX
+            body = IframeDelayHandler.INDEX
             headers = {
                 'Content-Type': 'text/html',
                 'Content-Length': len(body),
@@ -177,7 +179,123 @@ class IframeDelayHandler(ExtendedHttpRequestHandler):
             time.sleep(4)
 
             code = 200
-            body = IframeHandler.IFRAME
+            body = IframeDelayHandler.IFRAME
+            headers = {
+                'Content-Type': 'text/html',
+                'Content-Length': len(body),
+                'Content-Encoding': 'identity'
+            }
+
+        else:
+            code = 404
+            body = 'Not found'
+            headers = {
+                'Content-Type': 'text/html',
+                'Content-Length': len(body),
+                'Content-Encoding': 'identity'
+            }
+
+        self.send_response_to_client(code, body, headers)
+
+
+class TestInstrumentedChromeNestedIframeWithDelay(BaseInstrumentedUnittest):
+
+    def test_load_page_with_nested_delay_iframe(self):
+        self._unittest_setup(NestedIframeDelayHandler, load_url=False)
+        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+
+        self.ic.load_url(url)
+
+        loaded = self.ic.wait_for_load()
+        self.assertTrue(loaded)
+
+        self.assertEqual(self.ic.get_dom(), NestedIframeDelayHandler.INDEX)
+        self.assertEqual(self.http_traffic_queue.qsize(), 3)
+
+        #
+        # The first request / response
+        #
+        request, response = self.http_traffic_queue.get()
+
+        self.assertEqual(request.get_url().url_string, url)
+        self.assertEqual(response.get_url().url_string, url)
+
+        self.assertEqual(response.get_body(), NestedIframeDelayHandler.INDEX)
+        self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
+
+        #
+        # The second request / response
+        #
+        request, response = self.http_traffic_queue.get()
+        iframe_url = url + 'iframe-1'
+
+        self.assertEqual(request.get_url().url_string, iframe_url)
+        self.assertEqual(response.get_url().url_string, iframe_url)
+
+        self.assertEqual(response.get_body(), NestedIframeDelayHandler.IFRAME_1)
+        self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
+
+        #
+        # The third request / response
+        #
+        request, response = self.http_traffic_queue.get()
+        iframe_url = url + 'iframe-2'
+
+        self.assertEqual(request.get_url().url_string, iframe_url)
+        self.assertEqual(response.get_url().url_string, iframe_url)
+
+        self.assertEqual(response.get_body(), NestedIframeDelayHandler.IFRAME_2)
+        self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
+
+
+class NestedIframeDelayHandler(ExtendedHttpRequestHandler):
+
+    INDEX = ('<html>'
+             '<head></head>'
+             '<body>Hello world'
+             '<iframe src="/iframe-1"></iframe>'
+             '</body>'
+             '</html>')
+
+    IFRAME_1 = ('<html>'
+                '<head></head>'
+                '<body>'
+                '<p>Inside iframe #1</p>'
+                '<iframe src="/iframe-2"></iframe>'
+                '</body>'
+                '</html>')
+
+    IFRAME_2 = ('<html>'
+                '<head></head>'
+                '<body>Inside iframe #2</body>'
+                '</html>')
+
+    def do_GET(self):
+        request_path = urlparse(self.path).path
+
+        if request_path == '/':
+            code = 200
+            body = NestedIframeDelayHandler.INDEX
+            headers = {
+                'Content-Type': 'text/html',
+                'Content-Length': len(body),
+                'Content-Encoding': 'identity'
+            }
+
+        elif request_path == '/iframe-1':
+            code = 200
+            body = NestedIframeDelayHandler.IFRAME_1
+            headers = {
+                'Content-Type': 'text/html',
+                'Content-Length': len(body),
+                'Content-Encoding': 'identity'
+            }
+
+        elif request_path == '/iframe-2':
+            time.sleep(4)
+
+            code = 200
+            body = NestedIframeDelayHandler.IFRAME_2
             headers = {
                 'Content-Type': 'text/html',
                 'Content-Length': len(body),
