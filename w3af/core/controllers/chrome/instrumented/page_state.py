@@ -28,8 +28,9 @@ class PageState(object):
     STATE_LOADED = 'LOADED'
     MIGHT_NAVIGATE = 'MIGHT_NAVIGATE'
 
-    def __init__(self, frame_manager, debugging_id):
+    def __init__(self, frame_manager, proxy, debugging_id):
         self._frame_manager = frame_manager
+        self._proxy = proxy
         self._debugging_id = debugging_id
 
     def set_debugging_id(self, debugging_id):
@@ -43,6 +44,9 @@ class PageState(object):
                     * STATE_LOADED
                     * MIGHT_NAVIGATE
         """
+        if self._proxy.get_pending_http_request_count() > 0:
+            return self.STATE_LOADING
+        
         main_frame = self._frame_manager.get_main_frame()
 
         if main_frame is None:

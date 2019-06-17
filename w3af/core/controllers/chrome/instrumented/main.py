@@ -52,7 +52,9 @@ class InstrumentedChrome(InstrumentedChromeBase):
         super(InstrumentedChrome, self).__init__(uri_opener, http_traffic_queue)
 
         self.frame_manager = FrameManager(self.debugging_id)
-        self.page_state = PageState(self.frame_manager, self.debugging_id)
+        self.page_state = PageState(self.frame_manager,
+                                    self.proxy,
+                                    self.debugging_id)
 
         # Set the handler that will maintain the page and frame state
         self.chrome_conn.set_event_handler(self.frame_manager.frame_manager_handler)
@@ -80,7 +82,9 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
     def clear_state(self):
         self.frame_manager = FrameManager(self.debugging_id)
-        self.page_state = PageState(self.frame_manager, self.debugging_id)
+        self.page_state = PageState(self.frame_manager,
+                                    self.proxy,
+                                    self.debugging_id)
 
     def set_debugging_id(self, debugging_id):
         super(InstrumentedChrome, self).set_debugging_id(debugging_id)

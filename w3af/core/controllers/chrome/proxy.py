@@ -89,9 +89,14 @@ class LoggingHandler(ProxyHandler):
         self._remove_user_agent_headless(http_request)
         self._add_language_header(http_request)
 
-        http_response = super(LoggingHandler, self)._send_http_request(http_request,
-                                                                       grep=grep,
-                                                                       debugging_id=self.parent_process.debugging_id)
+        self.parent_process.increase_pending_http_request_count()
+
+        try:
+            http_response = super(LoggingHandler, self)._send_http_request(http_request,
+                                                                           grep=grep,
+                                                                           debugging_id=self.parent_process.debugging_id)
+        finally:
+            self.parent_process.decrease_pending_http_request_count()
 
         # Remove security headers to reduce runtime security
         self._remove_security_headers(http_response)
@@ -237,6 +242,9 @@ class LoggingProxy(Proxy):
         self.first_http_request = None
         self.first_lock = threading.RLock()
 
+        self._http_request_count_lock = threading.RLock()
+        self._pending_http_request_count = 0
+
     def set_first_request_response(self, fuzzable_request, http_response):
         with self.first_lock:
             if self.first_http_response is not None:
@@ -272,3 +280,14 @@ class LoggingProxy(Proxy):
         self.set_debugging_id(None)
         self.first_http_request = None
         self.first_http_response = None
+
+    def increase_pending_http_request_count(self):
+        with self._http_request_count_lock:
+            self._pending_http_request_count += 1
+
+    def decrease_pending_http_request_count(self):
+        with self._http_request_count_lock:
+            self._pending_http_request_count -= 1
+
+    def get_pending_http_request_count(self):
+        return self._pending_http_request_count
