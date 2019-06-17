@@ -47,6 +47,9 @@ class FrameManager(object):
         self._timestamp_set_page_might_nav = None
         self._id = rand_alnum(8)
 
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
     def get_main_frame(self):
         return self._main_frame
 

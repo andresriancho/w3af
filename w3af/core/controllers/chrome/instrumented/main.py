@@ -75,7 +75,16 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                        timeout=self.PAGE_LOAD_TIMEOUT)
 
     def load_about_blank(self):
+        self.clear_frame_manager()
         self.load_url('about:blank')
+
+    def clear_frame_manager(self):
+        self.frame_manager = FrameManager(self.debugging_id)
+
+    def set_debugging_id(self, debugging_id):
+        super(InstrumentedChrome, self).set_debugging_id(debugging_id)
+        self.frame_manager.set_debugging_id(debugging_id)
+        self.page_state.set_debugging_id(debugging_id)
 
     def navigation_started(self, timeout=None):
         """
@@ -121,9 +130,15 @@ class InstrumentedChrome(InstrumentedChromeBase):
         timeout = timeout or self.PAGE_LOAD_TIMEOUT
         start = time.time()
 
+        main_frame = self.frame_manager.get_main_frame()
+        main_frame_id = main_frame.frame_id if main_frame is not None else None
+
         while True:
             if time.time() - start > timeout:
-                om.out.debug('(did: %s) wait_for_load() timed out' % self.debugging_id)
+                msg = 'wait_for_load(timeout=%s) timed out (did: %s, main_frame: %s)'
+                args = (timeout, self.debugging_id, main_frame_id)
+                om.out.debug(msg % args)
+
                 return False
 
             if self.page_state.get() == PageState.STATE_LOADED:

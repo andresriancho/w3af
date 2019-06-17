@@ -32,6 +32,9 @@ class PageState(object):
         self._frame_manager = frame_manager
         self._debugging_id = debugging_id
 
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
     def get(self):
         """
         :return: The current page state, which is one of:
