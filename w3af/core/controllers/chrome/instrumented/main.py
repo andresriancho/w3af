@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import time
+import json
 
 import w3af.core.controllers.output_manager as om
 
@@ -504,7 +505,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
             # chrome or the dom_analyzer.js code
             return
 
-        for event_listener in event_listeners:
+        for event_listener in json.loads(event_listeners):
             yield EventListener(event_listener)
 
     def get_html_event_listeners_iter(self,
@@ -600,7 +601,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
             # chrome or the dom_analyzer.js code
             return
 
-        for event_listener in event_listeners:
+        for event_listener in json.loads(event_listeners):
             yield EventListener(event_listener)
 
     def get_all_event_listeners(self,

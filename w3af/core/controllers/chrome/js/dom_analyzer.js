@@ -651,7 +651,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             filtered_event_listeners.push(event_listener);
         }
 
-        return filtered_event_listeners.slice(start, start + count);
+        return JSON.stringify(filtered_event_listeners.slice(start, start + count));
     },
 
     /**
@@ -735,11 +735,12 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             // Pagination (2/2)
             if ( events.length >= count ){
-                return events.splice(0, count);
+                return JSON.stringify(events.splice(0, count));
             }
+
         }
 
-        return events;
+        return JSON.stringify(events);
     },
 
     /**
