@@ -340,7 +340,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                                    returnByValue=True,
                                                    generatePreview=True,
                                                    awaitPromise=True,
-                                                   timeout=timeout * 1000)
+                                                   timeout=timeout)
 
         # This is a rare case where the DOM is not present
         if result is None:
