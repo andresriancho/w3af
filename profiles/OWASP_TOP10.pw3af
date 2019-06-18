@@ -14,8 +14,8 @@ use_echo = True
 eq_limit = 0.9
 
 [infrastructure.allowed_methods]
-reportDavOnly = True
-execOneTime = False
+dav_only = True
+run_once = False
 
 [grep.feeds]
 
