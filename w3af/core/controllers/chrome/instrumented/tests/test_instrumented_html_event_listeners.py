@@ -50,7 +50,6 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
 
         self.assertEqual(event_listeners, [{u'event_type': u'click',
                                             u'tag_name': u'table',
-                                            u'handler': {},
                                             u'node_type': 1,
                                             u'selector': u'#outside',
                                             u'text_content': u'onetwo'}])

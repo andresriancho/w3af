@@ -114,8 +114,11 @@ class EventListener(object):
     def __setitem__(self, key, value):
         self._event_as_dict[key] = value
 
+    def keys(self):
+        return self._event_as_dict.keys()
+
     def __eq__(self, other):
-        if len(other) != len(self._event_as_dict):
+        if set(other.keys()) != set(self._event_as_dict.keys()):
             return False
 
         for key, value in self._event_as_dict.iteritems():
