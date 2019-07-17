@@ -71,7 +71,7 @@ class generic(AuthPlugin):
         # TODO Why we don't use FuzzableRequest+send_mutant here?
         self._uri_opener.POST(self.auth_url, data=data)
 
-        if not self.is_logged():
+        if not self.has_active_session():
             msg = "Can't login into web application as %s"
             raise BaseFrameworkException(msg % self.username)
         else:
@@ -84,7 +84,7 @@ class generic(AuthPlugin):
         """
         return None
 
-    def is_logged(self):
+    def has_active_session(self):
         """
         Check user session.
         """

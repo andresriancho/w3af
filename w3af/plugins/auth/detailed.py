@@ -109,7 +109,7 @@ class detailed(AuthPlugin):
             raise BaseFrameworkException(msg % (redirect_count, redirect_url))
 
         # check if we're logged in
-        if not self.is_logged():
+        if not self.has_active_session():
             msg = "Can't login into web application as %s"
             raise BaseFrameworkException(msg % self.username)
         else:
@@ -139,7 +139,7 @@ class detailed(AuthPlugin):
         """
         return None
 
-    def is_logged(self):
+    def has_active_session(self):
         """Check user session."""
         try:
             body = self._uri_opener.GET(self.check_url, grep=False).body

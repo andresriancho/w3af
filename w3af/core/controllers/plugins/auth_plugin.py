@@ -28,7 +28,7 @@ class AuthPlugin(Plugin):
     from it and implement the following methods:
         1. login(...)
         2. logout(...)
-        2. is_logged(...)
+        2. has_active_session(...)
 
     :author: Dmitriy V. Simonov ( dsimonov@yandex-team.com )
     """
@@ -55,17 +55,15 @@ class AuthPlugin(Plugin):
         TODO: need to add calling of this method to w3afCore::_end()
 
         """
-        raise NotImplementedError(
-            'Plugin is not implementing required method logout')
+        raise NotImplementedError('Plugin is not implementing required method logout')
 
-    def is_logged(self):
+    def has_active_session(self):
         """
         Check if current session is still valid.
 
         It is called in the begging of w3afCore::_discover_and_bruteforce() method.
         """
-        raise NotImplementedError(
-            'Plugin is not implementing required method isLogged')
+        raise NotImplementedError('Plugin is not implementing required method isLogged')
 
     def get_type(self):
         return 'auth'
