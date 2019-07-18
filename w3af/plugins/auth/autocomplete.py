@@ -19,20 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import w3af.core.controllers.output_manager as om
-import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.options.option_types import URL as URL_OPT, STRING
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.core.data.kb.info import Info
 
 
 class autocomplete(AuthPlugin):
@@ -52,9 +48,6 @@ class autocomplete(AuthPlugin):
 
         # Internal attributes
         self._attempt_login = True
-        self._debugging_id = rand_alnum(8)
-        self._http_response_ids = []
-        self._log_messages = []
 
     def login(self):
         """
@@ -73,7 +66,7 @@ class autocomplete(AuthPlugin):
             return
 
         # Create a new debugging ID for each login() run
-        self._debugging_id = rand_alnum(8)
+        self._new_debugging_id()
         self._clear_log()
 
         msg = 'Logging into the application with user: %s' % self.username
@@ -113,7 +106,7 @@ class autocomplete(AuthPlugin):
         self._log_debug(msg % self.username)
 
         # Create a new debugging ID for each has_active_session() run
-        self._debugging_id = rand_alnum(8)
+        self._new_debugging_id()
 
         try:
             http_response = self._uri_opener.GET(self.check_url,
@@ -275,60 +268,8 @@ class autocomplete(AuthPlugin):
 
         return login_form
 
-    def _log_http_response(self, http_response):
-        self._http_response_ids.append(http_response.id)
-
-    def _clear_log(self):
-        self._http_response_ids = []
-        self._log_messages = []
-
-    def _log_debug(self, message):
-        self._log_messages.append(message)
-
-        formatted_message = self._format_message(message)
-        om.out.debug(formatted_message)
-
-    def _log_error(self, message):
-        self._log_messages.append(message)
-
-        formatted_message = self._format_message(message)
-        om.out.error(formatted_message)
-
-    def _format_message(self, message):
-        message_fmt = '[auth.autocomplete] %s (did: %s)'
-        return message_fmt % (message, self._debugging_id)
-
-    def _log_info_to_kb(self):
-        """
-        This method creates an Info object containing information about failed
-        authentication attempts and stores it in the knowledge base.
-
-        The information stored in the Info object is:
-
-            * The log messages from self._log_messages
-            * HTTP response IDs from self._htp_response_ids
-
-        :return: None
-        """
-        desc = ('The authentication plugin failed to get a valid application'
-                ' session using the user-provided configuration settings.\n'
-                '\n'
-                'The plugin generated the following log messages:\n'
-                '\n')
-        desc += '\n'.join(self._log_messages)
-
-        i = Info('Authentication failure',
-                 desc,
-                 self._http_response_ids,
-                 self.get_name())
-
-        i.set_uri(self.login_form_url)
-        i.add_to_highlight(self.check_string,
-                           self.username,
-                           self.password)
-
-        kb.kb.clear('authentication', 'error')
-        kb.kb.append('authentication', 'error', i)
+    def _get_main_authentication_url(self):
+        return self.login_form_url
 
     def get_options(self):
         """
