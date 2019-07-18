@@ -54,9 +54,19 @@ class SpecificationHandler(object):
         self.http_response = http_response
         self.spec = None
         self.validate_swagger_spec = validate_swagger_spec
+        self._parsing_errors = []
 
     def get_http_response(self):
         return self.http_response
+
+    def get_parsing_errors(self):
+        """
+        :return: A list with all the errors found during parsing
+        """
+        return self._parsing_errors
+
+    def append_parsing_error(self, parsing_error):
+        self._parsing_errors.append(parsing_error)
 
     def get_api_information(self):
         """
@@ -141,7 +151,10 @@ class SpecificationHandler(object):
                    ' The following exception was raised while parsing the dict'
                    ' into a specification object: "%s"')
             args = (self.http_response.get_url(), e)
+
             om.out.debug(msg % args)
+            self.append_parsing_error(msg % args)
+
             return None
         else:
             # Everything went well
@@ -226,10 +239,16 @@ class SpecificationHandler(object):
 
             try:
                 spec_dict = load(self.http_response.body, Loader=Loader)
-            except yaml.scanner.ScannerError:
+            except Exception:
                 # Oops! We should never reach here because is_valid_json_or_yaml
                 # checks that we have a JSON or YAML object, but well... just in
                 # case we use a try / except.
+                msg = 'The OpenAPI specification at %s is not in JSON or YAML format'
+                args = (self.http_response.get_url(),)
+
+                om.out.error(msg % args)
+                self.append_parsing_error(msg % args)
+
                 return None
 
         return spec_dict

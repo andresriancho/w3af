@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import yaml
 
 from yaml import load
 
@@ -77,7 +76,14 @@ class OpenAPI(BaseParser):
                  discover_fuzzable_headers=True,
                  discover_fuzzable_url_parts=True):
         super(OpenAPI, self).__init__(http_response)
+
+        # Result
         self.api_calls = []
+
+        # Internal
+        self._specification_handler = None
+
+        # Configuration
         self.validate_swagger_spec = validate_swagger_spec
         self.discover_fuzzable_headers = discover_fuzzable_headers
         self.discover_fuzzable_url_parts = discover_fuzzable_url_parts
@@ -121,7 +127,7 @@ class OpenAPI(BaseParser):
 
         try:
             load(http_resp.body, Loader=Loader)
-        except yaml.scanner.ScannerError:
+        except:
             return False
         else:
             return True
@@ -157,10 +163,10 @@ class OpenAPI(BaseParser):
         The method also looks for all parameters which are passed to endpoints via headers,
         and stores them in to the fuzzable request
         """
-        specification_handler = SpecificationHandler(self.get_http_response(),
-                                                     validate_swagger_spec=self.validate_swagger_spec)
+        self._specification_handler = SpecificationHandler(self.get_http_response(),
+                                                           validate_swagger_spec=self.validate_swagger_spec)
 
-        for data in specification_handler.get_api_information():
+        for data in self._specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
                 fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers,
@@ -213,6 +219,15 @@ class OpenAPI(BaseParser):
         :return: A list with fuzzable requests representing the REST API calls
         """
         return self.api_calls
+
+    def get_parsing_errors(self):
+        """
+        :return: A list with all the errors found during parsing
+        """
+        if self._specification_handler is None:
+            return []
+
+        return self._specification_handler.get_parsing_errors()
 
     get_references_of_tag = get_references = BaseParser._return_empty_list
     get_comments = BaseParser._return_empty_list
