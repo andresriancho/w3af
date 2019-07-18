@@ -50,10 +50,10 @@ for to_silence in SILENCE:
 
 
 class SpecificationHandler(object):
-    def __init__(self, http_response, no_validation=False):
+    def __init__(self, http_response, validate_swagger_spec=False):
         self.http_response = http_response
         self.spec = None
-        self.no_validation = no_validation
+        self.validate_swagger_spec = validate_swagger_spec
 
     def get_http_response(self):
         return self.http_response
@@ -106,7 +106,7 @@ class SpecificationHandler(object):
             if op is not None:
                 yield op
 
-    def _parse_spec_from_dict(self, spec_dict, retry=True):
+    def _parse_spec_from_dict(self, spec_dict):
         """
         load_spec_dict will load the open api document into a dict. We use this
         function to parse the dict into a bravado Spec instance. By default,
@@ -120,7 +120,7 @@ class SpecificationHandler(object):
         config = {'use_models': False,
                   'use_spec_url_for_base_path': False}
 
-        if self.no_validation:
+        if not self.validate_swagger_spec:
             om.out.debug('Open API spec validation disabled')
             config.update({
                 'validate_swagger_spec': False,

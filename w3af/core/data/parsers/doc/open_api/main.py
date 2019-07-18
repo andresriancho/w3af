@@ -73,12 +73,12 @@ class OpenAPI(BaseParser):
 
     def __init__(self,
                  http_response,
-                 no_validation=False,
+                 validate_swagger_spec=False,
                  discover_fuzzable_headers=True,
                  discover_fuzzable_url_parts=True):
         super(OpenAPI, self).__init__(http_response)
         self.api_calls = []
-        self.no_validation = no_validation
+        self.validate_swagger_spec = validate_swagger_spec
         self.discover_fuzzable_headers = discover_fuzzable_headers
         self.discover_fuzzable_url_parts = discover_fuzzable_url_parts
 
@@ -158,7 +158,7 @@ class OpenAPI(BaseParser):
         and stores them in to the fuzzable request
         """
         specification_handler = SpecificationHandler(self.get_http_response(),
-                                                     self.no_validation)
+                                                     validate_swagger_spec=self.validate_swagger_spec)
 
         for data in specification_handler.get_api_information():
             try:

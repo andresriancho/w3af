@@ -291,11 +291,25 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
-        parser = OpenAPI(response)
+        #
+        # In some cases with validation enabled (not the default) we find a set
+        # of endpoints:
+        #
+        parser = OpenAPI(response, validate_swagger_spec=True)
         parser.parse()
         api_calls = parser.get_api_calls()
 
         expected_api_calls = 161
+        self.assertEqual(expected_api_calls, len(api_calls))
+
+        #
+        # And without spec validation there is a different set of endpoints:
+        #
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        expected_api_calls = 165
         self.assertEqual(expected_api_calls, len(api_calls))
 
         first_api_call = api_calls[0]
@@ -394,12 +408,11 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
+        #
+        # By default we don't validate the swagger spec, which allows us to
+        # parse some invalid specs and extract information
+        #
         parser = OpenAPI(response)
-        parser.parse()
-        api_calls = parser.get_api_calls()
-        self.assertEqual(len(api_calls), 0)
-
-        parser = OpenAPI(response, no_validation=True)
         parser.parse()
         api_calls = parser.get_api_calls()
         self.assertEqual(len(api_calls), 1)
@@ -415,6 +428,15 @@ class TestOpenAPIMain(unittest.TestCase):
         self.assertEquals(api_call.get_headers(), e_headers)
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
         self.assertEqual(api_call.get_data(), e_body)
+
+        #
+        # With validation enabled the parsing fails because there is a mising
+        # required attribute
+        #
+        parser = OpenAPI(response, validate_swagger_spec=True)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+        self.assertEqual(len(api_calls), 0)
 
     def test_real_api_yaml(self):
         body = file(self.REAL_API_YAML).read()
