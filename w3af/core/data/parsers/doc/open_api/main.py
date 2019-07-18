@@ -68,6 +68,7 @@ class OpenAPI(BaseParser):
     KEYWORDS = ('consumes',
                 'produces',
                 'swagger',
+                'openapi',
                 'paths')
 
     def __init__(self,
