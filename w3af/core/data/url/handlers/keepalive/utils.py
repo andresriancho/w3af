@@ -5,7 +5,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.tests.running_tests import is_running_tests
 
 
-DEBUG = os.environ.get('DEBUG', '0') == '1'
+KA_DEBUG = os.environ.get('KA_DEBUG', '0') == '1'
 
 
 def to_utf8_raw(unicode_or_str):
@@ -16,7 +16,7 @@ def to_utf8_raw(unicode_or_str):
 
 
 def debug(msg):
-    if DEBUG:
+    if KA_DEBUG:
         msg = '[keepalive] %s' % msg
         om.out.debug(msg)
 
@@ -26,7 +26,7 @@ def debug(msg):
 
 
 def error(msg):
-    if DEBUG:
+    if KA_DEBUG:
         msg = '[keepalive] %s' % msg
         om.out.error(msg)
 
