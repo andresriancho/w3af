@@ -1,0 +1,390 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API for demonstrating REST Concepts",
+    "version": "1.0",
+    "title": "REST Tutorial API",
+    "contact": {
+      "name": "Eric",
+      "url": "http://www.eric.com",
+      "email": "eric@eric.com"
+    },
+    "license": {}
+  },
+  "host": "1.2.3.4",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "controller",
+      "description": "REST Tutorial service"
+    }
+  ],
+  "paths": {
+    "/api/prod/2.0/employees": {
+      "get": {
+        "tags": [
+          "controller"
+        ],
+        "summary": "Get All Employees ",
+        "operationId": "getAllEmployeesUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "controller"
+        ],
+        "summary": "Create Employee",
+        "operationId": "createEmployeeUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "employee",
+            "description": "employee",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Employee"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/prod/2.0/employees/{id}": {
+      "get": {
+        "tags": [
+          "controller"
+        ],
+        "summary": "Get Employee",
+        "operationId": "getEmployeeUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "controller"
+        ],
+        "summary": "Update Employee",
+        "operationId": "updateEmployeeUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "employee",
+            "description": "employee",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Employee"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "controller"
+        ],
+        "summary": "Delete Employee",
+        "operationId": "deleteEmployeeUsingDELETE",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "controller"
+        ],
+        "summary": "Patch Employee",
+        "operationId": "patchEmployeeUsingPATCH",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "employee",
+            "description": "employee",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Employee"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResponseEntity"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ResponseEntity": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "object"
+        },
+        "statusCode": {
+          "type": "string",
+          "enum": [
+            "100",
+            "101",
+            "102",
+            "103",
+            "200",
+            "201",
+            "202",
+            "203",
+            "204",
+            "205",
+            "206",
+            "207",
+            "208",
+            "226",
+            "300",
+            "301",
+            "302",
+            "303",
+            "304",
+            "305",
+            "307",
+            "308",
+            "400",
+            "401",
+            "402",
+            "403",
+            "404",
+            "405",
+            "406",
+            "407",
+            "408",
+            "409",
+            "410",
+            "411",
+            "412",
+            "413",
+            "414",
+            "415",
+            "416",
+            "417",
+            "418",
+            "419",
+            "420",
+            "421",
+            "422",
+            "423",
+            "424",
+            "426",
+            "428",
+            "429",
+            "431",
+            "451",
+            "500",
+            "501",
+            "502",
+            "503",
+            "504",
+            "505",
+            "506",
+            "507",
+            "508",
+            "509",
+            "510",
+            "511"
+          ]
+        },
+        "statusCodeValue": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "Employee": {
+      "type": "object",
+      "required": [
+        "email",
+        "employeeId",
+        "firstName",
+        "lastName",
+        "phone"
+      ],
+      "properties": {
+        "employeeId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

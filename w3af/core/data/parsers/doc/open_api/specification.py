@@ -130,6 +130,8 @@ class SpecificationHandler(object):
 
         url_string = self.http_response.get_url().url_string
 
+        self._apply_known_fixes_before_parsing(spec_dict)
+
         try:
             self.spec = RelaxedSpec.from_dict(spec_dict,
                                               origin_url=url_string,
@@ -140,26 +142,76 @@ class SpecificationHandler(object):
                    ' into a specification object: "%s"')
             args = (self.http_response.get_url(), e)
             om.out.debug(msg % args)
-
-            if not retry:
-                return None
-
-            error_message = str(e)
-
-            if 'version' in error_message and 'is a required property' in error_message:
-                om.out.debug('The Open API specification seems to be missing the'
-                             ' version attribute, forcing version 1.0.0 and trying'
-                             ' again.')
-
-                spec_dict['info'] = {}
-                spec_dict['version'] = '1.0.0'
-
-                return self._parse_spec_from_dict(spec_dict, retry=False)
-
             return None
         else:
             # Everything went well
             return self.spec
+
+    def _apply_known_fixes_before_parsing(self, spec_dict):
+        """
+        Applies known fixes to the input dict before sending it to the parser.
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        self._add_version_to_spec_dict(spec_dict)
+        self._add_info_version_to_spec_dict(spec_dict)
+        self._add_license_name(spec_dict)
+
+    def _add_version_to_spec_dict(self, spec_dict):
+        """
+        If the spec_dict is missing the version this method will add one
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        swagger = spec_dict.get('swagger', None)
+        openapi = spec_dict.get('openapi', None)
+
+        if swagger is not None or openapi is not None:
+            # No changes are required
+            return
+
+        # We choose one and cross our fingers
+        spec_dict['swagger'] = '2.0'
+
+    def _add_info_version_to_spec_dict(self, spec_dict):
+        """
+        If the spec_dict is missing the version this method will add one
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        info = spec_dict.get('info', dict())
+        version = info.get('version', None)
+
+        if version is not None:
+            # No changes are required
+            return
+
+        spec_dict['info'] = info
+        spec_dict['info']['version'] = '1.0.0'
+
+    def _add_license_name(self, spec_dict):
+        """
+        If the spec_dict has a license field but doesn't have a "name" then we
+        just add one
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        info = spec_dict.get('info', dict())
+        license = info.get('license', dict())
+        name = license.get('name', None)
+
+        if name is not None:
+            # No changes are required
+            return
+
+        spec_dict['info'] = info
+        spec_dict['info']['license'] = license
+        spec_dict['info']['license']['name'] = 'Apache 2.0'
+        spec_dict['info']['license']['url'] = 'https://www.apache.org/licenses/LICENSE-2.0.html'
 
     def _load_spec_dict(self):
         """
