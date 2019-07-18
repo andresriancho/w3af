@@ -20,16 +20,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.parsers.parser_cache as parser_cache
 
+from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
+from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.options.option_types import URL as URL_OPT, STRING
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.kb.info import Info
 
 
 class autocomplete(AuthPlugin):
@@ -49,6 +52,9 @@ class autocomplete(AuthPlugin):
 
         # Internal attributes
         self._attempt_login = True
+        self._debugging_id = rand_alnum(8)
+        self._http_response_ids = []
+        self._log_messages = []
 
     def login(self):
         """
@@ -66,8 +72,12 @@ class autocomplete(AuthPlugin):
         if not self._attempt_login:
             return
 
+        # Create a new debugging ID for each login() run
+        self._debugging_id = rand_alnum(8)
+        self._clear_log()
+
         msg = 'Logging into the application with user: %s' % self.username
-        om.out.debug(msg)
+        self._log_debug(msg)
 
         #
         # First we send the request to `login_form_url` and then we extract
@@ -77,7 +87,6 @@ class autocomplete(AuthPlugin):
         form = self._get_login_form()
 
         if not form:
-            self._attempt_login = False
             return False
 
         #
@@ -86,15 +95,60 @@ class autocomplete(AuthPlugin):
         form_submitted = self._submit_form(form)
 
         if not form_submitted:
+            self._log_info_to_kb()
             return False
 
         if not self.has_active_session():
-            msg = "Can't login into the web application as %s"
-            om.out.error(msg % self.username)
+            self._log_info_to_kb()
             return False
 
-        om.out.debug('Login success for %s' % self.username)
+        self._log_debug('Login success for user %s' % self.username)
         return True
+
+    def has_active_session(self):
+        """
+        Check user session.
+        """
+        msg = 'Checking if session for user %s is active'
+        self._log_debug(msg % self.username)
+
+        # Create a new debugging ID for each has_active_session() run
+        self._debugging_id = rand_alnum(8)
+
+        try:
+            http_response = self._uri_opener.GET(self.check_url,
+                                                 grep=False,
+                                                 cache=False,
+                                                 follow_redirects=True,
+                                                 debugging_id=self._debugging_id)
+        except Exception, e:
+            msg = 'Failed to check if session is active because of exception: %s'
+            self._log_debug(msg % e)
+            return False
+
+        self._log_http_response(http_response)
+
+        body = http_response.get_body()
+        logged_in = self.check_string in body
+
+        msg_yes = 'User "%s" is currently logged into the application'
+        msg_yes %= (self.username,)
+
+        msg_no = ('User "%s" is NOT logged into the application, the'
+                  ' `check_string` was not found in the HTTP response'
+                  ' with ID %s.')
+        msg_no %= (self.username, http_response.id)
+
+        msg = msg_yes if logged_in else msg_no
+        self._log_debug(msg)
+
+        return logged_in
+
+    def logout(self):
+        """
+        User logout
+        """
+        return None
 
     def _submit_form(self, form_params):
         """
@@ -120,14 +174,21 @@ class autocomplete(AuthPlugin):
         fuzzable_request = FuzzableRequest.from_form(form)
 
         try:
-            self._uri_opener.send_mutant(fuzzable_request,
-                                         grep=False,
-                                         cache=False,
-                                         follow_redirects=True)
+            http_response = self._uri_opener.send_mutant(fuzzable_request,
+                                                         grep=False,
+                                                         cache=False,
+                                                         follow_redirects=True,
+                                                         debugging_id=self._debugging_id)
         except Exception, e:
             msg = 'Failed to submit the login form: %s'
-            om.out.debug(msg % e)
+            self._log_debug(msg % e)
             return False
+
+        msg = 'Login form sent to %s in HTTP request ID %s'
+        args = (fuzzable_request.get_uri(), http_response.id,)
+        self._log_debug(msg % args)
+
+        self._log_http_response(http_response)
 
         return True
 
@@ -145,11 +206,14 @@ class autocomplete(AuthPlugin):
             http_response = self._uri_opener.GET(self.login_form_url,
                                                  grep=False,
                                                  cache=False,
-                                                 follow_redirects=True)
+                                                 follow_redirects=True,
+                                                 debugging_id=self._debugging_id)
         except Exception as e:
             msg = 'Failed to HTTP GET the login_form_url: %s'
-            om.out.debug(msg % e)
+            self._log_debug(msg % e)
             return
+
+        self._log_http_response(http_response)
 
         #
         # Extract the form from the HTML document
@@ -158,7 +222,7 @@ class autocomplete(AuthPlugin):
             document_parser = parser_cache.dpc.get_document_parser_for(http_response)
         except BaseFrameworkException as e:
             msg = 'Failed to find a parser for the login_form_url: %s'
-            om.out.debug(msg % e)
+            self._log_debug(msg % e)
             return
 
         login_form = None
@@ -181,10 +245,10 @@ class autocomplete(AuthPlugin):
                 #
                 # There are two or more login forms in this page
                 #
-                om.out.debug('There are two or more login forms in the login_form_url.'
-                             ' This is not supported by the autocomplete authentication'
-                             ' plugin, using the first identified form and crossing'
-                             ' fingers.')
+                self._log_debug('There are two or more login forms in the login_form_url.'
+                                ' This is not supported by the autocomplete authentication'
+                                ' plugin, will use the first identified form and ignore the'
+                                ' second one.')
                 continue
 
             login_form = form_params
@@ -193,40 +257,78 @@ class autocomplete(AuthPlugin):
             msg = ('Failed to find an HTML login form at %s. The authentication'
                    ' plugin is most likely incorrectly configured.')
             args = (self.login_form_url,)
-            om.out.error(msg % args)
+            self._log_error(msg % args)
+
+            #
+            # Set the attempt_login to false, in order to prevent the plugin from
+            # running again.
+            #
+            # This is done in this case because we can't recover from it: got the
+            # HTML and it has no login forms. Other cases such as HTTP timeouts
+            # in the request to get the HTML might work in a retry
+            #
+            self._attempt_login = False
+
+        msg = 'Login form with action %s found in HTTP response with ID %s'
+        args = (login_form.get_action(), http_response.id,)
+        self._log_debug(msg % args)
 
         return login_form
 
-    def logout(self):
-        """
-        User logout
-        """
-        return None
+    def _log_http_response(self, http_response):
+        self._http_response_ids.append(http_response.id)
 
-    def has_active_session(self):
+    def _clear_log(self):
+        self._http_response_ids = []
+        self._log_messages = []
+
+    def _log_debug(self, message):
+        self._log_messages.append(message)
+
+        formatted_message = self._format_message(message)
+        om.out.debug(formatted_message)
+
+    def _log_error(self, message):
+        self._log_messages.append(message)
+
+        formatted_message = self._format_message(message)
+        om.out.error(formatted_message)
+
+    def _format_message(self, message):
+        message_fmt = '[auth.autocomplete] %s (did: %s)'
+        return message_fmt % (message, self._debugging_id)
+
+    def _log_info_to_kb(self):
         """
-        Check user session.
+        This method creates an Info object containing information about failed
+        authentication attempts and stores it in the knowledge base.
+
+        The information stored in the Info object is:
+
+            * The log messages from self._log_messages
+            * HTTP response IDs from self._htp_response_ids
+
+        :return: None
         """
-        try:
-            http_response = self._uri_opener.GET(self.check_url,
-                                                 grep=False,
-                                                 cache=False,
-                                                 follow_redirects=True)
-        except Exception, e:
-            msg = 'Failed to check if current authentication session is active: %s'
-            om.out.debug(msg % e)
-            return False
+        desc = ('The authentication plugin failed to get a valid application'
+                ' session using the user-provided configuration settings.\n'
+                '\n'
+                'The plugin generated the following log messages:\n'
+                '\n')
+        desc += '\n'.join(self._log_messages)
 
-        else:
-            body = http_response.get_body()
-            logged_in = self.check_string in body
+        i = Info('Authentication failure',
+                 desc,
+                 self._http_response_ids,
+                 self.get_name())
 
-            msg_yes = 'User "%s" is currently logged into the application'
-            msg_no = 'User "%s" is NOT logged into the application'
-            msg = msg_yes if logged_in else msg_no
-            om.out.debug(msg % self.username)
+        i.set_uri(self.login_form_url)
+        i.add_to_highlight(self.check_string,
+                           self.username,
+                           self.password)
 
-            return logged_in
+        kb.kb.clear('authentication', 'error')
+        kb.kb.append('authentication', 'error', i)
 
     def get_options(self):
         """
