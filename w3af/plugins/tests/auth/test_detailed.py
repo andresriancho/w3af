@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from httpretty import httpretty
 
+import w3af.core.data.kb.knowledge_base as kb
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -66,6 +68,60 @@ class TestDetailedBasic(PluginTest):
         vuln = vulns[0]
         self.assertEquals(vuln.get_name(), 'Cross site scripting vulnerability')
         self.assertEquals(vuln.get_token_name(), 'text')
+
+
+class TestDetailedFailAuth(PluginTest):
+    target_url = get_moth_http('/auth/auth_1/')
+
+    auth_url = URL(target_url + 'login_form.py')
+    check_url = URL(target_url + 'post_auth_xss.py')
+    check_string = 'or read your input'
+    data_format = '%u=%U&%p=%P&Login=Login'
+
+    _run_config = {
+        'target': target_url,
+        'plugins': {
+            'crawl': (
+                PluginConfig('web_spider',
+                             ('only_forward', True, PluginConfig.BOOL),
+                             ('ignore_regex', '.*logout.*', PluginConfig.STR)),),
+            'audit': (PluginConfig('xss', ),),
+            'auth': (PluginConfig('detailed',
+                                  ('username', 'user@mail.com', PluginConfig.STR),
+                                  ('password', 'invalid-passw0rd', PluginConfig.STR),
+                                  ('username_field', 'username', PluginConfig.STR),
+                                  ('password_field', 'password', PluginConfig.STR),
+                                  ('data_format', data_format, PluginConfig.STR),
+                                  ('auth_url', auth_url, PluginConfig.URL),
+                                  ('method', 'POST', PluginConfig.STR),
+                                  ('check_url', check_url, PluginConfig.URL),
+                                  ('check_string', check_string, PluginConfig.STR),
+                                  ('follow_redirects', False, PluginConfig.BOOL), ),),
+        }
+    }
+
+    def test_failed_login_invalid_password(self):
+        self._scan(self._run_config['target'], self._run_config['plugins'])
+
+        infos = kb.kb.get('authentication', 'error')
+
+        self.assertEqual(len(infos), 1)
+        info = infos[0]
+
+        expected_desc = (
+            'The authentication plugin failed to get a valid application session using'
+            ' the user-provided configuration settings.\n'
+            '\n'
+            'The plugin generated the following log messages:\n'
+            '\n'
+            'Logging into the application with user: user@mail.com\n'
+            'User "user@mail.com" is NOT logged into the application, the'
+            ' `check_string` was not found in the HTTP response with ID 24.'
+        )
+
+        self.assertEqual(info.get_name(), 'Authentication failure')
+        self.assertEqual(info.get_desc(with_id=False), expected_desc)
+        self.assertEqual(info.get_id(), [22, 24])
 
 
 class TestDetailedRedirect(PluginTest):
