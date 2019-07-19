@@ -34,6 +34,7 @@ class dot_net_errors(InfrastructurePlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    SPECIAL_CHARS = ['|', '~']
 
     RUNTIME_ERROR = '<h2> <i>Runtime Error</i> </h2></span>'
     REMOTE_MACHINE = ('<b>Details:</b> To enable the details of this'
@@ -76,18 +77,29 @@ class dot_net_errors(InfrastructurePlugin):
         :param original_url: The original url that has to be modified in
                              order to trigger errors in the remote application.
         """
-        special_chars = ['|', '~']
-
         filename = original_url.get_file_name()
-        if filename != '' and '.' in filename:
-            splitted_filename = filename.split('.')
-            extension = splitted_filename[-1:][0]
-            name = '.'.join(splitted_filename[0:-1])
 
-            for char in special_chars:
-                new_filename = name + char + '.' + extension
+        if not filename:
+            return
+
+        if '.' not in filename:
+            return
+
+        split_filename = filename.split('.')
+        extension = split_filename[-1:][0]
+        name = '.'.join(split_filename[0:-1])
+
+        for char in self.SPECIAL_CHARS:
+            new_filename = name + char + '.' + extension
+
+            try:
                 new_url = original_url.url_join(new_filename)
-                yield new_url
+            except ValueError:
+                # When the filename has a colon the url_join() will fail with
+                # ValueError
+                continue
+
+            yield new_url
 
     def _send_and_check(self, url):
         response = self._uri_opener.GET(url, cache=True)
