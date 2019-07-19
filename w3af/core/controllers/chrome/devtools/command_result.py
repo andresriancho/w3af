@@ -19,7 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import time
 import threading
+
+import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceTimeout
 
@@ -38,6 +41,8 @@ class CommandResult(object):
         # Raise any exceptions right away
         self._raise_exception_if_exists()
 
+        start = time.time()
+
         was_set = self.event.wait(timeout=timeout)
 
         # Or after the timeout, exceptions might have appeared while the
@@ -46,6 +51,9 @@ class CommandResult(object):
 
         if not was_set:
             raise ChromeInterfaceTimeout('Timeout waiting for message ID %s' % self.message_id)
+
+        spent = time.time() - start
+        om.out.debug('Waited %.2f seconds for message ID %s' % (spent, self.message_id))
 
         return self.message
 
