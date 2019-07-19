@@ -63,7 +63,7 @@ class autocomplete(AuthPlugin):
         # will fail
         #
         if not self._attempt_login:
-            return
+            return False
 
         # Create a new debugging ID for each login() run
         self._new_debugging_id()
