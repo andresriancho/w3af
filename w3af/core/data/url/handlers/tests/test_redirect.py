@@ -23,8 +23,6 @@ import urllib2
 import unittest
 import httpretty
 
-from nose.plugins.attrib import attr
-
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
@@ -59,9 +57,11 @@ class TestRedirectHandlerLowLevel(unittest.TestCase):
         opener = urllib2.build_opener(HTTP30XHandler)
         
         request = urllib2.Request(redirect_url.url_string)
-        response = opener.open(request)
-        
-        self.assertEqual(response.code, FOUND)
+
+        # This is because the 30x handler doesn't implement default error handling
+        # which is in another part of the w3af framework and this is just a urllib2
+        # level test
+        self.assertRaises(urllib2.HTTPError, opener.open, request)
 
     @httpretty.activate
     def test_handler_order(self):
