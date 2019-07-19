@@ -49,6 +49,7 @@ from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler, NoOpErrorHandler
 from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, URL_LIST, BOOL
 
+
 USER_AGENT_HEADER = 'User-Agent'
 
 
@@ -68,6 +69,7 @@ class OpenerSettings(Configurable):
         self._url_parameter_handler = None
         self._ntlm_auth_handler = None
         self._cache_handler = None
+        self._password_mgr = None
         # Keep alive handlers are created on build_openers()
 
         cj = cookielib.MozillaCookieJar()
@@ -294,15 +296,6 @@ class OpenerSettings(Configurable):
         cfg.save('proxy_address', ip)
         cfg.save('proxy_port', port)
 
-        #
-        # Remember that this line:
-        #
-        # proxyMap = {'http' : "http://" + ip + ":" + str(port) ,
-        #             'https' : "https://" + ip + ":" + str(port) }
-        #
-        # Makes no sense, because urllib2.ProxyHandler doesn't support HTTPS
-        # proxies with CONNECT. The proxying with CONNECT is implemented in
-        # keep-alive handler. (nasty!)
         proxy_url = 'http://%s:%s' % (ip, port)
         proxy_map = {'http': proxy_url}
         self._proxy_handler = urllib2.ProxyHandler(proxy_map)

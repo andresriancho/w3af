@@ -769,7 +769,7 @@ class CoreStrategy(object):
     def _setup_auth(self, timeout=5):
         """
         Start the thread that will make sure the xurllib always has a "fresh"
-        session. The thread will call is_logged() and login() for each enabled
+        session. The thread will call has_active_session() and login() for each enabled
         auth plugin every "timeout" seconds.
 
         If there is a specific need to make sure that the session is fresh before

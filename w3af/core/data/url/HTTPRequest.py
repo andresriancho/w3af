@@ -225,9 +225,12 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def __repr__(self):
         fmt = '<HTTPRequest "%s" (cookies:%s, cache:%s, did:%s, timeout:%.2f, new_connection:%s)>'
+
+        timeout = 3 if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
+
         return fmt % (self.url_object.url_string,
                       self.cookies,
                       self.get_from_cache,
                       self.debugging_id,
-                      self.timeout,
+                      timeout,
                       self.new_connection)

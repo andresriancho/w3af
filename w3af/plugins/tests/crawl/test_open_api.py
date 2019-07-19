@@ -21,9 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import json
 import re
 
+from mock import patch
+
 from w3af.plugins.audit.sqli import sqli
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.dc.headers import Headers
+from w3af.core.data.parsers.doc.open_api import OpenAPI
 from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (IntParamQueryString,
                                                                               NestedModel,
                                                                               PetstoreSimpleModel)
@@ -256,6 +259,51 @@ class TestOpenAPIRaisesWarningIfNoAuth(PluginTest):
 
         info_i = infos[1]
         self.assertEqual(info_i.get_name(), 'Open API missing credentials')
+
+
+class TestOpenAPIRaisesWarningIfParsingError(PluginTest):
+    target_url = 'http://w3af.org/'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {'crawl': (PluginConfig('open_api'),)}
+        }
+    }
+
+    MOCK_RESPONSES = [MockResponse('http://w3af.org/openapi.json',
+                                   NestedModel().get_specification()[:-1],
+                                   content_type='application/json')]
+
+    def test_parsing_error_raised(self):
+        cfg = self._run_configs['cfg']
+
+        with patch.object(OpenAPI, 'can_parse', return_value=True):
+            self._scan(cfg['target'], cfg['plugins'])
+
+        #
+        # Since we configured authentication we should only get one of the Info
+        #
+        infos = self.kb.get('open_api', 'open_api')
+        self.assertEqual(len(infos), 1, infos)
+
+        info = infos[0]
+
+        expected_desc = (
+            'An Open API specification was found at: "http://w3af.org/openapi.json",'
+            ' but the scanner was unable to extract any API endpoints. In most'
+            ' cases this is because of a syntax error in the Open API specification.\n'
+            '\n'
+            'Use https://editor.swagger.io/ to inspect the Open API specification,'
+            ' identify and fix any issues and try again.\n\nThe errors found by'
+            ' the parser were:\n'
+            '\n'
+            ' - The OpenAPI specification at http://w3af.org/openapi.json is not in'
+            ' JSON or YAML format'
+        )
+
+        self.assertEqual(info.get_name(), 'Failed to parse Open API specification')
+        self.assertEqual(info.get_desc(with_id=False), expected_desc)
 
 
 class TestOpenAPIFindsSpecInOtherDirectory(PluginTest):

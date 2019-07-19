@@ -245,7 +245,29 @@ class open_api(CrawlPlugin):
         :param parser: The OpenAPI parser instance
         :return: None
         """
-        if not parser.get_api_calls():
+        if not parser.get_api_calls() and parser.get_parsing_errors():
+            desc = ('An Open API specification was found at: "%s", but the scanner'
+                    ' was unable to extract any API endpoints. In most cases this'
+                    ' is because of a syntax error in the Open API specification.\n'
+                    '\n'
+                    'Use https://editor.swagger.io/ to inspect the Open API'
+                    ' specification, identify and fix any issues and try again.\n'
+                    '\n'
+                    'The errors found by the parser were:\n'
+                    '\n - %s')
+
+            desc %= (http_response.get_url(),
+                     '\n - '.join(parser.get_parsing_errors()))
+
+            i = Info('Failed to parse Open API specification',
+                     desc,
+                     http_response.id,
+                     self.get_name())
+            i.set_url(http_response.get_url())
+
+            kb.kb.append(self, 'open_api', i)
+            om.out.error(i.get_desc())
+
             return
 
         # Save it to the kb!
