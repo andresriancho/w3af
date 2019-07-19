@@ -239,12 +239,14 @@ class TestURLParser(unittest.TestCase):
         result = [i.url_string for i in URL('http://w3af.com/xyz/def/123/').get_directories()]
         expected = [u'http://w3af.com/xyz/def/123/',
                     u'http://w3af.com/xyz/def/',
-                    u'http://w3af.com/xyz/', u'http://w3af.com/']
+                    u'http://w3af.com/xyz/',
+                    u'http://w3af.com/']
         self.assertEqual(result, expected)
     
     def test_get_directories_path_levels_2(self):
         result = [i.url_string for i in URL('http://w3af.com/xyz/def/').get_directories()]
-        expected = [u'http://w3af.com/xyz/def/', u'http://w3af.com/xyz/',
+        expected = [u'http://w3af.com/xyz/def/',
+                    u'http://w3af.com/xyz/',
                     u'http://w3af.com/']
         self.assertEqual(result, expected)
     
@@ -317,7 +319,7 @@ class TestURLParser(unittest.TestCase):
         encode it.
         """
         u = URL('http://w3af.com/')
-        self.assertRaises(ValueError, u.url_join, "d:url.html")
+        self.assertRaises(ValueError, u.url_join, 'd:url.html')
 
     def test_url_join_case07(self):
         u = URL('http://w3af.com/')
@@ -528,8 +530,8 @@ class TestURLParser(unittest.TestCase):
 
         raise SkipTest(msg)
 
-        url = URL('http://w3af.com/a/b/%E1%BA%BC.php?x=%E1%BA%BC')
-        self.assertEqual(str(url), '#fail')
+        # url = URL('http://w3af.com/a/b/%E1%BA%BC.php?x=%E1%BA%BC')
+        # self.assertEqual(str(url), '#fail')
 
     #
     #    __unicode__
@@ -559,7 +561,11 @@ class TestURLParser(unittest.TestCase):
     #    from_parts
     #
     def test_from_parts(self):
-        u = URL.from_parts('http', 'w3af.com', '/foo/bar.txt', None, 'a=b',
+        u = URL.from_parts('http',
+                           'w3af.com',
+                           '/foo/bar.txt',
+                           None,
+                           'a=b',
                            'frag')
         
         self.assertEqual(u.path, '/foo/bar.txt')
