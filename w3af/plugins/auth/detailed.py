@@ -123,8 +123,8 @@ class detailed(AuthPlugin):
             http_response = self._uri_opener.GET(self.check_url,
                                                  grep=False,
                                                  cache=False,
-                                                 debugging_id=True,
-                                                 follow_redirects=True)
+                                                 follow_redirects=True,
+                                                 debugging_id=self._debugging_id)
         except Exception, e:
             msg = 'Failed to check if session is active because of exception: %s'
             self._log_debug(msg % e)
