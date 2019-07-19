@@ -37,26 +37,22 @@ class TestDetailedBasic(PluginTest):
     _run_config = {
         'target': target_url,
         'plugins': {
-        'crawl': (
-            PluginConfig('web_spider',
-                         ('only_forward', True, PluginConfig.BOOL),
-                         ('ignore_regex', '.*logout.*', PluginConfig.STR)),
-
-            ),
+            'crawl': (
+                PluginConfig('web_spider',
+                             ('only_forward', True, PluginConfig.BOOL),
+                             ('ignore_regex', '.*logout.*', PluginConfig.STR)),),
             'audit': (PluginConfig('xss',),),
             'auth': (PluginConfig('detailed',
-                                 ('username', 'user@mail.com', PluginConfig.STR),
-                                 ('password', 'passw0rd', PluginConfig.STR),
-                                 ('username_field', 'username', PluginConfig.STR),
-                                 ('password_field', 'password', PluginConfig.STR),
-                                 ('data_format', data_format, PluginConfig.STR),
-                                 ('auth_url', auth_url, PluginConfig.URL),
-                                 ('method', 'POST', PluginConfig.STR),
-                                 ('check_url', check_url, PluginConfig.URL),
-                                 ('check_string', check_string, PluginConfig.STR),
-                                 ('follow_redirects', False, PluginConfig.BOOL),
-                                  ),
-                         ),
+                                  ('username', 'user@mail.com', PluginConfig.STR),
+                                  ('password', 'passw0rd', PluginConfig.STR),
+                                  ('username_field', 'username', PluginConfig.STR),
+                                  ('password_field', 'password', PluginConfig.STR),
+                                  ('data_format', data_format, PluginConfig.STR),
+                                  ('auth_url', auth_url, PluginConfig.URL),
+                                  ('method', 'POST', PluginConfig.STR),
+                                  ('check_url', check_url, PluginConfig.URL),
+                                  ('check_string', check_string, PluginConfig.STR),
+                                  ('follow_redirects', False, PluginConfig.BOOL),),),
         }
     }
 
@@ -84,7 +80,7 @@ class TestDetailedRedirect(PluginTest):
     MOCK_RESPONSES = [MockResponse('http://mock/auth/login_form.py', '',
                                    status=302,
                                    headers={'Location': '/confirm/?token=123'},
-                                   method='POST'),
+                                   method='GET'),
                       MockResponse('http://mock/confirm/?token=123',
                                    'Login success',
                                    status=302,
@@ -98,16 +94,16 @@ class TestDetailedRedirect(PluginTest):
         'plugins': {
             'audit': (PluginConfig('xss'),),
             'auth': (PluginConfig('detailed',
-                                 ('username', 'user@mail.com', PluginConfig.STR),
-                                 ('password', 'passw0rd', PluginConfig.STR),
-                                 ('username_field', 'username', PluginConfig.STR),
-                                 ('password_field', 'password', PluginConfig.STR),
-                                 ('data_format', data_format, PluginConfig.STR),
-                                 ('auth_url', auth_url, PluginConfig.URL),
-                                 ('method', 'POST', PluginConfig.STR),
-                                 ('check_url', check_url, PluginConfig.URL),
-                                 ('check_string', check_string, PluginConfig.STR),
-                                 ('follow_redirects', True, PluginConfig.BOOL),),),
+                                  ('username', 'user@mail.com', PluginConfig.STR),
+                                  ('password', 'passw0rd', PluginConfig.STR),
+                                  ('username_field', 'username', PluginConfig.STR),
+                                  ('password_field', 'password', PluginConfig.STR),
+                                  ('data_format', data_format, PluginConfig.STR),
+                                  ('auth_url', auth_url, PluginConfig.URL),
+                                  ('method', 'GET', PluginConfig.STR),
+                                  ('check_url', check_url, PluginConfig.URL),
+                                  ('check_string', check_string, PluginConfig.STR),
+                                  ('follow_redirects', True, PluginConfig.BOOL),),),
         }
     }
 
@@ -138,7 +134,7 @@ class TestDetailedRedirectLoop(PluginTest):
     MOCK_RESPONSES = [MockResponse('http://mock/auth/login_form.py', '',
                                    status=302,
                                    headers={'Location': '/confirm/?token=123'},
-                                   method='POST'),
+                                   method='GET'),
 
                       # Redirect loop #1
                       MockResponse('http://mock/confirm/?token=123',
@@ -160,16 +156,16 @@ class TestDetailedRedirectLoop(PluginTest):
         'plugins': {
             'audit': (PluginConfig('xss'),),
             'auth': (PluginConfig('detailed',
-                                 ('username', 'user@mail.com', PluginConfig.STR),
-                                 ('password', 'passw0rd', PluginConfig.STR),
-                                 ('username_field', 'username', PluginConfig.STR),
-                                 ('password_field', 'password', PluginConfig.STR),
-                                 ('data_format', data_format, PluginConfig.STR),
-                                 ('auth_url', auth_url, PluginConfig.URL),
-                                 ('method', 'POST', PluginConfig.STR),
-                                 ('check_url', check_url, PluginConfig.URL),
-                                 ('check_string', check_string, PluginConfig.STR),
-                                 ('follow_redirects', True, PluginConfig.BOOL),),),
+                                  ('username', 'user@mail.com', PluginConfig.STR),
+                                  ('password', 'passw0rd', PluginConfig.STR),
+                                  ('username_field', 'username', PluginConfig.STR),
+                                  ('password_field', 'password', PluginConfig.STR),
+                                  ('data_format', data_format, PluginConfig.STR),
+                                  ('auth_url', auth_url, PluginConfig.URL),
+                                  ('method', 'GET', PluginConfig.STR),
+                                  ('check_url', check_url, PluginConfig.URL),
+                                  ('check_string', check_string, PluginConfig.STR),
+                                  ('follow_redirects', True, PluginConfig.BOOL),),),
         }
     }
 
