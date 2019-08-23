@@ -171,8 +171,16 @@ class BasicKnowledgeBase(object):
         :param group_klass: If required, will be used to create a new InfoSet
         :return: True if the data is in the cache
         """
-        key = (location_a, location_b, info_inst.get(group_klass.ITAG))
+        key = self._get_max_info_instances_key(location_a,
+                                               location_b,
+                                               info_inst,
+                                               group_klass)
         return self._reached_max_info_instances_cache.get(key)
+    
+    def _get_max_info_instances_key(self, location_a, location_b, info_inst, group_klass):
+        return (location_a,
+                location_b,
+                repr(info_inst.get(group_klass.ITAG)))
 
     def _record_reached_max_info_instances(self, location_a, location_b, info_inst, group_klass):
         """
@@ -191,7 +199,10 @@ class BasicKnowledgeBase(object):
         :param group_klass: If required, will be used to create a new InfoSet
         :return: None
         """
-        key = (location_a, location_b, info_inst.get(group_klass.ITAG))
+        key = self._get_max_info_instances_key(location_a,
+                                               location_b,
+                                               info_inst,
+                                               group_klass)
         self._reached_max_info_instances_cache[key] = True
 
     def append_uniq_group(self, location_a, location_b, info_inst,
@@ -219,6 +230,8 @@ class BasicKnowledgeBase(object):
         if not issubclass(group_klass, InfoSet):
             raise TypeError('append_uniq_group requires an InfoSet subclass'
                             ' as parameter.')
+
+        location_a = self._get_real_name(location_a)
 
         with self._kb_lock:
 
@@ -335,6 +348,12 @@ class BasicKnowledgeBase(object):
         return all_shells
 
     def _get_real_name(self, data):
+        """
+        Some operations allow location_a to be both a plugin instance or a string.
+        
+        Those operations will call this method to translate the plugin instance
+        into a string.
+        """
         if isinstance(data, basestring):
             return data
         else:
