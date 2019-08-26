@@ -239,8 +239,36 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         if self.ws is None:
             raise ChromeInterfaceException('The connection is closed')
 
-        self.debug('Sending message to Chrome: %s' % data)
+        log_data = self._clean_data(data)
+        self.debug('Sending message to Chrome: %s' % log_data)
+
         return self.ws.send(data)
+
+    def _clean_data(self, data):
+        """
+        Remove some strings from the data before sending it to the log,
+        for now this is only applied to the message where we send the
+        dom_analyzer.js code to the browser:
+
+            {"params": {"source": "..."
+
+        This is only useful for debugging.
+
+        :param data: The original message to be sent to the websocket
+        :return: The message to log
+        """
+        if '"source": ' not in data:
+            return data
+
+        data_dict = json.loads(data)
+        source = data_dict.get('params', {}).get('source')
+
+        if source is not None:
+            log_data = data_dict.copy()
+            log_data['params']['source'] = '...'
+            return json.dumps(log_data)
+
+        return data
 
     def recv(self):
         """
