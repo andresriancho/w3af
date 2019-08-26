@@ -31,6 +31,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     set_intervals: [],
     event_listeners: [],
 
+    // Cache attributes for storing events
+    self_cache_attr: 'dom_analyzer_self_cache_attr',
+
     universally_valid_events: [
         "click",
         "dblclick",
@@ -416,6 +419,15 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *
      */
     extractEventsFromAttributesAndProperties: function (tag_name, element) {
+        //
+        // Return the cached events for this element if they exist
+        //
+        let cached_events = element[_DOMAnalyzer.self_cache_attr];
+        if (cached_events !== undefined) { return cached_events }
+
+        //
+        // No cached results, find all the events and set the cache
+        //
         let events = [];
         let event_types = [];
         let selector = null;
@@ -432,6 +444,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             // two chars from any attribute name, but it will simply not pass
             // the eventIsValidForTagName filter below
             attr_name = attr_name.substr(2);
+            attr_name = attr_name.toLocaleLowerCase();
 
             if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, attr_name ) ) continue;
 
@@ -476,6 +489,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             //
             // noinspection JSUnfilteredForInLoop
             property_name = property_name.substr(2);
+            ///
+            // noinspection JSUnfilteredForInLoop
+            property_name = property_name.toLowerCase();
 
             // Prevent duplicates in some rare scenarios
             //
@@ -501,6 +517,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             events.push(edata)
         }
+
+        // Save the events to the cache
+        element[_DOMAnalyzer.self_cache_attr] = events;
 
         return events;
     },
@@ -595,6 +614,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             // change the scope to the child
             for( let event_it = 0; event_it < ancestor_attribute_events.length; event_it++ ){
                 let ancestor_event = ancestor_attribute_events[event_it];
+
+                // deep copy the object in order to prevent mangling the cache
+                ancestor_event = JSON.parse(JSON.stringify(ancestor_event));
 
                 ancestor_event.tag_name = tag_name;
                 ancestor_event.selector = OptimalSelect.getSingleSelector(element);
