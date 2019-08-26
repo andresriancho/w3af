@@ -48,6 +48,7 @@ from w3af.core.data.url.handlers.mangle import MangleHandler
 from w3af.core.data.url.handlers.normalize import NormalizeHandler
 from w3af.core.data.url.handlers.errors import ErrorHandler, NoOpErrorHandler
 from w3af.core.data.options.option_types import POSITIVE_INT, INT, STRING, URL_LIST, BOOL
+from w3af.core.data.misc.cookie_jar import ImprovedMozillaCookieJar
 
 
 USER_AGENT_HEADER = 'User-Agent'
@@ -72,7 +73,7 @@ class OpenerSettings(Configurable):
         self._password_mgr = None
         # Keep alive handlers are created on build_openers()
 
-        cj = cookielib.MozillaCookieJar()
+        cj = ImprovedMozillaCookieJar()
         self._cookie_handler = CookieHandler(cj)
 
         # Openers
@@ -182,7 +183,7 @@ class OpenerSettings(Configurable):
         if not cookiejar_file:
             return
 
-        cj = cookielib.MozillaCookieJar()
+        cj = ImprovedMozillaCookieJar()
 
         try:
             cj.load(cookiejar_file)
