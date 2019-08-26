@@ -108,25 +108,25 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
         self._unittest_setup(OnClickEventWithChildrenRequestHandler)
 
         event_listeners = self.ic.get_html_event_listeners()
-
+        self.maxDiff = None
         expected = [{u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'[onclick]',
                      u'tag_name': u'div',
-                     u'text_content': u'AllowedtoclickAllowedtoclick'},
+                     u'text_content': u'Allowedtoclick1Allowedtoclick2'},
                     {u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'[id="1"]',
                      u'tag_name': u'span',
-                     u'text_content': u'Allowedtoclick'},
+                     u'text_content': u'Allowedtoclick1'},
                     {u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'[id="2"]',
                      u'tag_name': u'span',
-                     u'text_content': u'Allowedtoclick'}]
+                     u'text_content': u'Allowedtoclick2'}]
 
         self.assertEqual(event_listeners, expected)
 
@@ -185,15 +185,15 @@ class LinkTagRequestHandler(ExtendedHttpRequestHandler):
 class OnClickEventWithChildrenRequestHandler(ExtendedHttpRequestHandler):
     # https://stackoverflow.com/questions/1431812/prevent-javascript-onclick-on-child-element
     RESPONSE_BODY = ('''<div id="0" onclick="javascript:manualToggle(this)">
-                            <span id="1">Allowed to click</span>
-                            <span id="2">Allowed to click</span>
+                            <span id="1">Allowed to click 1</span>
+                            <span id="2">Allowed to click 2</span>
                         </div>
                         
                         <div>tag to force more complex selector</div>
 
                         <script>
                             function manualToggle(e) {
-                              e.preventDefault();
+                              event.preventDefault();
                               
                               var elem = event.target;
                               
@@ -211,7 +211,7 @@ class OnClickEventChildrenNoInheritRequestHandler(ExtendedHttpRequestHandler):
 
                         <script>
                             function modifyText(e) {
-                              e.preventDefault();
+                              event.preventDefault();
                             }
                         </script>
                         ''')
@@ -224,7 +224,7 @@ class OnClickEventInvisibleTableRequestHandler(ExtendedHttpRequestHandler):
 
                         <script>
                             function modifyText(e) {
-                              e.preventDefault();
+                              event.preventDefault();
                             }
                         </script>
                         ''')
@@ -238,12 +238,12 @@ class TwoOnClickRequestHandler(ExtendedHttpRequestHandler):
 
                         <script>
                             function abc(e) {
-                              e.preventDefault();
+                              event.preventDefault();
                             }
                         </script>
                         <script>
                             function def(e) {
-                              e.preventDefault();
+                              event.preventDefault();
                             }
                         </script>
                         ''')
