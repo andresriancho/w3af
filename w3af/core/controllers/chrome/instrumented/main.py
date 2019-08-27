@@ -75,7 +75,8 @@ class InstrumentedChrome(InstrumentedChromeBase):
         """
         self._force_page_loading_state()
         self.chrome_conn.Page.navigate(url=str(url),
-                                       timeout=self.PAGE_LOAD_TIMEOUT)
+                                       timeout=self.PAGE_LOAD_TIMEOUT,
+                                       transitionType='link')
 
     def load_about_blank(self):
         self.clear_state()
