@@ -47,7 +47,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://www.bbc.com/news/uk-politics-47729773', 1444),
+        ('https://web.whatsapp.com/', 440),
     ])
 
     """
@@ -65,16 +65,16 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://edition.cnn.com/2019/03/27/uk/theresa-may-is-throwing-the-kitchen-sink-at-brexit-intl-gbr/index.html', 0),
 
         ('https://www.bbc.com/', 0),
-        ('https://www.bbc.com/news/uk-politics-47729773', 1),
+        ('https://www.bbc.com/news/uk-politics-47729773', 300),
 
         ('https://www.wikipedia.org/', 3),
         ('https://en.wikipedia.org/wiki/Cross-site_scripting', 1),
 
         ('http://w3af.org/', 2),
-        ('http://w3af.org/take-a-tour', 4),
+        ('http://w3af.org/take-a-tour', 20),
 
         ('https://github.com/', 0),
-        ('https://github.com/andresriancho/w3af', 0),
+        ('https://github.com/andresriancho/w3af', 46),
 
         ('https://web.whatsapp.com/', 0),
     """
