@@ -384,9 +384,15 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     eventIsValidForTagName: function (tag_name, attr_name) {
         if (_DOMAnalyzer.universally_valid_events.includes(attr_name)) return true;
 
-        if (!_DOMAnalyzer.valid_events_per_element.hasOwnProperty(tag_name)) return false;
+        if (!_DOMAnalyzer.valid_events_per_element.hasOwnProperty(tag_name)) {
+            return false;
+        }
 
-        return _DOMAnalyzer.valid_events_per_element[tag_name].includes(attr_name);
+        if (!_DOMAnalyzer.valid_events_per_element[tag_name].includes(attr_name)){
+            return false;
+        }
+
+        return true;
     },
 
      /**
