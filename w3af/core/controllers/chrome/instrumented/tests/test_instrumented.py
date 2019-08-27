@@ -247,9 +247,12 @@ class TestInstrumentedChromeWith301Redirect(BaseInstrumentedUnittest):
         self._unittest_setup(RedirectRequestHandler, load_url=False)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        # Just load the URL and assert that no exceptions were raised
+        # Load the URL, wait for load, confirm HTML body contents
         self.ic.load_url(url)
         self.ic.wait_for_load()
+
+        dom = self.ic.get_dom()
+        self.assertEqual(dom, RedirectRequestHandler.SUCCESS)
 
 
 class TestInstrumentedChromeReadJSVariables(BaseInstrumentedUnittest):
