@@ -114,8 +114,10 @@ class LoggingHandler(ProxyHandler):
         args = (http_request.get_uri(),
                 http_response.get_code(),
                 len(http_response.get_body()),
+                http_response.get_wait_time(),
                 self.parent_process.debugging_id)
-        msg = 'Chrome proxy received HTTP response for %s (code: %s, len: %s, did: %s)'
+        msg = ('Chrome proxy received HTTP response for %s'
+               ' (code: %s, len: %s, rtt: %.2f, did: %s)')
         om.out.debug(msg % args)
 
         return http_response
