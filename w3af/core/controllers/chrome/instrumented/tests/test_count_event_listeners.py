@@ -47,36 +47,42 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://web.whatsapp.com/', 440),
+        ('https://en.wikipedia.org/wiki/Cross-site_scripting', 1),
     ])
 
     """
+    There are some failing tests, Ctrl+F for "FAILS":    
+    
         ('https://google.com/', 20),
-        ('https://www.google.com/search?q=w3af', 70),
+        ('https://www.google.com/search?q=w3af', 7),
 
         ('https://www.bing.com/', 80),
         ('https://www.bing.com/search?q=w3af', 100),
 
-        ('https://facebook.com/', 50),
+        ('https://facebook.com/', 50),          # FAILS: timeout waiting for message, fails to handle 301
         ('https://www.facebook.com/', 50),
-        ('https://www.facebook.com/local/lists/350492278720904/', 5),
+        ('https://www.facebook.com/local/lists/350492278720904/', 5), # FAILS: performance!
 
-        ('https://cnn.com/', 0),
-        ('https://edition.cnn.com/2019/03/27/uk/theresa-may-is-throwing-the-kitchen-sink-at-brexit-intl-gbr/index.html', 0),
+        ('https://cnn.com/', 55),
+        ('https://edition.cnn.com/2019/03/27/uk/theresa-may-is-throwing-the-kitchen-sink-at-brexit-intl-gbr/index.html', 170), # FAILS: https://github.com/andresriancho/w3af-holm/issues/201
 
-        ('https://www.bbc.com/', 0),
+        ('https://www.bbc.com/', 200),
         ('https://www.bbc.com/news/uk-politics-47729773', 300),
 
-        ('https://www.wikipedia.org/', 3),
-        ('https://en.wikipedia.org/wiki/Cross-site_scripting', 1),
+        ('https://www.wikipedia.org/', 10),
+        
+        #
+        # This site has chrome headless detection
+        #
+        ('https://en.wikipedia.org/wiki/Cross-site_scripting', 0),
 
-        ('http://w3af.org/', 2),
-        ('http://w3af.org/take-a-tour', 20),
+        ('http://w3af.org/', 20),
+        ('http://w3af.org/take-a-tour', 24),
 
-        ('https://github.com/', 0),
+        ('https://github.com/', 40),
         ('https://github.com/andresriancho/w3af', 46),
 
-        ('https://web.whatsapp.com/', 0),
+        ('https://web.whatsapp.com/', 0), # FAILS: websocket?
     """
 
     def _load_url(self, url):
@@ -84,9 +90,10 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         http_traffic_queue = Queue.Queue()
 
         ic = InstrumentedChrome(uri_opener, http_traffic_queue)
+        import time; time.sleep(10)
         ic.load_url(url)
 
-        loaded = ic.wait_for_load()
+        loaded = ic.wait_for_load(timeout=20)
         if not loaded:
             ic.stop()
 
@@ -129,6 +136,8 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         msg = ('%s has %s event listeners and should have at least %s.'
                ' The complete list of identified event listeners is:\n%s')
         args = (url, len(all_event_listeners), min_event_count, all_el_str)
+
+        self._print_all_console_messages(ic)
 
         self.assertGreaterEqual(len(all_event_listeners),
                                 min_event_count,
