@@ -125,10 +125,21 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if(_DOMAnalyzer.initialized) return;
 
         _DOMAnalyzer.initialized = true;
+        _DOMAnalyzer.id = _DOMAnalyzer.random_uuid4();
 
         _DOMAnalyzer.override_addEventListener();
         _DOMAnalyzer.override_setTimeout();
         _DOMAnalyzer.override_setInterval();
+    },
+
+    random_uuid4: function() {
+        let array = new Uint32Array(8);
+        window.crypto.getRandomValues(array);
+        let str = '';
+        for (let i = 0; i < array.length; i++) {
+            str += (i < 2 || i > 5 ? '' : '-') + array[i].toString(16).slice(-4)
+        }
+        return str
     },
 
     // Override window.setTimeout()
@@ -289,7 +300,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, type ) ) return false;
 
         let selector = OptimalSelect.getSingleSelector(element);
-
+        
         // node_type is https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType#Node_type_constants
         _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
                                            "node_type": element.nodeType,
@@ -382,7 +393,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *      valid_events_per_element when testing and debugging.
      */
     eventIsValidForTagName: function (tag_name, attr_name) {
-        if (_DOMAnalyzer.universally_valid_events.includes(attr_name)) return true;
+        if (_DOMAnalyzer.universally_valid_events.includes(attr_name)){
+            return true;
+        }
 
         if (!_DOMAnalyzer.valid_events_per_element.hasOwnProperty(tag_name)) {
             return false;
