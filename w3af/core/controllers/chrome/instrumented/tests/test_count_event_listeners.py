@@ -90,7 +90,6 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         http_traffic_queue = Queue.Queue()
 
         ic = InstrumentedChrome(uri_opener, http_traffic_queue)
-        import time; time.sleep(10)
         ic.load_url(url)
 
         loaded = ic.wait_for_load(timeout=20)
