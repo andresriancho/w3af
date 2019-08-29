@@ -156,7 +156,6 @@ class ChromeProcess(object):
 
         self.thread = threading.Thread(name='ChromeThread',
                                        target=self.run)
-        self.thread.daemon = True
         self.thread.start()
 
     def run(self):

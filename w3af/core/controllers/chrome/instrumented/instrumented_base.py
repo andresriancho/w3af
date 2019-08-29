@@ -115,7 +115,6 @@ class InstrumentedChromeBase(object):
             raise InstrumentedChromeException(msg % port)
 
         chrome_conn.name = 'DebugChromeInterface'
-        chrome_conn.daemon = True
         chrome_conn.start()
 
         return chrome_conn
