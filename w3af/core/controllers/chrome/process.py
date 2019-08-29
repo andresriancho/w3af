@@ -120,6 +120,8 @@ class ChromeProcess(object):
 
         flags.append('--remote-debugging-port=%s' % self.devtools_port)
         flags.append('--user-data-dir=%s' % self.data_dir)
+        # flags.append('--disk-cache-dir=/dev/null')
+        # flags.append('--disk-cache-size=1')
 
         if self.proxy_port and self.proxy_host:
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
