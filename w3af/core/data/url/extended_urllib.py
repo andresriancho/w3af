@@ -1092,13 +1092,32 @@ class ExtendedUrllib(object):
 
         Our strategy for handling these errors is simple
         """
+        if self._is_dns_error(exception):
+            #
+            # Default error handling increases the timeout and retries the
+            # request. But we want to handle DNS errors in a different way
+            # because the DNS entry will not magically appear and the error
+            # will go away
+            #
+            self._raise_http_request_exception(req, exception, original_url)
+
         self._increase_timeout_on_error(req, exception)
 
         return self._generic_send_error_handler(req,
                                                 exception,
                                                 grep,
                                                 original_url)
-        
+
+    def _is_dns_error(self, exception):
+        """
+        :param exception: The exception raised during HTTP request / response
+        :return: True if [Errno -2] Name or service not known
+        """
+        if not isinstance(exception, socket.error):
+            return False
+
+        return exception.errno == -2
+
     def _handle_send_urllib_error(self, req, exception, grep, original_url):
         """
         I get to this section of the code if a 400 error is returned
@@ -1109,16 +1128,19 @@ class ExtendedUrllib(object):
                                                 exception,
                                                 grep,
                                                 original_url)
-        
+
+    def _raise_http_request_exception(self, req, exception, original_url):
+        msg = (u'Raising HTTP exception after "%s" "%s" failed.'
+               u' Original exception: "%s" (did:%s).')
+        args = (req.get_method(), original_url, exception, req.debugging_id)
+        om.out.debug(msg % args)
+
+        error_str = get_exception_reason(exception) or str(exception)
+        raise HTTPRequestException(error_str, request=req)
+
     def _generic_send_error_handler(self, req, exception, grep, original_url):
         if not req.error_handling:
-            msg = (u'Raising HTTP error "%s" "%s" failed reason: "%s".'
-                   u' Error handling was disabled for this request (did:%s).')
-            args = (req.get_method(), original_url, exception, req.debugging_id)
-            om.out.debug(msg % args)
-
-            error_str = get_exception_reason(exception) or str(exception)
-            raise HTTPRequestException(error_str, request=req)
+            self._raise_http_request_exception(req, exception, original_url)
 
         with self._count_lock:
             self._log_failed_response(req, exception, original_url)
