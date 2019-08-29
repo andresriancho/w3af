@@ -47,7 +47,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://en.wikipedia.org/wiki/Cross-site_scripting', 1),
+        ('https://edition.cnn.com/2019/03/27/uk/theresa-may-is-throwing-the-kitchen-sink-at-brexit-intl-gbr/index.html', 170),
     ])
 
     """
@@ -70,10 +70,6 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://www.bbc.com/news/uk-politics-47729773', 300),
 
         ('https://www.wikipedia.org/', 10),
-        
-        #
-        # This site has chrome headless detection
-        #
         ('https://en.wikipedia.org/wiki/Cross-site_scripting', 0),
 
         ('http://w3af.org/', 20),
@@ -85,22 +81,21 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://web.whatsapp.com/', 0), # FAILS: websocket?
     """
 
-    def _load_url(self, url):
+    def setUp(self):
         uri_opener = ExtendedUrllib()
         http_traffic_queue = Queue.Queue()
 
-        ic = InstrumentedChrome(uri_opener, http_traffic_queue)
-        ic.load_url(url)
+        self.ic = InstrumentedChrome(uri_opener, http_traffic_queue)
 
-        loaded = ic.wait_for_load(timeout=20)
+    def tearDown(self):
+        self.ic.terminate()
+
+    def _load_url(self, url):
+        self.ic.load_url(url)
+
+        loaded = self.ic.wait_for_load()
         if not loaded:
-            ic.stop()
-
-        return ic
-
-    def _cleanup(self, ic):
-        self.assertEqual(ic.get_js_errors(), [])
-        ic.terminate()
+            self.ic.stop()
 
     def _print_all_console_messages(self, ic):
         for console_message in ic.get_console_messages():
@@ -121,10 +116,10 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         # print()
 
     def _count_event_listeners(self, url, min_event_count):
-        ic = self._load_url(url)
+        self._load_url(url)
 
         try:
-            all_event_listeners = [el for el in ic.get_all_event_listeners()]
+            all_event_listeners = [el for el in self.ic.get_all_event_listeners()]
         except ChromeInterfaceException:
             all_event_listeners = []
 
@@ -136,11 +131,13 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
                ' The complete list of identified event listeners is:\n%s')
         args = (url, len(all_event_listeners), min_event_count, all_el_str)
 
-        self._print_all_console_messages(ic)
+        # self._print_all_console_messages(ic)
 
         self.assertGreaterEqual(len(all_event_listeners),
                                 min_event_count,
                                 msg % args)
+
+        # self.assertEqual(ic.get_js_errors(), [])
 
     @unittest.skip('Manual testing')
     def test_count_event_listeners(self):
