@@ -129,7 +129,7 @@ class Frame(object):
         #
         all_states = {self.get_state()}
 
-        for child in self.child_frames.itervalues():
+        for child in self.child_frames.values()[:]:
             all_states.add(child.get_overall_state())
 
         msg = 'Frame %s all_states: %s'
