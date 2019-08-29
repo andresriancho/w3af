@@ -30,7 +30,7 @@ from w3af.core.controllers.tests.running_tests import is_running_tests
 from w3af.core.controllers.profiling.utils.ps_mem import get_memory_usage
 from w3af.core.controllers.chrome.devtools import DebugChromeInterface
 from w3af.core.controllers.chrome.process import ChromeProcess
-from w3af.core.controllers.chrome.proxy import LoggingProxy
+from w3af.core.controllers.chrome.proxy.main import LoggingProxy
 from w3af.core.controllers.chrome.instrumented.utils import AllLoggingDisabled
 from w3af.core.controllers.chrome.instrumented.exceptions import InstrumentedChromeException
 from w3af.core.data.fuzzer.utils import rand_alnum
