@@ -33,6 +33,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
     // Cache attributes for storing events
     self_cache_attr: 'dom_analyzer_self_cache_attr',
+    parent_cache_attr: 'dom_analyzer_parent_cache_attr',
 
     universally_valid_events: [
         "click",
@@ -576,8 +577,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 Element.prototype.oMatchesSelector ||
                 Element.prototype.webkitMatchesSelector ||
                 function(s) {
-                    var matches = (this.document || this.ownerDocument).querySelectorAll(s),
-                        i = matches.length;
+                    let matches = (this.document || this.ownerDocument).querySelectorAll(s);
+                    let i = matches.length;
                     while (--i >= 0 && matches.item(i) !== this) {}
                     return i > -1;
                 };
@@ -612,6 +613,12 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *
      */
     extractInheritedEvents: function (tag_name, element) {
+        //
+        // Return the cached events for this element if they exist
+        //
+        let cached_events = element[_DOMAnalyzer.parent_cache_attr];
+        if (cached_events !== undefined) { return cached_events }
+
         if( !_DOMAnalyzer.elements_allowed_to_inherit_events_from_ancestors.includes( tag_name ) ) return [];
 
         // TODO: extractInheritedEvents should also support dynamically added event
@@ -650,6 +657,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 events.push(ancestor_event);
             }
         }
+
+        // Save the events to the cache
+        element[_DOMAnalyzer.parent_cache_attr] = events;
 
         return events;
     },
