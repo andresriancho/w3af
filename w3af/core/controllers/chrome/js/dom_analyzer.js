@@ -620,6 +620,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         //       been made
         let ancestors = _DOMAnalyzer.getAncestors(element, null);
         let events = [];
+        let selector = null;
+        let text_content = null;
 
         for( let ancestor_it = 0; ancestor_it < ancestors.length; ancestor_it++ ){
             let ancestor_elem = ancestors[ancestor_it];
@@ -627,6 +629,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             let ancestor_attribute_events = _DOMAnalyzer.extractEventsFromAttributesAndProperties(ancestor_tag_name, ancestor_elem);
 
             if (!ancestor_attribute_events.length) continue;
+
+            if (selector === null) { selector = OptimalSelect.getSingleSelector(element) }
+            if (text_content === null) { text_content = _DOMAnalyzer.superTrim(element.textContent)}
 
             // attribute_events holds the events associated with the ancestor element
             // those events are "scoped to the ancestor element", the following lines
@@ -638,9 +643,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 ancestor_event = JSON.parse(JSON.stringify(ancestor_event));
 
                 ancestor_event.tag_name = tag_name;
-                ancestor_event.selector = OptimalSelect.getSingleSelector(element);
+                ancestor_event.selector = selector;
                 ancestor_event.node_type = element.nodeType;
-                ancestor_event.text_content = _DOMAnalyzer.superTrim(element.textContent);
+                ancestor_event.text_content = text_content;
 
                 events.push(ancestor_event);
             }
