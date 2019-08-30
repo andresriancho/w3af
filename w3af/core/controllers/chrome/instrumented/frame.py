@@ -164,7 +164,7 @@ class Frame(object):
         # remove myself from the parent
         #
         if self.parent_frame is not None:
-            self.parent_frame.child_frames.pop(self.frame_id)
+            self.parent_frame.child_frames.pop(self.frame_id, None)
 
         #
         # remove myself from the frame manager
