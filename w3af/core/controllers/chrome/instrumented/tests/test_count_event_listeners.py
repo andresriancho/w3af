@@ -47,7 +47,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://facebook.com/', 50),
+        ('https://www.holmsecurity.com/', 100),
     ])
 
     """
@@ -79,6 +79,15 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://github.com/andresriancho/w3af', 46),
 
         ('https://web.whatsapp.com/', 0), # FAILS: websocket?
+        
+        ('https://www.holmsecurity.com/', 100),
+        ('https://www.holmsecurity.com/blog/', 100),
+        
+        ('https://andresriancho.com/', 100),
+        
+        ('https://www.amazon.com/', 100),
+        ('https://www.amazon.com/Donner-DAG-1C-Beginner-Acoustic-Cutaway/dp/B073XC3Y5J/', 100),
+        ('https://www.amazon.com/s?k=beginner+guitars', 100),
     """
 
     def setUp(self):
