@@ -47,7 +47,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://edition.cnn.com/2019/03/27/uk/theresa-may-is-throwing-the-kitchen-sink-at-brexit-intl-gbr/index.html', 170),
+        ('https://facebook.com/', 50),
     ])
 
     """
@@ -59,12 +59,12 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://www.bing.com/', 80),
         ('https://www.bing.com/search?q=w3af', 100),
 
-        ('https://facebook.com/', 50),          # FAILS: timeout waiting for message, fails to handle 301
+        ('https://facebook.com/', 50),
         ('https://www.facebook.com/', 50),
-        ('https://www.facebook.com/local/lists/350492278720904/', 5), # FAILS: performance!
+        ('https://www.facebook.com/local/lists/350492278720904/', 5),
 
         ('https://cnn.com/', 55),
-        ('https://edition.cnn.com/2019/03/27/uk/theresa-may-is-throwing-the-kitchen-sink-at-brexit-intl-gbr/index.html', 170), # FAILS: https://github.com/andresriancho/w3af-holm/issues/201
+        ('https://edition.cnn.com/2019/03/27/uk/theresa-may-is-throwing-the-kitchen-sink-at-brexit-intl-gbr/index.html', 170),
 
         ('https://www.bbc.com/', 200),
         ('https://www.bbc.com/news/uk-politics-47729773', 300),
