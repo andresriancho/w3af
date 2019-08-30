@@ -72,6 +72,18 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
+    @httpretty.activate
+    def test_redir_content_length_zero(self):
+        httpretty.register_uri(httpretty.GET, self.MOCK_URL,
+                               body='', status=301,
+                               adding_headers={'content-length': 0,
+                                               'location': self.MOCK_URL,
+                                               'connection': 'keep-alive'})
+
+        url = URL(self.MOCK_URL)
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertEqual(http_response.get_code(), 301)
+
     def test_basic_ssl(self):
         url = URL(get_moth_https())
         http_response = self.uri_opener.GET(url, cache=False)
