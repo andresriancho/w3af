@@ -70,6 +70,7 @@ class ChromeProcess(object):
              '--safebrowsing-disable-auto-update',
 
              # Disable some security features
+             '--allow-insecure-localhost',
              '--ignore-certificate-errors',
              '--ignore-ssl-errors',
              '--ignore-certificate-errors-spki-list',
