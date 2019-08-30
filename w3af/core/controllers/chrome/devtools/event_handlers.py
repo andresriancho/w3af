@@ -28,7 +28,8 @@ NET_ERRORS = {'net::ERR_EMPTY_RESPONSE',
               'net::ERR_CONNECTION_RESET',
               'net::ERR_NETWORK_CHANGED',
               'net::ERR_INTERNET_DISCONNECTED',
-              'net::ERR_CONNECTION_TIMED_OUT'}
+              'net::ERR_CONNECTION_TIMED_OUT',
+              'net::ERR_SSL_PROTOCOL_ERROR'}
 
 
 def proxy_connection_failed_handler(message):
