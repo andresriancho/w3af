@@ -438,7 +438,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      *      el.onclick = someFunction;
      *
      */
-    extractEventsFromAttributesAndProperties: function (tag_name, element) {
+    extractEventsFromAttributesAndProperties: function (tag_name, element, event_filter) {
         //
         // Return the cached events for this element if they exist
         //
@@ -467,6 +467,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             attr_name = attr_name.toLocaleLowerCase();
 
             if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, attr_name ) ) continue;
+
+            // Filter events by event type (click, hover, etc.)
+            if (! _DOMAnalyzer.filterByEventName( event_filter, attr_name ) ) continue;
 
             if( selector === null) { selector = OptimalSelect.getSingleSelector(element) }
 
@@ -522,6 +525,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             //
             // noinspection JSUnfilteredForInLoop
             if ( !_DOMAnalyzer.eventIsValidForTagName( tag_name, property_name ) ) continue;
+
+            // Filter events by event type (click, hover, etc.)
+            if (! _DOMAnalyzer.filterByEventName( event_filter, property_name ) ) continue;
 
             if( selector === null) { selector = OptimalSelect.getSingleSelector(element) }
 
@@ -612,7 +618,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      * inherited events and returns them.
      *
      */
-    extractInheritedEvents: function (tag_name, element) {
+    extractInheritedEvents: function (tag_name, element, event_filter) {
         //
         // Return the cached events for this element if they exist
         //
@@ -633,7 +639,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         for( let ancestor_it = 0; ancestor_it < ancestors.length; ancestor_it++ ){
             let ancestor_elem = ancestors[ancestor_it];
             let ancestor_tag_name = ancestor_elem.tagName.toLowerCase();
-            let ancestor_attribute_events = _DOMAnalyzer.extractEventsFromAttributesAndProperties(ancestor_tag_name, ancestor_elem);
+            let ancestor_attribute_events = _DOMAnalyzer.extractEventsFromAttributesAndProperties(ancestor_tag_name, ancestor_elem, event_filter);
 
             if (!ancestor_attribute_events.length) continue;
 
@@ -758,8 +764,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if( tag_name_filter.length > 0 && !tag_name_filter.includes(tag_name) ) continue;
 
             // Get the element events
-            let attribute_events = _DOMAnalyzer.extractEventsFromAttributesAndProperties(tag_name, element);
-            let inherited_events = _DOMAnalyzer.extractInheritedEvents(tag_name, element);
+            let attribute_events = _DOMAnalyzer.extractEventsFromAttributesAndProperties(tag_name, element, event_filter);
+            let inherited_events = _DOMAnalyzer.extractInheritedEvents(tag_name, element, event_filter);
 
             // Merge and unique
             let element_events = [];
@@ -768,9 +774,6 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             element_events = _DOMAnalyzer.objectArrayUniq(element_events);
 
             if (!element_events.length) continue;
-
-            // Filter events by event type (click, hover, etc.)
-            element_events = _DOMAnalyzer.filterByEventName(element_events, event_filter);
 
             // Pagination (1/2)
             let element_events_paginated = element_events.slice();
@@ -802,16 +805,16 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     /**
      * Filter previously extracted events by event_type (click, hover, etc.)
      *
-     * @param  {Array}   element_events   Events for a specific DOM element
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
+     * @param  {String}  event_name       The name of the event (eg. click, hover, etc.)
      *
      */
-    filterByEventName: function (element_events, event_filter) {
-        if( event_filter.length === 0 ) return element_events;
+    filterByEventName: function (event_filter, event_name) {
+        // No filter means that we want all events
+        if( event_filter.length === 0 ) return true;
 
-        return element_events.filter(function(event) {
-            return event_filter.includes(event.event_type);
-        });
+        // true if the event_name is in the event_filter
+        return event_filter.includes(event_name)
     },
 
 };
