@@ -79,6 +79,32 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://github.com/andresriancho/w3af', 46),
 
         ('https://web.whatsapp.com/', 0), # FAILS: websocket?
+        
+        ('https://andresriancho.com/', 400),
+        ('https://andresriancho.com/internet-scale-analysis-of-aws-cognito-security/', 400),
+        
+        ('https://Youtube.com/', 400),
+        ('https://www.youtube.com/watch?v=otvvUzFh5Do', 400),
+                
+        ('https://qq.com/', 400),
+        ('https://new.qq.com/rain/a/20190902A0C87G00', 400),
+        
+        ('https://360.cn/', 400),
+        ('http://ku.u.360.cn/online.php?s=gw_web', 400),
+        
+        ('https://netflix.com/', 400),
+        ('https://www.netflix.com/ar-en/title/80057281', 400),
+        
+        ('https://instagram.com/', 400),
+        ('https://www.instagram.com/leomessi/', 400),
+        ('https://www.instagram.com/p/Bz3BsLSim4x/', 400),
+        
+        ('https://twitter.com/', 400),
+        ('https://twitter.com/AndresRiancho', 400),
+        ('https://twitter.com/AndresRiancho/status/1115224660600393728', 400),
+        
+        ('https://stackoverflow.com/', 400),
+        ('https://stackoverflow.com/questions/20484920/terminate-a-hung-redis-pubsub-listen-thread', 400),
     """
 
     def setUp(self):
