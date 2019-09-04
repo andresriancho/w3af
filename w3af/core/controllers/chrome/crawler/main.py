@@ -126,93 +126,101 @@ class ChromeCrawler(object):
         """
         Use all the crawling strategies to extract links from the loaded page.
 
-        :return:
+        :return: None
         """
         for crawl_strategy in self.get_crawl_strategy_instances(debugging_id):
-            try:
-                chrome = self._initial_page_load(url,
-                                                 http_traffic_queue,
-                                                 debugging_id=debugging_id)
-            except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
-                msg = ('Failed to perform the initial page load of %s in'
-                       ' chrome crawler: "%s". Will skip this crawl strategy'
-                       ' and try the next one. (did: %s)')
-                args = (url, cie, debugging_id)
-                om.out.debug(msg % args)
+            self._crawl_with_strategy(crawl_strategy, url, http_traffic_queue, debugging_id)
 
-                # These are soft exceptions, just skip this crawl strategy
-                # and continue with the next one
-                continue
+    def _crawl_with_strategy(self, crawl_strategy, url, http_traffic_queue, debugging_id):
+        """
+        Use one of the crawling strategies to extract links from the loaded page.
 
-            except Exception, e:
-                msg = ('Unhandled exception while trying to perform the initial'
-                       ' page load of %s in chrome crawler: "%s" (did: %s)')
-                args = (url, e, debugging_id)
-                om.out.debug(msg % args)
+        :return: None
+        """
+        try:
+            chrome = self._initial_page_load(url,
+                                             http_traffic_queue,
+                                             debugging_id=debugging_id)
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
+            msg = ('Failed to perform the initial page load of %s in'
+                   ' chrome crawler: "%s". Will skip this crawl strategy'
+                   ' and try the next one. (did: %s)')
+            args = (url, cie, debugging_id)
+            om.out.debug(msg % args)
 
-                # We want to raise exceptions in order for them to reach
-                # the framework's exception handler
-                raise
+            # These are soft exceptions, just skip this crawl strategy
+            # and continue with the next one
+            return
 
-            args = (crawl_strategy.get_name(), url, debugging_id)
-            msg = 'Spent %%.2f seconds in crawl strategy %s for %s (did: %s)' % args
-            took_line = TookLine(msg)
+        except Exception, e:
+            msg = ('Unhandled exception while trying to perform the initial'
+                   ' page load of %s in chrome crawler: "%s" (did: %s)')
+            args = (url, e, debugging_id)
+            om.out.debug(msg % args)
 
-            try:
-                crawl_strategy.crawl(chrome,
-                                     url)
-            except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
-                msg = ('Failed to crawl %s using chrome crawler: "%s"'
-                       ' Will skip this crawl strategy and try the next one.'
-                       ' (did: %s)')
-                args = (url, cie, debugging_id)
-                om.out.debug(msg % args)
+            # We want to raise exceptions in order for them to reach
+            # the framework's exception handler
+            raise
 
-                # These are soft exceptions, just skip this crawl strategy
-                # and continue with the next one
-                continue
+        args = (crawl_strategy.get_name(), url, debugging_id)
+        msg = 'Spent %%.2f seconds in crawl strategy %s for %s (did: %s)' % args
+        took_line = TookLine(msg)
 
-            except Exception, e:
-                msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
-                args = (url, chrome, e, debugging_id)
-                om.out.debug(msg % args)
+        try:
+            crawl_strategy.crawl(chrome,
+                                 url)
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
+            msg = ('Failed to crawl %s using chrome crawler: "%s"'
+                   ' Will skip this crawl strategy and try the next one.'
+                   ' (did: %s)')
+            args = (url, cie, debugging_id)
+            om.out.debug(msg % args)
 
-                took_line.send()
+            # These are soft exceptions, just skip this crawl strategy
+            # and continue with the next one
+            return
 
-                self._pool.remove(chrome)
-
-                # We want to raise exceptions in order for them to reach
-                # the framework's exception handler
-                raise
-
-            try:
-                self._cleanup(url,
-                              chrome,
-                              debugging_id=debugging_id)
-            except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
-                msg = ('Failed to cleanup after crawling: "%s". Will skip this'
-                       ' phase and continue. (did: %s)')
-                args = (cie, debugging_id)
-                om.out.debug(msg % args)
-
-                took_line.send()
-
-                # These are soft exceptions, just skip this crawl strategy
-                # and continue with the next one
-                continue
-
-            except Exception, e:
-                msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
-                args = (url, chrome, e, debugging_id)
-                om.out.debug(msg % args)
-
-                took_line.send()
-
-                # We want to raise exceptions in order for them to reach
-                # the framework's exception handler
-                raise
+        except Exception, e:
+            msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
+            args = (url, chrome, e, debugging_id)
+            om.out.debug(msg % args)
 
             took_line.send()
+
+            self._pool.remove(chrome)
+
+            # We want to raise exceptions in order for them to reach
+            # the framework's exception handler
+            raise
+
+        try:
+            self._cleanup(url,
+                          chrome,
+                          debugging_id=debugging_id)
+        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
+            msg = ('Failed to cleanup after crawling: "%s". Will skip this'
+                   ' phase and continue. (did: %s)')
+            args = (cie, debugging_id)
+            om.out.debug(msg % args)
+
+            took_line.send()
+
+            # These are soft exceptions, just skip this crawl strategy
+            # and continue with the next one
+            return
+
+        except Exception, e:
+            msg = 'Failed to crawl %s using chrome instance %s: "%s" (did: %s)'
+            args = (url, chrome, e, debugging_id)
+            om.out.debug(msg % args)
+
+            took_line.send()
+
+            # We want to raise exceptions in order for them to reach
+            # the framework's exception handler
+            raise
+
+        took_line.send()
 
     def _get_chrome_from_pool(self, url, http_traffic_queue, debugging_id):
         args = (url, debugging_id)
