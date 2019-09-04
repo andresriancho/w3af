@@ -31,7 +31,7 @@ import psutil
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.misc.home_dir import get_home_dir
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path, get_chrome_version
 
 
@@ -97,7 +97,7 @@ class ChromeProcess(object):
         self.thread = None
 
     def get_default_user_data_dir(self):
-        return os.path.join(get_home_dir(), 'chrome')
+        return os.path.join(get_temp_dir(), 'chrome')
 
     def set_devtools_port(self, devtools_port):
         """
