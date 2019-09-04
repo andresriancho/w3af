@@ -197,6 +197,8 @@ class ChromeCrawlerJS(object):
                 if total == self.MAX_EVENTS_TO_DISPATCH:
                     return
 
+        om.out.debug('The JS crawler found a total of %s event listeners' % total)
+
     def _crawl_one_state(self):
         """
         Dispatch events in one state (DOM) until the state changes enough that
