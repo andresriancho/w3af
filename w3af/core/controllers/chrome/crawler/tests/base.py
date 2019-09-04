@@ -115,6 +115,25 @@ class BaseChromeCrawlerTest(unittest.TestCase):
         self.log = LogFile(self.log_filename)
 
     def _log_contains(self, expected_messages):
+        """
+        This method finds the expected messages in the log.
+
+        :param expected_messages: A string with all the messages to be found.
+
+                                  The string should be new line delimited and
+                                  each message should be in the order in which
+                                  it is expected to be found in the log. It does
+                                  NOT matter if there are other log messages in
+                                  between two expected messages.
+
+                                  Expected messages should have any specific string,
+                                  such as dates and debugging_ids removed.
+
+        Use a command like the following to extract your messages, then manually
+        remove any specific strings like the debugging_id.
+
+            egrep -e '(Processing event|event on selector|The JS crawler noticed a big|Dispatching ")' /tmp/latest-w3af-output.txt  | cut -d ']' -f 2- | sed 's/ //'
+        """
         expected_message_list = expected_messages.split('\n')
         expected_message_list = [em.strip() for em in expected_message_list]
 
