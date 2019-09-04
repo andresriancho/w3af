@@ -33,8 +33,7 @@ from w3af.core.data.url.extended_urllib import ExtendedUrllib
 class BaseEventListenerCountTest(unittest.TestCase):
 
     def setUp(self):
-        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
-            set_debugging_in_output_manager()
+        set_debugging_in_output_manager()
 
     def _load_url(self, url):
         uri_opener = ExtendedUrllib()

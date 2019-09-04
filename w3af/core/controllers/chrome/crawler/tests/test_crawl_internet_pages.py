@@ -114,8 +114,7 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
                                 pprint.pformat(found_uris))
 
     def test_crawl_all_common_pages(self):
-        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
-            set_debugging_in_output_manager()
+        set_debugging_in_output_manager()
 
         for url, min_found_urls in self.TESTS.iteritems():
             self._crawl(url, min_found_urls)
