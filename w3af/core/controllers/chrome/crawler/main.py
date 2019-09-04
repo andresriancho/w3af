@@ -24,8 +24,8 @@ import time
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.chrome.pool import ChromePool, ChromePoolException
-from w3af.core.controllers.chrome.crawler.dom_dump import ChromeCrawlerDOMDump
-from w3af.core.controllers.chrome.crawler.js import ChromeCrawlerJS
+from w3af.core.controllers.chrome.crawler.strategies.dom_dump import ChromeCrawlerDOMDump
+from w3af.core.controllers.chrome.crawler.strategies.js import ChromeCrawlerJS
 from w3af.core.controllers.chrome.crawler.state import CrawlerState
 from w3af.core.controllers.chrome.crawler.exceptions import ChromeCrawlerException
 from w3af.core.controllers.chrome.crawler.queue import CrawlerHTTPTrafficQueue
