@@ -63,8 +63,8 @@ class BaseChromeCrawlerTest(unittest.TestCase):
         self.crawler.terminate()
 
         if self.server is not None:
-            self.server_thread.join()
             self.server.shutdown()
+            self.server_thread.join()
 
         self._wait_for_output_manager_messages()
 
