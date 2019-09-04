@@ -47,7 +47,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://stackoverflow.com/questions/20484920/terminate-a-hung-redis-pubsub-listen-thread', 400),
+        ('https://www.bing.com/', 80),
     ])
 
     """
@@ -78,7 +78,9 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://github.com/', 40),
         ('https://github.com/andresriancho/w3af', 46),
 
-        ('https://web.whatsapp.com/', 0), # FAILS: websocket?
+        # FAILS: WebSocket connection to 'wss://web.whatsapp.com/ws' failed
+        #        Error during WebSocket handshake: Unexpected response code: 500
+        ('https://web.whatsapp.com/', 0),
         
         ('https://andresriancho.com/', 15),
         ('https://andresriancho.com/internet-scale-analysis-of-aws-cognito-security/', 15),
@@ -89,7 +91,12 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://Youtube.com/', 400),
         ('https://www.youtube.com/watch?v=otvvUzFh5Do', 400),
                 
-        ('https://qq.com/', 400),                               # FAILS: Connection reset?!
+        ('https://baidu.com/', 20),
+        ('http://www.baidu.com/s?wd=search', 80),
+        ('https://www.alexa.com/siteinfo/baidu.com', 1000),
+        
+        ('https://imdb.com/', 600),
+        
         ('https://new.qq.com/rain/a/20190902A0C87G00', 20),
         
         ('https://360.cn/', 150),
