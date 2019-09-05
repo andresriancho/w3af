@@ -186,13 +186,44 @@ class FrameManager(object):
         """
         Handle Page.navigatedWithinDocument events.
 
-        This could be used to track the current URL loaded into a frame, but we
-        don't really need that for now so using an empty implementation.
+        Fired when same-document navigation happens, e.g. due to history
+        API usage or anchor navigation.
 
-        :param message: A message received from the chrome websocket
+        https://chromedevtools.github.io/devtools-protocol/tot/Page#event-navigatedWithinDocument
+
+        This could be used to track the current URL loaded into a frame.
+
+        :param message: A message received from the chrome websocket. A dict
+                        with the following format:
+
+                        {"params": {"url": "https://react-icons-kit.now.sh/guide",
+                                    "frameId": "719977C1A7DEFC2EB63EE086E716CC9D"},
+                                    "method": "Page.navigatedWithinDocument"}
         :return: None
         """
-        pass
+        frame = self._get_frame(message)
+
+        if frame is None:
+            return
+
+        frame.on_navigated_within_document(message)
+
+    def _get_frame(self, message):
+        """
+        Get the frame object from the `frameId` received in a message
+
+        :param message: A message that has params->frameId
+        :return: The frame object or None
+        """
+        frame_id = message.get('params', {}).get('frameId', None)
+        if frame_id is None:
+            return
+
+        frame = self._frames.get(frame_id, None)
+        if frame is None:
+            return
+
+        return frame
 
     def _on_frame_detached(self, message):
         """
@@ -201,11 +232,8 @@ class FrameManager(object):
         :param message: A message received from the chrome websocket
         :return: None
         """
-        frame_id = message.get('params', {}).get('frameId', None)
-        if frame_id is None:
-            return
+        frame = self._get_frame(message)
 
-        frame = self._frames.get(frame_id, None)
         if frame is None:
             return
 
