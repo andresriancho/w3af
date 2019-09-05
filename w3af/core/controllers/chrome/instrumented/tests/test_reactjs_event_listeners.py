@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import print_function
 
-import pprint
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.chrome.instrumented.tests.base import BaseEventListenerCountTest
