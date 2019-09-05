@@ -78,7 +78,8 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         self.assertEqual(found_uris, expected_uris)
 
         expected_messages = '''
-        The JS crawler found a total of 0 event listeners
+        Dispatching "click" on CSS selector "!document"
+        The JS crawler found a total of 1 event listeners
         '''
 
         found, not_found = self._log_contains(expected_messages)
