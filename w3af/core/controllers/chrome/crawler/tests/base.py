@@ -78,6 +78,9 @@ class BaseChromeCrawlerTest(unittest.TestCase):
             if spent > 2.0:
                 break
 
+        manager.flush_plugin_output()
+        time.sleep(1)
+
     def _get_found_urls(self):
         uris = set()
 
@@ -112,6 +115,7 @@ class BaseChromeCrawlerTest(unittest.TestCase):
                                 self._format_assertion_message(found_uris, url, min_uris))
 
     def _parse_log(self):
+        self._wait_for_output_manager_messages()
         self.log = LogFile(self.log_filename)
 
     def _log_contains(self, expected_messages):
@@ -136,6 +140,7 @@ class BaseChromeCrawlerTest(unittest.TestCase):
         """
         expected_message_list = expected_messages.split('\n')
         expected_message_list = [em.strip() for em in expected_message_list]
+        expected_message_list = [em for em in expected_message_list if em]
 
         i = 0
         found = []

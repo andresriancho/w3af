@@ -185,7 +185,7 @@ class OutputManager(Process):
             # we flush the output (if needed)
             self.flush_plugin_output()
 
-    def flush_plugin_output(self):
+    def flush_plugin_output(self, force=False):
         """
         Call flush() on all plugins so they write their data to the external
         file(s) / socket(s) if they want to. This is useful when the scan
@@ -200,7 +200,7 @@ class OutputManager(Process):
         :see: https://github.com/andresriancho/w3af/issues/6726
         :return: None
         """
-        if not self.should_flush():
+        if not force and not self.should_flush():
             return
 
         pool = self._worker_pool
