@@ -117,7 +117,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         Dispatching "click" on CSS selector ".sc-hSdWYo div:nth-of-type(2)"
         Processing event 32 out of (unknown) for https://react-icons-kit.now.sh/.
         Event dispatch error count is 0.
-        Already processed 34 events with types: {u'click': 34}.
+        Already processed 35 events with types: {u'click': 35}
         Ignoring "click" event on selector
         '''
 
