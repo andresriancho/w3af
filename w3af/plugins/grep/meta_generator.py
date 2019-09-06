@@ -73,7 +73,9 @@ class meta_generator(GrepPlugin):
         generators = set()
 
         for tag in parser_cache.dpc.get_tags_by_filter(response, ('meta',)):
+            # pylint: disable=E1101
             name_attr_val = tag.attrib.get('name', None)
+            # pylint: enable=E1101
 
             if name_attr_val is None:
                 continue
@@ -81,7 +83,9 @@ class meta_generator(GrepPlugin):
             if 'generator' != name_attr_val.lower():
                 continue
 
+            # pylint: disable=E1101
             content_attr_val = tag.attrib.get('content', None)
+            # pylint: enable=E1101
 
             if not content_attr_val:
                 continue

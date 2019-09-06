@@ -99,7 +99,9 @@ class symfony(GrepPlugin):
         :return: True if there is CSRF protection enabled in this symfony app
         """
         for tag in parser_cache.dpc.get_tags_by_filter(response, ('input',)):
+            # pylint: disable=E1101
             input_id = tag.attrib.get('id', '')
+            # pylint: enable=E1101
             if self._csrf_token_re.search(input_id):
                 return True
 

@@ -71,7 +71,9 @@ class cross_domain_js(GrepPlugin):
             return
 
         for tag in parser_cache.dpc.get_tags_by_filter(response, ('script',)):
+            # pylint: disable=E1101
             script_src = tag.attrib.get('src', None)
+            # pylint: enable=E1101
 
             if script_src is None:
                 continue
