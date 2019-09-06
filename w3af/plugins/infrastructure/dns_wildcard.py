@@ -41,14 +41,12 @@ class dns_wildcard(InfrastructurePlugin):
 
     SIMPLE_IP_RE = re.compile('\d?\d?\d\.\d?\d?\d\.\d?\d?\d\.\d?\d?\d')
 
-    def __init__(self):
-        InfrastructurePlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Get www.site.com and site.com and compare responses.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

@@ -42,11 +42,12 @@ class server_header(InfrastructurePlugin):
         self._x_powered = set()
         self._lock = RLock()
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Nothing strange, just do a GET request to the url and save the server headers
         to the kb. A smarter way to check the server type is with the hmap plugin.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         """

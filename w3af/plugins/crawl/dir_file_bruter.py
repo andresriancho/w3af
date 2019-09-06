@@ -64,10 +64,11 @@ class dir_file_bruter(CrawlPlugin):
         self._exec = True
         self._already_tested = DiskSet(table_prefix='dir_file_bruter')
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Get the file and parse it.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                (among other things) the URL to test.
         """

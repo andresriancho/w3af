@@ -58,7 +58,7 @@ class TestArchiveDotOrg(PluginTest):
         url = URL('http://moth/')
         fr = FuzzableRequest(url, method='GET')
         ado = archive_dot_org()
-        self.assertRaises(RunOnce, ado.crawl_wrapper, fr)
+        self.assertRaises(RunOnce, ado.discover_wrapper, fr)
 
     def test_raise_on_domain_not_in_archive(self):
         url = URL('http://www.w3af-scanner.org/')
@@ -68,4 +68,4 @@ class TestArchiveDotOrg(PluginTest):
         uri_opener = ExtendedUrllib()
         ado.set_url_opener(uri_opener)
 
-        self.assertRaises(RunOnce, ado.crawl_wrapper, fr)
+        self.assertRaises(RunOnce, ado.discover_wrapper, fr)

@@ -59,7 +59,7 @@ class find_vhosts(InfrastructurePlugin):
         self._first_exec = True
         self._already_queried_dns = ScalableBloomFilter()
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Find virtual hosts.
 
