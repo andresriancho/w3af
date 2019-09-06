@@ -172,7 +172,8 @@ class TestKeepalive(unittest.TestCase):
         response.read()
 
         time.sleep(wait)
-        
+
+        # pylint: disable=E1101
         pid = os.getpid()
         p = psutil.Process(pid)
         connections_before = p.get_connections()
@@ -181,6 +182,7 @@ class TestKeepalive(unittest.TestCase):
 
         time.sleep(1)
         connections_after = p.get_connections()
+        # pylint: enable=E1101
         
         self.assertLess(len(connections_after), len(connections_before))
         

@@ -353,7 +353,9 @@ class OutputManager(Process):
                 continue
 
         if exc_info:
+            # pylint: disable=E0702
             raise exc_info
+            # pylint: enable=E0702
 
         # This is a neat trick which basically removes all plugin references
         # from memory. Those plugins might have pointers to memory parts that
