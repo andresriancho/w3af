@@ -163,7 +163,7 @@ class KeepAliveHandler(object):
 
         except OpenSSL.SSL.SysCallError:
             # We better discard this connection
-            self._cm.remove_connection(conn, reason='socket error')
+            self._cm.remove_connection(conn, reason='OpenSSL SysCallError')
             raise
 
         except OpenSSL.SSL.Error:
@@ -181,7 +181,7 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, reason='OpenSSL.SSL.Error')
             raise
 
-        except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
+        except (socket.error, httplib.HTTPException):
             # We better discard this connection
             self._cm.remove_connection(conn, reason='socket error')
             raise
