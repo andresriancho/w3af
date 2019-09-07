@@ -49,6 +49,7 @@ class TestOpenAPIMain(unittest.TestCase):
     LARGE_MANY_ENDPOINTS = os.path.join(DATA_PATH, 'large_many_endpoints.json')
     MISSING_LICENSE = os.path.join(DATA_PATH, 'missing_license.json')
     REAL_API_YAML = os.path.join(DATA_PATH, 'real.yaml')
+    ISSUE_210_API_YAML = os.path.join(DATA_PATH, '210-openapi.yaml')
 
     def test_json_pet_store(self):
         # http://petstore.swagger.io/v2/swagger.json
@@ -615,5 +616,27 @@ class TestOpenAPIMain(unittest.TestCase):
         uri = first_api_call.get_uri().url_string
 
         expected_uri = 'http://1.2.3.4/api/prod/2.0/employees/3419'
+
+        self.assertEqual(expected_uri, uri)
+
+    def test_issue_210(self):
+        body = file(self.ISSUE_210_API_YAML).read()
+        headers = Headers({'Content-Type': 'application/yaml'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.yaml'),
+                                URL('http://moth/swagger.yaml'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        expected_api_calls = 19
+        self.assertEqual(expected_api_calls, len(api_calls))
+
+        first_api_call = api_calls[0]
+        uri = first_api_call.get_uri().url_string
+
+        expected_uri = 'https://api.domain.com/domain/tokens'
 
         self.assertEqual(expected_uri, uri)
