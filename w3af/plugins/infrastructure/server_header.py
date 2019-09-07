@@ -25,6 +25,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.kb.info import Info
 
 
@@ -61,6 +62,22 @@ class server_header(InfrastructurePlugin):
         """
         HTTP GET and analyze response for server header
         """
+        if response.get_code() == NO_CONTENT:
+            #
+            # UrlOpenerProxy(), a helper class used by most plugins, will
+            # generate 204 HTTP responses for HTTP requests that fail.
+            # This makes plugins have less error handling code (try/except),
+            # and looks like this in the scan log:
+            #
+            #   Generated 204 "No Content" response (id:2131)
+            #
+            # The problem is that in some strange cases, like this plugin,
+            # the 204 response will trigger a false positive. Because of
+            # that I had to add this if statement to completely ignore
+            # the HTTP responses with 204 status code
+            #
+            return
+
         server, header_name = response.get_headers().iget('server')
 
         if server in self._server_headers:
@@ -142,8 +159,10 @@ class server_header(InfrastructurePlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin GETs the server header and saves the result to the knowledge base.
+        This plugin GETs the server header and saves the result to the
+        knowledge base.
 
-        Nothing strange, just do a GET request to the url and save the server headers
-        to the kb. A smarter way to check the server type is with the hmap plugin.
+        Nothing strange, just do a GET request to the url and save the server
+        headers to the kb. A smarter way to check the server type is with the
+        hmap plugin.
         """
