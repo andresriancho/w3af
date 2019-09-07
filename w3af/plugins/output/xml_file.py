@@ -795,8 +795,11 @@ class Finding(XMLNode):
             try:
                 xml = HTTPTransaction(self._jinja2_env, transaction).to_string()
             except (DBException, TraceReadException) as e:
-                msg = 'Failed to retrieve request with id %s from DB: "%s"'
-                om.out.error(msg % (transaction, e))
+                msg = ('Failed to retrieve request with id %s from DB: "%s".'
+                       ' The "%s" vulnerability will have an incomplete HTTP'
+                       ' transaction list.')
+                args = (transaction, e, context.name)
+                om.out.error(msg % args)
                 continue
             else:
                 context.http_transactions.append(xml)
