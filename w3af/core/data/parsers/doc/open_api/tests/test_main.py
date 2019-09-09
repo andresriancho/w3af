@@ -60,6 +60,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
+        self.assertTrue(OpenAPI.can_parse(response))
+
         parser = OpenAPI(response)
         parser.parse()
         api_calls = parser.get_api_calls()
@@ -134,6 +136,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 URL('http://moth/swagger.json'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response)
         parser.parse()
@@ -219,6 +223,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
+        self.assertTrue(OpenAPI.can_parse(response))
+
         parser = OpenAPI(response)
         parser.parse()
         api_calls = parser.get_api_calls()
@@ -277,6 +283,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
+        self.assertTrue(OpenAPI.can_parse(response))
+
         parser = OpenAPI(response)
         parser.parse()
         api_calls = parser.get_api_calls()
@@ -291,6 +299,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 URL('http://moth/swagger.json'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         #
         # In some cases with validation enabled (not the default) we find a set
@@ -327,6 +337,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 URL('http://moth/swagger.json'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response, discover_fuzzable_headers=False)
         parser.parse()
@@ -409,6 +421,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
+        self.assertTrue(OpenAPI.can_parse(response))
+
         #
         # By default we don't validate the swagger spec, which allows us to
         # parse some invalid specs and extract information
@@ -446,6 +460,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.yaml'),
                                 URL('http://moth/swagger.yaml'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response)
         parser.parse()
@@ -626,6 +642,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.yaml'),
                                 URL('http://moth/swagger.yaml'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response)
         parser.parse()

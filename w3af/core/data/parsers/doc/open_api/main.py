@@ -62,7 +62,8 @@ class OpenAPI(BaseParser):
                      'text/yaml',
                      'text/x-yaml',
                      'application/yaml',
-                     'application/x-yaml',)
+                     'application/x-yaml',
+                     'application/octet-stream')
 
     KEYWORDS = ('consumes',
                 'produces',
@@ -133,6 +134,14 @@ class OpenAPI(BaseParser):
             return True
 
     @staticmethod
+    def looks_like_json_or_yaml(http_resp):
+        """
+        :param http_resp: The HTTP response we want to parse
+        :return: True if it seems that this response body holds JSON or YAML
+        """
+        return ':' in '\n'.join(http_resp.body.split('\n')[:20])
+
+    @staticmethod
     def can_parse(http_resp):
         """
         :param http_resp: A http response object that contains a document of
@@ -140,8 +149,23 @@ class OpenAPI(BaseParser):
 
         :return: True if it seems that the HTTP response contains an Open API spec
         """
-        # Only parse JSON and YAML
-        if not OpenAPI.content_type_match(http_resp):
+        #
+        # In the past we had this check:
+        #
+        # if not OpenAPI.content_type_match(http_resp):
+        #     return False
+        #
+        # But real-life testing showed that it was too restrictive. Some web
+        # servers and frameworks did not return the "expected" content-types
+        # which triggered bugs in can_parse()
+        #
+        # Had to replace it with two other checks, which is worse in performance,
+        # more permissive, but should fix the bug
+        #
+        if http_resp.is_image():
+            return False
+
+        if not OpenAPI.looks_like_json_or_yaml(http_resp):
             return False
 
         # Only parse documents that look like Open API docs
