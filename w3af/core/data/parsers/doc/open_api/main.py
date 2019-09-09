@@ -63,7 +63,10 @@ class OpenAPI(BaseParser):
                      'text/x-yaml',
                      'application/yaml',
                      'application/x-yaml',
-                     'application/octet-stream')
+                     'application/octet-stream',
+                     'application/vnd.oai.openapi',
+                     'application/vnd.oai.openapi+json',
+                     'application/vnd.oai.openapi;version=2.0')
 
     KEYWORDS = ('consumes',
                 'produces',
