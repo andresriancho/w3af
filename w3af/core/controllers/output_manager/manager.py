@@ -210,8 +210,17 @@ class OutputManager(Process):
         self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
-            pool.apply_async(func=self.__inner_flush_plugin_output,
-                             args=(o_plugin,))
+            result = pool.apply_async(func=self.__inner_flush_plugin_output,
+                                      args=(o_plugin,))
+
+            #
+            # This forces the method to wait for each plugin.flush()
+            #
+            # Should be used with care because some plugins take considerable
+            # time to flush their ouput
+            #
+            if force:
+                result.get()
 
     def __inner_flush_plugin_output(self, o_plugin):
         """

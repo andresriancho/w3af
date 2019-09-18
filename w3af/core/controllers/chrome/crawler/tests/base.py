@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os
 import time
 import Queue
 import unittest
 
-from w3af.core.controllers.output_manager import manager
+import w3af.core.controllers.output_manager as om
+
 from w3af.core.controllers.chrome.tests.helpers import set_debugging_in_output_manager
 from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
@@ -71,15 +71,14 @@ class BaseChromeCrawlerTest(unittest.TestCase):
     def _wait_for_output_manager_messages(self):
         start = time.time()
 
-        while not manager.in_queue.empty():
+        while not om.manager.in_queue.empty():
             time.sleep(0.1)
             spent = time.time() - start
 
             if spent > 2.0:
                 break
 
-        manager.flush_plugin_output()
-        time.sleep(1)
+        om.manager.flush_plugin_output(force=True)
 
     def _get_found_urls(self):
         uris = set()
@@ -173,6 +172,10 @@ class LogMessage(object):
 
     def matches(self, message):
         return message in self.line
+
+    def __str__(self):
+        line = self.line.strip()
+        return '<LogMessage "%s">' % line
 
 
 class LogFile(object):
