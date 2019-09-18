@@ -27,7 +27,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         found_uris = self._crawl(url)
 
         expected_uris = {
-            'http://react-hello-world-app.surge.sh/'
+            'http://react-hello-world-app.surge.sh/',
             'http://react-hello-world-app.surge.sh/static/css/main.4b51051d.css',
             'http://react-hello-world-app.surge.sh/static/js/main.d78accb8.js',
         }
@@ -71,7 +71,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
             'https://dist-usikpayhrn.now.sh/autosuggest.css',
             'https://dist-usikpayhrn.now.sh/index.js',
             'https://fonts.googleapis.com/css?family=Open%20Sans:300|Open%20Sans:400',
-            'https://fonts.gstatic.com/s/opensans/v17/mem5YaGs126MiZpBA-UN_r8OUuhs.ttf'
+            'https://fonts.gstatic.com/s/opensans/v17/mem5YaGs126MiZpBA-UN_r8OUuhs.ttf',
             'https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFVZ0e.ttf',
         }
 
@@ -132,17 +132,17 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         expected_uris = {
             'https://84ol32ono9.codesandbox.io/',
             'https://84ol32ono9.codesandbox.io/babel-transpiler.a9fc7965.worker.js',
-            'https://84ol32ono9.codesandbox.io/frame.html?_sw-precache=5bf598d2d79541f37969fa10a186cd1a',
+            'https://84ol32ono9.codesandbox.io/frame.html?_sw-precache=1e4daed81fb6330cd12112a827a25054',
             'https://84ol32ono9.codesandbox.io/sandbox-service-worker.js',
             'https://aiwi8rnkp5.execute-api.eu-west-1.amazonaws.com/prod/packages/babel-runtime%406.26.0+csbbust%401.0.0+react%4016.3.2+react-dom%4016.3.2',
             'https://codesandbox.io/api/v1/sandboxes/84ol32ono9',
             'https://codesandbox.io/static/browserfs3/browserfs.min.js',
             'https://codesandbox.io/static/js/babel.7.3.4.min.js',
-            'https://codesandbox.io/static/js/common-sandbox.0c88c92a.chunk.js',
-            'https://codesandbox.io/static/js/default~app~embed~sandbox.79664459.chunk.js',
-            'https://codesandbox.io/static/js/sandbox.2719311d.js',
+            'https://codesandbox.io/static/js/common-sandbox.f352477c.chunk.js',
+            'https://codesandbox.io/static/js/default~app~embed~sandbox.f64c6d2f.chunk.js',
+            'https://codesandbox.io/static/js/sandbox.178735c3.js',
             'https://codesandbox.io/static/js/sandbox-startup.69e45348.js',
-            'https://codesandbox.io/static/js/vendors~sandbox.238dc9de.chunk.js',
+            'https://codesandbox.io/static/js/vendors~sandbox.727ab3d7.chunk.js',
             'https://d1jyvh0kxilfa7.cloudfront.net/v1/combinations/babel-runtime@6.26.0%2Bcsbbust@1.0.0%2Breact@16.3.2%2Breact-dom@16.3.2.json',
 
         }
@@ -170,8 +170,6 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         #
         #       * Which other page sections are NOT covered?
         #
-        self.assertTrue(False)
-
         url = 'https://react-shopping-cart-67954.firebaseapp.com/'
         found_uris = self._crawl(url)
 
