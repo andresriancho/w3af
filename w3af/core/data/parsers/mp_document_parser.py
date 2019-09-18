@@ -29,7 +29,10 @@ import resource
 import threading
 import multiprocessing
 
+# pylint: disable=E0611
 from setproctitle import setproctitle
+# pylint: enable=E0611
+
 from concurrent.futures import TimeoutError
 from tblib.decorators import Error
 from pebble import ProcessPool

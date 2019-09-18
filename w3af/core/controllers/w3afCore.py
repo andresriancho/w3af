@@ -289,7 +289,9 @@ class w3afCore(object):
             msg = 'Unhandled exception "%s", traceback:\n%s'
 
             if hasattr(e, 'original_traceback_string'):
+                # pylint: disable=E1101
                 traceback_string = e.original_traceback_string
+                # pylint: enable=E1101
             else:
                 traceback_string = traceback.format_exc()
 

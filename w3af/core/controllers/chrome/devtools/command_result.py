@@ -77,4 +77,5 @@ class CommandResult(object):
         if self.exc_type is None:
             return
 
+        # pylint: disable=E0702
         raise self.exc_type, self.exc_value, self.exc_traceback

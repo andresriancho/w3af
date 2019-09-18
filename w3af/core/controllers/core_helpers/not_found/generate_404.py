@@ -131,8 +131,8 @@ def generate_404_by_shuffle(filename, extension, seed):
 
     filename = [c for c in filename]
 
-    mod_filename = random.shuffle(filename)
-    mod_filename = ''.join(mod_filename)
+    random.shuffle(filename)
+    mod_filename = ''.join(filename)
 
     return append_extension_if_exists(mod_filename, extension)
 

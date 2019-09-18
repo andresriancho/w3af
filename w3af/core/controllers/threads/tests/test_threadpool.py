@@ -50,6 +50,7 @@ class TestWorkerPool(unittest.TestCase):
             [i for i in answers]
         except TypeError, te:
             self.assertEqual(str(te), '1 Boom!')
+            # pylint: disable=E1101
             self.assertIn("raise TypeError('%s Boom!' % foo)", te.original_traceback_string)
 
     def test_terminate_join_after_tasks(self):

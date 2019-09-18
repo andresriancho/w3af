@@ -91,8 +91,10 @@ class EventListener(object):
 
         str_a = smart_str_ignore(str_a)
         str_b = smart_str_ignore(str_b)
-        
+
+        # pylint: disable=E1101
         edit_distance = Levenshtein.distance(str_a, str_b)
+        # pylint: enable=E1101
 
         if edit_distance <= max_edit_distance:
             return True

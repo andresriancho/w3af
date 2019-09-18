@@ -70,11 +70,12 @@ class find_backdoors(CrawlPlugin):
 
             yield (line, 'Backdoor signature')
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         For every directory, fetch a list of shell files and analyze the
         response.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

@@ -55,10 +55,11 @@ class oracle_discovery(CrawlPlugin):
     ORACLE_RE = [re.compile(regex) for regex in ORACLE_RE]
 
     @runonce(exc_class=RunOnce)
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         GET some files and parse them.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
@@ -76,7 +77,9 @@ class oracle_discovery(CrawlPlugin):
         response = self.http_get_and_parse(url)
 
         for regex in self.ORACLE_RE:
+            # pylint: disable=E1101
             mo = regex.search(response.get_body(), re.DOTALL)
+            # pylint: enable=E1101
 
             if mo:
                 desc = '"%s" version "%s" was detected at "%s".'

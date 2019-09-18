@@ -83,6 +83,19 @@ def new_no_content_resp(uri, add_id=False):
     return no_content_response
 
 
+def is_no_content_response(http_response):
+    if http_response.get_code() != NO_CONTENT:
+        return False
+
+    if http_response.get_msg() != NO_CONTENT_MSG:
+        return False
+
+    if http_response.get_headers() != Headers():
+        return False
+
+    return True
+
+
 def apply_multi_escape_table(_input, max_len=None, max_count=None):
     """
 

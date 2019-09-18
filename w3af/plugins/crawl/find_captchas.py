@@ -45,10 +45,11 @@ class find_captchas(CrawlPlugin):
 
         self._captchas_found = DiskSet(table_prefix='find_captchas')
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Find CAPTCHA images.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

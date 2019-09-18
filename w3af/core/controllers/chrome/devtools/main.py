@@ -527,6 +527,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
             # Only raise once
             self._clear_exc_info()
 
+            # pylint: disable=E0702
             raise exc_type, exc_value, exc_traceback
 
         generic_element = DebugGenericElement(attr, self)

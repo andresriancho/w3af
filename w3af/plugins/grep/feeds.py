@@ -51,13 +51,14 @@ class feeds(GrepPlugin):
         uri = response.get_uri()
 
         for tag in parser_cache.dpc.get_tags_by_filter(response, self.TAGS):
-
+            # pylint: disable=E1101
             feed_tag = tag.name
-            feed_type = self._feed_types[feed_tag.lower()]
             version = tag.attrib.get('version', 'unknown')
+            # pylint: disable=E1101
+            feed_type = self._feed_types[feed_tag.lower()]
 
-            fmt = 'The URL "%s" is a %s version %s feed.'
-            desc = fmt % (uri, feed_type, version)
+            desc = 'The URL "%s" is a %s version %s feed.'
+            desc %= (uri, feed_type, version)
 
             i = Info('Content feed resource', desc, response.id, self.get_name())
             i.set_uri(uri)

@@ -45,10 +45,11 @@ class hmap(InfrastructurePlugin):
         self._threads = 4
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         It calls the "main" from hmap and writes the results to the kb.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

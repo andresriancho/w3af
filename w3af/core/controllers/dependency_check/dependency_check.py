@@ -61,6 +61,8 @@ def get_missing_pip_packages(platform, dependency_set):
     failed_deps = []
 
     for w3af_req in platform.PIP_PACKAGES[dependency_set]:
+
+        # pylint: disable=E1133
         for dist in pkg_resources.working_set:
             if w3af_req.package_name.lower() == dist.project_name.lower():
 
@@ -72,6 +74,7 @@ def get_missing_pip_packages(platform, dependency_set):
                     break
         else:
             failed_deps.append(w3af_req)
+        # pylint: enable=E1133
 
     return failed_deps
 

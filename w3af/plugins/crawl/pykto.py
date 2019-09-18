@@ -76,10 +76,11 @@ class pykto(CrawlPlugin):
 
         self._mutate_tests = False
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Runs pykto to the site.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                  (among other things) the URL to test.
         """

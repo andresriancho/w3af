@@ -1,0 +1,886 @@
+swagger: '2.0'
+info:
+  description: |
+    This is a Backend for Frontend HTTP API for domain mobile application.
+    The API provides resources for authentication, persons and partners.
+    This documentation is in progress.
+  title: Mobile API
+  version: 0.0.3
+host: api.domain.com
+basePath: /
+schemes:
+  - https
+paths:
+  /domain/orders:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          schema:
+            properties:
+              pid:
+                description: >-
+                  12 digit german personal identity number, all digits without
+                  hyphens
+                example: '191212121212'
+                type: string
+            required:
+              - pid
+            type: object
+      responses:
+        '200':
+          description: domain authentication order response
+          schema:
+            properties:
+              autoStartToken:
+                description: >-
+                  Must be used when launching the domain app if personal
+                  identity number was omitted in this request.
+                example: 2e39bac8-ee63-4e74-a35a-2ee51f06a68d
+                format: uuid
+                type: string
+              orderRef:
+                description: >-
+                  A reference id to the order. Used in subsequent create token
+                  requests.
+                example: e475f288-4e9b-43ea-966c-d3912e7a25b2
+                format: uuid
+                type: string
+            type: object
+        '400':
+          description: Invalid request
+        default:
+          description: >-
+            For other status codes and responses see [domain Relying Party
+            Guidelines](https://www.domain.com/assets/domain/rp/guidelinev3.2.1.pdf)
+            and the auth endpoint.
+      tags:
+        - domain
+      description: >
+        Inititates domain authentication order. If successful this returns an
+        order reference that can be used to
+
+        get an access token.
+
+        For more information about domain, see [domain Relying Party
+        Guidelines](https://www.domain.com/assets/domain/rp/guidelinev3.2.1.pdf)
+      operationId: createdomainOrder
+      summary: Create a domain authentication order
+  '/domain/orders/{orderRef}':
+    delete:
+      parameters:
+        - description: Order reference (created in /domain/orders resource)
+          in: path
+          name: orderRef
+          required: true
+          type: string
+      responses:
+        '200':
+          description: >-
+            Response status 200 and empty json response after successful
+            cancellation.
+        default:
+          description: >-
+            For other status codes and responses see [domain Relying Party
+            Guidelines](https://www.domain.com/assets/domain/rp/guidelinev3.2.1.pdf)
+            and the cancel endpoint.
+      tags:
+        - domain
+      description: |
+        Cancel an ongoind domain authentication order by order reference.
+      summary: Cancel an authentication order
+  /domain/tokens:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - description: >-
+            A valid bearer access token created by /domain/tokens resource. Used
+            for token renewal by authenticating with existing token.
+          in: header
+          name: Authorization
+          required: false
+          type: string
+        - in: body
+          name: body
+          schema:
+            properties:
+              orderRef:
+                description: Order reference (created in /domain/orders resource)
+                example: e475f288-4e9b-43ea-966c-d3912e7a25b2
+                format: uuid
+                type: string
+            type: object
+      responses:
+        '201':
+          description: >
+            For status 201 the order is completeted and a response object
+            containing the token and person data is returned.
+          schema:
+            properties:
+              accessToken:
+                description: >-
+                  JSON Web Token [RFC
+                  7519](https://tools.ietf.org/html/rfc7519). This access token
+                  is required by some API resources. It expires after a
+                  configured time, usually 1 hour.
+                example: >-
+                  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NTAyNDI3NjQsInBpZCI6IjE5NzYxMTA4MDAzMiIsInR5cGUiOiJlbXBsb3llZSJ9.IYUZ_2Tl4wTR-YKVb1VGAGFAlFfvT5Q8E8tU9Q6IVzM"
+                type: string
+              firstName:
+                description: First name
+                example: Vincent
+                type: string
+              isPartner:
+                description: If this is a partner to an employee
+                example: true
+                type: boolean
+              lastName:
+                description: Last name
+                example: Ashbaugh
+                type: string
+              pid:
+                description: 12 digit german personal identity number of the user
+                example: '191212121212'
+                type: string
+              tokenExpireTime:
+                description: Unix timestamp with token expire time
+                example: 1554719823
+                type: integer
+              type:
+                description: Describes if this person is a partner or employee
+                enum:
+                  - employee
+                  - partner
+                example: partner
+                type: string
+            type: object
+        '202':
+          description: Status Pending. Continue this request until success or failure.
+          schema:
+            properties:
+              hintCode:
+                description: >-
+                  Hint from domain API. This can be used to provide the end user
+                  with status details.
+                example: outstandingTransaction
+                type: string
+              orderRef:
+                description: Order reference (created in /domain/orders resource)
+                example: e475f288-4e9b-43ea-966c-d3912e7a25b2
+                format: uuid
+                type: string
+              status:
+                description: Status (complete or pending) from domain API.
+                example: pending
+                type: string
+            type: object
+        '401':
+          description: Not authorized user
+        default:
+          description: >-
+            For other status codes and responses see [domain Relying Party
+            Guidelines](https://www.domain.com/assets/domain/rp/guidelinev3.2.1.pdf)
+            and the cancel endpoint. For invalid or timed out orders status 400
+            is returned, with JSON response as described in the guidelines.
+      tags:
+        - domain
+      description: >
+        Create a token if domain order is completed. This resource should be
+
+        polled as long as the order is pending and the response status is 202.
+
+
+        If an access token is provided in the authorization header it is used
+        for authentication instead of a domain.
+
+
+        When successful the response contains an access token that is required
+        to access parts of this API.
+      summary: Create access token with domain authentication (login)
+  '/domain/tokens/{token}':
+    delete:
+      parameters:
+        - description: Access token (created by POST /domain/tokens)
+          in: path
+          name: token
+          required: true
+          type: string
+      responses:
+        '200':
+          description: >-
+            Response status 200 and empty json response for successful
+            operations.
+      tags:
+        - domain
+      description: |
+        Delete access token.
+      summary: Delete access token (logout)
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: Access token (created by POST /domain/tokens)
+          in: path
+          name: token
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Response with token and person details
+          schema:
+            properties:
+              firstName:
+                description: First name
+                example: Vincent
+                type: string
+              lastName:
+                description: Last name
+                example: Ashbaugh
+                type: string
+              pid:
+                description: 12 digit german personal identity.
+                example: '199901010003'
+                type: string
+            type: object
+        '404':
+          description: Token invalid or not found.
+      tags:
+        - domain
+      description: |
+        Verify access token.
+      summary: Verify token
+  /events:
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - description: >-
+            A valid bearer access token created by /domain/tokens resource. Used
+            for token renewal by authenticating with existing token.
+          in: header
+          name: Authorization
+          required: false
+          type: string
+        - in: body
+          name: body
+          schema:
+            properties:
+              event:
+                description: Short event header
+                example: start doktor24
+                type: string
+            type: object
+      responses:
+        '201':
+          description: >
+            For status 201 the order is completeted and a response object
+            containing the token and person data is returned.
+          schema:
+            properties:
+              event:
+                description: Short event header
+                example: start doktor24
+                type: string
+            type: object
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+      tags:
+        - Other resources
+      description: |
+        Store events from end-user application.
+        These events could be used for statistics and tracking errors.
+        An event example is when the user navigates to an external application.
+      summary: Store event
+  '/persons/{pid}':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Response with person details
+          schema:
+            $ref: '#/definitions/Person'
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+        '404':
+          description: No person or partner with matching pid was found.
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: |
+        Get a person by personal identity number.
+        A person can be an employee or a partner to an employee
+      summary: Get person
+    patch:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+        - in: body
+          name: body
+          schema:
+            properties:
+              termsAccepted:
+                description: If terms has been accepted or not
+                example: false
+                type: boolean
+            type: object
+      responses:
+        '200':
+          description: Response with person details
+          schema:
+            $ref: '#/definitions/Person'
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+        '404':
+          description: No person or partner with matching pid was found.
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: Add data such as whether the person has accepted the terms.
+      summary: Update additonal data on person
+  '/persons/{pid}/partners':
+    delete:
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success response with details
+          schema:
+            properties:
+              removed:
+                description: Number of removed partners
+                example: 1
+                type: integer
+            type: object
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: |
+        Remove all partners for a person
+      summary: Remove partners
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Response with partners
+          schema:
+            properties:
+              partners:
+                items:
+                  properties:
+                    partner:
+                      description: Masked personal identity number of partner
+                      example: 19101010****
+                      type: string
+                  type: object
+                type: array
+            type: object
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: |
+        Get all partners for a person.
+        A person is currently limited to having one partner.
+      summary: Get partners
+    post:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/Partner'
+      responses:
+        '201':
+          description: Successfully created partner
+          schema:
+            $ref: '#/definitions/Partner'
+        '400':
+          description: Partner is underaged
+          schema:
+            properties:
+              message:
+                description: Status message
+                example: Partner does not meet the minimum age requirement
+                type: string
+              status:
+                description: HTTP status code
+                example: 400
+                type: integer
+              substatus:
+                description: Sub status code
+                example: 2
+                type: integer
+            type: object
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+        '409':
+          description: Partner change limit exceeded
+          schema:
+            properties:
+              message:
+                description: Status message
+                example: Partner change not allowed
+                type: string
+              secondsLeft:
+                description: Seconds remaining to next possible partner change
+                example: 1790
+                type: integer
+              status:
+                description: HTTP status code
+                example: 409
+                type: integer
+              substatus:
+                description: Sub status code
+                example: 1
+                type: integer
+            type: object
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: |
+        Create a partner for a person, replace existing partner
+      summary: Create partner
+  '/persons/{pid}/partners/{ppid}':
+    delete:
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: ppid
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The removed partner
+          schema:
+            $ref: '#/definitions/Partner'
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+        '404':
+          description: Partner was not found.
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: |
+        Remove a specific partner for a person
+      summary: Remove partner
+    get:
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: ppid
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Partner'
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+        '404':
+          description: Partner was not found.
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: |
+        Get specific partner for a person
+      summary: Get partner
+    put:
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - description: A valid bearer access token created by /domain/tokens resource.
+          in: header
+          name: Authorization
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: pid
+          required: true
+          type: string
+        - description: >-
+            12 digit german personal identity number, without hyphen and plus
+            sign.
+          in: path
+          name: ppid
+          required: true
+          type: string
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/Partner'
+      responses:
+        '200':
+          description: Successfully updated partner
+          schema:
+            $ref: '#/definitions/Partner'
+        '400':
+          description: Partner is underaged
+          schema:
+            properties:
+              message:
+                description: Status message
+                example: Partner does not meet the minimum age requirement
+                type: string
+              status:
+                description: HTTP status code
+                example: 400
+                type: integer
+              substatus:
+                description: Sub status code
+                example: 2
+                type: integer
+            type: object
+        '401':
+          description: >-
+            Access token is missing or invalid. A JSON Web Token in
+            Authentication header is required. Only authenticated users with
+            matching token pids are authorized. An authenticated user is not
+            allowed to access other persons.
+        '409':
+          description: Partner change limit exceeded
+          schema:
+            properties:
+              message:
+                description: Status message
+                example: Partner change not allowed
+                type: string
+              secondsLeft:
+                description: Seconds remaining to next possible partner change
+                example: 1790
+                type: integer
+              status:
+                description: HTTP status code
+                example: 409
+                type: integer
+              substatus:
+                description: Sub status code
+                example: 1
+                type: integer
+            type: object
+      security:
+        - bearerAuth: []
+      tags:
+        - Persons and partners
+      description: >
+        Update/replace a partner for a person. A partner will be created if no
+        partner already exist.
+      summary: Update partner
+definitions:
+  Partner:
+    properties:
+      partner:
+        description: Masked personal identity number of partner
+        example: 19101010****
+        type: string
+      termsAccepted:
+        description: If terms has been accepted or not
+        example: false
+        type: boolean
+    type: object
+  Person:
+    properties:
+      companies:
+        items:
+          description: Parent company name
+          example: Acme
+          type: string
+        type: array
+      partner:
+        description: >
+          Personal identity number, last 4 replaced with asterisks, of the
+          partner.
+
+          Null or missing if this person is an employee or hasn't any partner
+          registered.
+        example: 19101010****
+        type: string
+      pid:
+        description: >-
+          12 digit german personal identity, the last 4 digits are replaced by
+          asterisks
+        example: 19121212****
+        type: string
+      secondsLeft:
+        description: >-
+          Seconds remaining to next possible partner change. Not applicable for
+          partners.
+        example: 1790
+        type: integer
+      termsAccepted:
+        description: If terms has been accepted or not
+        example: false
+        type: boolean
+      type:
+        description: Describes if this person is a partner or employee
+        enum:
+          - employee
+          - partner
+        example: employee
+        type: string
+    type: object
+securityDefinitions:
+  bearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+tags:
+  - description: |
+      domain authentication order resource.
+
+      To be able to use domain authentication users must install the domain app
+      and order a domain from their bank.
+
+
+      A basic authentication flow has the following steps:
+
+      1. an authentication order is created for an end user's personal identity
+      number by requesting /domain/orders resource
+
+      2. the end user opens the domain app on a PC or mobile device
+
+      3. an authentication token is created for the authenticated user by
+      requesting /domain/tokens resource until success
+    name: domain
+  - description: |
+      Persons and parters resources.
+      A person is either a customer employee or partner to a customer employee.
+      A customer employee can have 0 or 1 partner.
+    name: Persons and partners
+x-components:
+  parameters:
+    authHeader:
+      description: A valid bearer access token created by /domain/tokens resource.
+      in: header
+      name: Authorization
+      required: true
+      type: string
+    authHeaderTokens:
+      description: >-
+        A valid bearer access token created by /domain/tokens resource. Used for
+        token renewal by authenticating with existing token.
+      in: header
+      name: Authorization
+      required: false
+      type: string
+    partnerPidPathParam:
+      description: '12 digit german personal identity number, without hyphen and plus sign.'
+      in: path
+      name: ppid
+      required: true
+      type: string
+    pidPathParam:
+      description: '12 digit german personal identity number, without hyphen and plus sign.'
+      in: path
+      name: pid
+      required: true
+      type: string
+    tokenPathParam:
+      description: Access token (created by POST /domain/tokens)
+      in: path
+      name: token
+      required: true
+      type: string
+  responses:
+    PartnerChangeNotAllowed:
+      description: Partner change limit exceeded
+      schema:
+        properties:
+          message:
+            description: Status message
+            example: Partner change not allowed
+            type: string
+          secondsLeft:
+            description: Seconds remaining to next possible partner change
+            example: 1790
+            type: integer
+          status:
+            description: HTTP status code
+            example: 409
+            type: integer
+          substatus:
+            description: Sub status code
+            example: 1
+            type: integer
+        type: object
+    PartnerUnderAged:
+      description: Partner is underaged
+      schema:
+        properties:
+          message:
+            description: Status message
+            example: Partner does not meet the minimum age requirement
+            type: string
+          status:
+            description: HTTP status code
+            example: 400
+            type: integer
+          substatus:
+            description: Sub status code
+            example: 2
+            type: integer
+        type: object
+    UnauthorizedError:
+      description: >-
+        Access token is missing or invalid. A JSON Web Token in Authentication
+        header is required. Only authenticated users with matching token pids
+        are authorized. An authenticated user is not allowed to access other
+        persons.

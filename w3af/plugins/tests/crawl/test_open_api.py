@@ -364,9 +364,9 @@ class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
 
 class TestOpenAPIFuzzURLParts(PluginTest):
 
-    api_key = 'xxx'
+    api_key = 'xxx-yyy-zzz'
     target_url = 'http://petstore.swagger.io/'
-    vulnerable_url = 'http://petstore.swagger.io/api/pets/1%25272%25223'
+    vulnerable_url = 'http://petstore.swagger.io/api/pets/1%272%223'
 
     _run_configs = {
         'cfg': {
@@ -390,10 +390,13 @@ class TestOpenAPIFuzzURLParts(PluginTest):
                 return 401, response_headers, ''
 
             response_body = 'Sunny outside'
+            status = 200
+
             if uri == TestOpenAPIFuzzURLParts.vulnerable_url:
                 response_body = 'PostgreSQL query failed:'
+                status = 500
 
-            return self.status, response_headers, response_body
+            return status, response_headers, response_body
 
     MOCK_RESPONSES = [MockResponse('http://petstore.swagger.io/openapi.json',
                                    PetstoreSimpleModel().get_specification(),
@@ -411,11 +414,17 @@ class TestOpenAPIFuzzURLParts(PluginTest):
                       ]
 
     def test_fuzzing_parameters_in_path(self):
+        #
+        # TODO: This unittest is failing because of basePath being ignored
+        #       or incorrectly handled by the parser. Note that the request
+        #       being sent by the fuzzer goes to http://petstore.swagger.io/pets/...
+        #       instead of http://petstore.swagger.io/api/pets/...
+        #
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         #
-        # Since we configured authentication we should only get one of the Info
+        # Since we configured authentication we should only get one of the Infos
         #
         infos = self.kb.get('open_api', 'open_api')
         self.assertEqual(len(infos), 1, infos)

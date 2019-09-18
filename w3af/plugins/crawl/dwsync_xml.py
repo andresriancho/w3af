@@ -46,10 +46,11 @@ class dwsync_xml(CrawlPlugin):
         # Internal variables
         self._analyzed_dirs = DiskSet()
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         For every directory, fetch a list of files and analyze the response.
-        
+
+        :param debugging_id: A unique identifier for this call to discover()
         :parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
