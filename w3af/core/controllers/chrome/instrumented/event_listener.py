@@ -111,7 +111,10 @@ class EventListener(object):
             raise AttributeError('%s is not a known attribute' % item)
 
     def get(self, item, default=None):
-        return self._event_as_dict.get(item) or default
+        if item not in self._event_as_dict:
+            return default
+
+        return self._event_as_dict.get(item)
 
     def __setitem__(self, key, value):
         self._event_as_dict[key] = value
@@ -130,6 +133,12 @@ class EventListener(object):
                 return False
 
         return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return self._event_as_dict.__hash__()
 
     def __len__(self):
         return len(self._event_as_dict)
