@@ -687,7 +687,10 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
-     * Get event listeners in a paginated manner
+     * Get event listeners defined via JavaScript:
+     *
+     *     var el = document.getElementById("div");
+     *     el.addEventListener("click", modify_text, false);
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
      * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
@@ -711,6 +714,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if( event_filter.length > 0 && !event_filter.includes(event_type) ) continue;
 
             filtered_event_listeners.push(event_listener);
+
+            // If there are enough event listeners in the list we can stop
+            if ( filtered_event_listeners.length > (start + count)) break;
         }
 
         return JSON.stringify(filtered_event_listeners.slice(start, start + count));
@@ -739,7 +745,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
-     * Get elements with event handlers
+     * Get elements with event handlers defined in HTML:
+     *
+     *      <div onclick="javascript:...">
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
      * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names

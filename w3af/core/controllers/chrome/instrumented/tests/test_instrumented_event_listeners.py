@@ -198,6 +198,34 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
         self.assertEqual(el.selector, '!window')
         self.assertEqual(el.tag_name, '!window')
 
+    def test_pagination(self):
+        self._unittest_setup(TwoOnClickEventRequestHandler)
+
+        self.assertEqual(self.ic.get_js_set_timeouts(), [])
+        self.assertEqual(self.ic.get_js_set_intervals(), [])
+
+        event_listeners_page_1 = [el for el in self.ic.get_js_event_listeners_paginated(start=0, count=1)]
+        self.assertEqual(len(event_listeners_page_1), 1)
+
+        el = event_listeners_page_1[0]
+        self.assertEqual(el, {u'text_content': u'one',
+                              u'event_type': u'click',
+                              u'use_capture': False,
+                              u'node_type': 1,
+                              u'selector': u'#t1',
+                              u'tag_name': u'td'})
+
+        event_listeners_page_2 = [el for el in self.ic.get_js_event_listeners_paginated(start=1, count=1)]
+        self.assertEqual(len(event_listeners_page_2), 1)
+
+        el = event_listeners_page_2[0]
+        self.assertEqual(el, {u'text_content': u'two',
+                              u'event_type': u'click',
+                              u'use_capture': False,
+                              u'node_type': 1,
+                              u'selector': u'#t2',
+                              u'tag_name': u'td'})
+
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY = ''
@@ -366,4 +394,26 @@ class EventListenerInWindow(ExtendedHttpRequestHandler):
 
                         </body>
                         </html>
+                        ''')
+
+
+class TwoOnClickEventRequestHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY = ('''<table id="outside">
+                            <tr><td id="t1">one</td></tr>
+                            <tr><td id="t2">two</td></tr>
+                        </table>
+
+                        <script>
+                            function modify_text() {
+                            }
+
+                            // add event listener to t1
+                            var el = document.getElementById("t1");
+                            el.addEventListener("click", modify_text, false);
+                            
+                            // add event listener to t2
+                            var el = document.getElementById("t2");
+                            el.addEventListener("click", modify_text, false);
+
+                        </script>
                         ''')
