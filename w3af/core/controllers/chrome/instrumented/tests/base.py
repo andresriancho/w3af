@@ -34,26 +34,25 @@ class BaseEventListenerCountTest(unittest.TestCase):
     def setUp(self):
         set_debugging_in_output_manager()
 
-    def _load_url(self, url):
         uri_opener = ExtendedUrllib()
         http_traffic_queue = Queue.Queue()
 
-        ic = InstrumentedChrome(uri_opener, http_traffic_queue)
-        ic.load_url(url)
+        self.ic = InstrumentedChrome(uri_opener, http_traffic_queue)
 
-        loaded = ic.wait_for_load()
+    def tearDown(self):
+        self.assertEqual(self.ic.get_js_errors(), [])
+        self.ic.terminate()
+
+    def _load_url(self, url):
+        self.ic.load_url(url)
+
+        loaded = self.ic.wait_for_load()
         
         if not loaded:
-            ic.stop()
+            self.ic.stop()
 
-        return ic
-
-    def _cleanup(self, ic):
-        self.assertEqual(ic.get_js_errors(), [])
-        ic.terminate()
-
-    def _print_all_console_messages(self, ic):
-        for console_message in ic.get_console_messages():
+    def _print_all_console_messages(self):
+        for console_message in self.ic.get_console_messages():
             print(console_message)
 
     def _print_summary(self, url, all_event_listeners):
@@ -71,10 +70,10 @@ class BaseEventListenerCountTest(unittest.TestCase):
         # print()
 
     def _get_event_listeners(self, url):
-        ic = self._load_url(url)
+        self._load_url(url)
 
         try:
-            all_event_listeners = [el for el in ic.get_all_event_listeners()]
+            all_event_listeners = [el for el in self.ic.get_all_event_listeners()]
         except ChromeInterfaceException:
             all_event_listeners = []
 

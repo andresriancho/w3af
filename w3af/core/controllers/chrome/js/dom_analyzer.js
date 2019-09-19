@@ -700,6 +700,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      */
     getEventListeners: function (event_filter, tag_name_filter, start, count) {
         let filtered_event_listeners = [];
+        let inherit_from_document_or_window = false;
+        let document_or_window = ["!document", "!window"];
 
         for(let elem_it = 0; elem_it < _DOMAnalyzer.event_listeners.length; elem_it++) {
             let event_listener = _DOMAnalyzer.event_listeners[elem_it];
@@ -715,11 +717,68 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             filtered_event_listeners.push(event_listener);
 
+            // Check if other elements should inherit this event
+            if (document_or_window.includes(tag_name)) inherit_from_document_or_window = true;
+
             // If there are enough event listeners in the list we can stop
             if ( filtered_event_listeners.length > (start + count)) break;
         }
 
+        //
+        // The following code handles the case where click is defined in document or
+        // window, and the child elements (all elements) inherit the handler
+        //
+        if (!inherit_from_document_or_window){
+            return _DOMAnalyzer.sliceAndSerialize(filtered_event_listeners, start, count)
+        }
+
+        if (event_filter.length > 0 && !event_filter.includes("click")){
+            return _DOMAnalyzer.sliceAndSerialize(filtered_event_listeners, start, count)
+        }
+
+        let elements = _DOMAnalyzer.getElementsByFilter(tag_name_filter);
+
+        for(let elem_it = 0; elem_it < elements.length; elem_it++) {
+            let element = elements[elem_it];
+
+            if (! _DOMAnalyzer.cursorIsPointer(element)) continue;
+
+            // We get here only when:
+            //
+            //  - There is a 'click' handler for document or window
+            //  - There is no event_filter, or the filter includes 'click'
+            //  - The element can be clicked (cursor is pointer)
+            //
+            // Include this element in the result
+            let selector = OptimalSelect.getSingleSelector(element);
+
+            let edata = {
+                "tag_name": element.tagName.toLowerCase(),
+                "node_type": element.nodeType,
+                "selector": selector,
+                "event_type": "click",
+                "text_content": _DOMAnalyzer.superTrim(element.textContent)
+            };
+
+            filtered_event_listeners.push(edata);
+        }
+
+        return _DOMAnalyzer.sliceAndSerialize(filtered_event_listeners, start, count)
+    },
+
+    sliceAndSerialize: function (filtered_event_listeners, start, count) {
         return JSON.stringify(filtered_event_listeners.slice(start, start + count));
+    },
+
+    /**
+     * Checks the computed style of an element and returns true if the
+     * cursor (mouse pointer) is set to 'pointer'.
+     *
+     * The cursor is set to 'pointer' for elements which can be clicked,
+     * such as "a" tags and div tags with "onclick".
+     */
+    cursorIsPointer: function (element) {
+        return window.getComputedStyle(element).cursor === "pointer";
     },
 
     /**
@@ -744,6 +803,29 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         return _DOMAnalyzer.set_intervals.slice(start, start + count);
     },
 
+
+    /**
+     * Get elements by filter returns all elements from the DOM which match
+     * the tag name filter.
+     *
+     * If tag_name_filter is empty then all elements are returned.
+     *
+     * When the tag_name_filter is a list, only elements with those tags are returned.
+     *
+     * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
+     *
+     */
+    getElementsByFilter: function (tag_name_filter) {
+        if( tag_name_filter.length === 0 ){
+            return document.getElementsByTagName("*");
+        }
+        else
+        {
+            let selector = tag_name_filter.join(',');
+            return document.querySelectorAll(selector);
+        }
+    },
+
     /**
      * Get elements with event handlers defined in HTML:
      *
@@ -757,12 +839,12 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      */
     getElementsWithEventHandlers: function (event_filter, tag_name_filter, start, count) {
 
-        let all_elements = document.getElementsByTagName("*");
+        let elements = _DOMAnalyzer.getElementsByFilter(tag_name_filter);
         let events = [];
         let ignored_events = 0;
 
-        for(let elem_it = 0; elem_it < all_elements.length; elem_it++) {
-            let element = all_elements[elem_it];
+        for(let elem_it = 0; elem_it < elements.length; elem_it++) {
+            let element = elements[elem_it];
 
             if (_DOMAnalyzer.elementIsHidden(element)) continue;
 
