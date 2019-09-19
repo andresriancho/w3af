@@ -122,6 +122,16 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         'submit'
     ],
 
+    mouse_events: [
+        "mousedown",
+        "mouseup",
+        "click",
+        "dblclick",
+        "mousemove",
+        "mouseover",
+        "mouseout"
+    ],
+
     initialize: function () {
         if(_DOMAnalyzer.initialized) return;
 
@@ -352,13 +362,32 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         // The element might not exist anymore or be hidden from the user's view
         if (element == null) return false;
 
-        let event = document.createEvent("Events");
-        event.initEvent(event_type, true, true);
-        event.altKey   = false;
-        event.shiftKey = false;
-        event.ctrlKey  = false;
-        event.metaKey  = false;
-        event.view     = window;
+        let event;
+
+        //
+        // For an unknown reason ReactJS will handle events of type MouseEvent,
+        // but not a generic event created with document.createEvent() which is
+        // then initialized with event.initEvent("click")
+        //
+        // Because of this we need to have this if statement
+        //
+        if (_DOMAnalyzer.mouse_events.includes(event_type)){
+            let event_init = {
+                'bubbles': true,
+                'cancelable': true
+            };
+            event = new MouseEvent(event_type, event_init);
+        }
+        else
+        {
+            event = document.createEvent("Events");
+            event.initEvent(event_type, true, true);
+            event.altKey   = false;
+            event.shiftKey = false;
+            event.ctrlKey  = false;
+            event.metaKey  = false;
+            event.view     = window;
+        }
 
         element.dispatchEvent(event);
 

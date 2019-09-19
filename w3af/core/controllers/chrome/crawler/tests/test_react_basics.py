@@ -162,6 +162,12 @@ class ReactBasicTest(BaseChromeCrawlerTest):
 
     def test_react_cart(self):
         #
+        # Source code for this application lives at:
+        #
+        #   https://github.com/vishal2612200/react-shopping-cart
+        #
+
+        #
         #   TODO:
         #
         #       * Why are the size buttons (XXL, S, XS) not clicked?
@@ -169,6 +175,8 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         #       * Are there ways to improve performance?
         #
         #       * Which other page sections are NOT covered?
+        #
+        #       * What about the "Order by" combo from the top-right?
         #
         url = 'https://react-shopping-cart-67954.firebaseapp.com/'
         found_uris = self._crawl(url)
