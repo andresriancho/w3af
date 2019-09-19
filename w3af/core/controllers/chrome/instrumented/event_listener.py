@@ -137,9 +137,6 @@ class EventListener(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __hash__(self):
-        return self._event_as_dict.__hash__()
-
     def __len__(self):
         return len(self._event_as_dict)
 
