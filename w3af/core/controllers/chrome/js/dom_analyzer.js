@@ -783,11 +783,20 @@ var _DOMAnalyzer = _DOMAnalyzer || {
 
             if (! _DOMAnalyzer.cursorIsPointer(element)) continue;
 
+            // <a href="..."> tags can be extracted with other (much faster) methods
+            if (_DOMAnalyzer.isATagWithHref(element)) continue;
+
+            // Child elements of <a href="..."> tags can be extracted with other
+            // (much faster) methods
+            if (_DOMAnalyzer.isChildOfATagWithHref(element)) continue;
+
             // We get here only when:
             //
             //  - There is a 'click' handler for document or window
             //  - There is no event_filter, or the filter includes 'click'
             //  - The element can be clicked (cursor is pointer)
+            //  - The element is not an A tag with an href
+            //  - The element is not a child of an A tag with an href
             //
             // Include this element in the result
             let selector = OptimalSelect.getSingleSelector(element);
@@ -805,6 +814,38 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         }
 
         return _DOMAnalyzer.sliceAndSerialize(filtered_event_listeners, start, count)
+    },
+
+    /**
+     * Return true if this element tag name is "a" and it has an "href"
+     */
+    isATagWithHref: function (element) {
+        if (element.tagName.toLowerCase() !== "a") return false;
+
+        // Now check if the tag has an "href" attribute
+        for( let attr_it = 0; attr_it < element.attributes.length; attr_it++ ){
+            let attr_name = element.attributes[attr_it].nodeName;
+
+            attr_name = attr_name.toLocaleLowerCase();
+
+            if( attr_name === "href" ) return true;
+        }
+
+        return false;
+    },
+
+    /**
+     * Return true if this element is a child of an <a href="..."> tag
+     */
+    isChildOfATagWithHref: function (element) {
+        let ancestors = _DOMAnalyzer.getAncestors(element, "a");
+
+        for( let ancestor_it = 0; ancestor_it < ancestors.length; ancestor_it++ ){
+            let ancestor_elem = ancestors[ancestor_it];
+            if ( _DOMAnalyzer.isATagWithHref(ancestor_elem) ) return true;
+        }
+
+        return false;
     },
 
     sliceAndSerialize: function (filtered_event_listeners, start, count) {
