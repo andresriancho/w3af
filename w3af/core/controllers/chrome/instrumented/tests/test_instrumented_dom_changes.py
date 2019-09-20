@@ -47,7 +47,8 @@ class TestChromeCrawlerDOMChanges(BaseInstrumentedUnittest):
                                             u'selector': u'[onclick]',
                                             u'event_type': u'click',
                                             u'handler': u'goto();',
-                                            u'text_content': u'Thiscanbeclicked'}])
+                                            u'text_content': u'Thiscanbeclicked',
+                                            u'event_source': u'attribute'}])
 
         event_listener = event_listeners[0]
         selector = event_listener['selector']

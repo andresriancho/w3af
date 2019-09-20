@@ -75,17 +75,20 @@ class TestCountEventListeners(BaseEventListenerCountTest):
                            u'use_capture': False,
                            u'tag_name': u'!window',
                            u'node_type': -1,
-                           u'selector': u'!window'}),
+                           u'selector': u'!window',
+                           u'event_source': u'add_event_listener_other'}),
             EventListener({u'event_type': u'click',
                            u'tag_name': u'label',
                            u'text_content': u'XS',
                            u'node_type': 1,
-                           u'selector': u'.filters .filters-available-size:nth-child(2) label'}),
+                           u'selector': u'.filters .filters-available-size:nth-child(2) label',
+                           u'event_source': u'inherit_window_document'}),
             EventListener({u'event_type': u'click',
                            u'tag_name': u'input',
                            u'text_content': u'',
                            u'node_type': 1,
-                           u'selector': u'.filters .filters-available-size:nth-child(4) [type]'})
+                           u'selector': u'.filters .filters-available-size:nth-child(4) [type]',
+                           u'event_source': u'inherit_window_document'})
         }
 
         for expected_event_listener in expected_event_listeners:

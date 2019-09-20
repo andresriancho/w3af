@@ -68,7 +68,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                                                              u'selector': u'#outside',
                                                              u'event_type': u'click',
                                                              u'use_capture': False,
-                                                             u'text_content': u'onetwo'}])
+                                                             u'text_content': u'onetwo',
+                                                             u'event_source': u'add_event_listener_element'}])
 
     def test_onclick_assign_to_onclick_event_listener(self):
         self._unittest_setup(OnClickEventSetOnClickRequestHandler)
@@ -89,7 +90,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                               u'selector': u'#outside',
                               u'event_type': u'click',
                               u'use_capture': False,
-                              u'text_content': u'onetwo'}]
+                              u'text_content': u'onetwo',
+                              u'event_source': u'add_event_listener_element'}]
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
         self.assertEqual(self.ic.get_js_set_intervals(), [])
@@ -134,7 +136,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                      u'selector': u'#outside',
                      u'event_type': u'click',
                      u'use_capture': False,
-                     u'text_content': u'onetwo'}]
+                     u'text_content': u'onetwo',
+                     u'event_source': u'add_event_listener_element'}]
         _iter = self.ic.get_js_event_listeners_iter()
 
         for i in _iter:
@@ -152,7 +155,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                                                              u'selector': u'#outside',
                                                              u'event_type': u'click',
                                                              u'use_capture': False,
-                                                             u'text_content': u'onetwo'}])
+                                                             u'text_content': u'onetwo',
+                                                             u'event_source': u'add_event_listener_element'}])
 
     def test_onclick_arrow_event_listener(self):
         self._unittest_setup(OnClickEventArrowRequestHandler)
@@ -164,7 +168,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                                                              u'selector': u'#outside',
                                                              u'event_type': u'click',
                                                              u'use_capture': False,
-                                                             u'text_content': u'onetwo'}])
+                                                             u'text_content': u'onetwo',
+                                                             u'event_source': u'add_event_listener_element'}])
 
     def test_click_on_document(self):
         self._unittest_setup(EventListenerInDocument)
@@ -213,7 +218,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                               u'use_capture': False,
                               u'node_type': 1,
                               u'selector': u'#t1',
-                              u'tag_name': u'td'})
+                              u'tag_name': u'td',
+                              u'event_source': u'add_event_listener_element'})
 
         event_listeners_page_2 = [el for el in self.ic.get_js_event_listeners_paginated(start=1, count=1)]
         self.assertEqual(len(event_listeners_page_2), 1)
@@ -224,7 +230,8 @@ class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
                               u'use_capture': False,
                               u'node_type': 1,
                               u'selector': u'#t2',
-                              u'tag_name': u'td'})
+                              u'tag_name': u'td',
+                              u'event_source': u'add_event_listener_element'})
 
 
 class EmptyRequestHandler(ExtendedHttpRequestHandler):

@@ -52,7 +52,8 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'tag_name': u'table',
                                             u'node_type': 1,
                                             u'selector': u'#outside',
-                                            u'text_content': u'onetwo'}])
+                                            u'text_content': u'onetwo',
+                                            u'event_source': u'property'}])
 
     def test_onclick_event_listener_children_that_do_not_inherit(self):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
@@ -64,7 +65,8 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'[onclick]',
-                                            u'text_content': u'one'}])
+                                            u'text_content': u'one',
+                                            u'event_source': u'attribute'}])
 
     def test_html_events_filter_out_click(self):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
@@ -83,7 +85,8 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'[onclick]',
-                                            u'text_content': u'one'}])
+                                            u'text_content': u'one',
+                                            u'event_source': u'attribute'}])
 
     def test_html_events_filter_out_table(self):
         self._unittest_setup(OnClickEventChildrenNoInheritRequestHandler)
@@ -102,7 +105,8 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'[onclick]',
-                                            u'text_content': u'one'}])
+                                            u'text_content': u'one',
+                                            u'event_source': u'attribute'}])
 
     def test_onclick_event_listener_with_children(self):
         self._unittest_setup(OnClickEventWithChildrenRequestHandler)
@@ -114,19 +118,22 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'[onclick]',
                      u'tag_name': u'div',
-                     u'text_content': u'Allowedtoclick1Allowedtoclick2'},
+                     u'text_content': u'Allowedtoclick1Allowedtoclick2',
+                     u'event_source': u'attribute'},
                     {u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'[id="1"]',
                      u'tag_name': u'span',
-                     u'text_content': u'Allowedtoclick1'},
+                     u'text_content': u'Allowedtoclick1',
+                     u'event_source': u'attribute'},
                     {u'event_type': u'click',
                      u'node_type': 1,
                      u'handler': u'javascript:manualToggle(this)',
                      u'selector': u'[id="2"]',
                      u'tag_name': u'span',
-                     u'text_content': u'Allowedtoclick2'}]
+                     u'text_content': u'Allowedtoclick2',
+                     u'event_source': u'attribute'}]
 
         self.assertEqual(event_listeners, expected)
 
@@ -144,7 +151,8 @@ class TestChromeCrawlerGetHTMLEventListeners(BaseInstrumentedUnittest):
                                             u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'[onclick]',
-                                            u'text_content': u'x'}])
+                                            u'text_content': u'x',
+                                            u'event_source': u'attribute'}])
 
     def test_events_less_than_count(self):
         self._unittest_setup(EventsLessThanCountHandler)

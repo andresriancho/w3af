@@ -290,7 +290,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                                            "node_type": node_type,
                                            "selector": selector,
                                            "event_type": type,
-                                           "use_capture": useCapture});
+                                           "use_capture": useCapture,
+                                           "event_source": "add_event_listener_other"});
     },
 
     /**
@@ -318,7 +319,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                                            "selector": selector,
                                            "event_type": type,
                                            "use_capture": useCapture,
-                                           "text_content": _DOMAnalyzer.superTrim(element.textContent)});
+                                           "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                                           "event_source": "add_event_listener_element"});
     },
 
     /**
@@ -514,7 +516,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 "selector": selector,
                 "event_type": attr_name,
                 "handler": attributes[attr_it].nodeValue,
-                "text_content": _DOMAnalyzer.superTrim(element.textContent)
+                "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                "event_source": "attribute",
             };
 
             events.push(edata);
@@ -573,7 +576,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 "selector": selector,
                 "event_type": property_name,
                 "handler": property_value,
-                "text_content": _DOMAnalyzer.superTrim(element.textContent)
+                "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                "event_source": "property",
             };
 
             events.push(edata)
@@ -694,6 +698,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 ancestor_event.selector = selector;
                 ancestor_event.node_type = element.nodeType;
                 ancestor_event.text_content = text_content;
+                ancestor_event.event_source = "attribute";
 
                 events.push(ancestor_event);
             }
@@ -792,7 +797,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 "node_type": element.nodeType,
                 "selector": selector,
                 "event_type": "click",
-                "text_content": _DOMAnalyzer.superTrim(element.textContent)
+                "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                "event_source": "inherit_window_document",
             };
 
             filtered_event_listeners.push(edata);
