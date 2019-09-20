@@ -341,12 +341,18 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             return document;
         }
 
-        let element = document.querySelector(selector);
+        //
+        // The element might be hidden from the user's view, but we want to
+        // dispatch the event anyways, because during the event listener
+        // gathering phase it was visible.
+        //
+        // I'll leave this comment and code, here as a reminder of why
+        // the decision was made.
+        //
+        // if (_DOMAnalyzer.elementIsHidden(element)) return null;
+        //
 
-        // The element might be hidden from the user's view
-        if (_DOMAnalyzer.elementIsHidden(element)) return null;
-
-        return element;
+        return document.querySelector(selector);
     },
 
     /**
