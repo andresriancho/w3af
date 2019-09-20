@@ -291,6 +291,13 @@ class ChromeCrawlerJS(object):
         potentially_new_url = self._chrome.get_url()
 
         if potentially_new_url in self._visited_urls:
+            # If the event navigated the browser to a page which was already
+            # visited in the past, don't wait for the page to load
+            return
+
+        if potentially_new_url.get_root_domain() != self._url.get_root_domain():
+            # If the event navigated the browser to a different domain,
+            # don't wait for the page to load
             return
 
         self._visited_urls.add(potentially_new_url)
@@ -477,7 +484,7 @@ class ChromeCrawlerJS(object):
         return True
 
     def _append_event_to_logs(self, event, state):
-        url = self._url[:]
+        url = self._url.copy()
         event_dispatch_log_unit = EventDispatchLogUnit(event, state, url)
 
         self._local_crawler_state.append_event_to_log(event_dispatch_log_unit)

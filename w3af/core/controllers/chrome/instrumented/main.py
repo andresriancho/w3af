@@ -24,6 +24,7 @@ import json
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.chrome.instrumented.instrumented_base import InstrumentedChromeBase
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
 from w3af.core.controllers.chrome.instrumented.page_state import PageState
@@ -163,8 +164,11 @@ class InstrumentedChrome(InstrumentedChromeBase):
         self.chrome_conn.Page.stopLoading()
 
     def get_url(self):
+        """
+        :return: The current URL for the chrome instance
+        """
         result = self.chrome_conn.Runtime.evaluate(expression='document.location.href')
-        return result['result']['result']['value']
+        return URL(result['result']['result']['value'])
 
     def get_dom(self):
         result = self.chrome_conn.Runtime.evaluate(expression='document.documentElement.outerHTML')
