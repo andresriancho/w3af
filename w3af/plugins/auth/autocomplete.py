@@ -261,6 +261,7 @@ class autocomplete(AuthPlugin):
             # in the request to get the HTML might work in a retry
             #
             self._attempt_login = False
+            return None
 
         msg = 'Login form with action %s found in HTTP response with ID %s'
         args = (login_form.get_action(), http_response.id,)
