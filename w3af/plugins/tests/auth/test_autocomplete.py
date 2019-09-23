@@ -184,6 +184,9 @@ class TestAutocompleteInvalidCredentials(PluginTest):
             'audit': (PluginConfig('xss'),),
             'auth': (PluginConfig('autocomplete',
                                   ('username', USER, PluginConfig.STR),
+                                  #
+                                  # The login process fails because of this invalid password
+                                  #
                                   ('password', PASS + 'invalid', PluginConfig.STR),
                                   ('login_form_url', login_form_url, PluginConfig.URL),
                                   ('check_url', check_url, PluginConfig.URL),
