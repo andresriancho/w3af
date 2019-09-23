@@ -247,9 +247,9 @@ class autocomplete(AuthPlugin):
             login_form = form_params
 
         if login_form is None:
-            msg = ('Failed to find an HTML login form at %s. The authentication'
-                   ' plugin is most likely incorrectly configured.')
-            args = (self.login_form_url,)
+            msg = ('Failed to find an HTML login form at %s (id: %s).'
+                   ' The authentication plugin is most likely incorrectly configured.')
+            args = (self.login_form_url, http_response.id)
             self._log_error(msg % args)
 
             #
