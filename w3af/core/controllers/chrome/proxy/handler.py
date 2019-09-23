@@ -38,6 +38,8 @@ class LoggingHandler(ProxyHandler):
 
     HEADLESS_RE = re.compile('HeadlessChrome/.*? ')
 
+    DEFAULT_LANGUAGE = 'en-GB,en-US;q=0.9,en;q=0.8'
+
     def _target_is_private_site(self):
         """
         :return: True if the target site w3af is scanning is a private site
@@ -145,7 +147,7 @@ class LoggingHandler(ProxyHandler):
             # Already set, just return
             return
 
-        headers['Accept-Language'] = 'en-GB,en-US;q=0.9,en;q=0.8'
+        headers['Accept-Language'] = self.DEFAULT_LANGUAGE
         http_request.set_headers(headers)
 
     def _remove_user_agent_headless(self, http_request):
