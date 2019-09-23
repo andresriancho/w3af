@@ -102,11 +102,11 @@ class autocomplete(AuthPlugin):
         """
         Check user session.
         """
-        msg = 'Checking if session for user %s is active'
-        self._log_debug(msg % self.username)
-
         # Create a new debugging ID for each has_active_session() run
         self._new_debugging_id()
+
+        msg = 'Checking if session for user %s is active'
+        self._log_debug(msg % self.username)
 
         try:
             http_response = self._uri_opener.GET(self.check_url,
