@@ -102,11 +102,11 @@ class autocomplete(AuthPlugin):
         """
         Check user session.
         """
-        msg = 'Checking if session for user %s is active'
-        self._log_debug(msg % self.username)
-
         # Create a new debugging ID for each has_active_session() run
         self._new_debugging_id()
+
+        msg = 'Checking if session for user %s is active'
+        self._log_debug(msg % self.username)
 
         try:
             http_response = self._uri_opener.GET(self.check_url,
@@ -247,9 +247,9 @@ class autocomplete(AuthPlugin):
             login_form = form_params
 
         if login_form is None:
-            msg = ('Failed to find an HTML login form at %s. The authentication'
-                   ' plugin is most likely incorrectly configured.')
-            args = (self.login_form_url,)
+            msg = ('Failed to find an HTML login form at %s (id: %s).'
+                   ' The authentication plugin is most likely incorrectly configured.')
+            args = (self.login_form_url, http_response.id)
             self._log_error(msg % args)
 
             #
@@ -261,6 +261,7 @@ class autocomplete(AuthPlugin):
             # in the request to get the HTML might work in a retry
             #
             self._attempt_login = False
+            return None
 
         msg = 'Login form with action %s found in HTTP response with ID %s'
         args = (login_form.get_action(), http_response.id,)
