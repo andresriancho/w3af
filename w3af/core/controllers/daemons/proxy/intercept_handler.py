@@ -32,20 +32,18 @@ class InterceptProxyHandler(ProxyHandler):
     """
     The handler that traps requests and adds them to the queue.
     """
-    def handle_request_in_thread(self, flow):
+    def handle_request_in_thread(self, http_request):
         """
-        :param flow: A mitmproxy flow containing the request
-        :return: None, we reply to the flow
+        :param http_request: An HTTPRequest (w3af) object
+        :return: An HTTPResponse (w3af) object
         """
-        http_request = self._to_w3af_request(flow.request)
-
         try:
             # Now we check if we need to add this to the queue, or just let
             # it go through.
             if self._should_be_trapped(http_request):
                 http_response = self.on_start_edit_request(http_request)
             else:
-                # Send the request to the remote webserver
+                # Send the request to the remote web server
                 http_response = self._send_http_request(http_request)
         except Exception, e:
             trace = str(traceback.format_exc())
@@ -54,15 +52,7 @@ class InterceptProxyHandler(ProxyHandler):
                                                         e,
                                                         trace=trace)
 
-        # This signals mitmproxy that we have a response for this request
-        if flow.reply.state == 'taken':
-            if not flow.reply.has_message:
-                flow.reply.ack()
-            flow.reply.commit()
-
-        # Send the response (success|error) to the browser
-        http_response = self._to_mitmproxy_response(http_response)
-        flow.response = http_response
+        return http_response
 
     def on_request_drop(self, http_request):
         """

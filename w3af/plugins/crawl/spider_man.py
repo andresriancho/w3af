@@ -165,7 +165,7 @@ class spider_man(CrawlPlugin):
 
 class LoggingHandler(ProxyHandler):
 
-    def handle_request_in_thread(self, flow):
+    def handle_request_in_thread(self, http_request):
         """
         This method handles EVERY request that was sent by the browser, we
         receive the request and:
@@ -173,10 +173,9 @@ class LoggingHandler(ProxyHandler):
             * Check if it's a request to indicate we should finish, if not
             * Parse it and send to the core
 
-        :param flow: A mitmproxy flow containing the request
+        :param http_request: An HTTPRequest (w3af) object
+        :return: An HTTPResponse (w3af) object
         """
-        http_request = self._to_w3af_request(flow.request)
-
         uri = http_request.get_uri()
         msg = '[spider_man] Handling request: %s %s'
         om.out.debug(msg % (http_request.get_method(), uri))
@@ -194,7 +193,7 @@ class LoggingHandler(ProxyHandler):
                 freq = FuzzableRequest.from_http_request(http_request)
                 self.parent_process.plugin.send_fuzzable_request_to_core(freq)
 
-                # Send the request to the remote webserver
+                # Send the request to the remote web server
                 http_response = self._send_http_request(http_request, grep=grep)
         except Exception, e:
             trace = str(traceback.format_exc())
@@ -215,16 +214,8 @@ class LoggingHandler(ProxyHandler):
                    ' in order to maintain the session.')
             om.out.information(msg % cookie_value)
 
-        # This signals mitmproxy that we have a response for this request
-        if flow.reply.state == 'taken':
-            if not flow.reply.has_message:
-                flow.reply.ack()
-            flow.reply.commit()
-
-        # Send the response (success|error) to the browser
-        http_response = self._to_mitmproxy_response(http_response)
-        flow.response = http_response
-
+        return http_response
+    
     def _is_terminate_favicon(self, http_request):
         """
         :see: https://github.com/andresriancho/w3af/issues/9135

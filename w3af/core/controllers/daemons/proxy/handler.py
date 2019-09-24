@@ -69,24 +69,22 @@ class ProxyHandler(Master, EmptyHandler):
 
         self.parent_process.total_handled_requests += 1
 
-        t = threading.Thread(target=self.handle_request_in_thread,
+        t = threading.Thread(target=self.handle_request_in_thread_wrapper,
                              args=(flow,),
                              name='ThreadProxyRequestHandler')
         t.daemon = True
         t.start()
 
-    def handle_request_in_thread(self, flow):
+    def handle_request_in_thread_wrapper(self, flow):
+        """
+        Handles one HTTP request in a thread
+
+        :param flow: A mitmproxy flow containing the request
+        :return: None. The HTTP response is set to the flow
+        """
         http_request = self._to_w3af_request(flow.request)
 
-        try:
-            # Send the request to the remote web server
-            http_response = self._send_http_request(http_request)
-        except Exception, e:
-            trace = str(traceback.format_exc())
-            http_response = self._create_error_response(http_request,
-                                                        None,
-                                                        e,
-                                                        trace=trace)
+        http_response = self.handle_request_in_thread(http_request)
 
         # This signals mitmproxy that we have a response for this request
         if flow.reply.state == 'taken':
@@ -97,6 +95,26 @@ class ProxyHandler(Master, EmptyHandler):
         # Send the response (success|error) to the browser
         http_response = self._to_mitmproxy_response(http_response)
         flow.response = http_response
+
+    def handle_request_in_thread(self, http_request):
+        """
+        Receives an HTTP request, sends it to the wire, and returns an HTTP
+        response.
+
+        :param http_request: An HTTPRequest (w3af) object
+        :return: An HTTPResponse (w3af) object
+        """
+        try:
+            # Send the request to the remote web server
+            http_response = self._send_http_request(http_request)
+        except Exception, e:
+            trace = str(traceback.format_exc())
+            http_response = self._create_error_response(http_request,
+                                                        None,
+                                                        e,
+                                                        trace=trace)
+
+        return http_response
 
     def _to_w3af_request(self, mitmproxy_request):
         """
