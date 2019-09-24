@@ -60,7 +60,7 @@ class LoggingHandler(ProxyHandler):
         domain = targets[0].get_domain()
         return is_private_site(domain)
 
-    def _send_http_request(self, http_request, grep=True):
+    def _send_http_request(self, http_request, grep=True, debugging_id=None):
         """
         Send a w3af HTTP request to the web server using w3af's HTTP lib,
         capture the HTTP response and send it to the upstream Queue.

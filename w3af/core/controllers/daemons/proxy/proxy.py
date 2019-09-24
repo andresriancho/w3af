@@ -19,13 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import socket
-import time
 import os
+import time
+import socket
 
 from multiprocessing.dummy import Process
-from libmproxy.proxy.server import ProxyServer, ProxyServerError
-from libmproxy.proxy.config import ProxyConfig
+from mitmproxy.options import Options
+from mitmproxy.proxy import ProxyConfig
+from mitmproxy.proxy.server import ProxyServer
 
 import w3af.core.controllers.output_manager as om
 
@@ -114,66 +115,63 @@ class Proxy(Process):
         self._running = False
         self._uri_opener = uri_opener
         self._ca_certs = ca_certs
+        self._options = None
+        self._config = None
 
         # Stats
         self.total_handled_requests = 0
 
+        #
         # User configured parameters
+        #
         try:
-            self._config = ProxyConfig(cadir=self._ca_certs,
-                                       ssl_version_client='SSLv23',
-                                       ssl_version_server='SSLv23',
-                                       host=ip,
-                                       port=port)
-        except AttributeError as ae:
-            if str(ae) == "'module' object has no attribute '_lib'":
-                # This is a rare issue with the OpenSSL setup that some users
-                # (mostly in mac os) find. Not related with w3af/mitmproxy but
-                # with some broken stuff they have
-                #
-                # https://github.com/mitmproxy/mitmproxy/issues/281
-                # https://github.com/andresriancho/w3af/issues/10716
-                #
-                # AttributeError: 'module' object has no attribute '_lib'
-                raise ProxyException(self.INCORRECT_SETUP % ae)
+            self._options = Options(cadir=self._ca_certs,
+                                    ssl_version_client='all',
+                                    ssl_version_server='all',
+                                    ssl_insecure=True,
+                                    http2=False,
+                                    listen_host=ip,
+                                    listen_port=port)
+        except Exception as e:
+            raise ProxyException('Invalid proxy daemon options: "%s"' % e)
 
-            else:
-                # Something unexpected, raise
-                raise
+        try:
+            self._config = ProxyConfig(self._options)
+        except Exception as e:
+            raise ProxyException('Invalid proxy daemon configuration: "%s"' % e)
 
-        # Setting these options together with ssl_version_client and
-        # ssl_version_server set to SSLv23 means that the proxy will allow all
-        # types (including insecure) of SSL connections
-        self._config.openssl_options_client = None
-        self._config.openssl_options_server = None
-
+        #
         # Start the proxy server
+        #
         try:
             self._server = ProxyServer(self._config)
-        except socket.error, se:
+        except socket.error as se:
             msg = 'Socket error while starting proxy: "%s"'
             raise ProxyException(msg % se.strerror)
-        except ProxyServerError, pse:
+        except Exception as pse:
             raise ProxyException('%s' % pse)
         else:
             # This is here to support port == 0, which will bind to the first
             # available/free port, which we don't know until the server really
             # starts
-            self._config.port = self.get_port()
+            self._config.options.listen_port = self.get_port()
 
-        self._master = handler_klass(self._server, self._uri_opener, self)
+        self._master = handler_klass(self._options,
+                                     self._server,
+                                     self._uri_opener,
+                                     self)
 
     def get_bind_ip(self):
         """
         :return: The IP address where the proxy will listen.
         """
-        return self._config.host
+        return self._config.options.listen_host
 
     def get_bind_port(self):
         """
         :return: The TCP port where the proxy will listen.
         """
-        return self._config.port
+        return self._config.options.listen_port
 
     def is_running(self):
         """
@@ -194,8 +192,8 @@ class Proxy(Process):
         Starts the proxy daemon; usually this method isn't called directly. In
         most cases you'll call start()
         """
-        args = (self._config.host,
-                self._config.port,
+        args = (self._config.options.listen_host,
+                self._config.options.listen_port,
                 self._master.__class__.__name__)
         message = 'Proxy server listening on %s:%s using %s'
         om.out.debug(message % args)

@@ -24,6 +24,7 @@ import time
 import traceback
 
 from multiprocessing.dummy import Process
+from mitmproxy.controller import handler
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.ports as ports
@@ -42,9 +43,13 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 
-# Cohny changed the original http://w3af/spider_man?terminate
-# to http://127.7.7.7/spider_man?terminate because in Opera we got
-# an error if we used the original one! Thanks Cohny!
+#
+# Cohny changed the original terminate URL
+#
+#   http://w3af/spider_man?terminate
+#
+# To the new one because in Opera we got an error (most likely DNS-related).
+#
 TERMINATE_URL = URL('http://127.7.7.7/spider_man?terminate')
 TERMINATE_FAVICON_URL = URL('http://127.7.7.7/favicon.ico')
 
@@ -161,7 +166,8 @@ class spider_man(CrawlPlugin):
 
 class LoggingHandler(ProxyHandler):
 
-    def handle_request_in_thread(self, flow):
+    @handler
+    def request(self, flow):
         """
         This method handles EVERY request that was sent by the browser, we
         receive the request and:
@@ -169,7 +175,7 @@ class LoggingHandler(ProxyHandler):
             * Check if it's a request to indicate we should finish, if not
             * Parse it and send to the core
 
-        :param flow: A libmproxy flow containing the request
+        :param flow: A mitmproxy flow containing the request
         """
         http_request = self._to_w3af_request(flow.request)
 
@@ -177,10 +183,7 @@ class LoggingHandler(ProxyHandler):
         msg = '[spider_man] Handling request: %s %s'
         om.out.debug(msg % (http_request.get_method(), uri))
 
-        if uri.get_domain() == self.parent_process.target_domain:
-            grep = True
-        else:
-            grep = False
+        grep = uri.get_domain() == self.parent_process.target_domain
 
         try:
             if self._is_terminate_favicon(http_request):
@@ -197,22 +200,26 @@ class LoggingHandler(ProxyHandler):
                 http_response = self._send_http_request(http_request, grep=grep)
         except Exception, e:
             trace = str(traceback.format_exc())
-            http_response = self._create_error_response(http_request, None, e,
+            http_response = self._create_error_response(http_request,
+                                                        None,
+                                                        e,
                                                         trace=trace)
 
         # Useful logging
         headers = http_response.get_headers()
-        cookie_value, cookie_header = headers.iget('cookie', None)
+        cookie_value, cookie_header = headers.iget('set-cookie', None)
+
         if cookie_value is not None:
-            msg = ('The remote web application sent the following'
-                   ' cookie: "%s" through the spider-man proxy.\nw3af will use'
-                   ' it during the rest of the scan process in order to'
-                   ' maintain the session.')
+            msg = ('The remote web application sent a cookie via the spider-man'
+                   ' proxy. The cookie value is: "%s".\n'
+                   '\n'
+                   'w3af will use this cookie during the rest of the scan process'
+                   ' in order to maintain the session.')
             om.out.information(msg % cookie_value)
 
         # Send the response (success|error) to the browser
-        http_response = self._to_libmproxy_response(flow.request, http_response)
-        flow.reply(http_response)
+        http_response = self._to_mitmproxy_response(http_response)
+        flow.response = http_response
 
     def _is_terminate_favicon(self, http_request):
         """
@@ -224,8 +231,7 @@ class LoggingHandler(ProxyHandler):
         return False
 
     def _create_favicon_response(self, http_response):
-        favicon = os.path.join(ROOT_PATH,
-                               'plugins/crawl/spider_man/favicon.ico')
+        favicon = os.path.join(ROOT_PATH, 'plugins/crawl/spider_man/favicon.ico')
 
         headers = Headers((
             ('Connection', 'close'),

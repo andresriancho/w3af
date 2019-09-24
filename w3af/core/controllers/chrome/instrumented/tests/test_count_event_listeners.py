@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import print_function
 
-import os
 import Queue
 import unittest
 
@@ -47,7 +46,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://www.bing.com/', 80),
+        ('https://www.holmsecurity.com/work-at-holm', 400)
     ])
 
     """
@@ -85,8 +84,8 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://andresriancho.com/', 15),
         ('https://andresriancho.com/internet-scale-analysis-of-aws-cognito-security/', 15),
         
-        ('https://www.holmsecurity.com/', 400)              # FAILS: HTTPS / TLS
-        ('https://www.holmsecurity.com/work-at-holm', 400)  # FAILS: HTTPS / TLS
+        ('https://www.holmsecurity.com/', 8)
+        ('https://www.holmsecurity.com/work-at-holm', 10)
         
         ('https://Youtube.com/', 400),
         ('https://www.youtube.com/watch?v=otvvUzFh5Do', 400),

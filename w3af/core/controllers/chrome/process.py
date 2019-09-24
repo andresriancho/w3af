@@ -41,7 +41,7 @@ class ChromeProcess(object):
     CHROME_VERSION = None
 
     DEFAULT_FLAGS = [
-             '--headless',
+             # '--headless',
              '--disable-gpu',
              '--window-size=1920,1200',
 
@@ -49,7 +49,7 @@ class ChromeProcess(object):
              '--homepage=about:blank',
 
              # Do not load images
-             '--blink-settings=imagesEnabled=false',
+             # '--blink-settings=imagesEnabled=false',
 
              # Reduce memory usage
              # Run the JS garbage collector when reaching 500mb
