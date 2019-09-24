@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import threading
 import traceback
 
 from mitmproxy.controller import Master, handler
@@ -63,8 +64,18 @@ class ProxyHandler(Master, EmptyHandler):
 
         :param flow: A mitmproxy flow containing the request
         """
+        # This signals mitmproxy that the request will be handled by us
+        flow.reply.take()
+
         self.parent_process.total_handled_requests += 1
 
+        t = threading.Thread(target=self.handle_request_in_thread,
+                             args=(flow,),
+                             name='ThreadProxyRequestHandler')
+        t.daemon = True
+        t.start()
+
+    def handle_request_in_thread(self, flow):
         http_request = self._to_w3af_request(flow.request)
 
         try:
@@ -76,6 +87,12 @@ class ProxyHandler(Master, EmptyHandler):
                                                         None,
                                                         e,
                                                         trace=trace)
+
+        # This signals mitmproxy that we have a response for this request
+        if flow.reply.state == 'taken':
+            if not flow.reply.has_message:
+                flow.reply.ack()
+            flow.reply.commit()
 
         # Send the response (success|error) to the browser
         http_response = self._to_mitmproxy_response(http_response)

@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import traceback
 
-from mitmproxy.controller import handler
-
 from w3af.core.controllers.daemons.proxy import ProxyHandler
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
 from w3af.core.data.dc.headers import Headers
@@ -34,8 +32,7 @@ class InterceptProxyHandler(ProxyHandler):
     """
     The handler that traps requests and adds them to the queue.
     """
-    @handler
-    def request(self, flow):
+    def handle_request_in_thread(self, flow):
         """
         :param flow: A mitmproxy flow containing the request
         :return: None, we reply to the flow
@@ -56,6 +53,12 @@ class InterceptProxyHandler(ProxyHandler):
                                                         None,
                                                         e,
                                                         trace=trace)
+
+        # This signals mitmproxy that we have a response for this request
+        if flow.reply.state == 'taken':
+            if not flow.reply.has_message:
+                flow.reply.ack()
+            flow.reply.commit()
 
         # Send the response (success|error) to the browser
         http_response = self._to_mitmproxy_response(http_response)

@@ -24,7 +24,6 @@ import time
 import traceback
 
 from multiprocessing.dummy import Process
-from mitmproxy.controller import handler
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.ports as ports
@@ -166,8 +165,7 @@ class spider_man(CrawlPlugin):
 
 class LoggingHandler(ProxyHandler):
 
-    @handler
-    def request(self, flow):
+    def handle_request_in_thread(self, flow):
         """
         This method handles EVERY request that was sent by the browser, we
         receive the request and:
@@ -216,6 +214,12 @@ class LoggingHandler(ProxyHandler):
                    'w3af will use this cookie during the rest of the scan process'
                    ' in order to maintain the session.')
             om.out.information(msg % cookie_value)
+
+        # This signals mitmproxy that we have a response for this request
+        if flow.reply.state == 'taken':
+            if not flow.reply.has_message:
+                flow.reply.ack()
+            flow.reply.commit()
 
         # Send the response (success|error) to the browser
         http_response = self._to_mitmproxy_response(http_response)
