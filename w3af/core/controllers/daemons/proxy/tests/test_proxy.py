@@ -19,8 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import ssl
 import urllib2
 import unittest
+
+import websocket
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
@@ -42,7 +45,7 @@ class TestProxy(unittest.TestCase):
         self._proxy.wait_for_start()
         
         port = self._proxy.get_port()
-        
+
         # Build the proxy opener
         proxy_url = 'http://%s:%s' % (self.IP_ADDRESS, port)
         proxy_handler = urllib2.ProxyHandler({'http': proxy_url,
@@ -164,3 +167,22 @@ class TestProxy(unittest.TestCase):
 
         self.assertIn('"gzipped": true', resp.read())
         self.assertEqual('identity', content_encoding)
+
+    @unittest.skip('Implementation pending')
+    def test_websocket_secure_proxy(self):
+        raise NotImplementedError
+
+    @unittest.skip('Implementation pending')
+    def test_websocket_proxy(self):
+        ws = websocket.WebSocket()
+        ws.connect('ws://echo.websocket.org',
+                   http_proxy_host=self.IP_ADDRESS,
+                   http_proxy_port=self._proxy.get_port(),
+                   sslopt={'cert_reqs': ssl.CERT_NONE,
+                           'check_hostname': False})
+
+        sent_message = 'Hello, World'
+        ws.send(sent_message)
+
+        received_message = ws.recv()
+        self.assertEqual(received_message, sent_message)

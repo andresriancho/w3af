@@ -130,6 +130,7 @@ class Proxy(Process):
                                     ssl_version_server='all',
                                     ssl_insecure=True,
                                     http2=False,
+                                    websockets=False,
                                     listen_host=ip,
                                     listen_port=port)
         except Exception as e:
