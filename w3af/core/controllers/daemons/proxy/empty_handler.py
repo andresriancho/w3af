@@ -50,31 +50,31 @@ class EmptyHandler(object):
         pass
 
     @handler
-    def http_connect(self, f):
+    def http_connect(self, flow):
         pass
 
     @handler
-    def error(self, f):
+    def error(self, flow):
         pass
 
     @handler
-    def requestheaders(self, f):
+    def requestheaders(self, flow):
         pass
 
     @handler
-    def request(self, f):
+    def request(self, flow):
         pass
 
     @handler
-    def responseheaders(self, f):
+    def responseheaders(self, flow):
         pass
 
     @handler
-    def response(self, f):
+    def response(self, flow):
         pass
 
     @handler
-    def websocket_handshake(self, f):
+    def websocket_handshake(self, flow):
         pass
 
     @handler
