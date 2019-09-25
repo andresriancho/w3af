@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import re
 import time
 import Queue
 import unittest
@@ -164,6 +165,23 @@ class BaseChromeCrawlerTest(unittest.TestCase):
 
         # all expected messages found!
         return found, not_found
+
+    def _multi_regex_match(self, expected_url_regexes, found_uris):
+        for expected_url_regex in expected_url_regexes:
+
+            _re = re.compile(expected_url_regex)
+            found = False
+
+            for found_uri in found_uris:
+                if _re.search(found_uri):
+                    found = True
+                    break
+
+            args = (expected_url_regex, found_uris)
+            msg = 'Failed to find URL with regex %s in %r'
+            msg %= args
+
+            self.assertTrue(found, msg)
 
 
 class LogMessage(object):

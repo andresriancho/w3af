@@ -29,7 +29,7 @@ from w3af.core.controllers.chrome.instrumented.event_listener import EventListen
 @attr('internet')
 class TestCountEventListeners(BaseEventListenerCountTest):
     def test_button_onclick(self):
-        url = 'https://84ol32ono9.codesandbox.io/'
+        url = 'https://84ol32ono9.csb.app/'
         event_listeners = self._get_event_listeners(url)
 
         expected_selectors = {'!window', '!document', 'button'}
@@ -66,7 +66,7 @@ class TestCountEventListeners(BaseEventListenerCountTest):
             self.assertIn(expected_selector, found_selectors)
 
     def test_tshirt_sizes(self):
-        url = 'https://5oiu5.codesandbox.io/'
+        url = 'https://5oiu5.csb.app/'
 
         event_listeners = self._get_event_listeners(url)
 

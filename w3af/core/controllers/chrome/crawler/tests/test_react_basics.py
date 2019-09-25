@@ -37,24 +37,14 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         expected_messages = '''
         Dispatching "click" on CSS selector "!document"
         Dispatching "click" on CSS selector ".AddGreeter button"
+        The JS crawler noticed a big change in the DOM.
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(2)"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(2) [role]"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(3)"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(3) [role]"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(5)"
-        Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(5) [role]"
         The JS crawler noticed a big change in the DOM.
-        Dispatching "click" on CSS selector "!document"
-        Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(3) button:nth-child(2)"
-        Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(3) button:nth-child(2) [role]"
-        Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(3) button:nth-child(3)"
-        Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(3) button:nth-child(3) [role]"
-        Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(3) button:nth-child(5)"
-        The JS crawler noticed a big change in the DOM.
-        Dispatching "click" on CSS selector "!document"
-        Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(3) button:nth-child(5) [role]"
-        Processing event 13 out of (unknown) for http://react-hello-world-app.surge.sh/. Event dispatch error count is 0. Already processed 16 events with types: {u'click': 35}
-        The JS crawler noticed a big change in the DOM.
+        Processing event 10 out of (unknown)
         '''
 
         found, not_found = self._log_contains(expected_messages)
@@ -79,7 +69,8 @@ class ReactBasicTest(BaseChromeCrawlerTest):
 
         expected_messages = '''
         Dispatching "click" on CSS selector "!document"
-        The JS crawler found a total of 1 event listeners
+        Dispatching "click" on CSS selector ".ScrollableContainer__editButton___1g8v9"
+        The JS crawler found a total of 2 event listeners
         '''
 
         found, not_found = self._log_contains(expected_messages)
@@ -126,28 +117,28 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         self.assertEqual(not_found, [])
 
     def test_react_button(self):
-        url = 'https://84ol32ono9.codesandbox.io/'
+        url = 'https://84ol32ono9.csb.app/'
         found_uris = self._crawl(url)
 
-        expected_uris = {
-            'https://84ol32ono9.codesandbox.io/',
-            'https://84ol32ono9.codesandbox.io/babel-transpiler.a9fc7965.worker.js',
-            'https://84ol32ono9.codesandbox.io/frame.html?_sw-precache=1e4daed81fb6330cd12112a827a25054',
-            'https://84ol32ono9.codesandbox.io/sandbox-service-worker.js',
-            'https://aiwi8rnkp5.execute-api.eu-west-1.amazonaws.com/prod/packages/babel-runtime%406.26.0+csbbust%401.0.0+react%4016.3.2+react-dom%4016.3.2',
+        expected_url_regexes = {
+            'https://84ol32ono9.csb.app/',
+            'https://84ol32ono9.csb.app/babel-transpiler..*?.worker.js',
+            'https://84ol32ono9.csb.app/frame.html\\?_sw-precache=.*?',
+            'https://84ol32ono9.csb.app/sandbox-service-worker.js',
+            'https://aiwi8rnkp5.execute-api.eu-west-1.amazonaws.com/prod/packages/babel-runtime.*?',
             'https://codesandbox.io/api/v1/sandboxes/84ol32ono9',
             'https://codesandbox.io/static/browserfs3/browserfs.min.js',
-            'https://codesandbox.io/static/js/babel.7.3.4.min.js',
-            'https://codesandbox.io/static/js/common-sandbox.f352477c.chunk.js',
-            'https://codesandbox.io/static/js/default~app~embed~sandbox.f64c6d2f.chunk.js',
-            'https://codesandbox.io/static/js/sandbox.178735c3.js',
-            'https://codesandbox.io/static/js/sandbox-startup.69e45348.js',
-            'https://codesandbox.io/static/js/vendors~sandbox.727ab3d7.chunk.js',
-            'https://d1jyvh0kxilfa7.cloudfront.net/v1/combinations/babel-runtime@6.26.0%2Bcsbbust@1.0.0%2Breact@16.3.2%2Breact-dom@16.3.2.json',
-
+            'https://codesandbox.io/static/browserfs4/browserfs.min.js',
+            'https://codesandbox.io/static/js/babel..*?.min.js',
+            'https://codesandbox.io/static/js/common-sandbox..*?.chunk.js',
+            'https://codesandbox.io/static/js/default~app~embed~sandbox..*?.chunk.js',
+            'https://codesandbox.io/static/js/sandbox..*?.js',
+            'https://codesandbox.io/static/js/sandbox-startup..*?.js',
+            'https://codesandbox.io/static/js/vendors~sandbox..*?.chunk.js',
+            'https://d1jyvh0kxilfa7.cloudfront.net/v1/combinations/babel-runtime.*?.json'
         }
 
-        self.assertEqual(found_uris, expected_uris)
+        self._multi_regex_match(expected_url_regexes, found_uris)
 
         expected_messages = '''
         Dispatching "click" on CSS selector "!document"
@@ -165,18 +156,6 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         # Source code for this application lives at:
         #
         #   https://github.com/vishal2612200/react-shopping-cart
-        #
-
-        #
-        #   TODO:
-        #
-        #       * Why are the size buttons (XXL, S, XS) not clicked?
-        #
-        #       * Are there ways to improve performance?
-        #
-        #       * Which other page sections are NOT covered?
-        #
-        #       * What about the "Order by" combo from the top-right?
         #
         url = 'https://react-shopping-cart-67954.firebaseapp.com/'
         found_uris = self._crawl(url)
