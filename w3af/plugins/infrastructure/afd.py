@@ -49,23 +49,25 @@ class afd(InfrastructurePlugin):
         self._filtered = []
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Nothing strange, just do some GET requests to the first URL with an
         invented parameter and the custom payloads that are supposed to be
         filtered, and analyze the response.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
         try:
-            filtered, not_filtered = self._send_requests(fuzzable_request)
+            filtered, not_filtered = self._send_requests(fuzzable_request,
+                                                         debugging_id)
         except BaseFrameworkException, bfe:
             om.out.error(str(bfe))
         else:
             self._analyze_results(filtered, not_filtered)
 
-    def _send_requests(self, fuzzable_request):
+    def _send_requests(self, fuzzable_request, debugging_id):
         """
         Actually send the requests that might be blocked.
         :param fuzzable_request: The FuzzableRequest to modify in order to
@@ -80,7 +82,9 @@ class afd(InfrastructurePlugin):
         original_url = URL(original_url_str)
 
         try:
-            http_resp = self._uri_opener.GET(original_url, cache=True)
+            http_resp = self._uri_opener.GET(original_url,
+                                             cache=True,
+                                             debugging_id=debugging_id)
         except BaseFrameworkException, bfe:
             msg = ('Active filter detection plugin failed to receive a'
                    ' response for the first request. The exception was: "%s".'

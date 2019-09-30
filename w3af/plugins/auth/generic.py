@@ -30,11 +30,14 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 
 
 class generic(AuthPlugin):
-    """Generic authentication plugin."""
+    """
+    Generic authentication plugin
+    """
 
     def __init__(self):
         AuthPlugin.__init__(self)
 
+        # User configuration
         self.username = ''
         self.password = ''
         self.username_field = ''
@@ -42,41 +45,60 @@ class generic(AuthPlugin):
         self.auth_url = 'http://host.tld/'
         self.check_url = 'http://host.tld/'
         self.check_string = ''
-        self._login_error = True
+
+        # Internal attributes
+        self._attempt_login = True
 
     def login(self):
         """
         Login to the application.
         """
-        try:
-            return self.do_user_login()
-        except BaseFrameworkException, e:
-            if self._login_error:
-                om.out.error(str(e))
-                self._login_error = False
+        #
+        # In some cases the authentication plugin is incorrectly configured and
+        # we don't want to keep trying over and over to login when we know it
+        # will fail
+        #
+        if not self._attempt_login:
             return False
 
-    def do_user_login(self):
-        """
-        Send the request to login the user.
-        :return: True if the login was successful otherwise raise a
-                 BaseFrameworkException
-        """
+        #
+        # Create a new debugging ID for each login() run
+        #
+        self._new_debugging_id()
+        self._clear_log()
+
         msg = 'Logging into the application using %s' % self.username
         om.out.debug(msg)
 
+        #
+        # Send the auth HTTP request
+        #
         data = urlencode({self.username_field: self.username,
                           self.password_field: self.password})
 
-        # TODO Why we don't use FuzzableRequest+send_mutant here?
-        self._uri_opener.POST(self.auth_url, data=data)
+        try:
+            http_response = self._uri_opener.POST(self.auth_url,
+                                                  data=data,
+                                                  grep=False,
+                                                  cache=False,
+                                                  follow_redirects=True,
+                                                  debugging_id=self._debugging_id)
+        except Exception, e:
+            msg = 'Failed to login to the application because of exception: %s'
+            self._log_debug(msg % e)
+            return False
 
-        if not self.is_logged():
-            msg = "Can't login into web application as %s"
-            raise BaseFrameworkException(msg % self.username)
-        else:
-            om.out.debug('Login success for %s' % self.username)
-            return True
+        self._log_http_response(http_response)
+
+        #
+        # Check if we're logged in
+        #
+        if not self.has_active_session():
+            self._log_info_to_kb()
+            return False
+
+        om.out.debug('Login success for %s' % self.username)
+        return True
 
     def logout(self):
         """
@@ -84,24 +106,44 @@ class generic(AuthPlugin):
         """
         return None
 
-    def is_logged(self):
+    def has_active_session(self):
         """
-        Check user session.
+        Check user session
         """
+        # Create a new debugging ID for each has_active_session() run
+        self._new_debugging_id()
+
+        msg = 'Checking if session for user %s is active'
+        self._log_debug(msg % self.username)
+
         try:
-            http_response = self._uri_opener.GET(self.check_url, grep=False,
-                                                 cache=False)
-            body = http_response.get_body()
-            logged_in = self.check_string in body
-
-            msg_yes = 'User "%s" is currently logged into the application'
-            msg_no = 'User "%s" is NOT logged into the application'
-            msg = msg_yes if logged_in else msg_no
-            om.out.debug(msg % self.username)
-
-            return logged_in
-        except Exception:
+            http_response = self._uri_opener.GET(self.check_url,
+                                                 grep=False,
+                                                 cache=False,
+                                                 follow_redirects=True,
+                                                 debugging_id=self._debugging_id)
+        except Exception, e:
+            msg = 'Failed to check if session is active because of exception: %s'
+            self._log_debug(msg % e)
             return False
+
+        self._log_http_response(http_response)
+
+        body = http_response.get_body()
+        logged_in = self.check_string in body
+
+        msg_yes = 'User "%s" is currently logged into the application'
+        msg_yes %= (self.username,)
+
+        msg_no = ('User "%s" is NOT logged into the application, the'
+                  ' `check_string` was not found in the HTTP response'
+                  ' with ID %s.')
+        msg_no %= (self.username, http_response.id)
+
+        msg = msg_yes if logged_in else msg_no
+        self._log_debug(msg)
+
+        return logged_in
 
     def get_options(self):
         """

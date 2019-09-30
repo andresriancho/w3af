@@ -167,7 +167,8 @@ class Plugin(Configurable):
         """
         kb.kb.append_uniq_group a vulnerability to the KB
         """
-        info_set, created = kb.kb.append_uniq_group(location_a, location_b,
+        info_set, created = kb.kb.append_uniq_group(location_a,
+                                                    location_b,
                                                     info,
                                                     group_klass=group_klass)
 

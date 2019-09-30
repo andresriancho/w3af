@@ -24,15 +24,16 @@ from __future__ import print_function
 import os
 import sys
 import time
+import errno
+import pprint
 import threading
 import traceback
-import pprint
-import errno
 
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.threads.monkey_patch_debug import monkey_patch_debug, remove_monkey_patch_debug
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version_minimal
 from w3af.core.controllers.core_helpers.profiles import CoreProfiles
 from w3af.core.controllers.core_helpers.plugins import CorePlugins
@@ -92,6 +93,9 @@ class w3afCore(object):
     # mostly used for sending HTTP requests (which is the case
     # for the current w3af version).
     WORKER_THREADS = 30
+    MIN_WORKER_THREADS = 20
+    MAX_WORKER_THREADS = 100
+
     WORKER_INQUEUE_MAX_SIZE = WORKER_THREADS * 20
     WORKER_MAX_TASKS = 20
 
@@ -143,6 +147,9 @@ class w3afCore(object):
 
         # Keep track of first scan to call cleanup or not
         self._first_scan = True
+
+        # Worker pool
+        self._worker_pool = None
 
     def scan_start_hook(self):
         """
@@ -282,7 +289,9 @@ class w3afCore(object):
             msg = 'Unhandled exception "%s", traceback:\n%s'
 
             if hasattr(e, 'original_traceback_string'):
+                # pylint: disable=E1101
                 traceback_string = e.original_traceback_string
+                # pylint: enable=E1101
             else:
                 traceback_string = traceback.format_exc()
 
@@ -307,15 +316,21 @@ class w3afCore(object):
         """
         :return: Simple property that will always return a Pool in running state
         """
-        if not hasattr(self, '_worker_pool'):
+        if self._worker_pool is None:
             # Should get here only on the first call to "worker_pool".
             self._worker_pool = Pool(processes=self.WORKER_THREADS,
                                      worker_names='WorkerThread',
                                      max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
                                      maxtasksperchild=self.WORKER_MAX_TASKS)
 
+            msg = 'Created first Worker pool for core (id: %s)'
+            om.out.debug(msg % id(self._worker_pool))
+
+            return self._worker_pool
+
         if not self._worker_pool.is_running():
             # Clean-up the old worker pool
+            old_pool_id = id(self._worker_pool)
             self._worker_pool.terminate_join()
 
             # Create a new one
@@ -323,6 +338,10 @@ class w3afCore(object):
                                      worker_names='WorkerThread',
                                      max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
                                      maxtasksperchild=self.WORKER_MAX_TASKS)
+
+            msg = ('Created a new Worker pool for core (id: %s) because the old'
+                   ' one was not in running state (id: %s)')
+            om.out.debug(msg % (id(self._worker_pool), old_pool_id))
 
         return self._worker_pool
 
@@ -410,6 +429,7 @@ class w3afCore(object):
         # seconds
         wait_max = 10
         loop_delay = 0.5
+
         for _ in xrange(int(wait_max/loop_delay)):
             if not self.status.is_running():
                 core_stop_time = epoch_to_string(stop_start_time)
@@ -428,8 +448,8 @@ class w3afCore(object):
         
         om.out.debug(msg)
 
-        # Finally we terminate+join the worker pool
-        self.worker_pool.terminate_join()
+        # Finally we terminate and join the worker pool
+        self._terminate_worker_pool()
     
     def quit(self):
         """
@@ -479,44 +499,62 @@ class w3afCore(object):
             msg = 'No audit, grep or crawl plugins configured to run.'
             raise BaseFrameworkException(msg)
 
+    def _terminate_worker_pool(self):
+        om.out.debug('Called _terminate_worker_pool()')
+
+        #
+        # Adding extra logging to debug issues where the call to terminate_join()
+        # takes a lot of time to run
+        #
+        monkey_patch_debug()
+
+        #
+        # The scan has ended, and we've already joined() the consumer threads
+        # from strategy (in a nice way, waiting for them to finish before
+        # returning from strategy.start call), so this terminate and join call
+        # should return really quick
+        #
+        self.worker_pool.terminate_join()
+
+        # Disable monkey-patching
+        remove_monkey_patch_debug()
+
     def scan_end_hook(self):
         """
         This method is called when the process ends normally or by an error.
         """
-        # The scan has ended, and we've already joined() the consumer threads
-        # from strategy (in a nice way, waiting for them to finish before
-        # returning from strategy.start call), so this terminate and join call
-        # should return really quick:
-        #
-        self.worker_pool.terminate_join()
+        stop_profiling(self)
+        parser_cache.dpc.clear()
 
         try:
+            #
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the
             # data from the history in their end() method.
             #
             # Also needs to be done before target.clear() because some plugins
             # need to access the target data stored in cf
+            #
+            om.out.debug('Calling end_output_plugins()')
             om.manager.end_output_plugins()
         except Exception:
             raise
 
         finally:
+            self._terminate_worker_pool()
+
             self.exploit_phase_prerequisites()
 
             # Remove all references to plugins from memory
             self.plugins.zero_enabled_plugins()
             
-            # No targets to be scanned.
+            # No targets to be scanned
             self.target.clear()
 
-            # Finish the profiling
-            stop_profiling(self)
-
-            # Stop the parser subprocess
-            parser_cache.dpc.clear()
-
+            # Status
             self.status.stop()
+
+        om.out.debug('scan_end_hook() completed')
 
     def exploit_phase_prerequisites(self):
         """
@@ -524,6 +562,8 @@ class w3afCore(object):
         from the core during the exploitation phase. In other words, which
         internal objects do I need alive after a scan?
         """
+        om.out.debug('Setting exploit phase prerequisites')
+
         # We disable raising the exception, so we do this only once and don't
         # affect other parts of the tool such as the exploitation or manual HTTP
         # request sending from the GUI

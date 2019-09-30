@@ -45,10 +45,11 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         # Internal variables
         self._already_tested = ScalableBloomFilter()
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
-                                     (among other things) the URL to test.
+                                 (among other things) the URL to test.
         """
         # Check if there is a wordpress installation in this directory
         domain_path = fuzzable_request.get_url().get_domain_path()

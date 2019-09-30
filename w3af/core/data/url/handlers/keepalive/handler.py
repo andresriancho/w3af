@@ -26,13 +26,15 @@ modifications are:
     reads, and added a hack for the HEAD method.
   - SNI support for SSL
 """
-import threading
+import time
+import socket
 import urllib2
 import httplib
-import socket
-import time
-
 import OpenSSL
+import threading
+
+from email.base64mime import header_encode
+from httplib import _is_legal_header_name, _is_illegal_header_value
 
 from .utils import debug, error, to_utf8_raw
 from .connection_manager import ConnectionManager
@@ -41,6 +43,9 @@ from .connections import (ProxyHTTPConnection, ProxyHTTPSConnection,
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               HTTPRequestException,
                                               ConnectionPoolException)
+
+
+DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded'
 
 
 class URLTimeoutError(urllib2.URLError):
@@ -158,7 +163,7 @@ class KeepAliveHandler(object):
 
         except OpenSSL.SSL.SysCallError:
             # We better discard this connection
-            self._cm.remove_connection(conn, reason='socket error')
+            self._cm.remove_connection(conn, reason='OpenSSL SysCallError')
             raise
 
         except OpenSSL.SSL.Error:
@@ -176,7 +181,7 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, reason='OpenSSL.SSL.Error')
             raise
 
-        except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
+        except (socket.error, httplib.HTTPException):
             # We better discard this connection
             self._cm.remove_connection(conn, reason='socket error')
             raise
@@ -331,42 +336,83 @@ class KeepAliveHandler(object):
         """
         self._update_socket_timeout(conn, req)
 
-        try:
-            conn.putrequest(req.get_method(), req.get_selector(),
-                            skip_host=1, skip_accept_encoding=1)
+        conn.putrequest(req.get_method(),
+                        req.get_selector(),
+                        skip_host=1,
+                        skip_accept_encoding=1)
 
-            # We're always sending HTTP/1.1, which makes connection keep alive a
-            # default, BUT since the browsers (Chrome at least) send this header
-            # in their HTTP/1.1 requests we're going to do the same just to make
-            # sure we behave like a browser
-            if not req.has_header('Connection'):
-                conn.putheader('Connection', 'keep-alive')
+        # We're always sending HTTP/1.1, which makes connection keep alive a
+        # default, BUT since the browsers (Chrome at least) send this header
+        # in their HTTP/1.1 requests we're going to do the same just to make
+        # sure we behave like a browser
+        if not req.has_header('Connection'):
+            conn.putheader('Connection', 'keep-alive')
 
-            data = req.get_data()
-            if data is not None:
-                data = str(data)
+        data = req.get_data()
+        if data is not None:
+            data = str(data)
 
-                if not req.has_header('Content-type'):
-                    conn.putheader('Content-type',
-                                   'application/x-www-form-urlencoded')
+            if not req.has_header('Content-type'):
+                conn.putheader('Content-type', DEFAULT_CONTENT_TYPE)
 
-                if not req.has_header('Content-length'):
-                    conn.putheader('Content-length', '%d' % len(data))
-        except (socket.error, httplib.HTTPException):
-            raise
-        else:
-            # Add headers
-            header_dict = dict(self.parent.addheaders)
-            header_dict.update(req.headers)
-            header_dict.update(req.unredirected_hdrs)
+            if not req.has_header('Content-length'):
+                conn.putheader('Content-length', '%d' % len(data))
 
-            for k, v in header_dict.iteritems():
-                conn.putheader(to_utf8_raw(k),
-                               to_utf8_raw(v))
-            conn.endheaders()
+        # Add headers
+        header_dict = dict(self.parent.addheaders)
+        header_dict.update(req.headers)
+        header_dict.update(req.unredirected_hdrs)
 
-            if data is not None:
-                conn.send(data)
+        for k, v in header_dict.iteritems():
+            #
+            # Handle case where the key or value is None (strange but could happen)
+            #
+            if k is None:
+                continue
+
+            if v is None:
+                v = ''
+
+            #
+            # Encode the key and value as UTF-8 and try to send them to the wire
+            #
+            k = to_utf8_raw(k)
+            v = to_utf8_raw(v)
+
+            try:
+                conn.putheader(k, v)
+            except ValueError:
+                #
+                # The httplib adds some restrictions to the characters which can
+                # be sent in header names and values (see putheader function
+                # definition).
+                #
+                # Sending non-ascii characters in HTTP header values is difficult,
+                # since servers usually ignore the encoding. From stackoverflow:
+                #
+                # Historically, HTTP has allowed field content with text in the
+                # ISO-8859-1 charset [ISO-8859-1], supporting other charsets only
+                # through use of [RFC2047] encoding. In practice, most HTTP header
+                # field values use only a subset of the US-ASCII charset [USASCII].
+                # Newly defined header fields SHOULD limit their field values to
+                # US-ASCII octets. A recipient SHOULD treat other octets in field
+                # content (obs-text) as opaque data.
+                #
+                # TL;DR: we use RFC2047 encoding here, knowing that it will only
+                #        work in 1% of the remote servers, but it is our best bet
+                #
+                if not _is_legal_header_name(k):
+                    k = header_encode(k, charset='utf-8', keep_eols=True)
+
+                if _is_illegal_header_value(v):
+                    v = header_encode(v, charset='utf-8', keep_eols=True)
+
+                conn.putheader(k, v)
+
+        conn.endheaders()
+
+        if data is not None:
+            conn.send(data)
 
     def get_connection(self, host):
         """

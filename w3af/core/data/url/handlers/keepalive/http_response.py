@@ -189,7 +189,7 @@ class HTTPResponse(httplib.HTTPResponse):
         if length and not self.chunked:
             try:
                 self.length = int(length)
-            except ValueError:
+            except (ValueError, TypeError):
                 self.length = None
             else:
                 if self.length < 0:  # ignore nonsensical negative lengths

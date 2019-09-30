@@ -47,7 +47,9 @@ class TestOpenAPIMain(unittest.TestCase):
     CUSTOM_CONTENT_TYPE = os.path.join(DATA_PATH, 'custom_content_type.json')
     UNKNOWN_CONTENT_TYPE = os.path.join(DATA_PATH, 'unknown_content_type.json')
     LARGE_MANY_ENDPOINTS = os.path.join(DATA_PATH, 'large_many_endpoints.json')
+    MISSING_LICENSE = os.path.join(DATA_PATH, 'missing_license.json')
     REAL_API_YAML = os.path.join(DATA_PATH, 'real.yaml')
+    ISSUE_210_API_YAML = os.path.join(DATA_PATH, '210-openapi.yaml')
 
     def test_json_pet_store(self):
         # http://petstore.swagger.io/v2/swagger.json
@@ -57,6 +59,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 URL('http://moth/swagger.json'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response)
         parser.parse()
@@ -132,6 +136,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 URL('http://moth/swagger.json'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response)
         parser.parse()
@@ -217,6 +223,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
+        self.assertTrue(OpenAPI.can_parse(response))
+
         parser = OpenAPI(response)
         parser.parse()
         api_calls = parser.get_api_calls()
@@ -275,6 +283,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
+        self.assertTrue(OpenAPI.can_parse(response))
+
         parser = OpenAPI(response)
         parser.parse()
         api_calls = parser.get_api_calls()
@@ -290,11 +300,27 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
-        parser = OpenAPI(response)
+        self.assertTrue(OpenAPI.can_parse(response))
+
+        #
+        # In some cases with validation enabled (not the default) we find a set
+        # of endpoints:
+        #
+        parser = OpenAPI(response, validate_swagger_spec=True)
         parser.parse()
         api_calls = parser.get_api_calls()
 
         expected_api_calls = 161
+        self.assertEqual(expected_api_calls, len(api_calls))
+
+        #
+        # And without spec validation there is a different set of endpoints:
+        #
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        expected_api_calls = 165
         self.assertEqual(expected_api_calls, len(api_calls))
 
         first_api_call = api_calls[0]
@@ -311,6 +337,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 URL('http://moth/swagger.json'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response, discover_fuzzable_headers=False)
         parser.parse()
@@ -393,12 +421,13 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.json'),
                                 _id=1)
 
-        parser = OpenAPI(response)
-        parser.parse()
-        api_calls = parser.get_api_calls()
-        self.assertEqual(len(api_calls), 0)
+        self.assertTrue(OpenAPI.can_parse(response))
 
-        parser = OpenAPI(response, no_validation=True)
+        #
+        # By default we don't validate the swagger spec, which allows us to
+        # parse some invalid specs and extract information
+        #
+        parser = OpenAPI(response)
         parser.parse()
         api_calls = parser.get_api_calls()
         self.assertEqual(len(api_calls), 1)
@@ -415,6 +444,15 @@ class TestOpenAPIMain(unittest.TestCase):
         self.assertEqual(api_call.get_force_fuzzing_headers(), e_force_fuzzing_headers)
         self.assertEqual(api_call.get_data(), e_body)
 
+        #
+        # With validation enabled the parsing fails because there is a mising
+        # required attribute
+        #
+        parser = OpenAPI(response, validate_swagger_spec=True)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+        self.assertEqual(len(api_calls), 0)
+
     def test_real_api_yaml(self):
         body = file(self.REAL_API_YAML).read()
         headers = Headers({'Content-Type': 'application/yaml'}.items())
@@ -422,6 +460,8 @@ class TestOpenAPIMain(unittest.TestCase):
                                 URL('http://moth/swagger.yaml'),
                                 URL('http://moth/swagger.yaml'),
                                 _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
 
         parser = OpenAPI(response)
         parser.parse()
@@ -569,3 +609,52 @@ class TestOpenAPIMain(unittest.TestCase):
         headers = Headers([('content-type', content_type)])
         return HTTPResponse(200, specification_as_string, headers,
                             url, url, _id=1)
+
+    # Check if the OpenAPI parser can extract all api calls from a json
+    # file that is missing the license name (which is required if license
+    # attribute is specified)
+    def test_missing_license_name(self):
+        body = file(self.MISSING_LICENSE).read()
+        headers = Headers({'Content-Type': 'application/json'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.json'),
+                                URL('http://moth/swagger.json'),
+                                _id=1)
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        expected_api_calls = 5
+        self.assertEqual(expected_api_calls, len(api_calls))
+
+        first_api_call = api_calls[0]
+        uri = first_api_call.get_uri().url_string
+
+        expected_uri = 'http://1.2.3.4/api/prod/2.0/employees/3419'
+
+        self.assertEqual(expected_uri, uri)
+
+    def test_issue_210(self):
+        body = file(self.ISSUE_210_API_YAML).read()
+        headers = Headers({'Content-Type': 'application/yaml'}.items())
+        response = HTTPResponse(200, body, headers,
+                                URL('http://moth/swagger.yaml'),
+                                URL('http://moth/swagger.yaml'),
+                                _id=1)
+
+        self.assertTrue(OpenAPI.can_parse(response))
+
+        parser = OpenAPI(response)
+        parser.parse()
+        api_calls = parser.get_api_calls()
+
+        expected_api_calls = 19
+        self.assertEqual(expected_api_calls, len(api_calls))
+
+        first_api_call = api_calls[0]
+        uri = first_api_call.get_uri().url_string
+
+        expected_uri = 'https://api.domain.com/domain/tokens'
+
+        self.assertEqual(expected_uri, uri)

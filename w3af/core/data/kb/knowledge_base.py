@@ -25,6 +25,10 @@ import threading
 import cPickle
 import copy
 
+# pylint: disable=E0401
+from darts.lib.utils.lru import SynchronizedLRUDict
+# pylint: enable=E0401
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.fuzzer.utils import rand_alpha
@@ -57,6 +61,8 @@ class BasicKnowledgeBase(object):
 
         self.FILTERS = {'URL': self.filter_url,
                         'VAR': self.filter_var}
+
+        self._reached_max_info_instances_cache = SynchronizedLRUDict(512)
 
     def append_uniq(self, location_a, location_b, info_inst, filter_by='VAR'):
         """
@@ -148,6 +154,57 @@ class BasicKnowledgeBase(object):
 
         return True
 
+    def _has_reached_max_info_instances(self, location_a, location_b, info_inst, group_klass):
+        """
+        Checks if the tuple containing
+            - location_a,
+            - location_b,
+            - info.get(self.ITAG)
+
+        Is in the max info instances reached cache.
+
+        Works together with _record_reached_max_info_instances()
+
+        :param location_a: The "a" address
+        :param location_b: The "b" address
+        :param info_inst: The Info instance we want to store
+        :param group_klass: If required, will be used to create a new InfoSet
+        :return: True if the data is in the cache
+        """
+        key = self._get_max_info_instances_key(location_a,
+                                               location_b,
+                                               info_inst,
+                                               group_klass)
+        return self._reached_max_info_instances_cache.get(key)
+    
+    def _get_max_info_instances_key(self, location_a, location_b, info_inst, group_klass):
+        return (location_a,
+                location_b,
+                repr(info_inst.get(group_klass.ITAG)))
+
+    def _record_reached_max_info_instances(self, location_a, location_b, info_inst, group_klass):
+        """
+        Stores the tuple containing
+            - location_a,
+            - location_b,
+            - info.get(self.ITAG)
+
+        To the max info instances reached cache.
+
+        Works together with _has_reached_max_info_instances()
+
+        :param location_a: The "a" address
+        :param location_b: The "b" address
+        :param info_inst: The Info instance we want to store
+        :param group_klass: If required, will be used to create a new InfoSet
+        :return: None
+        """
+        key = self._get_max_info_instances_key(location_a,
+                                               location_b,
+                                               info_inst,
+                                               group_klass)
+        self._reached_max_info_instances_cache[key] = True
+
     def append_uniq_group(self, location_a, location_b, info_inst,
                           group_klass=InfoSet):
         """
@@ -174,7 +231,15 @@ class BasicKnowledgeBase(object):
             raise TypeError('append_uniq_group requires an InfoSet subclass'
                             ' as parameter.')
 
+        location_a = self._get_real_name(location_a)
+
         with self._kb_lock:
+
+            # This performs a quick check against a LRU cache to prevent
+            # queries to the DB
+            if self._has_reached_max_info_instances(location_a, location_b, info_inst, group_klass):
+                return info_inst, False
+
             for info_set in self.get_iter(location_a, location_b):
                 if not isinstance(info_set, InfoSet):
                     continue
@@ -183,6 +248,11 @@ class BasicKnowledgeBase(object):
                     # InfoSet will only store a MAX_INFO_INSTANCES inside, after
                     # that any calls to add() will not modify InfoSet.infos
                     if info_set.has_reached_max_info_instances():
+
+                        # Record that this location and infoset have reached the max
+                        # instances. This works together with _has_reached_max_info_instances()
+                        # to reduce SQLite queries
+                        self._record_reached_max_info_instances(location_a, location_b, info_inst, group_klass)
 
                         # The info set instance was not modified, so we just return
                         return info_set, False
@@ -278,6 +348,12 @@ class BasicKnowledgeBase(object):
         return all_shells
 
     def _get_real_name(self, data):
+        """
+        Some operations allow location_a to be both a plugin instance or a string.
+        
+        Those operations will call this method to translate the plugin instance
+        into a string.
+        """
         if isinstance(data, basestring):
             return data
         else:

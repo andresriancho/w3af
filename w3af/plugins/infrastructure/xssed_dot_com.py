@@ -50,10 +50,11 @@ class xssed_dot_com(InfrastructurePlugin):
     XSSED_DOMAIN_RE = re.compile("<a href='(/mirror/\d*/)' target='_blank'>")
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Search in xssed.com and parse the output.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

@@ -50,13 +50,23 @@ for to_silence in SILENCE:
 
 
 class SpecificationHandler(object):
-    def __init__(self, http_response, no_validation=False):
+    def __init__(self, http_response, validate_swagger_spec=False):
         self.http_response = http_response
         self.spec = None
-        self.no_validation = no_validation
+        self.validate_swagger_spec = validate_swagger_spec
+        self._parsing_errors = []
 
     def get_http_response(self):
         return self.http_response
+
+    def get_parsing_errors(self):
+        """
+        :return: A list with all the errors found during parsing
+        """
+        return self._parsing_errors
+
+    def append_parsing_error(self, parsing_error):
+        self._parsing_errors.append(parsing_error)
 
     def get_api_information(self):
         """
@@ -106,7 +116,7 @@ class SpecificationHandler(object):
             if op is not None:
                 yield op
 
-    def _parse_spec_from_dict(self, spec_dict, retry=True):
+    def _parse_spec_from_dict(self, spec_dict):
         """
         load_spec_dict will load the open api document into a dict. We use this
         function to parse the dict into a bravado Spec instance. By default,
@@ -120,7 +130,7 @@ class SpecificationHandler(object):
         config = {'use_models': False,
                   'use_spec_url_for_base_path': False}
 
-        if self.no_validation:
+        if not self.validate_swagger_spec:
             om.out.debug('Open API spec validation disabled')
             config.update({
                 'validate_swagger_spec': False,
@@ -129,6 +139,8 @@ class SpecificationHandler(object):
             })
 
         url_string = self.http_response.get_url().url_string
+
+        self._apply_known_fixes_before_parsing(spec_dict)
 
         try:
             self.spec = RelaxedSpec.from_dict(spec_dict,
@@ -139,27 +151,80 @@ class SpecificationHandler(object):
                    ' The following exception was raised while parsing the dict'
                    ' into a specification object: "%s"')
             args = (self.http_response.get_url(), e)
+
             om.out.debug(msg % args)
-
-            if not retry:
-                return None
-
-            error_message = str(e)
-
-            if 'version' in error_message and 'is a required property' in error_message:
-                om.out.debug('The Open API specification seems to be missing the'
-                             ' version attribute, forcing version 1.0.0 and trying'
-                             ' again.')
-
-                spec_dict['info'] = {}
-                spec_dict['version'] = '1.0.0'
-
-                return self._parse_spec_from_dict(spec_dict, retry=False)
+            self.append_parsing_error(msg % args)
 
             return None
         else:
             # Everything went well
             return self.spec
+
+    def _apply_known_fixes_before_parsing(self, spec_dict):
+        """
+        Applies known fixes to the input dict before sending it to the parser.
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        self._add_version_to_spec_dict(spec_dict)
+        self._add_info_version_to_spec_dict(spec_dict)
+        self._add_license_name(spec_dict)
+
+    def _add_version_to_spec_dict(self, spec_dict):
+        """
+        If the spec_dict is missing the version this method will add one
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        swagger = spec_dict.get('swagger', None)
+        openapi = spec_dict.get('openapi', None)
+
+        if swagger is not None or openapi is not None:
+            # No changes are required
+            return
+
+        # We choose one and cross our fingers
+        spec_dict['swagger'] = '2.0'
+
+    def _add_info_version_to_spec_dict(self, spec_dict):
+        """
+        If the spec_dict is missing the version this method will add one
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        info = spec_dict.get('info', dict())
+        version = info.get('version', None)
+
+        if version is not None:
+            # No changes are required
+            return
+
+        spec_dict['info'] = info
+        spec_dict['info']['version'] = '1.0.0'
+
+    def _add_license_name(self, spec_dict):
+        """
+        If the spec_dict has a license field but doesn't have a "name" then we
+        just add one
+
+        :param spec_dict: The dict, as received from the wire.
+        :return: A new (potentially unchanged) spec_dict
+        """
+        info = spec_dict.get('info', dict())
+        license = info.get('license', dict())
+        name = license.get('name', None)
+
+        if name is not None:
+            # No changes are required
+            return
+
+        spec_dict['info'] = info
+        spec_dict['info']['license'] = license
+        spec_dict['info']['license']['name'] = 'Apache 2.0'
+        spec_dict['info']['license']['url'] = 'https://www.apache.org/licenses/LICENSE-2.0.html'
 
     def _load_spec_dict(self):
         """
@@ -174,10 +239,16 @@ class SpecificationHandler(object):
 
             try:
                 spec_dict = load(self.http_response.body, Loader=Loader)
-            except yaml.scanner.ScannerError:
+            except Exception:
                 # Oops! We should never reach here because is_valid_json_or_yaml
                 # checks that we have a JSON or YAML object, but well... just in
                 # case we use a try / except.
+                msg = 'The OpenAPI specification at %s is not in JSON or YAML format'
+                args = (self.http_response.get_url(),)
+
+                om.out.error(msg % args)
+                self.append_parsing_error(msg % args)
+
                 return None
 
         return spec_dict

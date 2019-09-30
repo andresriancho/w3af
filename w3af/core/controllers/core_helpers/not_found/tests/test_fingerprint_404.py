@@ -173,8 +173,8 @@ class Test404FalsePositiveLargeResponsesRandomShort(Generic404Test):
 
 class Test404With1ByteRandomShort(Generic404Test):
 
-    def __init__(self, *args, **kwargs):
-        super(Generic404Test, self).__init__(*args, **kwargs)
+    def __init__(self):
+        super(Test404With1ByteRandomShort, self).__init__()
         self.application_server_ids = [1, 2, 2]
         self.application_server_idx = 0
 
@@ -213,8 +213,8 @@ class Test404With1ByteRandomShort(Generic404Test):
 
 class Test404With1ByteRandomLarge(Generic404Test):
 
-    def __init__(self, *args, **kwargs):
-        super(Generic404Test, self).__init__(*args, **kwargs)
+    def __init__(self):
+        super(Test404With1ByteRandomLarge, self).__init__()
         self.application_server_ids = [1, 2, 2]
         self.application_server_idx = 0
 

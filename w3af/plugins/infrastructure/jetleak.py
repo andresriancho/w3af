@@ -34,7 +34,14 @@ class jetleak(InfrastructurePlugin):
     """
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
+        """
+        Detect CVE-2015-2080 aka. JetLeak
+
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
+        """
         url = fuzzable_request.get_url()
         headers = Headers([('Referer', '\x00')])
 

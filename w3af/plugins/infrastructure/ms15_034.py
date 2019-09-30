@@ -35,9 +35,13 @@ class ms15_034(InfrastructurePlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Checks if the remote IIS is vulnerable to MS15-034
+
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
         """
         url = fuzzable_request.get_url()
         headers = Headers([('Range', 'bytes=18-18446744073709551615')])

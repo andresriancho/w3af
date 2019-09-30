@@ -102,13 +102,13 @@ class auth(BaseConsumer):
         for plugin in self._consumer_plugins:
 
             args = (plugin.get_name(), plugin.get_name())
-            om.out.debug('%s.is_logged() and %s.login()' % args)
+            om.out.debug('%s.has_active_session() and %s.login()' % args)
             took_line = TookLine(self._w3af_core,
                                  plugin.get_name(),
                                  '_login')
 
             try:
-                if not plugin.is_logged():
+                if not plugin.has_active_session():
                     plugin.login()
             except Exception, e:
                 self.handle_exception('auth', plugin.get_name(), None, e)

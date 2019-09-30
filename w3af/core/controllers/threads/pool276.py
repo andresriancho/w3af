@@ -270,6 +270,17 @@ class Pool(object):
                 'task_handler': task_is_active,
                 'result_handler': result_is_active}
 
+    def get_pool_queue_sizes(self):
+        result = dict()
+
+        if self._inqueue is not None:
+            result['inqueue_size'] = self._inqueue.qsize()
+
+        if self._outqueue is not None:
+            result['outqueue_size'] = self._outqueue.qsize()
+
+        return result
+
     def _join_exited_workers(self):
         """Cleanup after any worker processes which have exited due to reaching
         their specified lifetime.  Returns True if any workers were cleaned up.

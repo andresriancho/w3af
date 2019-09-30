@@ -19,10 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import time
+import unittest
 
 from w3af.core.controllers.threads.threadpool import Pool
+
+
+def noop():
+    return 1 + 2
+
+
+def delay():
+    time.sleep(0.5)
+    return 0
 
 
 class TestWorkerPool(unittest.TestCase):
@@ -41,7 +50,58 @@ class TestWorkerPool(unittest.TestCase):
             [i for i in answers]
         except TypeError, te:
             self.assertEqual(str(te), '1 Boom!')
+            # pylint: disable=E1101
             self.assertIn("raise TypeError('%s Boom!' % foo)", te.original_traceback_string)
+
+    def test_terminate_join_after_tasks(self):
+        worker_pool = Pool(processes=4,
+                           worker_names='WorkerThread',
+                           maxtasksperchild=3)
+
+        for _ in xrange(12):
+            result = worker_pool.apply_async(func=noop)
+            self.assertEqual(result.get(), 3)
+
+        worker_pool.terminate_join()
+
+    def test_get_pool_queue_sizes(self):
+        worker_pool = Pool(processes=4,
+                           worker_names='WorkerThread',
+                           maxtasksperchild=3)
+
+        for _ in xrange(12):
+            worker_pool.apply_async(func=delay)
+
+        pool_sizes = worker_pool.get_pool_queue_sizes()
+        self.assertGreater(pool_sizes['inqueue_size'], 0)
+        self.assertEqual(pool_sizes['outqueue_size'], 0)
+
+        worker_pool.terminate_join()
+
+    def test_output_pool_size(self):
+        worker_pool = Pool(processes=4,
+                           worker_names='WorkerThread',
+                           maxtasksperchild=3)
+
+        results = []
+
+        for _ in xrange(12):
+            result = worker_pool.apply_async(func=delay)
+            results.append(result)
+
+        pool_sizes = worker_pool.get_pool_queue_sizes()
+
+        while pool_sizes['inqueue_size']:
+            pool_sizes = worker_pool.get_pool_queue_sizes()
+
+        # Give the result handler task inside the pool set the results on the
+        # result instances stored in the results lists
+        time.sleep(1)
+
+        # There should be no pending tasks in the output queue
+        self.assertEqual(pool_sizes['outqueue_size'], 0)
+
+        worker_pool.terminate_join()
 
     def test_terminate_terminate(self):
         worker_pool = Pool(1, worker_names='WorkerThread')
@@ -64,9 +124,6 @@ class TestWorkerPool(unittest.TestCase):
                            maxtasksperchild=3)
 
         self.assertEqual(worker_pool.get_worker_count(), 4)
-
-        def noop():
-            return 1 + 2
 
         for _ in xrange(12):
             result = worker_pool.apply_async(func=noop)
@@ -94,9 +151,6 @@ class TestWorkerPool(unittest.TestCase):
                            maxtasksperchild=3)
 
         self.assertEqual(worker_pool.get_worker_count(), 2)
-
-        def noop():
-            return 1 + 2
 
         for _ in xrange(12):
             result = worker_pool.apply_async(func=noop)

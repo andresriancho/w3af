@@ -117,11 +117,12 @@ class allowed_methods(InfrastructurePlugin):
         self._exec_one_time = True
         self._report_dav_only = True
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Uses several techniques to try to find out what methods are allowed for
         an URL.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

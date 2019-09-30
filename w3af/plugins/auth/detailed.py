@@ -41,6 +41,7 @@ class detailed(AuthPlugin):
     def __init__(self):
         AuthPlugin.__init__(self)
 
+        # User configuration
         self.username = ''
         self.password = ''
         self.username_field = ''
@@ -50,71 +51,108 @@ class detailed(AuthPlugin):
         self.auth_url = 'http://host.tld/'
         self.check_url = 'http://host.tld/'
         self.check_string = ''
-        self._login_error = True
         self.follow_redirects = False
         self.url_encode_params = True
 
+        # Internal attributes
+        self._show_login_error = True
+        self._attempt_login = True
+
     def login(self):
         """
-        Login to the application.
+        Login to the application
         """
-        try:
-            return self.do_user_login()
-        except BaseFrameworkException, e:
-            if self._login_error:
-                om.out.error(str(e))
-                self._login_error = False
+        #
+        # In some cases the authentication plugin is incorrectly configured and
+        # we don't want to keep trying over and over to login when we know it
+        # will fail
+        #
+        if not self._attempt_login:
             return False
 
-    def do_user_login(self):
-        """
-        Send the request to login the user.
-        :return: True if the login was successful otherwise raise a
-                 BaseFrameworkException
-        """
-        data = self._get_data_from_format()
+        #
+        # Create a new debugging ID for each login() run
+        #
+        self._new_debugging_id()
+        self._clear_log()
 
+        msg = 'Logging into the application with user: %s' % self.username
+        self._log_debug(msg)
+
+        #
         # Send the auth HTTP request
+        #
+        data = self._get_data_from_format()
         functor = getattr(self._uri_opener, self.method)
-        response = functor(self.auth_url, data)
 
-        redirect_count = 0
+        try:
+            http_response = functor(self.auth_url,
+                                    data,
+                                    grep=False,
+                                    cache=False,
+                                    follow_redirects=self.follow_redirects,
+                                    debugging_id=self._debugging_id)
+        except Exception, e:
+            msg = 'Failed to login to the application because of exception: %s'
+            self._log_debug(msg % e)
+            return False
 
-        # follow redirects if the feature is enabled
-        while self.follow_redirects and redirect_count < self.MAX_REDIRECTS:
+        self._log_http_response(http_response)
 
-            if response.get_code() not in GET_HEAD_CODES:
-                # no redirect received, continue
-                break
+        #
+        # Check if we're logged in
+        #
+        if not self.has_active_session():
+            self._log_info_to_kb()
+            return False
 
-            # Avoid endless loops
-            redirect_count += 1
+        om.out.debug('Login success for %s' % self.username)
+        return True
 
-            response_headers = response.get_headers()
-            location_header_value, _ = response_headers.iget('location')
-            uri_header_value, _ = response_headers.iget('uri')
-            redirect_url = location_header_value or uri_header_value
+    def logout(self):
+        """
+        User logout
+        """
+        return None
 
-            redirect_url = response.get_url().url_join(redirect_url)
+    def has_active_session(self):
+        """
+        Check user session
+        """
+        # Create a new debugging ID for each has_active_session() run
+        self._new_debugging_id()
 
-            msg = 'auth.detailed was redirected to URL: "%s"'
-            om.out.debug(msg % redirect_url)
+        msg = 'Checking if session for user %s is active'
+        self._log_debug(msg % self.username)
 
-            # on HTTP redirect we can only follow up with GET
-            response = self._uri_opener.GET(redirect_url)
+        try:
+            http_response = self._uri_opener.GET(self.check_url,
+                                                 grep=False,
+                                                 cache=False,
+                                                 follow_redirects=True,
+                                                 debugging_id=self._debugging_id)
+        except Exception, e:
+            msg = 'Failed to check if session is active because of exception: %s'
+            self._log_debug(msg % e)
+            return False
 
-        if redirect_count == self.MAX_REDIRECTS:
-            msg = ('auth.detailed seems to have entered an endless HTTP'
-                   ' redirect loop with %s redirects, the last URL was %s')
-            raise BaseFrameworkException(msg % (redirect_count, redirect_url))
+        self._log_http_response(http_response)
 
-        # check if we're logged in
-        if not self.is_logged():
-            msg = "Can't login into web application as %s"
-            raise BaseFrameworkException(msg % self.username)
-        else:
-            om.out.debug('Login success for %s' % self.username)
-            return True
+        body = http_response.get_body()
+        logged_in = self.check_string in body
+
+        msg_yes = 'User "%s" is currently logged into the application'
+        msg_yes %= (self.username,)
+
+        msg_no = ('User "%s" is NOT logged into the application, the'
+                  ' `check_string` was not found in the HTTP response'
+                  ' with ID %s.')
+        msg_no %= (self.username, http_response.id)
+
+        msg = msg_yes if logged_in else msg_no
+        self._log_debug(msg)
+
+        return logged_in
 
     def _get_data_from_format(self):
         """
@@ -133,26 +171,8 @@ class detailed(AuthPlugin):
 
         return result
 
-    def logout(self):
-        """
-        User logout.
-        """
-        return None
-
-    def is_logged(self):
-        """Check user session."""
-        try:
-            body = self._uri_opener.GET(self.check_url, grep=False).body
-            logged_in = self.check_string in body
-
-            msg_yes = 'User "%s" is currently logged into the application'
-            msg_no = 'User "%s" is NOT logged into the application'
-            msg = msg_yes if logged_in else msg_no
-            om.out.debug(msg % self.username)
-
-            return logged_in
-        except Exception:
-            return False
+    def _get_main_authentication_url(self):
+        return self.auth_url
 
     def get_options(self):
         """

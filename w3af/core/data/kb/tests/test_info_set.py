@@ -20,9 +20,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import unittest
 import copy
 import json
+import unittest
 
 from nose.plugins.attrib import attr
 from cPickle import loads
@@ -130,7 +130,9 @@ class TestInfoSet(unittest.TestCase):
         self.assertEqual(iset1.get_uniq_id(), iset1_copy.get_uniq_id())
 
     def test_to_json(self):
-        i = Info('Blind SQL injection vulnerability', MockInfo.LONG_DESC, 1,
+        i = Info('Blind SQL injection vulnerability',
+                 MockInfo.LONG_DESC,
+                 1,
                  'plugin_name')
 
         i['test'] = 'foo'

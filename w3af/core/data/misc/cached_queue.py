@@ -159,7 +159,7 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
 
     def join(self):
         """
-        Blocks until all items in the Queue have been gotten and processed.
+        Blocks until all items in the Queue have been read and processed.
 
         The count of unfinished tasks goes up whenever an item is added to the
         queue. The count goes down whenever a consumer thread calls task_done()

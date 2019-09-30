@@ -74,12 +74,13 @@ class web_spider(CrawlPlugin):
         self._ignore_extensions = []
         self._compile_re()
 
-    def crawl(self, fuzzable_req):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Searches for links on the html.
 
-        :param fuzzable_req: A fuzzable_req instance that contains
-                             (among other things) the URL to test.
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_req instance that contains
+                                 (among other things) the URL to test.
         """
         self._handle_first_run()
 
@@ -87,17 +88,17 @@ class web_spider(CrawlPlugin):
         # If it is a form, then smart_fill the parameters to send something that
         # makes sense and will allow us to cover more code.
         #
-        data_container = fuzzable_req.get_raw_data()
+        data_container = fuzzable_request.get_raw_data()
         if isinstance(data_container, Form):
 
-            if fuzzable_req.get_url() in self._already_filled_form:
+            if fuzzable_request.get_url() in self._already_filled_form:
                 return
 
-            self._already_filled_form.add(fuzzable_req.get_url())
+            self._already_filled_form.add(fuzzable_request.get_url())
             data_container.smart_fill()
 
         # Send the HTTP request
-        resp = self._uri_opener.send_mutant(fuzzable_req)
+        resp = self._uri_opener.send_mutant(fuzzable_request)
 
         # Nothing to do here...
         if resp.get_code() == http_constants.UNAUTHORIZED:
@@ -111,8 +112,8 @@ class web_spider(CrawlPlugin):
         if is_404(resp):
             return
 
-        self._extract_html_forms(resp, fuzzable_req)
-        self._extract_links_and_verify(resp, fuzzable_req)
+        self._extract_html_forms(resp, fuzzable_request)
+        self._extract_links_and_verify(resp, fuzzable_request)
 
     def _extract_html_forms(self, resp, fuzzable_req):
         """

@@ -23,10 +23,7 @@ import urllib2
 import unittest
 import httpretty
 
-from nose.plugins.attrib import attr
-
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
-from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.response_codes import FOUND, OK, MOVED_PERMANENTLY
@@ -37,32 +34,50 @@ from w3af.core.data.url import opener_settings
 
 class TestRedirectHandlerLowLevel(unittest.TestCase):
 
-    REDIRECT_URL = '/audit/global_redirect/redirect-header-302.py?url=/'
+    REDIR_DEST = 'http://w3af.org/dest'
+    REDIR_SRC = 'http://w3af.org/src'
+    OK_BODY = 'Body!'
 
     def setUp(self):
         consecutive_number_generator.reset()
         
-    @attr('moth')
+    @httpretty.activate
     def test_redirect_handler(self):
         """
         Test the redirect handler using urllib2
         """
-        redirect_url = URL(get_moth_http(self.REDIRECT_URL))
+        httpretty.register_uri(httpretty.GET, self.REDIR_SRC,
+                               body='', status=FOUND,
+                               adding_headers={'Location': self.REDIR_DEST})
+
+        httpretty.register_uri(httpretty.GET, self.REDIR_DEST,
+                               body=self.OK_BODY, status=FOUND)
+
+        redirect_url = URL(self.REDIR_SRC)
         opener = urllib2.build_opener(HTTP30XHandler)
         
         request = urllib2.Request(redirect_url.url_string)
-        response = opener.open(request)
-        
-        self.assertEqual(response.code, FOUND)
 
-    @attr('moth')
+        # This is because the 30x handler doesn't implement default error handling
+        # which is in another part of the w3af framework and this is just a urllib2
+        # level test
+        self.assertRaises(urllib2.HTTPError, opener.open, request)
+
+    @httpretty.activate
     def test_handler_order(self):
         """
         Get an instance of the extended urllib and verify that the redirect
         handler still works, even when mixed with all the other handlers.
         """
+        httpretty.register_uri(httpretty.GET, self.REDIR_SRC,
+                               body='', status=FOUND,
+                               adding_headers={'Location': self.REDIR_DEST})
+
+        httpretty.register_uri(httpretty.GET, self.REDIR_DEST,
+                               body=self.OK_BODY, status=FOUND)
+
         # Configure the handler
-        redirect_url = URL(get_moth_http(self.REDIRECT_URL))
+        redirect_url = URL(self.REDIR_SRC)
         
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
