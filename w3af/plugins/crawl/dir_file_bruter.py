@@ -34,7 +34,6 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE, BOOL
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
@@ -65,10 +64,11 @@ class dir_file_bruter(CrawlPlugin):
         self._exec = True
         self._already_tested = DiskSet(table_prefix='dir_file_bruter')
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Get the file and parse it.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                (among other things) the URL to test.
         """
@@ -81,9 +81,11 @@ class dir_file_bruter(CrawlPlugin):
         if not self._be_recursive:
             self._exec = False
 
-        if domain_path not in self._already_tested:
-            self._already_tested.add(domain_path)
-            self._bruteforce_directories(domain_path)
+        if domain_path in self._already_tested:
+            return
+
+        self._already_tested.add(domain_path)
+        self._bruteforce_directories(domain_path)
 
     def _bruteforce_directories(self, base_path):
         """
@@ -155,41 +157,13 @@ class dir_file_bruter(CrawlPlugin):
 
         :return: None, data is stored in self.output_queue
         """
-        try:
-            http_response = self._uri_opener.GET(new_url, cache=False)
-        except:
-            return
+        http_response = self._uri_opener.GET(new_url, cache=False)
 
         if is_404(http_response):
             return
 
-        #
-        # Looking good, but lets see if this is a false positive or not...
-        #
-        forced_404 = file_or_path + rand_alnum(5)
-        if not new_url.get_file_name():
-            forced_404 += '/'
-
-        dir_url = base_path.url_join(forced_404)
-
-        invalid_http_response = self._uri_opener.GET(dir_url, cache=False)
-
-        if not is_404(invalid_http_response):
-            return
-
-        #
-        # Good, the directory_name + rand_alnum(5) return a
-        # 404, the original directory_name is not a false positive.
-        #
         fr = FuzzableRequest.from_http_response(http_response)
         self.output_queue.put(fr)
-
-        msg = ('dir_file_brute plugin found "%s" with HTTP response '
-               'code %s and Content-Length: %s.')
-
-        om.out.information(msg % (http_response.get_url(),
-                                  http_response.get_code(),
-                                  len(http_response.get_body())))
 
     def end(self):
         self._already_tested.cleanup()

@@ -57,11 +57,13 @@ class wordpress_fingerprint(CrawlPlugin):
         self._release_db = os.path.join(ROOT_PATH, 'plugins', 'crawl',
                                         'wordpress_fingerprint', 'release.db')
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Finds the version of a WordPress installation.
+
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
-        (among other things) the URL to test.
+                                 (among other things) the URL to test.
         """
         if not self._exec:
             # This will remove the plugin from the crawl plugins to be run.
@@ -76,18 +78,15 @@ class wordpress_fingerprint(CrawlPlugin):
         wp_unique_url = domain_path.url_join('wp-login.php')
         response = self._uri_opener.GET(wp_unique_url, cache=True)
 
-        # If wp_unique_url is not 404, wordpress = true
-        if not is_404(response):
-            # It was possible to analyze wp-login.php, don't run again
-            self._exec = False
+        if is_404(response):
+            return
 
-            # Analyze the identified wordpress installation
-            self._fingerprint_wordpress(domain_path, wp_unique_url,
-                                        response)
+        # It was possible to analyze wp-login.php, don't run again
+        self._exec = False
 
-            # Send link to core
-            fr = FuzzableRequest(response.get_uri())
-            self.output_queue.put(fr)
+        # Analyze the identified wordpress installation
+        self._fingerprint_wordpress(domain_path, wp_unique_url,
+                                    response)
 
     def _fingerprint_wordpress(self, domain_path, wp_unique_url, response):
         """
@@ -132,12 +131,12 @@ class wordpress_fingerprint(CrawlPlugin):
 
                 if release_db_hash == remote_release_hash:
 
-                    desc = 'The sysadmin used WordPress version "%s" during the'\
-                           ' installation, which was found by matching the contents'\
-                           ' of "%s" with the hashes of known releases. If the'\
-                           ' sysadmin did not update wordpress, the current version'\
-                           ' will still be the same.'
-                    desc = desc % (release_db_name, install_url)
+                    desc = ('The sysadmin used WordPress version "%s" during the'
+                            ' installation, which was found by matching the contents'
+                            ' of "%s" with the hashes of known releases. If the'
+                            ' sysadmin did not update wordpress, the current version'
+                            ' will still be the same.')
+                    desc %= (release_db_name, install_url)
 
                     i = Info('Fingerprinted Wordpress version', desc, response.id,
                              self.get_name())
@@ -145,6 +144,10 @@ class wordpress_fingerprint(CrawlPlugin):
                     
                     kb.kb.append(self, 'info', i)
                     om.out.information(i.get_desc())
+
+                    # Send link to core
+                    fr = FuzzableRequest(response.get_uri())
+                    self.output_queue.put(fr)
 
     def _fingerprint_readme(self, domain_path, wp_unique_url, response):
         """
@@ -162,14 +165,18 @@ class wordpress_fingerprint(CrawlPlugin):
             version = m.group(1)
 
             desc = 'WordPress version "%s" found in the readme.html file.'
-            desc = desc % version
+            desc %= version
 
-            i = Info('Fingerprinted Wordpress version', desc, response.id,
+            i = Info('Fingerprinted WordPress version', desc, response.id,
                      self.get_name())
             i.set_url(wp_readme_url)
             
             kb.kb.append(self, 'info', i)
             om.out.information(i.get_desc())
+
+            # Send link to core
+            fr = FuzzableRequest(response.get_uri())
+            self.output_queue.put(fr)
 
     def _fingerprint_meta(self, domain_path, wp_unique_url, response):
         """
@@ -191,12 +198,16 @@ class wordpress_fingerprint(CrawlPlugin):
             desc = 'WordPress version "%s" found in the index header.'
             desc = desc % version
 
-            i = Info('Fingerprinted Wordpress version', desc, response.id,
+            i = Info('Fingerprinted WordPress version', desc, response.id,
                      self.get_name())
             i.set_url(wp_index_url)
             
             kb.kb.append(self, 'info', i)
             om.out.information(i.get_desc())
+
+            # Send link to core
+            fr = FuzzableRequest(response.get_uri())
+            self.output_queue.put(fr)
 
     def _fingerprint_data(self, domain_path, wp_unique_url, response):
         """
@@ -221,17 +232,21 @@ class wordpress_fingerprint(CrawlPlugin):
                 version = wp_fingerprint.version
 
                 # Save it to the kb!
-                desc = 'WordPress version "%s" fingerprinted by matching known md5'\
-                       ' hashes to HTTP responses of static resources available at'\
-                       ' the remote WordPress install.'
-                desc = desc % version
-                i = Info('Fingerprinted Wordpress version', desc, response.id,
+                desc = ('WordPress version "%s" fingerprinted by matching known md5'
+                        ' hashes to HTTP responses of static resources available at'
+                        ' the remote WordPress install.')
+                desc %= version
+                i = Info('Fingerprinted WordPress version', desc, response.id,
                          self.get_name())
                 i.set_url(test_url)
         
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
-                
+
+                # Send link to core
+                fr = FuzzableRequest(response.get_uri())
+                self.output_queue.put(fr)
+
                 break
 
     def _get_wp_fingerprints(self):
@@ -242,9 +257,9 @@ class wordpress_fingerprint(CrawlPlugin):
             wordpress_fp_fd = codecs.open(self.WP_VERSIONS_XML, 'r', 'utf-8',
                                           errors='ignore')
         except Exception, e:
-            msg = 'Failed to open wordpress fingerprint database file:'\
-                  ' "%s", exception: "%s".'
-            raise BaseFrameworkException(msg % (self.WP_VERSIONS_XML, e))
+            msg = 'Failed to open wordpress fingerprint database "%s": "%s".'
+            args = (self.WP_VERSIONS_XML, e)
+            raise BaseFrameworkException(msg % args)
         
         parser = make_parser()
         wp_handler = WPVersionsHandler()

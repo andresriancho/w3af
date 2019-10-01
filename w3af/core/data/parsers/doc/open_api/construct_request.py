@@ -27,17 +27,17 @@ from bravado_core.param import marshal_param
 
 
 def construct_request(operation, request_options, **op_kwargs):
-    """Construct the outgoing request dict.
+    """
+    Construct the outgoing request dict.
 
     :type operation: :class:`bravado_core.operation.Operation`
-    :param request_options: _request_options passed into the operation
-        invocation.
-    :param op_kwargs: parameter name/value pairs to passed to the
-        invocation of the operation.
+    :param request_options: _request_options passed into the operation invocation.
+    :param op_kwargs: parameter name/value pairs to passed to the invocation of the operation.
 
     :return: request in dict form
     """
     url = operation.swagger_spec.api_url.rstrip('/') + operation.path_name
+
     request = {
         'method': str(operation.http_method.upper()),
         'url': url,
@@ -59,7 +59,8 @@ def construct_request(operation, request_options, **op_kwargs):
 
 
 def construct_params(operation, request, op_kwargs):
-    """Given the parameters passed to the operation invocation, validates and
+    """
+    Given the parameters passed to the operation invocation, validates and
     marshals the parameters into the provided request dict.
 
     :type operation: :class:`bravado_core.operation.Operation`
@@ -67,7 +68,7 @@ def construct_params(operation, request, op_kwargs):
     :param op_kwargs: the kwargs passed to the operation invocation
 
     :raises: SwaggerMappingError on extra parameters or when a required
-        parameter is not supplied.
+             parameter is not supplied.
     """
     current_params = operation.params.copy()
     for param_name, param_value in iteritems(op_kwargs):

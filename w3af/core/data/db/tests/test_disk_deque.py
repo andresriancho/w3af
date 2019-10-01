@@ -69,7 +69,9 @@ class TestDiskDeque(unittest.TestCase):
     def test_namedtuple(self):
         disk_deque = DiskDeque(maxsize=2)
 
-        disk_deque.append(FourOhFourResponse('body', 'image', '/'))
+        disk_deque.append(FourOhFourResponse(clean_body='body',
+                                             content_type='image',
+                                             url='/'))
 
         for fofr in disk_deque:
-            self.assertEqual(fofr.doc_type, 'image')
+            self.assertEqual(fofr.content_type, 'image')

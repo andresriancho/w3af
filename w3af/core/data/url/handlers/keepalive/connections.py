@@ -1,3 +1,24 @@
+# -*- coding: utf-8 -*-
+"""
+connections.py
+
+Copyright 2019 Andres Riancho
+
+This file is part of w3af, http://w3af.org/ .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+"""
 import threading
 import binascii
 import httplib
@@ -6,8 +27,10 @@ import socket
 import ssl
 import os
 
+import OpenSSL
+
 from .http_response import HTTPResponse
-from .utils import debug, DEBUG
+from .utils import debug
 
 from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
@@ -15,12 +38,7 @@ from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
 
 class UniqueID(object):
     def __init__(self):
-        if DEBUG:
-            # Only do the extra id stuff when debugging
-            self.id = binascii.hexlify(os.urandom(8))
-        else:
-            self.id = None
-
+        self.id = binascii.hexlify(os.urandom(8))
         self.req_count = 0
         self.timeout = None
 
@@ -36,7 +54,7 @@ class UniqueID(object):
         # Only makes sense when DEBUG is True
         timeout = None if self.timeout is socket._GLOBAL_DEFAULT_TIMEOUT else self.timeout
         args = (self.__class__.__name__, self.id, self.req_count, timeout)
-        return '%s(id:%s, req_count:%s, timeout:%s)' % args
+        return '<%s(id:%s, req_count:%s, timeout:%s)>' % args
 
 
 class _HTTPConnection(httplib.HTTPConnection, UniqueID):
@@ -47,6 +65,7 @@ class _HTTPConnection(httplib.HTTPConnection, UniqueID):
         httplib.HTTPConnection.__init__(self, host, port, strict,
                                         timeout=timeout)
         self.is_fresh = True
+        self.host_port = '%s:%s' % (self.host, self.port)
 
     def connect(self):
         """
@@ -114,6 +133,8 @@ class ProxyHTTPConnection(_HTTPConnection):
     def __init__(self, host, port=None, strict=None,
                  timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         _HTTPConnection.__init__(self, host, port, strict, timeout=timeout)
+        self._real_host = None
+        self._real_port = None
 
     def proxy_setup(self, url):
         # request is called before connect, so can interpret url and get
@@ -139,7 +160,7 @@ class ProxyHTTPConnection(_HTTPConnection):
     def connect(self):
         super(ProxyHTTPConnection, self).connect()
 
-        #send proxy CONNECT request
+        # send proxy CONNECT request
         new_line = '\r\n'
         host_port = '%s:%d' % (self._real_host, self._real_port)
         self.send('CONNECT %s HTTP/1.1%s' % (host_port, new_line))
@@ -153,34 +174,32 @@ class ProxyHTTPConnection(_HTTPConnection):
 
         self.send(new_line)
 
-        #expect a HTTP/1.0 200 Connection established
+        # expect a HTTP/1.0 200 Connection established
         response = self.response_class(self.sock, strict=self.strict,
                                        method=self._method)
         version, code, message = response._read_status()
 
-        #probably here we can handle auth requests...
+        # probably here we can handle auth requests...
         if code != 200:
-            #proxy returned and error, abort connection, and raise exception
+            # proxy returned and error, abort connection, and raise exception
             self.close()
             raise socket.error('Proxy connection failed: %d %s' %
-                              (code, message.strip()))
+                               (code, message.strip()))
 
         # eat up header block from proxy....
         while True:
-            #should not use directly fp probably
+            # should not use directly fp probably
             line = response.fp.readline()
             if line == '\r\n':
                 break
 
 
-# https://bugs.kali.org/view.php?id=2160
-proto_names = (
-               'PROTOCOL_SSLv3',        # Does not exist in ssl module Python 2.7.15rc1
-               'PROTOCOL_TLSv1',        # ssl.PROTOCOL_TLSv1  == 3
-               'PROTOCOL_SSLv23',       # ssl.PROTOCOL_SSLv23 == 2
-               'PROTOCOL_SSLv2'         # Does not exist in ssl module Python 2.7.15rc1
-               )
-_protocols = filter(None, (getattr(ssl, pn, None) for pn in proto_names))
+_protocols = [OpenSSL.SSL.SSLv3_METHOD,
+              OpenSSL.SSL.TLSv1_METHOD,
+              OpenSSL.SSL.SSLv23_METHOD,
+              OpenSSL.SSL.TLSv1_1_METHOD,
+              OpenSSL.SSL.TLSv1_2_METHOD,
+              OpenSSL.SSL.SSLv2_METHOD]
 
 # Avoid race conditions
 _protocols_lock = threading.RLock()
@@ -198,6 +217,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
     def __init__(self, *args, **kwargs):
         UniqueID.__init__(self)
         httplib.HTTPSConnection.__init__(self, *args, **kwargs)
+        self.host_port = '%s:%s' % (self.host, self.port)
 
     def connect(self):
         """
@@ -253,9 +273,12 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
         else:
             debug('Successful connection using protocol %s' % protocol)
             self.sock = ssl_sock
+
             with _protocols_lock:
+                # Make the protocol the first option for the next connections
                 _protocols.remove(protocol)
                 _protocols.insert(0, protocol)
+
             return ssl_sock
 
         return None
@@ -303,6 +326,7 @@ class HTTPConnection(_HTTPConnection):
                                  strict=strict,
                                  timeout=timeout)
         self.current_request_start = None
+        self.connection_manager_move_ts = None
 
 
 class HTTPSConnection(SSLNegotiatorConnection):
@@ -314,3 +338,4 @@ class HTTPSConnection(SSLNegotiatorConnection):
                                          strict, timeout=timeout)
         self.is_fresh = True
         self.current_request_start = None
+        self.connection_manager_move_ts = None

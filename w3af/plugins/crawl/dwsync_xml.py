@@ -46,19 +46,22 @@ class dwsync_xml(CrawlPlugin):
         # Internal variables
         self._analyzed_dirs = DiskSet()
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         For every directory, fetch a list of files and analyze the response.
-        
+
+        :param debugging_id: A unique identifier for this call to discover()
         :parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
         directories_to_check = []
 
         for domain_path in fuzzable_request.get_url().get_directories():
-            if domain_path not in self._analyzed_dirs:
-                self._analyzed_dirs.add(domain_path)
-                directories_to_check.append(domain_path)
+            if domain_path in self._analyzed_dirs:
+                continue
+
+            self._analyzed_dirs.add(domain_path)
+            directories_to_check.append(domain_path)
 
         # Send the requests using threads
         self.worker_pool.map(self._find_dwsync, directories_to_check)

@@ -70,27 +70,30 @@ class find_backdoors(CrawlPlugin):
 
             yield (line, 'Backdoor signature')
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         For every directory, fetch a list of shell files and analyze the
         response.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
         domain_path = fuzzable_request.get_url().get_domain_path()
 
-        if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.add(domain_path)
+        if domain_path in self._analyzed_dirs:
+            return
 
-            self.setup()
+        self._analyzed_dirs.add(domain_path)
 
-            # Read the web shell database
-            web_shells = self._iter_web_shells()
+        self.setup()
 
-            # Send the requests using threads:
-            args_iter = (domain_path.url_join(fname) for fname in web_shells)
-            self.worker_pool.map(self._check_if_exists, args_iter)
+        # Read the web shell database
+        web_shells = self._iter_web_shells()
+
+        # Send the requests using threads:
+        args_iter = (domain_path.url_join(fname) for fname in web_shells)
+        self.worker_pool.map(self._check_if_exists, args_iter)
 
     def _iter_web_shells(self):
         """
@@ -116,29 +119,30 @@ class find_backdoors(CrawlPlugin):
         try:
             response = self._uri_opener.GET(web_shell_url, cache=True)
         except BaseFrameworkException:
-            om.out.debug('Failed to GET webshell:' + web_shell_url)
-        else:
-            signature = self._match_signature(response)
-            if signature is None:
-                return
+            om.out.debug('Failed to GET webshell: %s' % web_shell_url)
+            return
 
-            desc = (u'An HTTP response matching the web backdoor signature'
-                    u' "%s" was found at: "%s"; this could indicate that the'
-                    u' server has been compromised.')
-            desc %= (signature, response.get_url())
+        signature = self._match_signature(response)
+        if signature is None:
+            return
 
-            # It's probability is higher if we found a long signature
-            _severity = severity.HIGH if len(signature) > 8 else severity.MEDIUM
+        desc = (u'An HTTP response matching the web backdoor signature'
+                u' "%s" was found at: "%s"; this could indicate that the'
+                u' server has been compromised.')
+        desc %= (signature, response.get_url())
 
-            v = Vuln(u'Potential web backdoor', desc, _severity,
-                     response.id, self.get_name())
-            v.set_url(response.get_url())
+        # It's probability is higher if we found a long signature
+        _severity = severity.HIGH if len(signature) > 8 else severity.MEDIUM
 
-            kb.kb.append(self, 'backdoors', v)
-            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+        v = Vuln(u'Potential web backdoor', desc, _severity,
+                 response.id, self.get_name())
+        v.set_url(response.get_url())
 
-            fr = FuzzableRequest.from_http_response(response)
-            self.output_queue.put(fr)
+        kb.kb.append(self, 'backdoors', v)
+        om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+
+        fr = FuzzableRequest.from_http_response(response)
+        self.output_queue.put(fr)
 
     def _match_signature(self, response):
         """

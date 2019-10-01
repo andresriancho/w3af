@@ -23,6 +23,34 @@ import difflib
 
 from w3af.core.controllers.misc.diff import split_by_sep
 
+#
+# Some sites have really large headers and footers which they
+# include for all pages. When that happens one page might look like:
+#
+#   {header-4000bytes}
+#   Hello world
+#   {footer-4000bytes}
+#
+# The header might contain large CSS and the footer might include
+# JQuery or some other large JS. Then, the 404 might look like:
+#
+#   {header-4000bytes}
+#   Not found
+#   {footer-4000bytes}
+#
+# A user with a browser might only see the text, and clearly
+# identify one as a valid page and another as a 404, but the
+# fuzzy_equal() function will return True, indicating that they
+# are equal because 99% of the bytes are the same.
+#
+# This constant is set here as a recommendation for developers: when
+# the size of the response bodies you are trying to compare exceeds
+# MAX_FUZZY_LENGTH, the result of fuzzy_equal will become inaccurate
+#
+# See fingerprint_404.py to understand how to solve this issue
+#
+MAX_FUZZY_LENGTH = 1024 * 4
+
 
 def fuzzy_equal(a_str, b_str, threshold=0.6):
     """
@@ -134,7 +162,10 @@ def relative_distance(a_str, b_str):
     :param b_str: A string object
     :return: A float with the distance
     """
+    a_split = split_by_sep(a_str)
+    b_split = split_by_sep(b_str)
+
     return difflib.SequenceMatcher(None,
-                                   split_by_sep(a_str),
-                                   split_by_sep(b_str)).quick_ratio()
+                                   a_split,
+                                   b_split).quick_ratio()
 

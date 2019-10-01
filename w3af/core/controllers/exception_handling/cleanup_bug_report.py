@@ -20,8 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import os
 
 import w3af.core.data.kb.config as cf
+
+
+EXPLICIT_CRASH_REPORT = os.environ.get('EXPLICIT_CRASH_REPORT', '0') == '1'
 
 
 def cleanup_bug_report(_input):
@@ -30,6 +34,16 @@ def cleanup_bug_report(_input):
              remove all references to the target site, operating system user
              name, etc.
     """
+    # In some scenarios users don't need to cleanup the bug reports. Use an
+    # environment variable to configure this setting:
+    #
+    #    EXPLICIT_CRASH_REPORT=1 ./w3af_console -s script.w3af
+    #
+    # Not using a misc-setting or similar since this is a very rare scenario
+    # and it would clutter the misc-settings
+    if EXPLICIT_CRASH_REPORT:
+        return _input
+
     user_re = '/home/(.*?)/'
     user_re_win = 'C:\\\\Documents and Settings\\\\(.*?)\\\\'
 

@@ -42,23 +42,26 @@ class wordpress_enumerate_users(CrawlPlugin):
         # Internal variables
         self._exec = True
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Find users in a WordPress installation
+
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
         if not self._exec:
             raise RunOnce()
-        else:
-            # Check if there is a wordpress installation in this directory
-            domain_path = fuzzable_request.get_url().get_domain_path()
-            wp_unique_url = domain_path.url_join('wp-login.php')
-            response = self._uri_opener.GET(wp_unique_url, cache=True)
 
-            # If wp_unique_url is not 404, wordpress = true
-            if not is_404(response):
-                self._enum_users(fuzzable_request)
+        # Check if there is a wordpress installation in this directory
+        domain_path = fuzzable_request.get_url().get_domain_path()
+        wp_unique_url = domain_path.url_join('wp-login.php')
+        response = self._uri_opener.GET(wp_unique_url, cache=True)
+
+        if is_404(response):
+            return
+
+        self._enum_users(fuzzable_request)
 
     def _enum_users(self, fuzzable_request):
         # Only run once
@@ -66,8 +69,10 @@ class wordpress_enumerate_users(CrawlPlugin):
 
         # First user ID, will be incremented until 404
         uid = 0
+
         # Save the last title for non-redirection scenario
         self._title_cache = ''
+
         # Tolerance for user ID gaps in the sequence (this gaps are present
         # when users are deleted and new users created)
         gap_tolerance = 10
@@ -89,8 +94,7 @@ class wordpress_enumerate_users(CrawlPlugin):
                 continue
 
             if response_author.was_redirected():
-                extracted_from_redir = self._extract_from_redir(
-                    response_author)
+                extracted_from_redir = self._extract_from_redir(response_author)
 
                 if extracted_from_redir:
                     gap = 0

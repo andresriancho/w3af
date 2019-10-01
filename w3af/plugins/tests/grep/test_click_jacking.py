@@ -20,17 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.data.constants.severity as severity
 
-from w3af.core.controllers.ci.moth import get_moth_http
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
-class TestClickJacking(PluginTest):
+class TestClickJackingVuln(PluginTest):
 
-    click_jacking_url = get_moth_http('/grep/click_jacking/')
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   status=200)]
 
     _run_configs = {
         'cfg': {
-            'target': click_jacking_url,
+            'target': target_url,
             'plugins': {
                 'grep': (PluginConfig('click_jacking'),),
                 'crawl': (
@@ -52,6 +56,197 @@ class TestClickJacking(PluginTest):
         v = vulns[0]
         self.assertEquals(severity.MEDIUM, v.get_severity())
         self.assertEquals('Click-Jacking vulnerability', v.get_name())
-        self.assertEquals(len(v.get_id()), 2, v.get_id())
-        self.assertIn(self.click_jacking_url + 'without_header.py',
-                      v.get_desc())
+        self.assertEquals(len(v.get_id()), 1, v.get_id())
+        self.assertIn('The application has no protection', v.get_desc())
+
+
+class TestClickJackingProtectedXFrameOptions(PluginTest):
+
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   headers={'x-frame-options': 'deny'},
+                                   status=200)]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('click_jacking'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('only_forward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        }
+    }
+
+    def test_no_vuln(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        vulns = self.kb.get('click_jacking', 'click_jacking')
+
+        self.assertEquals(0, len(vulns))
+
+
+class TestClickJackingCSPNone(PluginTest):
+
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   headers={'Content-Security-Policy': "frame-ancestors 'none';"},
+                                   status=200)]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('click_jacking'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('only_forward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        }
+    }
+
+    def test_no_vuln(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        vulns = self.kb.get('click_jacking', 'click_jacking')
+
+        self.assertEquals(0, len(vulns))
+
+
+class TestClickJackingCSPWildcard(PluginTest):
+
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   headers={'Content-Security-Policy': "frame-ancestors '*';"},
+                                   status=200)]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('click_jacking'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('only_forward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        }
+    }
+
+    def test_vuln(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        vulns = self.kb.get('click_jacking', 'click_jacking')
+
+        self.assertEquals(1, len(vulns))
+
+
+class TestClickJackingCSPSpecificDomain(PluginTest):
+
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   headers={'Content-Security-Policy': "frame-ancestors 'somesite.com';"},
+                                   status=200)]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('click_jacking'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('only_forward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        }
+    }
+
+    def test_vuln(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        vulns = self.kb.get('click_jacking', 'click_jacking')
+
+        self.assertEquals(0, len(vulns))
+
+
+class TestClickJackingCSPSelf(PluginTest):
+
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   headers={'Content-Security-Policy': "frame-ancestors 'self';"},
+                                   status=200)]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('click_jacking'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('only_forward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        }
+    }
+
+    def test_vuln(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        vulns = self.kb.get('click_jacking', 'click_jacking')
+
+        self.assertEquals(0, len(vulns))
+
+
+class TestClickJackingCSPSelfAndSpecificDomain(PluginTest):
+
+    target_url = 'http://httpretty'
+
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   headers={'Content-Security-Policy': "frame-ancestors self 'somesite.com';"},
+                                   status=200)]
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'grep': (PluginConfig('click_jacking'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('only_forward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        }
+    }
+
+    def test_vuln(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        vulns = self.kb.get('click_jacking', 'click_jacking')
+
+        self.assertEquals(0, len(vulns))

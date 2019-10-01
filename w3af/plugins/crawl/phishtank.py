@@ -53,30 +53,35 @@ class phishtank(CrawlPlugin):
         self._multi_in = None
 
     @runonce(exc_class=RunOnce)
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Plugin entry point, performs all the work.
+
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
         """
         to_check = self._get_to_check(fuzzable_request.get_url())
 
         # I found some URLs, create fuzzable requests
         pt_matches = self._is_in_phishtank(to_check)
 
+        if not pt_matches:
+            return
+
         for ptm in pt_matches:
             fr = FuzzableRequest(ptm.url)
             self.output_queue.put(fr)
 
-        # Only create the vuln object once
-        if pt_matches:
-            desc = 'The URL: "%s" seems to be involved in a phishing scam.' \
-                   ' Please see %s for more info.'
-            desc = desc % (ptm.url, ptm.more_info_url)
+        desc = ('The URL: "%s" seems to be involved in a Phishing scam.'
+                ' Please see %s for more info.')
+        desc %= (ptm.url, ptm.more_info_url)
 
-            v = Vuln('Phishing scam', desc, severity.MEDIUM, [], self.get_name())
-            v.set_url(ptm.url)
+        v = Vuln('Phishing scam', desc, severity.MEDIUM, [], self.get_name())
+        v.set_url(ptm.url)
 
-            kb.kb.append(self, 'phishtank', v)
-            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+        kb.kb.append(self, 'phishtank', v)
+        om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def _get_to_check(self, target_url):
         """

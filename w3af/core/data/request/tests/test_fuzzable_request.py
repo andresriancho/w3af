@@ -327,3 +327,34 @@ class TestFuzzableRequest(unittest.TestCase):
 
         self.assertIsInstance(fr_read.get_raw_data(), MultipartContainer)
         self.assertIn('a', fr_read.get_raw_data())
+
+    def test_force_fuzzing_headers(self):
+        fr = FuzzableRequest(URL('http://www.w3af.com/'),
+                             headers=Headers([('Host', 'www.w3af.com')]))
+
+        self.assertEquals(fr.get_force_fuzzing_headers(), [])
+
+        with self.assertRaises(TypeError):
+            fr.set_force_fuzzing_headers(None)
+
+        with self.assertRaises(TypeError):
+            fr.set_force_fuzzing_headers(1)
+
+        fr.set_force_fuzzing_headers(['X-Foo-Header',
+                                      'X-Bar-Header',
+                                      'X-Awesome-Header',
+                                      'X-Bar-Header'])
+        force_fuzzing_headers = fr.get_force_fuzzing_headers()
+        self.assertEquals(len(force_fuzzing_headers), 3)
+        self.assertIn('X-Foo-Header', force_fuzzing_headers)
+        self.assertIn('X-Bar-Header', force_fuzzing_headers)
+        self.assertIn('X-Awesome-Header', force_fuzzing_headers)
+
+        modified_force_fuzzing_headers = fr.get_force_fuzzing_headers()
+        modified_force_fuzzing_headers.append('X-Another-Header')
+        force_fuzzing_headers = fr.get_force_fuzzing_headers()
+        self.assertEquals(len(force_fuzzing_headers), 3)
+        self.assertNotIn('X-Another-Header', force_fuzzing_headers)
+
+        fr.set_force_fuzzing_headers(tuple())
+        self.assertEquals(fr.get_force_fuzzing_headers(), [])

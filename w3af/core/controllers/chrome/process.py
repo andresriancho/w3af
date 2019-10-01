@@ -25,13 +25,13 @@ import time
 import signal
 import select
 import threading
-import subprocess
+import subprocess32 as subprocess
 
 import psutil
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path, get_chrome_version
 
 
@@ -48,13 +48,37 @@ class ChromeProcess(object):
              # Initial page load performance
              '--homepage=about:blank',
 
-             # Do not load image
+             # Do not load images
              '--blink-settings=imagesEnabled=false',
+
+             # Reduce memory usage
+             # Run the JS garbage collector when reaching 500mb
+             #
+             # https://news.ycombinator.com/item?id=14103503
+             '--js-flags="--max-old-space-size=500"',
+
+             # https://peter.sh/experiments/chromium-command-line-switches/
+             '--disable-default-apps',
+             '--disable-extensions',
+             '--disable-sync',
+             '--disable-translate',
+             '--hide-scrollbars',
+             '--metrics-recording-only',
+             '--mute-audio',
+             '--no-first-run',
+
+             '--safebrowsing-disable-auto-update',
 
              # Disable some security features
              '--ignore-certificate-errors',
+             '--ignore-ssl-errors',
+             '--ignore-certificate-errors-spki-list',
              '--reduce-security-for-testing',
              '--allow-running-insecure-content',
+             '--no-sandox',
+
+             # Not supported at proxy
+             '--disable-http2',
     ]
 
     DEVTOOLS_PORT_RE = re.compile('DevTools listening on ws://127.0.0.1:(\d*?)/devtools/')
@@ -73,7 +97,7 @@ class ChromeProcess(object):
         self.thread = None
 
     def get_default_user_data_dir(self):
-        return os.path.join(get_home_dir(), 'chrome')
+        return os.path.join(get_temp_dir(), 'chrome')
 
     def set_devtools_port(self, devtools_port):
         """
@@ -96,9 +120,15 @@ class ChromeProcess(object):
 
         flags.append('--remote-debugging-port=%s' % self.devtools_port)
         flags.append('--user-data-dir=%s' % self.data_dir)
+        # flags.append('--disk-cache-dir=/dev/null')
+        # flags.append('--disk-cache-size=1')
 
         if self.proxy_port and self.proxy_host:
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
+
+            # Route HTTP requests that go to loopback via proxy
+            # https://github.com/chromium/chromium/commit/da790f920bbc169a6805a4fb83b4c2ab09532d91
+            flags.append('--proxy-bypass-list=<-loopback>')
 
         return self.get_chrome_path(), flags
 
@@ -126,7 +156,6 @@ class ChromeProcess(object):
 
         self.thread = threading.Thread(name='ChromeThread',
                                        target=self.run)
-        self.thread.daemon = True
         self.thread.start()
 
     def run(self):
@@ -167,6 +196,19 @@ class ChromeProcess(object):
                 else:
                     self.store_stderr(data)
 
+        #
+        # Read one last time to prevent some data to be lost
+        # Also prevents zombie processes
+        #
+        if self.proc is not None:
+            try:
+                stdoutdata, stderrdata = self.proc.communicate(timeout=3)
+            except:
+                pass
+            else:
+                self.store_stdout(stdoutdata)
+                self.store_stderr(stderrdata)
+
         os.close(stdout_r)
         os.close(stdout_w)
         os.close(stderr_r)
@@ -177,7 +219,7 @@ class ChromeProcess(object):
         wait = self.START_TIMEOUT_SEC / tries
 
         for _ in xrange(tries):
-            if self.get_devtools_port():
+            if self.get_devtools_port() != 0:
                 return True
 
             time.sleep(wait)
@@ -195,7 +237,13 @@ class ChromeProcess(object):
                 # will try to kill a process that doesn't exist anymore
                 pass
             finally:
-                self.proc = None
+                # Before the code contained:
+                #
+                # self.proc = None
+                #
+                # But doing that prevented me to read the last bytes from the
+                # chrome process in run()
+                pass
 
         if self.thread is not None:
             self.thread.join()
@@ -255,7 +303,10 @@ class ChromeProcess(object):
         self.devtools_port = int(devtools_port)
 
     def get_parent_pid(self):
-        return self.proc.pid if self.proc is not None else None
+        try:
+            return self.proc.pid
+        except:
+            return None
 
     def get_children_pids(self):
         parent_pid = self.get_parent_pid()

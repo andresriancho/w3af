@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import zlib
 import copy
 import httplib
 import urllib2
@@ -30,8 +31,7 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.misc.decorators import memoized
-from w3af.core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
+from w3af.core.data.misc.encoding import smart_unicode, smart_str_ignore, ESCAPED_CHAR
 from w3af.core.data.constants.encodings import DEFAULT_ENCODING
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
@@ -79,11 +79,14 @@ class HTTPResponse(DiskItem):
                  '_time',
                  '_alias',
                  '_doc_type',
-                 '_body_lock')
+                 '_body_lock',
+                 '_debugging_id',
+                 '_warned_no_content_type')
 
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
-                 charset=None, binary_response=False, set_body=False):
+                 charset=None, binary_response=False, set_body=False,
+                 debugging_id=None):
         """
         :param code: HTTP code
         :param read: HTTP body text; typically a string
@@ -116,6 +119,7 @@ class HTTPResponse(DiskItem):
 
         self._charset = charset
         self._headers = None
+        self._warned_no_content_type = False
 
         if set_body and isinstance(read, unicode):
             # We use this case for deserialization via from_dict()
@@ -138,6 +142,7 @@ class HTTPResponse(DiskItem):
         # Set the info
         self._info = headers
         # Set code
+        self._code = None
         self.set_code(code)
 
         # Set the URL variables
@@ -146,14 +151,15 @@ class HTTPResponse(DiskItem):
         self._uri = original_url
         # The URL where we were redirected to (equal to original_url
         # when no redirect)
-        self._redirected_url = geturl
-        self._redirected_uri = geturl.uri2url()
+        self._redirected_url = geturl.uri2url()
+        self._redirected_uri = geturl
 
         # Set the rest
         self._msg = smart_unicode(msg)
         self._time = time
         self._alias = alias
         self._doc_type = None
+        self._debugging_id = debugging_id
         
         # Internal lock
         self._body_lock = threading.RLock()
@@ -214,6 +220,7 @@ class HTTPResponse(DiskItem):
         _time = unserialized_dict['time']
         _id = unserialized_dict['id']
         url = URL(unserialized_dict['uri'])
+        debugging_id = unserialized_dict['debugging_id']
 
         headers_inst = Headers(headers.items())
 
@@ -222,7 +229,8 @@ class HTTPResponse(DiskItem):
                    _id=_id,
                    time=_time,
                    charset=charset,
-                   set_body=True)
+                   set_body=True,
+                   debugging_id=debugging_id)
 
     def to_dict(self):
         """
@@ -238,7 +246,8 @@ class HTTPResponse(DiskItem):
                 'time': self.get_wait_time(),
                 'id': self.get_id(),
                 'charset': self.get_charset(),
-                'uri': self.get_uri().url_string}
+                'uri': self.get_uri().url_string,
+                'debugging_id': self._debugging_id}
 
     def get_eq_attrs(self):
         return ('_code',
@@ -258,7 +267,8 @@ class HTTPResponse(DiskItem):
                 '_msg',
                 '_time',
                 '_alias',
-                '_doc_type')
+                '_doc_type',
+                '_debugging_id')
 
     def __contains__(self, string_to_test):
         """
@@ -291,20 +301,47 @@ class HTTPResponse(DiskItem):
     def get_id(self):
         return self.id
 
+    def set_debugging_id(self, debugging_id):
+        self._debugging_id = debugging_id
+
+    def get_debugging_id(self):
+        return self._debugging_id
+
     def set_code(self, code):
         self._code = code
 
     def get_code(self):
         return self._code
 
-    def get_body(self):
-        with self._body_lock:
-            if self._body is None:
-                self._body, self._charset = self._charset_handling()
+    @staticmethod
+    def _quick_hash(text):
+        return '%s%s' % (hash(text), zlib.adler32(text))
 
-                # The user wants the raw body, without any modifications / decoding?
-                if not self._binary_response:
-                    self._raw_body = None
+    def get_body_hash(self):
+        body = smart_str_ignore(self.get_body())
+        return self._quick_hash(body)
+
+    def get_hash(self, exclude_headers=None):
+        exclude_headers = [] or exclude_headers
+
+        headers = self.dump_response_head(exclude_headers=exclude_headers)
+        body = smart_str_ignore(self.get_body())
+
+        args = (headers, body)
+        dump = '%s%s' % args
+
+        return self._quick_hash(dump)
+
+    def get_body(self):
+        if self._body is not None:
+            return self._body
+
+        with self._body_lock:
+            self._body, self._charset = self._charset_handling()
+
+            # The user wants the raw body, without any modifications / decoding?
+            if not self._binary_response:
+                self._raw_body = None
 
             return self._body
 
@@ -363,10 +400,16 @@ class HTTPResponse(DiskItem):
             return
 
     def get_charset(self):
-        if not self._charset:
+        if self._charset:
+            return self._charset
+
+        with self._body_lock:
             self._body, self._charset = self._charset_handling()
-            # Free 'raw_body'
-            self._raw_body = None
+
+            # The user wants the raw body, without any modifications / decoding?
+            if not self._binary_response:
+                self._raw_body = None
+
         return self._charset
 
     def set_charset(self, charset):
@@ -448,7 +491,6 @@ class HTTPResponse(DiskItem):
 
     headers = property(get_headers, set_headers)
 
-    @memoized
     def get_lower_case_headers(self):
         """
         If the original headers were:
@@ -568,39 +610,40 @@ class HTTPResponse(DiskItem):
 
         Note: If the body is already a unicode string return it as it is.
         """
+        charset = self._charset
+        raw_body = self._raw_body
         headers = self.get_headers()
         content_type, _ = headers.iget(CONTENT_TYPE, None)
-        charset = self._charset
-        rawbody = self._raw_body
 
         # Only try to decode <str> strings. Skip <unicode> strings
-        if type(rawbody) is unicode:
-            _body = rawbody
+        if type(raw_body) is unicode:
+            _body = raw_body
             assert charset is not None, ("HTTPResponse objects containing "
                                          "unicode body must have an associated "
                                          "charset")
         elif content_type is None:
-            _body = rawbody
+            _body = raw_body
             charset = DEFAULT_CHARSET
 
-            if len(_body):
+            if _body and not self._warned_no_content_type:
+                self._warned_no_content_type = True
                 msg = ('The remote web server failed to send the CONTENT_TYPE'
                        ' header in HTTP response with id %s')
                 om.out.debug(msg % self.id)
 
         elif not self.is_text_or_html():
             # Not text, save as it is.
-            _body = rawbody
+            _body = raw_body
             charset = charset or DEFAULT_CHARSET
         else:
             # Figure out charset to work with
             if not charset:
-                charset = self.guess_charset(rawbody, headers)
+                charset = self.guess_charset(raw_body, headers)
 
             # Now that we have the charset, we use it!
             # The return value of the decode function is a unicode string.
             try:
-                _body = smart_unicode(rawbody,
+                _body = smart_unicode(raw_body,
                                       charset,
                                       errors=ESCAPED_CHAR,
                                       on_error_guess=False)
@@ -613,14 +656,14 @@ class HTTPResponse(DiskItem):
 
                 # Forcing it to use the default
                 charset = DEFAULT_CHARSET
-                _body = smart_unicode(rawbody,
+                _body = smart_unicode(raw_body,
                                       charset,
                                       errors=ESCAPED_CHAR,
                                       on_error_guess=False)
 
         return _body, charset
 
-    def guess_charset(self, rawbody, headers):
+    def guess_charset(self, raw_body, headers):
         # Start with the headers
         content_type, _ = headers.iget(CONTENT_TYPE, None)
         charset_mo = CHARSET_EXTRACT_RE.search(content_type, re.I)
@@ -629,7 +672,7 @@ class HTTPResponse(DiskItem):
             charset = charset_mo.groups()[0].lower().strip()
         else:
             # Continue with the body's meta tag
-            charset_mo = CHARSET_META_RE.search(rawbody, re.IGNORECASE)
+            charset_mo = CHARSET_META_RE.search(raw_body, re.IGNORECASE)
             if charset_mo:
                 charset = charset_mo.groups()[0].lower().strip()
             else:
@@ -677,7 +720,7 @@ class HTTPResponse(DiskItem):
         """
         return self.doc_type == HTTPResponse.DOC_TYPE_IMAGE
 
-    def dump_response_head(self):
+    def dump_response_head(self, exclude_headers=None):
         """
         :return: A byte-string, as we would send to the wire, containing:
 
@@ -686,8 +729,9 @@ class HTTPResponse(DiskItem):
             Header2: Value2
 
         """
+        exclude_headers = exclude_headers or []
         status_line = self.get_status_line()
-        dumped_headers = self.dump_headers()
+        dumped_headers = self.dump_headers(exclude_headers=exclude_headers)
 
         dump_head = '%s%s' % (status_line, dumped_headers)
 
@@ -707,16 +751,65 @@ class HTTPResponse(DiskItem):
         if isinstance(body, unicode):
             body = body.encode(self.charset, 'replace')
 
-        return "%s%s%s" % (self.dump_response_head(), CRLF, body)
+        return '%s%s%s' % (self.dump_response_head(), CRLF, body)
 
-    def dump_headers(self):
+    def dump_headers(self, exclude_headers=None):
         """
         :return: a str representation of the headers.
         """
+        exclude_headers = exclude_headers or []
+
         if self.headers:
-            return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF
+            return CRLF.join('%s: %s' % (h, hv) for
+                             (h, hv) in self.headers.items()
+                             if h.lower() not in exclude_headers) + CRLF
         else:
             return ''
+
+    def get_redirect_destination(self):
+        lower_headers = self.get_lower_case_headers()
+        redirect_url = None
+
+        for header_name in ('location', 'uri'):
+            if header_name in lower_headers:
+                header_value = lower_headers[header_name]
+                header_value = header_value.strip()
+
+                try:
+                    redirect_url = self.get_url().url_join(header_value)
+                except ValueError:
+                    # No special invalid URL handling required
+                    continue
+                else:
+                    break
+
+        return redirect_url
+
+    def does_redirect_outside_target(self):
+        """
+        :return: True when the redirect destination is not the same
+                 domain and protocol than the originally requested URL
+        """
+        redirect_destination = self.get_redirect_destination()
+
+        if redirect_destination is None:
+            return False
+
+        # Check if the protocol was changed:
+        original_proto = self.get_url().get_protocol()
+        redirect_proto = redirect_destination.get_protocol()
+
+        if original_proto != redirect_proto:
+            return True
+
+        # Check if the domain was changed:
+        original_domain = self.get_url().get_domain()
+        redirect_domain = redirect_destination.get_domain()
+
+        if original_domain != redirect_domain:
+            return True
+
+        return False
 
     def copy(self):
         return copy.deepcopy(self)

@@ -103,6 +103,10 @@ class ConsoleUI(object):
         self._context = parent._context
         self._w3af = parent._w3af
 
+    def skip_dependencies_check(self):
+        startup_cfg = StartUpConfig()
+        return startup_cfg.get_skip_dependencies_check()
+
     def accept_disclaimer(self):
         """
         :return: True/False depending on the user's answer to our disclaimer.

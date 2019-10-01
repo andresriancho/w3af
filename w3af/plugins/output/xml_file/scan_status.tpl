@@ -50,13 +50,13 @@
     <total-urls>{{ total_urls | escape_text }}</total-urls>
     <known-urls>
 
-        {%- for path, children in known_urls.iteritems() recursive %}
+        {%- for url_node, children in known_urls.iteritems() recursive %}
             {%- if children -%}
-                {{ "\n"|indent(loop.depth * 4, True, True) }}<node url="{{ path | escape_attr }}">
+                {{ "\n"|indent(loop.depth * 4, True, True) }}<node url="{{ url_node.path | escape_attr }}" exists="{{ url_node.is_leaf | escape_attr }}">
                 {{ loop(children.iteritems()) }}
                 {{ "\n"|indent(loop.depth * 4, True, True) }}</node>
             {%- else %}
-                {{ "\n"|indent(loop.depth * 4, True, True) }}<node url="{{ path | escape_attr }}" />
+                {{ "\n"|indent(loop.depth * 4, True, True) }}<node url="{{ url_node.path | escape_attr }}" exists="{{ url_node.is_leaf | escape_attr }}" />
             {%- endif %}
         {%- endfor %}
 

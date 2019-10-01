@@ -109,3 +109,6 @@ class TestHTMLCommentsUnit(unittest.TestCase):
 
         for _ in xrange(500):
             self.plugin.grep(request, response)
+
+        info_sets = kb.kb.get('html_comments', 'interesting_comments')
+        self.assertEquals(len(info_sets), 1)

@@ -23,7 +23,6 @@ from random import randint
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
 from w3af.core.data.parsers.doc.url import parse_qs
-from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class rnd_hex_encode(EvasionPlugin):
@@ -31,10 +30,6 @@ class rnd_hex_encode(EvasionPlugin):
     Add random hex encoding.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -63,9 +58,9 @@ class rnd_hex_encode(EvasionPlugin):
             else:
                 data = self._mutate(data)
 
-        new_req = HTTPRequest(new_url, data, request.headers,
-                              request.get_origin_req_host(),
-                              retries=request.retries_left)
+        new_req = request.copy()
+        new_req.set_uri(new_url)
+        new_req.set_data(data)
 
         return new_req
 
@@ -76,11 +71,13 @@ class rnd_hex_encode(EvasionPlugin):
         :return: a string.
         """
         new_data = ''
+
         for char in data:
             if char not in ['?', '/', '&', '\\', '=', '%', '+']:
                 if randint(1, 2) == 2:
                     char = "%%%02x" % ord(char)
             new_data += char
+
         return new_data
 
     def get_priority(self):
@@ -101,5 +98,5 @@ class rnd_hex_encode(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/b%61r/%66oo.asp'
+            Output:     '/b%61r/%66oo.asp'
         """

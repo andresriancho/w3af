@@ -298,7 +298,7 @@ class Info(dict):
         :return: The language code (es, en, etc.) to use when reading from
                  the vulnerability database.
         """
-        return cf.cf.get('vulndb_language')
+        return cf.cf.get('vulndb_language') or DBVuln.DEFAULT_LANG
 
     def has_db_details(self):
         """

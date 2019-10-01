@@ -19,15 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import re
 import socket
-
-
-TEN_X = re.compile('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_SEVEN_TWO = re.compile('(172\.[1-3]\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_NINE_TWO = re.compile('(192\.168\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_TWO_SEVEN = re.compile('(127\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)')
-ONE_SIX_NINE = re.compile('(169\.254\.\d?\d?\d?\.\d?\d?\d?)')
+import ipaddress
 
 
 def is_private_site(domain_or_ip_address):
@@ -39,33 +32,20 @@ def is_private_site(domain_or_ip_address):
         return True
 
     try:
-        addrinfo = socket.getaddrinfo(domain_or_ip_address, 0)
-    except socket.gaierror:
-        # If I can't resolve this DNS name, then it's a private domain
-        return True
+        ip_address = socket.gethostbyname(domain_or_ip_address)
+    except socket.gaierror, se:
+        # raises exception when it's not found
+        if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
+            return True
     else:
-        ip_address_list = [info[4][0] for info in addrinfo]
-        for ip_address in ip_address_list:
-            if matches_private_ip(ip_address):
-                return True
+        if matches_private_ip(ip_address):
+            return True
 
     return False
 
 
 def matches_private_ip(ip_address):
-    if TEN_X.match(ip_address):
-        return True
-
-    if ONE_SEVEN_TWO.match(ip_address):
-        return True
-
-    if ONE_NINE_TWO.match(ip_address):
-        return True
-
-    if ONE_TWO_SEVEN.match(ip_address):
-        return True
-
-    if ONE_SIX_NINE.match(ip_address):
-        return True
-
-    return False
+    try:
+        return ipaddress.ip_address(ip_address).is_private
+    except:
+        return False

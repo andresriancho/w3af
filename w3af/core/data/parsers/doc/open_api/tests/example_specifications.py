@@ -44,6 +44,11 @@ class IntParamJson(object):
         return file('%s/data/int_param_json.json' % CURRENT_PATH).read()
 
 
+class IntParamWithExampleJson(object):
+    def get_specification(self):
+        return file('%s/data/int_param_with_example_json.json' % CURRENT_PATH).read()
+
+
 class IntParamNoModelJson(object):
     def get_specification(self):
         return file('%s/data/int_param_no_model_json.json' % CURRENT_PATH).read()
@@ -72,6 +77,18 @@ class NestedLoopModel(object):
 class StringParamHeader(object):
     def get_specification(self):
         return file('%s/data/string_param_header.json' % CURRENT_PATH).read()
+
+
+class MultiplePathsAndHeaders(object):
+    def get_specification(self):
+        return file('%s/data/multiple_paths_and_headers.json' % CURRENT_PATH).read()
+
+
+class PetstoreSimpleModel(object):
+
+    @staticmethod
+    def get_specification():
+        return file('%s/data/petstore-simple.json' % CURRENT_PATH).read()
 
 
 class IntParamPath(object):

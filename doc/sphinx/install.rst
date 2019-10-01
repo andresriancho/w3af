@@ -124,6 +124,8 @@ In order to start the process, you need XCode and MacPorts installed.
     sudo port upgrade outdated
     sudo port install python27
     sudo port select python python27
+    sudo port install py27-pip 
+    sudo port install py27-libdnet git-core automake gcc48 py27-setuptools autoconf py27-pcapy
     ./w3af_console
     . /tmp/w3af_dependency_install.sh
 
@@ -132,6 +134,8 @@ in order to run the GUI a new dependency set is required:
 
 .. code-block:: console
 
+    sudo port install py27-pygtk py27-pygtksourceview graphviz
+    sudo port install py27-webkitgtk
     ./w3af_gui
     . /tmp/w3af_dependency_install.sh
 

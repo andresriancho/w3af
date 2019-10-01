@@ -27,9 +27,13 @@ from nose.plugins.attrib import attr
 from mock import Mock
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.core.data.url.constants import (MAX_ERROR_COUNT, DEFAULT_TIMEOUT,
+from w3af.core.data.url.constants import (MAX_ERROR_COUNT,
+                                          DEFAULT_TIMEOUT,
+                                          MIN_TIMEOUT,
                                           TIMEOUT_ADJUST_LIMIT,
-                                          TIMEOUT_MULT_CONST)
+                                          TIMEOUT_MULT_CONST,
+                                          TIMEOUT_UPDATE_ELAPSED_MIN)
+from w3af.core.data.url.handlers.keepalive.connection_manager import ConnectionManager
 from w3af.core.data.url.tests.helpers.upper_daemon import UpperDaemon
 from w3af.core.data.url.tests.helpers.ssl_daemon import RawSSLDaemon
 from w3af.core.data.url.tests.test_xurllib import TimeoutTCPHandler
@@ -165,7 +169,10 @@ class TestXUrllibTimeout(unittest.TestCase):
         url = URL('http://127.0.0.1:%s/' % port)
         sent_requests = 0
 
-        for _ in xrange(TIMEOUT_ADJUST_LIMIT * 2):
+        self.uri_opener.GET(url)
+        time.sleep(TIMEOUT_UPDATE_ELAPSED_MIN + 1)
+
+        for _ in xrange(TIMEOUT_ADJUST_LIMIT * 3):
             try:
                 self.uri_opener.GET(url)
             except Exception:
@@ -187,7 +194,55 @@ class TestXUrllibTimeout(unittest.TestCase):
         self.assertGreaterEqual(adjusted_tout, expected_tout - delta)
         self.assertLessEqual(adjusted_tout, expected_tout + delta)
         self.assertLess(adjusted_tout, DEFAULT_TIMEOUT)
-        self.assertEqual(sent_requests, TIMEOUT_ADJUST_LIMIT + 1)
+        self.assertEqual(sent_requests, TIMEOUT_ADJUST_LIMIT)
+
+    def test_timeout_parameter_overrides_global_timeout(self):
+        upper_daemon = UpperDaemon(Ok200SmallDelayWithLongTriggeredTimeoutHandler)
+        upper_daemon.start()
+        upper_daemon.wait_for_start()
+
+        port = upper_daemon.get_port()
+
+        # Enable timeout auto-adjust
+        self.uri_opener.settings.set_configured_timeout(0)
+        self.uri_opener.clear_timeout()
+
+        # Make sure we start from the desired timeout value
+        self.assertEqual(self.uri_opener.get_timeout('127.0.0.1'),
+                         DEFAULT_TIMEOUT)
+
+        url = URL('http://127.0.0.1:%s/' % port)
+
+        self.uri_opener.GET(url)
+        time.sleep(TIMEOUT_UPDATE_ELAPSED_MIN + 1)
+
+        for _ in xrange(TIMEOUT_ADJUST_LIMIT * 3):
+            self.uri_opener.GET(url)
+
+        # These make sure that the HTTP connection pool is full, this is
+        # required because we want to check if the timeout applies to
+        # existing connections, not new ones
+        for _ in xrange(ConnectionManager.MAX_CONNECTIONS):
+            self.uri_opener.GET(url)
+
+        # Make sure we reached the desired timeout after our HTTP
+        # requests to the test server
+        self.assertEqual(self.uri_opener.get_timeout('127.0.0.1'),
+                         MIN_TIMEOUT)
+
+        timeout_url = URL('http://127.0.0.1:%s/timeout' % port)
+
+        # And now the real test, this one makes sure that the timeout
+        # parameter sent to GET overrides the configured value
+        response = self.uri_opener.GET(timeout_url, timeout=8.0)
+        self.assertEqual(response.get_code(), 200)
+
+        self.assertEqual(self.uri_opener.get_timeout('127.0.0.1'),
+                         MIN_TIMEOUT)
+
+        # When timeout is not specified and the server returns in more
+        # than the expected time, an exception is raised
+        self.assertRaises(Exception, self.uri_opener.GET, timeout_url)
 
 
 class Ok200SmallDelayHandler(SocketServer.BaseRequestHandler):
@@ -197,6 +252,25 @@ class Ok200SmallDelayHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         time.sleep(self.sleep)
+        self.request.sendall('HTTP/1.0 200 Ok\r\n'
+                             'Connection: Close\r\n'
+                             'Content-Length: 3\r\n'
+                             '\r\n' + self.body)
+
+
+class Ok200SmallDelayWithLongTriggeredTimeoutHandler(SocketServer.BaseRequestHandler):
+    body = 'abc'
+    regular_sleep = 0.1
+    long_sleep = 7.0
+
+    def handle(self):
+        self.data = self.request.recv(1024).strip()
+        time.sleep(self.regular_sleep)
+
+        # When /timeout is in the request, we sleep some extra seconds
+        if '/timeout' in self.data:
+            time.sleep(self.long_sleep)
+
         self.request.sendall('HTTP/1.0 200 Ok\r\n'
                              'Connection: Close\r\n'
                              'Content-Length: 3\r\n'

@@ -124,7 +124,6 @@ class csp(GrepPlugin):
                     self.kb_append(self, 'csp', v)
                 
         # Cleanup
-        self._urls.cleanup()
         self._vulns.cleanup()
 
     def _find_occurrences(self, vuln_desc):

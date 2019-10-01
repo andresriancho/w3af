@@ -196,6 +196,7 @@ VULNS = {
          'CSP vulnerability': None,
          'Missing X-Content-Type-Options header': 76,
          'Missing Strict Transport Security header': 19,
+         'Missing Expect-CT header': None,
          'HTML5 WebSocket detected': None,
          'Insecure password form access over HTTP': 49,
          

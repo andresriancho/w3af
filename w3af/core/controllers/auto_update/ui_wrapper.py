@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os
 
-from w3af.core.controllers.misc.homeDir import (verify_dir_has_perm,
-                                                W3AF_LOCAL_PATH)
+from w3af.core.controllers.misc.home_dir import (verify_dir_has_perm,
+                                                 W3AF_LOCAL_PATH)
 from w3af.core.controllers.auto_update.version_manager import VersionMgr
 from w3af.core.controllers.auto_update.utils import is_git_repo
 

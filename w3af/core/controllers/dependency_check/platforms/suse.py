@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import subprocess
 import platform
+import subprocess
 
 from .base_platform import Platform
 from ..requirements import CORE, GUI
@@ -31,7 +31,7 @@ class SuSE(Platform):
     PKG_MANAGER_CMD = 'sudo zypper install'
     PIP_CMD = 'pip-2.7'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'sqlite3-devel',
+    CORE_SYSTEM_PACKAGES = ['python-pip','npm', 'python-devel', 'sqlite3-devel',
                             'git', 'libxml2-devel', 'libxslt-devel',
                             'python-webkitgtk', 'libffi-devel']
 

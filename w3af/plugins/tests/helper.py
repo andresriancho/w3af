@@ -22,7 +22,6 @@ from __future__ import print_function
 
 import os
 import re
-import copy
 import time
 import pprint
 import urllib2
@@ -38,8 +37,9 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.w3afCore import w3afCore
-from w3af.core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+from w3af.core.controllers.misc.home_dir import W3AF_LOCAL_PATH
 from w3af.core.controllers.misc.decorators import retry
+from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import URL_LIST
@@ -78,6 +78,7 @@ class PluginTest(unittest.TestCase):
     def setUp(self):
         self.kb.cleanup()
         self.w3afcore = w3afCore()
+        self.misc_settings = MiscSettings()
 
         self.request_callback_call_count = 0
         self.request_callback_match = 0
@@ -114,7 +115,7 @@ class PluginTest(unittest.TestCase):
         for http_method in all_methods:
             httpretty.register_uri(http_method,
                                    re.compile(re_str),
-                                   body=self.request_callback)
+                                   body=self.__internal_request_callback)
 
     def tearDown(self):
         self.w3afcore.quit()
@@ -196,7 +197,7 @@ class PluginTest(unittest.TestCase):
         self.assertEquals(set(found),
                           set(expected))
 
-    def request_callback(self, http_request, uri, headers):
+    def __internal_request_callback(self, http_request, uri, headers):
         self.request_callback_call_count += 1
         match = None
 
@@ -240,8 +241,13 @@ class PluginTest(unittest.TestCase):
             except Exception, e:
                 self.assertTrue(False, msg % (target, e))
 
-    def _scan(self, target, plugins, debug=False, assert_exceptions=True,
-              verify_targets=True):
+    def _scan(self,
+              target,
+              plugins,
+              debug=False,
+              assert_exceptions=True,
+              verify_targets=True,
+              misc_settings=None):
         """
         Setup env and start scan. Typically called from children's
         test methods.
@@ -250,6 +256,19 @@ class PluginTest(unittest.TestCase):
         :param plugins: PluginConfig objects to activate and setup before
             the test runs.
         """
+        self._set_target(target, verify_targets)
+        self._set_enabled_plugins(plugins)
+        self._set_output_manager(debug)
+        self._set_uri_opener_settings()
+        self._set_misc_settings(misc_settings)
+
+        try:
+            self._init_and_start(assert_exceptions)
+        finally:
+            # This prevents configurations from one test affecting the others
+            self.misc_settings.set_default_values()
+
+    def _set_target(self, target, verify_targets):
         if not isinstance(target, (basestring, tuple)):
             raise TypeError('Expected basestring or tuple in scan target.')
         
@@ -265,6 +284,7 @@ class PluginTest(unittest.TestCase):
         target_opts = create_target_option_list(*target)
         self.w3afcore.target.set_options(target_opts)
 
+    def _set_enabled_plugins(self, plugins):
         # Enable plugins to be tested
         for ptype, plugincfgs in plugins.items():
             self.w3afcore.plugins.set_plugins([p.name for p in plugincfgs],
@@ -287,16 +307,30 @@ class PluginTest(unittest.TestCase):
                 self.w3afcore.plugins.set_plugin_options(ptype, pcfg.name,
                                                          unit_test_options)
 
+    def _set_output_manager(self, debug):
         # Enable text output plugin for debugging
         environ_debug = os.environ.get('DEBUG', '0') == '1'
         if debug or environ_debug:
             self._configure_debug()
 
+    def _set_uri_opener_settings(self):
         # Set a special user agent to be able to grep the logs and identify
         # requests sent by each test
         custom_test_agent = self.get_custom_agent()
         self.w3afcore.uri_opener.settings.set_user_agent(custom_test_agent)
 
+    def _set_misc_settings(self, misc_settings):
+        if misc_settings is None:
+            return
+
+        options = self.misc_settings.get_options()
+
+        for setting, value in misc_settings.iteritems():
+            options[setting].set_value(value)
+
+        self.misc_settings.set_options(options)
+
+    def _init_and_start(self, assert_exceptions):
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
         self.w3afcore.verify_environment()
@@ -421,7 +455,15 @@ class PluginTest(unittest.TestCase):
         default_opts['http_output_file'].set_value(http_output)
         default_opts['verbose'].set_value(True)
 
-        print('Logging to %s' % text_output)
+        print('')
+        print('    Logging to %s' % text_output)
+
+        latest_output = os.path.join(tempfile.gettempdir(), 'latest-w3af-output.txt')
+        if os.path.exists(latest_output):
+            os.remove(latest_output)
+
+        os.symlink(text_output, latest_output)
+        print('    Symlink to log file created at %s' % latest_output)
 
         self.w3afcore.plugins.set_plugin_options(ptype, pname, default_opts)
 
@@ -596,6 +638,9 @@ class MockResponse(object):
                     * Headers dict
                     * Response body string
         """
+        if callable(self.body):
+            return self.body(self, http_request, uri, response_headers)
+
         response_headers.update({'status': self.status})
         response_headers.update(self.headers)
 
@@ -641,3 +686,15 @@ class MockResponse(object):
                 return True
 
         return False
+
+
+LOREM = """Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer
+        eu lacus accumsan arcu fermentum euismod. Donec pulvinar porttitor
+        tellus. Aliquam venenatis. Donec facilisis pharetra tortor.  In nec
+        mauris eget magna consequat convallis. Nam sed sem vitae odio
+        pellentesque interdum. Sed consequat viverra nisl. Suspendisse arcu
+        metus, blandit quis, rhoncus, pharetra eget, velit. Mauris
+        urna. Morbi nonummy molestie orci. Praesent nisi elit, fringilla ac,
+        suscipit non, tristique vel, mauris. Curabitur vel lorem id nisl porta
+        adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate tristique
+        enim. Donec quis lectus a justo imperdiet tempus."""

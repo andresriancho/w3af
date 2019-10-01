@@ -20,12 +20,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import urllib2
 import unittest
 
 from mock import patch, Mock, _Call
 
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.url.handlers.cache import CacheHandler
+from w3af.core.data.url import opener_settings
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 
@@ -88,6 +90,34 @@ class TestCacheHandler(unittest.TestCase):
                                            url.url_string)
         cache.http_response(request, response)
         self.assertEqual(cache.default_open(request), None)
+
+
+class CacheIntegrationTest(unittest.TestCase):
+    def test_cache_http_errors(self):
+        settings = opener_settings.OpenerSettings()
+        settings.build_openers()
+        opener = settings.get_custom_opener()
+
+        url = URL('http://w3af.org/foo-bar-not-exists.htm')
+        request = HTTPRequest(url, cache=False)
+
+        with patch('w3af.core.data.url.handlers.cache.CacheClass') as cc_mock:
+            store_in_cache = Mock()
+            cc_mock.attach_mock(store_in_cache, 'store_in_cache')
+
+            # If there is a response we should store it, even if it is a 404
+            try:
+                response = opener.open(request)
+            except urllib2.HTTPError:
+                pass
+
+            # Make sure the right call was made
+            _call = _Call(('store_in_cache', (request, response)))
+            self.assertEqual(cc_mock.mock_calls, [_call])
+            cc_mock.reset_mock()
+
+            # And make sure the response was a 404
+            self.assertEqual(response.status, 404)
 
 
 class FakeHttplibHTTPResponse(object):

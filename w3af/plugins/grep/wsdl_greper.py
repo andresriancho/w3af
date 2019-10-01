@@ -30,10 +30,15 @@ class wsdl_greper(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    WSDL_STRINGS = ('xs:int', 'target_namespace', 'soap:body',
-                    '/s:sequence', 'wsdl:', 'soapAction=',
+    WSDL_STRINGS = ('xs:int',
+                    'target_namespace',
+                    'soap:body',
+                    '/s:sequence',
+                    'wsdl:',
+                    'soapAction=',
                     # This isn't WSDL... but well...
                     'xmlns="urn:uddi"', '<p>Hi there, this is an AXIS service!</p>')
+
     _multi_in = MultiIn(WSDL_STRINGS)
 
     def __init__(self):
@@ -49,9 +54,11 @@ class wsdl_greper(GrepPlugin):
         :param response: The HTTP response object
         :return: None, all results are saved in the kb.
         """
-        if response.get_code() == 200:
-            self.analyze_wsdl(request, response)
-            self.analyze_disco(request, response)
+        if response.get_code() != 200:
+            return
+
+        self.analyze_wsdl(request, response)
+        self.analyze_disco(request, response)
     
     def analyze_wsdl(self, request, response):
         for match in self._multi_in.query(response.body):
@@ -89,7 +96,7 @@ class wsdl_greper(GrepPlugin):
         return """
         This plugin greps every page for WSDL definitions.
 
-        Not all wsdls are found appending "?WSDL" to the url like crawl.wsdl_finder
-        plugin does, this grep plugin will find some wsdl's that arent found by the
-        crawl plugin.
+        This grep plugin works together with `crawl.wsdl_finder`, which sends
+        HTTP requests to the original target URL appending `?WSDL`
+        (eg. http://target.com/original?WSDL).
         """

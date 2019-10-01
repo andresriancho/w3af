@@ -41,8 +41,8 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      # We need 0.1.8 because of mitmproxy
                      PIPDependency('pyasn1', 'pyasn1', '0.4.2'),
 
-                     PIPDependency('lxml', 'lxml', '3.4.4'),
-                     PIPDependency('scapy.config', 'scapy-real', '2.2.0-dev'),
+                     PIPDependency('lxml', 'lxml', '3.6.0'),
+                     PIPDependency('scapy.config', 'scapy', '2.4.0'),
                      PIPDependency('guess_language', 'guess-language', '0.2'),
                      PIPDependency('cluster', 'cluster', '1.1.1b3'),
                      PIPDependency('msgpack', 'msgpack', '0.5.6'),
@@ -50,12 +50,12 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('Halberd', 'halberd', '0.2.4'),
                      PIPDependency('darts.lib.utils', 'darts.util.lru', '0.5'),
                      PIPDependency('jinja2', 'Jinja2', '2.10'),
-                     PIPDependency('vulndb', 'vulndb', '0.1.0'),
+                     PIPDependency('vulndb', 'vulndb', '0.1.1'),
                      PIPDependency('markdown', 'markdown', '2.6.1'),
 
                      # This was used for testing, but now it's required for
                      # regular users too, do not remove!
-                     PIPDependency('psutil', 'psutil', '2.2.1'),
+                     PIPDependency('psutil', 'psutil', '5.4.8'),
 
                      # Added for the crawl.ds_store plugin
                      PIPDependency('ds_store', 'ds-store', '1.1.2'),
@@ -64,7 +64,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('termcolor', 'termcolor', '1.1.0'),
 
                      # We "outsource" the HTTP proxy feature to mitmproxy
-                     PIPDependency('mitmproxy', 'mitmproxy', '0.13'),
+                     PIPDependency('mitmproxy', 'mitmproxy', '0.18.3'),
 
                      # https://gist.github.com/andresriancho/cf2fa1ce239b30f37bd9
                      PIPDependency('ruamel.ordereddict',
@@ -92,7 +92,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('diff_match_patch', 'diff-match-patch', '20121119'),
 
                      # OpenAPI documentation parser
-                     PIPDependency('bravado_core', 'bravado-core', '5.0.2'),
+                     PIPDependency('bravado_core', 'bravado-core', '5.12.1'),
 
                      # Fast compression library
                      PIPDependency('lz4', 'lz4', '1.1.0'),
@@ -101,7 +101,19 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('PyChromeDevTools', 'PyChromeDevTools', '0.1'),
 
                      # Vulners API plugin needs this lib
-                     PIPDependency('vulners', 'vulners', '1.3.0')
+                     PIPDependency('vulners', 'vulners', '1.3.0'),
+
+                     PIPDependency('ipaddresses', 'ipaddresses', '0.0.2'),
+
+                     # subprocess32 "it is guaranteed to be reliable when used
+                     # in threaded applications". Needed this to fix issues in
+                     # retirejs that spawns processes from threads
+                     PIPDependency('subprocess32', 'subprocess32', '3.5.4'),
+
+                     PIPDependency('setproctitle', 'setproctitle', '1.1.10'),
+
+                     # Calculate distances between two strings
+                     PIPDependency('Levenshtein', 'python-Levenshtein', '0.12.0'),
                      ]
 
 GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]

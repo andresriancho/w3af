@@ -30,7 +30,7 @@ class strange_http_codes(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    COMMON_HTTP_CODES = {200, 301, 302, 303, 304, 401, 403, 404, 500, 501}
+    COMMON_HTTP_CODES = {200, 301, 302, 303, 304, 308, 401, 403, 404, 500, 501}
 
     # https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#5xx_Server_errors
     DOS_HTTP_CODES = {502, 503, 504, 508, 509, 530, 598, 520, 521, 522, 523,

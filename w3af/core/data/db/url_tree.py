@@ -23,8 +23,48 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from collections import defaultdict
 
 
+class OrderedIterDefaultDict(defaultdict):
+    def iteritems(self):
+        for k in sorted(self.keys()):
+            yield k, self[k]
+
+    def __repr__(self):
+        _repr = dict()
+        for k, v in self.iteritems():
+            _repr[k] = v
+        return repr(_repr)
+
+
 def url_tree_factory():
-    return defaultdict(url_tree_factory)
+    return OrderedIterDefaultDict(url_tree_factory)
+
+
+class URLNode(object):
+    __slots__ = ('path', 'is_leaf')
+
+    def __init__(self, path, is_leaf):
+        self.path = path
+
+        self.is_leaf = None
+        self.set_is_leaf(is_leaf)
+
+    def set_is_leaf(self, is_leaf):
+        self.is_leaf = 1 if is_leaf else 0
+
+    def __str__(self):
+        return '<URLNode (path:"%s", is_leaf:%s)>' % (self.path, self.is_leaf)
+
+    def __repr__(self):
+        return str(self)
+
+    def __hash__(self):
+        return hash(self.path)
+
+    def __eq__(self, other):
+        return self.path == other.path
+
+    def __cmp__(self, other):
+        return cmp(self.path, other.path)
 
 
 class URLTree(object):
@@ -35,20 +75,36 @@ class URLTree(object):
         """
         Splits the URL by path and adds a new node to the tree for each
         """
-        tree_path = self._url_to_tree_path(url)
+        tree_nodes = self._url_to_tree_nodes(url)
         parent = None
 
-        for path in tree_path:
+        # Note: The last node from tree_nodes is always a leaf
+        for node in tree_nodes:
             if parent is None:
-                parent = self.tree[path]
+                self._update_leaf_flag(self.tree, node)
+                parent = self.tree[node]
             else:
-                parent = parent[path]
+                self._update_leaf_flag(parent, node)
+                parent = parent[node]
+
+    def _update_leaf_flag(self, parent, node):
+        # If the node was already in the parent, it wasn't created
+        # but it might need an update on it's leaf status
+        if not node.is_leaf:
+            return
+
+        if node not in parent:
+            return
+
+        for n in parent:
+            if node.path == n.path:
+                n.set_is_leaf(True)
 
     def iteritems(self):
         for k, v in self.tree.iteritems():
             yield k, v
 
-    def _url_to_tree_path(self, url):
+    def _url_to_tree_nodes(self, url):
         """
         Split the path into pieces, each piece if a key in the tree. For example:
 
@@ -68,4 +124,10 @@ class URLTree(object):
 
         tree_path.extend(split_path)
 
-        return [i for i in tree_path if i]
+        url_nodes = [URLNode(path, False) for path in tree_path if path]
+
+        if url_nodes:
+            leaf = url_nodes[-1]
+            leaf.set_is_leaf(True)
+
+        return url_nodes

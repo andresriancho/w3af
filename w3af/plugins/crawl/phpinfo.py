@@ -128,10 +128,11 @@ class phpinfo(CrawlPlugin):
         self._analyzed_dirs = ScalableBloomFilter()
         self._has_audited = False
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         For every directory, fetch a list of files and analyze the response.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
@@ -178,7 +179,9 @@ class phpinfo(CrawlPlugin):
         """
         php_info_url = domain_path.url_join(php_info_filename)
 
-        response = self._uri_opener.GET(php_info_url, cache=True)
+        response = self._uri_opener.GET(php_info_url,
+                                        cache=True,
+                                        grep=False)
 
         if is_404(response):
             return

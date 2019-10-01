@@ -68,6 +68,8 @@ class ParserCache(CacheStats):
         Clear all the internal variables
         :return: None
         """
+        om.out.debug('Called clear() on ParserCache')
+
         # Stop any workers
         mp_doc_parser.stop_workers()
 
@@ -163,9 +165,8 @@ class ParserCache(CacheStats):
             # There is one subprocess already processing this http response
             # body, the best thing to do here is to make this thread wait
             # until that process has finished
-            try:
-                parser_finished.wait(timeout=mp_doc_parser.PARSER_TIMEOUT)
-            except:
+            wait_result = parser_finished.wait(timeout=mp_doc_parser.PARSER_TIMEOUT)
+            if not wait_result:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s". Waited more than %s sec.'
                 args = (http_response.get_url(), mp_doc_parser.PARSER_TIMEOUT)
@@ -296,9 +297,8 @@ class ParserCache(CacheStats):
             # There is one subprocess already processing this http response
             # body, the best thing to do here is to make this thread wait
             # until that process has finished
-            try:
-                parser_finished.wait(timeout=mp_doc_parser.PARSER_TIMEOUT)
-            except:
+            wait_result = parser_finished.wait(timeout=mp_doc_parser.PARSER_TIMEOUT)
+            if not wait_result:
                 # Act just like when there is no parser
                 self._log_return_empty(http_response, 'Timeout waiting for response')
                 return []

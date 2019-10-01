@@ -53,6 +53,11 @@ class eval(AuditPlugin):
         "print('%%s'*%s)" % PRINT_REPEATS,
         # ASP
         "Response.Write(new String(\"%%s\",%s))" % PRINT_REPEATS,
+        # NodeJS
+        "response.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
+        ";response.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
+        "res.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
+        ";res.end((new Array(%s+1)).join('%%s'))" % PRINT_REPEATS,
     )
 
     WAIT_OBJ = (
@@ -72,7 +77,9 @@ class eval(AuditPlugin):
         # Note: The Sleep in ASP.NET is uppercase
         ExactDelay("Thread.Sleep(%s);", mult=1000),
         # NodeJS eval
-        ExactDelay("var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)", mult=1000)
+        ExactDelay("var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)", mult=1000),
+        ExactDelay(";var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)", mult=1000),
+        ExactDelay('";var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s);var x="', mult=1000)
     )
 
     def __init__(self):

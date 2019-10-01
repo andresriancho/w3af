@@ -36,12 +36,10 @@ class finger_pks(InfrastructurePlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    def __init__(self):
-        InfrastructurePlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
@@ -55,7 +53,7 @@ class finger_pks(InfrastructurePlugin):
             mail = result.username + '@' + root_domain
             
             desc = 'The mail account: "%s" was found at: "%s".'
-            desc = desc % (mail, pks_url)
+            desc %= (mail, pks_url)
 
             i = Info('Email account', desc, result.id, self.get_name())
             i.set_url(URL(pks_url))

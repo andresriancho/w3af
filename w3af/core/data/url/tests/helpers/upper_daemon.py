@@ -66,7 +66,10 @@ class UpperDaemon(threading.Thread):
             # Catch some ugly tracebacks on shutdown
             # https://circleci.com/gh/andresriancho/w3af/1568
             pass
-    
+
+    def get_host_port(self):
+        return '127.0.0.1:%s' % self.get_port()
+
     def get_port(self):
         if self.server is not None:
             port = self.server.server_address[1]

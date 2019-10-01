@@ -56,48 +56,58 @@ class content_negotiation(CrawlPlugin):
         # Internal variables
         self._already_tested_dir = ScalableBloomFilter()
         self._already_tested_resource = ScalableBloomFilter()
-        self._content_negotiation_enabled = None
-        self._to_bruteforce = Queue.Queue()
-        # I want to try 3 times to see if the remote host is vulnerable
-        # detection is not thaaaat accurate!
-        self._tries_left = 3
 
-    def crawl(self, fuzzable_request):
+        # Test queue
+        #
+        # Note that this queue can have ~20 items in the worse case scenario
+        # it is not a risk to store it all in memory
+        self._to_bruteforce = Queue.Queue()
+
+        # Run N checks to verify if content negotiation is enabled
+        self._tries_left = 3
+        self._content_negotiation_enabled = None
+
+    def crawl(self, fuzzable_request, debugging_id):
         """
         1- Check if HTTP server is vulnerable
         2- Exploit using FuzzableRequest
         3- Perform bruteforce for each new directory
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         """
-        if self._content_negotiation_enabled is not None \
-        and self._content_negotiation_enabled == False:
+        if self._content_negotiation_enabled is False:
             return
 
-        else:
-            con_neg_result = self._verify_content_neg_enabled(
-                fuzzable_request)
+        con_neg_result = self._verify_content_neg_enabled(fuzzable_request)
 
-            if con_neg_result is None:
-                # I can't say if it's vulnerable or not (yet), save the current
-                # directory to be included in the bruteforcing process, and
-                # return.
-                self._to_bruteforce.put(fuzzable_request.get_url())
-                return
+        if con_neg_result is None:
+            # I can't say if it's vulnerable or not (yet), save the current
+            # directory to be included in the bruteforcing process, and
+            # return.
+            self._to_bruteforce.put(fuzzable_request.get_url())
+            return
 
-            elif not con_neg_result:
-                # Not vulnerable, nothing else to do.
-                return
+        if con_neg_result is False:
+            # Not vulnerable, nothing else to do.
+            self.clear_queue()
+            return
 
-            elif con_neg_result:
-                # Happy, happy, joy!
-                # Now we can test if we find new resources!
-                self._find_new_resources(fuzzable_request)
+        if con_neg_result is True:
+            # Now we can test if we find new resources!
+            self._find_new_resources(fuzzable_request)
 
-                # and we can also perform a bruteforce:
-                self._to_bruteforce.put(fuzzable_request.get_url())
-                self._bruteforce()
+            # and we can also perform a bruteforce:
+            self._to_bruteforce.put(fuzzable_request.get_url())
+            self._bruteforce()
+
+    def clear_queue(self):
+        while not self._to_bruteforce.empty():
+            try:
+                self._to_bruteforce.get_nowait()
+            except Queue.Empty:
+                continue
 
     def _find_new_resources(self, fuzzable_request):
         """
@@ -149,8 +159,9 @@ class content_negotiation(CrawlPlugin):
 
         # Send the requests using threads:
         for base_url, alternates in self.worker_pool.map_multi_args(
-            self._request_and_get_alternates,
-            args_generator, chunksize=10):
+                self._request_and_get_alternates,
+                args_generator,
+                chunksize=10):
 
             for fr in self._create_new_fuzzable_requests(base_url, alternates):
                 self.output_queue.put(fr)
@@ -162,7 +173,7 @@ class content_negotiation(CrawlPlugin):
             - URLs in self._bruteforce
             - Words in the bruteforce wordlist file
         """
-        while True:
+        while not self._to_bruteforce.empty():
             try:
                 bf_url = self._to_bruteforce.get_nowait()
             except Queue.Empty:
@@ -237,55 +248,55 @@ class content_negotiation(CrawlPlugin):
             # The test was already performed, we return the old response
             return self._content_negotiation_enabled
 
-        else:
-            # We perform the test, for this we need a URL that has a filename,
-            # URLs that don't have a filename can't be used for this.
-            filename = fuzzable_request.get_url().get_file_name()
-            if filename == '':
-                return None
+        # We perform the test, for this we need a URL that has a filename,
+        # URLs that don't have a filename can't be used for this.
+        filename = fuzzable_request.get_url().get_file_name()
+        if filename == '':
+            return None
 
-            filename = filename.split('.')[0]
+        filename = filename.split('.')[0]
 
-            # Now I simply perform the request:
-            alternate_resource = fuzzable_request.get_url().url_join(filename)
-            headers = fuzzable_request.get_headers()
-            headers['Accept'] = 'w3af/bar'
-            response = self._uri_opener.GET(alternate_resource, headers=headers)
+        # Now I simply perform the request:
+        alternate_resource = fuzzable_request.get_url().url_join(filename)
+        headers = fuzzable_request.get_headers()
+        headers['Accept'] = 'w3af/bar'
+        response = self._uri_opener.GET(alternate_resource, headers=headers)
 
-            if response.get_headers().icontains('alternates'):
-                # Even if there is only one file, with an unique mime type,
-                # the content negotiation will return an alternates header.
-                # So this is pretty safe.
+        if response.get_headers().icontains('alternates'):
+            # Even if there is only one file, with an unique mime type,
+            # the content negotiation will return an alternates header.
+            # So this is pretty safe.
 
-                # Save the result internally
-                self._content_negotiation_enabled = True
+            # Save the result as an info in the KB, for the user to see it:
+            desc = ('HTTP Content negotiation is enabled in the remote web'
+                    ' server. This could be used to bruteforce file names'
+                    ' and find new resources')
 
-                # Save the result as an info in the KB, for the user to see it:
-                desc = ('HTTP Content negotiation is enabled in the remote web'
-                        ' server. This could be used to bruteforce file names'
-                        ' and find new resources.')
- 
-                i = Info('HTTP Content Negotiation enabled', desc, response.id,
-                         self.get_name())
-                i.set_url(response.get_url())
-                
-                kb.kb.append(self, 'content_negotiation', i)
-                om.out.information(i.get_desc())
-            else:
-                om.out.information(
-                    'The remote Web server has Content Negotiation disabled.')
+            i = Info('HTTP Content Negotiation enabled', desc, response.id,
+                     self.get_name())
+            i.set_url(response.get_url())
 
-                # I want to perform this test a couple of times... so I only
-                # return False if that "couple of times" is empty
-                self._tries_left -= 1
-                if self._tries_left == 0:
-                    # Save the FALSE result internally
-                    self._content_negotiation_enabled = False
-                else:
-                    # None tells the plugin to keep trying with the next URL
-                    return None
+            kb.kb.append(self, 'content_negotiation', i)
+            om.out.information(i.get_desc())
 
+            # Save the result internally
+            self._content_negotiation_enabled = True
             return self._content_negotiation_enabled
+
+        msg = 'The remote Web server has Content Negotiation disabled'
+        om.out.information(msg)
+
+        # I want to perform this test a couple of times... so I only
+        # return False if that "couple of times" is empty
+        self._tries_left -= 1
+        if self._tries_left == 0:
+            # Save the False result internally
+            self._content_negotiation_enabled = False
+        else:
+            # None tells the plugin to keep trying with the next URL
+            return None
+
+        return self._content_negotiation_enabled
 
     def get_options(self):
         """
@@ -330,8 +341,9 @@ class content_negotiation(CrawlPlugin):
             - Perform a brute force attack in order to find new resources.
 
         One configurable parameter exists:
+        
             - wordlist: The wordlist to be used in the bruteforce process.
 
-        As far as I can tell, the first reference to this technique was written
-        by Stefano Di Paola in his blog (http://www.wisec.it/sectou.php?id=4698ebdc59d15).
+        The first reference to this technique was written by Stefano Di Paola
+        in his blog (http://www.wisec.it/sectou.php?id=4698ebdc59d15).
         """

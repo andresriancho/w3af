@@ -113,6 +113,17 @@ class OutputPlugin(Plugin):
         """
         pass
 
+    def log_crash(self, crash_message):
+        """
+        The ExceptionHandler receives all unhandled exceptions generated during
+        a scan, and calls log_crash() with the crash report (also saved to
+        /tmp/w3af-crash files) so that output plugins can write them in the
+        appropriate format.
+
+        :return: No value is returned.
+        """
+        pass
+
     def log_enabled_plugins(self, enabled_plugins_dict, plugin_options_dict):
         """
         This method logs to the output plugins the enabled plugins and their
@@ -224,13 +235,11 @@ class OutputPlugin(Plugin):
         # Only work if something is enabled
         if plugins_list:
             response = 'plugins\n'
-            response += '    ' + plugin_type + ' ' + ', '.join(
-                plugins_list) + '\n'
+            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
 
             for plugin_name in plugins_list:
                 if plugin_name in plugins_options:
-                    response += '    ' + plugin_type + \
-                        ' config ' + plugin_name + '\n'
+                    response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
 
                     for plugin_option in plugins_options[plugin_name]:
                         name = str(plugin_option.get_name())

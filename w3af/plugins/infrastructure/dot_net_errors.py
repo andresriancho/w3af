@@ -32,33 +32,44 @@ class dot_net_errors(InfrastructurePlugin):
     Request specially crafted URLs that generate ASP.NET errors in order
     to gather information.
 
-    :author: Andres Riancho ((andres.riancho@gmail.com))
+    :author: Andres Riancho (andres.riancho@gmail.com)
     """
+    SPECIAL_CHARS = ['|', '~']
+
+    RUNTIME_ERROR = '<h2> <i>Runtime Error</i> </h2></span>'
+    REMOTE_MACHINE = ('<b>Details:</b> To enable the details of this'
+                      ' specific error message to be viewable on'
+                      ' remote machines')
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
         # Internal variables
         self._already_tested = ScalableBloomFilter()
+
         # On real web applications, if we can't trigger an error in the first
         # MAX_TESTS tests, it simply won't happen and we have to stop testing.
         self.MAX_TESTS = 25
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Requests the special filenames.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
-        if len(self._already_tested) < self.MAX_TESTS \
-        and fuzzable_request.get_url() not in self._already_tested:
-            self._already_tested.add(fuzzable_request.get_url())
+        if len(self._already_tested) >= self.MAX_TESTS:
+            return
 
-            test_generator = self._generate_urls(fuzzable_request.get_url())
+        if fuzzable_request.get_url() in self._already_tested:
+            return
 
-            self.worker_pool.map(self._send_and_check, test_generator,
-                                 chunksize=1)
+        self._already_tested.add(fuzzable_request.get_url())
+
+        self.worker_pool.map(self._send_and_check,
+                             self._generate_urls(fuzzable_request.get_url()),
+                             chunksize=1)
 
     def _generate_urls(self, original_url):
         """
@@ -67,38 +78,51 @@ class dot_net_errors(InfrastructurePlugin):
         :param original_url: The original url that has to be modified in
                              order to trigger errors in the remote application.
         """
-        special_chars = ['|', '~']
-
         filename = original_url.get_file_name()
-        if filename != '' and '.' in filename:
-            splitted_filename = filename.split('.')
-            extension = splitted_filename[-1:][0]
-            name = '.'.join(splitted_filename[0:-1])
 
-            for char in special_chars:
-                new_filename = name + char + '.' + extension
+        if not filename:
+            return
+
+        if '.' not in filename:
+            return
+
+        split_filename = filename.split('.')
+        extension = split_filename[-1:][0]
+        name = '.'.join(split_filename[0:-1])
+
+        for char in self.SPECIAL_CHARS:
+            new_filename = name + char + '.' + extension
+
+            try:
                 new_url = original_url.url_join(new_filename)
-                yield new_url
+            except ValueError:
+                # When the filename has a colon the url_join() will fail with
+                # ValueError
+                continue
+
+            yield new_url
 
     def _send_and_check(self, url):
         response = self._uri_opener.GET(url, cache=True)
 
-        viewable_remote_machine = '<b>Details:</b> To enable the details of this'
-        viewable_remote_machine += ' specific error message to be viewable on'
-        viewable_remote_machine += ' remote machines'
+        if self.RUNTIME_ERROR not in response.body:
+            return
 
-        if viewable_remote_machine not in response.body\
-        and '<h2> <i>Runtime Error</i> </h2></span>' in response.body:
+        if self.REMOTE_MACHINE in response.body:
+            return
 
-            desc = 'Detailed information about ASP.NET error messages can be'\
-                   ' viewed from remote sites. The URL: "%s" discloses'\
-                   ' detailed error messages.'
-            desc = desc % response.get_url()
-        
-            v = Vuln('Information disclosure via .NET errors', desc,
-                     severity.LOW, response.id, self.get_name())
-        
-            kb.kb.append(self, 'dot_net_errors', v)
+        desc = ('Detailed information about ASP.NET error messages can be'
+                ' viewed from remote clients. The URL: "%s" discloses'
+                ' detailed error messages.')
+        desc %= response.get_url()
+
+        v = Vuln('Information disclosure via .NET errors',
+                 desc,
+                 severity.LOW,
+                 response.id,
+                 self.get_name())
+
+        kb.kb.append(self, 'dot_net_errors', v)
 
     def get_plugin_deps(self):
         """
@@ -115,6 +139,7 @@ class dot_net_errors(InfrastructurePlugin):
         Request specially crafted URLs that generate ASP.NET errors in order to
         gather information like the ASP.NET version. Some examples of URLs that
         generate errors are:
+        
             - default|.aspx
             - default~.aspx
         """

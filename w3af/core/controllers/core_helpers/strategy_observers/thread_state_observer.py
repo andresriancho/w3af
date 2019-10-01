@@ -44,15 +44,17 @@ class ThreadStateObserver(StrategyObserver):
     def __init__(self):
         super(ThreadStateObserver, self).__init__()
 
+        self.should_stop = False
+
         self.audit_thread = None
+        self.grep_thread = None
         self.crawl_infra_thread = None
         self.worker_thread = None
 
-        self.should_stop = False
-
+        self._audit_lock = threading.RLock()
+        self._grep_lock = threading.RLock()
         self._crawl_infra_lock = threading.RLock()
         self._worker_thread_lock = threading.RLock()
-        self._audit_lock = threading.RLock()
 
     def end(self):
         self.should_stop = True
@@ -62,6 +64,9 @@ class ThreadStateObserver(StrategyObserver):
 
         if self.audit_thread is not None:
             self.audit_thread.join()
+
+        if self.grep_thread is not None:
+            self.grep_thread.join()
 
         if self.worker_thread is not None:
             self.worker_thread.join()
@@ -74,25 +79,25 @@ class ThreadStateObserver(StrategyObserver):
         :param args: Fuzzable requests that we don't care about
         :return: None, everything is written to disk
         """
-        with self._crawl_infra_lock:
-            if self.crawl_infra_thread is not None:
-                return
+        if self.crawl_infra_thread is not None and self.worker_thread is not None:
+            return
 
-            pool = consumer.get_pool()
-            self.crawl_infra_thread = threading.Thread(target=self.thread_worker,
-                                                       args=(pool, 'CrawlInfraWorker'),
-                                                       name='CrawlInfraPoolStateObserver')
-            self.crawl_infra_thread.start()
+        with self._crawl_infra_lock:
+            if self.crawl_infra_thread is None:
+
+                pool = consumer.get_pool()
+                self.crawl_infra_thread = threading.Thread(target=self.thread_worker,
+                                                           args=(pool, 'CrawlInfraWorker'),
+                                                           name='CrawlInfraPoolStateObserver')
+                self.crawl_infra_thread.start()
 
         with self._worker_thread_lock:
-            if self.worker_thread is not None:
-                return
-
-            pool = consumer._w3af_core.worker_pool
-            self.worker_thread = threading.Thread(target=self.thread_worker,
-                                                  args=(pool, 'Worker'),
-                                                  name='WorkerPoolStateObserver')
-            self.worker_thread.start()
+            if self.worker_thread is None:
+                pool = consumer._w3af_core.worker_pool
+                self.worker_thread = threading.Thread(target=self.thread_worker,
+                                                      args=(pool, 'Worker'),
+                                                      name='WorkerPoolStateObserver')
+                self.worker_thread.start()
 
     def audit(self, consumer, *args):
         """
@@ -102,6 +107,9 @@ class ThreadStateObserver(StrategyObserver):
         :param args: Fuzzable requests that we don't care about
         :return: None, everything is written to disk
         """
+        if self.audit_thread is not None:
+            return
+
         with self._audit_lock:
             if self.audit_thread is not None:
                 return
@@ -111,6 +119,27 @@ class ThreadStateObserver(StrategyObserver):
                                                  args=(pool, 'AuditorWorker'),
                                                  name='AuditPoolStateObserver')
             self.audit_thread.start()
+
+    def grep(self, consumer, *args):
+        """
+        Log the thread state for grep plugins
+
+        :param consumer: A grep consumer instance
+        :param args: Fuzzable requests that we don't care about
+        :return: None, everything is written to disk
+        """
+        if self.grep_thread is not None:
+            return
+
+        with self._grep_lock:
+            if self.grep_thread is not None:
+                return
+
+            pool = consumer.get_pool()
+            self.grep_thread = threading.Thread(target=self.thread_worker,
+                                                args=(pool, 'GrepWorker'),
+                                                name='GrepPoolStateObserver')
+            self.grep_thread.start()
 
     def thread_worker(self, pool, name):
         last_call = 0
@@ -144,6 +173,9 @@ class ThreadStateObserver(StrategyObserver):
             internal_thread_data = pool.get_internal_thread_state()
             self.internal_thread_data_to_log(pool, name, internal_thread_data)
 
+            pool_queue_sizes = pool.get_pool_queue_sizes()
+            self.pool_queue_sizes_to_log(pool, name, pool_queue_sizes)
+
     def add_thread_stack(self, inspect_data):
         """
         When threads have been running for a long time, it is not enough to
@@ -157,7 +189,7 @@ class ThreadStateObserver(StrategyObserver):
         workers_to_inspect = []
 
         for worker_state in inspect_data:
-            if worker_state['idle']:
+            if worker_state['idle'] or worker_state['start_time'] is None:
                 continue
 
             spent = time.time() - worker_state['start_time']
@@ -182,10 +214,14 @@ class ThreadStateObserver(StrategyObserver):
             if thread is None:
                 continue
 
-            if not hasattr(thread, 'get_state'):
+            get_state = getattr(thread, 'get_state', None)
+            if get_state is None:
                 continue
 
-            state = thread.get_state()
+            if not callable(get_state):
+                continue
+
+            state = get_state()
             worker_id = state['worker_id']
 
             if worker_id not in workers_to_inspect:
@@ -209,6 +245,17 @@ class ThreadStateObserver(StrategyObserver):
         for thread in threading.enumerate():
             if thread.ident == thread_id:
                 return thread
+
+    def pool_queue_sizes_to_log(self, pool, name, pool_queue_sizes):
+        inqueue_size = pool_queue_sizes.get('inqueue_size', None)
+        outqueue_size = pool_queue_sizes.get('outqueue_size', None)
+
+        msg = '%s worker pool has %s tasks in inqueue and %s tasks in outqueue'
+        args = (name,
+                inqueue_size,
+                outqueue_size)
+
+        self.write_to_log(msg % args)
 
     def internal_thread_data_to_log(self, pool, name, internal_thread_data):
         worker_handler = internal_thread_data['worker_handler']
@@ -255,6 +302,9 @@ class ThreadStateObserver(StrategyObserver):
                 idle_workers.append(worker_state)
                 continue
 
+            if worker_state['start_time'] is None:
+                continue
+
             spent = time.time() - worker_state['start_time']
 
             # Save us some disk space and sanity, only log worker state if it has
@@ -271,11 +321,28 @@ class ThreadStateObserver(StrategyObserver):
                 else:
                     arg_str = smart_str_ignore(arg_repr)
 
+                if len(arg_str) > 80:
+                    arg_str = arg_str[:80] + "...'"
+
                 parts.append(arg_str)
 
             args_str = ', '.join(parts)
 
-            kwargs_str = smart_str_ignore(worker_state['kwargs'])
+            short_kwargs = {}
+            for key, value in worker_state['kwargs']:
+                try:
+                    value_repr = repr(value)
+                except UnicodeEncodeError:
+                    value_str = smart_str_ignore(value)
+                else:
+                    value_str = smart_str_ignore(value_repr)
+
+                if len(value_str) > 80:
+                    value_str = value_str[:80] + "...'"
+
+                short_kwargs[key] = value_str
+
+            kwargs_str = smart_str_ignore(short_kwargs)
 
             func_name = smart_str_ignore(worker_state['func_name'])
             func_name = self.clean_function_name(func_name)

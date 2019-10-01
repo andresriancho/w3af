@@ -30,7 +30,7 @@ class CentOS(Fedora):
     PKG_MANAGER_CMD = 'sudo yum install'
     PIP_CMD = 'pip-python'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip', 'python-devel', 'python-setuptools',
+    CORE_SYSTEM_PACKAGES = ['python-pip','npm', 'python-devel', 'python-setuptools',
                             'libsqlite3x-devel', 'gcc-c++', 'gcc', 'make',
                             'git', 'libxml2-devel', 'libxslt-devel',
                             'pyOpenSSL', 'openssl-devel', 'libcom_err-devel',

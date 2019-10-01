@@ -19,13 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import subprocess
 import sys
 import platform
+import subprocess
 
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
-from .base_platform import Platform
-from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_EXTRAS, CORE, GUI
+from w3af.core.controllers.dependency_check.platforms.base_platform import Platform
+from w3af.core.controllers.dependency_check.requirements import CORE_PIP_PACKAGES, GUI_PIP_EXTRAS, CORE, GUI
 
 
 TWO_PYTHON_MSG = """\
@@ -43,17 +43,6 @@ ports Python by using the following command:
 TRACEROUTE_SCAPY_MSG = """\
 Tried to import traceroute from scapy.all and found an OSError including the
 message "Device not configured".
-
-This is a bug in the scapy library and happens on OSX with MacPorts i.e. when
-Virtualbox is installed.
-
-Please apply the following fix (example for python 2.7):
-    - Open the file /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/scapy/arch/unix.py
-    - Change line 34 to read:
-        f=os.popen("netstat -rn|grep -v vboxnet") # -f inet
-
-Original bug report:
-    http://bb.secdev.org/scapy/issue/418/scapy-error-in-mac-osx-leopard
 """
 
 

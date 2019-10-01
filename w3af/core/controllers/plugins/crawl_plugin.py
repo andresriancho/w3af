@@ -37,9 +37,12 @@ class CrawlPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def crawl_wrapper(self, fuzzable_request):
+    def discover_wrapper(self, fuzzable_request, debugging_id):
         """
         Wrapper around the crawl method in order to perform some generic tasks.
+
+        :param fuzzable_request: The target to use for infrastructure plugins.
+        :param debugging_id: A unique identifier for this call to discover()
         """
         om.out.debug('[%s] Crawling "%s"' % (self.get_name(),
                                              fuzzable_request.get_uri()))
@@ -50,7 +53,7 @@ class CrawlPlugin(Plugin):
         fuzzable_request_copy = safe_deepcopy(fuzzable_request)
 
         try:
-            return self.crawl(fuzzable_request_copy)
+            return self.crawl(fuzzable_request_copy, debugging_id)
         except FourOhFourDetectionException, ffde:
             # We simply ignore any exceptions we find during the 404 detection
             # process. FYI: This doesn't break the xurllib error handling which
@@ -59,10 +62,11 @@ class CrawlPlugin(Plugin):
             # https://github.com/andresriancho/w3af/issues/8949
             om.out.debug('%s' % ffde)
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         This method MUST be implemented on every plugin.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: Represents an HTTP request, with its URL and
                                  parameters.
 
@@ -71,8 +75,6 @@ class CrawlPlugin(Plugin):
         """
         msg = 'Plugin is not implementing required method crawl'
         raise BaseFrameworkException(msg)
-
-    discover_wrapper = crawl_wrapper
 
     def get_type(self):
         return 'crawl'
@@ -96,5 +98,25 @@ class CrawlPlugin(Plugin):
 
             if on_success is not None:
                 on_success(http_response, url, *args)
+
+        return http_response
+
+    def http_get(self, url, *args, **kwargs):
+        """
+        Similar to `http_get_and_parse` but will not send the HTTP response to
+        the core.
+
+        :param url: The URL instance to send the GET request to
+        :param args: args for send_mutant
+        :param kwargs: kwargs for send_mutant
+        :return: The HTTP response
+        """
+        fr = FuzzableRequest(url, method='GET')
+
+        on_success = kwargs.pop('on_success', None)
+        http_response = self._uri_opener.send_mutant(fr, cache=True, *args, **kwargs)
+
+        if on_success is not None:
+            on_success(http_response, url, *args)
 
         return http_response

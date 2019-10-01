@@ -49,9 +49,15 @@ class meta_tags(GrepPlugin):
     demonstrate to Google that you're the site owner. So there is probably a
     Sitemaps account for the site, if you haven't found it already.
     """
-    INTERESTING_WORDS = {'user': None, 'pass': None, 'microsoft': None,
-                         'visual': None, 'linux': None, 'source': None,
-                         'author': None, 'release': None, 'version': None,
+    INTERESTING_WORDS = {'user': None,
+                         'pass': None,
+                         'microsoft': None,
+                         'visual': None,
+                         'linux': None,
+                         'source': None,
+                         'author': None,
+                         'release': None,
+                         'version': None,
                          'verify-v1': 'Google Sitemap'}
 
     def grep(self, request, response):
@@ -62,7 +68,10 @@ class meta_tags(GrepPlugin):
         :param response: The HTTP response object
         :return: None
         """
-        if not response.is_text_or_html() or is_404(response):
+        if not response.is_text_or_html():
+            return
+
+        if is_404(response):
             return
 
         try:

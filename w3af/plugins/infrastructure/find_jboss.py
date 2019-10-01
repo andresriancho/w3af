@@ -69,14 +69,15 @@ class find_jboss(InfrastructurePlugin):
          'type': 'vuln'}
     )
 
-    def __init__(self):
-        InfrastructurePlugin.__init__(self)
-
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Checks if JBoss Interesting Directories exist in the target server.
         Also verifies some vulnerabilities.
+
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                (among other things) the URL to test.
         """
         base_url = fuzzable_request.get_url().base_url()
 

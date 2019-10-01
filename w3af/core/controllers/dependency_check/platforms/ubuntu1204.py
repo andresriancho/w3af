@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import subprocess
 import platform
+import subprocess
 
 from .base_platform import Platform
 from ..requirements import CORE, GUI
@@ -31,7 +31,7 @@ class Ubuntu1204(Platform):
     PKG_MANAGER_CMD = 'sudo apt-get -y install'
     PIP_CMD = 'pip'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip', 'python2.7-dev',
+    CORE_SYSTEM_PACKAGES = ['python-pip', 'npm', 'python2.7-dev',
                             'python-setuptools', 'build-essential',
                             'libsqlite3-dev', 'libssl-dev', 'git',
                             'libxml2-dev', 'libxslt1-dev', 'libyaml-dev',

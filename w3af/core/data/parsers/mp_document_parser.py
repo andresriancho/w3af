@@ -29,6 +29,10 @@ import resource
 import threading
 import multiprocessing
 
+# pylint: disable=E0611
+from setproctitle import setproctitle
+# pylint: enable=E0611
+
 from concurrent.futures import TimeoutError
 from tblib.decorators import Error
 from pebble import ProcessPool
@@ -393,6 +397,7 @@ def init_worker(log_queue, mem_limit):
     log_sink_factory(log_queue)
     start_profiling_no_core()
     limit_memory_usage(mem_limit)
+    setproctitle('html-parser')
 
 
 def limit_memory_usage(mem_limit):
@@ -438,7 +443,15 @@ def limit_memory_usage(mem_limit):
     # New processes are created in the pool after 20 jobs (max_tasks=20) so
     # that should take care of cycling processes with different real memory
     # limits
-    p = psutil.Process()
+    try:
+        p = psutil.Process()
+    except (psutil.NoSuchProcess, psutil.ZombieProcess) as e:
+        error = ('Failed to limit parser process memory usage: "%s". The scan'
+                 ' will continue but in some scenarios the HTTP response'
+                 ' parsers might use a large amount of memory.')
+        om.out.error(error % e)
+        return
+
     real_memory_limit = p.memory_info().vms + mem_limit
 
     soft, hard = resource.getrlimit(resource.RLIMIT_AS)

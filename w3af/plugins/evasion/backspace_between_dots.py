@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
-from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class backspace_between_dots(EvasionPlugin):
@@ -30,10 +29,6 @@ class backspace_between_dots(EvasionPlugin):
 
     :author: Jose Ramon Palanco( jose.palanco@hazent.com )
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -49,9 +44,9 @@ class backspace_between_dots(EvasionPlugin):
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
         new_url.set_path(path)
-        new_req = HTTPRequest(new_url, request.get_data(),
-                              request.headers, request.get_origin_req_host(),
-                              retries=request.retries_left)
+
+        new_req = request.copy()
+        new_req.set_uri(new_url)
 
         return new_req
 

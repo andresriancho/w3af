@@ -33,7 +33,6 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.url.HTTPRequest import HTTPRequest
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.url.handlers.keepalive import (KeepAliveHandler,
                                                    ConnectionManager,
                                                    HTTPResponse,
@@ -95,7 +94,6 @@ class TestKeepalive(unittest.TestCase):
         conn_mgr_mock.get_available_connection.assert_called_once_with(req,
                                                                        conn_factory)
         conn_mgr_mock.remove_connection.assert_called_once_with(conn,
-                                                                host,
                                                                 reason='will close')
 
     def test_timeout(self):
@@ -174,7 +172,8 @@ class TestKeepalive(unittest.TestCase):
         response.read()
 
         time.sleep(wait)
-        
+
+        # pylint: disable=E1101
         pid = os.getpid()
         p = psutil.Process(pid)
         connections_before = p.get_connections()
@@ -183,6 +182,7 @@ class TestKeepalive(unittest.TestCase):
 
         time.sleep(1)
         connections_after = p.get_connections()
+        # pylint: enable=E1101
         
         self.assertLess(len(connections_after), len(connections_before))
         
@@ -197,6 +197,7 @@ class TestConnectionMgr(unittest.TestCase):
         # We don't need a new HTTPConnection for each request
         self.request.new_connection = False
         self.request.get_host = lambda: 'w3af.org'
+        self.request.get_netloc = lambda: 'w3af.org'
 
         self.cm.MAX_CONNECTIONS = 1  # Only a single connection
         self.assertEquals(0, len(self.cm._used_conns))
@@ -206,6 +207,7 @@ class TestConnectionMgr(unittest.TestCase):
         def conn_factory(request):
             mock = Mock()
             mock.host = request.get_host()
+            mock.host_port = request.get_host()
             return mock
 
         conn_1 = self.cm.get_available_connection(self.request, conn_factory)
@@ -262,17 +264,11 @@ class TestConnectionMgr(unittest.TestCase):
         self.assertEquals(self.cm.get_connections_total(), old_len)
 
     def test_remove_conn(self):
-        """
-        Remove a non existing conn, nothing should happen.
-        """
         self.assertEqual(self.cm.get_connections_total(), 0)
 
         conn = self.cm.get_available_connection(self.request, lambda h: Mock())
         self.assertEqual(self.cm.get_connections_total(), 1)
-        non_exist_host = "non_host"
 
-        # Remove ok
-        self.cm.remove_connection(conn, non_exist_host)
-        self.cm.remove_connection(conn, self.request)
+        self.cm.remove_connection(conn, reason='unittest')
 
         self.assertEqual(self.cm.get_connections_total(), 0)

@@ -35,10 +35,13 @@ class InfrastructurePlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    def discover_wrapper(self, fuzzable_request):
+    def discover_wrapper(self, fuzzable_request, debugging_id):
         """
-        Wrapper around the discover method in order to perform some generic
-        tasks.
+        Wrapper around the discover method to perform generic tasks such
+        as cloning the fuzzable request.
+
+        :param fuzzable_request: The target to use for infrastructure plugins.
+        :param debugging_id: A unique identifier for this call to discover()
         """
         # I copy the fuzzable request, to avoid cross plugin contamination
         # in other words, if one plugin modified the fuzzable request object
@@ -46,7 +49,7 @@ class InfrastructurePlugin(Plugin):
         fuzzable_request_copy = safe_deepcopy(fuzzable_request)
 
         try:
-            return self.discover(fuzzable_request_copy)
+            return self.discover(fuzzable_request_copy, debugging_id)
         except FourOhFourDetectionException, ffde:
             # We simply ignore any exceptions we find during the 404 detection
             # process. FYI: This doesn't break the xurllib error handling which
@@ -55,11 +58,12 @@ class InfrastructurePlugin(Plugin):
             # https://github.com/andresriancho/w3af/issues/8949
             om.out.debug('%s' % ffde)
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         This method MUST be implemented on every plugin.
 
         :param fuzzable_request: The target to use for infrastructure plugins.
+        :param debugging_id: A unique identifier for this call to discover()
         :return: None. These plugins should store information in the KB. Results
                  from this method will be ignored by the core.
         """

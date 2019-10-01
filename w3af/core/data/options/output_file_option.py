@@ -26,6 +26,8 @@ from w3af.core.data.options.baseoption import BaseOption
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.fuzzer.utils import rand_alpha
 
+DEV_NULL = '/dev/null'
+
 
 class OutputFileOption(BaseOption):
 
@@ -44,6 +46,15 @@ class OutputFileOption(BaseOption):
     def validate(self, value):
         
         expanded_path = os.path.expanduser(value)
+
+        # In some scenarios we want to allow the end-user to choose an output
+        # file that doesn't actually write to disk
+        #
+        # For example, in output.text_file the user might want to log to the
+        # text log, but doesn't care about the HTTP requests and responses. In
+        # that case the user specifies /dev/null as the output
+        if expanded_path == '/dev/null':
+            return value
 
         # This is useful for testing, the user specifies a script with $rnd$ in the
         # output file name, w3af will replace that string with 5 random chars.

@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pickle
 import unittest
 import copy
 
@@ -119,3 +120,86 @@ class TestJSONContainer(unittest.TestCase):
 
         dc_copy = copy.deepcopy(dc)
         self.assertIsNotNone(dc_copy.get_token())
+
+    def test_headers(self):
+        jcont = JSONContainer(COMPLEX_OBJECT)
+
+        e_headers = [('Content-Type', 'application/json')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont.set_header('Content-Type', 'application/vnd.w3af+json')
+        e_headers = [('Content-Type', 'application/vnd.w3af+json')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont.set_header('X-Foo-Header', 'Bar')
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', 'Bar')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        headers = {'Content-Type': 'application/vnd.w3af+json', 'X-Foo-Header': 'Bar'}
+        jcont = JSONContainer(COMPLEX_OBJECT, headers)
+
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', 'Bar')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont.set_header('X-Foo-Header', '42')
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', '42')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+        jcont = JSONContainer(COMPLEX_OBJECT, None)
+        e_headers = [('Content-Type', 'application/json')]
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+    def test_headers_immutable(self):
+        jcont = JSONContainer(OBJECT)
+
+        e_headers = [('Content-Type', 'application/json')]
+        headers = jcont.get_headers()
+        self.assertEquals(headers, e_headers)
+
+        headers.append(('X-Foo-Header', 'Bar'))
+        self.assertEquals(jcont.get_headers(), e_headers)
+
+    def test_wrong_headers(self):
+        jcont = JSONContainer(COMPLEX_OBJECT)
+
+        with self.assertRaises(TypeError):
+            jcont.set_header(1, 'Foo')
+
+        with self.assertRaises(TypeError):
+            jcont.set_header('Foo', 1)
+
+        with self.assertRaises(TypeError):
+            JSONContainer(COMPLEX_OBJECT, 'Foo')
+
+        with self.assertRaises(TypeError):
+            JSONContainer(COMPLEX_OBJECT, [])
+
+    def test_pickle(self):
+        original = JSONContainer(COMPLEX_OBJECT)
+
+        e_headers = [('Content-Type', 'application/json')]
+        self.assertEquals(original.get_headers(), e_headers)
+
+        clone = pickle.loads(pickle.dumps(original))
+        self.assertEquals(original, clone)
+        self.assertEquals(clone.get_headers(), e_headers)
+
+        original = JSONContainer(COMPLEX_OBJECT)
+        original.set_header('Content-Type', 'application/vnd.w3af+json')
+
+        e_headers = [('Content-Type', 'application/vnd.w3af+json')]
+        self.assertEquals(original.get_headers(), e_headers)
+
+        clone = pickle.loads(pickle.dumps(original))
+        self.assertEquals(original, clone)
+        self.assertEquals(clone.get_headers(), e_headers)
+
+        original = JSONContainer(COMPLEX_OBJECT)
+        original.set_header('X-Foo-Header', 'Bar')
+
+        e_headers = [('Content-Type', 'application/json'), ('X-Foo-Header', 'Bar')]
+        self.assertEquals(original.get_headers(), e_headers)
+
+        clone = pickle.loads(pickle.dumps(original))
+        self.assertEquals(original, clone)
+        self.assertEquals(clone.get_headers(), e_headers)

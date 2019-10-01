@@ -117,16 +117,16 @@ class sed(ManglePlugin):
         self._user_option_fix_content_len = option_list['fix_content_len'].get_value()
 
         self._expressions = ','.join(option_list['expressions'].get_value())
-        self._expressions = re.findall('([qs])([bh])/(.*?)/(.*?)/;?',
+        found_expressions = re.findall('([qs])([bh])/(.*?)/(.*?)/;?',
                                        self._expressions)
 
-        if len(self._expressions) == 0 and len(option_list['expressions'].get_value()) != 0:
+        if len(found_expressions) == 0 and len(option_list['expressions'].get_value()) != 0:
             msg = 'The user specified expression is invalid.'
             raise BaseFrameworkException(msg)
 
-        for exp in self._expressions:
+        for exp in found_expressions:
             req_res, body_header, regex_str, target_str = exp
-            
+
             if req_res not in ('q', 's'):
                 msg = 'The first letter of the sed expression should be "q"'\
                       ' for indicating request or "s" for response, got "%s"'\
@@ -152,7 +152,7 @@ class sed(ManglePlugin):
         :return: A list of option objects for this plugin.
         """
         ol = OptionList()
-        
+
         d = 'Stream edition expressions'
         h = ('Stream edition expressions are strings that tell the sed plugin'
              ' which transformations to apply to the HTTP requests and'
@@ -170,12 +170,12 @@ class sed(ManglePlugin):
              'Multiple expressions can be specified separated by commas.')
         o = opt_factory('expressions', self._expressions, d, 'list', help=h)
         ol.add(o)
-        
+
         d = 'Fix the content length header after mangling'
         o = opt_factory('fix_content_len', self._user_option_fix_content_len,
                         d, 'boolean')
         ol.add(o)
-        
+
         return ol
 
     def get_long_desc(self):

@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import string
 import base64
 import hashlib
+import collections
 
 from itertools import chain
 from urllib import unquote, quote, quote_plus
@@ -81,7 +82,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
                  '_headers',
                  '_uri',
                  '_url',
-                 '_sent_info_comp')
+                 '_sent_info_comp',
+                 '_force_fuzzing_headers',
+                 '_force_fuzzing_url_parts')
 
     def __init__(self, uri, method='GET', headers=None, cookie=None,
                  post_data=None):
@@ -112,6 +115,12 @@ class FuzzableRequest(RequestMixIn, DiskItem):
 
         # Set the internal variables
         self._sent_info_comp = None
+
+        # Set the headers which we want to fuzz explicitly (empty by default)
+        self._force_fuzzing_headers = set()
+
+        # Set a path template explicitly (empty by default)
+        self._force_fuzzing_url_parts = tuple()
 
     def __getstate__(self):
         state = {k: getattr(self, k) for k in self.__slots__}
@@ -275,13 +284,26 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         headers = smart_str_ignore(self.get_all_headers())
 
         haystacks = set()
+
+        # uris
+        uri_decoded = uri.url_decode()
+
         haystacks.add(smart_str_ignore(uri))
-        haystacks.add(smart_str_ignore(uri.url_decode()))
-        haystacks.add(self.make_comp(smart_str_ignore(uri.url_decode())))
+        haystacks.add(smart_str_ignore(uri_decoded))
+        haystacks.add(self.make_comp(smart_str_ignore(uri_decoded)))
+
+        # uris without encoding
+        haystacks.add(smart_str_ignore(uri.url_string))
+        haystacks.add(smart_str_ignore(uri_decoded.url_string))
+        haystacks.add(self.make_comp(smart_str_ignore(uri_decoded.url_string)))
+
+        # data
         haystacks.add(data)
         haystacks.add(unquote(data))
         haystacks.add(self.make_comp(data))
         haystacks.add(self.make_comp(unquote(data)))
+
+        # headers
         haystacks.add(headers)
         haystacks.add(unquote(headers))
 
@@ -428,6 +450,46 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             headers[k] = v
 
         self._headers = headers
+
+    def set_force_fuzzing_headers(self, headers):
+        """
+        Sets a list of headers which should be fuzzed.
+        :param headers: A list of header names.
+        """
+        if headers is None:
+            raise TypeError('headers should not be null')
+
+        if not isinstance(headers, collections.Iterable):
+            raise TypeError(TYPE_ERROR % ('_force_fuzzing_headers', 'iterable'))
+
+        self._force_fuzzing_headers = set(headers)
+
+    def get_force_fuzzing_headers(self):
+        """
+        Returns a list of headers which should be fuzzed.
+        :return: A list of header names.
+        """
+        return list(self._force_fuzzing_headers)
+
+    def set_force_fuzzing_url_parts(self, url_parts):
+        """
+        Sets a list of url parts which should be fuzzed.
+        :param url_parts: An iterable of (path part, is variable) tuples.
+        """
+        if url_parts is None:
+            raise TypeError('url_parts should not be null')
+
+        if not isinstance(url_parts, collections.Iterable):
+            raise TypeError(TYPE_ERROR % ('_force_fuzzing_url_parts', 'iterable'))
+
+        self._force_fuzzing_url_parts = tuple(url_parts)
+
+    def get_force_fuzzing_url_parts(self):
+        """
+        Returns a list of url parts which should be fuzzed.
+        :return: A tuple of (path part, is variable) tuples.`
+        """
+        return list(self._force_fuzzing_url_parts)
 
     def set_referer(self, referer):
         self._headers['Referer'] = str(referer)

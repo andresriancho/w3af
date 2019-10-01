@@ -29,7 +29,7 @@ from w3af.core.data.fuzzer.utils import rand_number
 from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.exceptions import HTTPRequestException
-from w3af.core.controllers.misc.diff import diff
+from w3af.core.controllers.misc.diff import chunked_diff
 
 
 class BlindSqliResponseDiff(object):
@@ -117,11 +117,13 @@ class BlindSqliResponseDiff(object):
             if confirmations == self.CONFIRMATION_ROUNDS:
                 return vuln
 
-    def _get_statements(self, mutant, exclude_numbers=[]):
+    def _get_statements(self, mutant, exclude_numbers=None):
         """
         Returns a list of statement tuples.
         """
         res = {}
+        exclude_numbers = exclude_numbers or []
+
         rnd_num = int(rand_number(2, exclude_numbers))
         rnd_num_plus_one = rnd_num + 1
 
@@ -391,7 +393,7 @@ class BlindSqliResponseDiff(object):
         start = time.time()
 
         if compare_diff:
-            body1, body2 = diff(body1, body2)
+            body1, body2 = chunked_diff(body1, body2)
 
         cmp_res = fuzzy_equal(body1, body2, self._eq_limit)
 

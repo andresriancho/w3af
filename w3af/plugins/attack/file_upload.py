@@ -205,7 +205,7 @@ class FileUploadShell(ExecShell):
 
         try:
             self.unlink(file_to_del)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'File upload shell cleanup failed with exception: "%s".'
             om.out.error(msg % e)
         else:

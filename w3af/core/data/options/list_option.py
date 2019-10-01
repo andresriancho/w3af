@@ -28,10 +28,16 @@ from w3af.core.data.options.option_types import LIST
 
 class ListOption(BaseOption):
 
-    LST_VALIDATION_RE = re.compile(
-        '((".*?"|\'.*?\'|.*?),)*(".*?"|\'.*?\'|.*?)', re.U)
-    LST_PARSE_RE = re.compile('(".*?"|\'.*?\'|.*?),', re.U)
     _type = LIST
+
+    LST_VALIDATION_RE = re.compile('((".*?"|\'.*?\'|.*?),)*(".*?"|\'.*?\'|.*?)', re.U)
+    LST_PARSE_RE = re.compile('(".*?"|\'.*?\'|.*?),', re.U)
+
+    VALID_EXAMPLES = ('Examples of valid list specifications are:\n'
+                      '\n'
+                      ' - a,b,c\n'
+                      ' - a,"b c",d\n'
+                      ' - \'a\',\'b c\',\'d\'\n')
 
     def _get_str(self, value):
         if isinstance(value, list):
@@ -52,29 +58,39 @@ class ListOption(BaseOption):
         self._value = self.validate(value)
 
     def validate(self, value):
+        # Raise an exception if the user specified a list using [...] and
+        # make it clear that they need to use comma separated format
+        if value.startswith('[') or value.endswith(']'):
+            raise BaseFrameworkException('Invalid list specified, use of [...] is not'
+                                         ' supported. %s' % self.VALID_EXAMPLES)
+
+        # Add the "," at the end to make parsing easier
         temp_value = value + ','
+
         mo = self.LST_VALIDATION_RE.match(temp_value)
+
         try:
             matched_str = mo.group(0)
             assert matched_str == temp_value
         except Exception:
-            msg = 'Invalid list format in user configuration: "%s".' % value
-            raise BaseFrameworkException(msg)
-        else:
-            res = []
-            list_items = self.LST_PARSE_RE.findall(temp_value)
+            msg = 'Invalid list specified in user configuration: "%s". %s'
+            args = (value, self.VALID_EXAMPLES)
+            raise BaseFrameworkException(msg % args)
 
-            for item in list_items:
+        res = []
+        list_items = self.LST_PARSE_RE.findall(temp_value)
 
-                item = item.strip()
-                if item == '':
-                    continue
+        for item in list_items:
 
-                # Now I check for single and double quotes
-                if (item.startswith('"') and item.endswith('"')) or \
-                   (item.startswith("'") and item.endswith("'")):
-                    res.append(item[1:-1])
-                else:
-                    res.append(item)
+            item = item.strip()
+            if not item:
+                continue
 
-            return res
+            # Now I check for single and double quotes
+            if (item.startswith('"') and item.endswith('"')) or \
+               (item.startswith("'") and item.endswith("'")):
+                item = item[1:-1]
+
+            res.append(item)
+
+        return res

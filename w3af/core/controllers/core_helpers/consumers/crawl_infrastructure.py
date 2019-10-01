@@ -27,6 +27,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.db.variant_db import VariantDB
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.misc.ordered_cached_queue import OrderedCachedQueue
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -47,7 +48,9 @@ class CrawlInfrastructure(BaseConsumer):
     again for continuing with the discovery process.
     """
 
-    def __init__(self, crawl_infrastructure_plugins, w3af_core,
+    def __init__(self,
+                 crawl_infrastructure_plugins,
+                 w3af_core,
                  max_discovery_time):
         """
         :param crawl_infrastructure_plugins: Instances of CrawlInfrastructure
@@ -108,19 +111,16 @@ class CrawlInfrastructure(BaseConsumer):
             else:
                 if work_unit == POISON_PILL:
 
-                    try:
-                        # Close the pool and wait for everyone to finish
-                        self._threadpool.close()
-                        self._threadpool.join()
-                        self._threadpool = None
+                    self._log_queue_sizes()
 
-                        self._running = False
-                        self._teardown()
+                    try:
+                        self._process_poison_pill()
+                    except Exception, e:
+                        msg = 'An exception was found while processing poison pill: "%s"'
+                        om.out.debug(msg % e)
                     finally:
-                        # Finish this consumer and everyone consuming the output
-                        self._out_queue.put(POISON_PILL)
+                        self._running = False
                         self.in_queue.task_done()
-                        self.set_has_finished()
                         break
 
                 else:
@@ -146,11 +146,11 @@ class CrawlInfrastructure(BaseConsumer):
         # we call .end(), so no need to call the same method twice
         to_teardown = set(to_teardown) - self._disabled_plugins
 
-        msg = 'Starting CrawlInfra consumer _teardown() with %s plugins.'
+        msg = 'Starting CrawlInfra consumer _teardown() with %s plugins'
         om.out.debug(msg % len(to_teardown))
 
         for plugin in to_teardown:
-            om.out.debug('Calling %s.end().' % plugin.get_name())
+            om.out.debug('Calling %s.end()' % plugin.get_name())
             start_time = time.time()
 
             try:
@@ -165,24 +165,24 @@ class CrawlInfrastructure(BaseConsumer):
                 # still be able to `end()` without sending HTTP requests to
                 # the remote server
                 msg_fmt = ('Spent %.2f seconds running %s.end() until a'
-                           ' scan must stop exception was raised.')
+                           ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
             except Exception, e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
-                           ' unhandled exception was found.')
+                           ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
                 self.handle_exception('crawl', plugin.get_name(), 'plugin.end()', e)
 
             else:
-                msg_fmt = 'Spent %.2f seconds running %s.end().'
+                msg_fmt = 'Spent %.2f seconds running %s.end()'
                 self._log_end_took(msg_fmt, start_time, plugin)
 
             finally:
                 self._disabled_plugins.add(plugin)
 
-        om.out.debug('Finished CrawlInfra consumer _teardown().')
+        om.out.debug('Finished CrawlInfra consumer _teardown()')
 
     @task_decorator
     def _consume(self, function_id, work_unit):
@@ -282,39 +282,35 @@ class CrawlInfrastructure(BaseConsumer):
                 # in the output queue
                 if self._should_stop_discovery():
                     self._running = False
-                    self._force_end()
+                    self._force_consumer_to_finish()
                     break
 
-    def _force_end(self):
+    def _force_consumer_to_finish(self):
         """
-        I had to create this method in order to be able to quickly end the
-        discovery phase from within the same thread.
+        Quickly end the crawling phase by clearing all items from the input
+        queue. That should prevent any more tasks from being run and will
+        exit the run() thread.
         """
-        # Clear all items in the input queue so no more work is performed
-        while not self.in_queue.empty():
+        # BaseConsumer._clear_input_output_queues() is not something we want
+        # to call here. That method also clears the output queue, which in
+        # this consumer holds information which might be useful for audit
+        # plugins
+        while True:
             try:
                 self.in_queue.get_nowait()
             except Queue.Empty:
-                # We get here in very rare cases where:
-                #
-                #  * Another thread (T1) is running and reading from in_queue
-                #  * Our thread (T2) asks if the queue is empty and gets False
-                #  * T1 reads from in_queue
-                #  * T2 reads from the queue but there are no more tasks there
-                #  * T2 locks for ever (at least that is what happen when self.in_queue.get()
-                #    was used instead of get_nowait()
-                #
-                msg = 'Handled race condition in %s consumer terminate()'
-                args = (self._thread_name,)
-                om.out.debug(msg % args)
+                break
+            else:
+                self.in_queue.task_done()
 
-                continue
+        self._log_queue_sizes()
 
-            self.in_queue.task_done()
+        # Poison the run() loop for this consumer so that no more tasks are
+        # processed
+        self.send_poison_pill()
 
-        om.out.debug('No more tasks in %s consumer input queue.' % self._thread_name)
-
-        # Let the client know that I finished
+        # Poison the loop in strategy.py to indicate that no more data will be
+        # generated by this consumer
         self.out_queue.put(POISON_PILL)
 
     def join(self):
@@ -349,9 +345,8 @@ class CrawlInfrastructure(BaseConsumer):
         all_known_fuzzable_requests = kb.kb.get_all_known_fuzzable_requests()
 
         msg = 'Found %s URLs and %s different injections points.'
-        msg = msg % (len(tmp_url_list),
-                     len(all_known_fuzzable_requests))
-        om.out.information(msg)
+        args = (len(tmp_url_list), len(all_known_fuzzable_requests))
+        om.out.information(msg % args)
 
         # print the URLs
         om.out.information('The URL list is:')
@@ -376,15 +371,16 @@ class CrawlInfrastructure(BaseConsumer):
         if not self._running:
             return True
 
-        if self._w3af_core.status.get_run_time() > self._max_discovery_time:
-            if self._report_max_time:
-                self._report_max_time = False
-                msg = ('Maximum crawl time limit hit, no new URLs will be'
-                       ' added to the queue.')
-                om.out.information(msg)
-            return True
+        if self._w3af_core.status.get_run_time() < self._max_discovery_time:
+            return False
 
-        return False
+        if self._report_max_time:
+            self._report_max_time = False
+            msg = ('Maximum crawl time limit hit, no new URLs will be'
+                   ' added to the queue.')
+            om.out.information(msg)
+
+        return True
 
     def _remove_discovery_plugin(self, plugin_to_remove):
         """
@@ -513,44 +509,50 @@ class CrawlInfrastructure(BaseConsumer):
 
         :return: A list with the newly found fuzzable requests.
         """
-        args = (plugin.get_name(), fuzzable_request.get_uri())
-        om.out.debug('%s.discover(%s)' % args)
+        debugging_id = rand_alnum(8)
+
+        args = (plugin.get_name(), fuzzable_request.get_uri(), debugging_id)
+        om.out.debug('%s.discover(%s, did=%s)' % args)
 
         took_line = TookLine(self._w3af_core,
                              plugin.get_name(),
                              'discover',
-                             debugging_id=None,
+                             debugging_id=debugging_id,
                              method_params={'uri': fuzzable_request.get_uri()})
 
         # Status reporting
         status = self._w3af_core.status
         status.set_running_plugin('crawl', plugin.get_name())
         status.set_current_fuzzable_request('crawl', fuzzable_request)
-        om.out.debug('%s is testing "%s"' % (plugin.get_name(),
-                                             fuzzable_request.get_uri()))
 
         try:
-            result = plugin.discover_wrapper(fuzzable_request)
-        except BaseFrameworkException, e:
-            msg = 'An exception was found while running "%s" with "%s": "%s".'
-            om.out.error(msg % (plugin.get_name(), fuzzable_request), e)
+            result = plugin.discover_wrapper(fuzzable_request, debugging_id)
+        except BaseFrameworkException as e:
+            msg = 'An exception was found while running "%s" with "%s": "%s" (did: %s)'
+            args = (plugin.get_name(), fuzzable_request, e, debugging_id)
+            om.out.error(msg % args)
         except RunOnce:
             # Some plugins are meant to be run only once
             # that is implemented by raising a RunOnce
             # exception
             self._remove_discovery_plugin(plugin)
         except Exception, e:
-            self.handle_exception(plugin.get_type(), plugin.get_name(),
-                                  fuzzable_request, e)
+            self.handle_exception(plugin.get_type(),
+                                  plugin.get_name(),
+                                  fuzzable_request,
+                                  e)
         else:
             # The plugin output is retrieved and analyzed by the
             # _route_plugin_results method, here we just verify that the plugin
             # result is None (which proves that the plugin respects this part
             # of the API)
             if result is not None:
-                msg = 'The %s plugin did NOT return None.' % plugin.get_name()
-                ve = ValueError(msg)
-                self.handle_exception(plugin.get_type(), plugin.get_name(),
-                                      fuzzable_request, ve)
+                msg = 'The %s plugin did NOT return None (did: %s)'
+                args = (plugin.get_name(), debugging_id)
+                ve = ValueError(msg % args)
+                self.handle_exception(plugin.get_type(),
+                                      plugin.get_name(),
+                                      fuzzable_request,
+                                      ve)
 
         took_line.send()

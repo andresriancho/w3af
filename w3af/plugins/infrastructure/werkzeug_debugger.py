@@ -36,8 +36,12 @@ class werkzeug_debugger(InfrastructurePlugin):
     REQUIRED_STRINGS = ('CONSOLE_MODE', 'openShell', 'console.png')
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
-
+    def discover(self, fuzzable_request, debugging_id):
+        """
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
+        """
         url = fuzzable_request.get_url().url_join(self.TEST_URL)
         response = self._uri_opener.GET(url, cache=False, grep=False)
 

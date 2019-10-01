@@ -23,6 +23,7 @@ import sys
 import warnings
 import logging
 
+from w3af.core.data.db.startup_cfg import StartUpConfig
 from .utils import verify_python_version
 verify_python_version()
 
@@ -60,6 +61,8 @@ def get_missing_pip_packages(platform, dependency_set):
     failed_deps = []
 
     for w3af_req in platform.PIP_PACKAGES[dependency_set]:
+
+        # pylint: disable=E1133
         for dist in pkg_resources.working_set:
             if w3af_req.package_name.lower() == dist.project_name.lower():
 
@@ -71,6 +74,7 @@ def get_missing_pip_packages(platform, dependency_set):
                     break
         else:
             failed_deps.append(w3af_req)
+        # pylint: enable=E1133
 
     return failed_deps
 
@@ -169,6 +173,9 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     
     :return: True if the process should exit
     """
+    if StartUpConfig().get_skip_dependencies_check():
+        return False
+
     disable_warnings()
 
     platform = get_current_platform()

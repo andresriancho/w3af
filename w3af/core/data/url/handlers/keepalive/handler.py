@@ -26,13 +26,15 @@ modifications are:
     reads, and added a hack for the HEAD method.
   - SNI support for SSL
 """
-import threading
+import time
+import socket
 import urllib2
 import httplib
-import socket
-import time
-
 import OpenSSL
+import threading
+
+from email.base64mime import header_encode
+from httplib import _is_legal_header_name, _is_illegal_header_value
 
 from .utils import debug, error, to_utf8_raw
 from .connection_manager import ConnectionManager
@@ -41,6 +43,9 @@ from .connections import (ProxyHTTPConnection, ProxyHTTPSConnection,
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               HTTPRequestException,
                                               ConnectionPoolException)
+
+
+DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded'
 
 
 class URLTimeoutError(urllib2.URLError):
@@ -90,12 +95,14 @@ class KeepAliveHandler(object):
         no error occurs if there is no connection to that host.
         """
         for conn in self._cm.get_all(host):
-            self._cm.remove_connection(conn, host, reason='close connection')
+            self._cm.remove_connection(conn, reason='close connection')
 
     def close_all(self):
         """
         Close all open connections
         """
+        debug('Closing all connections')
+
         for conn in self._cm.get_all():
             self._cm.remove_connection(conn, reason='close all connections')
 
@@ -107,8 +114,8 @@ class KeepAliveHandler(object):
         debug('Add %s to free-to-use connection list' % connection)
         self._cm.free_connection(connection)
 
-    def _remove_connection(self, host, conn):
-        self._cm.remove_connection(conn, host, reason='remove connection')
+    def _remove_connection(self, conn):
+        self._cm.remove_connection(conn, reason='remove connection')
 
     def do_open(self, req):
         """
@@ -145,24 +152,44 @@ class KeepAliveHandler(object):
 
         except socket.timeout:
             # We better discard this connection
-            self._cm.remove_connection(conn, host, reason='socket timeout')
+            self._cm.remove_connection(conn, reason='socket timeout')
             raise URLTimeoutError()
 
         except OpenSSL.SSL.ZeroReturnError:
             # According to the pyOpenSSL docs ZeroReturnError means that the
             # SSL connection has been closed cleanly
-            self._cm.remove_connection(conn, host, reason='ZeroReturnError')
+            self._cm.remove_connection(conn, reason='ZeroReturnError')
             raise
 
-        except (socket.error, httplib.HTTPException, OpenSSL.SSL.SysCallError):
+        except OpenSSL.SSL.SysCallError:
             # We better discard this connection
-            self._cm.remove_connection(conn, host, reason='socket error')
+            self._cm.remove_connection(conn, reason='OpenSSL SysCallError')
+            raise
+
+        except OpenSSL.SSL.Error:
+            #
+            # OpenSSL.SSL.Error: [('SSL routines',
+            #                      'ssl3_get_record',
+            #                      'decryption failed or bad record mac')]
+            #
+            # Or something similar.
+            #
+            # Note that OpenSSL.SSL.Error is the base class for all the
+            # OpenSSL exceptions, so we're catching quite a lot of things here
+            # and the except order matters.
+            #
+            self._cm.remove_connection(conn, reason='OpenSSL.SSL.Error')
+            raise
+
+        except (socket.error, httplib.HTTPException):
+            # We better discard this connection
+            self._cm.remove_connection(conn, reason='socket error')
             raise
 
         except Exception, e:
             # We better discard this connection, we don't even know what happen!
             reason = 'unexpected exception "%s"' % e
-            self._cm.remove_connection(conn, host, reason=reason)
+            self._cm.remove_connection(conn, reason=reason)
             raise
 
         # How many requests were sent with this connection?
@@ -185,18 +212,20 @@ class KeepAliveHandler(object):
             # better understand it.
             #
             # https://github.com/andresriancho/w3af/issues/2074
-            self._cm.remove_connection(conn, host, reason='http connection died')
+            self._cm.remove_connection(conn, reason='http connection died')
             raise HTTPRequestException('The HTTP connection died')
         except Exception, e:
             # We better discard this connection, we don't even know what happen!
             reason = 'unexpected exception while reading "%s"' % e
-            self._cm.remove_connection(conn, host, reason=reason)
+            self._cm.remove_connection(conn, reason=reason)
             raise
 
         # If not a persistent connection, or the user specified that he wanted
         # a new connection for this specific request, don't try to reuse it
-        if resp.will_close or req.new_connection:
-            self._cm.remove_connection(conn, host, reason='will close')
+        if resp.will_close:
+            self._cm.remove_connection(conn, reason='will close')
+        elif req.new_connection:
+            self._cm.remove_connection(conn, reason='new connection')
 
         # We measure time here because it's the best place we know of
         elapsed = time.time() - start
@@ -237,13 +266,13 @@ class KeepAliveHandler(object):
             # note: just because we got something back doesn't mean it
             # worked.  We'll check the version below, too.
         except (socket.error, httplib.HTTPException), e:
-            self._cm.remove_connection(conn, host, reason='socket error')
+            self._cm.remove_connection(conn, reason='socket error')
             resp = None
             reason = e
         except OpenSSL.SSL.ZeroReturnError, e:
             # According to the pyOpenSSL docs ZeroReturnError means that the
             # SSL connection has been closed cleanly
-            self._cm.remove_connection(conn, host, reason='ZeroReturnError')
+            self._cm.remove_connection(conn, reason='ZeroReturnError')
             resp = None
             reason = e
         except OpenSSL.SSL.SysCallError, e:
@@ -253,7 +282,7 @@ class KeepAliveHandler(object):
             #
             # A new connection will be created and the scan should continue without
             # problems
-            self._cm.remove_connection(conn, host, reason='OpenSSL.SSL.SysCallError')
+            self._cm.remove_connection(conn, reason='OpenSSL.SSL.SysCallError')
             resp = None
             reason = e
         except Exception, e:
@@ -267,7 +296,7 @@ class KeepAliveHandler(object):
             msg = 'Unexpected exception "%s" - closing %s to %s)'
             error(msg % (e, conn, host))
 
-            self._cm.remove_connection(conn, host, reason='unexpected %s' % e)
+            self._cm.remove_connection(conn, reason='unexpected %s' % e)
             raise
 
         if resp is None or resp.version == 9:
@@ -306,42 +335,84 @@ class KeepAliveHandler(object):
         The real workhorse.
         """
         self._update_socket_timeout(conn, req)
-        try:
-            conn.putrequest(req.get_method(), req.get_selector(),
-                            skip_host=1, skip_accept_encoding=1)
 
-            # We're always sending HTTP/1.1, which makes connection keep alive a
-            # default, BUT since the browsers (Chrome at least) send this header
-            # in their HTTP/1.1 requests we're going to do the same just to make
-            # sure we behave like a browser
-            if not req.has_header('Connection'):
-                conn.putheader('Connection', 'keep-alive')
+        conn.putrequest(req.get_method(),
+                        req.get_selector(),
+                        skip_host=1,
+                        skip_accept_encoding=1)
 
-            data = req.get_data()
-            if data is not None:
-                data = str(data)
+        # We're always sending HTTP/1.1, which makes connection keep alive a
+        # default, BUT since the browsers (Chrome at least) send this header
+        # in their HTTP/1.1 requests we're going to do the same just to make
+        # sure we behave like a browser
+        if not req.has_header('Connection'):
+            conn.putheader('Connection', 'keep-alive')
 
-                if not req.has_header('Content-type'):
-                    conn.putheader('Content-type',
-                                   'application/x-www-form-urlencoded')
+        data = req.get_data()
+        if data is not None:
+            data = str(data)
 
-                if not req.has_header('Content-length'):
-                    conn.putheader('Content-length', '%d' % len(data))
-        except (socket.error, httplib.HTTPException):
-            raise
-        else:
-            # Add headers
-            header_dict = dict(self.parent.addheaders)
-            header_dict.update(req.headers)
-            header_dict.update(req.unredirected_hdrs)
+            if not req.has_header('Content-type'):
+                conn.putheader('Content-type', DEFAULT_CONTENT_TYPE)
 
-            for k, v in header_dict.iteritems():
-                conn.putheader(to_utf8_raw(k),
-                               to_utf8_raw(v))
-            conn.endheaders()
+            if not req.has_header('Content-length'):
+                conn.putheader('Content-length', '%d' % len(data))
 
-            if data is not None:
-                conn.send(data)
+        # Add headers
+        header_dict = dict(self.parent.addheaders)
+        header_dict.update(req.headers)
+        header_dict.update(req.unredirected_hdrs)
+
+        for k, v in header_dict.iteritems():
+            #
+            # Handle case where the key or value is None (strange but could happen)
+            #
+            if k is None:
+                continue
+
+            if v is None:
+                v = ''
+
+            #
+            # Encode the key and value as UTF-8 and try to send them to the wire
+            #
+            k = to_utf8_raw(k)
+            v = to_utf8_raw(v)
+
+            try:
+                conn.putheader(k, v)
+            except ValueError:
+                #
+                # The httplib adds some restrictions to the characters which can
+                # be sent in header names and values (see putheader function
+                # definition).
+                #
+                # Sending non-ascii characters in HTTP header values is difficult,
+                # since servers usually ignore the encoding. From stackoverflow:
+                #
+                # Historically, HTTP has allowed field content with text in the
+                # ISO-8859-1 charset [ISO-8859-1], supporting other charsets only
+                # through use of [RFC2047] encoding. In practice, most HTTP header
+                # field values use only a subset of the US-ASCII charset [USASCII].
+                # Newly defined header fields SHOULD limit their field values to
+                # US-ASCII octets. A recipient SHOULD treat other octets in field
+                # content (obs-text) as opaque data.
+                #
+                # TL;DR: we use RFC2047 encoding here, knowing that it will only
+                #        work in 1% of the remote servers, but it is our best bet
+                #
+                if not _is_legal_header_name(k):
+                    k = header_encode(k, charset='utf-8', keep_eols=True)
+
+                if _is_illegal_header_value(v):
+                    v = header_encode(v, charset='utf-8', keep_eols=True)
+
+                conn.putheader(k, v)
+
+        conn.endheaders()
+
+        if data is not None:
+            conn.send(data)
 
     def get_connection(self, host):
         """

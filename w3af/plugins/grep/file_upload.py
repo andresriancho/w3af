@@ -43,7 +43,9 @@ class file_upload(GrepPlugin):
             return
         
         for tag in parser_cache.dpc.get_tags_by_filter(response, ('input',)):
+            # pylint: disable=E1101
             input_type = tag.attrib.get('type', None)
+            # pylint: enable=E1101
 
             if input_type is None:
                 continue

@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import time
 
+from operator import xor
+
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
@@ -65,6 +67,9 @@ class CoreStatus(object):
         self._eta_smooth = {AUDIT: 0,
                             GREP: 0,
                             CRAWL: 0}
+
+    def set_w3af_core(self, w3af_core):
+        self._w3af_core = w3af_core
 
     def pause(self, pause_yes_no):
         self._paused = pause_yes_no
@@ -341,7 +346,7 @@ class CoreStatus(object):
         return self._w3af_core.worker_pool.in_queue.qsize()
 
     def log_calculate_eta(self, eta, input_speed, output_speed, queue_size,
-                          _type, adjustment, average):
+                          _type, adjustment):
         """
         :return: None, a log line is added.
         """
@@ -357,14 +362,13 @@ class CoreStatus(object):
                 queue_size,
                 adjustment.known,
                 adjustment.unknown,
-                average,
+                adjustment.average,
                 run_time)
 
         om.out.debug(msg % args)
 
     def calculate_eta(self, input_speed, output_speed, queue_size, _type,
-                      adjustment=None,
-                      average=True):
+                      adjustment=None):
         """
         Do our best effort to calculate the ETA for a specific queue
         for which we have the input speed, output speed and current
@@ -380,9 +384,6 @@ class CoreStatus(object):
                            ratio for the case where input speed > output speed
                            and another for the case where output speed > input
                            speed.
-        :param average: True if the result of this calculation should be averaged
-                        with the previous result. This has the effect of removing
-                        spikes from the ETA results
         :return: ETA in epoch format, None if one of the parameters is None.
         """
         if adjustment is None:
@@ -393,7 +394,7 @@ class CoreStatus(object):
             eta = 0.0
 
             self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
-                                   _type, adjustment, average)
+                                   _type, adjustment)
 
             return eta
 
@@ -409,7 +410,7 @@ class CoreStatus(object):
             eta = 5 * 60.0
 
             self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
-                                   _type, adjustment, average)
+                                   _type, adjustment)
 
             return eta
 
@@ -442,8 +443,8 @@ class CoreStatus(object):
             #     values is to run scans and use scan_log_analysis.py to check
             #     (see: show_progress_delta).
             #
-            t_queued = queue_size / output_speed * adjustment.known
-            t_new = input_speed * t_queued / output_speed * adjustment.unknown
+            t_queued = (queue_size / output_speed) * adjustment.known
+            t_new = (input_speed * t_queued / output_speed) * adjustment.unknown
             eta_minutes = t_queued + t_new
         else:
             # This case is easier, we have an output speed which is
@@ -461,12 +462,12 @@ class CoreStatus(object):
         # Smooth with average to avoid ugly spikes in the ETAs
         eta = eta_minutes * 60
 
-        if average:
-            eta = (eta + self._eta_smooth[_type]) / 2.0
+        if adjustment.average:
+            eta = eta * 3 / 4 + self._eta_smooth[_type] * 1 / 4
             self._eta_smooth[_type] = eta
 
         self.log_calculate_eta(eta, input_speed, output_speed, queue_size,
-                               _type, adjustment, average)
+                               _type, adjustment)
 
         return eta
 
@@ -576,9 +577,27 @@ class CoreStatus(object):
 
         progress = int(run_time / estimated_end_time * 100)
 
+        # If the calculated progress is 100% but any of the consumers is still
+        # running, then we should return 99%. This happens when the ETA estimation
+        # is incorrect (often)
+        if progress == 100 and self.any_consumer_running():
+            progress = 99
+
         om.out.debug('The scan will finish in %.2f seconds (%s%% done)' % (eta, progress))
 
         return progress
+
+    def any_consumer_running(self):
+        if not self.has_finished_crawl():
+            return True
+
+        if not self.has_finished_audit():
+            return True
+
+        if not self.has_finished_grep():
+            return True
+
+        return False
 
     def get_crawl_adjustment_ratio(self):
         """
@@ -603,13 +622,13 @@ class CoreStatus(object):
         # scan will finish soon (not many items in the queue). To prevent
         # this we set a big adjustment ratio
         #
-        if run_time < 30:
-            return Adjustment(known=4, unknown=25)
-
         if run_time < 60:
-            return Adjustment(known=2, unknown=5)
+            return Adjustment(known=0.5, unknown=7.5)
 
-        return Adjustment(known=0.25, unknown=1.5)
+        if run_time < 120:
+            return Adjustment(known=0.75, unknown=4.0)
+
+        return Adjustment(known=0.75, unknown=0.75)
 
     def get_audit_adjustment_ratio(self):
         """
@@ -628,20 +647,20 @@ class CoreStatus(object):
         # this to zero is a really good idea
         #
         if self.has_finished_crawl():
-            return Adjustment(known=1.1, unknown=0)
+            return Adjustment(known=1.2, unknown=0)
 
         #
         # During the early phases of the scan it is easy to believe that the
         # scan will finish soon (not many items in the queue). To prevent
         # this we set a big adjustment ratio
         #
-        if run_time < 30:
-            return Adjustment(known=1, unknown=2)
-
         if run_time < 60:
-            return Adjustment(known=1, unknown=1.5)
+            return Adjustment(known=1, unknown=3.0)
 
-        return Adjustment(known=1.75, unknown=1.25)
+        if run_time < 120:
+            return Adjustment(known=1, unknown=2.0)
+
+        return Adjustment(known=1.1, unknown=2.0)
 
     def get_grep_adjustment_ratio(self):
         """
@@ -662,7 +681,7 @@ class CoreStatus(object):
         # this to zero is a really good idea
         #
         if self.has_finished_crawl() and self.has_finished_audit():
-            return Adjustment(known=0.5, unknown=0)
+            return Adjustment(known=1.0, unknown=0, average=False)
 
         #
         # During the early phases of the scan it is easy to believe that the
@@ -670,24 +689,30 @@ class CoreStatus(object):
         # this we set a big adjustment ratio
         #
         if run_time < 30:
-            return Adjustment(known=1, unknown=40)
+            return Adjustment(known=1.0, unknown=40)
 
         if run_time < 60:
-            return Adjustment(known=1, unknown=20)
+            return Adjustment(known=1.0, unknown=20)
 
         if run_time < 120:
-            return Adjustment(known=1, unknown=10)
+            return Adjustment(known=1.0, unknown=10)
 
         if run_time < 180:
-            return Adjustment(known=1, unknown=7.5)
+            return Adjustment(known=1.0, unknown=7.5)
 
         #
-        # Cases that fall into this adjustment rate:
-        #   * Crawl is running / Audit is not
-        #   * Audit is running / Crawl is not
-        #   * Crawl is running / Audit is running
+        # Crawl is running XOR Audit is running
         #
-        return Adjustment(known=1.0, unknown=2.5)
+        crawl_finished = self.has_finished_crawl()
+        audit_finished = self.has_finished_audit()
+
+        if xor(crawl_finished, audit_finished):
+            return Adjustment(known=1.0, unknown=0.5, average=False)
+
+        #
+        # Crawl is running and Audit is running
+        #
+        return Adjustment(known=1.0, unknown=0.75)
 
     def log_eta(self, msg):
         om.out.debug('[get_eta] %s' % msg)
@@ -722,7 +747,7 @@ class CoreStatus(object):
             after_audit = 0.0
             if grep_eta >= audit_eta:
                 after_audit = grep_eta - audit_eta
-                after_audit = after_audit * 0.9
+                after_audit = after_audit * 0.1
 
             self.log_eta('Crawl has finished. Using audit and grep ETAs'
                          ' to calculate overall ETA.')
@@ -730,23 +755,26 @@ class CoreStatus(object):
 
         # The crawling, audit and grep (all if they were enabled) are running.
         # Estimating ETA here is difficult!
+        self.log_eta('ETA calculation will merge ETAs for all phases.')
+
         grep_eta = self.get_grep_eta()
         audit_eta = self.get_audit_eta()
         crawl_eta = self.get_crawl_eta()
 
-        after_crawl_audit = 0.0
+        audit_after_crawl = 0.0
+        if audit_eta > crawl_eta:
+            audit_after_crawl = audit_eta = crawl_eta
+
+        grep_after_crawl_audit = 0.0
         if grep_eta >= audit_eta:
-            after_crawl_audit += grep_eta - audit_eta
+            grep_after_crawl_audit += grep_eta - audit_eta
 
         if grep_eta >= crawl_eta:
-            after_crawl_audit += grep_eta - crawl_eta
+            grep_after_crawl_audit += grep_eta - crawl_eta
 
-        self.log_eta('Crawl, audit and grep are running.'
-                     ' Using all ETAs to calculate overall ETA.')
-
-        average_1 = (crawl_eta + audit_eta) / 2.0
-        average_2 = after_crawl_audit / 2.0
-        return average_1 + average_2
+        audit_after_crawl = audit_after_crawl * 0.75
+        grep_after_crawl_audit = grep_after_crawl_audit * 0.05
+        return crawl_eta + audit_after_crawl + grep_after_crawl_audit
 
     def get_sent_request_count(self):
         """
@@ -786,16 +814,16 @@ class CoreStatus(object):
 
         status_str = '%(status)s\n'
 
-        status_str += ('Crawl phase: In (%(cin)s URLs/min)'
-                       ' Out (%(cout)s URLs/min) Pending (%(clen)s URLs)'
+        status_str += ('Crawl phase: In (%(cin).2f URLs/min)'
+                       ' Out (%(cout).2f URLs/min) Pending (%(clen)i URLs)'
                        ' ETA (%(ceta)s)\n')
 
-        status_str += ('Audit phase: In (%(ain)s URLs/min)'
-                       ' Out (%(aout)s URLs/min) Pending (%(alen)s URLs)'
+        status_str += ('Audit phase: In (%(ain).2f URLs/min)'
+                       ' Out (%(aout).2f URLs/min) Pending (%(alen)i URLs)'
                        ' ETA (%(aeta)s)\n')
 
-        status_str += ('Grep phase: In (%(gin)s URLs/min)'
-                       ' Out (%(gout)s URLs/min) Pending (%(glen)s URLs)'
+        status_str += ('Grep phase: In (%(gin).2f URLs/min)'
+                       ' Out (%(gout).2f URLs/min) Pending (%(glen)i URLs)'
                        ' ETA (%(geta)s)\n')
 
         status_str += 'Requests per minute: %(rpm)s\n\n'
@@ -807,7 +835,7 @@ class CoreStatus(object):
 
 
 class Adjustment(object):
-    def __init__(self, known=1.0, unknown=1.0):
+    def __init__(self, known=1.0, unknown=1.0, average=True):
         """
         Used to adjust the ETA calculations for two cases:
 
@@ -828,6 +856,11 @@ class Adjustment(object):
             * Higher values of `known` INCREASE the ETA
             * Higher values of `known` REDUCE estimated % (as shown in the
               scan log analysis output)
+
+        :param average: True if the result of this calculation should be averaged
+                        with the previous result. This has the effect of removing
+                        spikes from the ETA results
         """
         self.known = known
         self.unknown = unknown
+        self.average = average

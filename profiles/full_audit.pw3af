@@ -53,8 +53,8 @@ persistent_xss = True
 [audit.csrf]
 
 [audit.ssl_certificate]
-minExpireDays = 30
-caFileName = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
+min_expire_days = 30
+ca_file_name = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
 
 [audit.xst]
 
@@ -78,30 +78,30 @@ follow_regex = .*
 ignore_regex = 
 
 [bruteforce.basic_auth]
-usersFile = %ROOT_PATH%/core/controllers/bruteforce/users.txt
-passwdFile = %ROOT_PATH%/core/controllers/bruteforce/passwords.txt
-useSvnUsers = True
-stopOnFirst = True
-passEqUser = True
-useLeetPasswd = True
-useEmails = True
-useProfiling = True
-profilingNumber = 50
-comboFile = 
-comboSeparator = :
+users_file = %ROOT_PATH%/core/controllers/bruteforce/users.txt
+passwd_file = %ROOT_PATH%/core/controllers/bruteforce/passwords.txt
+use_svn_users = True
+stop_on_first = True
+pass_eq_user = True
+use_leet_password = True
+use_emails = True
+use_profiling = True
+profiling_number = 50
+combo_file =
+combo_separator = :
 
 [bruteforce.form_auth]
-usersFile = %ROOT_PATH%/core/controllers/bruteforce/users.txt
-passwdFile = %ROOT_PATH%/core/controllers/bruteforce/passwords.txt
-useSvnUsers = True
-stopOnFirst = True
-passEqUser = True
-useLeetPasswd = True
-useEmails = True
-useProfiling = True
-profilingNumber = 50
-comboFile = 
-comboSeparator = :
+users_file = %ROOT_PATH%/core/controllers/bruteforce/users.txt
+passwd_file = %ROOT_PATH%/core/controllers/bruteforce/passwords.txt
+use_svn_users = True
+stop_on_first = True
+pass_eq_user = True
+use_leet_password = True
+use_emails = True
+use_profiling = True
+profiling_number = 50
+combo_file =
+combo_separator = :
 
 [grep.symfony]
 override = False
@@ -208,8 +208,8 @@ httpsPort = 443
 [infrastructure.fingerprint_WAF]
 
 [infrastructure.allowed_methods]
-execOneTime = True
-reportDavOnly = True
+run_once = True
+dav_only = True
 
 [infrastructure.hmap]
 gen_fingerprint = False

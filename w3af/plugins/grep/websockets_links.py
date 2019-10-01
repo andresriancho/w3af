@@ -74,8 +74,10 @@ class websockets_links(GrepPlugin):
             get_tags = parser_cache.dpc.get_tags_by_filter
 
             for tag in get_tags(response, ('script',), yield_text=True):
+                # pylint: disable=E1101
                 for ws_link in find_websockets_links(tag.text):
                     ws_links.add(ws_link)
+                # pylint: enable=E1101
 
         # if we didn't find any link manual inspection is needed
         if len(ws_links) == 0:

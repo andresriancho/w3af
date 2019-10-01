@@ -20,14 +20,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import sys
+import cPickle
 import unittest
 import threading
-import sys
 
 from nose.plugins.attrib import attr
 
-from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler
+from w3af.core.controllers.w3afCore import w3afCore
+from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandler, ExceptionData
 from w3af.core.controllers.core_helpers.status import CoreStatus
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.dc.headers import Headers
+from w3af.core.data.dc.generic.kv_container import KeyValueContainer
 
 
 class TestExceptionHandler(unittest.TestCase):
@@ -51,7 +57,9 @@ class TestExceptionHandler(unittest.TestCase):
         except Exception, e:
             exec_info = sys.exc_info()
             enabled_plugins = ''
-            self.exception_handler.handle(self.status, e, exec_info,
+            self.exception_handler.handle(self.status,
+                                          e,
+                                          exec_info,
                                           enabled_plugins)
 
         scan_id = self.exception_handler.get_scan_id()
@@ -68,11 +76,12 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
-        self.assertEquals(edata.exception, e)
+        self.assertEquals(edata.filename, __file__)
+        self.assertEquals(edata.exception_msg, str(e))
+        self.assertEquals(edata.exception_class, e.__class__.__name__)
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 50)
+        self.assertEquals(edata.lineno, 56)
 
     @attr('smoke')
     def test_handle_multiple(self):
@@ -99,7 +108,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.filename, __file__)
 
     def test_get_unique_exceptions(self):
 
@@ -126,7 +135,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.filename, __file__)
 
     def test_handle_threads_calls(self):
         
@@ -156,10 +165,10 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.filename, __file__)
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 134)
+        self.assertEquals(edata.lineno, 143)
 
     def test_handle_multi_calls(self):
 
@@ -186,8 +195,89 @@ class TestExceptionHandler(unittest.TestCase):
 
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 167)
+        self.assertEquals(edata.lineno, 176)
 
 
 class FakeStatus(CoreStatus):
     pass
+
+
+class TestExceptionData(unittest.TestCase):
+
+    def get_fuzzable_request(self):
+        headers = Headers([(u'Hello', u'World')])
+        post_data = KeyValueContainer(init_val=[('a', ['b'])])
+        url = URL('http://w3af.org')
+        return FuzzableRequest(url, method='GET', post_data=post_data,
+                               headers=headers)
+
+    def test_without_traceback(self):
+        tb = None
+        enabled_plugins = '{}'
+
+        fr = self.get_fuzzable_request()
+
+        core = w3afCore()
+        status = CoreStatus(core)
+        status.set_running_plugin('audit', 'sqli', log=False)
+        status.set_current_fuzzable_request('audit', fr)
+
+        exception_data = ExceptionData(status,
+                                       KeyError(),
+                                       tb,
+                                       enabled_plugins,
+                                       store_tb=False)
+
+        pickled_ed = cPickle.dumps(exception_data)
+        unpickled_ed = cPickle.loads(pickled_ed)
+
+        self.assertEqual(exception_data.to_json(),
+                         unpickled_ed.to_json())
+
+    def test_serialize_deserialize(self):
+        try:
+            raise KeyError
+        except Exception, e:
+            except_type, except_class, tb = sys.exc_info()
+            enabled_plugins = '{}'
+
+            fr = self.get_fuzzable_request()
+
+            core = w3afCore()
+            status = CoreStatus(core)
+            status.set_running_plugin('audit', 'sqli', log=False)
+            status.set_current_fuzzable_request('audit', fr)
+
+            exception_data = ExceptionData(status,
+                                           e,
+                                           tb,
+                                           enabled_plugins,
+                                           store_tb=False)
+
+            pickled_ed = cPickle.dumps(exception_data)
+            unpickled_ed = cPickle.loads(pickled_ed)
+
+            self.assertEqual(exception_data.to_json(),
+                             unpickled_ed.to_json())
+
+    def test_fail_traceback_serialize(self):
+        try:
+            raise KeyError
+        except Exception, e:
+            except_type, except_class, tb = sys.exc_info()
+            enabled_plugins = '{}'
+
+            fr = self.get_fuzzable_request()
+
+            core = w3afCore()
+            status = CoreStatus(core)
+            status.set_running_plugin('audit', 'sqli', log=False)
+            status.set_current_fuzzable_request('audit', fr)
+
+            exception_data = ExceptionData(status,
+                                           e,
+                                           tb,
+                                           enabled_plugins,
+                                           store_tb=True)
+
+            self.assertRaises(TypeError, cPickle.dumps, exception_data)

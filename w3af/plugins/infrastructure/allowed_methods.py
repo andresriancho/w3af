@@ -26,6 +26,7 @@ import w3af.core.data.constants.response_codes as response_codes
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.group_by_min_key import group_by_min_key
+from w3af.core.controllers.exceptions import HTTPRequestException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -38,21 +39,67 @@ class allowed_methods(InfrastructurePlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    BAD_CODES = {response_codes.UNAUTHORIZED, response_codes.NOT_IMPLEMENTED,
-                 response_codes.METHOD_NOT_ALLOWED, response_codes.FORBIDDEN}
+    BAD_CODES = {response_codes.UNAUTHORIZED,
+                 response_codes.NOT_IMPLEMENTED,
+                 response_codes.METHOD_NOT_ALLOWED,
+                 response_codes.FORBIDDEN}
 
-    DAV_METHODS = {'DELETE', 'PROPFIND', 'PROPPATCH', 'COPY', 'MOVE', 'LOCK',
-                   'UNLOCK', 'MKCOL'}
-    COMMON_METHODS = {'OPTIONS', 'GET', 'HEAD', 'POST', 'TRACE', 'PUT'}
-    UNCOMMON_METHODS = {'*', 'SUBSCRIPTIONS', 'NOTIFY', 'DEBUG', 'TRACK',
-                        'POLL', 'PIN', 'INVOKE', 'SUBSCRIBE', 'UNSUBSCRIBE'}
+    DAV_METHODS = {'DELETE',
+                   'PROPFIND',
+                   'PROPPATCH',
+                   'COPY',
+                   'MOVE',
+                   'LOCK',
+                   'UNLOCK',
+                   'MKCOL'}
+
+    COMMON_METHODS = {'OPTIONS',
+                      'GET',
+                      'HEAD',
+                      'POST',
+                      'TRACE',
+                      'PUT'}
+
+    UNCOMMON_METHODS = {'*',
+                        'SUBSCRIPTIONS',
+                        'NOTIFY',
+                        'DEBUG',
+                        'TRACK',
+                        'POLL',
+                        'PIN',
+                        'INVOKE',
+                        'SUBSCRIBE',
+                        'UNSUBSCRIBE'}
+
     # Methods taken from http://www.w3.org/Protocols/HTTP/Methods.html
-    PROPOSED_METHODS = {'CHECKOUT', 'SHOWMETHOD', 'LINK', 'UNLINK', 'CHECKIN',
-                        'TEXTSEARCH', 'SPACEJUMP', 'SEARCH', 'REPLY'}
-    EXTRA_METHODS = {'CONNECT', 'RMDIR', 'MKDIR', 'REPORT', 'ACL', 'DELETE',
-                     'INDEX', 'LABEL', 'INVALID'}
-    VERSION_CONTROL = {'VERSION_CONTROL', 'CHECKIN', 'UNCHECKOUT', 'PATCH',
-                       'MERGE', 'MKWORKSPACE', 'MKACTIVITY', 'BASELINE_CONTROL'}
+    PROPOSED_METHODS = {'CHECKOUT',
+                        'SHOWMETHOD',
+                        'LINK',
+                        'UNLINK',
+                        'CHECKIN',
+                        'TEXTSEARCH',
+                        'SPACEJUMP',
+                        'SEARCH',
+                        'REPLY'}
+
+    EXTRA_METHODS = {'CONNECT',
+                     'RMDIR',
+                     'MKDIR',
+                     'REPORT',
+                     'ACL',
+                     'DELETE',
+                     'INDEX',
+                     'LABEL',
+                     'INVALID'}
+
+    VERSION_CONTROL = {'VERSION_CONTROL',
+                       'CHECKIN',
+                       'UNCHECKOUT',
+                       'PATCH',
+                       'MERGE',
+                       'MKWORKSPACE',
+                       'MKACTIVITY',
+                       'BASELINE_CONTROL'}
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
@@ -70,50 +117,64 @@ class allowed_methods(InfrastructurePlugin):
         self._exec_one_time = True
         self._report_dav_only = True
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Uses several techniques to try to find out what methods are allowed for
         an URL.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
         if not self._exec:
             # This will remove the plugin from the infrastructure
-            # plugins to be run.
+            # plugins to be run
             raise RunOnce()
 
-        # Run the plugin.
         if self._exec_one_time:
             self._exec = False
 
         domain_path = fuzzable_request.get_url().get_domain_path()
-        if domain_path not in self._already_tested:
-            self._already_tested.add(domain_path)
-            _allowed_methods, id_list = self._identify_allowed_methods(domain_path)
-            self._analyze_methods(domain_path, _allowed_methods, id_list)
+        if domain_path in self._already_tested:
+            return
+
+        self._already_tested.add(domain_path)
+
+        _allowed_methods, id_list = self._identify_allowed_methods(domain_path)
+        self._analyze_methods(domain_path, _allowed_methods, id_list)
 
     def _identify_allowed_methods(self, url):
-        # First, try to check available methods using OPTIONS,
-        # if OPTIONS isn't enabled, do it manually
-        allowed_options, id_options = self._identify_with_OPTIONS(url)
-        allowed_bf, id_bf = self._identify_with_bruteforce(url)
+        # Check available methods using OPTIONS
+        allowed_options, id_options = self._identify_with_options_method(url)
+
+        # Check available methods by brute-force (if possible)
+        allowed_bf = []
+        id_bf = []
+
+        if self._can_bruteforce(url):
+            allowed_bf, id_bf = self._identify_with_bruteforce(url)
         
         _allowed_methods = allowed_options + allowed_bf
-        # If a method was found by both, bf and options, it is duplicated in 
-        # the list. Remove dups
         _allowed_methods = list(set(_allowed_methods))
-        # There are no duplicate requests.
-        # Even if a method was discovered with both, bf and options, we 
-        # furthermore want to see both requests
+
         id_list = id_options + id_bf
         
-        # Added this to make the output a little bit more readable.
+        # Make the output a little bit more readable.
         _allowed_methods.sort()
         
         return _allowed_methods, id_list
 
-    def _identify_with_OPTIONS(self, url):
+    def handle_url_error(self, uri, url_error):
+        """
+        Override the url error handler, we don't care if these tests raise any
+        exceptions. Just raise the exception and the code will handle it.
+
+        This code had to be added because some servers close the TCP/IP
+        connection when an unsupported HTTP method was sent.
+        """
+        return True, None
+
+    def _identify_with_options_method(self, url):
         """
         Find out what methods are allowed using OPTIONS
         :param url: Where to check.
@@ -122,69 +183,106 @@ class allowed_methods(InfrastructurePlugin):
         id_list = []
 
         try:
-            res = self._uri_opener.OPTIONS(url)
-        except:
-            pass
-        else:
-            headers = res.get_lower_case_headers()
-            id_list.append(res.id)
-            
-            for header_name in ['allow', 'public']:
-                if header_name in headers:
-                    _allowed_methods.extend(headers[header_name].split(','))
-                    _allowed_methods = [x.strip() for x in _allowed_methods]
-                    _allowed_methods = list(set(_allowed_methods))
-        
+            res = self._uri_opener.OPTIONS(url, error_handling=False)
+        except HTTPRequestException:
+            return _allowed_methods, id_list
+
+        headers = res.get_lower_case_headers()
+        id_list.append(res.id)
+
+        for header_name in ['allow', 'public']:
+            if header_name in headers:
+                _allowed_methods.extend(headers[header_name].split(','))
+                _allowed_methods = [x.strip() for x in _allowed_methods]
+                _allowed_methods = list(set(_allowed_methods))
+
         return _allowed_methods, id_list
 
-    def _identify_with_bruteforce(self, url):
-        id_list = []
-        _allowed_methods = []
-        #
-        #   Before doing anything else, I'll send a request with a
-        #   non-existent method if that request succeeds, then all will...
-        #
-        non_exist_response = self._uri_opener.ARGENTINA(url)
-        get_response = self._uri_opener.GET(url)
+    def _can_bruteforce(self, url):
+        """
+        Send a request with a non-existent method if that request succeeds,
+        then all will during brute-force
 
-        if non_exist_response.get_code() not in self.BAD_CODES\
-        and get_response.get_body() == non_exist_response.get_body():
+        :return: True if non-existent methods have different responses than
+                 existing ones.
+        """
+        arg_response = None
+        get_response = None
+
+        try:
+            arg_response = self._uri_opener.ARGENTINA(url, error_handling=False)
+        except HTTPRequestException:
+            pass
+
+        try:
+            get_response = self._uri_opener.GET(url, error_handling=False)
+        except HTTPRequestException:
+            pass
+
+        # Most likely we're getting network errors
+        if arg_response is None and get_response is None:
+            return False
+
+        # ARGENTINA response triggered an error (connection close most likely)
+        # and the GET response worked
+        if arg_response is None and get_response is not None:
+            return True
+
+        # Network errors in GET response will break detection at this point
+        if get_response is None:
+            return False
+
+        # Now check if the two responses are equal
+        if arg_response.get_code() not in self.BAD_CODES and \
+           arg_response.get_body() == get_response.get_body():
 
             desc = ('The remote Web server has a custom configuration, in'
                     ' which any not implemented methods that are invoked are'
                     ' defaulted to GET instead of returning a "Not Implemented"'
                     ' response.')
-            response_ids = [non_exist_response.get_id(), get_response.get_id()]
-            i = Info('Non existent methods default to GET', desc, response_ids,
-                     self.get_name())
+            response_ids = [arg_response.get_id(), get_response.get_id()]
+            i = Info('Non existent methods default to GET',
+                     desc, response_ids, self.get_name())
             i.set_url(url)
-            
+
             kb.kb.append(self, 'custom-configuration', i)
-            #
-            #   It makes no sense to continue working, all methods will
-            #   appear as enabled because of this custom configuration.
-            #
-            return [], [non_exist_response.id, get_response.id]
 
-        # 'DELETE' is not tested! I don't want to remove anything...
-        # 'PUT' is not tested! I don't want to overwrite anything...
+            #
+            # All methods will appear as enabled because of this custom
+            # configuration
+            #
+            return False
+
+        return True
+
+    def _identify_with_bruteforce(self, url):
+        """
+        Send many HTTP requests with various methods to discover which ones
+        are enabled
+
+        :param url: The URL to target
+        :return: Tuple with the allowed methods and the IDs used to discover them
+        """
+        id_list = []
+        _allowed_methods = []
+
+        # DELETE and PUT are not tested to prevent denial of service situations
         methods_to_test = self._supported_methods.copy()
-
-        # remove dangerous methods.
         methods_to_test.remove('DELETE')
         methods_to_test.remove('PUT')
 
         for method in methods_to_test:
             method_functor = getattr(self._uri_opener, method)
             try:
-                response = apply(method_functor, (url,), {})
-            except:
-                pass
-            else:
-                code = response.get_code()                
-                if code not in self.BAD_CODES:
-                    _allowed_methods.append(method)
-                    id_list.append(response.id)
+                response = apply(method_functor,
+                                 (url,),
+                                 {'error_handling': False})
+            except HTTPRequestException:
+                continue
+
+            if response.get_code() not in self.BAD_CODES:
+                _allowed_methods.append(method)
+                id_list.append(response.id)
         
         return _allowed_methods, id_list
 
@@ -274,12 +372,11 @@ class allowed_methods(InfrastructurePlugin):
         h1 = ('Generally the methods allowed for a URL are configured system'
               ' wide, so executing this plugin only once is the faster choice.'
               ' The most accurate choice is to run it against every URL.')
-        o = opt_factory('execOneTime', self._exec_one_time, d1,
-                        'boolean', help=h1)
+        o = opt_factory('run_once', self._exec_one_time, d1, 'boolean', help=h1)
         ol.add(o)
 
         d2 = 'Only report findings if uncommon methods are found'
-        o = opt_factory('reportDavOnly', self._report_dav_only, d2, 'boolean')
+        o = opt_factory('dav_only', self._report_dav_only, d2, 'boolean')
         ol.add(o)
 
         return ol
@@ -292,8 +389,8 @@ class allowed_methods(InfrastructurePlugin):
         :param options_list: A dictionary with the options for the plugin.
         :return: No value is returned.
         """
-        self._exec_one_time = options_list['execOneTime'].get_value()
-        self._report_dav_only = options_list['reportDavOnly'].get_value()
+        self._exec_one_time = options_list['run_once'].get_value()
+        self._report_dav_only = options_list['dav_only'].get_value()
 
     def get_long_desc(self):
         """
@@ -303,11 +400,11 @@ class allowed_methods(InfrastructurePlugin):
         This plugin finds which HTTP methods are enabled for a URI.
 
         Two configurable parameters exist:
-            - execOneTime
-            - reportDavOnly
+            - run_once
+            - dav_only
 
-        If "execOneTime" is set to True, then only the methods in the webroot
-        are enumerated. If "reportDavOnly" is set to True, this plugin will only
+        If "run_once" is set to True, then only the methods in the webroot
+        are enumerated. If "dav_only" is set to True, this plugin will only
         report the enabled method list if DAV methods have been found.
 
         The plugin will try to use the OPTIONS method to enumerate all available

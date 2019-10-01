@@ -47,6 +47,7 @@ class objects(GrepPlugin):
         url = response.get_url()
 
         for tag in parser_cache.dpc.get_tags_by_filter(response, self.TAGS):
+            # pylint: disable=E1101
             desc = ('The URL: "%s" has an "%s" tag. We recommend you download'
                     ' the client side code and analyze it manually.')
             desc %= (response.get_uri(), tag.name)
@@ -57,6 +58,7 @@ class objects(GrepPlugin):
             i.add_to_highlight('<%s' % tag.name)
 
             self.kb_append_uniq(self, tag.name, i, 'URL')
+            # pylint: enable=E1101
 
     def get_long_desc(self):
         """

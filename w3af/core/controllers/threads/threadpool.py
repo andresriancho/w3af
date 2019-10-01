@@ -19,9 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import threading
-import Queue
+import sys
 import time
+import Queue
+import threading
+import traceback
 
 from functools import partial
 
@@ -83,6 +85,9 @@ class DaemonProcess(Process):
         state['name'] = self.name
         return state
 
+    def is_idle(self):
+        return self.worker.is_idle()
+
     def start(self):
         """
         This is a race condition in DaemonProcess.start() which was found
@@ -107,6 +112,82 @@ class DaemonProcess(Process):
         threading.Thread.start(self)
 
 
+def add_traceback_string(_exception):
+    """
+    Add the traceback string as a new attribute to the exception raised
+    by the target function defined by the developer.
+
+    Adding this original traceback allows us to better understand the
+    root cause for exceptions that happen in functions which are run inside
+    the Pool (most).
+
+    For example, this is an exception stored in a /tmp/w3af-crash file before
+    this patch:
+
+        A "TypeError" exception was found while running crawl.phpinfo on "Method: GET | http://domain/".
+        The exception was: "unsupported operand type(s) for -: 'float' and 'NoneType'" at pool276.py:get():643.
+        The full traceback is:
+
+          File "/home/user/tools/w3af/w3af/core/controllers/core_helpers/consumers/crawl_infrastructure.py", line 533, in _discover_worker
+            result = plugin.discover_wrapper(fuzzable_request)
+          File "/home/user/tools/w3af/w3af/core/controllers/plugins/crawl_plugin.py", line 53, in crawl_wrapper
+            return self.crawl(fuzzable_request_copy)
+          File "/home/user/tools/w3af/w3af/plugins/crawl/phpinfo.py", line 148, in crawl
+            self.worker_pool.map_multi_args(self._check_and_analyze, args)
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/threadpool.py", line 430, in map_multi_args
+            return self.map_async(one_to_many(func), iterable, chunksize).get()
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/pool276.py", line 643, in get
+            raise self._value
+
+    And after adding the original traceback and using it in exception_handler.py:
+
+        A "TypeError" exception was found while running crawl.phpinfo on "Method: GET | http://domain/".
+        The exception was: "unsupported operand type(s) for -: 'float' and 'NoneType'" at pool276.py:get():643.
+        The full traceback is:
+
+        Traceback (most recent call last):
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/threadpool.py", line 238, in __call__
+            result = (True, func(*args, **kwds))
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/pool276.py", line 67, in mapstar
+            return map(*args)
+          File "/home/user/tools/w3af/w3af/core/controllers/threads/threadpool.py", line 55, in __call__
+            return self.func_orig(*args)
+          File "/home/user/tools/w3af/w3af/plugins/crawl/phpinfo.py", line 180, in _check_and_analyze
+            1.0 - None
+        TypeError: unsupported operand type(s) for -: 'float' and 'NoneType'
+
+    The exact line where the exception is raised is shown!
+
+    Adding new attributes to instances is not something I like, but in
+    this case I had no choice...
+
+    Creating a new Exception type and wrapping all exceptions generated
+    by the pool with that one wouldn't work: we lose the exception type
+    and can't do:
+
+        try:
+            ...
+        except TypeError:
+            ...
+
+    The code for the whole framework would need to be changed to something
+    like:
+
+        try:
+            ...
+        except PoolException, pe:
+            if isinstance(pe.original_exception, TypeError):
+                ...
+
+    :param _exception: The exception instance where to add the new attribute
+    :return: None
+    """
+    except_type, except_class, tb = sys.exc_info()
+
+    tb = traceback.format_exception(type(_exception), _exception, tb)
+    _exception.original_traceback_string = ''.join(tb)
+
+
 class Worker(object):
 
     __slots__ = ('func', 'args', 'kwargs', 'start_time', 'job', 'id')
@@ -122,7 +203,7 @@ class Worker(object):
     def is_idle(self):
         return self.func is None
 
-    def get_real_func_name(self):
+    def get_real_func_name_args(self):
         """
         Because of various levels of abstraction the function name is not always in
         self.func.__name__, this method "unwraps" the abstractions and shows us
@@ -130,30 +211,36 @@ class Worker(object):
 
         :return: The function name
         """
-        if self.func is None:
-            return None
 
-        if self.func is mapstar:
-            self.func = self.args[0][0]
-            self.args = self.args[0][1:]
+        # self.func/self.args could change over the execution of this method, so take
+        # a copy here.
+        current_func = self.func
+        current_args = self.args
 
-        if self.func is apply_with_return_error:
-            self.func = self.args[0][0]
-            self.args = self.args[0][1:]
+        if current_func is mapstar:
+            current_func = current_args[0][0]
+            current_args = current_args[0][1:]
 
-        if isinstance(self.func, return_args):
-            return self.func.func_orig.__name__
+        if current_func is apply_with_return_error:
+            current_func = current_args[0][0]
+            current_args = current_args[0][1:]
 
-        if isinstance(self.func, one_to_many):
-            return self.func.func_orig.__name__
+        if isinstance(current_func, return_args):
+            return current_func.func_orig.__name__, current_args
 
-        return self.func.__name__
+        if isinstance(current_func, one_to_many):
+            return current_func.func_orig.__name__, current_args
+
+        if current_func is None:
+            return None, None
+
+        return current_func.__name__, current_args
 
     def get_state(self):
-        func_name = self.get_real_func_name()
+        func_name, func_args = self.get_real_func_name_args()
 
         return {'func_name': func_name,
-                'args': self.args,
+                'args': func_args,
                 'kwargs': self.kwargs,
                 'start_time': self.start_time,
                 'idle': self.is_idle(),
@@ -161,7 +248,8 @@ class Worker(object):
                 'worker_id': self.id}
 
     def __call__(self, inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
-        assert maxtasks is None or (type(maxtasks) == int and maxtasks > 0)
+        assert maxtasks is None or (type(maxtasks) in (int, long) and maxtasks > 0)
+
         put = outqueue.put
         get = inqueue.get
         if hasattr(inqueue, '_writer'):
@@ -195,6 +283,7 @@ class Worker(object):
             try:
                 result = (True, func(*args, **kwds))
             except Exception, e:
+                add_traceback_string(e)
                 result = (False, e)
 
             # Tracking
@@ -209,7 +298,17 @@ class Worker(object):
             except Exception as e:
                 wrapped = create_detailed_pickling_error(e, result[1])
                 put((job, i, (False, wrapped)))
-            completed += 1
+            finally:
+                # https://bugs.python.org/issue29861
+                task = None
+                job = None
+                result = None
+                func = None
+                args = None
+                kwds = None
+
+                completed += 1
+
         debug('worker exiting after %d tasks' % completed)
 
 
@@ -315,6 +414,9 @@ class Pool(ThreadPool):
     def get_inqueue(self):
         return self._inqueue
 
+    def get_outqueue(self):
+        return self._outqueue
+
     def get_running_task_count(self):
         # Cheating here a little bit because the task queued in _inqueue will
         # eventually be run by the pool, but is not yet in the pool
@@ -340,7 +442,7 @@ class Pool(ThreadPool):
                              args=(self._inqueue, self._outqueue,
                                    self._initializer,
                                    self._initargs, self._maxtasksperchild)
-                            )
+                             )
             self._pool.append(w)
             w.name = w.name.replace('Process', 'PoolWorker')
             w.daemon = True
@@ -444,8 +546,8 @@ class Pool(ThreadPool):
 
         for _ in xrange(int(timeout / delay)):
             if (self._inqueue.qsize() == 0 and
-                self._outqueue.qsize() == 0 and
-                self._taskqueue.qsize() == 0):
+                    self._outqueue.qsize() == 0 and
+                    self._taskqueue.qsize() == 0):
                 break
 
             time.sleep(delay)

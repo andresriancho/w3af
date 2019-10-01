@@ -33,7 +33,7 @@ class TestChromePool(unittest.TestCase):
         self.http_traffic_queue.debugging_id = 'abcd1234'
 
         self.pool = ChromePool(self.uri_opener,
-                               max_instances=2)
+                               max_instances=10)
 
     def tearDown(self):
         self.pool.terminate()
@@ -50,8 +50,8 @@ class TestChromePool(unittest.TestCase):
         self.assertIs(chrome_1, chrome_2)
 
     def test_get_new_chrome_pool_full(self):
-        self.pool.get(self.http_traffic_queue)
-        self.pool.get(self.http_traffic_queue)
+        for i in xrange(10):
+            self.pool.get(self.http_traffic_queue)
 
         self.assertRaises(ChromePoolException,
                           self.pool.get,

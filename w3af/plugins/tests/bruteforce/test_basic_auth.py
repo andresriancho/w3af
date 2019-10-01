@@ -43,10 +43,10 @@ class TestBasicAuth(PluginTest):
             'target': None,
             'plugins': {
                 'bruteforce': (PluginConfig('basic_auth',
-                                            ('usersFile', small_users_positive,
+                                            ('users_file', small_users_positive,
                                              PluginConfig.STR),
                                             (
-                                            'passwdFile', small_passwords, PluginConfig.STR),),
+                                            'passwd_file', small_passwords, PluginConfig.STR),),
                                ),
                 'grep': (PluginConfig('http_auth_detect'),),
             }
@@ -56,10 +56,10 @@ class TestBasicAuth(PluginTest):
             'target': None,
             'plugins': {
                 'bruteforce': (PluginConfig('basic_auth',
-                                            ('usersFile', small_users_negative,
+                                            ('users_file', small_users_negative,
                                              PluginConfig.STR),
                                             (
-                                            'passwdFile', small_passwords, PluginConfig.STR),),
+                                            'passwd_file', small_passwords, PluginConfig.STR),),
                                ),
                 'grep': (PluginConfig('http_auth_detect'),),
             }
