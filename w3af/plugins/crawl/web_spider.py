@@ -200,7 +200,7 @@ class web_spider(CrawlPlugin):
                               headers_url_generator(resp, fuzzable_req))
         
         for ref, fuzzable_req, original_resp, possibly_broken in gen:
-            if self._should_verify_extracted_url(ref, original_resp):
+            if self.should_verify_extracted_url(ref, original_resp):
                 yield (ref,
                        fuzzable_req,
                        original_resp,
@@ -323,7 +323,7 @@ class web_spider(CrawlPlugin):
 
         return new_url.get_extension().lower() in self._ignore_extensions
 
-    def _should_verify_extracted_url(self, ref, resp):
+    def should_verify_extracted_url(self, ref, resp):
         """
         :param ref: A newly found URL
         :param resp: The HTTP response where the URL was found
@@ -348,7 +348,7 @@ class web_spider(CrawlPlugin):
         #
         # If I remove the web_spider VariantDB and just leave the one in the
         # core the framework keeps working but this method
-        # (_should_verify_extracted_url) will return True much more often, which
+        # (should_verify_extracted_url) will return True much more often, which
         # leads to extra HTTP requests for URLs which we already checked and the
         # core will dismiss anyway
         #
