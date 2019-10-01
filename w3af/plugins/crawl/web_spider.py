@@ -715,7 +715,7 @@ class CrawlFilterQueue(object):
             return False
 
         ref = request.get_uri()
-        if not self._web_spider.should_verify_extracted_url(ref, self._response):
+        if not self._web_spider._should_verify_extracted_url(ref, self._response):
             return False
 
         self._output_queue.put(request)
