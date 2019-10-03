@@ -122,4 +122,4 @@ class ChromeCrawlerDOMDump(object):
 
         web_spider = self._web_spider
         web_spider.extract_html_forms(dom_http_response, first_http_request)
-        web_spider.extract_links_and_verify(dom_http_response, first_http_request)
+        web_spider.extract_links_and_verify(dom_http_response, first_http_request, self._debugging_id)
