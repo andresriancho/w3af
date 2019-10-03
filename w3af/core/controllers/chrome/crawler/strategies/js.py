@@ -290,6 +290,9 @@ class ChromeCrawlerJS(object):
         """
         potentially_new_url = self._chrome.get_url()
 
+        if potentially_new_url is None:
+            return
+
         if potentially_new_url in self._visited_urls:
             # If the event navigated the browser to a page which was already
             # visited in the past, don't wait for the page to load
@@ -351,7 +354,7 @@ class ChromeCrawlerJS(object):
             #
             potentially_new_url = self._chrome.get_url()
 
-            if potentially_new_url != self._url:
+            if potentially_new_url is not None and potentially_new_url != self._url:
                 #
                 # Let this new page load for 1 second so that new information
                 # reaches w3af's core, and after that render the initial URL

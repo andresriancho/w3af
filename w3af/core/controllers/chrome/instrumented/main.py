@@ -165,10 +165,25 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
     def get_url(self):
         """
-        :return: The current URL for the chrome instance
+        :return: The current URL for the chrome instance or None if there is
+                 no page loaded
         """
         result = self.chrome_conn.Runtime.evaluate(expression='document.location.href')
-        return URL(result['result']['result']['value'])
+        url_string = result['result']['result']['value']
+
+        try:
+            url = URL(url_string)
+        except ValueError:
+            #
+            # This happens in some rare cases when the URL in the browser tab
+            # is set to about:blank , which is an invalid URL for the w3af
+            # framework
+            #
+            # Callers to this method need to handle None as a result
+            #
+            url = None
+
+        return url
 
     def get_dom(self):
         result = self.chrome_conn.Runtime.evaluate(expression='document.documentElement.outerHTML')
