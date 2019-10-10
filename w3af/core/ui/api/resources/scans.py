@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from threading import Event
 from multiprocessing.dummy import Process
 from flask import jsonify, request
 
@@ -31,7 +30,8 @@ from w3af.core.ui.api.utils.log_handler import RESTAPIOutput
 from w3af.core.ui.api.utils.scans import (get_scan_info_from_id,
                                           start_scan_helper,
                                           get_new_scan_id,
-                                          create_temp_profile)
+                                          create_temp_profile,
+                                          remove_temp_profile)
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.w3afCore import w3afCore
 from w3af.core.controllers.exceptions import BaseFrameworkException
@@ -82,6 +82,8 @@ def start_scan():
                                        workdir=profile_path)
     except BaseFrameworkException, bfe:
         abort(400, str(bfe))
+    finally:
+        remove_temp_profile(scan_profile_file_name)
 
     #
     # Now that we know that the profile is valid I verify the scan target info

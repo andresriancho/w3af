@@ -14,7 +14,7 @@ from main.watch import watch
 
 
 HELP = '''\
-Usage: ./scan_log_analysis.py <scan.log>
+Usage: ./scan_log_analysis.py <scan.log> [--output=out.json]
 
 This is a command line tool that helps identify differences in two scans.
 

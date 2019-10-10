@@ -194,3 +194,29 @@ class OrderedCachedQueue(Queue.Queue, QueueSpeedMeasurement):
         self._item_left_queue()
         self.processed_tasks += 1
         return item
+
+    def join(self):
+        """
+        Blocks until all items in the Queue have been read and processed.
+
+        The count of unfinished tasks goes up whenever an item is added to the
+        queue. The count goes down whenever a consumer thread calls task_done()
+        to indicate the item was retrieved and all work on it is complete.
+
+        When the count of unfinished tasks drops to zero, join() unblocks.
+        """
+        msg = 'Called join on %s with %s unfinished tasks'
+        args = (self.name, self.unfinished_tasks)
+        om.out.debug(msg % args)
+
+        self.all_tasks_done.acquire()
+        try:
+            while self.unfinished_tasks:
+                result = self.all_tasks_done.wait(timeout=5)
+
+                if result is None:
+                    msg = 'Still have %s unfinished tasks in %s join()'
+                    args = (self.unfinished_tasks, self.name)
+                    om.out.debug(msg % args)
+        finally:
+            self.all_tasks_done.release()

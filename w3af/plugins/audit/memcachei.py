@@ -24,7 +24,7 @@ from functools import partial
 
 import w3af.core.data.constants.severity as severity
 
-from w3af.core.controllers.misc.diff import diff
+from w3af.core.controllers.misc.diff import chunked_diff
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.exceptions import HTTPRequestException
@@ -157,7 +157,7 @@ class memcachei(AuditPlugin):
         then we just compare the parts of the response bodies which are different.
         """
         if compare_diff:
-            body1, body2 = diff(body1, body2)
+            body1, body2 = chunked_diff(body1, body2)
 
         cmp_res = fuzzy_equal(body1, body2, self._eq_limit)
         return cmp_res

@@ -52,27 +52,34 @@ class CacheHandler(urllib2.BaseHandler):
         return CacheClass.clear()
 
     def default_open(self, request):
+        """
+        :param request: HTTP request
+        :return: None if another handler should attempt to answer this request
+        """
         method = request.get_method().upper()
 
-        if method in CACHE_METHODS and \
-        request.get_from_cache and \
-        CacheClass.exists_in_cache(request):
-            try:
-                cache_response_obj = CacheClass(request)
-            except Exception:
-                # Sometimes the cache gets corrupted, or the initial HTTP
-                # request that's saved to disk doesn't completely respect the
-                # RFC and when we try to read it, it crashes.
-
-                # Send None to the urllib2 framework, which means that we don't
-                # know how to handle the request, and we forward it to the next
-                # handler in the list.
-                return None
-            else:
-                return cache_response_obj
-        else:
-            # Let the next handler try to handle the request
+        if method not in CACHE_METHODS:
             return None
+
+        if not request.get_from_cache:
+            return None
+
+        if not CacheClass.exists_in_cache(request):
+            return None
+
+        try:
+            cache_response_obj = CacheClass(request)
+        except Exception:
+            # Sometimes the cache gets corrupted, or the initial HTTP
+            # request that's saved to disk doesn't completely respect the
+            # RFC and when we try to read it, it crashes.
+
+            # Send None to the urllib2 framework, which means that we don't
+            # know how to handle the request, and we forward it to the next
+            # handler in the list.
+            return None
+        else:
+            return cache_response_obj
 
     def http_response(self, request, response):
         # Set unique numeric identifier

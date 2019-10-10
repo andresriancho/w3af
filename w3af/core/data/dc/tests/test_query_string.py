@@ -86,3 +86,13 @@ class TestQueryString(unittest.TestCase):
         qs.set_token(('a', 0))
 
         self.assertEqual(str(qs), 'a=%E2%9C%93')
+
+    def test_merge_two_qs(self):
+        qs_1 = QueryString([('a', ['1'])])
+        qs_2 = QueryString([('b', ['2'])])
+
+        for key, values in qs_2.iteritems():
+            qs_1[key] = values
+
+        self.assertEqual(qs_1['b'], ['2'])
+        self.assertEqual(qs_1['a'], ['1'])

@@ -27,6 +27,7 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.db.variant_db import VariantDB
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.misc.ordered_cached_queue import OrderedCachedQueue
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -506,44 +507,50 @@ class CrawlInfrastructure(BaseConsumer):
 
         :return: A list with the newly found fuzzable requests.
         """
-        args = (plugin.get_name(), fuzzable_request.get_uri())
-        om.out.debug('%s.discover(%s)' % args)
+        debugging_id = rand_alnum(8)
+
+        args = (plugin.get_name(), fuzzable_request.get_uri(), debugging_id)
+        om.out.debug('%s.discover(%s, did=%s)' % args)
 
         took_line = TookLine(self._w3af_core,
                              plugin.get_name(),
                              'discover',
-                             debugging_id=None,
+                             debugging_id=debugging_id,
                              method_params={'uri': fuzzable_request.get_uri()})
 
         # Status reporting
         status = self._w3af_core.status
         status.set_running_plugin('crawl', plugin.get_name())
         status.set_current_fuzzable_request('crawl', fuzzable_request)
-        om.out.debug('%s is testing "%s"' % (plugin.get_name(),
-                                             fuzzable_request.get_uri()))
 
         try:
-            result = plugin.discover_wrapper(fuzzable_request)
+            result = plugin.discover_wrapper(fuzzable_request, debugging_id)
         except BaseFrameworkException, e:
-            msg = 'An exception was found while running "%s" with "%s": "%s".'
-            om.out.error(msg % (plugin.get_name(), fuzzable_request), e)
+            msg = 'An exception was found while running "%s" with "%s": "%s" (did: %s)'
+            args = (plugin.get_name(), fuzzable_request, debugging_id)
+            om.out.error(msg % args, e)
         except RunOnce:
             # Some plugins are meant to be run only once
             # that is implemented by raising a RunOnce
             # exception
             self._remove_discovery_plugin(plugin)
         except Exception, e:
-            self.handle_exception(plugin.get_type(), plugin.get_name(),
-                                  fuzzable_request, e)
+            self.handle_exception(plugin.get_type(),
+                                  plugin.get_name(),
+                                  fuzzable_request,
+                                  e)
         else:
             # The plugin output is retrieved and analyzed by the
             # _route_plugin_results method, here we just verify that the plugin
             # result is None (which proves that the plugin respects this part
             # of the API)
             if result is not None:
-                msg = 'The %s plugin did NOT return None.' % plugin.get_name()
-                ve = ValueError(msg)
-                self.handle_exception(plugin.get_type(), plugin.get_name(),
-                                      fuzzable_request, ve)
+                msg = 'The %s plugin did NOT return None (did: %s)'
+                args = (plugin.get_name(), debugging_id)
+                ve = ValueError(msg % args)
+                self.handle_exception(plugin.get_type(),
+                                      plugin.get_name(),
+                                      fuzzable_request,
+                                      ve)
 
         took_line.send()

@@ -24,8 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import csv
 import sys
-import subprocess
 
+import subprocess32 as subprocess
 import lxml.etree as etree
 
 

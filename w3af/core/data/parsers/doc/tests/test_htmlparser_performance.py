@@ -94,7 +94,6 @@ class TestHTMLParserPerformance(unittest.TestCase):
         print self_pid.memory_info()
 
 
-@profile
 def test():
     """
     Run using:
@@ -110,6 +109,7 @@ def test():
 
     p = HTMLParser(response)
     del p
+
 
 if __name__ == '__main__':
     test()

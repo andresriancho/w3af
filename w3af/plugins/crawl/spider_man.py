@@ -66,8 +66,12 @@ class spider_man(CrawlPlugin):
         self._listen_port = ports.SPIDERMAN
 
     @runonce(exc_class=RunOnce)
-    def crawl(self, freq):
-        
+    def crawl(self, fuzzable_request, debugging_id):
+        """
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                   (among other things) the URL to test.
+        """
         # Create the proxy server
         try:
             self._proxy = LoggingProxy(self._listen_address,
@@ -75,7 +79,7 @@ class spider_man(CrawlPlugin):
                                        self._uri_opener,
                                        handler_klass=LoggingHandler,
                                        plugin=self,
-                                       target_domain=freq.get_url().get_domain(),
+                                       target_domain=fuzzable_request.get_url().get_domain(),
                                        name='SpiderManProxyThread')
         except ProxyException, proxy_exc:
             om.out.error('%s' % proxy_exc)

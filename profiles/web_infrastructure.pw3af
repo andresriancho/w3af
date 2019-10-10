@@ -100,8 +100,8 @@ use_colors = True
 [infrastructure.fingerprint_WAF]
 
 [infrastructure.allowed_methods]
-execOneTime = True
-reportDavOnly = True
+run_once = True
+dav_only = True
 
 [infrastructure.hmap]
 

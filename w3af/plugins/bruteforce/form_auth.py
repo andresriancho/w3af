@@ -35,7 +35,7 @@ from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.kb.vuln import Vuln
-from w3af.core.controllers.misc.diff import diff
+from w3af.core.controllers.misc.diff import chunked_diff
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
@@ -360,7 +360,7 @@ class form_auth(BruteforcePlugin):
         # At some point this method was implemented as follows:
         #
         #   strings_to_replace_list = [username, password]
-        #   return get_clean_body_impl(http_response, strings_to_replace_list)
+        #   return get_clean_body_impl(http_response.body, strings_to_replace_list)
         #
         # There is a complex interaction between cleaning the response body
         # and the diff() in FailedLoginPage.matches(). The problem is that the
@@ -460,17 +460,18 @@ class form_auth(BruteforcePlugin):
         freq_url = mutant.get_url()
         self._found.add(freq_url)
 
+        password_for_report = self._get_password_for_report(password)
         user_token, pass_token = form.get_login_tokens()
 
         if user_token is not None:
             desc = ('Found authentication credentials to: "%s". A correct'
                     ' user and password combination is: %s/%s')
-            desc %= (freq_url, user, password)
+            desc %= (freq_url, user, password_for_report)
         else:
             # There is no user field!
             desc = ('Found authentication credentials to: "%s". The correct'
                     ' password is: "%s".')
-            desc %= (freq_url, password)
+            desc %= (freq_url, password_for_report)
 
         v = Vuln.from_mutant('Guessable credentials', desc, severity.HIGH,
                              resp.id, self.get_name(), mutant)
@@ -523,9 +524,9 @@ class FailedLoginPage(object):
             return False
 
         if self.diff_a_b is None:
-            self.diff_a_b, _ = diff(self.body_a, self.body_b)
+            self.diff_a_b, _ = chunked_diff(self.body_a, self.body_b)
 
-        _, diff_query_a = diff(self.body_a, query)
+        _, diff_query_a = chunked_diff(self.body_a, query)
 
         # Had to add this in order to prevent issues with CSRF tokens, which
         # might be part of the HTTP response body, are random (not removed by

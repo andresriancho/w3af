@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import cPickle
+import msgpack
 import operator
 import os
 
@@ -31,21 +32,41 @@ class HistorySuggestion(object):
     It's also responsible of loading and saving the info in a file.
     """
     def __init__(self, filename):
+        # Where the history items will be stored
         self.filename = filename
+
+        # dict: {text:points}
         self.history = {}
 
         if os.access(filename, os.R_OK):
-            # dict: {text:points}
-            fileh = open(filename)
             #
-            # Added this try/except because of this bug:
-            # https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2830825&group_id=170274
+            # First we try to read using msgpack, which is the default
+            # serialization algorithm we want to use
             #
             try:
-                self.history = cPickle.load(fileh)
+                self.history = msgpack.load(file(filename, 'rb'), raw=False)
             except:
-                self.history = {}
-            fileh.close()
+                #
+                # The history file might still be in pickle format, we read
+                # it and migrate to msgpack
+                #
+                try:
+                    self.history = cPickle.load(file(filename, 'rb'))
+                except:
+                    #
+                    # Well... the file is completely broken, just write an
+                    # empty string to it using msgpack to have a nicer run
+                    # the next time the user executes the GUI
+                    #
+                    self.history = {}
+                    msgpack.dump({}, file(filename, 'wb'))
+                else:
+                    #
+                    # We were able to read using pickle, migrate the file to
+                    # msgpack to prevent deserialization issues
+                    # https://github.com/andresriancho/w3af/issues/17807
+                    #
+                    msgpack.dump(self.history, file(filename, 'wb'))
 
     def get_texts(self):
         """Provides the texts, ordered by relevance.
@@ -65,6 +86,7 @@ class HistorySuggestion(object):
         fileh = open(self.filename, "w")
         cPickle.dump(self.history, fileh)
         fileh.close()
+
 
 if __name__ == "__main__":
     import random

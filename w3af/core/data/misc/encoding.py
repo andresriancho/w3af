@@ -76,16 +76,24 @@ codecs.register_error(PERCENT_ENCODE, _percent_encode)
 codecs.register_error(HTML_ENCODE, _return_html_encoded)
 
 
-def smart_unicode(s, encoding=DEFAULT_ENCODING, errors='strict',
-                  on_error_guess=True):
+def smart_unicode(s,
+                  encoding=DEFAULT_ENCODING,
+                  errors='strict',
+                  on_error_guess=True,
+
+                  # http://jamesls.com/micro-optimizations-in-python-code-speeding-up-lookups.html
+                  _isinstance=isinstance,
+                  _unicode=unicode,
+                  _str=str
+                  ):
     """
     Return the unicode representation of 's'. Decodes byte-strings using
     the 'encoding' codec.
     """
-    if isinstance(s, unicode):
+    if _isinstance(s, _unicode):
         return s
     
-    if isinstance(s, str):
+    if _isinstance(s, _str):
         try:
             s = s.decode(encoding, errors)
         except UnicodeDecodeError:
@@ -112,40 +120,47 @@ def smart_unicode(s, encoding=DEFAULT_ENCODING, errors='strict',
                 # Read the pyar thread "__unicode__ deberia tomar los mismos
                 # parametros que unicode() ?" to better understand why I can't
                 # pass encoding and errors parameters here:
-                s = unicode(s)
+                s = _unicode(s)
             except UnicodeDecodeError:
                 # And why I'm doing it here:
-                s = str(s)
+                s = _str(s)
                 s = smart_unicode(s, encoding=encoding, errors=errors,
                                   on_error_guess=on_error_guess)
         else:
-            s = str(s)
+            s = _str(s)
             s = smart_unicode(s, encoding=encoding, errors=errors,
                               on_error_guess=on_error_guess)
 
     return s
 
 
-def smart_str(s, encoding=DEFAULT_ENCODING, errors='strict'):
+def smart_str(s,
+              encoding=DEFAULT_ENCODING,
+              errors='strict',
+
+              # http://jamesls.com/micro-optimizations-in-python-code-speeding-up-lookups.html
+              _isinstance=isinstance,
+              _unicode=unicode,
+              _str=str):
     """
     Return a byte-string version of 's', encoded as specified in 'encoding'.
     """
-    if isinstance(s, unicode):
+    if _isinstance(s, _unicode):
         return s.encode(encoding, errors)
 
     # Already a byte-string, nothing to do here
-    if isinstance(s, str):
+    if _isinstance(s, _str):
         return s
 
     # Handling objects is hard! Each implements __str__ in a different way
     # which might trigger issues
     try:
-        return str(s)
+        return _str(s)
     except UnicodeEncodeError:
         # This will raise an exception if errors is strict, or return a
         # string representation of the object
         try:
-            unicode_s = unicode(s)
+            unicode_s = _unicode(s)
         except UnicodeEncodeError:
             if errors == 'strict':
                 raise

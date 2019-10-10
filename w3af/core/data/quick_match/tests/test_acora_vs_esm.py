@@ -41,6 +41,7 @@ class TestAcoraPerformanceVsESM(unittest.TestCase):
     ITERATIONS = 100000
 
     def test_pyahocorasick(self):
+        # pylint: disable=E0602
         autom = ahocorasick.Automaton()
 
         for idx, (key,) in enumerate(SQL_ERRORS):

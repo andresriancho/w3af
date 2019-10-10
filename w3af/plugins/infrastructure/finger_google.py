@@ -45,83 +45,68 @@ class finger_google(InfrastructurePlugin):
 
         # Internal variables
         self._accounts = []
+        self._google = None
+        self._domain = None
+        self._domain_root = None
 
         # User configured
         self._result_limit = 300
         self._fast_search = False
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
-        if not is_private_site(fuzzable_request.get_url().get_domain()):
-            self._google = google(self._uri_opener)
-            self._domain = domain = fuzzable_request.get_url().get_domain()
-            self._domain_root = fuzzable_request.get_url().get_root_domain()
+        if is_private_site(fuzzable_request.get_url().get_domain()):
+            return
 
-            if self._fast_search:
-                self._do_fast_search(domain)
-            else:
-                self._do_complete_search(domain)
+        # There are no race conditions here with these attributes because of
+        # @runonce
+        self._domain = fuzzable_request.get_url().get_domain()
+        self._domain_root = fuzzable_request.get_url().get_root_domain()
+        self._google = google(self._uri_opener)
 
-    def _do_fast_search(self, domain):
+        if self._fast_search:
+            self._do_fast_search()
+        else:
+            self._do_complete_search()
+
+    def _do_fast_search(self):
         """
         Only search for mail addresses in the google result page.
         """
         search_string = '@' + self._domain_root
-        try:
-            result_page_objects = self._google.get_n_result_pages(
-                search_string,
-                self._result_limit
-            )
-        except BaseFrameworkException, w3:
-            om.out.error(str(w3))
-            # If I found an error, I don't want to be run again
-            raise RunOnce()
-        else:
-            # Happy happy joy, no error here!
-            for result in result_page_objects:
-                self._parse_document(result)
+        result_page_objects = self._google.get_n_result_pages(search_string, self._result_limit)
 
-    def _do_complete_search(self, domain):
+        for result in result_page_objects:
+            self._parse_document(result)
+
+    def _do_complete_search(self):
         """
         Performs a complete search for email addresses.
         """
         search_string = '@' + self._domain_root
-        try:
-            result_page_objects = self._google.get_n_result_pages(
-                search_string,
-                self._result_limit
-            )
-        except BaseFrameworkException, w3:
-            om.out.error(str(w3))
-            # If I found an error, I don't want to be run again
-            raise RunOnce()
-        else:
-            #   Send the requests using threads:
-            self.worker_pool.map(self._find_accounts, result_page_objects)
+        google_results = self._google.search(search_string, self._result_limit)
+        self.worker_pool.map(self._find_accounts, google_results)
 
-    def _find_accounts(self, googlePage):
+    def _find_accounts(self, google_result):
         """
         Finds emails in google result page.
 
+        :param google_result: GoogleResult instance
         :return: A list of valid accounts
         """
-        try:
-            gpuri = googlePage.get_uri()
-            om.out.debug('Searching for emails in: ' + gpuri)
+        om.out.debug('Searching for emails in: ' + google_result.URL)
 
-            grep_res = True if (gpuri.get_domain() == self._domain) else False
-            response = self._uri_opener.GET(gpuri, cache=True,
-                                            grep=grep_res)
-        except BaseFrameworkException, e:
-            msg = 'ExtendedUrllib exception raised while fetching page in' \
-                  ' finger_google, error description: "%s"'
-            om.out.debug(msg % e)
-        else:
-            self._parse_document(response)
+        grep_res = google_result.URL.get_domain() == self._domain
+
+        response = self._uri_opener.GET(google_result.URL,
+                                        cache=True,
+                                        grep=grep_res)
+        self._parse_document(response)
 
     def _parse_document(self, response):
         """
@@ -133,24 +118,28 @@ class finger_google(InfrastructurePlugin):
             document_parser = get_document_parser_for(response, cache=False)
         except BaseFrameworkException:
             # Failed to find a suitable parser for the document
-            pass
-        else:
-            # Search for email addresses
-            for mail in document_parser.get_emails(self._domain_root):
-                if mail not in self._accounts:
-                    self._accounts.append(mail)
+            return
 
-                    desc = 'The mail account: "%s" was found at: "%s".'
-                    desc = desc % (mail, response.get_uri())
+        #
+        # Search for email addresses
+        #
+        for mail in document_parser.get_emails(self._domain_root):
+            if mail not in self._accounts:
+                self._accounts.append(mail)
 
-                    i = Info('Email account', desc, response.id,
-                             self.get_name())
-                    i.set_url(response.get_uri())
-                    i['mail'] = mail
-                    i['user'] = mail.split('@')[0]
-                    i['url_list'] = {response.get_uri()}
+                desc = 'The mail account: "%s" was found at: "%s".'
+                desc %= (mail, response.get_uri())
 
-                    self.kb_append('emails', 'emails', i)
+                i = Info('Email account',
+                         desc,
+                         response.id,
+                         self.get_name())
+                i.set_url(response.get_uri())
+                i['mail'] = mail
+                i['user'] = mail.split('@')[0]
+                i['url_list'] = {response.get_uri()}
+
+                self.kb_append('emails', 'emails', i)
 
     def get_options(self):
         """
@@ -162,11 +151,11 @@ class finger_google(InfrastructurePlugin):
         o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
         
-        d = 'Do a fast search, when this feature is enabled, not all mail'\
-            ' addresses are found'
-        h = 'This method is faster, because it only searches for emails in'\
-            ' the small page snippet that google shows to the user after'\
-            ' performing a common search.'
+        d = ('Do a fast search, when this feature is enabled, not all mail'
+             ' addresses are found')
+        h = ('This method is faster, because it only searches for emails in'
+             ' the small page snippet that Google shows to the user after'
+             ' performing a common search.')
         o = opt_factory('fast_search', self._fast_search, d, 'boolean', help=h)
         ol.add(o)
         

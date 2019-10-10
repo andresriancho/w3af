@@ -958,6 +958,7 @@ class ExtendedUrllib(object):
         except (socket.error,
                 URLTimeoutError,
                 ConnectionPoolException,
+                OpenSSL.SSL.Error,
                 OpenSSL.SSL.SysCallError,
                 OpenSSL.SSL.ZeroReturnError,
                 BadStatusLine), e:
@@ -973,8 +974,9 @@ class ExtendedUrllib(object):
     def _decrease_worker_pool_size(self):
         w3af_core = self.get_w3af_core()
         worker_pool = w3af_core.worker_pool
+        min_workers = w3af_core.MIN_WORKER_THREADS
+
         error_rate = self.get_error_rate()
-        min_workers = 10
 
         # Note that we decrease by two here, and increase by one below
         new_worker_count = worker_pool.get_worker_count() - 2
@@ -993,8 +995,9 @@ class ExtendedUrllib(object):
     def _increase_worker_pool_size(self):
         w3af_core = self.get_w3af_core()
         worker_pool = w3af_core.worker_pool
+        max_workers = w3af_core.MAX_WORKER_THREADS
+
         error_rate = self.get_error_rate()
-        max_workers = 100
 
         # Note that we increase by one here, and decrease by two above
         new_worker_count = worker_pool.get_worker_count() + 1
@@ -1077,7 +1080,9 @@ class ExtendedUrllib(object):
         """
         self._increase_timeout_on_error(req, exception)
 
-        return self._generic_send_error_handler(req, exception, grep,
+        return self._generic_send_error_handler(req,
+                                                exception,
+                                                grep,
                                                 original_url)
         
     def _handle_send_urllib_error(self, req, exception, grep, original_url):
@@ -1086,7 +1091,9 @@ class ExtendedUrllib(object):
         also possible when a proxy is configured and not available
         also possible when auth credentials are wrong for the URI
         """
-        return self._generic_send_error_handler(req, exception, grep,
+        return self._generic_send_error_handler(req,
+                                                exception,
+                                                grep,
                                                 original_url)
         
     def _generic_send_error_handler(self, req, exception, grep, original_url):

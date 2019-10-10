@@ -19,13 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import subprocess
 import sys
 import platform
+import subprocess
 
 from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
-from .base_platform import Platform
-from ..requirements import CORE_PIP_PACKAGES, GUI_PIP_EXTRAS, CORE, GUI
+from w3af.core.controllers.dependency_check.platforms.base_platform import Platform
+from w3af.core.controllers.dependency_check.requirements import CORE_PIP_PACKAGES, GUI_PIP_EXTRAS, CORE, GUI
 
 
 TWO_PYTHON_MSG = """\

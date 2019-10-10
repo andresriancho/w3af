@@ -27,7 +27,7 @@ from w3af.core.controllers.misc_settings import MiscSettings
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.controllers.misc.get_file_list import get_file_list
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.misc.homeDir import HOME_DIR
+from w3af.core.controllers.misc.home_dir import get_home_dir
 from w3af.core.data.profile.profile import profile as profile
 
 
@@ -231,7 +231,7 @@ class CoreProfiles(object):
             msg = error_fmt % (profile_name, '\n    - '.join(error_messages))
             raise BaseFrameworkException(msg)
 
-    def get_profile_list(self, directory=HOME_DIR):
+    def get_profile_list(self, directory=None):
         """
         :param directory: The directory from which profiles are loaded
 
@@ -240,14 +240,15 @@ class CoreProfiles(object):
               loaded
             - One with the file names of the profiles that are invalid
 
-        >>> HOME_DIR = '.'
+        >>> path = '.'
         >>> p = CoreProfiles(None)
-        >>> valid, invalid = p.get_profile_list(HOME_DIR)
+        >>> valid, invalid = p.get_profile_list(path)
         >>> valid_lower = [prof.get_name().lower() for prof in valid]
         >>> 'owasp_top10' in valid_lower
         True
-
         """
+        directory = directory or get_home_dir()
+
         profile_home = os.path.join(directory, 'profiles')
         str_profile_list = get_file_list(profile_home,
                                          extension=profile.EXTENSION)

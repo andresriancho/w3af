@@ -67,12 +67,13 @@ class content_negotiation(CrawlPlugin):
         self._tries_left = 3
         self._content_negotiation_enabled = None
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         1- Check if HTTP server is vulnerable
         2- Exploit using FuzzableRequest
         3- Perform bruteforce for each new directory
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         """

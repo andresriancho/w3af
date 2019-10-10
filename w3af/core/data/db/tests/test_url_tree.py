@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 
-from w3af.core.data.db.url_tree import URLTree, url_tree_factory
+from w3af.core.data.db.url_tree import URLTree, URLNode, url_tree_factory
 from w3af.core.data.parsers.doc.url import URL
 
 
@@ -35,9 +35,7 @@ class TestURLTree(unittest.TestCase):
         url = URL('http://w3af.org/')
         tree.add_url(url)
 
-        expected = url_tree_factory()
-        expected[u'http://w3af.org']
-
+        expected = {URLNode(u'http://w3af.org', 1): {}}
         self.assertEqual(tree.tree, expected)
 
     def test_two_independent_paths(self):
@@ -48,10 +46,8 @@ class TestURLTree(unittest.TestCase):
         tree.add_url(url_1)
         tree.add_url(url_2)
 
-        expected = url_tree_factory()
-        expected[u'http://w3af.org'][u'foo']
-        expected[u'http://w3af.org'][u'bar']
-
+        expected = {URLNode("http://w3af.org", 0): {URLNode("foo", 1): {},
+                                                    URLNode("bar", 1): {}}}
         self.assertEqual(tree.tree, expected)
 
     def test_two_nested_paths(self):
@@ -62,9 +58,9 @@ class TestURLTree(unittest.TestCase):
         tree.add_url(url_1)
         tree.add_url(url_2)
 
-        expected = url_tree_factory()
-        expected[u'http://w3af.org'][u'foo'][u'bar']
-        expected[u'http://w3af.org'][u'spam'][u'eggs']
+        expected = {URLNode("http://w3af.org", 0):
+                        {URLNode("foo", 0): {URLNode("bar", 1): {}},
+                         URLNode("spam", 0): {URLNode("eggs", 1): {}}}}
 
         self.assertEqual(tree.tree, expected)
 
@@ -76,9 +72,9 @@ class TestURLTree(unittest.TestCase):
         tree.add_url(url_1)
         tree.add_url(url_2)
 
-        expected = url_tree_factory()
-        expected[u'http://w3af.org'][u'foo'][u'bar']
-        expected[u'http://w3af.org'][u'spam'][u'eggs'][u'123.txt']
+        expected = {URLNode("http://w3af.org", 0):
+                        {URLNode("foo", 0): {URLNode("bar", 1): {}},
+                         URLNode("spam", 0): {URLNode("eggs", 0): {URLNode("123.txt", 1): {}}}}}
 
         self.assertEqual(tree.tree, expected)
 

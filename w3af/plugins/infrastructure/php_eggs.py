@@ -91,11 +91,12 @@ class php_eggs(InfrastructurePlugin):
 
         return egg_db
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Nothing strange, just do some GET requests to the eggs and analyze the
         response.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                  (among other things) the URL to test.
         """

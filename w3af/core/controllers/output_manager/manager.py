@@ -121,7 +121,7 @@ class OutputManager(Process):
 
     def get_worker_pool(self):
         return Pool(self.WORKER_THREADS,
-                    worker_names='WorkerThread',
+                    worker_names='OutputManagerWorkerThread',
                     max_queued_tasks=self.WORKER_THREADS * 10)
 
     def get_in_queue(self):
@@ -338,8 +338,24 @@ class OutputManager(Process):
         #
         self._is_shutting_down = True
 
+        # Call .end() on all plugin instances. Save the exceptions (if any)
+        # and raise the first one.
+        #
+        # We want all plugin instances to get the chance to run their .end()
+        # and we also don't want to ignore exceptions
+        exc_info = None
+
         for o_plugin in self._output_plugin_instances:
-            o_plugin.end()
+            try:
+                o_plugin.end()
+            except:
+                exc_info = sys.exc_info()
+                continue
+
+        if exc_info:
+            # pylint: disable=E0702
+            raise exc_info
+            # pylint: enable=E0702
 
         # This is a neat trick which basically removes all plugin references
         # from memory. Those plugins might have pointers to memory parts that

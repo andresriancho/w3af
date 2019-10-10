@@ -270,3 +270,22 @@ class TestHTTPResponse(unittest.TestCase):
             msg = 'Incorrect escape with %s!' % content_type
             self.assertNotIn('\\xff\\xd8', resp.body, msg)
 
+    def test_http_response_get_hash(self):
+        html = '<html>hello world</html>'
+        headers = Headers([('Content-Type', 'text/html'),
+                           ('Date', '2019-02-02 10:11:12 am')])
+        resp = self.create_resp(headers, html)
+
+        self.assertEqual(resp.get_hash(), '803813234089059747495951793')
+
+    def test_dump_headers_exclude(self):
+        html = '<html>hello world</html>'
+        headers = Headers([('Content-Type', 'text/html'),
+                           ('Date', '2019-02-02 10:11:12 am')])
+        resp = self.create_resp(headers, html)
+
+        header_dump = resp.dump_headers(exclude_headers={'date'})
+        self.assertEqual(header_dump, u'Content-Type: text/html\r\n')
+
+        header_dump = resp.dump_headers(exclude_headers={})
+        self.assertEqual(header_dump, u'Content-Type: text/html\r\nDate: 2019-02-02 10:11:12 am\r\n')

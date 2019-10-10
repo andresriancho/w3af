@@ -34,7 +34,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.plugins.attack_plugin import AttackPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.home_dir import get_home_dir
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
 from w3af.core.data.kb.exec_shell import ExecShell
 from w3af.core.data.kb.shell import Shell

@@ -192,7 +192,7 @@ class TestBasic(unittest.TestCase):
         TYPES_AND_ATTRS = {'attack': ['_generate_shell', 'get_attack_type',
                                       'get_root_probability', 'get_kb_location'],
                            'audit': ['audit',],
-                           'auth': ['login', 'logout', 'is_logged'],
+                           'auth': ['login', 'logout', 'has_active_session'],
                            'bruteforce': ['audit',],
                            'crawl': ['crawl'],
                            'evasion': ['get_priority', 'modify_request'],

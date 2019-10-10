@@ -172,7 +172,8 @@ class TestKeepalive(unittest.TestCase):
         response.read()
 
         time.sleep(wait)
-        
+
+        # pylint: disable=E1101
         pid = os.getpid()
         p = psutil.Process(pid)
         connections_before = p.get_connections()
@@ -181,6 +182,7 @@ class TestKeepalive(unittest.TestCase):
 
         time.sleep(1)
         connections_after = p.get_connections()
+        # pylint: enable=E1101
         
         self.assertLess(len(connections_after), len(connections_before))
         
@@ -195,6 +197,7 @@ class TestConnectionMgr(unittest.TestCase):
         # We don't need a new HTTPConnection for each request
         self.request.new_connection = False
         self.request.get_host = lambda: 'w3af.org'
+        self.request.get_netloc = lambda: 'w3af.org'
 
         self.cm.MAX_CONNECTIONS = 1  # Only a single connection
         self.assertEquals(0, len(self.cm._used_conns))
@@ -204,6 +207,7 @@ class TestConnectionMgr(unittest.TestCase):
         def conn_factory(request):
             mock = Mock()
             mock.host = request.get_host()
+            mock.host_port = request.get_host()
             return mock
 
         conn_1 = self.cm.get_available_connection(self.request, conn_factory)

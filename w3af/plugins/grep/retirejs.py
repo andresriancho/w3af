@@ -24,9 +24,7 @@ import json
 import shlex
 import hashlib
 import tempfile
-import subprocess
-
-from threading import Timer
+import subprocess32 as subprocess
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.constants.severity as severity
@@ -38,6 +36,9 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
+from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.options.option_types import URL as URL_OPTION
+from w3af.core.data.options.option_list import OptionList
 
 
 class retirejs(GrepPlugin):
@@ -49,8 +50,13 @@ class retirejs(GrepPlugin):
 
     METHODS = ('GET',)
     HTTP_CODES = (200,)
+
     RETIRE_CMD = 'retire -j --outputformat json --outputpath %s --jspath %s'
+    RETIRE_CMD_VERSION = 'retire --version'
     RETIRE_CMD_JSREPO = 'retire -j --outputformat json --outputpath %s --jsrepo %s --jspath %s'
+
+    RETIRE_VERSION = '2.'
+
     RETIRE_TIMEOUT = 5
     RETIRE_DB_URL = URL('https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
     BATCH_SIZE = 20
@@ -60,11 +66,17 @@ class retirejs(GrepPlugin):
 
         self._analyzed_hashes = ScalableBloomFilter()
         self._retirejs_path = self._get_retirejs_path()
-        self._retirejs_exit_code_result = None
-        self._retirejs_exit_code_was_run = False
+
+        self._is_valid_retire_version = None
+        self._is_valid_retirejs_exit_code = None
+        self._should_run_retirejs_install_check = True
+
         self._retire_db_filename = None
         self._batch = []
         self._js_temp_directory = None
+
+        # User-configured parameters
+        self._retire_db_url = self.RETIRE_DB_URL
 
     def grep(self, request, response):
         """
@@ -85,7 +97,7 @@ class retirejs(GrepPlugin):
         if response.get_code() not in self.HTTP_CODES:
             return
 
-        if not response.is_text_or_html():
+        if 'javascript' not in response.content_type:
             return
 
         if not self._should_analyze(response):
@@ -99,9 +111,11 @@ class retirejs(GrepPlugin):
         with self._plugin_lock:
             batch = self._add_response_to_batch(response)
 
-            if self._should_analyze_batch(batch):
-                self._analyze_batch(batch)
-                self._remove_batch(batch)
+            if not self._should_analyze_batch(batch):
+                return
+
+            self._analyze_batch(batch)
+            self._remove_batch(batch)
 
     def _remove_batch(self, batch):
         for url, response_id, filename in batch:
@@ -162,7 +176,7 @@ class retirejs(GrepPlugin):
             # But in this case we're breaking that general rule to retrieve the
             # DB at the beginning of the scan
             try:
-                http_response = self._uri_opener.GET(self.RETIRE_DB_URL,
+                http_response = self._uri_opener.GET(self._retire_db_url,
                                                      binary_response=True,
                                                      respect_size_limit=False)
             except Exception, e:
@@ -198,9 +212,45 @@ class retirejs(GrepPlugin):
 
         :return: True if everything works
         """
-        if self._retirejs_exit_code_was_run:
-            return self._retirejs_exit_code_result
+        with self._plugin_lock:
+            if self._should_run_retirejs_install_check:
+                # Only run once
+                self._should_run_retirejs_install_check = False
 
+                self._is_valid_retire_version = self._get_is_valid_retire_version()
+                self._is_valid_retirejs_exit_code = self._retire_smoke_test()
+
+        return self._is_valid_retire_version and self._is_valid_retirejs_exit_code
+
+    def _get_is_valid_retire_version(self):
+        cmd = shlex.split(self.RETIRE_CMD_VERSION)
+
+        retire_version_fd = tempfile.NamedTemporaryFile(prefix='retirejs-version-',
+                                                        suffix='.out',
+                                                        delete=False,
+                                                        mode='w')
+
+        try:
+            subprocess.check_call(cmd,
+                                  stderr=subprocess.DEVNULL,
+                                  stdout=retire_version_fd)
+        except subprocess.CalledProcessError:
+            msg = 'Unexpected retire.js exit code. Disabling grep.retirejs plugin.'
+            om.out.error(msg)
+            return False
+
+        retire_version_fd.close()
+        current_retire_version = open(retire_version_fd.name).read()
+        self._remove_file(retire_version_fd.name)
+
+        if current_retire_version.startswith(self.RETIRE_VERSION):
+            om.out.debug('Using a supported retirejs version')
+            return True
+
+        om.out.error('Please install a supported retirejs version (2.x)')
+        return False
+
+    def _retire_smoke_test(self):
         check_file = tempfile.NamedTemporaryFile(prefix='retirejs-check-',
                                                  suffix='.js',
                                                  delete=False,
@@ -217,25 +267,23 @@ class retirejs(GrepPlugin):
         args = (output_file.name, check_file.name)
         cmd = self.RETIRE_CMD % args
 
-        try:
-            subprocess.check_output(shlex.split(cmd))
-        except subprocess.CalledProcessError:
-            msg = ('Unexpected retire.js exit code.'
-                   ' Disabling grep.retirejs plugin.')
-            om.out.error(msg)
+        process = subprocess.Popen(shlex.split(cmd),
+                                   stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL)
 
-            self._retirejs_exit_code_was_run = True
-            self._retirejs_exit_code_result = False
+        process.wait()
+
+        self._remove_file(output_file.name)
+        self._remove_file(check_file.name)
+
+        if process.returncode != 0:
+            msg = 'Unexpected retire.js exit code. Disabling grep.retirejs plugin.'
+            om.out.error(msg)
+            return False
+
         else:
             om.out.debug('retire.js returned the expected exit code.')
-
-            self._retirejs_exit_code_was_run = True
-            self._retirejs_exit_code_result = True
-        finally:
-            self._remove_file(output_file.name)
-            self._remove_file(check_file.name)
-
-        return self._retirejs_exit_code_result
+            return True
 
     def _should_analyze(self, response):
         """
@@ -301,31 +349,44 @@ class retirejs(GrepPlugin):
                 self._get_js_temp_directory())
         cmd = self.RETIRE_CMD_JSREPO % args
 
-        process = subprocess.Popen(shlex.split(cmd))
-
-        # This will terminate the retirejs process in case it hangs
-        t = Timer(self.RETIRE_TIMEOUT, kill, [process])
-        t.start()
-
-        # Wait for the retirejs process to complete
-        process.wait()
-
-        # Cancel the timer if it wasn't run
-        t.cancel()
+        try:
+            returncode = subprocess.call(shlex.split(cmd),
+                                         stdout=subprocess.DEVNULL,
+                                         stderr=subprocess.DEVNULL,
+                                         timeout=self.RETIRE_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            # The process timed out and the returncode was never set
+            om.out.debug('The retirejs process for batch %s timeout out' % batch)
+            return dict()
 
         # retirejs will return code != 0 when a vulnerability is found
         # we use this to decide when we need to parse the output
-        json_doc = []
+        if returncode == 0:
+            self._remove_file(json_file.name)
+            return dict()
 
-        if process.returncode != 0:
-            try:
-                json_doc = json.loads(file(json_file.name).read())
-            except Exception, e:
-                msg = 'Failed to parse retirejs output. Exception: "%s"'
-                om.out.debug(msg % e)
+        try:
+            file_contents = file(json_file.name).read()
+        except Exception:
+            msg = 'Failed to read retirejs output file at %s'
+            om.out.debug(msg % json_file.name)
 
-        self._remove_file(json_file.name)
-        return json_doc
+            self._remove_file(json_file.name)
+            return dict()
+
+        try:
+            json_doc = json.loads(file_contents)
+        except Exception, e:
+            msg = ('Failed to parse retirejs output as JSON.'
+                   ' Exception is "%s" and file content: "%s..."')
+            args = (e, file_contents[:20])
+            om.out.debug(msg % args)
+
+            self._remove_file(json_file.name)
+            return dict()
+        else:
+            self._remove_file(json_file.name)
+            return json_doc
 
     def _remove_file(self, response_file):
         """
@@ -347,7 +408,9 @@ class retirejs(GrepPlugin):
         :param json_doc: The whole JSON document as returned by retirejs
         :return: None, everything is written to the KB.
         """
-        for json_finding in json_doc:
+        data = json_doc.get('data', [])
+
+        for json_finding in data:
             self._handle_finding(batch, json_finding)
 
     def _handle_finding(self, batch, json_finding):
@@ -435,6 +498,28 @@ class retirejs(GrepPlugin):
         # at least one installation of the retirejs command.
         return paths_to_retire[0]
 
+    def get_options(self):
+        """
+        :return: A list of option objects for this plugin.
+        """
+        ol = OptionList()
+
+        d = 'URL to download the retirejs database from'
+        o = opt_factory('retire_db_url', self._retire_db_url, d, URL_OPTION)
+        ol.add(o)
+
+        return ol
+
+    def set_options(self, options_list):
+        """
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
+
+        :param options_list: A dictionary with the options for the plugin.
+        :return: No value is returned.
+        """
+        self._retire_db_url = options_list['retire_db_url'].get_value()
+
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
@@ -501,11 +586,3 @@ class RetireJSVulnerability(object):
         self.severity = vuln_severity
         self.summary = summary
         self.info_urls = info_urls
-
-
-def kill(process):
-    try:
-        process.terminate()
-    except OSError:
-        # ignore
-        pass
