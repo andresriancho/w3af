@@ -25,7 +25,7 @@ from w3af.core.controllers.ci.moth import get_moth_http
 
 class TestFileReadShell(ReadExploitTest):
 
-    target_url = get_moth_http('/audit/local_file_read/'\
+    target_url = get_moth_http('/audit/local_file_read/'
                                'local_file_read.py?file=section.txt')
     _run_configs = {
         'cfg': {
@@ -44,22 +44,24 @@ class TestFileReadShell(ReadExploitTest):
         # Assert the general results
         vulns = self.kb.get('lfi', 'lfi')
         self.assertEquals(1, len(vulns), vulns)
-        
+
         vuln = vulns[0]
-        
-        self.assertEquals(vuln.get_name(), "Local file inclusion vulnerability")
-        
+
+        self.assertEquals(
+            vuln.get_name(),
+            "Local file inclusion vulnerability")
+
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'local_file_reader')
 
     def test_from_template(self):
         lfit = LocalFileReadTemplate()
-        
+
         options = lfit.get_options()
-        
+
         target_url = get_moth_http('/audit/local_file_read/local_file_read.py')
         options['url'].set_value(target_url)
-        
+
         options['data'].set_value('file=section.txt')
         options['vulnerable_parameter'].set_value('file')
         options['payload'].set_value('/etc/passwd')
@@ -69,5 +71,5 @@ class TestFileReadShell(ReadExploitTest):
         lfit.store_in_kb()
         vuln = self.kb.get(*lfit.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         self._exploit_vuln(vuln_to_exploit_id, 'local_file_reader')

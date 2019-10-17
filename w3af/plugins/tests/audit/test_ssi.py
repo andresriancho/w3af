@@ -97,4 +97,3 @@ class TestJinja2SSI(PluginTest):
         self.assertEquals('Server side include vulnerability', vuln.get_name())
         self.assertEquals(URL(self.target_url).uri2url().url_string,
                           vuln.get_url().url_string)
-

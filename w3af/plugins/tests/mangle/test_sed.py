@@ -46,12 +46,12 @@ class TestSed(unittest.TestCase):
         response = HTTPResponse(200, body, headers, self.url, self.url, _id=1)
 
         option_list = self.plugin.get_options()
-        option_list['expressions'].set_value('qh/User/NotLuser/')        
+        option_list['expressions'].set_value('qh/User/NotLuser/')
         self.plugin.set_options(option_list)
-        
+
         mod_request = self.plugin.mangle_request(self.request)
         mod_response = self.plugin.mangle_response(response)
-        
+
         self.assertEqual(mod_request.get_headers(), self.request.get_headers())
         self.assertEqual(mod_response.get_headers(), response.get_headers())
 
@@ -66,12 +66,12 @@ class TestSed(unittest.TestCase):
         response = HTTPResponse(200, body, headers, self.url, self.url, _id=1)
 
         option_list = self.plugin.get_options()
-        option_list['expressions'].set_value('sb/user/notluser/')        
+        option_list['expressions'].set_value('sb/user/notluser/')
         self.plugin.set_options(option_list)
-        
+
         mod_request = self.plugin.mangle_request(self.request)
         mod_response = self.plugin.mangle_response(response)
-        
+
         self.assertEqual(mod_request.get_headers(), self.request.get_headers())
         self.assertEqual(mod_response.get_headers(), response.get_headers())
 
@@ -85,11 +85,11 @@ class TestSed(unittest.TestCase):
         request = HTTPRequest(self.url, headers=headers)
 
         option_list = self.plugin.get_options()
-        option_list['expressions'].set_value('qh/html/xml/')        
+        option_list['expressions'].set_value('qh/html/xml/')
         self.plugin.set_options(option_list)
-        
+
         mod_request = self.plugin.mangle_request(request)
-        
+
         value, _ = mod_request.get_headers().iget('content-type')
         self.assertEqual(value, 'text/xml')
 

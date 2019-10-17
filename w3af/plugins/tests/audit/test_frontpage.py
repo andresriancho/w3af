@@ -63,5 +63,9 @@ class TestFrontpage(PluginTest):
 
         vuln = vulns[0]
 
-        self.assertEqual(vuln.get_url().url_string, 'http://httpretty/AAAAAA.html')
-        self.assertEqual(vuln.get_name(), 'Insecure Frontpage extensions configuration')
+        self.assertEqual(
+            vuln.get_url().url_string,
+            'http://httpretty/AAAAAA.html')
+        self.assertEqual(
+            vuln.get_name(),
+            'Insecure Frontpage extensions configuration')

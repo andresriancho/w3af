@@ -22,7 +22,7 @@ from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
 from w3af.core.data.kb.vuln_templates.dav_template import DAVTemplate
- 
+
 
 @attr('smoke')
 class TestDAVShell(ExecExploitTest):
@@ -53,11 +53,11 @@ class TestDAVShell(ExecExploitTest):
 
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'dav')
-    
+
     @attr('ci_fails')
     def test_from_template(self):
         dt = DAVTemplate()
-        
+
         options = dt.get_options()
         options['url'].set_value('http://moth/w3af/audit/dav/write-all/')
         dt.set_options(options)
@@ -65,5 +65,5 @@ class TestDAVShell(ExecExploitTest):
         dt.store_in_kb()
         vuln = self.kb.get(*dt.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         self._exploit_vuln(vuln_to_exploit_id, 'dav')

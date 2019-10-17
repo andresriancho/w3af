@@ -36,12 +36,17 @@ class TestRFI(ExecExploitTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                'audit': (PluginConfig('rfi',
-                                       ('use_w3af_site', False, PluginConfig.BOOL),
-                                       ('listen_port', unused_port, PluginConfig.INT)),),
-            }
-        }
-    }
+                'audit': (
+                    PluginConfig(
+                        'rfi',
+                        ('use_w3af_site',
+                         False,
+                         PluginConfig.BOOL),
+                        ('listen_port',
+                         unused_port,
+                         PluginConfig.INT)),
+                ),
+            }}}
 
     def test_found_exploit_rfi(self):
         cfg = self._run_configs['cfg']
@@ -57,10 +62,10 @@ class TestRFI(ExecExploitTest):
 
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'rfi')
-    
+
     def test_from_template(self):
         rfit = RFITemplate()
-        
+
         options = rfit.get_options()
         options['url'].set_value(self.target_url)
         options['data'].set_value('file=abc.txt')
@@ -70,5 +75,5 @@ class TestRFI(ExecExploitTest):
         rfit.store_in_kb()
         vuln = self.kb.get(*rfit.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         self._exploit_vuln(vuln_to_exploit_id, 'rfi')

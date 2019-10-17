@@ -219,9 +219,9 @@ class TestCORSOrigin(PluginTest):
         allow_methods = 'GET, POST, OPTIONS'
         allow_origin = 'http://moth/'
         allow_credentials = 'false'
-        self.co._analyze_server_response( self.request, self.url, self.origin,
-                                          self.response, allow_origin,
-                                          allow_credentials, allow_methods)
+        self.co._analyze_server_response(self.request, self.url, self.origin,
+                                         self.response, allow_origin,
+                                         allow_credentials, allow_methods)
         vulns = self.kb.get('cors_origin', 'cors_origin')
 
         self.assertEqual(len(vulns), 1, vulns)
@@ -243,8 +243,9 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1, vulns)
         vuln = vulns[0]
 
-        self.assertEqual(vuln.get_name(),
-                         'Insecure Access-Control-Allow-Origin with credentials')
+        self.assertEqual(
+            vuln.get_name(),
+            'Insecure Access-Control-Allow-Origin with credentials')
         self.assertNotEqual(vuln.get_desc(), None)
 
     def test_universal_origin_allow_creds(self):

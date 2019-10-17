@@ -10,6 +10,7 @@ from lib.core.dicts import DBMS_DICT
 from lib.core.enums import DBMS
 from lib.core.settings import IS_WIN
 
+
 def checkDependencies():
     missing_libraries = set()
 
@@ -22,7 +23,8 @@ def checkDependencies():
                 __import__("_mssql")
 
                 import pymssql
-                if not hasattr(pymssql, "__version__") or pymssql.__version__ < "1.0.2":
+                if not hasattr(pymssql,
+                               "__version__") or pymssql.__version__ < "1.0.2":
                     warnMsg = "'%s' third-party library must be " % data[1]
                     warnMsg += "version >= 1.0.2 to work properly. "
                     warnMsg += "Download from %s" % data[2]
@@ -46,7 +48,7 @@ def checkDependencies():
                 __import__("jpype")
             elif dbmsName == DBMS.INFORMIX:
                 __import__("ibm_db_dbi")
-        except:
+        except BaseException:
             warnMsg = "sqlmap requires '%s' third-party library " % data[1]
             warnMsg += "in order to directly connect to the DBMS "
             warnMsg += "'%s'. Download from %s" % (dbmsName, data[2])
@@ -108,4 +110,3 @@ def checkDependencies():
     if len(missing_libraries) == 0:
         infoMsg = "all dependencies are installed"
         logger.info(infoMsg)
-

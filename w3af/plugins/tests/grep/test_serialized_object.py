@@ -50,7 +50,8 @@ class TestSerializedObject(unittest.TestCase):
 
         self.url = URL('http://www.w3af.com/')
         self.headers = Headers([('content-type', 'text/html')])
-        self.response = HTTPResponse(200, '', self.headers, self.url, self.url, _id=1)
+        self.response = HTTPResponse(
+            200, '', self.headers, self.url, self.url, _id=1)
 
     def tearDown(self):
         self.plugin.end()
@@ -105,7 +106,8 @@ class TestSerializedObject(unittest.TestCase):
 
     def test_php_serialized_objects_post_data(self):
         post_data = 'obj=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[1])
-        headers = Headers([('Content-Type', 'application/x-www-form-urlencoded')])
+        headers = Headers(
+            [('Content-Type', 'application/x-www-form-urlencoded')])
 
         form = URLEncodedForm.from_postdata(headers, post_data)
         request = FuzzableRequest(self.url, headers=headers, post_data=form)
@@ -117,8 +119,10 @@ class TestSerializedObject(unittest.TestCase):
 
     def test_not_php_serialized_objects(self):
         # Note that I'm sending the serialized object in reverse string order
-        post_data = 'obj=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[1][::-1])
-        headers = Headers([('Content-Type', 'application/x-www-form-urlencoded')])
+        post_data = 'obj=%s' % base64.b64encode(
+            SERIALIZED_PHP_OBJECTS[1][::-1])
+        headers = Headers(
+            [('Content-Type', 'application/x-www-form-urlencoded')])
 
         form = URLEncodedForm.from_postdata(headers, post_data)
         request = FuzzableRequest(self.url, headers=headers, post_data=form)
@@ -130,8 +134,10 @@ class TestSerializedObject(unittest.TestCase):
 
     def test_mutated_request(self):
         # Note that I'm sending the serialized object in reverse string order
-        post_data = 'test=1&obj=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[1])
-        headers = Headers([('Content-Type', 'application/x-www-form-urlencoded')])
+        post_data = 'test=1&obj=%s' % base64.b64encode(
+            SERIALIZED_PHP_OBJECTS[1])
+        headers = Headers(
+            [('Content-Type', 'application/x-www-form-urlencoded')])
 
         form = URLEncodedForm.from_postdata(headers, post_data)
         request = FuzzableRequest(self.url, headers=headers, post_data=form)

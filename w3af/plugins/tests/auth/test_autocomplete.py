@@ -104,23 +104,23 @@ class TestAutocomplete(PluginTest):
     check_string = 'Logged in'
 
     MOCK_RESPONSES = [
-                      MockResponse('http://w3af.org/login_form.py',
-                                   HTML_LOGIN_FORM,
-                                   status=200,
-                                   method='GET',
-                                   headers={'Set-Cookie': '__csrf=09876xyzxyz'}),
+        MockResponse('http://w3af.org/login_form.py',
+                     HTML_LOGIN_FORM,
+                     status=200,
+                     method='GET',
+                     headers={'Set-Cookie': '__csrf=09876xyzxyz'}),
 
-                      LoginMockResponse('http://w3af.org/login_post.py',
-                                        '',
-                                        method='POST'),
+        LoginMockResponse('http://w3af.org/login_post.py',
+                          '',
+                          method='POST'),
 
-                      SessionCheckMockResponse('http://w3af.org/admin', ''),
+        SessionCheckMockResponse('http://w3af.org/admin', ''),
 
-                      MockResponse('http://w3af.org/unittest',
-                                   'Success',
-                                   status=200,
-                                   method='GET')
-                      ]
+        MockResponse('http://w3af.org/unittest',
+                     'Success',
+                     status=200,
+                     method='GET')
+    ]
 
     _run_config = {
         'target': target_url,
@@ -160,23 +160,23 @@ class TestAutocompleteInvalidCredentials(PluginTest):
     check_string = 'Logged in'
 
     MOCK_RESPONSES = [
-                      MockResponse('http://w3af.org/login_form.py',
-                                   HTML_LOGIN_FORM,
-                                   status=200,
-                                   method='GET',
-                                   headers={'Set-Cookie': '__csrf=09876xyzxyz'}),
+        MockResponse('http://w3af.org/login_form.py',
+                     HTML_LOGIN_FORM,
+                     status=200,
+                     method='GET',
+                     headers={'Set-Cookie': '__csrf=09876xyzxyz'}),
 
-                      LoginMockResponse('http://w3af.org/login_post.py',
-                                        '',
-                                        method='POST'),
+        LoginMockResponse('http://w3af.org/login_post.py',
+                          '',
+                          method='POST'),
 
-                      SessionCheckMockResponse('http://w3af.org/admin', ''),
+        SessionCheckMockResponse('http://w3af.org/admin', ''),
 
-                      MockResponse('http://w3af.org/unittest',
-                                   'Success',
-                                   status=200,
-                                   method='GET')
-                      ]
+        MockResponse('http://w3af.org/unittest',
+                     'Success',
+                     status=200,
+                     method='GET')
+    ]
 
     _run_config = {
         'target': target_url,

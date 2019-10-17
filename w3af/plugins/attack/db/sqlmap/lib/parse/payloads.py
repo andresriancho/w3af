@@ -16,6 +16,7 @@ from lib.core.datatype import AttribDict
 from lib.core.exception import SqlmapInstallationException
 from lib.core.settings import PAYLOAD_XML_FILES
 
+
 def cleanupVals(text, tag):
     if tag in ("clause", "where"):
         text = text.split(',')
@@ -34,6 +35,7 @@ def cleanupVals(text, tag):
             text = text[0]
 
     return text
+
 
 def parseXmlNode(node):
     for element in node.getiterator('boundary'):
@@ -71,29 +73,34 @@ def parseXmlNode(node):
 
         conf.tests.append(test)
 
+
 def loadBoundaries():
     try:
         doc = et.parse(paths.BOUNDARIES_XML)
-    except Exception, ex:
+    except Exception as ex:
         errMsg = "something appears to be wrong with "
-        errMsg += "the file '%s' ('%s'). Please make " % (paths.BOUNDARIES_XML, getSafeExString(ex))
+        errMsg += "the file '%s' ('%s'). Please make " % (
+            paths.BOUNDARIES_XML, getSafeExString(ex))
         errMsg += "sure that you haven't made any changes to it"
-        raise SqlmapInstallationException, errMsg
+        raise SqlmapInstallationException(errMsg)
 
     root = doc.getroot()
     parseXmlNode(root)
 
+
 def loadPayloads():
     for payloadFile in PAYLOAD_XML_FILES:
-        payloadFilePath = os.path.join(paths.SQLMAP_XML_PAYLOADS_PATH, payloadFile)
+        payloadFilePath = os.path.join(
+            paths.SQLMAP_XML_PAYLOADS_PATH, payloadFile)
 
         try:
             doc = et.parse(payloadFilePath)
-        except Exception, ex:
+        except Exception as ex:
             errMsg = "something appears to be wrong with "
-            errMsg += "the file '%s' ('%s'). Please make " % (payloadFilePath, getSafeExString(ex))
+            errMsg += "the file '%s' ('%s'). Please make " % (
+                payloadFilePath, getSafeExString(ex))
             errMsg += "sure that you haven't made any changes to it"
-            raise SqlmapInstallationException, errMsg
+            raise SqlmapInstallationException(errMsg)
 
         root = doc.getroot()
         parseXmlNode(root)

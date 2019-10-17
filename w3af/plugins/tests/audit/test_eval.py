@@ -32,23 +32,31 @@ class TestEval(PluginTest):
         'echo': {
             'target': target_echo + '?text=1',
             'plugins': {
-                'audit': (PluginConfig('eval',
-                                       ('use_echo', True, PluginConfig.BOOL),
-                                       ('use_time_delay', False, PluginConfig.BOOL)),
-                          ),
-            }
-        },
-
+                'audit': (
+                    PluginConfig(
+                        'eval',
+                        ('use_echo',
+                         True,
+                         PluginConfig.BOOL),
+                        ('use_time_delay',
+                         False,
+                         PluginConfig.BOOL)),
+                ),
+            }},
         'delay': {
             'target': target_delay + '?text=1',
             'plugins': {
-                'audit': (PluginConfig('eval',
-                                       ('use_echo', False, PluginConfig.BOOL),
-                                       ('use_time_delay', True, PluginConfig.BOOL)),
-                          ),
-            }
-        }
-    }
+                'audit': (
+                    PluginConfig(
+                        'eval',
+                        ('use_echo',
+                                     False,
+                                     PluginConfig.BOOL),
+                        ('use_time_delay',
+                         True,
+                         PluginConfig.BOOL)),
+                ),
+            }}}
 
     def test_found_eval_echo(self):
         cfg = self._run_configs['echo']
@@ -91,9 +99,17 @@ class TestPHPEchoEval(PluginTest):
                            '&custom_inject='
                            '&submit=Inject%21')
 
-    config = {'audit': (PluginConfig('eval',
-                                    ('use_echo', True, PluginConfig.BOOL),
-                                    ('use_time_delay', False, PluginConfig.BOOL)),),
+    config = {
+        'audit': (
+            PluginConfig(
+                'eval',
+                ('use_echo',
+                 True,
+                 PluginConfig.BOOL),
+                ('use_time_delay',
+                 False,
+                 PluginConfig.BOOL)),
+        ),
     }
 
     def test_found_eval_echo_php(self):
@@ -121,9 +137,17 @@ class TestPHPSleepEval(PluginTest):
                            '&custom_inject='
                            '&submit=Inject%21')
 
-    config = {'audit': (PluginConfig('eval',
-                                    ('use_echo', False, PluginConfig.BOOL),
-                                    ('use_time_delay', True, PluginConfig.BOOL)),),
+    config = {
+        'audit': (
+            PluginConfig(
+                'eval',
+                ('use_echo',
+                 False,
+                 PluginConfig.BOOL),
+                ('use_time_delay',
+                 True,
+                 PluginConfig.BOOL)),
+        ),
     }
 
     def test_found_eval_echo_php(self):

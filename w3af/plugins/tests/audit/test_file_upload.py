@@ -88,7 +88,8 @@ class TestFileUpload(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         fu_vulns = self.kb.get('file_upload', 'file_upload')
-        self.assertTrue(all(v.get_name() == 'Insecure file upload' for v in fu_vulns))
+        self.assertTrue(
+            all(v.get_name() == 'Insecure file upload' for v in fu_vulns))
 
         EXPECTED_FILES = {'uploader.php', 'uploader.534'}
         found_files = set(v.get_url().get_file_name() for v in fu_vulns)
@@ -112,20 +113,20 @@ class TestParseOutputFromUpload(PluginTest):
     image_content = 'PNG' + 'B' * 239
 
     MOCK_RESPONSES = [
-              MockResponse(url=target_url,
-                           body=FORM,
-                           content_type='text/html',
-                           method='GET', status=200),
+        MockResponse(url=target_url,
+                     body=FORM,
+                     content_type='text/html',
+                     method='GET', status=200),
 
-              MockResponse(url=target_url + 'upload',
-                           body=RESULT,
-                           content_type='text/html',
-                           method='POST', status=200),
+        MockResponse(url=target_url + 'upload',
+                     body=RESULT,
+                     content_type='text/html',
+                     method='POST', status=200),
 
-              MockResponse(url=target_url + 'uploads/foo.png',
-                           body=image_content,
-                           content_type='image/png',
-                           method='GET', status=200),
+        MockResponse(url=target_url + 'uploads/foo.png',
+                     body=image_content,
+                     content_type='image/png',
+                     method='GET', status=200),
 
     ]
 

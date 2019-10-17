@@ -57,5 +57,3 @@ class TestBufferOverflow(PluginTest):
         self.assertEquals('Buffer overflow vulnerability', vuln.get_name())
         self.assertEquals('buf', vuln.get_token_name())
         self.assertEquals(self.target_url, str(vuln.get_url()))
-
-

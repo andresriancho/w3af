@@ -10,6 +10,7 @@ import re
 from xml.sax.handler import ContentHandler
 from lib.core.common import sanitizeStr
 
+
 class FingerprintHandler(ContentHandler):
     """
     This class defines methods to parse and extract information from
@@ -44,10 +45,12 @@ class FingerprintHandler(ContentHandler):
     def startElement(self, name, attrs):
         if name == "regexp":
             self._regexp = sanitizeStr(attrs.get("value"))
-            _ = re.match(r"\A[A-Za-z0-9]+", self._regexp)  # minor trick avoiding compiling of large amount of regexes
+            # minor trick avoiding compiling of large amount of regexes
+            _ = re.match(r"\A[A-Za-z0-9]+", self._regexp)
 
             if _ and _.group(0).lower() in self._banner.lower() or not _:
-                self._match = re.search(self._regexp, self._banner, re.I | re.M)
+                self._match = re.search(
+                    self._regexp, self._banner, re.I | re.M)
             else:
                 self._match = None
 
@@ -62,10 +65,13 @@ class FingerprintHandler(ContentHandler):
             self._sp = sanitizeStr(attrs.get("sp"))
 
             if self._dbmsVersion.isdigit():
-                self._feedInfo("dbmsVersion", self._match.group(int(self._dbmsVersion)))
+                self._feedInfo("dbmsVersion",
+                               self._match.group(int(self._dbmsVersion)))
 
             if self._techVersion.isdigit():
-                self._feedInfo("technology", "%s %s" % (attrs.get("technology"), self._match.group(int(self._techVersion))))
+                self._feedInfo("technology",
+                               "%s %s" % (attrs.get("technology"),
+                                          self._match.group(int(self._techVersion))))
             else:
                 self._feedInfo("technology", attrs.get("technology"))
 

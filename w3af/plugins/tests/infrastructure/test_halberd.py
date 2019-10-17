@@ -28,8 +28,8 @@ class TestHalberd(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': target_url,
-        'plugins': {'infrastructure': (PluginConfig('halberd'),)}
+            'target': target_url,
+            'plugins': {'infrastructure': (PluginConfig('halberd'),)}
         }
     }
 

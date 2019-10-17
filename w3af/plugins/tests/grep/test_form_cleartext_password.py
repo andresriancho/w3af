@@ -37,7 +37,7 @@ class TestFormCleartextPassword(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    #Vulnerable to insecure form data submission over HTTP
+    # Vulnerable to insecure form data submission over HTTP
     def test_vs1(self, *args):
         body = 'header <form action="http://www.w3af.com/">' \
                '<input type="password" name="passwd">' \
@@ -65,8 +65,8 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 1)
         self.assertEqual(
-            kb.kb.get('form_cleartext_password','form_cleartext_password')
-            [0].get_name() =='Insecure password submission over HTTP', 1)
+            kb.kb.get('form_cleartext_password', 'form_cleartext_password')
+            [0].get_name() == 'Insecure password submission over HTTP', 1)
 
     def test_vs3(self, *args):
         body = 'header <form><input type="password" name="passwd" />' \
@@ -80,7 +80,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 1)
         self.assertEqual(
-            kb.kb.get('form_cleartext_password','form_cleartext_password')
+            kb.kb.get('form_cleartext_password', 'form_cleartext_password')
             [0].get_name() == 'Insecure password submission over HTTP', 1)
 
     def test_vs4(self, *args):
@@ -95,7 +95,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 1)
         self.assertEqual(
-            kb.kb.get('form_cleartext_password','form_cleartext_password')
+            kb.kb.get('form_cleartext_password', 'form_cleartext_password')
             [0].get_name() == 'Insecure password submission over HTTP', 1)
 
     def test_vs5(self, *args):
@@ -110,8 +110,8 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 1)
         self.assertEqual(
-            kb.kb.get('form_cleartext_password','form_cleartext_password')
-            [0].get_name() =='Insecure password submission over HTTP', 1)
+            kb.kb.get('form_cleartext_password', 'form_cleartext_password')
+            [0].get_name() == 'Insecure password submission over HTTP', 1)
 
     def test_m1(self, *args):
         """
@@ -128,7 +128,7 @@ class TestFormCleartextPassword(unittest.TestCase):
             len(kb.kb.get('form_cleartext_password',
                           'form_cleartext_password')), 1)
         self.assertEqual(
-            kb.kb.get('form_cleartext_password','form_cleartext_password')
+            kb.kb.get('form_cleartext_password', 'form_cleartext_password')
             [0].get_name() == 'Insecure password form access over HTTP', 1)
 
     def test_d1(self, *args):

@@ -36,13 +36,14 @@ class Callable:
     def __init__(self, anycallable):
         self.__call__ = anycallable
 
+
 # Controls how sequences are uncoded. If true, elements may be given
 # multiple values by assigning a sequence.
 doseq = 1
 
 
 class MultipartPostHandler(urllib2.BaseHandler):
-    handler_order = urllib2.HTTPHandler.handler_order - 10 # needs to run first
+    handler_order = urllib2.HTTPHandler.handler_order - 10  # needs to run first
 
     def http_request(self, request):
         data = request.get_data()
@@ -53,7 +54,10 @@ class MultipartPostHandler(urllib2.BaseHandler):
 
             try:
                 for(key, value) in data.items():
-                    if isinstance(value, file) or hasattr(value, "file") or isinstance(value, StringIO.StringIO):
+                    if isinstance(
+                            value, file) or hasattr(
+                            value, "file") or isinstance(
+                            value, StringIO.StringIO):
                         v_files.append((key, value))
                     else:
                         v_vars.append((key, value))
@@ -66,7 +70,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
             else:
                 boundary, data = self.multipart_encode(v_vars, v_files)
                 contenttype = "multipart/form-data; boundary=%s" % boundary
-                #if (request.has_header("Content-Type") and request.get_header("Content-Type").find("multipart/form-data") != 0):
+                # if (request.has_header("Content-Type") and request.get_header("Content-Type").find("multipart/form-data") != 0):
                 #    print "Replacing %s with %s" % (request.get_header("content-type"), "multipart/form-data")
                 request.add_unredirected_header("Content-Type", contenttype)
 
@@ -87,20 +91,27 @@ class MultipartPostHandler(urllib2.BaseHandler):
                 buf += "\r\n\r\n" + value + "\r\n"
 
         for (key, fd) in files:
-            file_size = os.fstat(fd.fileno())[stat.ST_SIZE] if isinstance(fd, file) else fd.len
-            filename = fd.name.split("/")[-1] if "/" in fd.name else fd.name.split("\\")[-1]
+            file_size = os.fstat(
+                fd.fileno())[
+                stat.ST_SIZE] if isinstance(
+                fd, file) else fd.len
+            filename = fd.name.split(
+                "/")[-1] if "/" in fd.name else fd.name.split("\\")[-1]
             try:
-                contenttype = mimetypes.guess_type(filename)[0] or "application/octet-stream"
-            except:
+                contenttype = mimetypes.guess_type(
+                    filename)[0] or "application/octet-stream"
+            except BaseException:
                 # Reference: http://bugs.python.org/issue9291
                 contenttype = "application/octet-stream"
             buf += "--%s\r\n" % boundary
-            buf += "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n" % (key, filename)
+            buf += "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n" % (
+                key, filename)
             buf += "Content-Type: %s\r\n" % contenttype
             # buf += "Content-Length: %s\r\n" % file_size
             fd.seek(0)
 
-            buf = str(buf) if not isinstance(buf, unicode) else buf.encode("utf8")
+            buf = str(buf) if not isinstance(
+                buf, unicode) else buf.encode("utf8")
             buf += "\r\n%s\r\n" % fd.read()
 
         buf += "--%s--\r\n\r\n" % boundary

@@ -49,7 +49,8 @@ class TestLFI(PluginTest):
             ('local_file_read_full_path.py', 'file'),
         ]
 
-        self.assertAllVulnNamesEqual('Local file inclusion vulnerability', vulns)
+        self.assertAllVulnNamesEqual(
+            'Local file inclusion vulnerability', vulns)
         self.assertExpectedVulnsFound(expected, vulns)
 
 

@@ -93,7 +93,7 @@ class TestJsonOutput(PluginTest):
         super(TestJsonOutput, self).tearDown()
         try:
             os.remove(self.FILENAME)
-        except:
+        except BaseException:
             pass
         finally:
             self.kb.cleanup()

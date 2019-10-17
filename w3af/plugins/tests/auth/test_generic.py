@@ -36,52 +36,52 @@ class TestGeneric(PluginTest):
         'target': base_url,
         'plugins': {
             'crawl': (PluginConfig('web_spider',
-                        ('only_forward', True, PluginConfig.BOOL),
-                        ('ignore_regex', '.*logout.*', PluginConfig.STR)),),
+                                   ('only_forward', True, PluginConfig.BOOL),
+                                   ('ignore_regex', '.*logout.*', PluginConfig.STR)),),
             'audit': (PluginConfig('xss',),),
             'auth': (PluginConfig('generic',
-                                 ('username', 'user@mail.com', PluginConfig.STR),
-                                 ('password', 'passw0rd', PluginConfig.STR),
-                                 ('username_field',
-                                  'username', PluginConfig.STR),
-                                 ('password_field',
-                                  'password', PluginConfig.STR),
-                                 ('auth_url', URL(base_url +
-                                  'login_form.py'), PluginConfig.URL),
-                                 ('check_url', URL(base_url +
-                                  'post_auth_xss.py'), PluginConfig.URL),
-                                 ('check_string', 'read your input',
-                                  PluginConfig.STR),
+                                  ('username', 'user@mail.com', PluginConfig.STR),
+                                  ('password', 'passw0rd', PluginConfig.STR),
+                                  ('username_field',
+                                   'username', PluginConfig.STR),
+                                  ('password_field',
+                                   'password', PluginConfig.STR),
+                                  ('auth_url', URL(base_url +
+                                                   'login_form.py'), PluginConfig.URL),
+                                  ('check_url', URL(base_url +
+                                                    'post_auth_xss.py'), PluginConfig.URL),
+                                  ('check_string', 'read your input',
+                                   PluginConfig.STR),
                                   ),
-                         ),
+                     ),
         }
     }
 
     demo_testfire_net = {
         'target': demo_testfire,
         'plugins': {
-        'crawl': (
-        PluginConfig('web_spider',
-                     ('only_forward', True, PluginConfig.BOOL),
-                     ('ignore_regex',
-                      '.*logout.*', PluginConfig.STR),
-                     (
-        'follow_regex', '.*queryxpath.*', PluginConfig.STR)),
+            'crawl': (
+                PluginConfig('web_spider',
+                             ('only_forward', True, PluginConfig.BOOL),
+                             ('ignore_regex',
+                                 '.*logout.*', PluginConfig.STR),
+                             (
+                                 'follow_regex', '.*queryxpath.*', PluginConfig.STR)),
 
-        ),
+            ),
             'auth': (PluginConfig('generic',
-                                 ('username', 'admin', PluginConfig.STR),
-                                 ('password', 'admin', PluginConfig.STR),
-                                 ('username_field', 'uid', PluginConfig.STR),
-                                 ('password_field', 'passw', PluginConfig.STR),
-                                 ('auth_url', URL(demo_testfire +
-                                  'login.aspx'), PluginConfig.URL),
-                                 ('check_url', URL(demo_testfire +
-                                  'main.aspx'), PluginConfig.URL),
-                                 ('check_string', 'View Recent Transactions',
-                                  PluginConfig.STR),
+                                  ('username', 'admin', PluginConfig.STR),
+                                  ('password', 'admin', PluginConfig.STR),
+                                  ('username_field', 'uid', PluginConfig.STR),
+                                  ('password_field', 'passw', PluginConfig.STR),
+                                  ('auth_url', URL(demo_testfire +
+                                                   'login.aspx'), PluginConfig.URL),
+                                  ('check_url', URL(demo_testfire +
+                                                    'main.aspx'), PluginConfig.URL),
+                                  ('check_string', 'View Recent Transactions',
+                                   PluginConfig.STR),
                                   ),
-                         ),
+                     ),
         }
     }
 
@@ -94,7 +94,9 @@ class TestGeneric(PluginTest):
         self.assertEquals(len(vulns), 1, vulns)
 
         vuln = vulns[0]
-        self.assertEquals(vuln.get_name(), 'Cross site scripting vulnerability')
+        self.assertEquals(
+            vuln.get_name(),
+            'Cross site scripting vulnerability')
         self.assertEquals(vuln.get_token_name(), 'text')
         self.assertEquals(vuln.get_url().get_path(),
                           '/auth/auth_1/post_auth_xss.py')
@@ -108,10 +110,10 @@ class TestGeneric(PluginTest):
         login_url = URL(self.demo_testfire + 'login.aspx')
         try:
             res = uri_opener.GET(login_url)
-        except:
+        except BaseException:
             raise SkipTest('demo.testfire.net is unreachable!')
         else:
-            if not 'Online Banking Login' in res.body:
+            if 'Online Banking Login' not in res.body:
                 raise SkipTest('demo.testfire.net has changed!')
 
         self._scan(self.demo_testfire_net['target'],

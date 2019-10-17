@@ -58,15 +58,15 @@ class TestREDoS(PluginTest):
     }
 
     MOCK_RESPONSES = [
-              ReDosMockResponse(url=re.compile('http://httpretty/re\?redos=.*'),
-                                body='dummy'),
+        ReDosMockResponse(url=re.compile('http://httpretty/re\?redos=.*'),
+                          body='dummy'),
     ]
 
     def test_found_redos(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('redos', 'redos')
-        
+
         expected = [('re', 'redos')]
         self.assertExpectedVulnsFound(expected, vulns)
         self.assertAllVulnNamesEqual('ReDoS vulnerability', vulns)
@@ -85,9 +85,9 @@ class TestREDoSNegative(PluginTest):
     }
 
     MOCK_RESPONSES = [
-            MockResponse(url=re.compile('http://httpretty/re\?redos=.*'),
-                         body='dummy',
-                         delay=0.1),
+        MockResponse(url=re.compile('http://httpretty/re\?redos=.*'),
+                     body='dummy',
+                     delay=0.1),
     ]
 
     def test_found_redos(self):

@@ -18,29 +18,29 @@ Description:
 
     Creates a new site which is useful for testing the crawler. The site will
     contain multiple linked pages with forms, parameters, images, etc.
-    
+
     After creating the site you can:
-    
+
         cd site/
         python -m SimpleHTTPServer 8000
-        
-    And run a w3af scan against http://localhost:8000/ . 
-    
-    The tool is deterministic: will always generate the same site for the same 
+
+    And run a w3af scan against http://localhost:8000/ .
+
+    The tool is deterministic: will always generate the same site for the same
     parameter names, so it is something you can use for unittests.
 
 Parameters:
 
     - pages: The number of pages (links) to create
-    
+
     - parameters-per-page: The number of query string parameters that each page
                            should have. Using a number between 0 and 1 will make
                            the tool create parameters in N% of the pages.
-                           
+
     - forms: The number of forms to include per page
-    
+
     - form-params: The number of parameters to include in each form
-    
+
     - output: The output directory where all the files will be created
 '''
 
@@ -76,7 +76,7 @@ def _main():
     try:
         pages = int(pages)
         assert pages >= 1
-    except:
+    except BaseException:
         print('Error in --pages parameter')
         print('')
         print(USAGE)
@@ -85,7 +85,7 @@ def _main():
     try:
         parameters_per_page = float(parameters_per_page)
         assert parameters_per_page > 0
-    except:
+    except BaseException:
         print('Error in --parameters-per-page parameter')
         print('')
         print(USAGE)
@@ -94,7 +94,7 @@ def _main():
     try:
         forms = float(forms)
         assert forms > 0
-    except:
+    except BaseException:
         print('Error in --forms parameter')
         print('')
         print(USAGE)
@@ -103,7 +103,7 @@ def _main():
     try:
         form_params = float(form_params)
         assert form_params >= 1
-    except:
+    except BaseException:
         print('Error in --form-params parameter')
         print('')
         print(USAGE)
@@ -113,7 +113,7 @@ def _main():
         assert output is not None
         assert os.path.exists(output)
         assert os.path.isdir(output)
-    except:
+    except BaseException:
         print('Error in --output parameter')
         print('')
         print(USAGE)
@@ -128,20 +128,20 @@ PAGE_TEMPLATE = Template('''\
     <head>
         <title>{{ title }}</title>
     </head>
-    
+
     <body>
         {% for href in hrefs %}
         <a href="{{ href }}">{{ href }}</a><br/>
         {% endfor %}
-        
+
         <br/>
-        
+
         {% for form in forms %}
         <form action="{{ form.action }}" method="GET">
             {% for param in form.params %}
             {{ param }}: <input name="{{ param }}" type="text"></input><br/>
             {% endfor %}
-            
+
             <input type="submit">
         </form>
         {% endfor %}
@@ -227,7 +227,7 @@ def get_probabilistic_count(count):
     decimal_part = count - integer
     decimal_part *= 100
 
-    print random.randint(0, 100) , decimal_part
+    print random.randint(0, 100), decimal_part
     if random.randint(0, 100) > decimal_part:
         return integer + 1
 
@@ -287,7 +287,12 @@ def generate_site(pages, parameters_per_page, forms, form_params, output):
             form_filename = generate_page_filename(action_num)
             action = '/' + form_path + '/' + form_filename
 
-            params = [generate_parameter_name(page_num, form_num, i) for i in xrange(int(form_params_i))]
+            params = [
+                generate_parameter_name(
+                    page_num,
+                    form_num,
+                    i) for i in xrange(
+                    int(form_params_i))]
 
             generated_forms.append(Form(action, params))
 

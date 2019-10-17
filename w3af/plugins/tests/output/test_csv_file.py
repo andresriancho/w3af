@@ -101,7 +101,7 @@ class TestCSVFile(PluginTest):
     def tearDown(self):
         try:
             os.remove(self.OUTPUT_FILE)
-        except:
+        except BaseException:
             pass
 
 

@@ -40,22 +40,22 @@ class TestJSONAllFiltered(PluginTest):
     target_url = 'http://json-all-filtered/?q=rfd'
 
     MOCK_RESPONSES = [
-              MockResponse(url='http://json-all-filtered/%3B/w3af.cmd%3B/'
-                               'w3af.cmd?q=rfd',
-                           body='message "w3afExecToken"',
-                           content_type='text/json',
-                           method='GET', status=200),
-              MockResponse(url='http://json-all-filtered/%3B/w3af.cmd%3B/'
-                               'w3af.cmd?q=w3afExecToken',
-                           body='    {"a":"w3afExecToken","b":"b"}',
-                           content_type='text/json',
-                           method='GET', status=200),
-              MockResponse(url='http://json-all-filtered/%3B/w3af.cmd%3B/'
-                               'w3af.cmd?q=w3afExecToken%22%26%7C%0A',
-                           body='    {"a":"w3afExecToken","b":"b"}',
-                           content_type='application/javascript',
-                           method='GET', status=200),
-              ]
+        MockResponse(url='http://json-all-filtered/%3B/w3af.cmd%3B/'
+                     'w3af.cmd?q=rfd',
+                     body='message "w3afExecToken"',
+                     content_type='text/json',
+                     method='GET', status=200),
+        MockResponse(url='http://json-all-filtered/%3B/w3af.cmd%3B/'
+                     'w3af.cmd?q=w3afExecToken',
+                     body='    {"a":"w3afExecToken","b":"b"}',
+                     content_type='text/json',
+                     method='GET', status=200),
+        MockResponse(url='http://json-all-filtered/%3B/w3af.cmd%3B/'
+                     'w3af.cmd?q=w3afExecToken%22%26%7C%0A',
+                     body='    {"a":"w3afExecToken","b":"b"}',
+                     content_type='application/javascript',
+                     method='GET', status=200),
+    ]
 
     def test_not_found_json_all_filtered(self):
         cfg = RUN_CONFIG['cfg']
@@ -69,21 +69,21 @@ class TestJSON(PluginTest):
     target_url = 'http://json/?q=rfd'
 
     MOCK_RESPONSES = [
-              MockResponse(url='http://json/%3B/w3af.cmd%3B/w3af.cmd?q=rfd',
-                           body='message "w3afExecToken"',
-                           content_type='text/json',
-                           method='GET', status=200),
-              MockResponse(url='http://json/%3B/w3af.cmd%3B/w3af.cmd?'
-                               'q=w3afExecToken',
-                           body='    {"a":"w3afExecToken","b":"b"}',
-                           content_type='text/json',
-                           method='GET', status=200),
-              MockResponse(url='http://json/%3B/w3af.cmd%3B/w3af.cmd?'
-                               'q=w3afExecToken%22%26%7C%0A',
-                           body='    {"a":"w3afExecToken"&|\n","b":"b"}',
-                           content_type='application/javascript',
-                           method='GET', status=200),
-              ]
+        MockResponse(url='http://json/%3B/w3af.cmd%3B/w3af.cmd?q=rfd',
+                     body='message "w3afExecToken"',
+                     content_type='text/json',
+                     method='GET', status=200),
+        MockResponse(url='http://json/%3B/w3af.cmd%3B/w3af.cmd?'
+                     'q=w3afExecToken',
+                     body='    {"a":"w3afExecToken","b":"b"}',
+                     content_type='text/json',
+                     method='GET', status=200),
+        MockResponse(url='http://json/%3B/w3af.cmd%3B/w3af.cmd?'
+                     'q=w3afExecToken%22%26%7C%0A',
+                     body='    {"a":"w3afExecToken"&|\n","b":"b"}',
+                     content_type='application/javascript',
+                     method='GET', status=200),
+    ]
 
     def test_found_json(self):
         cfg = RUN_CONFIG['cfg']
@@ -97,21 +97,21 @@ class TestJSONDobleQuotesFiltered(PluginTest):
     target_url = 'http://json-filtered/?q=rfd'
 
     MOCK_RESPONSES = [
-              MockResponse(url='http://json-filtered/%3B/w3af.cmd%3B/w3af.cmd?q=rfd',
-                           body='message "w3afExecToken"',
-                           content_type='text/json',
-                           method='GET', status=200),
-              MockResponse(url='http://json-filtered/%3B/w3af.cmd%3B/w3af.cmd?'
-                               'q=w3afExecToken',
-                           body='    {"a":"w3afExecToken","b":"b"}',
-                           content_type='text/json',
-                           method='GET', status=200),
-              MockResponse(url='http://json-filtered/%3B/w3af.cmd%3B/w3af.cmd?'
-                               'q=w3afExecToken%22%26%7C%0A',
-                           body='    {"a":"w3afExecToken&|\n","b":"b"}',
-                           content_type='application/javascript',
-                           method='GET', status=200),
-              ]
+        MockResponse(url='http://json-filtered/%3B/w3af.cmd%3B/w3af.cmd?q=rfd',
+                     body='message "w3afExecToken"',
+                     content_type='text/json',
+                     method='GET', status=200),
+        MockResponse(url='http://json-filtered/%3B/w3af.cmd%3B/w3af.cmd?'
+                     'q=w3afExecToken',
+                     body='    {"a":"w3afExecToken","b":"b"}',
+                     content_type='text/json',
+                     method='GET', status=200),
+        MockResponse(url='http://json-filtered/%3B/w3af.cmd%3B/w3af.cmd?'
+                     'q=w3afExecToken%22%26%7C%0A',
+                     body='    {"a":"w3afExecToken&|\n","b":"b"}',
+                     content_type='application/javascript',
+                     method='GET', status=200),
+    ]
 
     def test_not_found_json(self):
         cfg = RUN_CONFIG['cfg']
@@ -125,19 +125,19 @@ class TestJSONP(PluginTest):
     target_url = 'http://jsonp/?callback=rfd'
 
     MOCK_RESPONSES = [
-          MockResponse(url='http://jsonp/%3B/w3af.cmd%3B/w3af.cmd?callback'
-                           '=rfd',
-                       body='    rfd({ "Result": '
-                            '{ "Timestamp": 1417601045 } }) ',
-                       content_type='application/javascript',
-                       method='GET', status=200),
-          MockResponse(url='http://jsonp/%3B/w3af.cmd%3B/w3af.cmd?callback'
-                           '=w3afExecToken',
-                       body='    w3afExecToken({ "Result": '
-                            '{ "Timestamp": 1417601045 } }) ',
-                       content_type='application/javascript',
-                       method='GET', status=200),
-                      ]
+        MockResponse(url='http://jsonp/%3B/w3af.cmd%3B/w3af.cmd?callback'
+                     '=rfd',
+                     body='    rfd({ "Result": '
+                     '{ "Timestamp": 1417601045 } }) ',
+                     content_type='application/javascript',
+                     method='GET', status=200),
+        MockResponse(url='http://jsonp/%3B/w3af.cmd%3B/w3af.cmd?callback'
+                     '=w3afExecToken',
+                     body='    w3afExecToken({ "Result": '
+                     '{ "Timestamp": 1417601045 } }) ',
+                     content_type='application/javascript',
+                     method='GET', status=200),
+    ]
 
     def test_found_jsonp(self):
         cfg = RUN_CONFIG['cfg']

@@ -22,8 +22,8 @@ from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.kb.vuln_templates.os_commanding_template import OSCommandingTemplate
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
 from w3af.plugins.attack.os_commanding import (FullPathExploitStrategy,
-                                          CmdsInPathExploitStrategy,
-                                          BasicExploitStrategy)
+                                               CmdsInPathExploitStrategy,
+                                               BasicExploitStrategy)
 
 
 class TestOSCommandingShell(ExecExploitTest):
@@ -47,7 +47,7 @@ class TestOSCommandingShell(ExecExploitTest):
         # Assert the general results
         vulns = self.kb.get('os_commanding', 'os_commanding')
         self.assertEquals(1, len(vulns))
-        
+
         vuln = vulns[0]
         self.assertEquals(vuln.get_name(), 'OS commanding vulnerability')
         self.assertEquals(vuln.get_url().get_file_name(), 'trivial_osc.py')
@@ -60,41 +60,42 @@ class TestOSCommandingShell(ExecExploitTest):
 
         for strategy in (FullPathExploitStrategy, CmdsInPathExploitStrategy,
                          BasicExploitStrategy):
-    
+
             # Test one strategy in each loop
-            plugin.EXPLOIT_STRATEGIES = [strategy,]
-    
+            plugin.EXPLOIT_STRATEGIES = [strategy, ]
+
             self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
-    
+
             exploit_result = plugin.exploit(vuln_to_exploit_id)
-    
+
             msg = 'Exploitation failed with strategy %s.' % strategy
             self.assertGreaterEqual(len(exploit_result), 1, msg)
-    
+
             #
             # Now I start testing the shell itself!
             #
             shell = exploit_result[0]
-            etc_passwd = shell.generic_user_input('exec', ['cat', '/etc/passwd'])
-    
+            etc_passwd = shell.generic_user_input(
+                'exec', ['cat', '/etc/passwd'])
+
             self.assertTrue('root' in etc_passwd)
-    
+
             lsp = shell.generic_user_input('lsp', [])
             self.assertTrue('apache_config_directory' in lsp)
-    
+
             payload = shell.generic_user_input('payload',
                                                ['apache_config_directory'])
             self.assertTrue(payload is None)
-            
+
             _help = shell.help(None)
             self.assertIn('execute', _help)
             self.assertIn('upload', _help)
-    
+
     def test_from_template(self):
         osct = OSCommandingTemplate()
-        
+
         options = osct.get_options()
-        
+
         target_url = get_moth_http('/audit/os_commanding/trivial_osc.py')
         options['url'].set_value(target_url)
         options['data'].set_value('cmd=ls')
@@ -106,5 +107,5 @@ class TestOSCommandingShell(ExecExploitTest):
         osct.store_in_kb()
         vuln = self.kb.get(*osct.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         self._exploit_vuln(vuln_to_exploit_id, 'os_commanding')

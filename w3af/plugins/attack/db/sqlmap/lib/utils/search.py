@@ -47,13 +47,14 @@ def _search(dork):
 
     headers = {}
 
-    headers[HTTP_HEADER.USER_AGENT] = dict(conf.httpHeaders).get(HTTP_HEADER.USER_AGENT, DUMMY_SEARCH_USER_AGENT)
+    headers[HTTP_HEADER.USER_AGENT] = dict(conf.httpHeaders).get(
+        HTTP_HEADER.USER_AGENT, DUMMY_SEARCH_USER_AGENT)
     headers[HTTP_HEADER.ACCEPT_ENCODING] = HTTP_ACCEPT_ENCODING_HEADER_VALUE
 
     try:
         req = urllib2.Request("https://www.google.com/ncr", headers=headers)
         conn = urllib2.urlopen(req)
-    except Exception, ex:
+    except Exception as ex:
         errMsg = "unable to connect to Google ('%s')" % getSafeExString(ex)
         raise SqlmapConnectionException(errMsg)
 
@@ -77,7 +78,10 @@ def _search(dork):
         code = conn.code
         status = conn.msg
         responseHeaders = conn.info()
-        page = decodePage(page, responseHeaders.get("Content-Encoding"), responseHeaders.get("Content-Type"))
+        page = decodePage(
+            page,
+            responseHeaders.get("Content-Encoding"),
+            responseHeaders.get("Content-Type"))
 
         responseMsg = "HTTP response (%s - %d):\n" % (status, code)
 
@@ -87,10 +91,10 @@ def _search(dork):
             responseMsg += "%s\n%s\n" % (responseHeaders, page)
 
         logger.log(CUSTOM_LOGGING.TRAFFIC_IN, responseMsg)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         try:
             page = e.read()
-        except Exception, ex:
+        except Exception as ex:
             warnMsg = "problem occurred while trying to get "
             warnMsg += "an error page information (%s)" % getSafeExString(ex)
             logger.critical(warnMsg)
@@ -99,7 +103,8 @@ def _search(dork):
         errMsg = "unable to connect to Google"
         raise SqlmapConnectionException(errMsg)
 
-    retVal = [urllib.unquote(match.group(1) or match.group(2)) for match in re.finditer(GOOGLE_REGEX, page, re.I)]
+    retVal = [urllib.unquote(match.group(1) or match.group(2))
+              for match in re.finditer(GOOGLE_REGEX, page, re.I)]
 
     if not retVal and "detected unusual traffic" in page:
         warnMsg = "Google has detected 'unusual' traffic from "
@@ -120,7 +125,8 @@ def _search(dork):
         if choice == '3':
             raise SqlmapUserQuitException
         elif choice == '2':
-            url = "https://www.bing.com/search?q=%s&first=%d" % (urlencode(dork, convall=True), (gpage - 1) * 10 + 1)
+            url = "https://www.bing.com/search?q=%s&first=%d" % (
+                urlencode(dork, convall=True), (gpage - 1) * 10 + 1)
             regex = BING_REGEX
         else:
             url = "https://duckduckgo.com/d.js?"
@@ -139,7 +145,9 @@ def _search(dork):
             code = conn.code
             status = conn.msg
             responseHeaders = conn.info()
-            page = decodePage(page, responseHeaders.get("Content-Encoding"), responseHeaders.get("Content-Type"))
+            page = decodePage(page,
+                              responseHeaders.get("Content-Encoding"),
+                              responseHeaders.get("Content-Type"))
 
             responseMsg = "HTTP response (%s - %d):\n" % (status, code)
 
@@ -149,7 +157,7 @@ def _search(dork):
                 responseMsg += "%s\n%s\n" % (responseHeaders, page)
 
             logger.log(CUSTOM_LOGGING.TRAFFIC_IN, responseMsg)
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             try:
                 page = e.read()
             except socket.timeout:
@@ -157,13 +165,19 @@ def _search(dork):
                 warnMsg += "to get error page information (%d)" % e.code
                 logger.critical(warnMsg)
                 return None
-        except:
+        except BaseException:
             errMsg = "unable to connect"
             raise SqlmapConnectionException(errMsg)
 
-        retVal = [urllib.unquote(match.group(1)) for match in re.finditer(regex, page, re.I | re.S)]
+        retVal = [
+            urllib.unquote(
+                match.group(1)) for match in re.finditer(
+                regex,
+                page,
+                re.I | re.S)]
 
     return retVal
+
 
 def search(dork):
     pushValue(kb.redirectChoice)
@@ -171,7 +185,7 @@ def search(dork):
 
     try:
         return _search(dork)
-    except SqlmapBaseException, ex:
+    except SqlmapBaseException as ex:
         if conf.proxyList:
             logger.critical(getSafeExString(ex))
 
@@ -186,6 +200,7 @@ def search(dork):
             raise
     finally:
         kb.redirectChoice = popValue()
+
 
 def setHTTPHandlers():  # Cross-linked function
     raise NotImplementedError

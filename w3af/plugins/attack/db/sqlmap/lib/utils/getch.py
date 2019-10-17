@@ -5,11 +5,13 @@ Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
+
 class _Getch(object):
     """
     Gets a single character from standard input.  Does not echo to
     the screen (reference: http://code.activestate.com/recipes/134892/)
     """
+
     def __init__(self):
         try:
             self.impl = _GetchWindows()
@@ -58,6 +60,7 @@ class _GetchMacCarbon(object):
     page http://www.mactech.com/macintosh-c/chap02-1.html was
     very helpful in figuring out how to do this.
     """
+
     def __init__(self):
         import Carbon
         Carbon.Evt  # see if it has this (in Unix, it doesn't)
@@ -81,4 +84,3 @@ class _GetchMacCarbon(object):
 
 
 getch = _Getch()
-

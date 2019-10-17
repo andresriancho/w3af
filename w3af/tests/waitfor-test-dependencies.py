@@ -8,10 +8,11 @@ LOOPS = 25
 DELAY = 1
 STABLE_LOOPS = 5
 
-WAVSEP_TEST_URL = ('http://127.0.0.1:8098/wavsep/active/SQL-Injection/'
-                   'SInjection-Detection-Evaluation-GET-200Error/'
-                   'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp?'
-                   'username=%27or%277%27=%277&password=%27or%277%27=%277')
+WAVSEP_TEST_URL = (
+    'http://127.0.0.1:8098/wavsep/active/SQL-Injection/'
+    'SInjection-Detection-Evaluation-GET-200Error/'
+    'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp?'
+    'username=%27or%277%27=%277&password=%27or%277%27=%277')
 
 TEST_DEPENDENCIES = [('http://127.0.0.1:8000', None),
                      ('https://127.0.0.1:8001', None),
@@ -26,9 +27,9 @@ TEST_DEPENDENCIES = [('http://127.0.0.1:8000', None),
 def is_online(url, match_string):
     try:
         content = urllib2.urlopen(url).read()
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         content = e.read()
-    except Exception, e:
+    except Exception as e:
         print('%s is offline (%s)' % (url, e.__class__.__name__))
         return False
 
@@ -93,6 +94,7 @@ def wait_until_stable():
         sys.exit(1)
 
     return True
+
 
 if __name__ == '__main__':
     waitfor_test_dependencies()

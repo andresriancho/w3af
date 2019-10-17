@@ -31,8 +31,8 @@ class TestHmap(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': base_url,
-        'plugins': {'infrastructure': (PluginConfig('hmap'),)}
+            'target': base_url,
+            'plugins': {'infrastructure': (PluginConfig('hmap'),)}
         }
     }
 

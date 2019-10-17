@@ -99,18 +99,16 @@ class TestEmailReport(PluginTest):
             email_msg = inbox[0]
 
             self.assertEqual(email_msg.from_address, self.from_addr)
-            self.assertEqual(email_msg.to_address, [self.to_addrs,])
+            self.assertEqual(email_msg.to_address, [self.to_addrs, ])
 
             content = email_msg.fullmessage
             xss_count = 0
             pxss_count = 0
-            
+
             for line in content.split('\n'):
                 if 'A Cross Site Scripting vulnerability was found at:' in line:
                     xss_count += 1
                 elif 'A persistent Cross Site Scripting vulnerability' in line:
                     pxss_count += 1
-            
+
             self.assertEqual(len(xss_vulns), xss_count + pxss_count)
-
-

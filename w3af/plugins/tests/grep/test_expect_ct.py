@@ -54,9 +54,12 @@ class TestECTSecurity(unittest.TestCase):
     def test_https_with_ect(self):
         body = ''
         url = URL('https://www.w3af.com/')
-        headers = Headers([('content-type', 'text/html'),
-                           ('expect-ct',
-                            'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"')])
+        headers = Headers(
+            [
+                ('content-type',
+                 'text/html'),
+                ('expect-ct',
+                 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
 

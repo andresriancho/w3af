@@ -17,6 +17,7 @@ from thirdparty.oset.pyoset import oset
 
 abortedFlag = None
 
+
 def parseSitemap(url, retVal=None):
     global abortedFlag
 
@@ -29,10 +30,11 @@ def parseSitemap(url, retVal=None):
             retVal = oset()
 
         try:
-            content = Request.getPage(url=url, raise404=True)[0] if not abortedFlag else ""
+            content = Request.getPage(url=url, raise404=True)[
+                0] if not abortedFlag else ""
         except httplib.InvalidURL:
             errMsg = "invalid URL given for sitemap ('%s')" % url
-            raise SqlmapSyntaxException, errMsg
+            raise SqlmapSyntaxException(errMsg)
 
         for match in re.finditer(r"<loc>\s*([^<]+)", content or ""):
             if abortedFlag:
@@ -41,7 +43,8 @@ def parseSitemap(url, retVal=None):
             if url.endswith(".xml") and "sitemap" in url.lower():
                 if kb.followSitemapRecursion is None:
                     message = "sitemap recursion detected. Do you want to follow? [y/N] "
-                    kb.followSitemapRecursion = readInput(message, default='N', boolean=True)
+                    kb.followSitemapRecursion = readInput(
+                        message, default='N', boolean=True)
                 if kb.followSitemapRecursion:
                     parseSitemap(url, retVal)
             else:

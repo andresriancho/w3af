@@ -45,10 +45,12 @@ class TestEvalShell(ExecExploitTest):
         # Assert the general results
         vulns = self.kb.get('eval', 'eval')
         self.assertEquals(1, len(vulns))
-        
+
         vuln = vulns[0]
-        
-        self.assertEquals("eval() input injection vulnerability", vuln.get_name())
+
+        self.assertEquals(
+            "eval() input injection vulnerability",
+            vuln.get_name())
         self.assertEquals('eval_double.py', vuln.get_url().get_file_name())
 
         vuln_to_exploit_id = vuln.get_id()
@@ -56,9 +58,10 @@ class TestEvalShell(ExecExploitTest):
 
     def test_from_template(self):
         et = EvalTemplate()
-        
+
         options = et.get_options()
-        options['url'].set_value(get_moth_http('/audit/eval_vuln/eval_double.py'))
+        options['url'].set_value(
+            get_moth_http('/audit/eval_vuln/eval_double.py'))
         options['data'].set_value('text=1')
         options['vulnerable_parameter'].set_value('text')
         et.set_options(options)
@@ -66,5 +69,5 @@ class TestEvalShell(ExecExploitTest):
         et.store_in_kb()
         vuln = self.kb.get(*et.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         self._exploit_vuln(vuln_to_exploit_id, 'eval')

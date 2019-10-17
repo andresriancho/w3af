@@ -54,18 +54,18 @@ class TestXPathShell(PluginTest):
         # Assert the general results
         vulns = self.kb.get('xpath', 'xpath')
         self.assertEquals(1, len(vulns), vulns)
-        
+
         vuln = vulns[0]
-        
+
         self.assertEquals(vuln.get_name(), "XPATH injection vulnerability")
-        
+
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_xpath(vuln_to_exploit_id)
 
     @attr('fails')
     def test_from_template(self):
         xt = XPathTemplate()
-        
+
         options = xt.get_options()
         options['url'].set_value(self.target_url)
         options['data'].set_value('text=1')
@@ -76,9 +76,9 @@ class TestXPathShell(PluginTest):
         xt.store_in_kb()
         vuln = self.kb.get(*xt.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         self._exploit_xpath(vuln_to_exploit_id)
-        
+
     def _exploit_xpath(self, vuln_to_exploit_id):
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'xpath')
 
@@ -92,18 +92,18 @@ class TestXPathShell(PluginTest):
         # Now I start testing the shell itself!
         #
         shell = exploit_result[0]
-        
+
         self.assertEqual(shell._get_data_len(), 183)
-        
+
         # Now that I know that this worked, lets modify the method in order for
         # it to return a lower number and the getxml() process to be much
         # shorter an faster to test.
-        
+
         shell._get_data_len = MagicMock(return_value=45)
-        
+
         xml = shell.generic_user_input('getxml', [])
         self.assertIn('moth', xml)
-        
+
         _help = shell.help(None)
         self.assertNotIn('execute', _help)
         self.assertNotIn('lsp', _help)

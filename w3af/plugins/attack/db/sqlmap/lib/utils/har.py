@@ -19,12 +19,14 @@ from lib.core.settings import VERSION
 # Reference: https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/HAR/Overview.html
 #            http://www.softwareishard.com/har/viewer/
 
+
 class HTTPCollectorFactory:
     def __init__(self, harFile=False):
         self.harFile = harFile
 
     def create(self):
         return HTTPCollector()
+
 
 class HTTPCollector:
     def __init__(self):
@@ -34,7 +36,12 @@ class HTTPCollector:
     def setExtendedArguments(self, arguments):
         self.extendedArguments = arguments
 
-    def collectRequest(self, requestMessage, responseMessage, startTime=None, endTime=None):
+    def collectRequest(
+            self,
+            requestMessage,
+            responseMessage,
+            startTime=None,
+            endTime=None):
         self.messages.append(RawPair(requestMessage, responseMessage,
                                      startTime=startTime, endTime=endTime,
                                      extendedArguments=self.extendedArguments))
@@ -46,8 +53,15 @@ class HTTPCollector:
             "entries": [pair.toEntry().toDict() for pair in self.messages],
         }}
 
+
 class RawPair:
-    def __init__(self, request, response, startTime=None, endTime=None, extendedArguments=None):
+    def __init__(
+            self,
+            request,
+            response,
+            startTime=None,
+            endTime=None,
+            extendedArguments=None):
         self.request = request
         self.response = response
         self.startTime = startTime
@@ -55,12 +69,24 @@ class RawPair:
         self.extendedArguments = extendedArguments or {}
 
     def toEntry(self):
-        return Entry(request=Request.parse(self.request), response=Response.parse(self.response),
-                     startTime=self.startTime, endTime=self.endTime,
-                     extendedArguments=self.extendedArguments)
+        return Entry(
+            request=Request.parse(
+                self.request),
+            response=Response.parse(
+                self.response),
+            startTime=self.startTime,
+            endTime=self.endTime,
+            extendedArguments=self.extendedArguments)
+
 
 class Entry:
-    def __init__(self, request, response, startTime, endTime, extendedArguments):
+    def __init__(
+            self,
+            request,
+            response,
+            startTime,
+            endTime,
+            extendedArguments):
         self.request = request
         self.response = response
         self.startTime = startTime or 0
@@ -73,18 +99,36 @@ class Entry:
             "response": self.response.toDict(),
             "cache": {},
             "timings": {
-                "send": -1,
-                "wait": -1,
-                "receive": -1,
+                "send": -
+                1,
+                "wait": -
+                1,
+                "receive": -
+                1,
             },
-            "time": int(1000 * (self.endTime - self.startTime)),
-            "startedDateTime": "%s%s" % (datetime.datetime.fromtimestamp(self.startTime).isoformat(), time.strftime("%z")) if self.startTime else None
-        }
+            "time": int(
+                1000 *
+                (
+                    self.endTime -
+                    self.startTime)),
+            "startedDateTime": "%s%s" %
+            (datetime.datetime.fromtimestamp(
+                self.startTime).isoformat(),
+             time.strftime("%z")) if self.startTime else None}
         out.update(self.extendedArguments)
         return out
 
+
 class Request:
-    def __init__(self, method, path, httpVersion, headers, postBody=None, raw=None, comment=None):
+    def __init__(
+            self,
+            method,
+            path,
+            httpVersion,
+            headers,
+            postBody=None,
+            raw=None,
+            comment=None):
         self.method = method
         self.path = path
         self.httpVersion = httpVersion
@@ -114,7 +158,11 @@ class Request:
             "httpVersion": self.httpVersion,
             "method": self.method,
             "url": self.url,
-            "headers": [dict(name=key.capitalize(), value=value) for key, value in self.headers.items()],
+            "headers": [
+                dict(
+                    name=key.capitalize(),
+                    value=value) for key,
+                value in self.headers.items()],
             "cookies": [],
             "queryString": [],
             "headersSize": -1,
@@ -131,10 +179,19 @@ class Request:
 
         return out
 
+
 class Response:
     extract_status = re.compile(r'\((\d{3}) (.*)\)')
 
-    def __init__(self, httpVersion, status, statusText, headers, content, raw=None, comment=None):
+    def __init__(
+            self,
+            httpVersion,
+            status,
+            statusText,
+            headers,
+            content,
+            raw=None,
+            comment=None):
         self.raw = raw
         self.httpVersion = httpVersion
         self.status = status
@@ -148,7 +205,8 @@ class Response:
         altered = raw
         comment = ""
 
-        if altered.startswith("HTTP response [") or altered.startswith("HTTP redirect ["):
+        if altered.startswith("HTTP response [") or altered.startswith(
+                "HTTP redirect ["):
             io = StringIO.StringIO(raw)
             first_line = io.readline()
             parts = cls.extract_status.search(first_line)
@@ -165,13 +223,14 @@ class Response:
         except httplib.IncompleteRead:
             content = raw[raw.find("\r\n\r\n") + 4:].rstrip("\r\n")
 
-        return cls(httpVersion="HTTP/1.1" if response.version == 11 else "HTTP/1.0",
-                   status=response.status,
-                   statusText=response.reason,
-                   headers=response.msg,
-                   content=content,
-                   comment=comment,
-                   raw=raw)
+        return cls(
+            httpVersion="HTTP/1.1" if response.version == 11 else "HTTP/1.0",
+            status=response.status,
+            statusText=response.reason,
+            headers=response.msg,
+            content=content,
+            comment=comment,
+            raw=raw)
 
     def toDict(self):
         content = {
@@ -189,7 +248,11 @@ class Response:
             "httpVersion": self.httpVersion,
             "status": self.status,
             "statusText": self.statusText,
-            "headers": [dict(name=key.capitalize(), value=value) for key, value in self.headers.items() if key.lower() != "uri"],
+            "headers": [
+                dict(
+                    name=key.capitalize(),
+                    value=value) for key,
+                value in self.headers.items() if key.lower() != "uri"],
             "cookies": [],
             "content": content,
             "headersSize": -1,
@@ -197,6 +260,7 @@ class Response:
             "redirectURL": "",
             "comment": self.comment,
         }
+
 
 class FakeSocket:
     # Original source:
@@ -207,6 +271,7 @@ class FakeSocket:
 
     def makefile(self, *args, **kwargs):
         return self._file
+
 
 class HTTPRequest(BaseHTTPServer.BaseHTTPRequestHandler):
     # Original source:

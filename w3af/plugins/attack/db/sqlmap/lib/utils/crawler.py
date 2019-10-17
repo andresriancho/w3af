@@ -35,6 +35,7 @@ from lib.request.connect import Connect as Request
 from thirdparty.beautifulsoup.beautifulsoup import BeautifulSoup
 from thirdparty.oset.pyoset import oset
 
+
 def crawl(target):
     try:
         visited = set()
@@ -62,16 +63,19 @@ def crawl(target):
                 content = None
                 try:
                     if current:
-                        content = Request.getPage(url=current, crawling=True, raise404=False)[0]
-                except SqlmapConnectionException, ex:
-                    errMsg = "connection exception detected ('%s'). skipping " % getSafeExString(ex)
+                        content = Request.getPage(
+                            url=current, crawling=True, raise404=False)[0]
+                except SqlmapConnectionException as ex:
+                    errMsg = "connection exception detected ('%s'). skipping " % getSafeExString(
+                        ex)
                     errMsg += "URL '%s'" % current
                     logger.critical(errMsg)
                 except SqlmapSyntaxException:
                     errMsg = "invalid URL detected. skipping '%s'" % current
                     logger.critical(errMsg)
-                except httplib.InvalidURL, ex:
-                    errMsg = "invalid URL detected ('%s'). skipping " % getSafeExString(ex)
+                except httplib.InvalidURL as ex:
+                    errMsg = "invalid URL detected ('%s'). skipping " % getSafeExString(
+                        ex)
                     errMsg += "URL '%s'" % current
                     logger.critical(errMsg)
 
@@ -80,7 +84,8 @@ def crawl(target):
 
                 if isinstance(content, unicode):
                     try:
-                        match = re.search(r"(?si)<html[^>]*>(.+)</html>", content)
+                        match = re.search(
+                            r"(?si)<html[^>]*>(.+)</html>", content)
                         if match:
                             content = "<html>%s</html>" % match.group(1)
 
@@ -88,17 +93,21 @@ def crawl(target):
                         tags = soup('a')
 
                         if not tags:
-                            tags = re.finditer(r'(?i)<a[^>]+href="(?P<href>[^>"]+)"', content)
+                            tags = re.finditer(
+                                r'(?i)<a[^>]+href="(?P<href>[^>"]+)"', content)
 
                         for tag in tags:
-                            href = tag.get("href") if hasattr(tag, "get") else tag.group("href")
+                            href = tag.get("href") if hasattr(
+                                tag, "get") else tag.group("href")
 
                             if href:
-                                if threadData.lastRedirectURL and threadData.lastRedirectURL[0] == threadData.lastRequestUID:
+                                if threadData.lastRedirectURL and threadData.lastRedirectURL[
+                                        0] == threadData.lastRequestUID:
                                     current = threadData.lastRedirectURL[1]
                                 url = urlparse.urljoin(current, href)
 
-                                # flag to know if we are dealing with the same target host
+                                # flag to know if we are dealing with the same
+                                # target host
                                 _ = checkSameHost(url, target)
 
                                 if conf.scope:
@@ -107,7 +116,8 @@ def crawl(target):
                                 elif not _:
                                     continue
 
-                                if url.split('.')[-1].lower() not in CRAWL_EXCLUDE_EXTENSIONS:
+                                if url.split(
+                                        '.')[-1].lower() not in CRAWL_EXCLUDE_EXTENSIONS:
                                     with kb.locks.value:
                                         threadData.shared.deeper.add(url)
                                         if re.search(r"(.*?)\?(.+)", url):
@@ -122,8 +132,12 @@ def crawl(target):
 
                 if conf.verbose in (1, 2):
                     threadData.shared.count += 1
-                    status = '%d/%d links visited (%d%%)' % (threadData.shared.count, threadData.shared.length, round(100.0 * threadData.shared.count / threadData.shared.length))
-                    dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status), True)
+                    status = '%d/%d links visited (%d%%)' % (threadData.shared.count,
+                                                             threadData.shared.length,
+                                                             round(100.0 * threadData.shared.count / threadData.shared.length))
+                    dataToStdout(
+                        "\r[%s] [INFO] %s" %
+                        (time.strftime("%X"), status), True)
 
         threadData.shared.deeper = set()
         threadData.shared.unprocessed = set([target])
@@ -138,11 +152,11 @@ def crawl(target):
                 url = urlparse.urljoin(target, "/sitemap.xml")
                 try:
                     items = parseSitemap(url)
-                except SqlmapConnectionException, ex:
+                except SqlmapConnectionException as ex:
                     if "page not found" in getSafeExString(ex):
                         found = False
                         logger.warn("'sitemap.xml' not found")
-                except:
+                except BaseException:
                     pass
                 finally:
                     if found:
@@ -152,7 +166,9 @@ def crawl(target):
                                     threadData.shared.value.add(item)
                             if conf.crawlDepth > 1:
                                 threadData.shared.unprocessed.update(items)
-                        logger.info("%s links found" % ("no" if not items else len(items)))
+                        logger.info(
+                            "%s links found" %
+                            ("no" if not items else len(items)))
 
         infoMsg = "starting crawler"
         if conf.bulkFile:
@@ -167,7 +183,7 @@ def crawl(target):
             if not conf.bulkFile:
                 logger.info("searching for links with depth %d" % (i + 1))
 
-            runThreads(numThreads, crawlThread, threadChoice=(i>0))
+            runThreads(numThreads, crawlThread, threadChoice=(i > 0))
             clearConsoleLine(True)
 
             if threadData.shared.deeper:
@@ -188,9 +204,17 @@ def crawl(target):
             logger.warn(warnMsg)
         else:
             for url in threadData.shared.value:
-                kb.targets.add((urldecode(url, kb.pageEncoding), None, None, None, None))
+                kb.targets.add(
+                    (urldecode(
+                        url,
+                        kb.pageEncoding),
+                        None,
+                        None,
+                        None,
+                        None))
 
         storeResultsToFile(kb.targets)
+
 
 def storeResultsToFile(results):
     if not results:
@@ -203,7 +227,8 @@ def storeResultsToFile(results):
         kb.storeCrawlingChoice = readInput(message, default='N', boolean=True)
 
     if kb.storeCrawlingChoice:
-        handle, filename = tempfile.mkstemp(prefix=MKSTEMP_PREFIX.CRAWLER, suffix=".csv" if conf.forms else ".txt")
+        handle, filename = tempfile.mkstemp(
+            prefix=MKSTEMP_PREFIX.CRAWLER, suffix=".csv" if conf.forms else ".txt")
         os.close(handle)
 
         infoMsg = "writing crawling results to a temporary file '%s' " % filename
@@ -215,6 +240,7 @@ def storeResultsToFile(results):
 
             for url, _, data, _, _ in results:
                 if conf.forms:
-                    f.write("%s,%s\n" % (safeCSValue(url), safeCSValue(data or "")))
+                    f.write("%s,%s\n" %
+                            (safeCSValue(url), safeCSValue(data or "")))
                 else:
                     f.write("%s\n" % url)

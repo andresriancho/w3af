@@ -36,11 +36,15 @@ class TestFindDVCS(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'crawl': (PluginConfig('find_dvcs'),
-                                  PluginConfig('web_spider',
-                                               ('only_forward', True, PluginConfig.BOOL)),)}
-        }
-    }
+            'plugins': {
+                'crawl': (
+                    PluginConfig('find_dvcs'),
+                    PluginConfig(
+                        'web_spider',
+                        ('only_forward',
+                         True,
+                         PluginConfig.BOOL)),
+                )}}}
 
     # There are a couple commented-out repositories here because the test
     # environment doesn't fully support them yet, but the code for parsing
@@ -96,25 +100,45 @@ class TestFindDVCS(PluginTest):
 
 class TestSVN(PluginTest):
 
-    WC_DB = file(os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'find_dvcs', 'sample-wc.db')).read()
+    WC_DB = file(
+        os.path.join(
+            ROOT_PATH,
+            'plugins',
+            'tests',
+            'crawl',
+            'find_dvcs',
+            'sample-wc.db')).read()
 
     SECRET = 'Secret contents here!'
 
-    MOCK_RESPONSES = [MockResponse('http://mock/', 'root'),
-                      MockResponse('http://mock/.svn/wc.db', WC_DB),
-                      MockResponse('http://mock/.svn/pristine/96/96acedb8cc77c893b90d1ce37c7119fd0c0fba00.svn-base', SECRET),
-                      MockResponse('http://mock/seris/changelog.rst', SECRET)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://mock/',
+            'root'),
+        MockResponse(
+            'http://mock/.svn/wc.db',
+            WC_DB),
+        MockResponse(
+            'http://mock/.svn/pristine/96/96acedb8cc77c893b90d1ce37c7119fd0c0fba00.svn-base',
+            SECRET),
+        MockResponse(
+            'http://mock/seris/changelog.rst',
+            SECRET)]
 
     target_url = 'http://mock'
 
     _run_configs = {
         'cfg': {
             'target': target_url,
-            'plugins': {'crawl': (PluginConfig('find_dvcs'),
-                                  PluginConfig('web_spider',
-                                               ('only_forward', True, PluginConfig.BOOL)),)}
-        }
-    }
+            'plugins': {
+                'crawl': (
+                    PluginConfig('find_dvcs'),
+                    PluginConfig(
+                        'web_spider',
+                        ('only_forward',
+                         True,
+                         PluginConfig.BOOL)),
+                )}}}
 
     def test_wc_db(self):
         cfg = self._run_configs['cfg']

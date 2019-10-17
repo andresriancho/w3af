@@ -10,6 +10,7 @@ from lib.core.common import dataToStdout
 from lib.core.data import conf
 from lib.core.data import kb
 
+
 class ProgressBar(object):
     """
     This class defines methods to update and draw a progress bar
@@ -52,7 +53,8 @@ class ProgressBar(object):
         percentDone = min(100, int(percentDone))
 
         # Figure out how many hash bars the percentage should be
-        allFull = self._width - len("100%% [] %s/%s  ETA 00:00" % (self._max, self._max))
+        allFull = self._width - \
+            len("100%% [] %s/%s  ETA 00:00" % (self._max, self._max))
         numHashes = (percentDone / 100.0) * allFull
         numHashes = int(round(numHashes))
 
@@ -63,7 +65,7 @@ class ProgressBar(object):
             self._progBar = "[%s]" % ("=" * allFull)
         else:
             self._progBar = "[%s>%s]" % ("=" * (numHashes - 1),
-                                          " " * (allFull - numHashes))
+                                         " " * (allFull - numHashes))
 
         # Add the percentage at the beginning of the progress bar
         percentString = getUnicode(percentDone) + "%"
@@ -74,7 +76,9 @@ class ProgressBar(object):
         This method saves item delta time and shows updated progress bar with calculated eta
         """
 
-        if len(self._times) <= ((self._max * 3) / 100) or newAmount > self._max:
+        if len(
+                self._times) <= (
+                (self._max * 3) / 100) or newAmount > self._max:
             eta = None
         else:
             midTime = sum(self._times) / len(self._times)
@@ -92,7 +96,14 @@ class ProgressBar(object):
 
         if self._progBar != self._oldProgBar:
             self._oldProgBar = self._progBar
-            dataToStdout("\r%s %d/%d%s" % (self._progBar, self._amount, self._max, ("  ETA %s" % self._convertSeconds(int(eta))) if eta is not None else ""))
+            dataToStdout(
+                "\r%s %d/%d%s" %
+                (self._progBar,
+                 self._amount,
+                 self._max,
+                 ("  ETA %s" %
+                  self._convertSeconds(
+                      int(eta))) if eta is not None else ""))
             if self._amount >= self._max:
                 if not conf.liveTest:
                     dataToStdout("\r%s\r" % (" " * self._width))

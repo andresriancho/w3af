@@ -41,8 +41,8 @@ class TestKeys(PluginTest):
         kb.kb.clear('keys', 'keys')
 
     def tearDown(self):
-        self.plugin.end()        
-        
+        self.plugin.end()
+
     def test_private_key(self):
         body = '-----BEGIN PRIVATE KEY-----'
         url = URL('http://www.w3af.com/')
@@ -50,7 +50,7 @@ class TestKeys(PluginTest):
         response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        
+
         data = kb.kb.get('keys', 'keys')
         self.assertEquals(len(data), 1)
         self.assertEquals(type(data[0]), Vuln)
@@ -65,7 +65,7 @@ class TestKeys(PluginTest):
 
         data = kb.kb.get('keys', 'keys')
         self.assertEquals(len(data), 1)
-        self.assertEquals(type(data[0]), Info)        
+        self.assertEquals(type(data[0]), Info)
 
     def test_xml_key(self):
         body = '<RSAKeyValue>'
@@ -76,7 +76,7 @@ class TestKeys(PluginTest):
         self.plugin.grep(request, response)
 
         data = kb.kb.get('keys', 'keys')
-        self.assertEquals(len(data), 1)  
+        self.assertEquals(len(data), 1)
 
     def test_public_ecdsa_key(self):
         body = 'ecdsa-sha2-nistp256'
@@ -88,7 +88,7 @@ class TestKeys(PluginTest):
 
         data = kb.kb.get('keys', 'keys')
         self.assertEquals(len(data), 1)
-        self.assertEquals(type(data[0]), Info)        
+        self.assertEquals(type(data[0]), Info)
 
     def test_multi_match(self):
         body = """

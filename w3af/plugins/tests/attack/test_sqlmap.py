@@ -37,16 +37,16 @@ class TestSQLMapShell(ReadExploitTest):
                 'audit': (PluginConfig('sqli'),),
             }
         },
-                    
+
         'blind_sqli': {
             'target': BSQLI,
             'plugins': {
                 'audit': (PluginConfig('blind_sqli'),),
                 'crawl': (PluginConfig('web_spider',
-                          ('only_forward', True, PluginConfig.BOOL)),)
+                                       ('only_forward', True, PluginConfig.BOOL)),)
             }
         }
-        
+
     }
 
     def test_found_exploit_sqlmap_sqli(self):
@@ -68,9 +68,9 @@ class TestSQLMapShell(ReadExploitTest):
         self.assertEquals(set(EXPECTED),
                           set(found_vulns))
 
-        vuln_to_exploit_id = [v.get_id() for v in vulns
-                              if v.get_url().get_file_name() == EXPECTED[0][0]][0]
-        
+        vuln_to_exploit_id = [
+            v.get_id() for v in vulns if v.get_url().get_file_name() == EXPECTED[0][0]][0]
+
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
     def test_found_exploit_sqlmap_blind_sqli(self):
@@ -80,20 +80,22 @@ class TestSQLMapShell(ReadExploitTest):
 
         # Assert the general results
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
-        
+
         self.assertEquals(1, len(vulns))
         vuln = vulns[0]
 
         self.assertEquals('Blind SQL injection vulnerability', vuln.get_name())
         self.assertEquals('id', vuln.get_mutant().get_token_name())
-        self.assertEquals('get_int_noerror.php', vuln.get_url().get_file_name())
-        
+        self.assertEquals(
+            'get_int_noerror.php',
+            vuln.get_url().get_file_name())
+
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
     def test_from_template(self):
         sqlit = SQLiTemplate()
-        
+
         options = sqlit.get_options()
         path = '/sqlmap/mysql/get_int.php'
         options['url'].set_value(get_sqlmap_testenv_http(path))
@@ -104,7 +106,7 @@ class TestSQLMapShell(ReadExploitTest):
         sqlit.store_in_kb()
         vuln = self.kb.get(*sqlit.get_kb_location())[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         self._exploit_vuln(vuln_to_exploit_id, 'sqlmap')
 
     def test_found_exploit_blind_sqli_form_GET(self):
@@ -112,7 +114,8 @@ class TestSQLMapShell(ReadExploitTest):
         Reproduce bug https://github.com/andresriancho/w3af/issues/262
         "it appears that you have provided tainted parameter values"
         """
-        target = get_moth_http('/audit/blind_sqli/blind_where_integer_form_get.py')
+        target = get_moth_http(
+            '/audit/blind_sqli/blind_where_integer_form_get.py')
         cfg = self._run_configs['blind_sqli']
         self._scan(target, cfg['plugins'])
 

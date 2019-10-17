@@ -46,14 +46,16 @@ class TestGenericOnly(PluginTest):
 
     def test_found_generic(self):
         self._scan(self.target_url, self.CONFIG)
-        
+
         vulns = self.kb.get('generic', 'generic')
-        
+
         self.assertEquals(1, len(vulns))
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Unhandled error in web application', vuln.get_name())
+        self.assertEquals(
+            'Unhandled error in web application',
+            vuln.get_name())
         self.assertEquals('http://mock/?id=1/0', str(vuln.get_uri()))
         self.assertEquals(vuln.get_mutant().get_token_name(), 'id')
 
@@ -73,8 +75,15 @@ class TestGenericExtensive(PluginTest):
 
             return self.status, response_headers, body
 
-    CONFIG = {'audit': (PluginConfig('generic',
-                                     ('extensive', True, PluginConfig.BOOL),),)}
+    CONFIG = {
+        'audit': (
+            PluginConfig(
+                'generic',
+                ('extensive',
+                 True,
+                 PluginConfig.BOOL),
+            ),
+        )}
     MOCK_RESPONSES = [GenericErrorMockResponse(re.compile('.*'), body=None,
                                                method='GET', status=200)]
 
@@ -87,7 +96,9 @@ class TestGenericExtensive(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Unhandled error in web application', vuln.get_name())
+        self.assertEquals(
+            'Unhandled error in web application',
+            vuln.get_name())
         self.assertEquals('http://mock/?id=Infinity', str(vuln.get_uri()))
         self.assertEquals(vuln.get_mutant().get_token_name(), 'id')
 
