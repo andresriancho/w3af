@@ -27,7 +27,7 @@ def start_container(tag, command=DOCKER_RUN):
 
     try:
         container_id = subprocess.check_output(docker_run, shell=True)
-    except subprocess.CalledProcessError, cpe:
+    except subprocess.CalledProcessError as cpe:
         print('w3af container failed to start: "%s"' % cpe)
         sys.exit(1)
     else:
@@ -42,7 +42,7 @@ def stop_container(container_id):
     """
     try:
         subprocess.check_output('docker stop %s' % container_id, shell=True)
-    except subprocess.CalledProcessError, cpe:
+    except subprocess.CalledProcessError as cpe:
         print('w3af container failed to stop: "%s"' % cpe)
         sys.exit(1)
 
@@ -138,7 +138,7 @@ def restore_file_ownership():
 
     try:
         _chown(path, uid, gid)
-    except:
+    except BaseException:
         return False
 
     return True
