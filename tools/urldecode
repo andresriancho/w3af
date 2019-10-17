@@ -27,6 +27,7 @@ import urllib
 import sys
 import getopt
 
+
 def usage():
     print('w3af - urldecoder')
     print('')
@@ -35,9 +36,10 @@ def usage():
     print('    -d  String to be decoded.')
     print('')
     print('Example: urldecode -d decodeMeNow')
-    
+
+
 def main():
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "decode"])
     except getopt.GetoptError:
@@ -53,11 +55,11 @@ def main():
             sys.exit()
 
     if decode is None:
-            usage()
-            sys.exit()
+        usage()
+        sys.exit()
     else:
-        print( urllib.unquote_plus( decode ) )
-        
+        print(urllib.unquote_plus(decode))
+
+
 if __name__ == "__main__":
     main()
-  

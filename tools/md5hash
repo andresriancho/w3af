@@ -27,6 +27,7 @@ import md5
 import sys
 import getopt
 
+
 def usage():
     print('w3af - md5 hash calculator')
     print('')
@@ -35,9 +36,10 @@ def usage():
     print('    -e  String to be hashed.')
     print('')
     print('Example: md5hash -e makeHash')
-    
+
+
 def main():
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "he:", ["help", "encode"])
     except getopt.GetoptError:
@@ -53,11 +55,11 @@ def main():
             sys.exit()
 
     if encode is None:
-            usage()
-            sys.exit()
+        usage()
+        sys.exit()
 
-    print( md5.new(encode).hexdigest() )
-        
+    print(md5.new(encode).hexdigest())
+
+
 if __name__ == "__main__":
     main()
-  

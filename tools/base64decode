@@ -27,6 +27,7 @@ import base64
 import sys
 import getopt
 
+
 def usage():
     print('w3af - base64 decoder')
     print('')
@@ -35,9 +36,10 @@ def usage():
     print('    -d  String to be decoded.')
     print('')
     print('Example: base64decode -d dzNhZiBpcyBncmVhdA==')
-    
+
+
 def main():
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hd:", ["help", "decode"])
     except getopt.GetoptError:
@@ -53,15 +55,14 @@ def main():
             sys.exit()
 
     if decode is None:
-            usage()
-            sys.exit()
+        usage()
+        sys.exit()
 
     try:
-        print( base64.b64decode(decode) )
-    except:
-        print( 'Could not decode string.' )
+        print(base64.b64decode(decode))
+    except BaseException:
+        print('Could not decode string.')
 
-        
+
 if __name__ == "__main__":
     main()
-  

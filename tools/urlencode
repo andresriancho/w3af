@@ -27,6 +27,7 @@ import urllib
 import sys
 import getopt
 
+
 def usage():
     print('w3af - urlencoder')
     print('')
@@ -36,11 +37,13 @@ def usage():
     print('    -e  String to be encoded.')
     print('')
     print('Example: urlencode -s &% -e encodeMeNow')
-    
+
+
 def main():
-    
+
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hs:e:", ["help", "safe","encode"])
+        opts, args = getopt.getopt(sys.argv[1:], "hs:e:", [
+                                   "help", "safe", "encode"])
     except getopt.GetoptError:
         # print help information and exit:
         usage()
@@ -57,11 +60,11 @@ def main():
             sys.exit()
 
     if encode is None:
-            usage()
-            sys.exit()
+        usage()
+        sys.exit()
     else:
-        print( urllib.quote_plus( encode, safe ) )
-        
+        print(urllib.quote_plus(encode, safe))
+
+
 if __name__ == "__main__":
     main()
-  

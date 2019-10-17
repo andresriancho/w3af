@@ -27,6 +27,7 @@ import base64
 import sys
 import getopt
 
+
 def usage():
     print('w3af - base64 encoder')
     print('')
@@ -35,9 +36,10 @@ def usage():
     print('    -e  String to be encoded.')
     print('')
     print('Example: base64encode -e encodeMeNow')
-    
+
+
 def main():
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "he:", ["help", "encode"])
     except getopt.GetoptError:
@@ -53,10 +55,10 @@ def main():
             sys.exit()
 
     if encode is None:
-            usage()
-            sys.exit()
-    print( base64.b64encode( encode) )
-        
+        usage()
+        sys.exit()
+    print(base64.b64encode(encode))
+
+
 if __name__ == "__main__":
     main()
-  
