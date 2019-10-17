@@ -25,10 +25,7 @@ import shlex
 import random
 import traceback
 
-#from termcolor import colored
-#tg12 "fix"
-import termcolor
-import colored
+from termcolor import colored
 
 try:
     import w3af.core.ui.console.io.console as term
