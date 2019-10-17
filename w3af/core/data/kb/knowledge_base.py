@@ -26,7 +26,7 @@ import cPickle
 import copy
 
 # pylint: disable=E0401
-#from darts.lib.utils.lru import SynchronizedLRUDict
+from darts.lib.utils.lru import SynchronizedLRUDict
 #from darts.util.lru import SynchronizedLRUDict
 import darts
 # pylint: enable=E0401
