@@ -32,7 +32,13 @@ class TestRetireJSNotAnalyzeHTMLContentType(PluginTest):
     target_url = 'http://httpretty'
 
     # This is a vulnerable version of JQuery
-    JQUERY_VULN = os.path.join(ROOT_PATH, 'plugins', 'tests', 'grep', 'retirejs', 'jquery.js')
+    JQUERY_VULN = os.path.join(
+        ROOT_PATH,
+        'plugins',
+        'tests',
+        'grep',
+        'retirejs',
+        'jquery.js')
 
     INDEX = '<html><script src="/js/jquery.js"></script></html>'
 
@@ -85,7 +91,13 @@ class TestRetireJS(PluginTest):
     target_url = 'http://httpretty'
 
     # This is a vulnerable version of JQuery
-    JQUERY_VULN = os.path.join(ROOT_PATH, 'plugins', 'tests', 'grep', 'retirejs', 'jquery.js')
+    JQUERY_VULN = os.path.join(
+        ROOT_PATH,
+        'plugins',
+        'tests',
+        'grep',
+        'retirejs',
+        'jquery.js')
 
     INDEX = '<html><script src="/js/jquery.js"></script></html>'
 
@@ -124,8 +136,12 @@ class TestRetireJS(PluginTest):
 
         vuln = vulns[0]
 
-        self.assertEqual(vuln.get_name(), 'Vulnerable JavaScript library in use')
-        self.assertEqual(vuln.get_url().url_string, 'http://httpretty/js/jquery.js')
+        self.assertEqual(
+            vuln.get_name(),
+            'Vulnerable JavaScript library in use')
+        self.assertEqual(
+            vuln.get_url().url_string,
+            'http://httpretty/js/jquery.js')
         self.assertEqual(vuln.get_desc(with_id=False), EXPECTED_VULN_DESC)
 
 

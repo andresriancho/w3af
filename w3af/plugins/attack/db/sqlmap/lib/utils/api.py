@@ -56,6 +56,8 @@ from thirdparty.bottle.bottle import run
 from thirdparty.bottle.bottle import server_names
 
 # Global data storage
+
+
 class DataStore(object):
     admin_id = ""
     current_db = None
@@ -64,6 +66,8 @@ class DataStore(object):
     password = None
 
 # API objects
+
+
 class Database(object):
     filepath = None
 
@@ -73,7 +77,11 @@ class Database(object):
         self.cursor = None
 
     def connect(self, who="server"):
-        self.connection = sqlite3.connect(self.database, timeout=3, isolation_level=None, check_same_thread=False)
+        self.connection = sqlite3.connect(
+            self.database,
+            timeout=3,
+            isolation_level=None,
+            check_same_thread=False)
         self.cursor = self.connection.cursor()
         logger.debug("REST-JSON API %s connected to IPC database" % who)
 
@@ -94,8 +102,8 @@ class Database(object):
                     self.cursor.execute(statement, arguments)
                 else:
                     self.cursor.execute(statement)
-            except sqlite3.OperationalError, ex:
-                if not "locked" in getSafeExString(ex):
+            except sqlite3.OperationalError as ex:
+                if "locked" not in getSafeExString(ex):
                     raise
             else:
                 break
@@ -105,21 +113,22 @@ class Database(object):
 
     def init(self):
         self.execute("CREATE TABLE logs("
-                  "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                  "taskid INTEGER, time TEXT, "
-                  "level TEXT, message TEXT"
-                  ")")
+                     "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                     "taskid INTEGER, time TEXT, "
+                     "level TEXT, message TEXT"
+                     ")")
 
         self.execute("CREATE TABLE data("
-                  "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                  "taskid INTEGER, status INTEGER, "
-                  "content_type INTEGER, value TEXT"
-                  ")")
+                     "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                     "taskid INTEGER, status INTEGER, "
+                     "content_type INTEGER, value TEXT"
+                     ")")
 
         self.execute("CREATE TABLE errors("
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                    "taskid INTEGER, error TEXT"
-                    ")")
+                     "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                     "taskid INTEGER, error TEXT"
+                     ")")
+
 
 class Task(object):
     def __init__(self, taskid, remote_addr):
@@ -131,7 +140,11 @@ class Task(object):
         self.initialize_options(taskid)
 
     def initialize_options(self, taskid):
-        datatype = {"boolean": False, "string": None, "integer": None, "float": None}
+        datatype = {
+            "boolean": False,
+            "string": None,
+            "integer": None,
+            "float": None}
         self.options = AttribDict()
 
         for _ in optDict:
@@ -165,16 +178,31 @@ class Task(object):
         self.options = AttribDict(self._original_options)
 
     def engine_start(self):
-        handle, configFile = tempfile.mkstemp(prefix=MKSTEMP_PREFIX.CONFIG, text=True)
+        handle, configFile = tempfile.mkstemp(
+            prefix=MKSTEMP_PREFIX.CONFIG, text=True)
         os.close(handle)
         saveConfig(self.options, configFile)
 
         if os.path.exists("sqlmap.py"):
-            self.process = Popen(["python", "sqlmap.py", "--api", "-c", configFile], shell=False, close_fds=not IS_WIN)
+            self.process = Popen(["python",
+                                  "sqlmap.py",
+                                  "--api",
+                                  "-c",
+                                  configFile],
+                                 shell=False,
+                                 close_fds=not IS_WIN)
         elif os.path.exists(os.path.join(os.getcwd(), "sqlmap.py")):
-            self.process = Popen(["python", "sqlmap.py", "--api", "-c", configFile], shell=False, cwd=os.getcwd(), close_fds=not IS_WIN)
+            self.process = Popen(["python",
+                                  "sqlmap.py",
+                                  "--api",
+                                  "-c",
+                                  configFile],
+                                 shell=False,
+                                 cwd=os.getcwd(),
+                                 close_fds=not IS_WIN)
         else:
-            self.process = Popen(["sqlmap", "--api", "-c", configFile], shell=False, close_fds=not IS_WIN)
+            self.process = Popen(
+                ["sqlmap", "--api", "-c", configFile], shell=False, close_fds=not IS_WIN)
 
     def engine_stop(self):
         if self.process:
@@ -191,7 +219,7 @@ class Task(object):
             try:
                 self.process.kill()
                 return self.process.wait()
-            except:
+            except BaseException:
                 pass
         return None
 
@@ -225,7 +253,11 @@ class StdDbOut(object):
         else:
             sys.stderr = self
 
-    def write(self, value, status=CONTENT_STATUS.IN_PROGRESS, content_type=None):
+    def write(
+            self,
+            value,
+            status=CONTENT_STATUS.IN_PROGRESS,
+            content_type=None):
         if self.messagetype == "stdout":
             if content_type is None:
                 if kb.partRun is not None:
@@ -234,26 +266,45 @@ class StdDbOut(object):
                     # Ignore all non-relevant messages
                     return
 
-            output = conf.databaseCursor.execute("SELECT id, status, value FROM data WHERE taskid = ? AND content_type = ?", (self.taskid, content_type))
+            output = conf.databaseCursor.execute(
+                "SELECT id, status, value FROM data WHERE taskid = ? AND content_type = ?",
+                (self.taskid,
+                 content_type))
 
-            # Delete partial output from IPC database if we have got a complete output
+            # Delete partial output from IPC database if we have got a complete
+            # output
             if status == CONTENT_STATUS.COMPLETE:
                 if len(output) > 0:
                     for index in xrange(len(output)):
-                        conf.databaseCursor.execute("DELETE FROM data WHERE id = ?", (output[index][0],))
+                        conf.databaseCursor.execute(
+                            "DELETE FROM data WHERE id = ?", (output[index][0],))
 
-                conf.databaseCursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)", (self.taskid, status, content_type, jsonize(value)))
+                conf.databaseCursor.execute(
+                    "INSERT INTO data VALUES(NULL, ?, ?, ?, ?)",
+                    (self.taskid,
+                     status,
+                     content_type,
+                     jsonize(value)))
                 if kb.partRun:
                     kb.partRun = None
 
             elif status == CONTENT_STATUS.IN_PROGRESS:
                 if len(output) == 0:
-                    conf.databaseCursor.execute("INSERT INTO data VALUES(NULL, ?, ?, ?, ?)", (self.taskid, status, content_type, jsonize(value)))
+                    conf.databaseCursor.execute(
+                        "INSERT INTO data VALUES(NULL, ?, ?, ?, ?)",
+                        (self.taskid,
+                         status,
+                         content_type,
+                         jsonize(value)))
                 else:
                     new_value = "%s%s" % (dejsonize(output[0][2]), value)
-                    conf.databaseCursor.execute("UPDATE data SET value = ? WHERE id = ?", (jsonize(new_value), output[0][0]))
+                    conf.databaseCursor.execute(
+                        "UPDATE data SET value = ? WHERE id = ?", (jsonize(new_value), output[0][0]))
         else:
-            conf.databaseCursor.execute("INSERT INTO errors VALUES(NULL, ?, ?)", (self.taskid, str(value) if value else ""))
+            conf.databaseCursor.execute(
+                "INSERT INTO errors VALUES(NULL, ?, ?)",
+                (self.taskid,
+                 str(value) if value else ""))
 
     def flush(self):
         pass
@@ -264,21 +315,29 @@ class StdDbOut(object):
     def seek(self):
         pass
 
+
 class LogRecorder(logging.StreamHandler):
     def emit(self, record):
         """
         Record emitted events to IPC database for asynchronous I/O
         communication with the parent process
         """
-        conf.databaseCursor.execute("INSERT INTO logs VALUES(NULL, ?, ?, ?, ?)", (conf.taskid, time.strftime("%X"), record.levelname, record.msg % record.args if record.args else record.msg))
+        conf.databaseCursor.execute(
+            "INSERT INTO logs VALUES(NULL, ?, ?, ?, ?)",
+            (conf.taskid,
+             time.strftime("%X"),
+             record.levelname,
+             record.msg %
+             record.args if record.args else record.msg))
+
 
 def setRestAPILog():
     if conf.api:
         try:
             conf.databaseCursor = Database(conf.database)
             conf.databaseCursor.connect("client")
-        except sqlite3.OperationalError, ex:
-            raise SqlmapConnectionException, "%s ('%s')" % (ex, conf.database)
+        except sqlite3.OperationalError as ex:
+            raise SqlmapConnectionException("%s ('%s')" % (ex, conf.database))
 
         # Set a logging handler that writes log messages to a IPC database
         logger.removeHandler(LOGGER_HANDLER)
@@ -286,8 +345,11 @@ def setRestAPILog():
         logger.addHandler(LOGGER_RECORDER)
 
 # Generic functions
+
+
 def is_admin(taskid):
     return DataStore.admin_id == taskid
+
 
 @hook('before_request')
 def check_authentication():
@@ -302,15 +364,18 @@ def check_authentication():
 
     try:
         creds = match.group(1).decode("base64")
-    except:
+    except BaseException:
         request.environ["PATH_INFO"] = "/error/401"
     else:
         if creds.count(':') != 1:
             request.environ["PATH_INFO"] = "/error/401"
         else:
             username, password = creds.split(':')
-            if username.strip() != (DataStore.username or "") or password.strip() != (DataStore.password or ""):
+            if username.strip() != (
+                    DataStore.username or "") or password.strip() != (
+                    DataStore.password or ""):
                 request.environ["PATH_INFO"] = "/error/401"
+
 
 @hook("after_request")
 def security_headers(json_header=True):
@@ -332,20 +397,25 @@ def security_headers(json_header=True):
 # HTTP Status Code functions #
 ##############################
 
+
 @return_error(401)  # Access Denied
 def error401(error=None):
     security_headers(False)
     return "Access denied"
+
 
 @return_error(404)  # Not Found
 def error404(error=None):
     security_headers(False)
     return "Nothing here"
 
-@return_error(405)  # Method Not Allowed (e.g. when requesting a POST method via GET)
+
+# Method Not Allowed (e.g. when requesting a POST method via GET)
+@return_error(405)
 def error405(error=None):
     security_headers(False)
     return "Method not allowed"
+
 
 @return_error(500)  # Internal Server Error
 def error500(error=None):
@@ -355,6 +425,7 @@ def error500(error=None):
 #############
 # Auxiliary #
 #############
+
 
 @get('/error/401')
 def path_401():
@@ -366,6 +437,8 @@ def path_401():
 #############################
 
 # Users' methods
+
+
 @get("/task/new")
 def task_new():
     """
@@ -379,6 +452,7 @@ def task_new():
     logger.debug("Created new task: '%s'" % taskid)
     return jsonize({"success": True, "taskid": taskid})
 
+
 @get("/task/<taskid>/delete")
 def task_delete(taskid):
     """
@@ -390,12 +464,15 @@ def task_delete(taskid):
         logger.debug("[%s] Deleted task" % taskid)
         return jsonize({"success": True})
     else:
-        logger.warning("[%s] Invalid task ID provided to task_delete()" % taskid)
+        logger.warning(
+            "[%s] Invalid task ID provided to task_delete()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
 ###################
 # Admin functions #
 ###################
+
 
 @get("/admin/<taskid>/list")
 def task_list(taskid=None):
@@ -405,11 +482,15 @@ def task_list(taskid=None):
     tasks = {}
 
     for key in DataStore.tasks:
-        if is_admin(taskid) or DataStore.tasks[key].remote_addr == request.remote_addr:
+        if is_admin(
+                taskid) or DataStore.tasks[key].remote_addr == request.remote_addr:
             tasks[key] = dejsonize(scan_status(key))["status"]
 
-    logger.debug("[%s] Listed task pool (%s)" % (taskid, "admin" if is_admin(taskid) else request.remote_addr))
+    logger.debug(
+        "[%s] Listed task pool (%s)" %
+        (taskid, "admin" if is_admin(taskid) else request.remote_addr))
     return jsonize({"success": True, "tasks": tasks, "tasks_num": len(tasks)})
+
 
 @get("/admin/<taskid>/flush")
 def task_flush(taskid):
@@ -418,11 +499,14 @@ def task_flush(taskid):
     """
 
     for key in list(DataStore.tasks):
-        if is_admin(taskid) or DataStore.tasks[key].remote_addr == request.remote_addr:
+        if is_admin(
+                taskid) or DataStore.tasks[key].remote_addr == request.remote_addr:
             DataStore.tasks[key].engine_kill()
             del DataStore.tasks[key]
 
-    logger.debug("[%s] Flushed task pool (%s)" % (taskid, "admin" if is_admin(taskid) else request.remote_addr))
+    logger.debug(
+        "[%s] Flushed task pool (%s)" %
+        (taskid, "admin" if is_admin(taskid) else request.remote_addr))
     return jsonize({"success": True})
 
 ##################################
@@ -430,17 +514,23 @@ def task_flush(taskid):
 ##################################
 
 # Handle task's options
+
+
 @get("/option/<taskid>/list")
 def option_list(taskid):
     """
     List options for a certain task ID
     """
     if taskid not in DataStore.tasks:
-        logger.warning("[%s] Invalid task ID provided to option_list()" % taskid)
+        logger.warning(
+            "[%s] Invalid task ID provided to option_list()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     logger.debug("[%s] Listed task options" % taskid)
-    return jsonize({"success": True, "options": DataStore.tasks[taskid].get_options()})
+    return jsonize(
+        {"success": True, "options": DataStore.tasks[taskid].get_options()})
+
 
 @post("/option/<taskid>/get")
 def option_get(taskid):
@@ -448,17 +538,25 @@ def option_get(taskid):
     Get the value of an option (command line switch) for a certain task ID
     """
     if taskid not in DataStore.tasks:
-        logger.warning("[%s] Invalid task ID provided to option_get()" % taskid)
+        logger.warning(
+            "[%s] Invalid task ID provided to option_get()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     option = request.json.get("option", "")
 
     if option in DataStore.tasks[taskid].options:
         logger.debug("[%s] Retrieved value for option %s" % (taskid, option))
-        return jsonize({"success": True, option: DataStore.tasks[taskid].get_option(option)})
+        return jsonize({"success": True,
+                        option: DataStore.tasks[taskid].get_option(option)})
     else:
-        logger.debug("[%s] Requested value for unknown option %s" % (taskid, option))
-        return jsonize({"success": False, "message": "Unknown option", option: "not set"})
+        logger.debug(
+            "[%s] Requested value for unknown option %s" %
+            (taskid, option))
+        return jsonize({"success": False,
+                        "message": "Unknown option",
+                        option: "not set"})
+
 
 @post("/option/<taskid>/set")
 def option_set(taskid):
@@ -467,11 +565,15 @@ def option_set(taskid):
     """
 
     if taskid not in DataStore.tasks:
-        logger.warning("[%s] Invalid task ID provided to option_set()" % taskid)
+        logger.warning(
+            "[%s] Invalid task ID provided to option_set()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     if request.json is None:
-        logger.warning("[%s] Invalid JSON options provided to option_set()" % taskid)
+        logger.warning(
+            "[%s] Invalid JSON options provided to option_set()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid JSON options"})
 
     for option, value in request.json.items():
@@ -481,6 +583,8 @@ def option_set(taskid):
     return jsonize({"success": True})
 
 # Handle scans
+
+
 @post("/scan/<taskid>/start")
 def scan_start(taskid):
     """
@@ -488,11 +592,15 @@ def scan_start(taskid):
     """
 
     if taskid not in DataStore.tasks:
-        logger.warning("[%s] Invalid task ID provided to scan_start()" % taskid)
+        logger.warning(
+            "[%s] Invalid task ID provided to scan_start()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     if request.json is None:
-        logger.warning("[%s] Invalid JSON options provided to scan_start()" % taskid)
+        logger.warning(
+            "[%s] Invalid JSON options provided to scan_start()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid JSON options"})
 
     # Initialize sqlmap engine's options with user's provided options, if any
@@ -503,7 +611,9 @@ def scan_start(taskid):
     DataStore.tasks[taskid].engine_start()
 
     logger.debug("[%s] Started scan" % taskid)
-    return jsonize({"success": True, "engineid": DataStore.tasks[taskid].engine_get_id()})
+    return jsonize(
+        {"success": True, "engineid": DataStore.tasks[taskid].engine_get_id()})
+
 
 @get("/scan/<taskid>/stop")
 def scan_stop(taskid):
@@ -522,6 +632,7 @@ def scan_stop(taskid):
     logger.debug("[%s] Stopped scan" % taskid)
     return jsonize({"success": True})
 
+
 @get("/scan/<taskid>/kill")
 def scan_kill(taskid):
     """
@@ -539,6 +650,7 @@ def scan_kill(taskid):
     logger.debug("[%s] Killed scan" % taskid)
     return jsonize({"success": True})
 
+
 @get("/scan/<taskid>/status")
 def scan_status(taskid):
     """
@@ -546,13 +658,16 @@ def scan_status(taskid):
     """
 
     if taskid not in DataStore.tasks:
-        logger.warning("[%s] Invalid task ID provided to scan_status()" % taskid)
+        logger.warning(
+            "[%s] Invalid task ID provided to scan_status()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     if DataStore.tasks[taskid].engine_process() is None:
         status = "not running"
     else:
-        status = "terminated" if DataStore.tasks[taskid].engine_has_terminated() is True else "running"
+        status = "terminated" if DataStore.tasks[taskid].engine_has_terminated(
+        ) is True else "running"
 
     logger.debug("[%s] Retrieved scan status" % taskid)
     return jsonize({
@@ -560,6 +675,7 @@ def scan_status(taskid):
         "status": status,
         "returncode": DataStore.tasks[taskid].engine_get_returncode()
     })
+
 
 @get("/scan/<taskid>/data")
 def scan_data(taskid):
@@ -575,15 +691,20 @@ def scan_data(taskid):
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     # Read all data from the IPC database for the taskid
-    for status, content_type, value in DataStore.current_db.execute("SELECT status, content_type, value FROM data WHERE taskid = ? ORDER BY id ASC", (taskid,)):
-        json_data_message.append({"status": status, "type": content_type, "value": dejsonize(value)})
+    for status, content_type, value in DataStore.current_db.execute(
+            "SELECT status, content_type, value FROM data WHERE taskid = ? ORDER BY id ASC", (taskid,)):
+        json_data_message.append(
+            {"status": status, "type": content_type, "value": dejsonize(value)})
 
     # Read all error messages from the IPC database
-    for error in DataStore.current_db.execute("SELECT error FROM errors WHERE taskid = ? ORDER BY id ASC", (taskid,)):
+    for error in DataStore.current_db.execute(
+            "SELECT error FROM errors WHERE taskid = ? ORDER BY id ASC", (taskid,)):
         json_errors_message.append(error)
 
     logger.debug("[%s] Retrieved scan data and error messages" % taskid)
-    return jsonize({"success": True, "data": json_data_message, "error": json_errors_message})
+    return jsonize({"success": True,
+                    "data": json_data_message,
+                    "error": json_errors_message})
 
 
 # Functions to handle scans' logs
@@ -596,19 +717,26 @@ def scan_log_limited(taskid, start, end):
     json_log_messages = list()
 
     if taskid not in DataStore.tasks:
-        logger.warning("[%s] Invalid task ID provided to scan_log_limited()" % taskid)
+        logger.warning(
+            "[%s] Invalid task ID provided to scan_log_limited()" %
+            taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     if not start.isdigit() or not end.isdigit() or end < start:
-        logger.warning("[%s] Invalid start or end value provided to scan_log_limited()" % taskid)
-        return jsonize({"success": False, "message": "Invalid start or end value, must be digits"})
+        logger.warning(
+            "[%s] Invalid start or end value provided to scan_log_limited()" %
+            taskid)
+        return jsonize(
+            {"success": False, "message": "Invalid start or end value, must be digits"})
 
     start = max(1, int(start))
     end = max(1, int(end))
 
     # Read a subset of log messages from the IPC database
-    for time_, level, message in DataStore.current_db.execute("SELECT time, level, message FROM logs WHERE taskid = ? AND id >= ? AND id <= ? ORDER BY id ASC", (taskid, start, end)):
-        json_log_messages.append({"time": time_, "level": level, "message": message})
+    for time_, level, message in DataStore.current_db.execute(
+            "SELECT time, level, message FROM logs WHERE taskid = ? AND id >= ? AND id <= ? ORDER BY id ASC", (taskid, start, end)):
+        json_log_messages.append(
+            {"time": time_, "level": level, "message": message})
 
     logger.debug("[%s] Retrieved scan log messages subset" % taskid)
     return jsonize({"success": True, "log": json_log_messages})
@@ -627,8 +755,10 @@ def scan_log(taskid):
         return jsonize({"success": False, "message": "Invalid task ID"})
 
     # Read all log messages from the IPC database
-    for time_, level, message in DataStore.current_db.execute("SELECT time, level, message FROM logs WHERE taskid = ? ORDER BY id ASC", (taskid,)):
-        json_log_messages.append({"time": time_, "level": level, "message": message})
+    for time_, level, message in DataStore.current_db.execute(
+            "SELECT time, level, message FROM logs WHERE taskid = ? ORDER BY id ASC", (taskid,)):
+        json_log_messages.append(
+            {"time": time_, "level": level, "message": message})
 
     logger.debug("[%s] Retrieved scan log messages" % taskid)
     return jsonize({"success": True, "log": json_log_messages})
@@ -645,7 +775,11 @@ def download(taskid, target, filename):
         logger.warning("[%s] Invalid task ID provided to download()" % taskid)
         return jsonize({"success": False, "message": "Invalid task ID"})
 
-    path = os.path.abspath(os.path.join(paths.SQLMAP_OUTPUT_PATH, target, filename))
+    path = os.path.abspath(
+        os.path.join(
+            paths.SQLMAP_OUTPUT_PATH,
+            target,
+            filename))
     # Prevent file path traversal
     if not path.startswith(paths.SQLMAP_OUTPUT_PATH):
         logger.warning("[%s] Forbidden path (%s)" % (taskid, target))
@@ -661,7 +795,12 @@ def download(taskid, target, filename):
         return jsonize({"success": False, "message": "File does not exist"})
 
 
-def server(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, adapter=RESTAPI_DEFAULT_ADAPTER, username=None, password=None):
+def server(
+        host=RESTAPI_DEFAULT_ADDRESS,
+        port=RESTAPI_DEFAULT_PORT,
+        adapter=RESTAPI_DEFAULT_ADAPTER,
+        username=None,
+        password=None):
     """
     REST-JSON API server
     """
@@ -670,7 +809,8 @@ def server(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, adapter=REST
     DataStore.username = username
     DataStore.password = password
 
-    _, Database.filepath = tempfile.mkstemp(prefix=MKSTEMP_PREFIX.IPC, text=False)
+    _, Database.filepath = tempfile.mkstemp(
+        prefix=MKSTEMP_PREFIX.IPC, text=False)
     os.close(_)
 
     if port == 0:  # random
@@ -690,7 +830,8 @@ def server(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, adapter=REST
     # Run RESTful API
     try:
         # Supported adapters: aiohttp, auto, bjoern, cgi, cherrypy, diesel, eventlet, fapws3, flup, gae, gevent, geventSocketIO, gunicorn, meinheld, paste, rocket, tornado, twisted, waitress, wsgiref
-        # Reference: https://bottlepy.org/docs/dev/deployment.html || bottle.server_names
+        # Reference: https://bottlepy.org/docs/dev/deployment.html ||
+        # bottle.server_names
 
         if adapter == "gevent":
             from gevent import monkey
@@ -700,7 +841,7 @@ def server(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, adapter=REST
             eventlet.monkey_patch()
         logger.debug("Using adapter '%s' to run bottle" % adapter)
         run(host=host, port=port, quiet=True, debug=True, server=adapter)
-    except socket.error, ex:
+    except socket.error as ex:
         if "already in use" in getSafeExString(ex):
             logger.error("Address already in use ('%s:%s')" % (host, port))
         else:
@@ -714,6 +855,7 @@ def server(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, adapter=REST
             errMsg += "(Note: you can try to install it with 'sudo apt-get install python-%s' or 'sudo pip install %s')" % (adapter, adapter)
         logger.critical(errMsg)
 
+
 def _client(url, options=None):
     logger.debug("Calling %s" % url)
     try:
@@ -723,18 +865,24 @@ def _client(url, options=None):
         headers = {"Content-Type": "application/json"}
 
         if DataStore.username or DataStore.password:
-            headers["Authorization"] = "Basic %s" % base64encode("%s:%s" % (DataStore.username or "", DataStore.password or ""))
+            headers["Authorization"] = "Basic %s" % base64encode(
+                "%s:%s" % (DataStore.username or "", DataStore.password or ""))
 
         req = urllib2.Request(url, data, headers)
         response = urllib2.urlopen(req)
         text = response.read()
-    except:
+    except BaseException:
         if options:
             logger.error("Failed to load and parse %s" % url)
         raise
     return text
 
-def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username=None, password=None):
+
+def client(
+        host=RESTAPI_DEFAULT_ADDRESS,
+        port=RESTAPI_DEFAULT_PORT,
+        username=None,
+        password=None):
     """
     REST-JSON API client
     """
@@ -743,8 +891,10 @@ def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username=Non
     DataStore.password = password
 
     dbgMsg = "Example client access from command line:"
-    dbgMsg += "\n\t$ taskid=$(curl http://%s:%d/task/new 2>1 | grep -o -I '[a-f0-9]\{16\}') && echo $taskid" % (host, port)
-    dbgMsg += "\n\t$ curl -H \"Content-Type: application/json\" -X POST -d '{\"url\": \"http://testphp.vulnweb.com/artists.php?artist=1\"}' http://%s:%d/scan/$taskid/start" % (host, port)
+    dbgMsg += "\n\t$ taskid=$(curl http://%s:%d/task/new 2>1 | grep -o -I '[a-f0-9]\{16\}') && echo $taskid" % (
+        host, port)
+    dbgMsg += "\n\t$ curl -H \"Content-Type: application/json\" -X POST -d '{\"url\": \"http://testphp.vulnweb.com/artists.php?artist=1\"}' http://%s:%d/scan/$taskid/start" % (
+        host, port)
     dbgMsg += "\n\t$ curl http://%s:%d/scan/$taskid/data" % (host, port)
     dbgMsg += "\n\t$ curl http://%s:%d/scan/$taskid/log" % (host, port)
     logger.debug(dbgMsg)
@@ -754,8 +904,10 @@ def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username=Non
 
     try:
         _client(addr)
-    except Exception, ex:
-        if not isinstance(ex, urllib2.HTTPError) or ex.code == httplib.UNAUTHORIZED:
+    except Exception as ex:
+        if not isinstance(
+                ex,
+                urllib2.HTTPError) or ex.code == httplib.UNAUTHORIZED:
             errMsg = "There has been a problem while connecting to the "
             errMsg += "REST-JSON API server at '%s' " % addr
             errMsg += "(%s)" % ex
@@ -767,8 +919,14 @@ def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username=Non
 
     while True:
         try:
-            command = raw_input("api%s> " % (" (%s)" % taskid if taskid else "")).strip()
-            command = re.sub(r"\A(\w+)", lambda match: match.group(1).lower(), command)
+            command = raw_input(
+                "api%s> " %
+                (" (%s)" %
+                 taskid if taskid else "")).strip()
+            command = re.sub(
+                r"\A(\w+)",
+                lambda match: match.group(1).lower(),
+                command)
         except (EOFError, KeyboardInterrupt):
             print
             break
@@ -806,14 +964,16 @@ def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username=Non
 
             try:
                 argv = ["sqlmap.py"] + shlex.split(command)[1:]
-            except Exception, ex:
-                logger.error("Error occurred while parsing arguments ('%s')" % ex)
+            except Exception as ex:
+                logger.error(
+                    "Error occurred while parsing arguments ('%s')" %
+                    ex)
                 taskid = None
                 continue
 
             try:
                 cmdLineOptions = cmdLineParser(argv).__dict__
-            except:
+            except BaseException:
                 taskid = None
                 continue
 
@@ -837,7 +997,8 @@ def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username=Non
             logger.info("Scanning started")
 
         elif command.startswith("use"):
-            taskid = (command.split()[1] if ' ' in command else "").strip("'\"")
+            taskid = (
+                command.split()[1] if ' ' in command else "").strip("'\"")
             if not taskid:
                 logger.error("Task ID is missing")
                 taskid = None
@@ -861,7 +1022,7 @@ def client(host=RESTAPI_DEFAULT_ADDRESS, port=RESTAPI_DEFAULT_PORT, username=Non
             return
 
         elif command in ("help", "?"):
-            msg =  "help           Show this help message\n"
+            msg = "help           Show this help message\n"
             msg += "new ARGS       Start a new scan task with provided arguments (e.g. 'new -u \"http://testphp.vulnweb.com/artists.php?artist=1\"')\n"
             msg += "use TASKID     Switch current context to different task (e.g. 'use c04d8c5c7582efb4')\n"
             msg += "data           Retrieve and show data for current task\n"

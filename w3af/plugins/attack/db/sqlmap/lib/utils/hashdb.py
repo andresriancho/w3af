@@ -26,6 +26,7 @@ from lib.core.settings import UNICODE_ENCODING
 from lib.core.threads import getCurrentThreadData
 from lib.core.threads import getCurrentThreadName
 
+
 class HashDB(object):
     def __init__(self, filepath):
         self.filepath = filepath
@@ -37,13 +38,16 @@ class HashDB(object):
 
         if threadData.hashDBCursor is None:
             try:
-                connection = sqlite3.connect(self.filepath, timeout=3, isolation_level=None)
+                connection = sqlite3.connect(
+                    self.filepath, timeout=3, isolation_level=None)
                 threadData.hashDBCursor = connection.cursor()
-                threadData.hashDBCursor.execute("CREATE TABLE IF NOT EXISTS storage (id INTEGER PRIMARY KEY, value TEXT)")
+                threadData.hashDBCursor.execute(
+                    "CREATE TABLE IF NOT EXISTS storage (id INTEGER PRIMARY KEY, value TEXT)")
                 connection.commit()
-            except Exception, ex:
+            except Exception as ex:
                 errMsg = "error occurred while opening a session "
-                errMsg += "file '%s' ('%s')" % (self.filepath, getSafeExString(ex))
+                errMsg += "file '%s' ('%s')" % (self.filepath,
+                                                getSafeExString(ex))
                 raise SqlmapConnectionException(errMsg)
 
         return threadData.hashDBCursor
@@ -61,13 +65,15 @@ class HashDB(object):
                 threadData.hashDBCursor.close()
                 threadData.hashDBCursor.connection.close()
                 threadData.hashDBCursor = None
-        except:
+        except BaseException:
             pass
 
     @staticmethod
     def hashKey(key):
-        key = key.encode(UNICODE_ENCODING) if isinstance(key, unicode) else repr(key)
-        retVal = int(hashlib.md5(key).hexdigest(), 16) & 0x7fffffffffffffff  # Reference: http://stackoverflow.com/a/4448400
+        key = key.encode(UNICODE_ENCODING) if isinstance(
+            key, unicode) else repr(key)
+        # Reference: http://stackoverflow.com/a/4448400
+        retVal = int(hashlib.md5(key).hexdigest(), 16) & 0x7fffffffffffffff
         return retVal
 
     def retrieve(self, key, unserialize=False):
@@ -79,20 +85,24 @@ class HashDB(object):
             if not retVal:
                 for _ in xrange(HASHDB_RETRIEVE_RETRIES):
                     try:
-                        for row in self.cursor.execute("SELECT value FROM storage WHERE id=?", (hash_,)):
+                        for row in self.cursor.execute(
+                                "SELECT value FROM storage WHERE id=?", (hash_,)):
                             retVal = row[0]
-                    except sqlite3.OperationalError, ex:
-                        if any(_ in getSafeExString(ex) for _ in ("locked", "no such table")):
-                            warnMsg = "problem occurred while accessing session file '%s' ('%s')" % (self.filepath, getSafeExString(ex))
+                    except sqlite3.OperationalError as ex:
+                        if any(_ in getSafeExString(ex)
+                               for _ in ("locked", "no such table")):
+                            warnMsg = "problem occurred while accessing session file '%s' ('%s')" % (
+                                self.filepath, getSafeExString(ex))
                             singleTimeWarnMessage(warnMsg)
                         elif "Could not decode" in getSafeExString(ex):
                             break
                         else:
                             raise
-                    except sqlite3.DatabaseError, ex:
-                        errMsg = "error occurred while accessing session file '%s' ('%s'). " % (self.filepath, getSafeExString(ex))
+                    except sqlite3.DatabaseError as ex:
+                        errMsg = "error occurred while accessing session file '%s' ('%s'). " % (
+                            self.filepath, getSafeExString(ex))
                         errMsg += "If the problem persists please rerun with `--flush-session`"
-                        raise SqlmapConnectionException, errMsg
+                        raise SqlmapConnectionException(errMsg)
                     else:
                         break
 
@@ -101,7 +111,7 @@ class HashDB(object):
         if retVal and unserialize:
             try:
                 retVal = unserializeObject(retVal)
-            except:
+            except BaseException:
                 retVal = None
                 warnMsg = "error occurred while unserializing value for session key '%s'. " % key
                 warnMsg += "If the problem persists please rerun with `--flush-session`"
@@ -113,7 +123,8 @@ class HashDB(object):
         if key:
             hash_ = HashDB.hashKey(key)
             self._cache_lock.acquire()
-            self._write_cache[hash_] = getUnicode(value) if not serialize else serializeObject(value)
+            self._write_cache[hash_] = getUnicode(
+                value) if not serialize else serializeObject(value)
             self._cache_lock.release()
 
         if getCurrentThreadName() in ('0', 'MainThread'):
@@ -138,10 +149,12 @@ class HashDB(object):
                 while True:
                     try:
                         try:
-                            self.cursor.execute("INSERT INTO storage VALUES (?, ?)", (hash_, value,))
+                            self.cursor.execute(
+                                "INSERT INTO storage VALUES (?, ?)", (hash_, value,))
                         except sqlite3.IntegrityError:
-                            self.cursor.execute("UPDATE storage SET value=? WHERE id=?", (value, hash_,))
-                    except sqlite3.DatabaseError, ex:
+                            self.cursor.execute(
+                                "UPDATE storage SET value=? WHERE id=?", (value, hash_,))
+                    except sqlite3.DatabaseError as ex:
                         if not os.path.exists(self.filepath):
                             debugMsg = "session file '%s' does not exist" % self.filepath
                             logger.debug(debugMsg)
@@ -167,7 +180,7 @@ class HashDB(object):
         if not threadData.inTransaction:
             try:
                 self.cursor.execute("BEGIN TRANSACTION")
-            except:
+            except BaseException:
                 # Reference: http://stackoverflow.com/a/25245731
                 self.cursor.close()
                 threadData.hashDBCursor = None

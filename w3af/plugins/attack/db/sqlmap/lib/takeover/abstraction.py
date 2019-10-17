@@ -117,11 +117,15 @@ class Abstraction(Web, UDF, XP_cmdshell):
                 errMsg = "feature not yet implemented for the back-end DBMS"
                 raise SqlmapUnsupportedFeatureException(errMsg)
 
-            infoMsg = "calling %s OS shell. To quit type " % (Backend.getOs() or "Windows")
+            infoMsg = "calling %s OS shell. To quit type " % (
+                Backend.getOs() or "Windows")
             infoMsg += "'x' or 'q' and press ENTER"
             logger.info(infoMsg)
 
-        autoCompletion(AUTOCOMPLETE_TYPE.OS, OS.WINDOWS if Backend.isOs(OS.WINDOWS) else OS.LINUX)
+        autoCompletion(
+            AUTOCOMPLETE_TYPE.OS,
+            OS.WINDOWS if Backend.isOs(
+                OS.WINDOWS) else OS.LINUX)
 
         while True:
             command = None
@@ -168,15 +172,21 @@ class Abstraction(Web, UDF, XP_cmdshell):
             msg += "Do you want to enable it? [Y/n] "
 
             if readInput(msg, default='Y', boolean=True):
-                expression = getSQLSnippet(DBMS.MSSQL, "configure_openrowset", ENABLE="1")
+                expression = getSQLSnippet(
+                    DBMS.MSSQL, "configure_openrowset", ENABLE="1")
                 inject.goStacked(expression)
 
         # TODO: add support for PostgreSQL
-        #elif Backend.isDbms(DBMS.PGSQL):
+        # elif Backend.isDbms(DBMS.PGSQL):
         #    expression = getSQLSnippet(DBMS.PGSQL, "configure_dblink", ENABLE="1")
         #    inject.goStacked(expression)
 
-    def initEnv(self, mandatory=True, detailed=False, web=False, forceInit=False):
+    def initEnv(
+            self,
+            mandatory=True,
+            detailed=False,
+            web=False,
+            forceInit=False):
         self._initRunAs()
 
         if self.envInitialized and not forceInit:

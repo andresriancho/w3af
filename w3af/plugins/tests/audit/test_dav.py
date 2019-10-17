@@ -75,10 +75,10 @@ class TestDav(PluginTest):
 
         vname = 'Insecure DAV configuration'
         vuln_propfind = [v for v in vulns if v.get_name() == vname][0]
-         
-        info_url =  str(info_no_privs.get_url().get_domain_path())
-        vuln_url =  str(vuln_propfind.get_url().get_domain_path())
-        
+
+        info_url = str(info_no_privs.get_url().get_domain_path())
+        vuln_url = str(vuln_propfind.get_url().get_domain_path())
+
         self.assertEquals(self.target_no_privs, info_url)
         self.assertEquals(self.target_no_privs, vuln_url)
 

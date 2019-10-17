@@ -27,10 +27,12 @@ class TestValidMOTW(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='<!-- saved from url=(0011)http://a/ -->',
-                                   method='GET',
-                                   status=200)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='<!-- saved from url=(0011)http://a/ -->',
+            method='GET',
+            status=200)]
 
     _run_configs = {
         'cfg': {
@@ -63,10 +65,12 @@ class TestInvalidMOTW(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body="<!-- saved from      url='http://a/' -->",
-                                   method='GET',
-                                   status=200)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body="<!-- saved from      url='http://a/' -->",
+            method='GET',
+            status=200)]
 
     _run_configs = {
         'cfg': {

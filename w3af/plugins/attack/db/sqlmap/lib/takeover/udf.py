@@ -28,6 +28,7 @@ from lib.core.exception import SqlmapUserQuitException
 from lib.core.unescaper import unescaper
 from lib.request import inject
 
+
 class UDF:
     """
     This class defines methods to deal with User-Defined Functions for
@@ -48,8 +49,13 @@ class UDF:
     def _checkExistUdf(self, udf):
         logger.info("checking if UDF '%s' already exist" % udf)
 
-        query = agent.forgeCaseStatement(queries[Backend.getIdentifiedDbms()].check_udf.query % (udf, udf))
-        return inject.getValue(query, resumeValue=False, expected=EXPECTED.BOOL, charsetType=CHARSET_TYPE.BINARY)
+        query = agent.forgeCaseStatement(
+            queries[Backend.getIdentifiedDbms()].check_udf.query % (udf, udf))
+        return inject.getValue(
+            query,
+            resumeValue=False,
+            expected=EXPECTED.BOOL,
+            charsetType=CHARSET_TYPE.BINARY)
 
     def udfCheckAndOverwrite(self, udf):
         exists = self._checkExistUdf(udf)
@@ -101,14 +107,25 @@ class UDF:
         else:
             cmd = unescaper.escape(self.udfForgeCmd(cmd))
 
-            inject.goStacked("INSERT INTO %s(%s) VALUES (%s(%s))" % (self.cmdTblName, self.tblField, udfName, cmd))
-            output = unArrayizeValue(inject.getValue("SELECT %s FROM %s" % (self.tblField, self.cmdTblName), resumeValue=False, firstChar=first, lastChar=last, safeCharEncode=False))
+            inject.goStacked(
+                "INSERT INTO %s(%s) VALUES (%s(%s))" %
+                (self.cmdTblName, self.tblField, udfName, cmd))
+            output = unArrayizeValue(
+                inject.getValue(
+                    "SELECT %s FROM %s" %
+                    (self.tblField,
+                     self.cmdTblName),
+                    resumeValue=False,
+                    firstChar=first,
+                    lastChar=last,
+                    safeCharEncode=False))
             inject.goStacked("DELETE FROM %s" % self.cmdTblName)
 
         return output
 
     def udfCheckNeeded(self):
-        if (not conf.rFile or (conf.rFile and not Backend.isDbms(DBMS.PGSQL))) and "sys_fileread" in self.sysUdfs:
+        if (not conf.rFile or (conf.rFile and not Backend.isDbms(
+                DBMS.PGSQL))) and "sys_fileread" in self.sysUdfs:
             self.sysUdfs.pop("sys_fileread")
 
         if not conf.osPwn:
@@ -144,7 +161,11 @@ class UDF:
         if len(self.udfToCreate) > 0:
             self.udfSetRemotePath()
             checkFile(self.udfLocalFile)
-            written = self.writeFile(self.udfLocalFile, self.udfRemoteFile, "binary", forceCheck=True)
+            written = self.writeFile(
+                self.udfLocalFile,
+                self.udfRemoteFile,
+                "binary",
+                forceCheck=True)
 
             if written is not True:
                 errMsg = "there has been a problem uploading the shared library, "
@@ -207,7 +228,8 @@ class UDF:
                 if self.udfLocalFile:
                     break
                 else:
-                    logger.warn("you need to specify the local path of the shared library")
+                    logger.warn(
+                        "you need to specify the local path of the shared library")
         else:
             self.udfLocalFile = conf.shLib
 
@@ -215,7 +237,8 @@ class UDF:
             errMsg = "the specified shared library file does not exist"
             raise SqlmapFilePathException(errMsg)
 
-        if not self.udfLocalFile.endswith(".dll") and not self.udfLocalFile.endswith(".so"):
+        if not self.udfLocalFile.endswith(
+                ".dll") and not self.udfLocalFile.endswith(".so"):
             errMsg = "shared library file must end with '.dll' or '.so'"
             raise SqlmapMissingMandatoryOptionException(errMsg)
 
@@ -229,8 +252,10 @@ class UDF:
             errMsg += "but the database underlying operating system is Linux"
             raise SqlmapMissingMandatoryOptionException(errMsg)
 
-        self.udfSharedLibName = os.path.basename(self.udfLocalFile).split(".")[0]
-        self.udfSharedLibExt = os.path.basename(self.udfLocalFile).split(".")[1]
+        self.udfSharedLibName = os.path.basename(
+            self.udfLocalFile).split(".")[0]
+        self.udfSharedLibExt = os.path.basename(
+            self.udfLocalFile).split(".")[1]
 
         msg = "how many user-defined functions do you want to create "
         msg += "from the shared library? "
@@ -288,7 +313,8 @@ class UDF:
                     parType = readInput(msg, default=defaultType).strip()
 
                     if parType.isdigit():
-                        logger.warn("you need to specify the data-type of the parameter")
+                        logger.warn(
+                            "you need to specify the data-type of the parameter")
 
                     else:
                         self.udfs[udfName]["input"].append(parType)
@@ -301,7 +327,8 @@ class UDF:
                 retType = readInput(msg, default=defaultType)
 
                 if isinstance(retType, basestring) and retType.isdigit():
-                    logger.warn("you need to specify the data-type of the return value")
+                    logger.warn(
+                        "you need to specify the data-type of the return value")
                 else:
                     self.udfs[udfName]["return"] = retType
                     break
@@ -370,7 +397,8 @@ class UDF:
 
                         break
                     else:
-                        logger.warn("you need to specify the value of the parameter")
+                        logger.warn(
+                            "you need to specify the value of the parameter")
 
                 count += 1
 

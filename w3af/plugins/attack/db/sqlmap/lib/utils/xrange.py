@@ -5,6 +5,7 @@ Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
+
 class xrange(object):
     """
     Advanced (re)implementation of xrange (supports slice/copy/etc.)
@@ -63,13 +64,14 @@ class xrange(object):
         return max(0, int((self.stop - self.start) / self.step))
 
     def __contains__(self, value):
-        return (self.start <= value < self.stop) and (value - self.start) % self.step == 0
+        return (self.start <= value < self.stop) and (
+            value - self.start) % self.step == 0
 
     def __getitem__(self, index):
         if isinstance(index, slice):
             start, stop, step = index.indices(self._len())
             return xrange(self._index(start),
-                          self._index(stop), step*self.step)
+                          self._index(stop), step * self.step)
         elif isinstance(index, (int, long)):
             if index < 0:
                 fixed_index = index + self._len()

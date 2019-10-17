@@ -67,7 +67,8 @@ class TestGetEmails(PluginTest):
         all_email_info_sets = self.kb.get('emails', 'external_emails')
         self.assertEqual(len(all_email_info_sets), len(expected))
 
-        all_emails = set([i.get_attribute('mail') for i in all_email_info_sets])
+        all_emails = set([i.get_attribute('mail')
+                          for i in all_email_info_sets])
         self.assertEqual(all_emails, expected)
 
 

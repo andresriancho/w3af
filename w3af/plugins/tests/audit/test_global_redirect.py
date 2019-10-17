@@ -73,14 +73,19 @@ class TestGlobalRedirectBasic(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   '<a href="/redir?target=">redirect</a>'),
-                      MockResponse('http://httpretty/redir?target=',
-                                   'No redirect'),
-                      MockResponse('http://httpretty/redir?target=http://www.w3af.org/',
-                                   status=302,
-                                   headers={'Location': 'https://www.w3af.org/'},
-                                   body='')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            '<a href="/redir?target=">redirect</a>'),
+        MockResponse(
+            'http://httpretty/redir?target=',
+            'No redirect'),
+        MockResponse(
+            'http://httpretty/redir?target=http://www.w3af.org/',
+            status=302,
+            headers={
+                'Location': 'https://www.w3af.org/'},
+            body='')]
 
     def test_original_response_has_no_redirect(self):
         cfg = SCAN_CONFIG['cfg']
@@ -99,12 +104,16 @@ class TestGlobalRedirectBasicWithMetaRedir(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   '<a href="/redir?target=">redirect</a>'),
-                      MockResponse('http://httpretty/redir?target=',
-                                   '<meta http-equiv="refresh" content="0; url=">'),
-                      MockResponse('http://httpretty/redir?target=http://www.w3af.org/',
-                                   body='<meta http-equiv="refresh" content="0; url=http://www.w3af.org/">')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            '<a href="/redir?target=">redirect</a>'),
+        MockResponse(
+            'http://httpretty/redir?target=',
+            '<meta http-equiv="refresh" content="0; url=">'),
+        MockResponse(
+            'http://httpretty/redir?target=http://www.w3af.org/',
+            body='<meta http-equiv="refresh" content="0; url=http://www.w3af.org/">')]
 
     def test_original_response_has_meta_redirect(self):
         cfg = SCAN_CONFIG['cfg']
@@ -123,16 +132,22 @@ class TestGlobalRedirectExtendedPayloadSet(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   '<a href="/redir?target=">redirect</a>'),
-                      MockResponse('http://httpretty/redir?target=',
-                                   status=302,
-                                   headers={'Location': 'http://httpretty/default'},
-                                   body=''),
-                      MockResponse('http://httpretty/redir?target=//httpretty.w3af.org/',
-                                   status=302,
-                                   headers={'Location': 'httpretty.w3af.org'},
-                                   body='')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            '<a href="/redir?target=">redirect</a>'),
+        MockResponse(
+            'http://httpretty/redir?target=',
+            status=302,
+            headers={
+                'Location': 'http://httpretty/default'},
+            body=''),
+        MockResponse(
+            'http://httpretty/redir?target=//httpretty.w3af.org/',
+            status=302,
+            headers={
+                'Location': 'httpretty.w3af.org'},
+            body='')]
 
     def test_original_response_has_redirect(self):
         cfg = SCAN_CONFIG['cfg']
@@ -203,7 +218,8 @@ class TestGlobalRedirectUnitResponseHasRedirect(TestCase):
 
         body = ''
         url = URL('http://www.w3af.com/')
-        headers = Headers([('content-type', 'text/html'), ('Location',  'http://w3af.org')])
+        headers = Headers([('content-type', 'text/html'),
+                           ('Location', 'http://w3af.org')])
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
 
         self.assertTrue(plugin._response_has_redirect(resp))

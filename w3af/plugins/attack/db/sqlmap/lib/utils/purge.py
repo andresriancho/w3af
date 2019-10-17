@@ -14,6 +14,7 @@ import string
 from lib.core.common import getSafeExString
 from lib.core.data import logger
 
+
 def purge(directory):
     """
     Safely removes content from a given directory
@@ -31,14 +32,16 @@ def purge(directory):
     dirpaths = []
 
     for rootpath, directories, filenames in os.walk(directory):
-        dirpaths.extend([os.path.abspath(os.path.join(rootpath, _)) for _ in directories])
-        filepaths.extend([os.path.abspath(os.path.join(rootpath, _)) for _ in filenames])
+        dirpaths.extend([os.path.abspath(os.path.join(rootpath, _))
+                         for _ in directories])
+        filepaths.extend([os.path.abspath(os.path.join(rootpath, _))
+                          for _ in filenames])
 
     logger.debug("changing file attributes")
     for filepath in filepaths:
         try:
             os.chmod(filepath, stat.S_IREAD | stat.S_IWRITE)
-        except:
+        except BaseException:
             pass
 
     logger.debug("writing random data to files")
@@ -46,8 +49,9 @@ def purge(directory):
         try:
             filesize = os.path.getsize(filepath)
             with open(filepath, "w+b") as f:
-                f.write("".join(chr(random.randint(0, 255)) for _ in xrange(filesize)))
-        except:
+                f.write("".join(chr(random.randint(0, 255))
+                                for _ in xrange(filesize)))
+        except BaseException:
             pass
 
     logger.debug("truncating files")
@@ -55,14 +59,23 @@ def purge(directory):
         try:
             with open(filepath, 'w') as f:
                 pass
-        except:
+        except BaseException:
             pass
 
     logger.debug("renaming filenames to random values")
     for filepath in filepaths:
         try:
-            os.rename(filepath, os.path.join(os.path.dirname(filepath), "".join(random.sample(string.ascii_letters, random.randint(4, 8)))))
-        except:
+            os.rename(
+                filepath,
+                os.path.join(
+                    os.path.dirname(filepath),
+                    "".join(
+                        random.sample(
+                            string.ascii_letters,
+                            random.randint(
+                                4,
+                                8)))))
+        except BaseException:
             pass
 
     dirpaths.sort(cmp=lambda x, y: y.count(os.path.sep) - x.count(os.path.sep))
@@ -70,8 +83,17 @@ def purge(directory):
     logger.debug("renaming directory names to random values")
     for dirpath in dirpaths:
         try:
-            os.rename(dirpath, os.path.join(os.path.dirname(dirpath), "".join(random.sample(string.ascii_letters, random.randint(4, 8)))))
-        except:
+            os.rename(
+                dirpath,
+                os.path.join(
+                    os.path.dirname(dirpath),
+                    "".join(
+                        random.sample(
+                            string.ascii_letters,
+                            random.randint(
+                                4,
+                                8)))))
+        except BaseException:
             pass
 
     logger.debug("deleting the whole directory tree")
@@ -79,5 +101,7 @@ def purge(directory):
 
     try:
         shutil.rmtree(directory)
-    except OSError, ex:
-        logger.error("problem occurred while removing directory '%s' ('%s')" % (directory, getSafeExString(ex)))
+    except OSError as ex:
+        logger.error(
+            "problem occurred while removing directory '%s' ('%s')" %
+            (directory, getSafeExString(ex)))

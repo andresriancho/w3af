@@ -125,7 +125,7 @@ class test_private_ip(unittest.TestCase):
 
         url_2 = URL('http://www.w3af.com/2')
         headers_2 = Headers([('content-type', 'text/html'),
-                             ('x-via', '10.6.6.6')]) # Changed the ip address
+                             ('x-via', '10.6.6.6')])  # Changed the ip address
         response_2 = HTTPResponse(200, body, headers_2, url_2, url_2, _id=2)
         request_2 = FuzzableRequest(url_2, method='GET')
         self.plugin.grep(request_2, response_2)

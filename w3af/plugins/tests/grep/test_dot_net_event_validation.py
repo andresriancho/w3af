@@ -97,7 +97,6 @@ class TestEventValidationGrouping(PluginTest):
         vulns = self.kb.get('dot_net_event_validation',
                             'dot_net_event_validation')
 
-
         expected_vulns = {('.NET Event Validation is disabled',
                            u'The application contains 2 unique URLs which have'
                            u' .NET Event Validation disabled. This programming'

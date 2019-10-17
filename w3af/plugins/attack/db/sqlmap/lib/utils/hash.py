@@ -14,7 +14,8 @@ _multiprocessing = None
 try:
     import multiprocessing
 
-    # problems on FreeBSD (Reference: http://www.eggheadcafe.com/microsoft/Python/35880259/multiprocessing-on-freebsd.aspx)
+    # problems on FreeBSD (Reference:
+    # http://www.eggheadcafe.com/microsoft/Python/35880259/multiprocessing-on-freebsd.aspx)
     _ = multiprocessing.Queue()
 except (ImportError, OSError):
     pass
@@ -84,6 +85,7 @@ from thirdparty.colorama.initialise import init as coloramainit
 from thirdparty.pydes.pyDes import des
 from thirdparty.pydes.pyDes import CBC
 
+
 def mysql_passwd(password, uppercase=True):
     """
     Reference(s):
@@ -96,6 +98,7 @@ def mysql_passwd(password, uppercase=True):
     retVal = "*%s" % sha1(sha1(password).digest()).hexdigest()
 
     return retVal.upper() if uppercase else retVal.lower()
+
 
 def mysql_old_passwd(password, uppercase=True):  # prior to version '4.1'
     """
@@ -122,6 +125,7 @@ def mysql_old_passwd(password, uppercase=True):  # prior to version '4.1'
 
     return retVal.upper() if uppercase else retVal.lower()
 
+
 def postgres_passwd(password, username, uppercase=False):
     """
     Reference(s):
@@ -130,7 +134,6 @@ def postgres_passwd(password, username, uppercase=False):
     >>> postgres_passwd(password='testpass', username='testuser', uppercase=False)
     'md599e5ea7a6f7c3269995cba3927fd0093'
     """
-
 
     if isinstance(username, unicode):
         username = unicode.encode(username, UNICODE_ENCODING)
@@ -141,6 +144,7 @@ def postgres_passwd(password, username, uppercase=False):
     retVal = "md5%s" % md5(password + username).hexdigest()
 
     return retVal.upper() if uppercase else retVal.lower()
+
 
 def mssql_passwd(password, salt, uppercase=False):
     """
@@ -153,11 +157,14 @@ def mssql_passwd(password, salt, uppercase=False):
     """
 
     binsalt = hexdecode(salt)
-    unistr = "".join(("%s\0" if ord(_) < 256 else "%s") % utf8encode(_) for _ in password)
+    unistr = "".join(
+        ("%s\0" if ord(_) < 256 else "%s") %
+        utf8encode(_) for _ in password)
 
     retVal = "0100%s%s" % (salt, sha1(unistr + binsalt).hexdigest())
 
     return "0x%s" % (retVal.upper() if uppercase else retVal.lower())
+
 
 def mssql_old_passwd(password, salt, uppercase=True):  # prior to version '2005'
     """
@@ -171,11 +178,16 @@ def mssql_old_passwd(password, salt, uppercase=True):  # prior to version '2005'
     """
 
     binsalt = hexdecode(salt)
-    unistr = "".join(("%s\0" if ord(_) < 256 else "%s") % utf8encode(_) for _ in password)
+    unistr = "".join(
+        ("%s\0" if ord(_) < 256 else "%s") %
+        utf8encode(_) for _ in password)
 
-    retVal = "0100%s%s%s" % (salt, sha1(unistr + binsalt).hexdigest(), sha1(unistr.upper() + binsalt).hexdigest())
+    retVal = "0100%s%s%s" % (salt,
+                             sha1(unistr + binsalt).hexdigest(),
+                             sha1(unistr.upper() + binsalt).hexdigest())
 
     return "0x%s" % (retVal.upper() if uppercase else retVal.lower())
+
 
 def mssql_new_passwd(password, salt, uppercase=False):
     """
@@ -187,11 +199,14 @@ def mssql_new_passwd(password, salt, uppercase=False):
     """
 
     binsalt = hexdecode(salt)
-    unistr = "".join(("%s\0" if ord(_) < 256 else "%s") % utf8encode(_) for _ in password)
+    unistr = "".join(
+        ("%s\0" if ord(_) < 256 else "%s") %
+        utf8encode(_) for _ in password)
 
     retVal = "0200%s%s" % (salt, sha512(unistr + binsalt).hexdigest())
 
     return "0x%s" % (retVal.upper() if uppercase else retVal.lower())
+
 
 def oracle_passwd(password, salt, uppercase=True):
     """
@@ -206,9 +221,11 @@ def oracle_passwd(password, salt, uppercase=True):
 
     binsalt = hexdecode(salt)
 
-    retVal = "s:%s%s" % (sha1(utf8encode(password) + binsalt).hexdigest(), salt)
+    retVal = "s:%s%s" % (
+        sha1(utf8encode(password) + binsalt).hexdigest(), salt)
 
     return retVal.upper() if uppercase else retVal.lower()
+
 
 def oracle_old_passwd(password, username, uppercase=True):  # prior to version '11g'
     """
@@ -238,6 +255,7 @@ def oracle_old_passwd(password, username, uppercase=True):  # prior to version '
 
     return retVal.upper() if uppercase else retVal.lower()
 
+
 def md5_generic_passwd(password, uppercase=False):
     """
     >>> md5_generic_passwd(password='testpass', uppercase=False)
@@ -247,6 +265,7 @@ def md5_generic_passwd(password, uppercase=False):
     retVal = md5(password).hexdigest()
 
     return retVal.upper() if uppercase else retVal.lower()
+
 
 def sha1_generic_passwd(password, uppercase=False):
     """
@@ -258,6 +277,7 @@ def sha1_generic_passwd(password, uppercase=False):
 
     return retVal.upper() if uppercase else retVal.lower()
 
+
 def apache_sha1_passwd(password, **kwargs):
     """
     >>> apache_sha1_passwd(password='testpass')
@@ -265,6 +285,7 @@ def apache_sha1_passwd(password, **kwargs):
     """
 
     return "{SHA}%s" % base64.b64encode(sha1(password).digest())
+
 
 def ssha_passwd(password, salt, **kwargs):
     """
@@ -274,13 +295,16 @@ def ssha_passwd(password, salt, **kwargs):
 
     return "{SSHA}%s" % base64.b64encode(sha1(password + salt).digest() + salt)
 
+
 def ssha256_passwd(password, salt, **kwargs):
     """
     >>> ssha256_passwd(password='testpass', salt='salt')
     '{SSHA256}hhubsLrO/Aje9F/kJrgv5ZLE40UmTrVWvI7Dt6InP99zYWx0'
     """
 
-    return "{SSHA256}%s" % base64.b64encode(sha256(password + salt).digest() + salt)
+    return "{SSHA256}%s" % base64.b64encode(
+        sha256(password + salt).digest() + salt)
+
 
 def ssha512_passwd(password, salt, **kwargs):
     """
@@ -288,7 +312,9 @@ def ssha512_passwd(password, salt, **kwargs):
     '{SSHA512}mCUSLfPMhXCQOJl9WHW/QMn9v9sjq7Ht/Wk7iVau8vLOfh+PeynkGMikqIE8sStFd0khdfcCD8xZmC6UyjTxsHNhbHQ='
     """
 
-    return "{SSHA512}%s" % base64.b64encode(sha512(password + salt).digest() + salt)
+    return "{SSHA512}%s" % base64.b64encode(
+        sha512(password + salt).digest() + salt)
+
 
 def sha224_generic_passwd(password, uppercase=False):
     """
@@ -300,6 +326,7 @@ def sha224_generic_passwd(password, uppercase=False):
 
     return retVal.upper() if uppercase else retVal.lower()
 
+
 def sha256_generic_passwd(password, uppercase=False):
     """
     >>> sha256_generic_passwd(password='testpass', uppercase=False)
@@ -309,6 +336,7 @@ def sha256_generic_passwd(password, uppercase=False):
     retVal = sha256(password).hexdigest()
 
     return retVal.upper() if uppercase else retVal.lower()
+
 
 def sha384_generic_passwd(password, uppercase=False):
     """
@@ -320,6 +348,7 @@ def sha384_generic_passwd(password, uppercase=False):
 
     return retVal.upper() if uppercase else retVal.lower()
 
+
 def sha512_generic_passwd(password, uppercase=False):
     """
     >>> sha512_generic_passwd(password='testpass', uppercase=False)
@@ -329,6 +358,7 @@ def sha512_generic_passwd(password, uppercase=False):
     retVal = sha512(password).hexdigest()
 
     return retVal.upper() if uppercase else retVal.lower()
+
 
 def crypt_generic_passwd(password, salt, **kwargs):
     """
@@ -343,6 +373,7 @@ def crypt_generic_passwd(password, salt, **kwargs):
     """
 
     return crypt(password, salt)
+
 
 def unix_md5_passwd(password, salt, magic="$1$", **kwargs):
     """
@@ -370,7 +401,7 @@ def unix_md5_passwd(password, salt, magic="$1$", **kwargs):
     ctx = password + magic + salt
     final = md5(password + salt + password).digest()
 
-    for pl in xrange(len(password),0,-16):
+    for pl in xrange(len(password), 0, -16):
         if pl > 16:
             ctx = ctx + final[:16]
         else:
@@ -379,7 +410,7 @@ def unix_md5_passwd(password, salt, magic="$1$", **kwargs):
     i = len(password)
     while i:
         if i & 1:
-            ctx = ctx + chr(0)  #if ($i & 1) { $ctx->add(pack("C", 0)); }
+            ctx = ctx + chr(0)  # if ($i & 1) { $ctx->add(pack("C", 0)); }
         else:
             ctx = ctx + password[0]
         i = i >> 1
@@ -407,14 +438,20 @@ def unix_md5_passwd(password, salt, magic="$1$", **kwargs):
 
         final = md5(ctx1).digest()
 
-    hash_ = _encode64((int(ord(final[0])) << 16) | (int(ord(final[6])) << 8) | (int(ord(final[12]))),4)
-    hash_ = hash_ + _encode64((int(ord(final[1])) << 16) | (int(ord(final[7])) << 8) | (int(ord(final[13]))), 4)
-    hash_ = hash_ + _encode64((int(ord(final[2])) << 16) | (int(ord(final[8])) << 8) | (int(ord(final[14]))), 4)
-    hash_ = hash_ + _encode64((int(ord(final[3])) << 16) | (int(ord(final[9])) << 8) | (int(ord(final[15]))), 4)
-    hash_ = hash_ + _encode64((int(ord(final[4])) << 16) | (int(ord(final[10])) << 8) | (int(ord(final[5]))), 4)
+    hash_ = _encode64((int(ord(final[0])) << 16) | (
+        int(ord(final[6])) << 8) | (int(ord(final[12]))), 4)
+    hash_ = hash_ + _encode64((int(ord(final[1])) << 16) | (
+        int(ord(final[7])) << 8) | (int(ord(final[13]))), 4)
+    hash_ = hash_ + _encode64((int(ord(final[2])) << 16) | (
+        int(ord(final[8])) << 8) | (int(ord(final[14]))), 4)
+    hash_ = hash_ + _encode64((int(ord(final[3])) << 16) | (
+        int(ord(final[9])) << 8) | (int(ord(final[15]))), 4)
+    hash_ = hash_ + _encode64((int(ord(final[4])) << 16) | (
+        int(ord(final[10])) << 8) | (int(ord(final[5]))), 4)
     hash_ = hash_ + _encode64((int(ord(final[11]))), 2)
 
     return "%s%s$%s" % (magic, salt, hash_)
+
 
 def joomla_passwd(password, salt, **kwargs):
     """
@@ -426,6 +463,7 @@ def joomla_passwd(password, salt, **kwargs):
 
     return "%s:%s" % (md5("%s%s" % (password, salt)).hexdigest(), salt)
 
+
 def django_md5_passwd(password, salt, **kwargs):
     """
     Reference: https://github.com/jay0lee/GAM/blob/master/src/passlib/handlers/django.py
@@ -435,6 +473,7 @@ def django_md5_passwd(password, salt, **kwargs):
     """
 
     return "md5$%s$%s" % (salt, md5("%s%s" % (salt, password)).hexdigest())
+
 
 def django_sha1_passwd(password, salt, **kwargs):
     """
@@ -446,6 +485,7 @@ def django_sha1_passwd(password, salt, **kwargs):
 
     return "sha1$%s$%s" % (salt, sha1("%s%s" % (salt, password)).hexdigest())
 
+
 def vbulletin_passwd(password, salt, **kwargs):
     """
     Reference: https://stackoverflow.com/a/2202810
@@ -454,7 +494,9 @@ def vbulletin_passwd(password, salt, **kwargs):
     '85c4d8ea77ebef2236fb7e9d24ba9482:salt'
     """
 
-    return "%s:%s" % (md5("%s%s" % (md5(password).hexdigest(), salt)).hexdigest(), salt)
+    return "%s:%s" % (
+        md5("%s%s" % (md5(password).hexdigest(), salt)).hexdigest(), salt)
+
 
 def wordpress_passwd(password, salt, count, prefix, **kwargs):
     """
@@ -511,39 +553,41 @@ def wordpress_passwd(password, salt, count, prefix, **kwargs):
 
     return "%s%s" % (prefix, _encode64(hash_, 16))
 
+
 __functions__ = {
-                    HASH.MYSQL: mysql_passwd,
-                    HASH.MYSQL_OLD: mysql_old_passwd,
-                    HASH.POSTGRES: postgres_passwd,
-                    HASH.MSSQL: mssql_passwd,
-                    HASH.MSSQL_OLD: mssql_old_passwd,
-                    HASH.MSSQL_NEW: mssql_new_passwd,
-                    HASH.ORACLE: oracle_passwd,
-                    HASH.ORACLE_OLD: oracle_old_passwd,
-                    HASH.MD5_GENERIC: md5_generic_passwd,
-                    HASH.SHA1_GENERIC: sha1_generic_passwd,
-                    HASH.SHA224_GENERIC: sha224_generic_passwd,
-                    HASH.SHA256_GENERIC: sha256_generic_passwd,
-                    HASH.SHA384_GENERIC: sha384_generic_passwd,
-                    HASH.SHA512_GENERIC: sha512_generic_passwd,
-                    HASH.CRYPT_GENERIC: crypt_generic_passwd,
-                    HASH.JOOMLA: joomla_passwd,
-                    HASH.DJANGO_MD5: django_md5_passwd,
-                    HASH.DJANGO_SHA1: django_sha1_passwd,
-                    HASH.WORDPRESS: wordpress_passwd,
-                    HASH.APACHE_MD5_CRYPT: unix_md5_passwd,
-                    HASH.UNIX_MD5_CRYPT: unix_md5_passwd,
-                    HASH.APACHE_SHA1: apache_sha1_passwd,
-                    HASH.VBULLETIN: vbulletin_passwd,
-                    HASH.VBULLETIN_OLD: vbulletin_passwd,
-                    HASH.SSHA: ssha_passwd,
-                    HASH.SSHA256: ssha256_passwd,
-                    HASH.SSHA512: ssha512_passwd,
-                    HASH.MD5_BASE64: md5_generic_passwd,
-                    HASH.SHA1_BASE64: sha1_generic_passwd,
-                    HASH.SHA256_BASE64: sha256_generic_passwd,
-                    HASH.SHA512_BASE64: sha512_generic_passwd,
-                }
+    HASH.MYSQL: mysql_passwd,
+    HASH.MYSQL_OLD: mysql_old_passwd,
+    HASH.POSTGRES: postgres_passwd,
+    HASH.MSSQL: mssql_passwd,
+    HASH.MSSQL_OLD: mssql_old_passwd,
+    HASH.MSSQL_NEW: mssql_new_passwd,
+    HASH.ORACLE: oracle_passwd,
+    HASH.ORACLE_OLD: oracle_old_passwd,
+    HASH.MD5_GENERIC: md5_generic_passwd,
+    HASH.SHA1_GENERIC: sha1_generic_passwd,
+    HASH.SHA224_GENERIC: sha224_generic_passwd,
+    HASH.SHA256_GENERIC: sha256_generic_passwd,
+    HASH.SHA384_GENERIC: sha384_generic_passwd,
+    HASH.SHA512_GENERIC: sha512_generic_passwd,
+    HASH.CRYPT_GENERIC: crypt_generic_passwd,
+    HASH.JOOMLA: joomla_passwd,
+    HASH.DJANGO_MD5: django_md5_passwd,
+    HASH.DJANGO_SHA1: django_sha1_passwd,
+    HASH.WORDPRESS: wordpress_passwd,
+    HASH.APACHE_MD5_CRYPT: unix_md5_passwd,
+    HASH.UNIX_MD5_CRYPT: unix_md5_passwd,
+    HASH.APACHE_SHA1: apache_sha1_passwd,
+    HASH.VBULLETIN: vbulletin_passwd,
+    HASH.VBULLETIN_OLD: vbulletin_passwd,
+    HASH.SSHA: ssha_passwd,
+    HASH.SSHA256: ssha256_passwd,
+    HASH.SSHA512: ssha512_passwd,
+    HASH.MD5_BASE64: md5_generic_passwd,
+    HASH.SHA1_BASE64: sha1_generic_passwd,
+    HASH.SHA256_BASE64: sha256_generic_passwd,
+    HASH.SHA512_BASE64: sha512_generic_passwd,
+}
+
 
 def storeHashesToFile(attack_dict):
     if not attack_dict:
@@ -558,7 +602,8 @@ def storeHashesToFile(attack_dict):
     if not kb.storeHashesChoice:
         return
 
-    handle, filename = tempfile.mkstemp(prefix=MKSTEMP_PREFIX.HASHES, suffix=".txt")
+    handle, filename = tempfile.mkstemp(
+        prefix=MKSTEMP_PREFIX.HASHES, suffix=".txt")
     os.close(handle)
 
     infoMsg = "writing hashes to a temporary file '%s' " % filename
@@ -573,13 +618,15 @@ def storeHashesToFile(attack_dict):
                 if hash_ and hash_ != NULL and hashRecognition(hash_):
                     item = None
                     if user and not user.startswith(DUMMY_USER_PREFIX):
-                        item = "%s:%s\n" % (user.encode(UNICODE_ENCODING), hash_.encode(UNICODE_ENCODING))
+                        item = "%s:%s\n" % (user.encode(
+                            UNICODE_ENCODING), hash_.encode(UNICODE_ENCODING))
                     else:
                         item = "%s\n" % hash_.encode(UNICODE_ENCODING)
 
                     if item and item not in items:
                         f.write(item)
                         items.add(item)
+
 
 def attackCachedUsersPasswords():
     if kb.data.cachedUsersPasswords:
@@ -592,9 +639,12 @@ def attackCachedUsersPasswords():
         for user in kb.data.cachedUsersPasswords.keys():
             for i in xrange(len(kb.data.cachedUsersPasswords[user])):
                 if (kb.data.cachedUsersPasswords[user][i] or "").strip():
-                    value = kb.data.cachedUsersPasswords[user][i].lower().split()[0]
+                    value = kb.data.cachedUsersPasswords[user][i].lower().split()[
+                        0]
                     if value in lut:
-                        kb.data.cachedUsersPasswords[user][i] += "%s    clear-text password: %s" % ('\n' if kb.data.cachedUsersPasswords[user][i][-1] != '\n' else '', lut[value])
+                        kb.data.cachedUsersPasswords[user][i] += "%s    clear-text password: %s" % (
+                            '\n' if kb.data.cachedUsersPasswords[user][i][-1] != '\n' else '', lut[value])
+
 
 def attackDumpedTable():
     if kb.data.dumpedTable:
@@ -645,14 +695,17 @@ def attackDumpedTable():
                     col_passwords.add(column)
 
         if attack_dict:
-            infoMsg = "recognized possible password hashes in column%s " % ("s" if len(col_passwords) > 1 else "")
+            infoMsg = "recognized possible password hashes in column%s " % (
+                "s" if len(col_passwords) > 1 else "")
             infoMsg += "'%s'" % ", ".join(col for col in col_passwords)
             logger.info(infoMsg)
 
             storeHashesToFile(attack_dict)
 
-            message = "do you want to crack them via a dictionary-based attack? %s" % ("[y/N/q]" if conf.multipleTargets else "[Y/n/q]")
-            choice = readInput(message, default='N' if conf.multipleTargets else 'Y').upper()
+            message = "do you want to crack them via a dictionary-based attack? %s" % (
+                "[y/N/q]" if conf.multipleTargets else "[Y/n/q]")
+            choice = readInput(
+                message, default='N' if conf.multipleTargets else 'Y').upper()
 
             if choice == 'N':
                 return
@@ -671,12 +724,18 @@ def attackDumpedTable():
 
             for i in xrange(count):
                 for column in columns:
-                    if not (column == col_user or column == '__infos__' or len(table[column]['values']) <= i):
+                    if not (
+                        column == col_user or column == '__infos__' or len(
+                            table[column]['values']) <= i):
                         value = table[column]['values'][i]
 
                         if value and value.lower() in lut:
-                            table[column]['values'][i] = "%s (%s)" % (getUnicode(table[column]['values'][i]), getUnicode(lut[value.lower()]))
-                            table[column]['length'] = max(table[column]['length'], len(table[column]['values'][i]))
+                            table[column]['values'][i] = "%s (%s)" % (getUnicode(
+                                table[column]['values'][i]), getUnicode(lut[value.lower()]))
+                            table[column]['length'] = max(
+                                table[column]['length'], len(
+                                    table[column]['values'][i]))
+
 
 def hashRecognition(value):
     retVal = None
@@ -699,7 +758,17 @@ def hashRecognition(value):
 
     return retVal
 
-def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc_count, wordlists, custom_wordlist, api):
+
+def _bruteProcessVariantA(
+        attack_info,
+        hash_regex,
+        suffix,
+        retVal,
+        proc_id,
+        proc_count,
+        wordlists,
+        custom_wordlist,
+        api):
     if IS_WIN:
         coloramainit()
 
@@ -707,7 +776,14 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
     rotator = 0
     hashes = set([item[0][1] for item in attack_info])
 
-    wordlist = Wordlist(wordlists, proc_id, getattr(proc_count, "value", 0), custom_wordlist)
+    wordlist = Wordlist(
+        wordlists,
+        proc_id,
+        getattr(
+            proc_count,
+            "value",
+            0),
+        custom_wordlist)
 
     try:
         for word in wordlist:
@@ -721,7 +797,8 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
                 word = word + suffix
 
             try:
-                current = __functions__[hash_regex](password=word, uppercase=False)
+                current = __functions__[hash_regex](
+                    password=word, uppercase=False)
 
                 count += 1
 
@@ -734,7 +811,8 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
 
                             clearConsoleLine()
 
-                            infoMsg = "\r[%s] [INFO] cracked password '%s'" % (time.strftime("%X"), word)
+                            infoMsg = "\r[%s] [INFO] cracked password '%s'" % (
+                                time.strftime("%X"), word)
 
                             if user and not user.startswith(DUMMY_USER_PREFIX):
                                 infoMsg += " for user '%s'\n" % user
@@ -751,10 +829,13 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
                     if rotator >= len(ROTATING_CHARS):
                         rotator = 0
 
-                    status = 'current status: %s... %s' % (word.ljust(5)[:5], ROTATING_CHARS[rotator])
+                    status = 'current status: %s... %s' % (
+                        word.ljust(5)[:5], ROTATING_CHARS[rotator])
 
                     if not api:
-                        dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status))
+                        dataToStdout(
+                            "\r[%s] [INFO] %s" %
+                            (time.strftime("%X"), status))
 
             except KeyboardInterrupt:
                 raise
@@ -762,8 +843,9 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
             except (UnicodeEncodeError, UnicodeDecodeError):
                 pass  # ignore possible encoding problems caused by some words in custom dictionaries
 
-            except Exception, e:
-                warnMsg = "there was a problem while hashing entry: %s (%s). " % (repr(word), e)
+            except Exception as e:
+                warnMsg = "there was a problem while hashing entry: %s (%s). " % (
+                    repr(word), e)
                 warnMsg += "Please report by e-mail to '%s'" % DEV_EMAIL_ADDRESS
                 logger.critical(warnMsg)
 
@@ -775,21 +857,42 @@ def _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, proc_id, proc
             with proc_count.get_lock():
                 proc_count.value -= 1
 
-def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found, proc_id, proc_count, wordlists, custom_wordlist, api):
+
+def _bruteProcessVariantB(
+        user,
+        hash_,
+        kwargs,
+        hash_regex,
+        suffix,
+        retVal,
+        found,
+        proc_id,
+        proc_count,
+        wordlists,
+        custom_wordlist,
+        api):
     if IS_WIN:
         coloramainit()
 
     count = 0
     rotator = 0
 
-    wordlist = Wordlist(wordlists, proc_id, getattr(proc_count, "value", 0), custom_wordlist)
+    wordlist = Wordlist(
+        wordlists,
+        proc_id,
+        getattr(
+            proc_count,
+            "value",
+            0),
+        custom_wordlist)
 
     try:
         for word in wordlist:
             if found.value:
                 break
 
-            current = __functions__[hash_regex](password=word, uppercase=False, **kwargs)
+            current = __functions__[hash_regex](
+                password=word, uppercase=False, **kwargs)
             count += 1
 
             if not isinstance(word, basestring):
@@ -807,7 +910,8 @@ def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found
 
                     clearConsoleLine()
 
-                    infoMsg = "\r[%s] [INFO] cracked password '%s'" % (time.strftime("%X"), word)
+                    infoMsg = "\r[%s] [INFO] cracked password '%s'" % (
+                        time.strftime("%X"), word)
 
                     if user and not user.startswith(DUMMY_USER_PREFIX):
                         infoMsg += " for user '%s'\n" % user
@@ -822,13 +926,16 @@ def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found
                     rotator += 1
                     if rotator >= len(ROTATING_CHARS):
                         rotator = 0
-                    status = 'current status: %s... %s' % (word.ljust(5)[:5], ROTATING_CHARS[rotator])
+                    status = 'current status: %s... %s' % (
+                        word.ljust(5)[:5], ROTATING_CHARS[rotator])
 
                     if user and not user.startswith(DUMMY_USER_PREFIX):
                         status += ' (user: %s)' % user
 
                     if not api:
-                        dataToStdout("\r[%s] [INFO] %s" % (time.strftime("%X"), status))
+                        dataToStdout(
+                            "\r[%s] [INFO] %s" %
+                            (time.strftime("%X"), status))
 
             except KeyboardInterrupt:
                 raise
@@ -836,8 +943,9 @@ def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found
             except (UnicodeEncodeError, UnicodeDecodeError):
                 pass  # ignore possible encoding problems caused by some words in custom dictionaries
 
-            except Exception, e:
-                warnMsg = "there was a problem while hashing entry: %s (%s). " % (repr(word), e)
+            except Exception as e:
+                warnMsg = "there was a problem while hashing entry: %s (%s). " % (
+                    repr(word), e)
                 warnMsg += "Please report by e-mail to '%s'" % DEV_EMAIL_ADDRESS
                 logger.critical(warnMsg)
 
@@ -848,6 +956,7 @@ def _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found
         if hasattr(proc_count, "value"):
             with proc_count.get_lock():
                 proc_count.value -= 1
+
 
 def dictionaryAttack(attack_dict):
     suffix_list = [""]
@@ -869,7 +978,8 @@ def dictionaryAttack(attack_dict):
 
             if regex and regex not in hash_regexes:
                 hash_regexes.append(regex)
-                infoMsg = "using hash method '%s'" % __functions__[regex].func_name
+                infoMsg = "using hash method '%s'" % __functions__[
+                    regex].func_name
                 logger.info(infoMsg)
 
     for hash_regex in hash_regexes:
@@ -888,19 +998,50 @@ def dictionaryAttack(attack_dict):
                     try:
                         item = None
 
-                        if hash_regex not in (HASH.CRYPT_GENERIC, HASH.JOOMLA, HASH.WORDPRESS, HASH.UNIX_MD5_CRYPT, HASH.APACHE_MD5_CRYPT, HASH.APACHE_SHA1, HASH.VBULLETIN, HASH.VBULLETIN_OLD, HASH.SSHA, HASH.SSHA256, HASH.SSHA512, HASH.DJANGO_MD5, HASH.DJANGO_SHA1, HASH.MD5_BASE64, HASH.SHA1_BASE64, HASH.SHA256_BASE64, HASH.SHA512_BASE64):
+                        if hash_regex not in (
+                                HASH.CRYPT_GENERIC,
+                                HASH.JOOMLA,
+                                HASH.WORDPRESS,
+                                HASH.UNIX_MD5_CRYPT,
+                                HASH.APACHE_MD5_CRYPT,
+                                HASH.APACHE_SHA1,
+                                HASH.VBULLETIN,
+                                HASH.VBULLETIN_OLD,
+                                HASH.SSHA,
+                                HASH.SSHA256,
+                                HASH.SSHA512,
+                                HASH.DJANGO_MD5,
+                                HASH.DJANGO_SHA1,
+                                HASH.MD5_BASE64,
+                                HASH.SHA1_BASE64,
+                                HASH.SHA256_BASE64,
+                                HASH.SHA512_BASE64):
                             hash_ = hash_.lower()
 
-                        if hash_regex in (HASH.MD5_BASE64, HASH.SHA1_BASE64, HASH.SHA256_BASE64, HASH.SHA512_BASE64):
-                            item = [(user, hash_.decode("base64").encode("hex")), {}]
+                        if hash_regex in (
+                                HASH.MD5_BASE64,
+                                HASH.SHA1_BASE64,
+                                HASH.SHA256_BASE64,
+                                HASH.SHA512_BASE64):
+                            item = [
+                                (user, hash_.decode("base64").encode("hex")), {}]
                         elif hash_regex in (HASH.MYSQL, HASH.MYSQL_OLD, HASH.MD5_GENERIC, HASH.SHA1_GENERIC, HASH.APACHE_SHA1):
                             item = [(user, hash_), {}]
                         elif hash_regex in (HASH.SSHA,):
-                            item = [(user, hash_), {"salt": hash_.decode("base64")[20:]}]
+                            item = [
+                                (user, hash_), {
+                                    "salt": hash_.decode("base64")[
+                                        20:]}]
                         elif hash_regex in (HASH.SSHA256,):
-                            item = [(user, hash_), {"salt": hash_.decode("base64")[32:]}]
+                            item = [
+                                (user, hash_), {
+                                    "salt": hash_.decode("base64")[
+                                        32:]}]
                         elif hash_regex in (HASH.SSHA512,):
-                            item = [(user, hash_), {"salt": hash_.decode("base64")[64:]}]
+                            item = [
+                                (user, hash_), {
+                                    "salt": hash_.decode("base64")[
+                                        64:]}]
                         elif hash_regex in (HASH.ORACLE_OLD, HASH.POSTGRES):
                             item = [(user, hash_), {'username': user}]
                         elif hash_regex in (HASH.ORACLE,):
@@ -910,14 +1051,25 @@ def dictionaryAttack(attack_dict):
                         elif hash_regex in (HASH.CRYPT_GENERIC,):
                             item = [(user, hash_), {"salt": hash_[0:2]}]
                         elif hash_regex in (HASH.UNIX_MD5_CRYPT, HASH.APACHE_MD5_CRYPT):
-                            item = [(user, hash_), {"salt": hash_.split('$')[2], "magic": "$%s$" % hash_.split('$')[1]}]
+                            item = [
+                                (user, hash_), {
+                                    "salt": hash_.split('$')[2], "magic": "$%s$" %
+                                    hash_.split('$')[1]}]
                         elif hash_regex in (HASH.JOOMLA, HASH.VBULLETIN, HASH.VBULLETIN_OLD):
-                            item = [(user, hash_), {"salt": hash_.split(':')[-1]}]
+                            item = [(user, hash_), {
+                                "salt": hash_.split(':')[-1]}]
                         elif hash_regex in (HASH.DJANGO_MD5, HASH.DJANGO_SHA1):
-                            item = [(user, hash_), {"salt": hash_.split('$')[1]}]
+                            item = [
+                                (user, hash_), {
+                                    "salt": hash_.split('$')[1]}]
                         elif hash_regex in (HASH.WORDPRESS,):
                             if ITOA64.index(hash_[3]) < 32:
-                                item = [(user, hash_), {"salt": hash_[4:12], "count": 1 << ITOA64.index(hash_[3]), "prefix": hash_[:12]}]
+                                item = [
+                                    (user, hash_), {
+                                        "salt": hash_[
+                                            4:12], "count": 1 << ITOA64.index(
+                                            hash_[3]), "prefix": hash_[
+                                            :12]}]
                             else:
                                 warnMsg = "invalid hash '%s'" % hash_
                                 logger.warn(warnMsg)
@@ -928,8 +1080,10 @@ def dictionaryAttack(attack_dict):
                                 attack_info.append(item)
                                 user_hash.append(item[0])
                             else:
-                                infoMsg = "resuming password '%s' for hash '%s'" % (resumed, hash_)
-                                if user and not user.startswith(DUMMY_USER_PREFIX):
+                                infoMsg = "resuming password '%s' for hash '%s'" % (
+                                    resumed, hash_)
+                                if user and not user.startswith(
+                                        DUMMY_USER_PREFIX):
                                     infoMsg += " for user '%s'" % user
                                 logger.info(infoMsg)
                                 resumes.append((user, hash_, resumed))
@@ -987,7 +1141,7 @@ def dictionaryAttack(attack_dict):
 
                     kb.wordlists = dictPaths
 
-                except Exception, ex:
+                except Exception as ex:
                     warnMsg = "there was a problem while loading dictionaries"
                     warnMsg += " ('%s')" % getSafeExString(ex)
                     logger.critical(warnMsg)
@@ -997,7 +1151,8 @@ def dictionaryAttack(attack_dict):
             if readInput(message, default='N', boolean=True):
                 suffix_list += COMMON_PASSWORD_SUFFIXES
 
-        infoMsg = "starting dictionary-based cracking (%s)" % __functions__[hash_regex].func_name
+        infoMsg = "starting dictionary-based cracking (%s)" % __functions__[
+            hash_regex].func_name
         logger.info(infoMsg)
 
         for item in attack_info:
@@ -1006,7 +1161,18 @@ def dictionaryAttack(attack_dict):
                 custom_wordlist.append(normalizeUnicode(user))
 
         # Algorithms without extra arguments (e.g. salt and/or username)
-        if hash_regex in (HASH.MYSQL, HASH.MYSQL_OLD, HASH.MD5_GENERIC, HASH.SHA1_GENERIC, HASH.SHA224_GENERIC, HASH.SHA256_GENERIC, HASH.SHA384_GENERIC, HASH.SHA512_GENERIC, HASH.APACHE_SHA1, HASH.VBULLETIN, HASH.VBULLETIN_OLD):
+        if hash_regex in (
+                HASH.MYSQL,
+                HASH.MYSQL_OLD,
+                HASH.MD5_GENERIC,
+                HASH.SHA1_GENERIC,
+                HASH.SHA224_GENERIC,
+                HASH.SHA256_GENERIC,
+                HASH.SHA384_GENERIC,
+                HASH.SHA512_GENERIC,
+                HASH.APACHE_SHA1,
+                HASH.VBULLETIN,
+                HASH.VBULLETIN_OLD):
             for suffix in suffix_list:
                 if not attack_info or processException:
                     break
@@ -1028,10 +1194,22 @@ def dictionaryAttack(attack_dict):
                         gc.disable()
 
                         retVal = _multiprocessing.Queue()
-                        count = _multiprocessing.Value('i', _multiprocessing.cpu_count())
+                        count = _multiprocessing.Value(
+                            'i', _multiprocessing.cpu_count())
 
                         for i in xrange(_multiprocessing.cpu_count()):
-                            process = _multiprocessing.Process(target=_bruteProcessVariantA, args=(attack_info, hash_regex, suffix, retVal, i, count, kb.wordlists, custom_wordlist, conf.api))
+                            process = _multiprocessing.Process(
+                                target=_bruteProcessVariantA,
+                                args=(
+                                    attack_info,
+                                    hash_regex,
+                                    suffix,
+                                    retVal,
+                                    i,
+                                    count,
+                                    kb.wordlists,
+                                    custom_wordlist,
+                                    conf.api))
                             processes.append(process)
 
                         for process in processes:
@@ -1047,7 +1225,16 @@ def dictionaryAttack(attack_dict):
                         singleTimeWarnMessage(warnMsg)
 
                         retVal = Queue()
-                        _bruteProcessVariantA(attack_info, hash_regex, suffix, retVal, 0, 1, kb.wordlists, custom_wordlist, conf.api)
+                        _bruteProcessVariantA(
+                            attack_info,
+                            hash_regex,
+                            suffix,
+                            retVal,
+                            0,
+                            1,
+                            kb.wordlists,
+                            custom_wordlist,
+                            conf.api)
 
                 except KeyboardInterrupt:
                     print
@@ -1071,7 +1258,8 @@ def dictionaryAttack(attack_dict):
 
                         while not retVal.empty():
                             user, hash_, word = item = retVal.get(block=False)
-                            attack_info = filter(lambda _: _[0][0] != user or _[0][1] != hash_, attack_info)
+                            attack_info = filter(
+                                lambda _: _[0][0] != user or _[0][1] != hash_, attack_info)
                             hashDBWrite(hash_, word)
                             results.append(item)
 
@@ -1112,10 +1300,25 @@ def dictionaryAttack(attack_dict):
 
                             retVal = _multiprocessing.Queue()
                             found_ = _multiprocessing.Value('i', False)
-                            count = _multiprocessing.Value('i', _multiprocessing.cpu_count())
+                            count = _multiprocessing.Value(
+                                'i', _multiprocessing.cpu_count())
 
                             for i in xrange(_multiprocessing.cpu_count()):
-                                process = _multiprocessing.Process(target=_bruteProcessVariantB, args=(user, hash_, kwargs, hash_regex, suffix, retVal, found_, i, count, kb.wordlists, custom_wordlist, conf.api))
+                                process = _multiprocessing.Process(
+                                    target=_bruteProcessVariantB,
+                                    args=(
+                                        user,
+                                        hash_,
+                                        kwargs,
+                                        hash_regex,
+                                        suffix,
+                                        retVal,
+                                        found_,
+                                        i,
+                                        count,
+                                        kb.wordlists,
+                                        custom_wordlist,
+                                        conf.api))
                                 processes.append(process)
 
                             for process in processes:
@@ -1139,7 +1342,19 @@ def dictionaryAttack(attack_dict):
                             found_ = Value()
                             found_.value = False
 
-                            _bruteProcessVariantB(user, hash_, kwargs, hash_regex, suffix, retVal, found_, 0, 1, kb.wordlists, custom_wordlist, conf.api)
+                            _bruteProcessVariantB(
+                                user,
+                                hash_,
+                                kwargs,
+                                hash_regex,
+                                suffix,
+                                retVal,
+                                found_,
+                                0,
+                                1,
+                                kb.wordlists,
+                                custom_wordlist,
+                                conf.api)
 
                             found = found_.value
 
@@ -1164,7 +1379,8 @@ def dictionaryAttack(attack_dict):
                             conf.hashDB.beginTransaction()
 
                             while not retVal.empty():
-                                user, hash_, word = item = retVal.get(block=False)
+                                user, hash_, word = item = retVal.get(
+                                    block=False)
                                 hashDBWrite(hash_, word)
                                 results.append(item)
 

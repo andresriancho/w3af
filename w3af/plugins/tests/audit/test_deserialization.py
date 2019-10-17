@@ -54,13 +54,13 @@ class TestDeserializePickle(PluginTest):
 
             try:
                 message = base64.b64decode(b64message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
             try:
                 cPickle.loads(message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
@@ -94,7 +94,7 @@ class TestDeserializePickleNotBase64(PluginTest):
 
             try:
                 cPickle.loads(message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
@@ -128,13 +128,13 @@ class TestShouldInjectIsCalled(PluginTest):
 
             try:
                 message = base64.b64decode(b64message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
             try:
                 cPickle.loads(message)
-            except Exception, e:
+            except Exception as e:
                 body = str(e)
                 return self.status, response_headers, body
 
@@ -218,8 +218,10 @@ class TestShouldInject(unittest.TestCase):
 
     def test_should_inject_form_hidden(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("type", "text")])
-        form_params.add_field_by_attr_items([("name", "csrf_token"), ("type", "hidden")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("type", "text")])
+        form_params.add_field_by_attr_items(
+            [("name", "csrf_token"), ("type", "hidden")])
 
         form = URLEncodedForm(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/'),
@@ -292,7 +294,8 @@ class TestJSONPayloadIsValid(unittest.TestCase):
                         for offset in data[str(delay_len)]['offsets']:
                             self.assertIsInstance(offset, int, file_name)
 
-                            payload = base64.b64decode(data[str(delay_len)]['payload'])
+                            payload = base64.b64decode(
+                                data[str(delay_len)]['payload'])
                             self.assertGreater(len(payload), offset, file_name)
 
                     loaded_payloads += 1
@@ -339,7 +342,7 @@ class TestExactDelay(unittest.TestCase):
                     try:
                         payload_1 = ed.get_string_for_delay(1)
                         payload_22 = ed.get_string_for_delay(22)
-                    except Exception, e:
+                    except Exception as e:
                         msg = 'Raised exception "%s" on "%s"'
                         args = (e, file_name)
                         self.assertTrue(False, msg % args)
@@ -347,5 +350,7 @@ class TestExactDelay(unittest.TestCase):
                     #file('1', 'w').write(base64.b64decode(payload['1']['payload']))
                     #file('2', 'w').write(base64.b64decode(payload_1))
 
-                    self.assertEqual(payload['1']['payload'], payload_1, file_name)
-                    self.assertEqual(payload['2']['payload'], payload_22, file_name)
+                    self.assertEqual(
+                        payload['1']['payload'], payload_1, file_name)
+                    self.assertEqual(
+                        payload['2']['payload'], payload_22, file_name)

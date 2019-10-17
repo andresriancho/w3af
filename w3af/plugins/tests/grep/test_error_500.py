@@ -23,6 +23,7 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
+
 @attr('ci_ready')
 class TestError500(PluginTest):
 

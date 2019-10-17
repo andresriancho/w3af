@@ -101,9 +101,11 @@ class TestCreditCards(unittest.TestCase):
     def test_find_credit_card_performance_true(self):
         credit_card = '3566 0020 2036 0505'
 
-        html_file = os.path.join(ROOT_PATH, 'plugins/tests/grep/data/test-3.html')
+        html_file = os.path.join(
+            ROOT_PATH, 'plugins/tests/grep/data/test-3.html')
         html = file(html_file).read()
-        html = html[:len(html) / 2] + ' ' + credit_card + ' ' + html[len(html) / 2:]
+        html = html[:len(html) / 2] + ' ' + credit_card + \
+            ' ' + html[len(html) / 2:]
 
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])

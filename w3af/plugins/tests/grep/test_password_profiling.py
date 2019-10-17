@@ -47,12 +47,12 @@ class TestPasswordProfiling(PluginTest):
     def test_collected_passwords(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         def sortfunc(x_obj, y_obj):
             return cmp(x_obj[1], y_obj[1])
 
         # pylint: disable=E1103
-        # Pylint fails to detect the object types that come out of the KB            
+        # Pylint fails to detect the object types that come out of the KB
         collected_passwords = self.kb.raw_read('password_profiling',
                                                'password_profiling')
 
@@ -66,33 +66,32 @@ class TestPasswordProfiling(PluginTest):
 
     def test_merge_password_profiling(self):
         pp = password_profiling()
-        
+
         old_data = {'foobar': 1, 'spameggs': 2}
         data = {'charlotte': 3, 'and': 55, 'spameggs': 1}
         lang = 'en'
-        
+
         url = URL('http://moth/')
         request = FuzzableRequest(url)
-        
+
         merged_map = pp.merge_maps(old_data, data, request, lang)
-        
+
         self.assertEqual(merged_map, {'foobar': 1,
                                       'spameggs': 3,
                                       'charlotte': 3})
 
     def test_merge_password_profiling_unknown_lang(self):
         pp = password_profiling()
-        
+
         old_data = {'foobar': 1, 'spameggs': 2}
         data = {'charlotte': 3, 'and': 55, 'spameggs': 1}
         lang = 'hu'
-        
+
         url = URL('http://moth/')
         request = FuzzableRequest(url)
-        
+
         merged_map = pp.merge_maps(old_data, data, request, lang)
-        
+
         self.assertEqual(merged_map, {'foobar': 1,
                                       'spameggs': 3,
                                       'charlotte': 3})
-

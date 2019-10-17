@@ -30,6 +30,7 @@ from lib.core.settings import MAX_INT
 from lib.core.unescaper import unescaper
 from lib.request import inject
 
+
 def pivotDumpTable(table, colList, count=None, blind=True):
     lengths = {}
     entries = {}
@@ -42,13 +43,23 @@ def pivotDumpTable(table, colList, count=None, blind=True):
     if count is None:
         query = dumpNode.count % table
         query = agent.whereQuery(query)
-        count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS) if blind else inject.getValue(query, blind=False, time=False, expected=EXPECTED.INT)
+        count = inject.getValue(
+            query,
+            union=False,
+            error=False,
+            expected=EXPECTED.INT,
+            charsetType=CHARSET_TYPE.DIGITS) if blind else inject.getValue(
+            query,
+            blind=False,
+            time=False,
+            expected=EXPECTED.INT)
 
     if isinstance(count, basestring) and count.isdigit():
         count = int(count)
 
     if count == 0:
-        infoMsg = "table '%s' appears to be empty" % unsafeSQLIdentificatorNaming(table)
+        infoMsg = "table '%s' appears to be empty" % unsafeSQLIdentificatorNaming(
+            table)
         logger.info(infoMsg)
 
         for column in colList:
@@ -64,7 +75,11 @@ def pivotDumpTable(table, colList, count=None, blind=True):
         lengths[column] = 0
         entries[column] = BigArray()
 
-    colList = filter(None, sorted(colList, key=lambda x: len(x) if x else MAX_INT))
+    colList = filter(
+        None,
+        sorted(
+            colList,
+            key=lambda x: len(x) if x else MAX_INT))
 
     if conf.pivotColumn:
         for _ in colList:
@@ -92,7 +107,13 @@ def pivotDumpTable(table, colList, count=None, blind=True):
 
             query = dumpNode.count2 % (column, table)
             query = agent.whereQuery(query)
-            value = inject.getValue(query, blind=blind, union=not blind, error=not blind, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+            value = inject.getValue(
+                query,
+                blind=blind,
+                union=not blind,
+                error=not blind,
+                expected=EXPECTED.INT,
+                charsetType=CHARSET_TYPE.DIGITS)
 
             if isNumPosStrValue(value):
                 validColumnList = True
@@ -121,12 +142,40 @@ def pivotDumpTable(table, colList, count=None, blind=True):
 
     def _(column, pivotValue):
         if column == colList[0]:
-            query = dumpNode.query.replace("'%s'", "%s") % (agent.preprocessField(table, column), table, agent.preprocessField(table, column), unescaper.escape(pivotValue, False))
+            query = dumpNode.query.replace(
+                "'%s'",
+                "%s") % (agent.preprocessField(
+                    table,
+                    column),
+                table,
+                agent.preprocessField(
+                    table,
+                    column),
+                unescaper.escape(
+                    pivotValue,
+                    False))
         else:
-            query = dumpNode.query2.replace("'%s'", "%s") % (agent.preprocessField(table, column), table, agent.preprocessField(table, colList[0]), unescaper.escape(pivotValue, False))
+            query = dumpNode.query2.replace(
+                "'%s'",
+                "%s") % (agent.preprocessField(
+                    table,
+                    column),
+                table,
+                agent.preprocessField(
+                    table,
+                    colList[0]),
+                unescaper.escape(
+                    pivotValue,
+                    False))
 
         query = agent.whereQuery(query)
-        return unArrayizeValue(inject.getValue(query, blind=blind, time=blind, union=not blind, error=not blind))
+        return unArrayizeValue(
+            inject.getValue(
+                query,
+                blind=blind,
+                time=blind,
+                union=not blind,
+                error=not blind))
 
     try:
         for i in xrange(count):
@@ -138,7 +187,8 @@ def pivotDumpTable(table, colList, count=None, blind=True):
                 if column == colList[0]:
                     if isNoneValue(value):
                         try:
-                            for pivotValue in filter(None, ("  " if pivotValue == " " else None, "%s%s" % (pivotValue[0], unichr(ord(pivotValue[1]) + 1)) if len(pivotValue) > 1 else None, unichr(ord(pivotValue[0]) + 1))):
+                            for pivotValue in filter(None, ("  " if pivotValue == " " else None, "%s%s" % (pivotValue[0], unichr(
+                                    ord(pivotValue[1]) + 1)) if len(pivotValue) > 1 else None, unichr(ord(pivotValue[0]) + 1))):
                                 value = _(column, pivotValue)
                                 if not isNoneValue(value):
                                     break
@@ -162,7 +212,10 @@ def pivotDumpTable(table, colList, count=None, blind=True):
 
                 value = "" if isNoneValue(value) else unArrayizeValue(value)
 
-                lengths[column] = max(lengths[column], len(DUMP_REPLACEMENTS.get(getUnicode(value), getUnicode(value))))
+                lengths[column] = max(
+                    lengths[column], len(
+                        DUMP_REPLACEMENTS.get(
+                            getUnicode(value), getUnicode(value))))
                 entries[column].append(value)
 
     except KeyboardInterrupt:
@@ -172,7 +225,7 @@ def pivotDumpTable(table, colList, count=None, blind=True):
         warnMsg += "will display partial output"
         logger.warn(warnMsg)
 
-    except SqlmapConnectionException, e:
+    except SqlmapConnectionException as e:
         errMsg = "connection exception detected. sqlmap "
         errMsg += "will display partial output"
         errMsg += "'%s'" % e
