@@ -89,4 +89,3 @@ class JavaScriptParser(BaseParser):
     get_references_of_tag = get_forms = BaseParser._return_empty_list
     get_comments = BaseParser._return_empty_list
     get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
-

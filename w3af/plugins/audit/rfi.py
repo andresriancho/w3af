@@ -53,11 +53,12 @@ class rfi(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    CONFIG_ERROR_MSG = ('audit.rfi plugin needs to be correctly configured to' 
-                        ' use. Please set valid values for local address (eg.' 
-                        ' 10.5.2.5) and port (eg. 44449), or use the official' 
-                        ' w3af site as the target server for remote inclusions.'
-                        ' The configuration error is: "%s"')
+    CONFIG_ERROR_MSG = (
+        'audit.rfi plugin needs to be correctly configured to'
+        ' use. Please set valid values for local address (eg.'
+        ' 10.5.2.5) and port (eg. 44449), or use the official'
+        ' w3af site as the target server for remote inclusions.'
+        ' The configuration error is: "%s"')
 
     RFI_TEST_URL = 'http://w3af.org/rfi.html'
 
@@ -103,10 +104,10 @@ class rfi(AuditPlugin):
             self._error_reported = True
             om.out.error(self.CONFIG_ERROR_MSG % config_message)
             return
-        
+
         # 2- create a request that will include a file from a local web server
         self._local_test_inclusion(freq, orig_response, debugging_id)
-        
+
         # Now that we've captured all vulnerabilities, report the ones with
         # higher risk
         self._report_vulns()
@@ -115,22 +116,22 @@ class rfi(AuditPlugin):
         """
         There was a problem with threads and self.kb_append_uniq which in some
         cases was hiding a high risk vulnerability. The issue was like this:
-            
+
             * _analyze_result was called with response that contained PHP error
-            
+
             * LOW risk vulnerability was kb_append_uniq'ed
-            
+
             * _analyze_result was called with response that contained execution
-              result after successful RFI, vulnerability was detected and 
+              result after successful RFI, vulnerability was detected and
               kb_append_uniq was called; but the vulnerability wasn't added to
               the KB since the LOW risk vulnerability was already there for the
               same (URL, param) tuple.
-        
+
         So now we store stuff in self._vulns analyze them after all vulns are
         found and store the ones with highest risk.
         """
         sorted_vulns = {}
-        
+
         for v in self._vulns:
             data_tuple = (v.get_url(), v.get_token_name())
 
@@ -138,19 +139,19 @@ class rfi(AuditPlugin):
                 sorted_vulns[data_tuple].append(v)
             else:
                 sorted_vulns[data_tuple] = [v]
-        
+
         # FIXME: This should be done somewhere else
         rank = {severity.INFORMATION: 0,
                 severity.LOW: 1,
                 severity.MEDIUM: 2,
                 severity.HIGH: 3}
-        
+
         # Get the one with the higher severity and report that one
         for _, vulns_for_url_var in sorted_vulns.iteritems():
-            
+
             highest_severity = -1
             highest_severity_vuln = None
-            
+
             for vuln in vulns_for_url_var:
 
                 this_vuln_severity = rank.get(vuln.get_severity())
@@ -182,7 +183,7 @@ class rfi(AuditPlugin):
                 bind_args = (listen_address, listen_port)
                 try:
                     s.bind(bind_args)
-                except socket.error, se:
+                except socket.error as se:
                     msg = 'Failed to bind to address %s:%s, error: %s'
                     fmt_args = list(bind_args)
                     fmt_args.append(se)
@@ -215,11 +216,11 @@ class rfi(AuditPlugin):
         is_target_priv = is_private_site(freq.get_url().get_domain())
 
         if (is_listen_priv and is_target_priv) or \
-        not (is_listen_priv or is_target_priv):
-            
-            msg = 'RFI using local web server for URL: %s' % freq.get_url() 
+                not (is_listen_priv or is_target_priv):
+
+            msg = 'RFI using local web server for URL: %s' % freq.get_url()
             om.out.debug(msg)
-            
+
             try:
                 # Create file for remote inclusion
                 php_jsp_code, rfi_data = self._create_file()
@@ -245,19 +246,21 @@ class rfi(AuditPlugin):
                                           RFIWebHandler)
 
                 # Perform the real work
-                self._test_inclusion(freq, rfi_data, orig_response, debugging_id)
-            except socket.error, se:
+                self._test_inclusion(
+                    freq, rfi_data, orig_response, debugging_id)
+            except socket.error as se:
                 errorcode = se[0]
                 if errorcode == errno.EADDRINUSE:
                     # We can't use this address because it is already in use
                     self._listen_address = None
 
                     # Let the user know
-                    msg = ('Failed to bind to the provided listen address in the audit.'
-                           'rfi plugin. The address is already in use by another process.')
+                    msg = (
+                        'Failed to bind to the provided listen address in the audit.'
+                        'rfi plugin. The address is already in use by another process.')
                     om.out.error(msg)
 
-            except Exception, e:
+            except Exception as e:
                 msg = 'An error occurred while running local web server for' \
                       ' the remote file inclusion (rfi) plugin: "%s"'
                 om.out.error(msg % e)
@@ -331,7 +334,7 @@ class rfi(AuditPlugin):
         if rfi_data.rfi_result in response:
             desc = 'A remote file inclusion vulnerability that allows remote' \
                    ' code execution was found at: %s' % mutant.found_at()
-            
+
             v = Vuln.from_mutant('Remote code execution', desc,
                                  severity.HIGH, response.id, self.get_name(),
                                  mutant)
@@ -339,13 +342,13 @@ class rfi(AuditPlugin):
             self._vulns.append(v)
 
         elif rfi_data.rfi_result_part_1 in response \
-        and rfi_data.rfi_result_part_2 in response:
+                and rfi_data.rfi_result_part_2 in response:
             # This means that both parts ARE in the response body but the
             # rfi_data.rfi_result is NOT in it. In other words, the remote
             # content was embedded but not executed
             desc = 'A remote file inclusion vulnerability without code' \
                    ' execution was found at: %s' % mutant.found_at()
-            
+
             v = Vuln.from_mutant('Remote file inclusion', desc,
                                  severity.MEDIUM, response.id, self.get_name(),
                                  mutant)
@@ -358,11 +361,11 @@ class rfi(AuditPlugin):
             #   with some "configuration problems"
             #
             for error in self.RFI_ERRORS:
-                if error in response and not error in mutant.get_original_response_body():
+                if error in response and error not in mutant.get_original_response_body():
                     desc = 'A potential remote file inclusion vulnerability' \
                            ' was identified by the means of application error' \
                            ' messages at: %s' % mutant.found_at()
-                    
+
                     v = Vuln.from_mutant('Potential remote file inclusion',
                                          desc, severity.LOW, response.id,
                                          self.get_name(), mutant)
@@ -423,7 +426,12 @@ class rfi(AuditPlugin):
         h = 'w3af runs a webserver to serve the files to the target web'\
             ' application when doing remote file inclusions. This setting'\
             ' configures where the webserver is going to listen for requests.'
-        o = opt_factory('listen_address', self._listen_address, d, STRING, help=h)
+        o = opt_factory(
+            'listen_address',
+            self._listen_address,
+            d,
+            STRING,
+            help=h)
         ol.add(o)
 
         d = 'TCP port that the webserver will use to receive requests'
@@ -454,7 +462,9 @@ class rfi(AuditPlugin):
         config_ok, config_message = self._correctly_configured()
 
         if not config_ok and not self._use_w3af_site:
-            raise BaseFrameworkException(self.CONFIG_ERROR_MSG % config_message)
+            raise BaseFrameworkException(
+                self.CONFIG_ERROR_MSG %
+                config_message)
 
     def get_long_desc(self):
         """
@@ -491,7 +501,7 @@ class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             self.wfile.write(self.RESPONSE_BODY)
-        except Exception, e:
+        except Exception as e:
             om.out.debug('[RFIWebHandler] Exception: "%s".' % e)
         finally:
             # Clean up
@@ -513,7 +523,12 @@ class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 
 class RFIData(object):
-    def __init__(self, rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result):
+    def __init__(
+            self,
+            rfi_url,
+            rfi_result_part_1,
+            rfi_result_part_2,
+            rfi_result):
         self.rfi_url = rfi_url
         self.rfi_result_part_1 = rfi_result_part_1
         self.rfi_result_part_2 = rfi_result_part_2

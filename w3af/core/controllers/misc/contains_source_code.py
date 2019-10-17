@@ -84,7 +84,9 @@ SOURCE_CODE = (
     ('(^|\W)def .*?\(.*?\):(\n|\r)', {PYTHON}),
 
     # Ruby
-    ('(^|\W)class \w{1,60}\s*<?\s*[a-zA-Z0-9_:]{0,90}.*?\W(def|validates)\s.*?\send($|\W)', {RUBY}),
+    (
+        '(^|\W)class \w{1,60}\s*<?\s*[a-zA-Z0-9_:]{0,90}.*?\W(def|validates)\s.*?\send($|\W)',
+        {RUBY}),
 )
 
 BLACKLIST = {'xml', 'xpacket'}

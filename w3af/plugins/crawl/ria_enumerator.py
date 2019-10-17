@@ -131,7 +131,8 @@ class ria_enumerator(CrawlPlugin):
         fr = FuzzableRequest.from_http_response(response)
         self.output_queue.put(fr)
 
-    def _analyze_crossdomain_clientaccesspolicy(self, url, response, file_name):
+    def _analyze_crossdomain_clientaccesspolicy(
+            self, url, response, file_name):
 
         # https://github.com/andresriancho/w3af/issues/14491
         if file_name not in self.FILE_TAG_ATTR:
@@ -143,8 +144,8 @@ class ria_enumerator(CrawlPlugin):
             # Report this, it may be interesting for the final user
             # not a vulnerability per-se... but... it's information after all
             if 'allow-access-from' in response.get_body() or \
-            'cross-domain-policy' in response.get_body() or \
-            'cross-domain-access' in response.get_body():
+                'cross-domain-policy' in response.get_body() or \
+                    'cross-domain-access' in response.get_body():
 
                 desc = 'The "%s" file at: "%s" is not a valid XML.'
                 desc %= (file_name, response.get_url())

@@ -29,6 +29,7 @@ class backspace_between_dots(EvasionPlugin):
 
     :author: Jose Ramon Palanco( jose.palanco@hazent.com )
     """
+
     def modify_request(self, request):
         """
         Mangles the request

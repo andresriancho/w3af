@@ -1,19 +1,19 @@
 """
 rfd.py
- 
+
 Copyright 2006 Andres Riancho
- 
+
 This file is part of w3af, http://w3af.org/ .
- 
+
 w3af is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation version 2 of the License.
- 
+
 w3af is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
- 
+
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -40,10 +40,11 @@ class rfd(AuditPlugin):
     Identify reflected file download vulnerabilities.
     :author: Dmitry (nixwzard@gmail.com)
     """
+
     def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for RFD vulnerabilities.
- 
+
         :param freq: A FuzzableRequest
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
@@ -62,10 +63,11 @@ class rfd(AuditPlugin):
 
             if 'filename' in cd.lower():
                 # yes filename exists
-                om.out.debug(u'URL "%s" is not vulnerable to RFD because of'
-                             u' explicit filename in content-disposition header'
-                             u', response id %s' %
-                             (freq.get_url(), orig_response.id))
+                om.out.debug(
+                    u'URL "%s" is not vulnerable to RFD because of'
+                    u' explicit filename in content-disposition header'
+                    u', response id %s' %
+                    (freq.get_url(), orig_response.id))
                 return
             else:
                 self._test(freq)
@@ -93,13 +95,13 @@ class rfd(AuditPlugin):
 
     def _test(self, freq):
         uri = freq.get_uri()
-        new_path = uri.get_path()+PATH_PARAM
+        new_path = uri.get_path() + PATH_PARAM
         uri.set_path(new_path)
         freq.set_uri(uri)
         freq.set_querystring(uri.get_querystring())
 
         payload1 = EXEC_TOKEN
-        payload2 = EXEC_TOKEN+''.join(ESCAPE_CHARS)
+        payload2 = EXEC_TOKEN + ''.join(ESCAPE_CHARS)
         payloads = payload1, payload2
 
         mutants = create_mutants(freq, payloads, mutant_tuple=(QSMutant,))
@@ -117,7 +119,7 @@ class rfd(AuditPlugin):
                 continue
 
             # is it JSONP?
-            if body[rpos+len(EXEC_TOKEN)] == '(' and not '\"' in body[:rpos]:
+            if body[rpos + len(EXEC_TOKEN)] == '(' and '\"' not in body[:rpos]:
                 # we've reflected as JSONP callback
                 self._report_vuln(u'%s is vulnerable, to RFD because even if'
                                   u' escape chars are filtered, JSONP callback'
@@ -126,16 +128,15 @@ class rfd(AuditPlugin):
                 break
 
             # now we need to figure out what escape chars were filtered
-            if body[rpos:rpos+len(payloads[1])] == payloads[1]:
+            if body[rpos:rpos + len(payloads[1])] == payloads[1]:
                 # nothing was filtered or escaped
                 self._report_vuln(u'%s is vulnerable to RFD because nothing is'
                                   u' filtered or escaped, response id %s',
                                   freq, response.id)
                 return
 
-            filtered, escaped = self._find_escaped_or_filtered(body,
-                                                               rpos+len(EXEC_TOKEN),
-                                                               ESCAPE_CHARS)
+            filtered, escaped = self._find_escaped_or_filtered(
+                body, rpos + len(EXEC_TOKEN), ESCAPE_CHARS)
 
             if '\n' not in filtered:
                 self._report_vuln(u'%s is vulnerable to RFD because with'
@@ -146,25 +147,25 @@ class rfd(AuditPlugin):
 
             fne = filtered + escaped
 
-            if not '\"' in filtered:
+            if '\"' not in filtered:
                 if not all(char in fne for char in SHELL_CHARS):
-                        self._report_vuln(u'%s is vulnerable to RFD because'
-                                          u' double quotes are not filtered,'
-                                          u' response id %s',
-                                          freq, response.id)
-                        return
+                    self._report_vuln(u'%s is vulnerable to RFD because'
+                                      u' double quotes are not filtered,'
+                                      u' response id %s',
+                                      freq, response.id)
+                    return
 
             else:
-                #should find out if we have preceding double quotes
+                # should find out if we have preceding double quotes
                 if '\"' in body[:rpos]:
                     continue
 
                 if not all(char in fne for char in SHELL_CHARS):
-                        self._report_vuln(u'uri %s is vulnerable to RFD because'
-                                          u' we don\'t need to escape double'
-                                          u' quotes ,response id %s',
-                                          freq, response.id)
-                        return
+                    self._report_vuln(u'uri %s is vulnerable to RFD because'
+                                      u' we don\'t need to escape double'
+                                      u' quotes ,response id %s',
+                                      freq, response.id)
+                    return
 
     def _find_escaped_or_filtered(self, body, pos, chars):
         filtered = []
@@ -175,7 +176,7 @@ class rfd(AuditPlugin):
                     pos += 1
                     continue
 
-                elif body[pos] == '\\' and body[pos+1] == c:
+                elif body[pos] == '\\' and body[pos + 1] == c:
                     escaped += [c]
                     pos += 2
 

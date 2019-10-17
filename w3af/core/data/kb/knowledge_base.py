@@ -88,12 +88,14 @@ class BasicKnowledgeBase(object):
                  parameter.
         """
         if not isinstance(info_inst, Info):
-            raise ValueError('append_uniq requires an info object as parameter.')
+            raise ValueError(
+                'append_uniq requires an info object as parameter.')
 
         filter_function = self.FILTERS.get(filter_by, None)
 
         if filter_function is None:
-            raise ValueError('append_uniq only knows about URL or VAR filters.')
+            raise ValueError(
+                'append_uniq only knows about URL or VAR filters.')
 
         with self._kb_lock:
 
@@ -154,7 +156,12 @@ class BasicKnowledgeBase(object):
 
         return True
 
-    def _has_reached_max_info_instances(self, location_a, location_b, info_inst, group_klass):
+    def _has_reached_max_info_instances(
+            self,
+            location_a,
+            location_b,
+            info_inst,
+            group_klass):
         """
         Checks if the tuple containing
             - location_a,
@@ -176,13 +183,19 @@ class BasicKnowledgeBase(object):
                                                info_inst,
                                                group_klass)
         return self._reached_max_info_instances_cache.get(key)
-    
-    def _get_max_info_instances_key(self, location_a, location_b, info_inst, group_klass):
+
+    def _get_max_info_instances_key(
+            self,
+            location_a,
+            location_b,
+            info_inst,
+            group_klass):
         return (location_a,
                 location_b,
                 repr(info_inst.get(group_klass.ITAG)))
 
-    def _record_reached_max_info_instances(self, location_a, location_b, info_inst, group_klass):
+    def _record_reached_max_info_instances(
+            self, location_a, location_b, info_inst, group_klass):
         """
         Stores the tuple containing
             - location_a,
@@ -237,7 +250,8 @@ class BasicKnowledgeBase(object):
 
             # This performs a quick check against a LRU cache to prevent
             # queries to the DB
-            if self._has_reached_max_info_instances(location_a, location_b, info_inst, group_klass):
+            if self._has_reached_max_info_instances(
+                    location_a, location_b, info_inst, group_klass):
                 return info_inst, False
 
             for info_set in self.get_iter(location_a, location_b):
@@ -252,13 +266,16 @@ class BasicKnowledgeBase(object):
                         # Record that this location and infoset have reached the max
                         # instances. This works together with _has_reached_max_info_instances()
                         # to reduce SQLite queries
-                        self._record_reached_max_info_instances(location_a, location_b, info_inst, group_klass)
+                        self._record_reached_max_info_instances(
+                            location_a, location_b, info_inst, group_klass)
 
-                        # The info set instance was not modified, so we just return
+                        # The info set instance was not modified, so we just
+                        # return
                         return info_set, False
 
                     # Since MAX_INFO_INSTANCES has not been reached, we need to
-                    # copy the info set, add the info instance, and update the DB
+                    # copy the info set, add the info instance, and update the
+                    # DB
                     old_info_set = copy.deepcopy(info_set)
 
                     # Add the new information to the InfoSet instance, if we reach
@@ -350,7 +367,7 @@ class BasicKnowledgeBase(object):
     def _get_real_name(self, data):
         """
         Some operations allow location_a to be both a plugin instance or a string.
-        
+
         Those operations will call this method to translate the plugin instance
         into a string.
         """
@@ -462,7 +479,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         self.initialized = False
 
         # TODO: Why doesn't this work with a WeakValueDictionary?
-        self.observers = {} #WeakValueDictionary()
+        self.observers = {}  # WeakValueDictionary()
         self._observer_id = 0
 
     def setup(self):
@@ -478,7 +495,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
                 return
 
             self.urls = DiskSet(table_prefix='kb_urls')
-            self.fuzzable_requests = DiskSet(table_prefix='kb_fuzzable_requests')
+            self.fuzzable_requests = DiskSet(
+                table_prefix='kb_fuzzable_requests')
 
             self.db = get_default_persistent_db_instance()
 
@@ -506,7 +524,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         clears any pre-existing values.
         """
         if isinstance(value, Info):
-            raise TypeError('Use append or append_uniq to store vulnerabilities')
+            raise TypeError(
+                'Use append or append_uniq to store vulnerabilities')
 
         location_a = self._get_real_name(location_a)
 
@@ -602,7 +621,10 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         result_lst = []
 
-        for obj in self.get_iter(location_a, location_b, check_types=check_types):
+        for obj in self.get_iter(
+                location_a,
+                location_b,
+                check_types=check_types):
             result_lst.append(obj)
 
         return result_lst
@@ -620,7 +642,7 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             params = (location_a,)
         else:
             query = 'SELECT pickle FROM %s WHERE location_a = ?' \
-                                           ' and location_b = ?'
+                ' and location_b = ?'
             params = (location_a, location_b)
 
         for r in self.db.select(query % self.table_name, params):
@@ -732,7 +754,8 @@ class DBKnowledgeBase(BasicKnowledgeBase):
         """
         result_lst = []
 
-        for entry in self.get_all_entries_of_class_iter(klass, exclude_ids=exclude_ids):
+        for entry in self.get_all_entries_of_class_iter(
+                klass, exclude_ids=exclude_ids):
             result_lst.append(entry)
 
         return result_lst
@@ -804,9 +827,9 @@ class DBKnowledgeBase(BasicKnowledgeBase):
             obj = cPickle.loads(pickle)
 
             if location_a not in result_dict:
-                result_dict[location_a] = {location_b: [obj,]}
+                result_dict[location_a] = {location_b: [obj, ]}
             elif location_b not in result_dict[location_a]:
-                result_dict[location_a][location_b] = [obj,]
+                result_dict[location_a][location_b] = [obj, ]
             else:
                 result_dict[location_a][location_b].append(obj)
 

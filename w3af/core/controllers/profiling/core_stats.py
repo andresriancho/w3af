@@ -68,26 +68,21 @@ def start_core_profiling(w3af_core):
 def dump_data(w3af_core):
     s = w3af_core.status
     try:
-        data = {'Requests sent': consecutive_number_generator.get(),
-                'Requests per minute': s.get_rpm(),
-
-                'Crawl input queue input speed': s.get_crawl_input_speed(),
-                'Crawl input queue output speed': s.get_crawl_output_speed(),
-                'Crawl input queue size': s.get_crawl_qsize(),
-                'Crawl output queue size': s.get_crawl_output_qsize(),
-
-                'Audit input queue input speed': s.get_audit_input_speed(),
-                'Audit input queue output speed': s.get_audit_output_speed(),
-                'Audit input queue size': s.get_audit_qsize(),
-
-                'Grep input queue size': s.get_audit_qsize(),
-
-                'Core worker pool input queue size': s.get_core_worker_pool_queue_size(),
-
-                'Output manager input queue size': om.manager.get_in_queue().qsize(),
-
-                'Cache stats': get_parser_cache_stats()}
-    except Exception, e:
+        data = {
+            'Requests sent': consecutive_number_generator.get(),
+            'Requests per minute': s.get_rpm(),
+            'Crawl input queue input speed': s.get_crawl_input_speed(),
+            'Crawl input queue output speed': s.get_crawl_output_speed(),
+            'Crawl input queue size': s.get_crawl_qsize(),
+            'Crawl output queue size': s.get_crawl_output_qsize(),
+            'Audit input queue input speed': s.get_audit_input_speed(),
+            'Audit input queue output speed': s.get_audit_output_speed(),
+            'Audit input queue size': s.get_audit_qsize(),
+            'Grep input queue size': s.get_audit_qsize(),
+            'Core worker pool input queue size': s.get_core_worker_pool_queue_size(),
+            'Output manager input queue size': om.manager.get_in_queue().qsize(),
+            'Cache stats': get_parser_cache_stats()}
+    except Exception as e:
         exc_type, exc_value, exc_tb = sys.exc_info()
         tback = traceback.format_exception(exc_type, exc_value, exc_tb)
 
@@ -111,7 +106,7 @@ def stop_core_profiling(w3af_core):
 def get_parser_cache_stats():
     import w3af.core.data.parsers.parser_cache as parser_cache
     from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
-    
+
     r = {'hit_rate': parser_cache.dpc.get_hit_rate(),
          'max_lru_items': parser_cache.dpc.get_max_lru_items(),
          'current_lru_size': parser_cache.dpc.get_current_lru_items(),

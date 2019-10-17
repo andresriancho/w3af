@@ -235,7 +235,8 @@ class OutputPlugin(Plugin):
         # Only work if something is enabled
         if plugins_list:
             response = 'plugins\n'
-            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
+            response += '    ' + plugin_type + \
+                ' ' + ', '.join(plugins_list) + '\n'
 
             for plugin_name in plugins_list:
                 if plugin_name in plugins_options:

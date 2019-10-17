@@ -140,7 +140,8 @@ class payment_webhook_finder(CrawlPlugin):
 
         :return: A set containing the extensions to use during fuzzing
         """
-        if len(kb.kb.get_all_known_urls()) < self.MIN_URL_COUNT_FOR_EXTENSION_FILTER:
+        if len(kb.kb.get_all_known_urls()
+               ) < self.MIN_URL_COUNT_FOR_EXTENSION_FILTER:
             return self._exts
 
         site_url_extensions = get_url_extensions_from_kb()
@@ -187,7 +188,12 @@ class payment_webhook_finder(CrawlPlugin):
             if is_new:
                 yield mutated_url_path
 
-    def _mutate_path(self, url, dirs_to_append, files_to_append, exts_to_append):
+    def _mutate_path(
+            self,
+            url,
+            dirs_to_append,
+            files_to_append,
+            exts_to_append):
         """
         Mutate the path of the url.
 
@@ -209,7 +215,11 @@ class payment_webhook_finder(CrawlPlugin):
                     if ext_to_append:
                         ext_to_append = '.%s' % ext_to_append
 
-                    args = (url_string, dir_to_append, file_to_append, ext_to_append)
+                    args = (
+                        url_string,
+                        dir_to_append,
+                        file_to_append,
+                        ext_to_append)
                     url_str = '%s%s%s%s' % args
 
                     new_url = URL(url_str)
@@ -223,11 +233,11 @@ class payment_webhook_finder(CrawlPlugin):
         return """
         This plugin will try to find payment gateway webhooks, for example if
         the input URL is:
-        
+
             - http://host.tld
 
         The plugin will request:
-        
+
             - http://host.tld/inc/
             - http://host.tld/include/pay/success.php
             - http://host.tld/cgi/validate/payment.cgi
@@ -240,7 +250,7 @@ class payment_webhook_finder(CrawlPlugin):
         Useful when performing a black-box security assessment of an e-commerce
         site that has a hidden payment confirmation endpoint which is consumed
         by the payment gateway and not intended for public access.
-        
+
         Warning! This plugin will send *many HTTP requests* and potentially
         increase scan time.
         """

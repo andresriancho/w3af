@@ -32,5 +32,5 @@ def only_ci(decorated_func):
     def _inner_func(*args, **kwds):
         if is_running_on_ci():
             return decorated_func(*args, **kwds)
-    
+
     return _inner_func

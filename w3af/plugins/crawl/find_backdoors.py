@@ -153,7 +153,7 @@ class find_backdoors(CrawlPlugin):
         :return: A bool value
         """
         body_text = response.get_body()
-        
+
         for match, _, _, _ in self._signature_re.query(body_text):
             match_string = match.group(0)
             return match_string

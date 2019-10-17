@@ -140,7 +140,7 @@ class extrusionServer(object):
             #
             # 0x2 flag is SYN
             if p.haslayer(TCP) and p[TCP].dport in self._tcp_ports and\
-            p[IP].dst in get_if_addr(self._iface) and p[TCP].flags == 0x2:
+                    p[IP].dst in get_if_addr(self._iface) and p[TCP].flags == 0x2:
 
                 possible_packets.append(p)
                 if p[IP].src in possible_hosts:
@@ -204,13 +204,13 @@ class extrusionServer(object):
 
         for p in packets:
             if p[TCP] is not None and p[TCP].dport in self._tcp_ports and\
-            p[IP].src == self._host and p[TCP].flags == 0x2:
+                    p[IP].src == self._host and p[TCP].flags == 0x2:
 
                 if (p[IP].src, p[TCP].dport, 'TCP') not in good_ports:
                     good_ports.append((p[IP].src, p[TCP].dport, 'TCP'))
 
             if p[UDP] is not None and p[UDP].dport in self._udp_ports and\
-            p[IP].src == self._host:
+                    p[IP].src == self._host:
 
                 if (p[IP].src, p[UDP].dport, 'UDP') not in good_ports:
                     good_ports.append((p[IP].src, p[UDP].dport, 'UDP'))

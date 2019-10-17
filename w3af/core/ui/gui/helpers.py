@@ -39,6 +39,7 @@ class PropagateBuffer(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, target):
         self.target = target
         self.alerted = {}
@@ -73,6 +74,7 @@ class PropagateBufferPayload(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, target, *payload):
         self.target = target
         self.alerted = {}
@@ -144,6 +146,7 @@ class RegistThread(threading.Thread):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self):
         _threadPool.append(self)
         self.my_thread_ended = False
@@ -196,6 +199,7 @@ class _Wrapper(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, friendly):
         self.friendly = friendly
 
@@ -203,10 +207,11 @@ class _Wrapper(object):
         """Apply the wrap."""
         try:
             return func(*args, **kwargs)
-        except Exception, err:
+        except Exception as err:
             if isinstance(err, self.friendly):
                 FriendlyExceptionDlg(str(err))
             raise
+
 
 coreWrap = _Wrapper(BaseFrameworkException)
 
@@ -292,6 +297,7 @@ class BroadcastWrapper(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, *values):
         self.initvalues = values
         self.widgets = []
@@ -313,8 +319,11 @@ class BroadcastWrapper(object):
 # This is a helper for debug, you just should connect the
 # 'event' event to this debugHandler
 
-event_types = [i for i in vars(gtk.gdk).values() if type(i)
-               is gtk.gdk.EventType]
+
+event_types = [
+    i for i in vars(
+        gtk.gdk).values() if isinstance(
+            i, gtk.gdk.EventType)]
 
 
 def debugHandler(widget, event, *a):
@@ -328,12 +337,19 @@ class Throbber(gtk.ToolButton):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self):
         self.img_static = gtk.Image()
-        self.img_static.set_from_file(os.path.join(GUI_DATA_PATH, 'throbber_static.gif'))
+        self.img_static.set_from_file(
+            os.path.join(
+                GUI_DATA_PATH,
+                'throbber_static.gif'))
         self.img_static.show()
         self.img_animat = gtk.Image()
-        self.img_animat.set_from_file(os.path.join(GUI_DATA_PATH,'throbber_animat.gif'))
+        self.img_animat.set_from_file(
+            os.path.join(
+                GUI_DATA_PATH,
+                'throbber_animat.gif'))
         self.img_animat.show()
 
         super(Throbber, self).__init__(self.img_static, "")
@@ -373,7 +389,12 @@ def loadIcon(stock_item_id):
     """
     stock_item = getattr(gtk, stock_item_id)
 
-    local_icon = os.path.join(GUI_DATA_PATH, 'icons', '16', '%s.png' % stock_item)
+    local_icon = os.path.join(
+        GUI_DATA_PATH,
+        'icons',
+        '16',
+        '%s.png' %
+        stock_item)
     if os.path.exists(local_icon):
         im = gtk.Image()
         im.set_from_file(local_icon)
@@ -383,7 +404,7 @@ def loadIcon(stock_item_id):
         icon_theme = gtk.IconTheme()
         try:
             icon = icon_theme.load_icon(stock_item, 16, ())
-        except:
+        except BaseException:
             # If param id not found use this image
             icon = loadImage('missing-image.png').get_pixbuf()
         return icon
@@ -397,6 +418,7 @@ class SensitiveAnd(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, target, falseDefaults=None):
         if falseDefaults is None:
             falseDefaults = []
@@ -453,11 +475,11 @@ class DrawingAreaStringRepresentation(gtk.DrawingArea):
     def area_expose_cb(self, area, event):
         self.draw()
         return True
-    
+
     def query_tooltip(self, widget, x, y, keyboard_tip, tooltip, data=None):
         if keyboard_tip:
             return False
-        
+
         tooltip.set_markup('Representation of HTTP response body')
         return True
 

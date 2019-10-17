@@ -134,7 +134,7 @@ class Plugin(Configurable):
         """
         if self.__doc__ is not None:
             tmp = self.__doc__.replace('    ', '')
-            
+
             res = ''.join(l for l in tmp.split('\n') if l != '' and
                           not l.startswith(':'))
         else:
@@ -181,7 +181,7 @@ class Plugin(Configurable):
         """
         kb.kb.append(location_a, location_b, info)
         om.out.report_finding(info)
-        
+
     def __eq__(self, other):
         """
         This function is called when extending a list of plugin instances.
@@ -267,7 +267,7 @@ class Plugin(Configurable):
                       sense if re_raise is False.
         """
         no_content_resp = new_no_content_resp(uri, add_id=True)
-        
+
         msg = ('The %s plugin got an error while requesting "%s".'
                ' Exception: "%s".'
                ' Generated 204 "No Content" response (id:%s)')
@@ -323,7 +323,7 @@ class UrlOpenerProxy(object):
         def url_opener_proxy(*args, **kwargs):
             try:
                 return attr(*args, **kwargs)
-            except HTTPRequestException, hre:
+            except HTTPRequestException as hre:
                 #
                 # We get here when **one** HTTP request fails. When more than
                 # one exception fails the URL opener will raise a different

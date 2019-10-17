@@ -121,13 +121,13 @@ def exception_creator(scan_id):
 
     try:
         raise Exception('unittest')
-    except Exception, exception:
+    except Exception as exception:
         exec_info = sys.exc_info()
         enabled_plugins = ''
 
         scan_info.w3af_core.exception_handler.write_crash_file = lambda x: x
-        scan_info.w3af_core.exception_handler.handle(current_status, exception,
-                                                     exec_info, enabled_plugins)
+        scan_info.w3af_core.exception_handler.handle(
+            current_status, exception, exec_info, enabled_plugins)
 
     return jsonify({'code': 201}), 201
 

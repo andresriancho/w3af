@@ -1,7 +1,7 @@
 from astroid import MANAGER, register_module_extender
 from astroid.builder import AstroidBuilder
 
-"""    
+"""
 Fixes:
     E: 61,12: Module 'httpretty' has no 'enable' member (no-member)
     E: 63,12: Module 'httpretty' has no 'register_uri' member (no-member)

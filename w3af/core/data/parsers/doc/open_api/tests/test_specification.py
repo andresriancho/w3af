@@ -28,22 +28,23 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
-from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (NoParams,
-                                                                              IntParamQueryString,
-                                                                              IntParamPath,
-                                                                              StringParamQueryString,
-                                                                              StringParamJson,
-                                                                              StringParamHeader,
-                                                                              IntParamJson,
-                                                                              ArrayStringItemsQueryString,
-                                                                              ArrayIntItemsQueryString,
-                                                                              IntParamNoModelJson,
-                                                                              ComplexDereferencedNestedModel,
-                                                                              DereferencedPetStore,
-                                                                              NestedModel,
-                                                                              NestedLoopModel,
-                                                                              ArrayModelItems,
-                                                                              MultiplePathsAndHeaders)
+from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (
+    NoParams,
+    IntParamQueryString,
+    IntParamPath,
+    StringParamQueryString,
+    StringParamJson,
+    StringParamHeader,
+    IntParamJson,
+    ArrayStringItemsQueryString,
+    ArrayIntItemsQueryString,
+    IntParamNoModelJson,
+    ComplexDereferencedNestedModel,
+    DereferencedPetStore,
+    NestedModel,
+    NestedLoopModel,
+    ArrayModelItems,
+    MultiplePathsAndHeaders)
 
 
 class TestSpecification(unittest.TestCase):
@@ -382,15 +383,23 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['in'], 'body')
         self.assertIn('schema', param.param_spec)
 
-        expected_value = {u'birthdate': datetime.date(2017, 6, 30),
-                          u'name': 'John',
-                          u'owner': {u'address': {u'city': 'Buenos Aires',
-                                                  u'postalCode': '90210',
-                                                  u'state': 'AK',
-                                                  u'street1': 'Bonsai Street 123',
-                                                  u'street2': 'Bonsai Street 123'},
-                                     u'name': {u'first': '56', u'last': 'Smith'}},
-                          u'type': u'cat'}
+        expected_value = {
+            u'birthdate': datetime.date(
+                2017,
+                6,
+                30),
+            u'name': 'John',
+            u'owner': {
+                u'address': {
+                    u'city': 'Buenos Aires',
+                    u'postalCode': '90210',
+                    u'state': 'AK',
+                    u'street1': 'Bonsai Street 123',
+                    u'street2': 'Bonsai Street 123'},
+                u'name': {
+                    u'first': '56',
+                    u'last': 'Smith'}},
+            u'type': u'cat'}
         self.assertEqual(param.fill, expected_value)
 
     def test_array_with_model_items_param_in_json(self):
@@ -541,13 +550,23 @@ class TestSpecification(unittest.TestCase):
         self.assertEqual(param.param_spec['in'], 'body')
         self.assertIn('schema', param.param_spec)
 
-        expected_value = {u'owner': {u'name': {u'last': 'Smith', u'first': '56'},
-                                     u'address': {u'postalCode': '90210',
-                                                  u'street1': 'Bonsai Street 123',
-                                                  u'street2': 'Bonsai Street 123',
-                                                  u'state': 'AK',
-                                                  u'city': 'Buenos Aires'}},
-                          u'type': 'cat', u'name': 'John', u'birthdate': datetime.date(2017, 6, 30)}
+        expected_value = {
+            u'owner': {
+                u'name': {
+                    u'last': 'Smith',
+                    u'first': '56'},
+                u'address': {
+                    u'postalCode': '90210',
+                    u'street1': 'Bonsai Street 123',
+                    u'street2': 'Bonsai Street 123',
+                    u'state': 'AK',
+                    u'city': 'Buenos Aires'}},
+            u'type': 'cat',
+            u'name': 'John',
+            u'birthdate': datetime.date(
+                2017,
+                6,
+                30)}
         self.assertEqual(param.fill, expected_value)
 
     def test_parameter_handler_no_params(self):
@@ -568,7 +587,8 @@ class TestSpecification(unittest.TestCase):
         handler = SpecificationHandler(http_response)
         self.check_parameter_setting(handler)
 
-    def test_parameter_handler_no_model_json_object_complex_nested_in_body(self):
+    def test_parameter_handler_no_model_json_object_complex_nested_in_body(
+            self):
         specification_as_string = ComplexDereferencedNestedModel().get_specification()
         http_response = self.generate_response(specification_as_string)
         handler = SpecificationHandler(http_response)
@@ -598,12 +618,16 @@ class TestSpecification(unittest.TestCase):
                 for parameter_name, parameter in operation.params.iteritems():
                     self.assertFalse(hasattr(parameter, 'fill'))
 
-                parameter_handler = ParameterHandler(spec_handler.spec, operation)
-                updated_operation = parameter_handler.set_operation_params(True)
+                parameter_handler = ParameterHandler(
+                    spec_handler.spec, operation)
+                updated_operation = parameter_handler.set_operation_params(
+                    True)
                 self.assertOperation(operation, updated_operation)
 
-                parameter_handler = ParameterHandler(spec_handler.spec, operation)
-                updated_operation = parameter_handler.set_operation_params(False)
+                parameter_handler = ParameterHandler(
+                    spec_handler.spec, operation)
+                updated_operation = parameter_handler.set_operation_params(
+                    False)
                 self.assertOperation(operation, updated_operation)
 
     def assertOperation(self, operation, updated_operation):

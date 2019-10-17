@@ -37,19 +37,19 @@ from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.kb.info import Info
 
 
-FILE_OPEN_ERRORS = [# Java
-                    'java.io.FileNotFoundException:',
-                    'java.lang.Exception:',
-                    'java.lang.IllegalArgumentException:',
-                    'java.net.MalformedURLException:',
+FILE_OPEN_ERRORS = [  # Java
+    'java.io.FileNotFoundException:',
+    'java.lang.Exception:',
+    'java.lang.IllegalArgumentException:',
+    'java.net.MalformedURLException:',
 
-                    # PHP
-                    'fread\\(\\):',
-                    'for inclusion \'\\(include_path=',
-                    'Failed opening required',
-                    '<b>Warning</b>:  file\\(',
-                    '<b>Warning</b>:  file_get_contents\\(',
-                    'open_basedir restriction in effect']
+    # PHP
+    'fread\\(\\):',
+    'for inclusion \'\\(include_path=',
+    'Failed opening required',
+    '<b>Warning</b>:  file\\(',
+    '<b>Warning</b>:  file_get_contents\\(',
+    'open_basedir restriction in effect']
 
 
 class lfi(AuditPlugin):
@@ -173,16 +173,16 @@ class lfi(AuditPlugin):
         #
         for file_pattern_match in self._find_common_file_fragments(response):
             if file_pattern_match not in mutant.get_original_response_body():
-                
+
                 desc = 'Local File Inclusion was found at: %s'
                 desc %= mutant.found_at()
-                
+
                 v = Vuln.from_mutant('Local file inclusion vulnerability',
                                      desc, severity.MEDIUM, response.id,
                                      self.get_name(), mutant)
 
                 v['file_pattern'] = file_pattern_match
-                
+
                 v.add_to_highlight(file_pattern_match)
                 self.kb_append_uniq(self, 'lfi', v)
                 return
@@ -213,7 +213,7 @@ class lfi(AuditPlugin):
                 desc = ('An arbitrary local file read vulnerability was'
                         ' found at: %s')
                 desc %= mutant.found_at()
-                
+
                 v = Vuln.from_mutant('Local file inclusion vulnerability',
                                      desc, severity.MEDIUM, response.id,
                                      self.get_name(), mutant)
@@ -236,11 +236,11 @@ class lfi(AuditPlugin):
             if error_str not in mutant.get_original_response_body():
                 desc = 'A file read error was found at: %s'
                 desc %= mutant.found_at()
-                
+
                 i = Info.from_mutant('File read error', desc, response.id,
                                      self.get_name(), mutant)
                 i.add_to_highlight(error_str)
-                
+
                 self.kb_append_uniq(self, 'error', i)
 
     def _find_common_file_fragments(self, response):
@@ -258,26 +258,27 @@ class lfi(AuditPlugin):
             res.add(file_pattern_match)
 
         if len(res) == 1:
-            msg = ('A file fragment was found. The section where the file is'
-                   ' included is (only a fragment is shown): "%s". This is'
-                   ' just an informational message, which might be related'
-                   '  to a vulnerability and was found on response with id %s.')
+            msg = (
+                'A file fragment was found. The section where the file is'
+                ' included is (only a fragment is shown): "%s". This is'
+                ' just an informational message, which might be related'
+                '  to a vulnerability and was found on response with id %s.')
             om.out.debug(msg % (list(res)[0], response.id))
-            
+
         if len(res) > 1:
             msg = ('File fragments have been found. The following is a list'
                    ' of file fragments that were returned by the web'
                    ' application while testing for local file inclusion: \n')
-            
+
             for file_pattern_match in res:
                 msg += '- "%s" \n' % file_pattern_match
-                
+
             msg += ('This is just an informational message, which might be'
                     ' related to a vulnerability and was found in response'
                     ' with id %s.' % response.id)
-                    
+
             om.out.debug(msg)
-        
+
         return res
 
     def get_long_desc(self):

@@ -29,6 +29,7 @@ class BaseOption(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, name, default_value, desc, _help='', tabid=''):
         """
         :param name: The name of the option

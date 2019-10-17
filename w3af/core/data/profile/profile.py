@@ -52,7 +52,7 @@ class profile(object):
         """
         # The default optionxform transforms the option to lower case;
         # w3af needs the value as it is
-        optionxform = lambda opt: opt
+        def optionxform(opt): return opt
 
         self._config = ConfigParser.ConfigParser()
         # Set the new optionxform function
@@ -64,10 +64,10 @@ class profile(object):
             with codecs.open(profname, "rb", UTF8) as fp:
                 try:
                     self._config.readfp(fp)
-                except ConfigParser.Error, cpe:
+                except ConfigParser.Error as cpe:
                     msg = 'ConfigParser error in profile: "%s". Exception: "%s"'
                     raise BaseFrameworkException(msg % (profname, cpe))
-                except Exception, e:
+                except Exception as e:
                     msg = 'Unknown error in profile: "%s". Exception: "%s"'
                     raise BaseFrameworkException(msg % (profname, e))
                 else:
@@ -121,13 +121,13 @@ class profile(object):
                     config = ConfigParser.ConfigParser()
                     try:
                         config.readfp(fp)
-                    except:
+                    except BaseException:
                         # Any errors simply break name detection
                         continue
 
                     try:
                         name = config.get(self.PROFILE_SECTION, 'name')
-                    except:
+                    except BaseException:
                         # Any errors simply break name detection
                         continue
                     else:
@@ -179,7 +179,7 @@ class profile(object):
         """
         try:
             os.unlink(self.profile_file_name)
-        except Exception, e:
+        except Exception as e:
             msg = ('An exception occurred while removing the profile.'
                    ' Exception: "%s".')
             raise BaseFrameworkException(msg % e)
@@ -204,7 +204,7 @@ class profile(object):
 
         try:
             shutil.copyfile(self.profile_file_name, new_profile_path_name)
-        except Exception, e:
+        except Exception as e:
             msg = 'An exception occurred while copying the profile. Exception:'
             msg += ' "%s".' % e
             raise BaseFrameworkException(msg % e)
@@ -250,7 +250,7 @@ class profile(object):
             # Section is something like audit.xss or crawl.web_spider
             try:
                 _type, name = section.split('.')
-            except:
+            except BaseException:
                 pass
             else:
                 if _type == plugin_type:
@@ -291,7 +291,7 @@ class profile(object):
             # Section is something like audit.xss or crawl.web_spider
             try:
                 _type, name = section.split('.')
-            except:
+            except BaseException:
                 pass
             else:
                 if _type == plugin_type and name == plugin_name:
@@ -488,7 +488,7 @@ class profile(object):
 
         try:
             file_handler = open(self.profile_file_name, 'w')
-        except:
+        except BaseException:
             msg = 'Failed to open profile file: "%s"'
             raise BaseFrameworkException(msg % self.profile_file_name)
         else:

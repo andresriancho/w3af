@@ -75,7 +75,9 @@ def clean_fuzzable_request(fuzzable_request, dc_handler=clean_data_container):
     return res
 
 
-def clean_fuzzable_request_form(fuzzable_request, dc_handler=clean_data_container):
+def clean_fuzzable_request_form(
+        fuzzable_request,
+        dc_handler=clean_data_container):
     """
     This function will extract data from the fuzzable request and serialize it.
 

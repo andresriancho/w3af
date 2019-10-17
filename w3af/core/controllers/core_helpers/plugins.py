@@ -154,7 +154,9 @@ class CorePlugins(object):
 
         :return: An OptionList with the plugin options.
         """
-        return self._plugins_options.get(plugin_type, {}).get(plugin_name, None)
+        return self._plugins_options.get(
+            plugin_type, {}).get(
+            plugin_name, None)
 
     def get_all_plugin_options(self):
         return self._plugins_options
@@ -185,12 +187,12 @@ class CorePlugins(object):
         plugin_names = list(set(plugin_names))
         known_plugin_names = self.get_plugin_list(plugin_type)
         unknown_plugins = []
-        
+
         for plugin_name in plugin_names:
             if plugin_name not in known_plugin_names \
-            and plugin_name.replace('!', '') not in known_plugin_names\
-            and plugin_name != 'all':
-            
+                    and plugin_name.replace('!', '') not in known_plugin_names\
+                    and plugin_name != 'all':
+
                 if raise_on_error:
                     raise ValueError('Unknown plugin %s' % plugin_name)
                 else:
@@ -213,9 +215,9 @@ class CorePlugins(object):
         }
 
         set_dict[plugin_type](plugin_names)
-        
+
         return unknown_plugins
-    
+
     def reload_modified_plugin(self, plugin_type, plugin_name):
         """
         When a plugin is modified using the plugin editor, all instances of it
@@ -228,7 +230,8 @@ class CorePlugins(object):
                             'sqli', etc
         """
         try:
-            amodule = sys.modules['w3af.plugins.%s.%s' % (plugin_type, plugin_name)]
+            amodule = sys.modules['w3af.plugins.%s.%s' %
+                                  (plugin_type, plugin_name)]
         except KeyError:
             msg = 'Tried to reload a plugin that was never imported! (%s.%s)'
             om.out.debug(msg % (plugin_type, plugin_name))
@@ -256,12 +259,18 @@ class CorePlugins(object):
         def rem_from_list(ele, lst):
             try:
                 lst.remove(ele)
-            except:
+            except BaseException:
                 pass
-        plugin_types = [x for x in os.listdir(os.path.join(ROOT_PATH, 'plugins'))]
+        plugin_types = [
+            x for x in os.listdir(
+                os.path.join(
+                    ROOT_PATH,
+                    'plugins'))]
         # Now we filter to show only the directories
-        plugin_types = [d for d in plugin_types
-                        if os.path.isdir(os.path.join(ROOT_PATH, 'plugins', d))]
+        plugin_types = [
+            d for d in plugin_types if os.path.isdir(
+                os.path.join(
+                    ROOT_PATH, 'plugins', d))]
         rem_from_list('attack', plugin_types)
         rem_from_list('tests', plugin_types)
         rem_from_list('.git', plugin_types)
@@ -279,11 +288,13 @@ class CorePlugins(object):
         """
         :return: An instance of a plugin.
         """
-        plugin_inst = factory('w3af.plugins.%s.%s' % (plugin_type, plugin_name))
+        plugin_inst = factory(
+            'w3af.plugins.%s.%s' %
+            (plugin_type, plugin_name))
         plugin_inst.set_url_opener(self._w3af_core.uri_opener)
         plugin_inst.set_worker_pool(self._w3af_core.worker_pool)
         plugin_inst.set_w3af_core(self._w3af_core)
-        
+
         if plugin_name in self._plugins_options[plugin_type].keys():
             custom_options = self._plugins_options[plugin_type][plugin_name]
             plugin_inst.set_options(custom_options)
@@ -291,7 +302,7 @@ class CorePlugins(object):
         # This will init some plugins like mangle and output
         if plugin_type == 'attack' and not self.initialized:
             self.init_plugins()
-            
+
         return plugin_inst
 
     def get_quick_instance(self, plugin_type, plugin_name):
@@ -329,10 +340,12 @@ class CorePlugins(object):
 
                     try:
                         dep_plugin_type, dep_plugin_name = dep.split('.')
-                    except:
-                        msg = ('Plugin dependencies must be indicated using'
-                               ' plugin_type.plugin_name notation. This is'
-                               ' an error in %s.get_plugin_deps().' % plugin_name)
+                    except BaseException:
+                        msg = (
+                            'Plugin dependencies must be indicated using'
+                            ' plugin_type.plugin_name notation. This is'
+                            ' an error in %s.get_plugin_deps().' %
+                            plugin_name)
                         raise BaseFrameworkException(msg)
 
                     if dep_plugin_name not in self._plugins_names_dict[dep_plugin_type]:
@@ -364,8 +377,10 @@ class CorePlugins(object):
                         continue
 
                     try:
-                        plugin_index = plugin_names[plugin_type].index(plugin_name)
-                        dependency_index = plugin_names[plugin_type].index(dep_name)
+                        plugin_index = plugin_names[plugin_type].index(
+                            plugin_name)
+                        dependency_index = plugin_names[plugin_type].index(
+                            dep_name)
                     except ValueError:
                         # A very rare case which I was unable to reproduce since
                         # it requires the enabled_plugins list to change
@@ -395,10 +410,10 @@ class CorePlugins(object):
                     # Ensure that the latest settings are applied to the instance
                     # that will be used for execution
                     for existing_inst in self.plugins[plugin_type]:
-                        if existing_inst.get_name() == plugin_name and plugin_name in self._plugins_options[plugin_type].keys():
+                        if existing_inst.get_name(
+                        ) == plugin_name and plugin_name in self._plugins_options[plugin_type].keys():
                             custom_options = self._plugins_options[plugin_type][plugin_name]
                             existing_inst.set_options(custom_options)
-
 
     def plugin_factory(self):
         """

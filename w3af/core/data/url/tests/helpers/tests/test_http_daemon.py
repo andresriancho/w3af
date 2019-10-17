@@ -28,31 +28,31 @@ from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
 class TestHTTPDaemon(unittest.TestCase):
     """
     This is a unittest for the ServerHandler which lives in http_daemon.py
-    
+
     @author: Andres Riancho <andres . riancho | gmail . com>
     """
+
     def setUp(self):
         self.http_daemon = HTTPDaemon()
         self.http_daemon.start()
         self.http_daemon.wait_for_start()
-        
-        self.requests = self.http_daemon.requests 
-    
+
+        self.requests = self.http_daemon.requests
+
     def tearDown(self):
         self.http_daemon.shutdown()
-    
+
     def test_simple_GET(self):
         url = 'http://%s:%s/hello' % ('127.0.0.1', self.http_daemon.get_port())
         response_body = urllib2.urlopen(url).read()
-        
+
         self.assertEqual(response_body, 'ABCDEF\n')
         self.assertEqual(len(self.requests), 1)
-        
+
         request = self.requests[0]
-        
+
         self.assertEqual(request.path, '/hello')
         self.assertEqual(request.command, 'GET')
         self.assertEqual(request.request_version, 'HTTP/1.1')
         self.assertIn('host', request.headers)
         self.assertEqual(request.request_body, None)
-        

@@ -82,7 +82,7 @@ class dot_ds_store(CrawlPlugin):
 
         try:
             response = self.http_get_and_parse(url, binary_response=True)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'Failed to GET .DS_Store file: %s. Exception: %s.'
             om.out.debug(msg, (url, w3))
             return
@@ -94,8 +94,10 @@ class dot_ds_store(CrawlPlugin):
         try:
             store = DsStore(response.get_raw_body())
             entries = store.get_file_entries()
-        except Exception, e:
-            om.out.debug('Unexpected error while parsing DS_Store file: "%s"' % e)
+        except Exception as e:
+            om.out.debug(
+                'Unexpected error while parsing DS_Store file: "%s"' %
+                e)
             return
 
         parsed_url_list = []
@@ -109,7 +111,12 @@ class dot_ds_store(CrawlPlugin):
                 ' disclose filenames')
         desc %= (response.get_url())
 
-        v = Vuln('.DS_Store file found', desc, severity.LOW, response.id, self.get_name())
+        v = Vuln(
+            '.DS_Store file found',
+            desc,
+            severity.LOW,
+            response.id,
+            self.get_name())
         v.set_url(response.get_url())
 
         kb.kb.append(self, 'dot_ds_store', v)
@@ -123,11 +130,11 @@ class dot_ds_store(CrawlPlugin):
         This plugin searches for the .DS_Store file in all the directories and
         subdirectories that are sent as input. If the file is found extract new
         URLs from its content.
-        
-        The .DS_Store file holds information about the list of files in the 
+
+        The .DS_Store file holds information about the list of files in the
         current directory. These files are created by the Mac OS X Finder in every
         directory that it accesses.
-        
+
         For example, if the plugin input is:
             - http://host.tld/w3af/index.php
 

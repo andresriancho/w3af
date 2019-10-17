@@ -33,29 +33,29 @@ from w3af.core.data.dc.generic.nr_kv_container import NonRepeatKeyValueContainer
 class MockVuln(Vuln):
     def __init__(self, name='TestCase', long_desc=None, severity='High',
                  _id=1, plugin_name='plugin_name'):
-        
+
         if long_desc is None:
             long_desc = 'Foo bar spam eggs' * 10
-            
+
         super(MockVuln, self).__init__(name, long_desc, severity,
                                        _id, plugin_name)
 
 
 @attr('smoke')
 class TestVuln(unittest.TestCase):
-    
+
     def test_from_vuln(self):
         url = URL('http://moth/')
-        
+
         inst1 = MockVuln()
         inst1.set_uri(url)
         inst1['eggs'] = 'spam'
-        
+
         inst2 = Vuln.from_vuln(inst1)
-        
+
         self.assertNotEqual(id(inst1), id(inst2))
         self.assertIsInstance(inst2, Vuln)
-        
+
         self.assertEqual(inst1.get_uri(), inst2.get_uri())
         self.assertEqual(inst1.get_uri(), url)
         self.assertEqual(inst2.get_uri(), url)
@@ -74,17 +74,17 @@ class TestVuln(unittest.TestCase):
 
         freq = FuzzableRequest(url)
         fuzzer_config = {}
-        
+
         created_mutants = QSMutant.create_mutants(freq, payloads, [], False,
                                                   fuzzer_config)
-                
+
         mutant = created_mutants[0]
-        
+
         inst = Vuln.from_mutant('TestCase', 'desc' * 30, 'High', 1,
                                 'plugin_name', mutant)
-        
+
         self.assertIsInstance(inst, Vuln)
-        
+
         self.assertEqual(inst.get_uri(), mutant.get_uri())
         self.assertEqual(inst.get_url(), mutant.get_url())
         self.assertEqual(inst.get_method(), mutant.get_method())

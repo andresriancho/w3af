@@ -103,8 +103,9 @@ class meta_tags(GrepPlugin):
                         continue
 
                     # Now... if we found something, report it =)
-                    desc = ('The URI: "%s" sent a <meta> tag with the attribute'
-                            ' %s set to "%s" which looks interesting.')
+                    desc = (
+                        'The URI: "%s" sent a <meta> tag with the attribute'
+                        ' %s set to "%s" which looks interesting.')
                     desc %= (response.get_uri(), where, content)
 
                     tag_name = self._find_tag_name(tag)

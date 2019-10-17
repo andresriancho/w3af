@@ -31,6 +31,7 @@ class Splash(gtk.Window):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self):
         super(Splash, self).__init__()
 
@@ -43,7 +44,13 @@ class Splash(gtk.Window):
         self.add(vbox)
 
         # content
-        splash = os.path.join(ROOT_PATH, 'core', 'ui', 'gui', 'data', 'splash.png')
+        splash = os.path.join(
+            ROOT_PATH,
+            'core',
+            'ui',
+            'gui',
+            'data',
+            'splash.png')
         img = gtk.image_new_from_file(splash)
         vbox.pack_start(img)
         self.label = gtk.Label()

@@ -25,13 +25,12 @@ from w3af.core.controllers.misc.is_ip_address import is_ip_address
 
 
 class TestIsIPAddress(unittest.TestCase):
-    
+
     def test_is_ip_address_true(self):
         self.assertTrue(is_ip_address('127.0.0.1'))
-    
+
     def test_is_ip_address_false_case01(self):
         self.assertFalse(is_ip_address('127.0.0.1.2'))
-    
+
     def test_is_ip_address_false_case02(self):
         self.assertFalse(is_ip_address('127.0.0.256'))
-                

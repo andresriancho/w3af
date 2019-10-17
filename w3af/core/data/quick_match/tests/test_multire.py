@@ -126,4 +126,3 @@ class MultiReTest(unittest.TestCase):
         result = to_list(mre.query('abc\x00\x01\x02\x03def'))
         self.assertEqual(1, len(result))
         self.assertEqual('\x00\x01\x02\x03', result[0][1])
-

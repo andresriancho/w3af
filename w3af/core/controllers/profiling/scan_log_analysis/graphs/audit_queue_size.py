@@ -25,13 +25,15 @@ def get_queue_size_audit_data(scan_log_filename, scan):
 
 
 def draw_queue_size_audit(scan_log_filename, scan):
-    auditor_queue_sizes, auditor_queue_timestamps = get_queue_size_audit_data(scan_log_filename, scan)
+    auditor_queue_sizes, auditor_queue_timestamps = get_queue_size_audit_data(
+        scan_log_filename, scan)
 
     # Get the last timestamp to use as max in the graphs
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
-    auditor_queue_timestamps = [ts - first_timestamp for ts in auditor_queue_timestamps]
+    auditor_queue_timestamps = [
+        ts - first_timestamp for ts in auditor_queue_timestamps]
 
     if not auditor_queue_sizes:
         print('No audit consumer queue size data found')

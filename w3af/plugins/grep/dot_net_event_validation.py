@@ -41,8 +41,9 @@ class dot_net_event_validation(GrepPlugin):
                     r' value=".*?" />')
         ev_regex = (r'<input type="hidden" name="__EVENTVALIDATION"'
                     r' id="__EVENTVALIDATION" value=".*?" />')
-        encryptedvs_regex = (r'<input type="hidden" name="__VIEWSTATEENCRYPTED"'
-                             r' id="__VIEWSTATEENCRYPTED" value=".*?" />')
+        encryptedvs_regex = (
+            r'<input type="hidden" name="__VIEWSTATEENCRYPTED"'
+            r' id="__VIEWSTATEENCRYPTED" value=".*?" />')
 
         self._viewstate = re.compile(vs_regex, re.IGNORECASE)
         self._eventvalidation = re.compile(ev_regex, re.IGNORECASE)
@@ -85,8 +86,8 @@ class dot_net_event_validation(GrepPlugin):
                     ' exploited to decode the viewstate contents.')
             desc %= response.get_url()
 
-            i = Info('.NET ViewState encryption is disabled', desc, response.id,
-                     self.get_name())
+            i = Info('.NET ViewState encryption is disabled',
+                     desc, response.id, self.get_name())
             i.set_url(response.get_url())
             i[EVClearTextInfoSet.ITAG] = response.get_url().get_domain()
 
@@ -135,5 +136,4 @@ class EVClearTextInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')

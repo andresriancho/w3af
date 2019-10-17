@@ -92,7 +92,7 @@ class http_vs_https_dist(InfrastructurePlugin):
         # usage (which is specially big in scapy module, just when importing)
         try:
             from scapy.all import traceroute
-        except ImportError, ie:
+        except ImportError as ie:
             om.out.debug('There was an error importing scapy.all: "%s"' % ie)
             return
 
@@ -105,13 +105,15 @@ class http_vs_https_dist(InfrastructurePlugin):
             http_troute = traceroute(domain, dport=http_port)[0].get_trace()
 
             # pylint: enable=E1124,E1136
-        except Exception, e:
+        except Exception as e:
             # I've seen numerous bug reports with the following exception:
             # "error: illegal IP address string passed to inet_aton"
             # that come from this part of the code. It seems that in some cases
             # the domain resolves to an IPv6 address and scapy does NOT
             # support that protocol.
-            om.out.debug('There was an error running scapy\'s traceroute: "%s"' % e)
+            om.out.debug(
+                'There was an error running scapy\'s traceroute: "%s"' %
+                e)
             return
 
         # This destination was probably 'localhost' or a host reached
@@ -133,8 +135,8 @@ class http_vs_https_dist(InfrastructurePlugin):
             if not last_http_ip[1]:
                 om.out.error(desc % (http_port, domain))
         else:
-            trace_str = lambda iptuples: '\n'.join('    %s %s' %
-                                                  (t[0], t[1][0]) for t in enumerate(iptuples))
+            def trace_str(iptuples): return '\n'.join('    %s %s' %
+                                                      (t[0], t[1][0]) for t in enumerate(iptuples))
 
             if http_ip_tuples != https_ip_tuples:
                 header = '  TCP trace to %s:%s\n%s'
@@ -177,9 +179,9 @@ class http_vs_https_dist(InfrastructurePlugin):
             return False
         except Scapy_Exception:
             return False
-        except:
+        except BaseException:
             return False
-            
+
         return True
     # pylint: enable=E0202
 

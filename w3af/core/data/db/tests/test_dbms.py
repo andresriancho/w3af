@@ -42,23 +42,23 @@ def get_temp_filename():
 
 
 class TestDBMS(unittest.TestCase):
-    
+
     def setUp(self):
         create_temp_dir()
-    
+
     def tearDown(self):
         remove_temp_dir()
-    
+
     def test_open_error(self):
         invalid_filename = '/'
         self.assertRaises(DBException, SQLiteDBMS, invalid_filename)
-    
+
     def test_simple_db(self):
         db = SQLiteDBMS(get_temp_filename())
         db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')]).result()
-        
+
         db.execute('INSERT INTO TEST VALUES (1,"a")').result()
-        
+
         self.assertIn((1, 'a'), db.select('SELECT * from TEST'))
         self.assertEqual((1, 'a'), db.select_one('SELECT * from TEST'))
 
@@ -68,7 +68,8 @@ class TestDBMS(unittest.TestCase):
 
         db.execute('INSERT INTO TEST VALUES (1, "a")').result()
 
-        result = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('b', 1)).result()
+        result = db.execute(
+            'UPDATE TEST SET data = ? WHERE id = ?', ('b', 1)).result()
         self.assertEqual(result.rowcount, 1)
 
         # There was a bug here where the same cursor instance was used as a result
@@ -78,21 +79,24 @@ class TestDBMS(unittest.TestCase):
         #
         #   https://github.com/andresriancho/w3af/issues/16171
         #
-        result1 = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('c', 1)).result()
-        result2 = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('nope', 3)).result()
+        result1 = db.execute(
+            'UPDATE TEST SET data = ? WHERE id = ?', ('c', 1)).result()
+        result2 = db.execute(
+            'UPDATE TEST SET data = ? WHERE id = ?', ('nope', 3)).result()
         self.assertEqual(result1.rowcount, 1)
         self.assertEqual(result2.rowcount, 0)
 
     def test_performance_with_multiple_cursors(self):
-        raise SkipTest('This test is very specific to my workstation and was written just'
-                       ' to make sure that my changes did not break the performance of a'
-                       ' critical part of the framework.'
-                       ''
-                       'It is specific to my workstation because of the hard-coded'
-                       ' ONE_CURSOR_TIME value, which should be updated in each environment'
-                       ' by making the dbms._query_handler implementation look like:'
-                       ''
-                       'return self.cursor.execute(query, parameters)')
+        raise SkipTest(
+            'This test is very specific to my workstation and was written just'
+            ' to make sure that my changes did not break the performance of a'
+            ' critical part of the framework.'
+            ''
+            'It is specific to my workstation because of the hard-coded'
+            ' ONE_CURSOR_TIME value, which should be updated in each environment'
+            ' by making the dbms._query_handler implementation look like:'
+            ''
+            'return self.cursor.execute(query, parameters)')
 
         # I measured the performance of doing 10000 UPDATE calls with the same
         # cursor in dbms._query_handler(). It took:
@@ -108,7 +112,9 @@ class TestDBMS(unittest.TestCase):
         start_time = time.time()
 
         for i in xrange(10000):
-            result = db.execute('UPDATE TEST SET data = ? WHERE id = ?', ('%s' % i, 1)).result()
+            result = db.execute(
+                'UPDATE TEST SET data = ? WHERE id = ?', ('%s' %
+                                                          i, 1)).result()
             self.assertEqual(result.rowcount, 1)
 
         spent_time = time.time() - start_time
@@ -117,14 +123,17 @@ class TestDBMS(unittest.TestCase):
     def test_select_non_exist_table(self):
         db = SQLiteDBMS(get_temp_filename())
 
-        self.assertRaises(NoSuchTableException, db.select, 'SELECT * from TEST')
+        self.assertRaises(
+            NoSuchTableException,
+            db.select,
+            'SELECT * from TEST')
 
     def test_default_db(self):
         db = get_default_temp_db_instance()
         db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')]).result()
-        
+
         db.execute('INSERT INTO TEST VALUES (1,"a")').result()
-        
+
         self.assertIn((1, 'a'), db.select('SELECT * from TEST'))
         self.assertEqual((1, 'a'), db.select_one('SELECT * from TEST'))
 
@@ -132,35 +141,35 @@ class TestDBMS(unittest.TestCase):
         db = SQLiteDBMS(get_temp_filename())
         fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
         fr.result()
-        
+
         self.assertEqual([], db.select('SELECT * from TEST'))
-    
+
     def test_drop_table(self):
         db = SQLiteDBMS(get_temp_filename())
         fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
         fr.result()
-        
+
         db.drop_table('TEST').result()
         self.assertRaises(DBException, db.drop_table('TEST').result)
-    
+
     def test_simple_db_with_index(self):
         db = SQLiteDBMS(get_temp_filename())
         fr = db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
         fr.result()
-        
+
         db.create_index('TEST', ['data']).result()
         self.assertRaises(DBException,
                           db.create_index('TEST', ['data']).result)
-    
+
     def test_table_exists(self):
         db = SQLiteDBMS(get_temp_filename())
         self.assertFalse(db.table_exists('TEST'))
-        
+
         db = SQLiteDBMS(get_temp_filename())
         db.create_table('TEST', [('id', 'INT'), ('data', 'TEXT')], ['id'])
-        
+
         self.assertTrue(db.table_exists('TEST'))
-    
+
     def test_close_twice(self):
         db = SQLiteDBMS(get_temp_filename())
         db.close()

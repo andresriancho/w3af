@@ -81,11 +81,12 @@ class rootMenu(menu):
         # Check if the console output plugin is enabled or not, and warn.
         output_plugins = self._w3af.plugins.get_enabled_plugins('output')
         if 'console' not in output_plugins and len(output_plugins) == 0:
-            msg = ("\nWarning: You disabled the console output plugin. If you"
-                   " start a new scan, the discovered vulnerabilities won\'t be"
-                   " printed to the console, we advise you to enable at least"
-                   " one output plugin in order to be able to actually see the"
-                   " the scan output.")
+            msg = (
+                "\nWarning: You disabled the console output plugin. If you"
+                " start a new scan, the discovered vulnerabilities won\'t be"
+                " printed to the console, we advise you to enable at least"
+                " one output plugin in order to be able to actually see the"
+                " the scan output.")
             print msg
 
         # Note that I'm NOT starting this in a new multiprocess Process
@@ -96,7 +97,7 @@ class rootMenu(menu):
         self._scan_thread.name = 'ConsoleScanThread'
         self._scan_thread.daemon = True
         self._scan_thread.start()
-        
+
         # let the core thread start
         scan_started = self.wait_for_start()
         if not scan_started:
@@ -142,9 +143,9 @@ class rootMenu(menu):
             self._w3af.plugins.init_plugins()
             self._w3af.verify_environment()
             self._w3af.start()
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             om.out.error(str(w3))
-        except ScanMustStopException, w3:
+        except ScanMustStopException as w3:
             om.out.error(str(w3))
         except Exception:
             self._w3af.stop()
@@ -194,7 +195,8 @@ class rootMenu(menu):
                     continue
 
                 pressed_key = sys.stdin.read(1)
-                handler = handlers.get(pressed_key, self._default_during_scan_handler)
+                handler = handlers.get(
+                    pressed_key, self._default_during_scan_handler)
                 handler()
         finally:
             term.set_raw_input_mode(False)

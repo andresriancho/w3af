@@ -15,7 +15,14 @@ from plugins.dbms.firebird.syntax import Syntax
 from plugins.dbms.firebird.takeover import Takeover
 from plugins.generic.misc import Miscellaneous
 
-class FirebirdMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
+
+class FirebirdMap(
+        Syntax,
+        Fingerprint,
+        Enumeration,
+        Filesystem,
+        Miscellaneous,
+        Takeover):
     """
     This class defines Firebird methods
     """

@@ -38,13 +38,14 @@ class lang(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
         # Internal variables
         self._exec = True
         self._tries_left = 25
-        
+
     def grep(self, request, response):
         """
         Get the page indicated by the fuzzable_request and determine the language

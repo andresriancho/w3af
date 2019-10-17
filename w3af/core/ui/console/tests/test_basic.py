@@ -29,6 +29,7 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     """
     Basic test for the console UI.
     """
+
     def test_menu_browse_misc(self):
         commands_to_run = ['misc-settings', 'back', 'exit']
 
@@ -86,11 +87,12 @@ class TestBasicConsoleUI(ConsoleTestHelper):
                     'The configuration has been saved.\r\n')
         assert_result, msg = self.all_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
-        
+
         expected_start_with = ('| http://moth/',)
-        assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
+        assert_result, msg = self.all_expected_substring_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)
-        
+
     def test_menu_set_option_manual_save(self):
         commands_to_run = ['target set target http://moth/',
                            'target view',
@@ -102,7 +104,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
 
         expected_start_with = ('| target ',
                                'The configuration has been saved.')
-        assert_result, msg = self.startswith_expected_in_output(expected_start_with)
+        assert_result, msg = self.startswith_expected_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)
 
     def test_menu_set_option_auto_save(self):
@@ -115,9 +118,10 @@ class TestBasicConsoleUI(ConsoleTestHelper):
 
         expected_start_with = ('| target ',
                                'The configuration has been saved.')
-        assert_result, msg = self.startswith_expected_in_output(expected_start_with)
+        assert_result, msg = self.startswith_expected_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)
-        
+
     def test_menu_set_option_invalid_case01(self):
         # Invalid port
         commands_to_run = ['target', 'set target http://moth:301801/', 'view',
@@ -130,6 +134,6 @@ class TestBasicConsoleUI(ConsoleTestHelper):
                                # Because nothing was really saved and the
                                # config is empty, this will succeed
                                'The configuration has been saved.')
-        assert_result, msg = self.startswith_expected_in_output(expected_start_with)
+        assert_result, msg = self.startswith_expected_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)
-

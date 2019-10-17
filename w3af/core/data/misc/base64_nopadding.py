@@ -24,7 +24,8 @@ import base64
 import binascii
 
 
-BASE64_RE = re.compile('^(?:[a-zA-Z0-9+/]{4})*(?:[a-zA-Z0-9+/]{2}==|[a-zA-Z0-9+/]{3}=|[a-zA-Z0-9+/]{4})$')
+BASE64_RE = re.compile(
+    '^(?:[a-zA-Z0-9+/]{4})*(?:[a-zA-Z0-9+/]{2}==|[a-zA-Z0-9+/]{3}=|[a-zA-Z0-9+/]{4})$')
 
 
 def decode_base64(data):

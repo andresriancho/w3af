@@ -29,6 +29,7 @@ class EmptyMutant(Mutant):
     A Mutant which points its set_dc and get_dc to an internal container, not
     related with a FuzzableRequest
     """
+
     def __init__(self, freq=None):
         self._dc = NonRepeatKeyValueContainer()
 

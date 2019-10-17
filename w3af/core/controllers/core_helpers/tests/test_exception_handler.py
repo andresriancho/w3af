@@ -54,7 +54,7 @@ class TestExceptionHandler(unittest.TestCase):
 
         try:
             raise Exception('unittest')
-        except Exception, e:
+        except Exception as e:
             exec_info = sys.exc_info()
             enabled_plugins = ''
             self.exception_handler.handle(self.status,
@@ -89,7 +89,7 @@ class TestExceptionHandler(unittest.TestCase):
         for _ in xrange(10):
             try:
                 raise Exception('unittest')
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 self.exception_handler.handle(self.status, e, exec_info,
@@ -115,7 +115,7 @@ class TestExceptionHandler(unittest.TestCase):
         for _ in xrange(10):
             try:
                 raise Exception('unittest')
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 self.exception_handler.handle(self.status, e, exec_info,
@@ -138,14 +138,14 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.filename, 'test_exception_handler.py')
 
     def test_handle_threads_calls(self):
-        
+
         def test2():
             raise Exception('unittest')
-        
+
         def test(ehandler):
             try:
                 test2()
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 ehandler.handle(self.status, e, exec_info, enabled_plugins)
@@ -153,7 +153,7 @@ class TestExceptionHandler(unittest.TestCase):
         th = threading.Thread(target=test, args=(self.exception_handler,))
         th.start()
         th.join()
-        
+
         all_edata = self.exception_handler.get_all_exceptions()
 
         self.assertEqual(1, len(all_edata))
@@ -172,16 +172,16 @@ class TestExceptionHandler(unittest.TestCase):
 
     def test_handle_multi_calls(self):
 
-        def test3():        
+        def test3():
             raise Exception('unittest')
-        
+
         def test2():
             test3()
-        
+
         def test(ehandler):
             try:
                 test2()
-            except Exception, e:
+            except Exception as e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
                 ehandler.handle(self.status, e, exec_info, enabled_plugins)
@@ -237,7 +237,7 @@ class TestExceptionData(unittest.TestCase):
     def test_serialize_deserialize(self):
         try:
             raise KeyError
-        except Exception, e:
+        except Exception as e:
             except_type, except_class, tb = sys.exc_info()
             enabled_plugins = '{}'
 
@@ -263,7 +263,7 @@ class TestExceptionData(unittest.TestCase):
     def test_fail_traceback_serialize(self):
         try:
             raise KeyError
-        except Exception, e:
+        except Exception as e:
             except_type, except_class, tb = sys.exc_info()
             enabled_plugins = '{}'
 

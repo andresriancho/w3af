@@ -24,7 +24,7 @@ from functools import wraps
 def only_if_subclass(meth):
     """
     Function to decorate tests that should NOT be called unless they are
-    a subclass of  
+    a subclass of
     """
     @wraps(meth)
     def test_only_subclass(self, *args, **kwds):
@@ -32,11 +32,11 @@ def only_if_subclass(meth):
         to run it!"""
         for base_klass in self.__class__.__bases__:
             if meth.__name__ in dir(base_klass) and \
-            base_klass.__name__ != self.__class__.__name__:
+                    base_klass.__name__ != self.__class__.__name__:
                 # The method that we're calling was defined in a base class
                 # of the current caller, so we want to call it!
                 return meth(self, *args, **kwds)
-            
+
         return
-        
+
     return test_only_subclass

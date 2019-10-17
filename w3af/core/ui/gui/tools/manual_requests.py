@@ -44,34 +44,35 @@ class ManualRequests(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, initial_request=None):
         super(ManualRequests, self).__init__(w3af, "manualreq",
                                              "w3af - Manual Requests",
                                              "Manual_Requests")
         self.w3af = w3af
-        
+
         #
         # Toolbar
         #
-        self.send_but = entries.SemiStockButton(_("Send"), gtk.STOCK_MEDIA_PLAY,
-                                                _("Send HTTP request"))
+        self.send_but = entries.SemiStockButton(
+            _("Send"), gtk.STOCK_MEDIA_PLAY, _("Send HTTP request"))
         self.send_but.connect("clicked", self._send)
         self.send_but.show()
-        
+
         # Fix content length checkbox
         self._fix_content_len_cb = gtk.CheckButton('Fix content length header')
         self._fix_content_len_cb.set_active(True)
         self._fix_content_len_cb.show()
-        
+
         # request-response viewer
         self.reqresp = ReqResViewer(w3af, [self.send_but.set_sensitive],
                                     withManual=False, editableRequest=True)
         self.reqresp.response.set_sensitive(False)
-        
+
         self.vbox.pack_start(self.reqresp, True, True)
         self.vbox.pack_start(self._fix_content_len_cb, False, False)
         self.vbox.pack_start(self.send_but, False, False)
-        
+
         # Add a default request
         if initial_request is None:
             self.reqresp.request.show_raw(MANUAL_REQUEST_EXAMPLE, '')
@@ -116,7 +117,7 @@ class ManualRequests(entries.RememberingWindow):
                 self.reqresp.response.set_sensitive(True)
                 self.reqresp.response.show_object(impact.httpResp)
                 self.reqresp.nb.next_page()
-                
+
             elif hasattr(impact, 'exception'):
                 known_exceptions = (BaseFrameworkException,
                                     ScanMustStopException,

@@ -60,20 +60,20 @@ class DiskCachedResponse(CachedResponse):
             headers = str(response.info())
             f.write(headers)
             f.close()
-        except Exception, e:
+        except Exception as e:
             msg = 'cache.py: Could not save headers file. Exception: "%s".'
             raise FileException(msg % e)
 
         try:
             body = response.read()
-        except Exception, e:
+        except Exception as e:
             om.out.error('cache.py: Timeout while fetching page body.')
         else:
             try:
                 f = open(fname + ".body", "w")
                 f.write(body)
                 f.close()
-            except Exception, e:
+            except Exception as e:
                 msg = 'cache.py: Could not save body file. Exception: "%s".'
                 raise FileException(msg % e)
 
@@ -86,7 +86,7 @@ class DiskCachedResponse(CachedResponse):
             # store data to disk
             f.write(str(response.code))
             f.close()
-        except Exception, e:
+        except Exception as e:
             msg = 'cache.py: Could not save code file. Exception: "%s".'
             raise FileException(msg % e)
 
@@ -94,7 +94,7 @@ class DiskCachedResponse(CachedResponse):
             f = open(fname + ".msg", "w")
             f.write(str(response.msg))
             f.close()
-        except Exception, e:
+        except Exception as e:
             msg = 'cache.py: Could not save msg file. Exception: "%s".'
             raise FileException(msg % e)
 

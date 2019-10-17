@@ -8,12 +8,13 @@ except ImportError:
 
 
 def configure_logging(log_file):
-    logging.basicConfig(filename=log_file,
-                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                        datefmt='%m-%d %H:%M',
-                        filemode='w',
-                        level=logging.DEBUG)
-    
+    logging.basicConfig(
+        filename=log_file,
+        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        datefmt='%m-%d %H:%M',
+        filemode='w',
+        level=logging.DEBUG)
+
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = ColorLog()
     console.setLevel(logging.INFO)
@@ -30,7 +31,7 @@ class ColorLog(logging.Handler):
               logging.WARNING: yellow,
               logging.INFO: green,
               logging.DEBUG: lambda x: x}
-    
+
     def __init__(self):
         logging.Handler.__init__(self)
 

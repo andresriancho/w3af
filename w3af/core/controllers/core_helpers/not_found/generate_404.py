@@ -249,7 +249,11 @@ def grouper(iterable, n, fillvalue=None):
     return itertools.izip_longest(fillvalue=fillvalue, *args)
 
 
-def send_request_generate_404(uri_opener, http_response, debugging_id, exclude=None):
+def send_request_generate_404(
+        uri_opener,
+        http_response,
+        debugging_id,
+        exclude=None):
     exclude = [] if exclude is None else exclude
 
     #
@@ -305,7 +309,7 @@ def send_404(uri_opener, url_404, debugging_id=None):
                                   cache=True,
                                   grep=False,
                                   debugging_id=debugging_id)
-    except HTTPRequestException, hre:
+    except HTTPRequestException as hre:
         message = 'Exception found while detecting 404: "%s" (did:%s)'
         args = (hre, debugging_id)
         om.out.debug(message % args)

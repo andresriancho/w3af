@@ -39,7 +39,7 @@ class TestXUrllibIntegration(unittest.TestCase):
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
-        
+
     @attr('ci_fails')
     def test_ntlm_auth_not_configured(self):
         self.uri_opener = ExtendedUrllib()
@@ -49,24 +49,24 @@ class TestXUrllibIntegration(unittest.TestCase):
 
     @attr('ci_fails')
     def test_ntlm_auth_valid_creds(self):
-        
+
         self.uri_opener = ExtendedUrllib()
-        
+
         settings = OpenerSettings()
         options = settings.get_options()
-        ntlm_domain = options['ntlm_auth_domain'] 
+        ntlm_domain = options['ntlm_auth_domain']
         ntlm_user = options['ntlm_auth_user']
         ntlm_pass = options['ntlm_auth_passwd']
         ntlm_url = options['ntlm_auth_url']
-        
-        ntlm_domain.set_value('moth') 
+
+        ntlm_domain.set_value('moth')
         ntlm_user.set_value('admin')
         ntlm_pass.set_value('admin')
         ntlm_url.set_value('http://moth/w3af/core/ntlm_auth/ntlm_v1/')
-        
+
         settings.set_options(options)
         self.uri_opener.settings = settings
-        
+
         url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('You are admin from MOTH/', http_response.body)
@@ -127,4 +127,3 @@ class TestUpperCaseHeaders(unittest.TestCase):
         content_encoding = headers.get('Content-Type', '')
 
         self.assertIn('application/html', content_encoding)
-

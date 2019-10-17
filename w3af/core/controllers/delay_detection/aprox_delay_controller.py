@@ -34,22 +34,22 @@ class AproxDelayController(object):
     This class works for approximated time delays, this means that we DO NOT
     NEED to control how many seconds the remote server will "sleep" before
     returning the response
-    
+
     A good example to understand this is MySQL's sleep(x) vs. benchmark(...).
     This class solves the benchmark(...) issue while ExactDelay solves the
     sleep(x) issue.
-    
+
     Note that these delays are applied ONLY if all the previous delays worked
     so adding more here will only increase accuracy and not performance since
     you'll only get slower scans when there is a vulnerability, which is not
     the most common case
-    
+
     The delay multiplier means: "try to delay for twice the time of the
     original request". In other words, if the original request said
     BENCHMARK(2500000,MD5(1)) then if the multiplier is a 2 the next request
     will send BENCHMARK(5000000,MD5(1)) and if the multiplier is a 4 it will
     send BENCHMARK(10000000,MD5(1)).
-    
+
     After sending the request, the algorithm will verify that the response
     was delayed at least multiplier * original_time to continue with the
     next step
@@ -69,8 +69,9 @@ class AproxDelayController(object):
                           the remote server (ie. sleep(%s) )
         """
         if not isinstance(delay_obj, AproxDelay):
-            raise TypeError('ExactDelayController requires ExactDelay as input')
-        
+            raise TypeError(
+                'ExactDelayController requires ExactDelay as input')
+
         if delay_setting not in (LINEARLY, EXPONENTIALLY):
             raise TypeError('delay_increases needs to be one of LINEARLY'
                             ' or EXPONENTIALLY')
@@ -107,8 +108,8 @@ class AproxDelayController(object):
         """
         responses = []
 
-        original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
-                                                                  debugging_id=self.get_debugging_id())
+        original_rtt = self.uri_opener.get_average_rtt_for_mutant(
+            mutant=self.mutant, debugging_id=self.get_debugging_id())
 
         # Find a multiplier that delays
         multiplier = self.find_delay_multiplier(original_rtt, responses)
@@ -118,8 +119,8 @@ class AproxDelayController(object):
         # We want to make sure that the multiplier actually works and
         # that the delay is stable
         for _ in xrange(3):
-            original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
-                                                                      debugging_id=self.get_debugging_id())
+            original_rtt = self.uri_opener.get_average_rtt_for_mutant(
+                mutant=self.mutant, debugging_id=self.get_debugging_id())
             delays, resp = self.multiplier_delays_response(multiplier,
                                                            original_rtt,
                                                            grep=False)
@@ -132,21 +133,23 @@ class AproxDelayController(object):
             return True, responses
 
         return False, responses
-    
+
     def find_delay_multiplier(self, original_rtt, responses):
-        for i, multiplier in enumerate(self.DELAY_SETTINGS[self.delay_setting]):
+        for i, multiplier in enumerate(
+                self.DELAY_SETTINGS[self.delay_setting]):
             # Only grep the first response, this way we let the grep plugins find stuff
             # but afterwards we get a performance improvement
             grep = i == 0
 
-            delays, resp = self.multiplier_delays_response(multiplier, original_rtt, grep)
+            delays, resp = self.multiplier_delays_response(
+                multiplier, original_rtt, grep)
             responses.append(resp)
             if delays:
                 return multiplier
-        
+
         # No multiplier was able to make an impact in the delay
         return None
-    
+
     def multiplier_delays_response(self, multiplier, original_rtt, grep):
         """
         :return: (True if the multiplier delays the response,
@@ -164,6 +167,6 @@ class AproxDelayController(object):
 
         # Test
         if response.get_wait_time() > (original_rtt * self.DELAY_DIFF_MULT):
-                return True, response
+            return True, response
 
         return False, response

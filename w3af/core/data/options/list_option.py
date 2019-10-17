@@ -30,7 +30,8 @@ class ListOption(BaseOption):
 
     _type = LIST
 
-    LST_VALIDATION_RE = re.compile('((".*?"|\'.*?\'|.*?),)*(".*?"|\'.*?\'|.*?)', re.U)
+    LST_VALIDATION_RE = re.compile(
+        '((".*?"|\'.*?\'|.*?),)*(".*?"|\'.*?\'|.*?)', re.U)
     LST_PARSE_RE = re.compile('(".*?"|\'.*?\'|.*?),', re.U)
 
     VALID_EXAMPLES = ('Examples of valid list specifications are:\n'
@@ -61,8 +62,10 @@ class ListOption(BaseOption):
         # Raise an exception if the user specified a list using [...] and
         # make it clear that they need to use comma separated format
         if value.startswith('[') or value.endswith(']'):
-            raise BaseFrameworkException('Invalid list specified, use of [...] is not'
-                                         ' supported. %s' % self.VALID_EXAMPLES)
+            raise BaseFrameworkException(
+                'Invalid list specified, use of [...] is not'
+                ' supported. %s' %
+                self.VALID_EXAMPLES)
 
         # Add the "," at the end to make parsing easier
         temp_value = value + ','

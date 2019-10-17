@@ -24,10 +24,8 @@ import unittest
 from github import Github
 from nose.plugins.attrib import attr
 
-from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
-                                                                   OAUTH_TOKEN,
-                                                                   OAuthTokenInvalid,
-                                                                   UserCredentialsInvalid)
+from w3af.core.controllers.easy_contribution.github_issues import (
+    GithubIssues, OAUTH_TOKEN, OAuthTokenInvalid, UserCredentialsInvalid)
 
 
 @attr('internet')
@@ -36,7 +34,7 @@ class TestGithubIssues(unittest.TestCase):
     def test_report(self):
         gh = GithubIssues(OAUTH_TOKEN)
         gh.login()
-        
+
         summary = 'Unittest bug report'
         userdesc = 'Please remove this ticket'
 
@@ -44,7 +42,7 @@ class TestGithubIssues(unittest.TestCase):
         self.assertIsInstance(ticket_id, int)
         self.assertTrue(ticket_url.startswith(
             'https://github.com/andresriancho/w3af/issues/'))
-        
+
         # Remove the ticket I've just created
         gh = Github(OAUTH_TOKEN)
         repo = gh.get_user('andresriancho').get_repo('w3af')
@@ -58,7 +56,7 @@ class TestGithubIssues(unittest.TestCase):
     def test_login_success_token(self):
         gh = GithubIssues(OAUTH_TOKEN)
         self.assertTrue(gh.login())
-    
+
     def test_login_failed_user_pass(self):
         gh = GithubIssues('foobar', 'testbar')
         self.assertRaises(UserCredentialsInvalid, gh.login)

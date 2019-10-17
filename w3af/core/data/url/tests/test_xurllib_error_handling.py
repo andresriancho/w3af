@@ -81,7 +81,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
                     self.uri_opener.GET(url, cache=False)
                 except HTTPRequestException:
                     http_exception_count += 1
-                except Exception, e:
+                except Exception as e:
                     msg = 'Not expecting: "%s"'
                     self.assertTrue(False, msg % e.__class__.__name__)
                 else:
@@ -117,7 +117,8 @@ class TestXUrllibDelayOnError(unittest.TestCase):
                 self.assertTrue(False, 'Expected HTTPRequestException')
 
             # The log was cleared, all values should be False
-            self.assertTrue(all([not v for v in self.uri_opener._sleep_log.values()]))
+            self.assertTrue(
+                all([not v for v in self.uri_opener._sleep_log.values()]))
 
     def test_error_handling_disable_per_request(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
@@ -164,9 +165,9 @@ class TestXUrllibDelayOnError(unittest.TestCase):
                 self.uri_opener.GET(url, cache=False)
             except HTTPRequestException:
                 http_exception_count += 1
-            except ScanMustStopByKnownReasonExc, smse:
+            except ScanMustStopByKnownReasonExc as smse:
                 break
-            except Exception, e:
+            except Exception as e:
                 msg = 'Not expecting: "%s"'
                 self.assertTrue(False, msg % e.__class__.__name__)
             else:
@@ -175,14 +176,19 @@ class TestXUrllibDelayOnError(unittest.TestCase):
         # We quickly reach this state, which is good since the server is down
         self.assertEquals(http_exception_count, 9)
 
-        # After reaching this state we will always yield ScanMustStopByKnownReasonExc
+        # After reaching this state we will always yield
+        # ScanMustStopByKnownReasonExc
         for i in xrange(loops):
             self.assertRaises(ScanMustStopByKnownReasonExc,
                               self.uri_opener.GET, url, cache=False)
 
         # Confirm that this is the code section raising the exception
         self.uri_opener._raise_if_should_stop = lambda: True
-        self.assertRaises(HTTPRequestException, self.uri_opener.GET, url, cache=False)
+        self.assertRaises(
+            HTTPRequestException,
+            self.uri_opener.GET,
+            url,
+            cache=False)
 
 
 class TestXUrllibErrorHandling(PluginTest):
@@ -254,7 +260,8 @@ class TestXUrllibErrorHandling(PluginTest):
         # Verify the specifics about the vulnerabilities
         expected = [('5', 'g')]
 
-        self.assertAllVulnNamesEqual('Local file inclusion vulnerability', vulns)
+        self.assertAllVulnNamesEqual(
+            'Local file inclusion vulnerability', vulns)
         self.assertExpectedVulnsFound(expected, vulns)
         self.assertTrue(self.w3afcore.uri_opener.clear.called)
 

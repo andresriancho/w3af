@@ -25,9 +25,9 @@ from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestProfileLoading(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'profile_loading', 'images')
-    
+
     def test_profile_loading(self):
         """
         Tests that it is possible to change from one profile to the next
@@ -35,11 +35,9 @@ class TestProfileLoading(XpresserUnittest):
         """
         self.click('empty_profile')
         self.find('no_plugins_enabled')
-        
+
         self.click('owasp_top_10')
         self.find('audit_plugins_enabled')
-        
+
         self.click('empty_profile')
         self.find('no_plugins_enabled')
-    
-        

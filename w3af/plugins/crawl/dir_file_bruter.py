@@ -46,9 +46,9 @@ class dir_file_bruter(CrawlPlugin):
     :author: Andres Riancho ( andres@bonsai-sec.com )
     :author: Tomas Velazquez
     """
-    
+
     BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'crawl', 'dir_file_bruter')
-    
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -114,12 +114,14 @@ class dir_file_bruter(CrawlPlugin):
         """
         if self._bf_directories:
             is_path = True
-            for line, new_url in self._read_db_file_gen_url(base_path, self._dir_list, is_path):
+            for line, new_url in self._read_db_file_gen_url(
+                    base_path, self._dir_list, is_path):
                 yield line, new_url
 
         if self._bf_files:
             is_path = False
-            for line, new_url in self._read_db_file_gen_url(base_path, self._file_list, is_path):
+            for line, new_url in self._read_db_file_gen_url(
+                    base_path, self._file_list, is_path):
                 yield line, new_url
 
     def _read_db_file_gen_url(self, base_path, file_name, is_path):
@@ -145,18 +147,19 @@ class dir_file_bruter(CrawlPlugin):
 
             try:
                 new_url = base_path.url_join(line)
-            except ValueError, ve:
+            except ValueError as ve:
                 msg = 'The "%s" line at "%s" generated an invalid URL: %s'
                 om.out.debug(msg % (line, file_name, ve))
             else:
                 yield line, new_url
 
-    def _send_and_check(self, base_path, (file_or_path, new_url)):
+    def _send_and_check(self, base_path, xxx_todo_changeme):
         """
         Performs a GET and verifies that the response is not a 404.
 
         :return: None, data is stored in self.output_queue
         """
+        (file_or_path, new_url) = xxx_todo_changeme
         http_response = self._uri_opener.GET(new_url, cache=False)
 
         if is_404(http_response):
@@ -192,8 +195,9 @@ class dir_file_bruter(CrawlPlugin):
 
         d = ('If set to True, this plugin will bruteforce all directories, not'
              ' only the root directory.')
-        h = ('WARNING: Enabling this will make the plugin send tens of thousands'
-             ' of requests.')
+        h = (
+            'WARNING: Enabling this will make the plugin send tens of thousands'
+            ' of requests.')
         o = opt_factory('be_recursive', self._be_recursive, d, BOOL, help=h)
         ol.add(o)
 
@@ -218,11 +222,11 @@ class dir_file_bruter(CrawlPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin finds directories and files on a web server by brute-forcing 
+        This plugin finds directories and files on a web server by brute-forcing
         their names using a wordlist.
 
         Given the large amount of time that this plugin can consume, by default,
-        it will only try to identify directories in the current web resource, 
+        it will only try to identify directories in the current web resource,
         ignoring the path that is sent as its input.
 
         Five configurable parameters exist:

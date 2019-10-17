@@ -150,8 +150,8 @@ class TestSGMLParser(unittest.TestCase):
         self.assertEqual([URL('http://crawler.w3af.com/')], p.references[0])
 
     def test_meta_tags_with_single_quotes(self):
-        body = HTML_DOC % {'head': META_REFRESH + META_REFRESH_WITH_URL_AND_QUOTES,
-                           'body': ''}
+        body = HTML_DOC % {'head': META_REFRESH +
+                           META_REFRESH_WITH_URL_AND_QUOTES, 'body': ''}
         resp = build_http_response(self.url, body)
 
         p = SGMLParser(resp)
@@ -286,7 +286,8 @@ class TestSGMLParser(unittest.TestCase):
         test_file = os.path.join(ROOT_PATH, test_file_path)
         body = file(test_file, 'rb').read()
 
-        sample_encodings = [encoding for _, (_, encoding) in TEST_RESPONSES.iteritems()]
+        sample_encodings = [encoding for _,
+                            (_, encoding) in TEST_RESPONSES.iteritems()]
         sample_encodings.extend(['', 'utf-8'])
 
         for encoding in sample_encodings:

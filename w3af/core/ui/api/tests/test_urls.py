@@ -57,4 +57,3 @@ class URLTest(APIUnitTest):
                          u'%s/where_string_single_qs.py' % target_url[:-1],
                          u'%s/where_integer_form.py' % target_url[:-1]]
         self.assertEqual(set(url_items), set(expected_urls))
-

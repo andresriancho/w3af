@@ -17,6 +17,7 @@ from lib.core.settings import PGSQL_ALIASES
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.PGSQL)
@@ -52,7 +53,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
@@ -79,7 +81,8 @@ class Fingerprint(GenericFingerprint):
             infoMsg = "confirming %s" % DBMS.PGSQL
             logger.info(infoMsg)
 
-            result = inject.checkBooleanExpression("COALESCE([RANDNUM], NULL)=[RANDNUM]")
+            result = inject.checkBooleanExpression(
+                "COALESCE([RANDNUM], NULL)=[RANDNUM]")
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.PGSQL
@@ -154,15 +157,21 @@ class Fingerprint(GenericFingerprint):
         infoMsg = "fingerprinting the back-end DBMS operating system"
         logger.info(infoMsg)
 
-        self.createSupportTbl(self.fileTblName, self.tblField, "character(10000)")
-        inject.goStacked("INSERT INTO %s(%s) VALUES (%s)" % (self.fileTblName, self.tblField, "VERSION()"))
+        self.createSupportTbl(
+            self.fileTblName,
+            self.tblField,
+            "character(10000)")
+        inject.goStacked(
+            "INSERT INTO %s(%s) VALUES (%s)" %
+            (self.fileTblName, self.tblField, "VERSION()"))
 
         # Windows executables should always have ' Visual C++' or ' mingw'
         # patterns within the banner
         osWindows = (" Visual C++", "mingw")
 
         for osPattern in osWindows:
-            query = "(SELECT LENGTH(%s) FROM %s WHERE %s " % (self.tblField, self.fileTblName, self.tblField)
+            query = "(SELECT LENGTH(%s) FROM %s WHERE %s " % (
+                self.tblField, self.fileTblName, self.tblField)
             query += "LIKE '%" + osPattern + "%')>0"
 
             if inject.checkBooleanExpression(query):

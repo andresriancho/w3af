@@ -28,14 +28,26 @@ from ..requirements import CORE, GUI
 class CentOS65(CentOS):
     SYSTEM_NAME = 'CentOS 6.5'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip','npm', 'python-devel', 'python-setuptools',
-                            'sqlite-devel', 'gcc-c++', 'gcc', 'make', 'git',
-                            'libxml2-devel', 'libxslt-devel', 'pyOpenSSL',
-                            'openssl-devel', 'libcom_err-devel', 'libcom_err']
+    CORE_SYSTEM_PACKAGES = [
+        'python-pip',
+        'npm',
+        'python-devel',
+        'python-setuptools',
+        'sqlite-devel',
+        'gcc-c++',
+        'gcc',
+        'make',
+        'git',
+        'libxml2-devel',
+        'libxslt-devel',
+        'pyOpenSSL',
+        'openssl-devel',
+        'libcom_err-devel',
+        'libcom_err']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
-    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'gtksourceview2', 'pygtksourceview',
-                                'pywebkitgtk'])
+    GUI_SYSTEM_PACKAGES.extend(
+        ['graphviz', 'gtksourceview2', 'pygtksourceview', 'pywebkitgtk'])
 
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}

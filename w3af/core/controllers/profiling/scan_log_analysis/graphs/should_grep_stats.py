@@ -10,6 +10,7 @@ from utils.utils import (get_first_timestamp,
 
 SHOULD_GREP_STATS = re.compile("Grep consumer should_grep\\(\\) stats: (.*)$")
 
+
 def to_dict(match_data):
     match_data = match_data.replace("'", '"')
     return json.loads(match_data)
@@ -28,7 +29,7 @@ def get_should_grep_data(scan_log_filename, scan):
 
         try:
             stats_dict = to_dict(match.group(1))
-        except:
+        except BaseException:
             print('Warning: %s is not valid JSON' % match.group(1))
             continue
         else:
@@ -39,13 +40,15 @@ def get_should_grep_data(scan_log_filename, scan):
 
 
 def draw_should_grep(scan_log_filename, scan):
-    should_grep_data, should_grep_timestamps = get_should_grep_data(scan_log_filename, scan)
+    should_grep_data, should_grep_timestamps = get_should_grep_data(
+        scan_log_filename, scan)
 
     # Get the last timestamp to use as max in the graphs
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
-    should_grep_timestamps = [ts - first_timestamp for ts in should_grep_timestamps]
+    should_grep_timestamps = [
+        ts - first_timestamp for ts in should_grep_timestamps]
 
     if not should_grep_data:
         print('No should_grep data found')
@@ -60,7 +63,8 @@ def draw_should_grep(scan_log_filename, scan):
     last_data = should_grep_data[-1]
     total = sum(v for k, v in last_data.iteritems())
     total = float(total)
-    data_percent = dict((k, round((v / total) * 100)) for k, v in last_data.iteritems())
+    data_percent = dict((k, round((v / total) * 100))
+                        for k, v in last_data.iteritems())
     print('    Latest should_grep() percentages: %r' % data_percent)
     print('')
 
@@ -85,7 +89,8 @@ def draw_should_grep(scan_log_filename, scan):
                 key_slice.append(0)
                 continue
 
-            data_percent = dict((k, (v / total) * 100) for k, v in data_point.iteritems())
+            data_percent = dict((k, (v / total) * 100)
+                                for k, v in data_point.iteritems())
             key_slice.append(data_percent[key])
 
         fig.plot(should_grep_timestamps,

@@ -7,7 +7,7 @@ See the file 'LICENSE' for copying permission
 
 try:
     import sqlite3
-except:
+except BaseException:
     pass
 
 import logging
@@ -40,13 +40,14 @@ class Connector(GenericConnector):
         self.checkFileDb()
 
         try:
-            self.connector = self.__sqlite.connect(database=self.db, check_same_thread=False, timeout=conf.timeout)
+            self.connector = self.__sqlite.connect(
+                database=self.db, check_same_thread=False, timeout=conf.timeout)
 
             cursor = self.connector.cursor()
             cursor.execute("SELECT * FROM sqlite_master")
             cursor.close()
 
-        except (self.__sqlite.DatabaseError, self.__sqlite.OperationalError), msg:
+        except (self.__sqlite.DatabaseError, self.__sqlite.OperationalError) as msg:
             warnMsg = "unable to connect using SQLite 3 library, trying with SQLite 2"
             logger.warn(warnMsg)
 
@@ -59,8 +60,9 @@ class Connector(GenericConnector):
                     raise SqlmapMissingDependence(errMsg)
 
                 self.__sqlite = sqlite
-                self.connector = self.__sqlite.connect(database=self.db, check_same_thread=False, timeout=conf.timeout)
-            except (self.__sqlite.DatabaseError, self.__sqlite.OperationalError), msg:
+                self.connector = self.__sqlite.connect(
+                    database=self.db, check_same_thread=False, timeout=conf.timeout)
+            except (self.__sqlite.DatabaseError, self.__sqlite.OperationalError) as msg:
                 raise SqlmapConnectionException(msg[0])
 
         self.initCursor()
@@ -69,16 +71,22 @@ class Connector(GenericConnector):
     def fetchall(self):
         try:
             return self.cursor.fetchall()
-        except self.__sqlite.OperationalError, msg:
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[0])
+        except self.__sqlite.OperationalError as msg:
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[0])
             return None
 
     def execute(self, query):
         try:
             self.cursor.execute(utf8encode(query))
-        except self.__sqlite.OperationalError, msg:
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[0])
-        except self.__sqlite.DatabaseError, msg:
+        except self.__sqlite.OperationalError as msg:
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[0])
+        except self.__sqlite.DatabaseError as msg:
             raise SqlmapConnectionException(msg[0])
 
         self.connector.commit()

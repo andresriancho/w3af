@@ -57,12 +57,13 @@ class bing_spider(CrawlPlugin):
             raise BaseFrameworkException(msg % domain)
 
         try:
-            results = bing_se.get_n_results('site:' + domain, self._result_limit)
-        except:
+            results = bing_se.get_n_results(
+                'site:' + domain, self._result_limit)
+        except BaseException:
             pass
         else:
             self.worker_pool.map(self.http_get_and_parse,
-                                    [r.URL for r in results])
+                                 [r.URL for r in results])
 
     def get_options(self):
         """

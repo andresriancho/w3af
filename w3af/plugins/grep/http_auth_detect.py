@@ -95,8 +95,9 @@ class http_auth_detect(GrepPlugin):
         #
         url_list = []
         try:
-            document_parser = parser_cache.dpc.get_document_parser_for(response)
-        except BaseFrameworkException, e:
+            document_parser = parser_cache.dpc.get_document_parser_for(
+                response)
+        except BaseFrameworkException as e:
             msg = 'Failed to find a suitable document parser. Exception: "%s"'
             om.out.debug(msg % e)
         else:
@@ -111,7 +112,7 @@ class http_auth_detect(GrepPlugin):
                 desc = ('The resource: "%s" has a user and password in the'
                         ' body. The offending URL is: "%s".')
                 desc %= (response.get_url(), url)
-                
+
                 v = Vuln('Basic HTTP credentials', desc,
                          severity.HIGH, response.id, self.get_name())
 
@@ -135,9 +136,9 @@ class http_auth_detect(GrepPlugin):
             if key.lower() == 'www-authenticate':
                 realm = response.get_headers()[key]
                 return realm
-        
+
         return None
-        
+
     def _report_no_realm(self, response):
         # Report this strange case
         desc = ('The resource: "%s" requires authentication (HTTP Code'
@@ -150,21 +151,21 @@ class http_auth_detect(GrepPlugin):
 
         kb.kb.append(self, 'non_rfc_auth', i)
         om.out.information(i.get_desc())
-        
+
     def _analyze_401(self, response):
         """
         Analyze a 401 response and report it.
         :return: None
         """
         realm = self._get_realm(response)
-        
+
         if realm is None:
             self._report_no_realm(response)
             return
-        
+
         insecure = response.get_url().get_protocol() == 'http'
         vuln_severity = severity.HIGH if insecure else severity.LOW
-        
+
         desc = 'The resource: "%s" requires HTTP authentication'
         if insecure:
             desc += (' over a non-encrypted channel, which allows'
@@ -172,13 +173,13 @@ class http_auth_detect(GrepPlugin):
                      ' valid credentials.')
         else:
             desc += '.'
-        
+
         desc += ' The received authentication realm is: "%s".'
         desc = desc % (response.get_url(), realm)
-        
+
         # Report the common case, were a realm is set.
         if 'ntlm' in realm.lower():
-            
+
             v = Vuln('NTLM authentication', desc,
                      vuln_severity, response.id, self.get_name())
 

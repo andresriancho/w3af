@@ -96,7 +96,7 @@ class eval(AttackPlugin):
 
             try:
                 http_res = self._uri_opener.send_mutant(mutant)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 msg = 'An error occurred while trying to exploit the eval()'\
                       ' vulnerability. Original exception: "%s".'
                 om.out.debug(msg % w3)
@@ -135,9 +135,9 @@ class EvalShell(ExecShell):
 
     def __init__(self, vuln, uri_opener, worker_pool, shellcode_generator):
         super(EvalShell, self).__init__(vuln, uri_opener, worker_pool)
-        
+
         self.shellcode_generator = shellcode_generator
-        
+
     @exec_debug
     def execute(self, command):
         """
@@ -154,7 +154,7 @@ class EvalShell(ExecShell):
 
         try:
             response = self._uri_opener.send_mutant(mutant)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'An error occurred while trying to exploit the eval()'\
                   ' vulnerability (sending command %s). Original exception:' \
                   ' "%s".'
@@ -171,4 +171,5 @@ class EvalShell(ExecShell):
         Need to define this method since the Shell class defines it, and we have
         a different number of __init__ parameters.
         """
-        return self.__class__, (self._vuln, None, None, self.shellcode_generator)
+        return self.__class__, (self._vuln, None, None,
+                                self.shellcode_generator)

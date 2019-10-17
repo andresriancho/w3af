@@ -33,10 +33,10 @@ def whereis_moth():
     :return: The net location for the moth http and https daemon. For example,
              if the HTTP Django application was started on 127.0.0.1 port 8083
              and listens HTTPS on port 8341 we return:
-             
+
              {'http': '127.0.0.1:8083',
               'https': '127.0.0.1:8341',}
-            
+
              We need this function because when we run on CI we don't really
              know which ports are going to be free for the server to bind.
     """
@@ -44,12 +44,12 @@ def whereis_moth():
         moth = file(HTTP_ADDRESS_FILE).read().strip()
     except IOError:
         moth = None
-    
+
     try:
         moths = file(HTTPS_ADDRESS_FILE).read().strip()
     except IOError:
         moths = None
-    
+
     return {'http': moth or DEFAULT_MOTH,
             'https': moths or DEFAULT_MOTHS}
 

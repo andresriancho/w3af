@@ -25,18 +25,15 @@ from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestScanOfflineURL(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'scan_offline_url', 'images')
-    
+
     def test_scan_offline_url(self):
         self.click('owasp_top_10_profile')
         self.click('insert_target_url_here')
         self.type('http://moth:8181/', False)
-        self.type(['<Enter>',], False)
-        
+        self.type(['<Enter>', ], False)
+
         self.find('log_tab_enabled')
         self.find('clear_icon')
         self.find('connection_refused')
-        
-        
-        

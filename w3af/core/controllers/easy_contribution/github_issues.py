@@ -86,11 +86,11 @@ class GithubIssues(object):
         self._password = password
         self.gh = None
         self.using_oauth = True if password is None else False
-        
+
     def login(self):
         try:
             self.gh = Github(self._user_or_token, self._password)
-        except GithubException, ex:
+        except GithubException as ex:
             # Not sure when we get here, but just in case...
             raise LoginFailed(str(ex))
         else:
@@ -100,7 +100,8 @@ class GithubIssues(object):
             try:
                 [i for i in self.gh.get_user().get_repos()]
             except BadCredentialsException:
-                # The OAUTH_TOKEN and/or user provided credentials are incorrect
+                # The OAUTH_TOKEN and/or user provided credentials are
+                # incorrect
                 if self.using_oauth:
                     raise OAuthTokenInvalid('Invalid OAuth token')
                 else:
@@ -110,23 +111,23 @@ class GithubIssues(object):
                 raise LoginFailed(str(ex))
 
         return True
-        
+
     def report_bug(self, summary, userdesc, tback='', fname=None, plugins='',
                    autogen=True, email=None):
         if self.gh is None:
             raise Exception('Please login before reporting a bug.')
-        
+
         summary, desc = self._build_summary_and_desc(summary, userdesc,
                                                      tback, fname, plugins,
                                                      autogen, email)
-        
+
         w3af_repo = self.gh.get_user('andresriancho').get_repo('w3af')
         labels = []
         # Github doesn't allow users that do NOT own the repository to assign
         # labels to new issues
-        #labels = [w3af_repo.get_label('automatic-bug-report'),
+        # labels = [w3af_repo.get_label('automatic-bug-report'),
         #          w3af_repo.get_label('bug')]
-        
+
         issue = w3af_repo.create_issue(title=summary, body=desc, labels=labels)
         return issue.number, TICKET_URL_FMT % issue.number
 

@@ -45,7 +45,8 @@ class TestDependencyCheck(unittest.TestCase):
         """
         Test that the dependency check works well @ this system
         """
-        must_exit = dependency_check(dependency_set=CORE, exit_on_failure=False)
+        must_exit = dependency_check(
+            dependency_set=CORE, exit_on_failure=False)
         self.assertFalse(must_exit)
 
     def test_default_platform_core_all_deps(self):
@@ -65,7 +66,7 @@ class TestDependencyCheck(unittest.TestCase):
         there are missing PIP core dependencies.
         """
         with patch(self.CURR_PLATFORM) as mock_curr_plat,\
-        patch('sys.stdout') as stdout_mock:
+                patch('sys.stdout') as stdout_mock:
             default = DefaultPlatform()
             default.PIP_PACKAGES = default.PIP_PACKAGES.copy()
             default.PIP_PACKAGES[CORE] = default.PIP_PACKAGES[CORE][:]
@@ -97,7 +98,7 @@ class TestDependencyCheck(unittest.TestCase):
         there are missing PIP core dependencies.
         """
         with patch(self.CURR_PLATFORM) as mock_curr_plat,\
-        patch('sys.stdout') as stdout_mock:
+                patch('sys.stdout') as stdout_mock:
             default = DefaultPlatform()
             default.PIP_PACKAGES = default.PIP_PACKAGES.copy()
             default.PIP_PACKAGES[GUI] = default.PIP_PACKAGES[GUI][:]
@@ -131,4 +132,3 @@ class TestDependencyCheck(unittest.TestCase):
             must_exit = dependency_check(dependency_set=GUI,
                                          exit_on_failure=False)
             self.assertFalse(must_exit)
-

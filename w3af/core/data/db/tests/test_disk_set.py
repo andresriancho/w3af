@@ -137,25 +137,27 @@ class TestDiskSet(unittest.TestCase):
 
         ds_as_list.sort()
         self.assertEqual(ds_as_list, range(1000))
-    
+
     def test_remove_table(self):
         disk_set = DiskSet()
         disk_set.add(1)
         disk_set.add(2)
-        
+
         table_name = disk_set.table_name
         db = get_default_temp_db_instance()
-        
+
         self.assertTrue(db.table_exists(table_name))
 
         disk_set.cleanup()
-        
+
         self.assertFalse(db.table_exists(table_name))
 
     def test_store_fuzzable_request(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
-        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items(
+            [("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 
@@ -180,8 +182,10 @@ class TestDiskSet(unittest.TestCase):
 
         # Add a fr with post-data
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
-        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items(
+            [("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 

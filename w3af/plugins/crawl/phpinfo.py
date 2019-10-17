@@ -33,28 +33,29 @@ from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
-from w3af.plugins.crawl.phpinfo_analysis.analysis import (register_globals,
-                                                          allow_url_fopen,
-                                                          allow_url_include,
-                                                          display_errors,
-                                                          expose_php,
-                                                          lowest_privilege_test,
-                                                          disable_functions,
-                                                          curl_file_support,
-                                                          cgi_force_redirect,
-                                                          session_cookie_httponly,
-                                                          session_save_path,
-                                                          session_use_trans,
-                                                          default_charset,
-                                                          enable_dl,
-                                                          memory_limit,
-                                                          post_max_size,
-                                                          upload_max_filesize,
-                                                          upload_tmp_dir,
-                                                          file_uploads,
-                                                          magic_quotes_gpc,
-                                                          open_basedir,
-                                                          session_hash_function)
+from w3af.plugins.crawl.phpinfo_analysis.analysis import (
+    register_globals,
+    allow_url_fopen,
+    allow_url_include,
+    display_errors,
+    expose_php,
+    lowest_privilege_test,
+    disable_functions,
+    curl_file_support,
+    cgi_force_redirect,
+    session_cookie_httponly,
+    session_save_path,
+    session_use_trans,
+    default_charset,
+    enable_dl,
+    memory_limit,
+    post_max_size,
+    upload_max_filesize,
+    upload_tmp_dir,
+    file_uploads,
+    magic_quotes_gpc,
+    open_basedir,
+    session_hash_function)
 
 
 PHP_INFO_FILES = {
@@ -140,7 +141,7 @@ class phpinfo(CrawlPlugin):
 
             if domain_path in self._analyzed_dirs:
                 continue
-            
+
             self._analyzed_dirs.add(domain_path)
 
             url_repeater = repeat(domain_path)
@@ -159,7 +160,8 @@ class phpinfo(CrawlPlugin):
 
     def _should_use_lowercase_db(self):
         # pylint: disable=E1103
-        identified_os = kb.kb.raw_read('fingerprint_os', 'operating_system_str')
+        identified_os = kb.kb.raw_read(
+            'fingerprint_os', 'operating_system_str')
 
         if not isinstance(identified_os, basestring):
             identified_os = cf.cf.get('target_os')

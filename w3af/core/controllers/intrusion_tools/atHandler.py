@@ -41,7 +41,8 @@ class atHandler(delayedExecution):
         """
         :return: True if the remote user can add entries to his crontab
         """
-        om.out.debug('[atHandler] Verifying if the remote user can run the at command.')
+        om.out.debug(
+            '[atHandler] Verifying if the remote user can run the at command.')
         res = self._exec('at')
 
         if 'Access is denied' in res:
@@ -58,7 +59,8 @@ class atHandler(delayedExecution):
 
         # Work
         remoteTime = self._exec('time')
-        atCommand, wait_time = self._create_at_command(remoteTime, command_to_exec)
+        atCommand, wait_time = self._create_at_command(
+            remoteTime, command_to_exec)
 
         # Schedule the shellcode for execution
         self._exec(atCommand)
@@ -76,7 +78,7 @@ class atHandler(delayedExecution):
                     break
 
             self._exec('at ' + taskId + ' /delete')
-        except:
+        except BaseException:
             om.out.debug('Failed to remove task from "at" service.')
 
     def _create_at_command(self, time, command):
@@ -109,10 +111,12 @@ class atHandler(delayedExecution):
                 am_pm = ''
             else:
                 # TODO !
-                # analyze... before I had am_pm = 'a' ; check if this is really necesary
+                # analyze... before I had am_pm = 'a' ; check if this is really
+                # necesary
                 am_pm = ''
-        except:
-            raise BaseFrameworkException('The time command of the remote server returned an unknown format.')
+        except BaseException:
+            raise BaseFrameworkException(
+                'The time command of the remote server returned an unknown format.')
         else:
 
             if int(seconds) > 57:

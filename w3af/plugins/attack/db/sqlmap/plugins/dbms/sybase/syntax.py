@@ -7,6 +7,7 @@ See the file 'LICENSE' for copying permission
 
 from plugins.generic.syntax import Syntax as GenericSyntax
 
+
 class Syntax(GenericSyntax):
     def __init__(self):
         GenericSyntax.__init__(self)
@@ -19,6 +20,11 @@ class Syntax(GenericSyntax):
         """
 
         def escaper(value):
-            return "+".join("%s(%d)" % ("CHAR" if ord(value[i]) < 256 else "TO_UNICHAR", ord(value[i])) for i in xrange(len(value)))
+            return "+".join(
+                "%s(%d)" %
+                ("CHAR" if ord(
+                    value[i]) < 256 else "TO_UNICHAR", ord(
+                    value[i])) for i in xrange(
+                    len(value)))
 
         return Syntax._escape(expression, quote, escaper)

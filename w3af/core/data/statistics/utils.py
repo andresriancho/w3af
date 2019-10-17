@@ -22,7 +22,7 @@ def _ss(data):
     Return sum of square deviations of sequence data.
     """
     c = mean(data)
-    ss = sum((x-c)**2 for x in data)
+    ss = sum((x - c)**2 for x in data)
     return ss
 
 
@@ -36,7 +36,7 @@ def stddev(data, ddof=0):
     if n < 2:
         raise ValueError('variance requires at least two data points')
     ss = _ss(data)
-    pvar = ss / (n-ddof)
+    pvar = ss / (n - ddof)
     return pvar ** 0.5
 
 
@@ -61,7 +61,8 @@ def outliers_modified_z_score(ys):
     if median_absolute_deviation_y == 0:
         median_absolute_deviation_y = 0.0001
 
-    modified_z_scores = [0.6745 * (y - median_y) / median_absolute_deviation_y for y in ys]
+    modified_z_scores = [
+        0.6745 * (y - median_y) / median_absolute_deviation_y for y in ys]
 
     result = []
 

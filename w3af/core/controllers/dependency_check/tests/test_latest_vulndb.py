@@ -42,7 +42,8 @@ class TestLatestVulnDB(unittest.TestCase):
                                       get_highest_installed(pkg))
 
         for dist, active in all_dists:
-            project_name, versions = pypi.query_versions_pypi(dist.project_name)
+            project_name, versions = pypi.query_versions_pypi(
+                dist.project_name)
 
             if versions:
                 # PyPI returns them in chronological order,
@@ -53,7 +54,7 @@ class TestLatestVulnDB(unittest.TestCase):
 
                     # We may have newer than what PyPI knows about
                     if pkg_resources.parse_version(dist.version) < \
-                    pkg_resources.parse_version(newest):
+                            pkg_resources.parse_version(newest):
                         found = True
 
         if found:

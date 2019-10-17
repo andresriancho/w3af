@@ -110,8 +110,8 @@ class allowed_methods(InfrastructurePlugin):
 
         # Methods
         self._supported_methods = self.DAV_METHODS | self.COMMON_METHODS | \
-                                  self.UNCOMMON_METHODS | self.PROPOSED_METHODS | \
-                                  self.EXTRA_METHODS | self.VERSION_CONTROL
+            self.UNCOMMON_METHODS | self.PROPOSED_METHODS | \
+            self.EXTRA_METHODS | self.VERSION_CONTROL
 
         # User configured variables
         self._exec_one_time = True
@@ -153,15 +153,15 @@ class allowed_methods(InfrastructurePlugin):
 
         if self._can_bruteforce(url):
             allowed_bf, id_bf = self._identify_with_bruteforce(url)
-        
+
         _allowed_methods = allowed_options + allowed_bf
         _allowed_methods = list(set(_allowed_methods))
 
         id_list = id_options + id_bf
-        
+
         # Make the output a little bit more readable.
         _allowed_methods.sort()
-        
+
         return _allowed_methods, id_list
 
     def handle_url_error(self, uri, url_error):
@@ -210,7 +210,8 @@ class allowed_methods(InfrastructurePlugin):
         get_response = None
 
         try:
-            arg_response = self._uri_opener.ARGENTINA(url, error_handling=False)
+            arg_response = self._uri_opener.ARGENTINA(
+                url, error_handling=False)
         except HTTPRequestException:
             pass
 
@@ -236,10 +237,11 @@ class allowed_methods(InfrastructurePlugin):
         if arg_response.get_code() not in self.BAD_CODES and \
            arg_response.get_body() == get_response.get_body():
 
-            desc = ('The remote Web server has a custom configuration, in'
-                    ' which any not implemented methods that are invoked are'
-                    ' defaulted to GET instead of returning a "Not Implemented"'
-                    ' response.')
+            desc = (
+                'The remote Web server has a custom configuration, in'
+                ' which any not implemented methods that are invoked are'
+                ' defaulted to GET instead of returning a "Not Implemented"'
+                ' response.')
             response_ids = [arg_response.get_id(), get_response.get_id()]
             i = Info('Non existent methods default to GET',
                      desc, response_ids, self.get_name())
@@ -274,16 +276,14 @@ class allowed_methods(InfrastructurePlugin):
         for method in methods_to_test:
             method_functor = getattr(self._uri_opener, method)
             try:
-                response = apply(method_functor,
-                                 (url,),
-                                 {'error_handling': False})
+                response = method_functor(*(url,), **{'error_handling': False})
             except HTTPRequestException:
                 continue
 
             if response.get_code() not in self.BAD_CODES:
                 _allowed_methods.append(method)
                 id_list.append(response.id)
-        
+
         return _allowed_methods, id_list
 
     def _analyze_methods(self, url, _allowed_methods, id_list):
@@ -300,11 +300,11 @@ class allowed_methods(InfrastructurePlugin):
             desc = ('The URL "%s" has the following allowed methods. These'
                     ' include DAV methods and should be disabled: %s')
             desc = desc % (url, ', '.join(_allowed_methods))
-            
+
             i = Info('DAV methods enabled', desc, id_list, self.get_name())
             i.set_url(url)
             i['methods'] = _allowed_methods
-            
+
             kb.kb.append(self, 'dav-methods', i)
         else:
             # Save the results in the KB so that other plugins can use this
@@ -312,11 +312,11 @@ class allowed_methods(InfrastructurePlugin):
             # REALLY use it !
             desc = 'The URL "%s" has the following enabled HTTP methods: %s'
             desc = desc % (url, ', '.join(_allowed_methods))
-            
+
             i = Info('Allowed HTTP methods', desc, id_list, self.get_name())
             i.set_url(url)
             i['methods'] = _allowed_methods
-            
+
             kb.kb.append(self, 'methods', i)
 
     def end(self):
@@ -372,7 +372,12 @@ class allowed_methods(InfrastructurePlugin):
         h1 = ('Generally the methods allowed for a URL are configured system'
               ' wide, so executing this plugin only once is the faster choice.'
               ' The most accurate choice is to run it against every URL.')
-        o = opt_factory('run_once', self._exec_one_time, d1, 'boolean', help=h1)
+        o = opt_factory(
+            'run_once',
+            self._exec_one_time,
+            d1,
+            'boolean',
+            help=h1)
         ol.add(o)
 
         d2 = 'Only report findings if uncommon methods are found'

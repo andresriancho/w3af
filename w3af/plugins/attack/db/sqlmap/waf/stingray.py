@@ -12,12 +12,20 @@ from lib.core.settings import WAF_ATTACK_VECTORS
 
 __product__ = "Stingray Application Firewall (Riverbed / Brocade)"
 
+
 def detect(get_page):
     retval = False
 
     for vector in WAF_ATTACK_VECTORS:
         _, headers, code = get_page(get=vector)
-        retval = code in (403, 500) and re.search(r"\AX-Mapping-", headers.get(HTTP_HEADER.SET_COOKIE, ""), re.I) is not None
+        retval = code in (
+            403,
+            500) and re.search(
+            r"\AX-Mapping-",
+            headers.get(
+                HTTP_HEADER.SET_COOKIE,
+                ""),
+            re.I) is not None
         if retval:
             break
 

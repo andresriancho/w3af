@@ -38,7 +38,15 @@ class OnlyOptions(gtk.VBox):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
-    def __init__(self, parentwidg, w3af, plugin, save_btn, rvrt_btn, overwriter=None):
+
+    def __init__(
+            self,
+            parentwidg,
+            w3af,
+            plugin,
+            save_btn,
+            rvrt_btn,
+            overwriter=None):
         super(OnlyOptions, self).__init__()
         if overwriter is None:
             overwriter = {}
@@ -51,7 +59,7 @@ class OnlyOptions(gtk.VBox):
             self._changedAnyWidget)
         self.propagLabels = {}
         self.saved_successfully = False
-        
+
         # options
         self.options = OptionList()
         options = plugin.get_options()
@@ -220,13 +228,17 @@ class OnlyOptions(gtk.VBox):
             if hasattr(opt.widg, "is_valid"):
                 if not opt.widg.is_valid():
                     invalid.append(opt.get_name())
-        
+
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the"\
                   " following parameter(s):\n\n"
             msg += "\n-".join(invalid)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
-                                    gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(
+                None,
+                gtk.DIALOG_MODAL,
+                gtk.MESSAGE_WARNING,
+                gtk.BUTTONS_OK,
+                msg)
             dlg.set_title('Configuration error')
             dlg.run()
             dlg.destroy()
@@ -244,7 +256,7 @@ class OnlyOptions(gtk.VBox):
                 SetOptionsWrapper(plugin.set_options, self.options)
         except (BaseFrameworkException, ValueError):
             return
-        
+
         for opt in self.options:
             opt.widg.save()
 
@@ -263,6 +275,7 @@ class OnlyOptions(gtk.VBox):
         msg = "The plugin configuration was reverted to its last saved state"
         self.w3af.mainwin.sb(msg)
 
+
 SetOptionsWrapper = helpers._Wrapper((BaseFrameworkException, ValueError))
 
 
@@ -277,6 +290,7 @@ class ConfigDialog(gtk.Dialog):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, title, w3af, plugin, overwriter=None, showDesc=False):
         super(ConfigDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file(W3AF_ICON)
@@ -363,6 +377,7 @@ class AdvancedTargetConfigDialog(ConfigDialog):
 
     :author: Andres Riancho
     """
+
     def __init__(self, title, w3af, plugin, overwriter=None):
         if overwriter is None:
             overwriter = {}

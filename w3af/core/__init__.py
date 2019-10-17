@@ -24,6 +24,8 @@ import logging
 #
 # Some magic for nosetests to support i18n
 #
+
+
 def setUpPackage():
     import __builtin__
     __builtin__.__dict__['_'] = lambda x: x
@@ -31,8 +33,11 @@ def setUpPackage():
 #
 # And more magic for removing some annoying scapy log messages
 #
+
+
 class FilterScapy(logging.Filter):
     """A simple way to prevent messages from getting through."""
+
     def __init__(self, name=None):
         pass
 
@@ -40,6 +45,7 @@ class FilterScapy(logging.Filter):
         if 'No route found for IPv6' in rec.msg:
             return False
         return True
+
 
 logger = logging.getLogger("scapy.runtime")
 logger.addFilter(FilterScapy())
@@ -49,4 +55,3 @@ logger.addFilter(FilterScapy())
 #
 import threading
 threading._DummyThread._Thread__stop = lambda x: 42
-

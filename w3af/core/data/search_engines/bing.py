@@ -74,7 +74,7 @@ class bing(SearchEngine):
             else:
                 # Test for full match.
                 if url.get_domain() not in self.BLACKLISTED_DOMAINS:
-                    
+
                     # Now test for partial match
                     for blacklisted_domain in self.BLACKLISTED_DOMAINS:
                         if blacklisted_domain in url.get_domain():
@@ -91,6 +91,7 @@ class BingResult(object):
     """
     Dummy class that represents the search result.
     """
+
     def __init__(self, url):
         if not isinstance(url, URL):
             msg = ('The url __init__ parameter of a BingResult object must'
@@ -101,9 +102,9 @@ class BingResult(object):
 
     def __repr__(self):
         return '<bing result %s>' % self.URL
-    
+
     def __eq__(self, other):
         return self.URL == other.URL
-    
+
     def __hash__(self):
         return hash(self.URL)

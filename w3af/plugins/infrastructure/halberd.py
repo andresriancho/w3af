@@ -85,10 +85,12 @@ class halberd(InfrastructurePlugin):
         halberd_logger.setError()
         try:
             scantask.readConf()
-        except halberd_scan_task.ConfError, e:
+        except halberd_scan_task.ConfError as e:
             # halberd: 'unable to create a default conf. file'
             # https://github.com/andresriancho/w3af/issues/9988
-            om.out.error('Failed to initialize Halberd configuration: "%s"' % e)
+            om.out.error(
+                'Failed to initialize Halberd configuration: "%s"' %
+                e)
             return
 
         # UniScan
@@ -98,14 +100,14 @@ class halberd(InfrastructurePlugin):
 
         try:
             s = scanner(scantask)
-        except halberd_shell.ScanError, msg:
+        except halberd_shell.ScanError as msg:
             om.out.error('Halberd error: %s' % msg)
             return
 
         # The scantask initialization worked, we can start the actual scan!
         try:
             s.execute()
-        except halberd_shell.ScanError, msg:
+        except halberd_shell.ScanError as msg:
             om.out.debug('Halberd error: %s' % msg)
             return
 
@@ -133,7 +135,7 @@ class halberd(InfrastructurePlugin):
             i['server_number'] = len(clues)
 
             kb.kb.append(self, 'halberd', i)
-            
+
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.

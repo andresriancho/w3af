@@ -137,7 +137,7 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     """
     if not isinstance(qstr, basestring):
         raise TypeError('parse_qs requires a basestring as input.')
-    
+
     qs = QueryString(encoding=encoding)
 
     if qstr:
@@ -182,25 +182,25 @@ class URL(DiskItem):
     SET_DOMAIN_RE = re.compile('[a-z0-9-.]+([a-z0-9-]+)*$')
 
     __slots__ = (
-                 # URL attributes
-                 '_querystr',
-                 '_fragment',
-                 '_scheme',
-                 '_netloc',
-                 '_path',
-                 '_params',
+        # URL attributes
+        '_querystr',
+        '_fragment',
+        '_scheme',
+        '_netloc',
+        '_path',
+        '_params',
 
-                 # Internals
-                 '_cache',
-                 '_encoding',
+        # Internals
+        '_cache',
+        '_encoding',
 
-                 # Easy access via properties
-                 'scheme',
-                 'netloc',
-                 'path',
-                 'params',
-                 'querystring',
-                 'fragment',)
+        # Easy access via properties
+        'scheme',
+        'netloc',
+        'path',
+        'params',
+        'querystring',
+        'fragment',)
 
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         """
@@ -237,7 +237,8 @@ class URL(DiskItem):
         # This is the case when someone creates a URL like
         # this: URL('www.w3af.com')
         #
-        if parsed.scheme == parsed.netloc == '' and not parsed.path.startswith(u'/'):
+        if parsed.scheme == parsed.netloc == '' and not parsed.path.startswith(
+                u'/'):
             # By default we set the protocol to "http"
             scheme = u'http'
             netloc = parsed.path
@@ -265,7 +266,7 @@ class URL(DiskItem):
                    qs, fragment, encoding=DEFAULT_ENCODING):
         """
         This is a "constructor" for the URL class.
-        
+
         :param scheme: http/https
         :param netloc: domain and port
         :param path: directory
@@ -274,13 +275,13 @@ class URL(DiskItem):
         :param fragment: #fragments
         :return: An instance of URL.
         """
-        scheme = scheme or u'' 
+        scheme = scheme or u''
         netloc = netloc or u''
         path = path or u''
         params = params or u''
         qs = qs or u''
         fragment = fragment or u''
-        
+
         data = (scheme, netloc, path, params, qs, fragment)
         url_str = urlparse.urlunparse(data)
         return cls(url_str, encoding)
@@ -298,7 +299,7 @@ class URL(DiskItem):
         path = src_url_obj.get_path() or u''
         params = src_url_obj.get_params() or u''
         fragment = src_url_obj.get_fragment() or u''
-        
+
         encoding = src_url_obj.encoding
         qs = copy.deepcopy(src_url_obj.querystring)
 
@@ -361,7 +362,8 @@ class URL(DiskItem):
         if isinstance(qs, DataContainer):
             self._querystr = qs
         elif isinstance(qs, basestring):
-            self._querystr = parse_qs(qs, ignore_exc=True, encoding=self.encoding)
+            self._querystr = parse_qs(
+                qs, ignore_exc=True, encoding=self.encoding)
         else:
             # This might fail because of the type-check performed in QueryString
             # __init__, but that's ok.
@@ -441,7 +443,7 @@ class URL(DiskItem):
         # 'net_location' beginning in the last appearance of ':'
         at_symb_index = net_location.rfind('@')
         colon_symb_max_index = net_location.rfind(':')
-        
+
         # Found
         if colon_symb_max_index > at_symb_index:
 
@@ -460,7 +462,7 @@ class URL(DiskItem):
             if int(port) > 65535 or int(port) < 1:
                 msg = 'Invalid TCP port "%s", expected a number in range 1-65535.'
                 raise ValueError(msg % port)
-            
+
             # Collapse port
             if (protocol == 'http' and port == '80') or \
                (protocol == 'https' and port == '443'):
@@ -543,7 +545,7 @@ class URL(DiskItem):
         # There is no need to call normalize_url here, since it is called in the
         # URL object __init__
         #
-        #jurl_obj.normalize_url()
+        # jurl_obj.normalize_url()
 
         return jurl_obj
 
@@ -568,7 +570,7 @@ class URL(DiskItem):
     def is_valid_domain(self):
         """
         :return: Returns a boolean that indicates if self.netloc domain is valid
-        """        
+        """
         # check if domain name valid
         hostname = self.netloc.split(':')[0]  # split away port
         if not self.RE_DOMAIN.match(hostname):
@@ -695,7 +697,8 @@ class URL(DiskItem):
         original URL had no extension.
         """
         if not self.get_extension():
-            raise Exception('You can only set a new extension to a URL that had one.')
+            raise Exception(
+                'You can only set a new extension to a URL that had one.')
 
         filename = self.get_file_name()
 

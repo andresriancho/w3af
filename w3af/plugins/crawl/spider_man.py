@@ -56,6 +56,7 @@ class spider_man(CrawlPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     :author: Alexander Berezhnoy < alexander.berezhnoy |at| gmail.com >
     """
+
     def __init__(self):
         CrawlPlugin.__init__(self)
         self._first_captured_request = True
@@ -74,16 +75,17 @@ class spider_man(CrawlPlugin):
         """
         # Create the proxy server
         try:
-            self._proxy = LoggingProxy(self._listen_address,
-                                       self._listen_port,
-                                       self._uri_opener,
-                                       handler_klass=LoggingHandler,
-                                       plugin=self,
-                                       target_domain=fuzzable_request.get_url().get_domain(),
-                                       name='SpiderManProxyThread')
-        except ProxyException, proxy_exc:
+            self._proxy = LoggingProxy(
+                self._listen_address,
+                self._listen_port,
+                self._uri_opener,
+                handler_klass=LoggingHandler,
+                plugin=self,
+                target_domain=fuzzable_request.get_url().get_domain(),
+                name='SpiderManProxyThread')
+        except ProxyException as proxy_exc:
             om.out.error('%s' % proxy_exc)
-        
+
         else:
             msg = ('spider_man proxy is running on %s:%s.\nPlease configure '
                    'your browser to use these proxy settings and navigate the '
@@ -92,7 +94,7 @@ class spider_man(CrawlPlugin):
                                  self._listen_port,
                                  TERMINATE_URL))
             om.out.information(msg)
-            
+
             self._proxy.run()
 
     def send_fuzzable_request_to_core(self, freq):
@@ -194,8 +196,9 @@ class LoggingHandler(ProxyHandler):
                 self.parent_process.plugin.send_fuzzable_request_to_core(freq)
 
                 # Send the request to the remote webserver
-                http_response = self._send_http_request(http_request, grep=grep)
-        except Exception, e:
+                http_response = self._send_http_request(
+                    http_request, grep=grep)
+        except Exception as e:
             trace = str(traceback.format_exc())
             http_response = self._create_error_response(http_request, None, e,
                                                         trace=trace)
@@ -211,7 +214,8 @@ class LoggingHandler(ProxyHandler):
             om.out.information(msg % cookie_value)
 
         # Send the response (success|error) to the browser
-        http_response = self._to_libmproxy_response(flow.request, http_response)
+        http_response = self._to_libmproxy_response(
+            flow.request, http_response)
         flow.reply(http_response)
 
     def _is_terminate_favicon(self, http_request):

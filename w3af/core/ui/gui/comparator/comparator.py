@@ -103,7 +103,9 @@ class ListItem(object):
         self.value = " ".join(a)
 
     def __str__(self):
-        return "<%s %s %i %s>" % (self.__class__, self.name, self.active, self.value)
+        return "<%s %s %i %s>" % (
+            self.__class__, self.name, self.active, self.value)
+
 
 _pixmap_path = os.path.join(ROOT_PATH, "core/ui/gui/comparator/pixmaps")
 
@@ -127,6 +129,7 @@ class Struct(object):
     s = Struct(a=10, b=20, d={"cat":"dog"} )
     print s.a + s.b
     """
+
     def __init__(self, **args):
         self.__dict__.update(args)
 
@@ -188,7 +191,8 @@ class FileDiff(object):
         da.set_property("visible", True)
         da.set_property("can_focus", True)
         da.set_property("has_focus", True)
-        da.set_property("events", gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK | gtk.gdk.KEY_PRESS_MASK | gtk.gdk.KEY_RELEASE_MASK)
+        da.set_property("events", gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK |
+                        gtk.gdk.KEY_PRESS_MASK | gtk.gdk.KEY_RELEASE_MASK)
         da.connect("expose-event", self.on_linkmap_expose_event)
         da.connect("scroll-event", self.on_linkmap_scroll_event)
         da.connect("button-press-event", self.on_linkmap_button_press_event)
@@ -296,7 +300,10 @@ class FileDiff(object):
         self.deleted_lines_pending = -1
         self.textview_overwrite = 0
         self.textview_focussed = None
-        self.textview_overwrite_handlers = [t.connect("toggle-overwrite", self.on_textview_toggle_overwrite) for t in self.textview]
+        self.textview_overwrite_handlers = [
+            t.connect(
+                "toggle-overwrite",
+                self.on_textview_toggle_overwrite) for t in self.textview]
         for i in range(2):
             w = self.scrolledwindow[i]
             w.get_vadjustment().connect("value-changed", self._sync_vscroll)
@@ -360,9 +367,11 @@ class FileDiff(object):
     def _update_cursor_status(self, buf):
         def update():
             it = buf.get_iter_at_mark(buf.get_insert())
-            # Abbreviation for insert,overwrite so that it will fit in the status bar
+            # Abbreviation for insert,overwrite so that it will fit in the
+            # status bar
             insert_overwrite = "INS,OVR".split(",")[self.textview_overwrite]
-            # Abbreviation for line, column so that it will fit in the status bar
+            # Abbreviation for line, column so that it will fit in the status
+            # bar
             line_column = "Ln %i, Col %i" % (
                 it.get_line() + 1, it.get_line_offset() + 1)
             raise StopIteration
@@ -405,7 +414,8 @@ class FileDiff(object):
 
             def __getitem__(self, i):
                 return self.texts[i]
-        return FakeTextArray([t.get_buffer() for t in self.textview], [self._filter_text, lambda x:x][raw])
+        return FakeTextArray([t.get_buffer() for t in self.textview], [
+                             self._filter_text, lambda x:x][raw])
 
     def _filter_text(self, txt):
         def killit(m):
@@ -493,7 +503,10 @@ class FileDiff(object):
             v.disconnect(h)
             if v != view:
                 v.emit("toggle-overwrite")
-        self.textview_overwrite_handlers = [t.connect("toggle-overwrite", self.on_textview_toggle_overwrite) for t in self.textview]
+        self.textview_overwrite_handlers = [
+            t.connect(
+                "toggle-overwrite",
+                self.on_textview_toggle_overwrite) for t in self.textview]
         self._update_cursor_status(view.get_buffer())
 
     def _set_internal(self, texts):
@@ -562,7 +575,8 @@ class FileDiff(object):
         pane = self.textview.index(textview)
         start_line = self._pixel_to_line(pane, visible.y)
         end_line = 1 + self._pixel_to_line(pane, visible.y + visible.height)
-        gc = lambda x: getattr(textview.meldgc, "gc_" + x)
+
+        def gc(x): return getattr(textview.meldgc, "gc_" + x)
         gclight = textview.get_style().bg_gc[gtk.STATE_ACTIVE]
 
         def draw_change(change):  # draw background and thin lines
@@ -642,7 +656,8 @@ class FileDiff(object):
                 mbegin, mend, obegin, oend = 0, self._get_line_count(
                     master), 0, self._get_line_count(i)
                 # look for the chunk containing 'line'
-                for c in self.linediffer.pair_changes(master, i, self._get_texts()):
+                for c in self.linediffer.pair_changes(
+                        master, i, self._get_texts()):
                     c = c[1:]
                     if c[0] >= line:
                         mend = c[0]
@@ -679,7 +694,7 @@ class FileDiff(object):
         diffmapindex = self.diffmap.index(area)
         textindex = (0, 1)[diffmapindex]
 
-        #TODO need height of arrow button on scrollbar - how do we get that?
+        # TODO need height of arrow button on scrollbar - how do we get that?
         size_of_arrow = 14
         hperline = float(self.scrolledwindow[textindex].get_allocation(
         ).height - 4 * size_of_arrow) / self._get_line_count(textindex)
@@ -712,7 +727,7 @@ class FileDiff(object):
                 window.draw_rectangle(gctext, 0, x0, s, x1, e - s)
 
     def on_diffmap_button_press_event(self, area, event):
-        #TODO need gutter of scrollbar - how do we get that?
+        # TODO need gutter of scrollbar - how do we get that?
         if event.button == 1:
             size_of_arrow = 14
             diffmapindex = self.diffmap.index(area)
@@ -822,15 +837,16 @@ class FileDiff(object):
         window.clear()
 
         # gain function for smoothing
-        #TODO cache these values
-        bias = lambda x, g: math.pow(x, math.log(g) / math.log(0.5))
+        # TODO cache these values
+        def bias(x, g): return math.pow(x, math.log(g) / math.log(0.5))
 
         def gain(t, g):
             if t < 0.5:
                 return bias(2 * t, 1 - g) / 2.0
             else:
                 return (2 - bias(2 - 2 * t, 1 - g)) / 2.0
-        f = lambda x: gain(x, 0.85)
+
+        def f(x): return gain(x, 0.85)
 
         if self.keymask & MASK_SHIFT:
             pix0 = self.pixbuf_delete
@@ -849,7 +865,10 @@ class FileDiff(object):
         pix_start[1] = self.textview[1].get_visible_rect().y
 
         def bounds(idx):
-            return [self._pixel_to_line(idx, pix_start[idx]), self._pixel_to_line(idx, pix_start[idx] + htotal)]
+            return [
+                self._pixel_to_line(
+                    idx, pix_start[idx]), self._pixel_to_line(
+                    idx, pix_start[idx] + htotal)]
         visible = [None] + bounds(0) + bounds(1)
 
         for c in self.linediffer.pair_changes(0, 1, self._get_texts()):
@@ -951,11 +970,12 @@ class FileDiff(object):
                 side = 1
                 rect_x = wtotal - pix_width
             else:
-                return  1
+                return 1
             src = side
             dst = 1 - side
             adj = self.scrolledwindow[src].get_vadjustment()
-            func = lambda c: self._line_to_pixel(src, c[1]) - adj.value
+
+            def func(c): return self._line_to_pixel(src, c[1]) - adj.value
 
             for c in self.linediffer.pair_changes(src, dst, self._get_texts()):
                 if Prefs.ignore_blank_lines:
@@ -991,9 +1011,19 @@ class FileDiff(object):
             if self.mouse_chunk:
                 (src, dst), rect, chunk = self.mouse_chunk
                 # check we're still in button
-                inrect = lambda p, r: ((r[0] < p.x) and (p.x < r[0] + r[2]) and (r[1] < p.y) and (p.y < r[1] + r[3]))
+
+                def inrect(
+                    p,
+                    r): return (
+                    (r[0] < p.x) and (
+                        p.x < r[0] +
+                        r[2]) and (
+                        r[1] < p.y) and (
+                        p.y < r[1] +
+                        r[3]))
                 if inrect(event, rect):
-                    # gtk tries to jump back to where the cursor was unless we move the cursor
+                    # gtk tries to jump back to where the cursor was unless we
+                    # move the cursor
                     self.textview[src].place_cursor_onscreen()
                     self.textview[dst].place_cursor_onscreen()
                     chunk = chunk[1:]

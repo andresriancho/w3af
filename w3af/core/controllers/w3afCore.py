@@ -44,8 +44,8 @@ from w3af.core.controllers.core_helpers.exception_handler import ExceptionHandle
 from w3af.core.controllers.core_helpers.strategy_observers.disk_space_observer import DiskSpaceObserver
 from w3af.core.controllers.core_helpers.strategy_observers.thread_count_observer import ThreadCountObserver
 from w3af.core.controllers.core_helpers.strategy_observers.thread_state_observer import ThreadStateObserver
-from w3af.core.controllers.core_helpers.status import (CoreStatus,
-                                                       STOPPED, RUNNING, PAUSED)
+from w3af.core.controllers.core_helpers.status import (
+    CoreStatus, STOPPED, RUNNING, PAUSED)
 from w3af.core.controllers.output_manager import (fresh_output_manager_inst,
                                                   log_sink_factory)
 from w3af.core.controllers.profiling import start_profiling, stop_profiling
@@ -124,13 +124,13 @@ class w3afCore(object):
         # used
         self._home_directory()
         self._tmp_directory()
-        
+
         # We want to have only one exception handler instance during the whole
         # w3af process. The data captured by it will be cleared before starting
         # each scan, but we want to keep the same instance after a scan because
         # we'll extract info from it.
         self.exception_handler = ExceptionHandler()
-        
+
         # These are some of the most important moving parts in the w3afCore
         # they basically handle every aspect of the w3af framework. I create
         # these here because they are used by the UIs even before starting a
@@ -156,7 +156,7 @@ class w3afCore(object):
         Create directories, threads and consumers required to perform a w3af
         scan. Used both when we init the core and when we want to clear all
         the previous results and state from an old scan and start again.
-        
+
         :return: None
         """
         # Create this again just to clear the internal states
@@ -168,22 +168,22 @@ class w3afCore(object):
 
         if not self._first_scan:
             self.cleanup()
-        
+
         else:
             # Create some directories, do this every time before starting a new
             # scan and before doing any other core init because these are
             # widely used
             self._home_directory()
             self._tmp_directory()
-            
+
             enable_dns_cache()
-        
+
         # Reset global sequence number generator
         consecutive_number_generator.reset()
-               
+
         # Now that we know we're going to run a new scan, overwrite the old
         # strategy which might still have data stored in it and create a new
-        # one  
+        # one
         self.strategy = CoreStrategy(self)
         self.strategy.add_observer(DiskSpaceObserver())
         self.strategy.add_observer(ThreadCountObserver())
@@ -197,7 +197,7 @@ class w3afCore(object):
         """
         The user interfaces call this method to start the whole scanning
         process.
-        
+
         @raise: This method raises almost every possible exception, so please
                 do your error handling!
         """
@@ -208,7 +208,7 @@ class w3afCore(object):
         try:
             # Just in case the GUI / Console forgot to do this...
             self.verify_environment()
-        except Exception, e:
+        except Exception as e:
             error = ('verify_environment() raised an exception: "%s". This'
                      ' should never happen. Are you (UI developer) sure that'
                      ' you called verify_environment() *before* start() ?')
@@ -222,7 +222,9 @@ class w3afCore(object):
 
         self._first_scan = False
 
-        om.out.debug('Starting the scan using w3af version %s' % get_w3af_version_minimal())
+        om.out.debug(
+            'Starting the scan using w3af version %s' %
+            get_w3af_version_minimal())
 
         try:
             self.strategy.start()
@@ -230,7 +232,7 @@ class w3afCore(object):
             print(NO_MEMORY_MSG)
             om.out.error(NO_MEMORY_MSG)
 
-        except OSError, os_err:
+        except OSError as os_err:
             # https://github.com/andresriancho/w3af/issues/10186
             # OSError: [Errno 12] Cannot allocate memory
             if os_err.errno == errno.ENOMEM:
@@ -255,16 +257,16 @@ class w3afCore(object):
             else:
                 raise
 
-        except threading.ThreadError, te:
+        except threading.ThreadError as te:
             handle_threading_error(self.status.scans_completed, te)
 
-        except HTTPRequestException, hre:
+        except HTTPRequestException as hre:
             # TODO: These exceptions should never reach this level
             #       adding the exception handler to raise them and fix any
             #       instances where it happens.
             raise
 
-        except ScanMustStopByUserRequest, sbur:
+        except ScanMustStopByUserRequest as sbur:
             # I don't have to do anything here, since the user is the one that
             # requested the scanner to stop. From here the code continues at the
             # "finally" clause, which simply shows a message saying that the
@@ -280,12 +282,12 @@ class w3afCore(object):
             #
             raise
 
-        except ScanMustStopException, wmse:
+        except ScanMustStopException as wmse:
             error = ('The following error was detected and could not be'
                      ' resolved:\n%s\n')
             om.out.error(error % wmse)
 
-        except Exception, e:
+        except Exception as e:
             msg = 'Unhandled exception "%s", traceback:\n%s'
 
             if hasattr(e, 'original_traceback_string'):
@@ -318,10 +320,11 @@ class w3afCore(object):
         """
         if self._worker_pool is None:
             # Should get here only on the first call to "worker_pool".
-            self._worker_pool = Pool(processes=self.WORKER_THREADS,
-                                     worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
-                                     maxtasksperchild=self.WORKER_MAX_TASKS)
+            self._worker_pool = Pool(
+                processes=self.WORKER_THREADS,
+                worker_names='WorkerThread',
+                max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                maxtasksperchild=self.WORKER_MAX_TASKS)
 
             msg = 'Created first Worker pool for core (id: %s)'
             om.out.debug(msg % id(self._worker_pool))
@@ -334,13 +337,15 @@ class w3afCore(object):
             self._worker_pool.terminate_join()
 
             # Create a new one
-            self._worker_pool = Pool(processes=self.WORKER_THREADS,
-                                     worker_names='WorkerThread',
-                                     max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
-                                     maxtasksperchild=self.WORKER_MAX_TASKS)
+            self._worker_pool = Pool(
+                processes=self.WORKER_THREADS,
+                worker_names='WorkerThread',
+                max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
+                maxtasksperchild=self.WORKER_MAX_TASKS)
 
-            msg = ('Created a new Worker pool for core (id: %s) because the old'
-                   ' one was not in running state (id: %s)')
+            msg = (
+                'Created a new Worker pool for core (id: %s) because the old'
+                ' one was not in running state (id: %s)')
             om.out.debug(msg % (id(self._worker_pool), old_pool_id))
 
         return self._worker_pool
@@ -366,11 +371,11 @@ class w3afCore(object):
         # response associated with a vulnerability
         self.uri_opener.restart()
         self.uri_opener.set_exploit_mode(False)
-    
+
         # If this is not the first scan, I want to clear the old bug data
         # that might be stored in the exception_handler.
         self.exception_handler.clear()
-        
+
         # Clean all data that is stored in the kb
         kb.cleanup()
 
@@ -430,27 +435,27 @@ class w3afCore(object):
         wait_max = 10
         loop_delay = 0.5
 
-        for _ in xrange(int(wait_max/loop_delay)):
+        for _ in xrange(int(wait_max / loop_delay)):
             if not self.status.is_running():
                 core_stop_time = epoch_to_string(stop_start_time)
                 msg = '%s were needed to stop the core.' % core_stop_time
                 break
-            
+
             try:
                 time.sleep(loop_delay)
             except KeyboardInterrupt:
                 msg = 'The user cancelled the cleanup process, forcing exit.'
                 break
-            
+
         else:
             msg = 'The core failed to stop in %s seconds, forcing exit.'
             msg %= wait_max
-        
+
         om.out.debug(msg)
 
         # Finally we terminate and join the worker pool
         self._terminate_worker_pool()
-    
+
     def quit(self):
         """
         The user wants to exit w3af ASAP, so we stop the scan and exit.
@@ -547,7 +552,7 @@ class w3afCore(object):
 
             # Remove all references to plugins from memory
             self.plugins.zero_enabled_plugins()
-            
+
             # No targets to be scanned
             self.target.clear()
 
@@ -558,7 +563,7 @@ class w3afCore(object):
 
     def exploit_phase_prerequisites(self):
         """
-        This method is just a way to group all the things that we'll need 
+        This method is just a way to group all the things that we'll need
         from the core during the exploitation phase. In other words, which
         internal objects do I need alive after a scan?
         """
@@ -582,10 +587,11 @@ class w3afCore(object):
         """
         home_dir = get_home_dir()
 
-        # Start by trying to create the home directory (linux: /home/user/.w3af/)
+        # Start by trying to create the home directory (linux:
+        # /home/user/.w3af/)
         if not create_home_dir():
             print('Failed to create the w3af home directory "%s".' % home_dir)
-            sys.exit(-3)            
+            sys.exit(-3)
 
         # If this fails, maybe it is because the home directory doesn't exist
         # or simply because it ain't writable|readable by this user
@@ -616,14 +622,13 @@ def handle_threading_error(scans_completed, threading_error):
     and handle them in a specific way
     """
     active_threads = threading.active_count()
-    
+
     def nice_thread_repr(alive_threads):
-        repr_alive = [repr(x) for x in alive_threads]
-        repr_alive.sort()
+        repr_alive = sorted([repr(x) for x in alive_threads])
         return pprint.pformat(repr_alive)
-    
+
     pprint_threads = nice_thread_repr(threading.enumerate())
-    
+
     msg = ('A "%s" threading error was found.\n'
            ' The current process has a total of %s active threads and has'
            ' completed %s scans. The complete list of threads follows:\n\n%s')

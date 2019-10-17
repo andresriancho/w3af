@@ -64,6 +64,7 @@ def sigsegv_handler(signum, frame):
     #
     print(SIGSEV_ERROR)
 
+
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 
 
@@ -75,11 +76,12 @@ class ReqResViewer(gtk.VBox):
     :author: Facundo Batista ( facundo@taniquetil.com.ar )
 
     """
+
     def __init__(self, w3af, enableWidget=None, withManual=True,
                  withFuzzy=True, withCompare=True, withAudit=True,
                  editableRequest=False, editableResponse=False,
                  widgname='default', layout='Tabbed'):
-        
+
         super(ReqResViewer, self).__init__()
         self.w3af = w3af
         # Request
@@ -110,7 +112,7 @@ class ReqResViewer(gtk.VBox):
         # Info
         self.info = HttpEditor(self.w3af)
         self.info.set_editable(False)
-        #self.info.show()
+        # self.info.show()
         nb.append_page(self.info, gtk.Label(_("Info")))
 
     def _initSplitLayout(self):
@@ -199,7 +201,8 @@ class ReqResViewer(gtk.VBox):
         # Create the popup menu
         gm = gtk.Menu()
         plugin_type = "audit"
-        for plugin_name in sorted(self.w3af.plugins.get_plugin_list(plugin_type)):
+        for plugin_name in sorted(
+                self.w3af.plugins.get_plugin_list(plugin_type)):
             e = gtk.MenuItem(plugin_name)
             e.connect('activate', self._auditRequest, plugin_name, plugin_type)
             gm.append(e)
@@ -258,7 +261,8 @@ class ReqResViewer(gtk.VBox):
                 for itemId in result.get_id():
                     history_item = HistoryItem()
                     history_item.load(itemId)
-                    history_item.update_tag(history_item.tag + result.plugin_name)
+                    history_item.update_tag(
+                        history_item.tag + result.plugin_name)
                     history_item.info = result.get_desc()
                     history_item.save()
         else:
@@ -341,7 +345,7 @@ class RequestResponsePart(gtk.Notebook):
                 view.initial = True
                 view.show_object(self._obj)
                 view.initial = False
-        
+
         self.enable_attached_widgets()
 
     def disable_attached_widgets(self):
@@ -362,7 +366,7 @@ class RequestResponsePart(gtk.Notebook):
         if self.enableWidget:
             for widg in self.enableWidget:
                 widg(True)
-                
+
     def clear_panes(self):
         self._obj = None
         self._parent.draw_area.clear()
@@ -404,8 +408,14 @@ class RequestPart(RequestResponsePart):
 
     def __init__(self, parent, w3af, enableWidget=[], editable=False,
                  widgname='default'):
-        RequestResponsePart.__init__(self, parent, w3af, enableWidget, editable,
-                                     widgname=widgname + 'request')
+        RequestResponsePart.__init__(
+            self,
+            parent,
+            w3af,
+            enableWidget,
+            editable,
+            widgname=widgname +
+            'request')
 
         self.raw_view = HttpRawView(w3af, self, editable)
         self.add_view(self.raw_view)
@@ -417,7 +427,7 @@ class RequestPart(RequestResponsePart):
 
     def get_both_texts(self):
         head = self._obj.dump_request_head()
-        data = str(self._obj.get_data()) if self._obj.get_data() else '' 
+        data = str(self._obj.get_data()) if self._obj.get_data() else ''
         return head, data
 
     def show_raw(self, head, body):
@@ -438,7 +448,7 @@ class ResponsePart(RequestResponsePart):
         try:
             rend = getRenderingView(w3af, self)
             self.add_view(rend)
-        except Exception, ex:
+        except Exception as ex:
             print ex
 
     def get_both_texts(self):
@@ -449,6 +459,7 @@ class reqResWindow(RememberingWindow):
     """
     A window to show a request/response pair.
     """
+
     def __init__(self, w3af, request_id, enableWidget=None, withManual=True,
                  withFuzzy=True, withCompare=True, withAudit=True,
                  editableRequest=False, editableResponse=False,
@@ -480,12 +491,13 @@ class reqResWindow(RememberingWindow):
 
 class ThreadedURLImpact(threading.Thread):
     """Impacts an URL in a different thread."""
+
     def __init__(self, w3af, request, plugin_name, plugin_type, event):
         """Init ThreadedURLImpact."""
         threading.Thread.__init__(self)
         self.name = 'ThreadedURLImpact'
         self.daemon = True
-        
+
         self.w3af = w3af
         self.request = request
         self.plugin_name = plugin_name
@@ -510,7 +522,7 @@ class ThreadedURLImpact(threading.Thread):
                     try:
                         tmp_result = plugin.audit_return_vulns(self.request)
                         plugin.end()
-                    except BaseFrameworkException, e:
+                    except BaseFrameworkException as e:
                         om.out.error(str(e))
                     else:
                         #
@@ -530,7 +542,7 @@ class ThreadedURLImpact(threading.Thread):
                 try:
                     self.result = plugin.audit_return_vulns(self.request)
                     plugin.end()
-                except BaseFrameworkException, e:
+                except BaseFrameworkException as e:
                     om.out.error(str(e))
                 else:
                     #
@@ -542,7 +554,7 @@ class ThreadedURLImpact(threading.Thread):
             #   We got here, everything is OK!
             self.ok = True
 
-        except Exception, e:
+        except Exception as e:
             self.exception = e
             #
             #   This is for debugging errors in the audit button of the

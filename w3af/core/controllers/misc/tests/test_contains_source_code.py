@@ -47,32 +47,32 @@ class TestContainsSourceCode(unittest.TestCase):
 
         self.assertNotEqual(match, None)
         self.assertEqual(lang, {PHP})
-    
+
     def test_no_code_case01(self):
         source = self.create_response('foo <?php echo "bar')
         match, lang = contains_source_code(source)
-        
+
         self.assertEqual(match, None)
         self.assertEqual(lang, None)
-    
+
     def test_no_code_case02(self):
         source = self.create_response('foo <?xml ?> "bar')
         match, lang = contains_source_code(source)
-        
+
         self.assertEqual(match, None)
         self.assertEqual(lang, None)
 
     def test_no_code_case03(self):
         source = self.create_response('foo <?php xpacket ?> "bar')
         match, lang = contains_source_code(source)
-        
+
         self.assertEqual(match, None)
         self.assertEqual(lang, None)
 
     def test_code_case04(self):
         source = self.create_response('foo <?php ypacket ?> "bar')
         match, lang = contains_source_code(source)
-        
+
         self.assertNotEqual(match, None)
         self.assertEqual(lang, {PHP})
 
@@ -184,4 +184,3 @@ class TestContainsSourceCode(unittest.TestCase):
                                          content_type='image/jpeg')
         match, lang = contains_source_code(no_source)
         self.assertEqual(match, None)
-

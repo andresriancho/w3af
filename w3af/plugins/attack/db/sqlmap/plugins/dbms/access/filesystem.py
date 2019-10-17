@@ -8,6 +8,7 @@ See the file 'LICENSE' for copying permission
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
+
 class Filesystem(GenericFilesystem):
     def __init__(self):
         GenericFilesystem.__init__(self)

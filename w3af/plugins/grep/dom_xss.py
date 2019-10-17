@@ -41,7 +41,7 @@ class dom_xss(GrepPlugin):
                     'window.open',
                     'eval',
                     'window.execScript')
-    
+
     JS_FUNCTION_CALLS = [re.compile(js_f + ' *\((.*?)\)', re.IGNORECASE)
                          for js_f in JS_FUNCTIONS]
 
@@ -73,12 +73,12 @@ class dom_xss(GrepPlugin):
             desc = 'The URL: "%s" has a DOM XSS (insecure javascript code)'\
                    ' bug using: "%s".'
             desc = desc % (response.get_url(), vuln_code)
-            
+
             v = Vuln('DOM Cross site scripting', desc,
                      severity.LOW, response.id, self.get_name())
             v.set_url(response.get_url())
             v.add_to_highlight(vuln_code)
-            
+
             self.kb_append_uniq(self, 'dom_xss', v, filter_by='URL')
 
     def _smart_grep(self, response):

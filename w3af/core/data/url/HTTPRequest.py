@@ -81,14 +81,14 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
         if isinstance(headers, Headers):
             headers.tokens_to_value()
-            
+
         headers = dict(headers)
 
         # Call the base class constructor
         urllib2.Request.__init__(self, url.url_encode(), data,
                                  headers, origin_req_host, unverifiable)
         RequestMixIn.__init__(self)
-    
+
     def __eq__(self, other):
         return (self.get_method() == other.get_method() and
                 self.get_uri() == other.get_uri() and
@@ -133,7 +133,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
     def set_uri(self, url_object):
         self.url_object = url_object
-    
+
     def get_headers(self):
         headers = Headers(self.headers.items())
         headers.update(self.unredirected_hdrs.items())
@@ -151,7 +151,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     def to_dict(self):
         serializable_dict = {}
         sdict = serializable_dict
-        
+
         sdict['method'] = self.get_method()
         sdict['uri'] = self.get_uri().url_string
         sdict['headers'] = dict(self.get_headers())
@@ -184,24 +184,25 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
         return cls(fuzzable_request.get_uri(), data=data, headers=headers,
                    origin_req_host=host)
 
-    @classmethod    
+    @classmethod
     def from_dict(cls, unserialized_dict):
         """
         * msgpack is MUCH faster than cPickle,
         * msgpack can't serialize python objects,
         * I have to create a dict representation of HTTPRequest to serialize it,
         * and a from_dict to have the object back
-        
+
         :param unserialized_dict: A dict just as returned by to_dict()
         """
         udict = unserialized_dict
-        
+
         method, uri = udict['method'], udict['uri']
         headers, data = udict['headers'], udict['data']
         cookies = udict['cookies']
         session = udict['session']
         cache = udict['cache']
-        timeout = socket.getdefaulttimeout() if udict['timeout'] is None else udict['timeout']
+        timeout = socket.getdefaulttimeout(
+        ) if udict['timeout'] is None else udict['timeout']
         new_connection = udict['new_connection']
         follow_redirects = udict['follow_redirects']
         use_basic_auth = udict['use_basic_auth']
@@ -211,7 +212,7 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
 
         headers_inst = Headers(headers.items())
         url = URL(uri)
-        
+
         return cls(url, data=data, headers=headers_inst,
                    cookies=cookies, session=session,
                    cache=cache, method=method,

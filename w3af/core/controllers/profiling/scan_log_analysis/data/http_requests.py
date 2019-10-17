@@ -3,7 +3,8 @@ import re
 from utils.utils import get_path
 from utils.output import ListOutput, ListOutputItem
 
-HTTP_METHOD_URL_RE = re.compile('\] (.*?) (.*?) (with data: ".*?" )?returned HTTP code')
+HTTP_METHOD_URL_RE = re.compile(
+    '\] (.*?) (.*?) (with data: ".*?" )?returned HTTP code')
 HTTP_CODE_RE = re.compile('returned HTTP code "(.*?)"')
 FROM_CACHE = 'from_cache=1'
 
@@ -81,7 +82,9 @@ def get_total_http_requests(scan_log_filename, scan):
     requests_by_method = {}
 
     for method, count in methods_list:
-        requests_by_method[method] = (count, '%.2f%%' % (count / float(total) * 100,))
+        requests_by_method[method] = (
+            count, '%.2f%%' %
+            (count / float(total) * 100,))
 
     output.append(ListOutputItem('HTTP request method analysis',
                                  requests_by_method))
@@ -93,7 +96,9 @@ def get_total_http_requests(scan_log_filename, scan):
     urls_with_more_requests = {}
 
     for url, num in urls_list:
-        urls_with_more_requests[url] = (num, '%.2f%%' % (num / float(total) * 100,))
+        urls_with_more_requests[url] = (
+            num, '%.2f%%' %
+            (num / float(total) * 100,))
 
     output.append(ListOutputItem('URLs which received more HTTP requests',
                                  urls_with_more_requests))

@@ -25,10 +25,9 @@ from w3af.core.data.dc.generic.data_container import DataContainer
 
 
 class TestDataContainer(unittest.TestCase):
-    
+
     def test_empty(self):
         dc = DataContainer()
 
         self.assertRaises(NotImplementedError, dc.get_param_names)
         self.assertIsNone(dc.get_token())
-

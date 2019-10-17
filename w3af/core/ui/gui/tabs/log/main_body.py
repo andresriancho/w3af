@@ -33,6 +33,7 @@ class LogBody(RememberingVPaned):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         super(LogBody, self).__init__(w3af, "pane-logbody")
         self.w3af = w3af
@@ -44,17 +45,16 @@ class LogBody(RememberingVPaned):
         # The log and status visualization
         graph = LogGraph(w3af)
         stats = StatsViewer(w3af)
-        
+
         bottom_hbox.pack1(stats)
         bottom_hbox.pack2(graph)
         bottom_hbox.show_all()
-        
+
         messag = Messages()
         messag.show()
-        
+
         # Add to the main vpan
         self.pack1(messag)
         self.pack2(bottom_hbox)
 
         self.show()
-

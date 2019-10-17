@@ -32,7 +32,11 @@ from w3af.tests.helpers.parse_http_log import iter_http_request_responses
 
 class TestGrepConsumer(unittest.TestCase):
 
-    HTTP_FILE = os.path.join(ROOT_PATH, '..', 'scan-logs', 'kryptera-ktCKJ.http')
+    HTTP_FILE = os.path.join(
+        ROOT_PATH,
+        '..',
+        'scan-logs',
+        'kryptera-ktCKJ.http')
     MAX_REQUEST_RESPONSE = 5000
     CACHE_TEST_EVERY = 50
     CACHE_TESTS = 5
@@ -59,7 +63,8 @@ class TestGrepConsumer(unittest.TestCase):
 
         grep_consumer = grep(grep_plugins, core)
 
-        for count, (request, response) in enumerate(iter_http_request_responses(self.HTTP_FILE)):
+        for count, (request, response) in enumerate(
+                iter_http_request_responses(self.HTTP_FILE)):
 
             if not cf.cf.get('target_domains'):
                 cf.cf.save('target_domains', {request.get_uri().get_domain()})

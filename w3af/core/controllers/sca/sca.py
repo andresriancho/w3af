@@ -66,6 +66,7 @@ def accept(nodeinst, visitor):
                     item._parent_node = nodeinst
                     item.accept(visitor)
 
+
 # Finally monkeypatch phpast.Node's accept method.
 Node.accept = accept
 
@@ -94,18 +95,19 @@ class PhpSCA(object):
         # Code AST
         try:
             self._ast_code = parser.parse(code, lexer=lexer)
-        except SyntaxError, se:
+        except SyntaxError as se:
             raise CodeSyntaxError("Error while parsing the code")
 
         # Convenient definition of new node type
-        GlobalParentNodeType = phpast.node('GlobalParentNodeType',
-                                           ['name', 'children', '_parent_node'])
-        ## Instantiate it and self-assign it as root node
+        GlobalParentNodeType = phpast.node(
+            'GlobalParentNodeType', [
+                'name', 'children', '_parent_node'])
+        # Instantiate it and self-assign it as root node
         self._global_pnode = GlobalParentNodeType(
             'dummy', self._ast_code, None)
         # Started parsing?
         self._started = False
-        ## Parsing lock
+        # Parsing lock
         self._parselock = threading.RLock()
         # Define scope
         scope = Scope(self._global_pnode, parent_scope=None)
@@ -252,7 +254,7 @@ class NodeRep(object):
                 val = getattr(node, f)
                 if isinstance(val, phpast.Node):
                     val = [val]
-                if type(val) is list:
+                if isinstance(val, list):
                     for el in val:
                         el._parent_node = node
                         for ele in NodeRep.parse(el, currlevel + 1, maxlevel):
@@ -312,7 +314,7 @@ class VariableDef(NodeRep):
 
     def set_is_root(self, is_root):
         self._is_root = is_root
-        
+
     is_root = property(get_is_root, set_is_root)
 
     def get_parent(self):
@@ -330,7 +332,7 @@ class VariableDef(NodeRep):
 
     def set_parent(self, parent):
         self._parent = parent
-    
+
     parent = property(get_parent, set_parent)
 
     @property
@@ -365,7 +367,7 @@ class VariableDef(NodeRep):
         else:
             deps = list(itertools.chain((self,), self.deps()))
             v = deps[-2].var_node if len(deps) > 1 else None
-            if v and type(v._parent_node) is phpast.ArrayOffset:
+            if v and isinstance(v._parent_node, phpast.ArrayOffset):
                 return v._parent_node.expr
             return None
 
@@ -419,7 +421,7 @@ class VariableDef(NodeRep):
         we got that $_GET is $a's ancestor as well as $a is for $b.
         """
         for n in NodeRep.parse(node):
-            if type(n) is phpast.Variable:
+            if isinstance(n, phpast.Variable):
                 nodetys = [phpast.FunctionCall]
                 for fc in self._get_parent_nodes(n, nodetys=nodetys):
                     vulnty = FuncCall.get_vulnty_for_sec(fc.name)
@@ -453,7 +455,7 @@ class FuncCall(NodeRep):
         ('htmlentities', 'htmlspecialchars'),
         'SQL':
         ('addslashes', 'mysql_real_escape_string', 'mysqli_escape_string',
-             'mysqli_real_escape_string')
+         'mysqli_real_escape_string')
     }
 
     def __init__(self, name, lineno, ast_node, scope):
@@ -467,7 +469,7 @@ class FuncCall(NodeRep):
     def vulntypes(self):
         vulntys = self._vulntypes
 
-        if type(vulntys) is list:
+        if isinstance(vulntys, list):
             return vulntys
         else:
             # Defaults to no vulns.
@@ -483,7 +485,7 @@ class FuncCall(NodeRep):
     @property
     def vulnsources(self):
         vulnsrcs = self._vulnsources
-        if type(vulnsrcs) is list:
+        if isinstance(vulnsrcs, list):
             return vulnsrcs
         else:
             vulnsrcs = self._vulnsources = []
@@ -549,7 +551,7 @@ class FuncCall(NodeRep):
         astnode = self._ast_node
         nodeparams = getattr(astnode, attrname(astnode), [])
 
-        if nodeparams and type(nodeparams) is not list:
+        if nodeparams and not isinstance(nodeparams, list):
             nodeparams = [nodeparams]
 
         for par in nodeparams:
@@ -611,7 +613,7 @@ class Param(object):
 
         for node in NodeRep.parse(node):
 
-            if type(node) is phpast.Variable:
+            if isinstance(node, phpast.Variable):
                 varname = node.name
                 scopevar = scope.get_var(varname)
                 vardef = VariableDef(varname + '__$temp_anon_var$_',
@@ -620,7 +622,7 @@ class Param(object):
                 vardef.parent = scopevar
                 break
 
-            elif type(node) is phpast.FunctionCall:
+            elif isinstance(node, phpast.FunctionCall):
                 vardef = VariableDef(node.name + '_funvar', node.lineno, scope)
                 fc = FuncCall(node.name, node.lineno, node, scope)
 

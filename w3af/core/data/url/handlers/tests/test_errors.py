@@ -33,10 +33,10 @@ from w3af.core.data.url import opener_settings
 
 
 class TestErrorHandler(unittest.TestCase):
-    
+
     def setUp(self):
         consecutive_number_generator.reset()
-    
+
     @attr('moth')
     def test_error_handler_id(self):
         """
@@ -44,7 +44,7 @@ class TestErrorHandler(unittest.TestCase):
         crash on response codes not in range 200-300.
         """
         fail_url = URL(get_moth_http('/abc/def/do-not-exist.foo'))
-        
+
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
         opener = settings.get_custom_opener()
@@ -52,6 +52,6 @@ class TestErrorHandler(unittest.TestCase):
         request = HTTPRequest(fail_url)
         try:
             opener.open(request)
-        except urllib2.HTTPError, response:
+        except urllib2.HTTPError as response:
             self.assertEqual(response.code, NOT_FOUND)
             self.assertEqual(response.id, 1)

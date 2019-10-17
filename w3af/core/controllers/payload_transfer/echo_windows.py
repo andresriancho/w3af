@@ -128,7 +128,8 @@ class EchoWindows(BasePayloadTransfer):
         if 'file creation error' in res.lower():
             raise BaseFrameworkException('Error in remote debug.exe command.')
         extension = self._get_extension(destination)
-        om.out.debug('Changing the extension of the binary file to match the original one ()')
+        om.out.debug(
+            'Changing the extension of the binary file to match the original one ()')
         res = self._exec_method('move ' + self._filename + '._ ' +
                                 self._filename + '.' + extension)
 

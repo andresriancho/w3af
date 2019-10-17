@@ -89,7 +89,8 @@ class Test404FuzzyEqualForDiff(unittest.TestCase):
 
         for num_lines, expected_result in tests:
             diff_x = self.get_body([])
-            diff_y = self.get_body(['Hello world this an added line for a test'] * num_lines)
+            diff_y = self.get_body(
+                ['Hello world this an added line for a test'] * num_lines)
 
             args = (diff_x, diff_y, self.IS_EQUAL_RATIO)
 
@@ -127,7 +128,8 @@ class Test404FuzzyEqualForDiff(unittest.TestCase):
 
         for num_lines, expected_result in tests:
             diff_x = ''
-            diff_y = '\n'.join(['0e7b2e00d5ee46718258ae6ed5e2b315'] * num_lines)
+            diff_y = '\n'.join(
+                ['0e7b2e00d5ee46718258ae6ed5e2b315'] * num_lines)
 
             args = (diff_x, diff_y, self.IS_EQUAL_RATIO)
 

@@ -40,7 +40,7 @@ COMMON_CSRF_NAMES = (
     'CSRFName',                   # OWASP CSRF_Guard
     'CSRFToken',                  # OWASP CSRF_Guard
     'anticsrf',                   # AntiCsrfParam.java
-    '__RequestVerificationToken', # AntiCsrfParam.java
+    '__RequestVerificationToken',  # AntiCsrfParam.java
     'token',
     'csrf',
     'YII_CSRF_TOKEN',             # http://www.yiiframework.com/
@@ -54,7 +54,7 @@ COMMON_CSRF_NAMES = (
 class csrf(AuditPlugin):
     """
     Identify Cross-Site Request Forgery vulnerabilities.
-    
+
     :author: Taras (oxdef@oxdef.info)
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
@@ -99,10 +99,10 @@ class csrf(AuditPlugin):
 
         # Ok, we have found vulnerable to CSRF attack request
         msg = 'Cross Site Request Forgery has been found at: %s' % freq.get_url()
-        
+
         v = Vuln.from_fr('CSRF vulnerability', msg, severity.MEDIUM,
                          orig_response.id, self.get_name(), freq)
-        
+
         self.kb_append_uniq(self, 'csrf', v)
 
     def _is_resp_equal(self, response_1, response_2):
@@ -114,7 +114,10 @@ class csrf(AuditPlugin):
         if response_1.get_code() != response_2.get_code():
             return False
 
-        if not fuzzy_equal(response_1.body, response_2.body, self._equal_limit):
+        if not fuzzy_equal(
+                response_1.body,
+                response_2.body,
+                self._equal_limit):
             return False
 
         return True
@@ -176,11 +179,12 @@ class csrf(AuditPlugin):
         headers['Referer'] = fake_ref
         mutant.set_token(('Referer',))
 
-        mutant_response = self._uri_opener.send_mutant(mutant, debugging_id=debugging_id)
-        
+        mutant_response = self._uri_opener.send_mutant(
+            mutant, debugging_id=debugging_id)
+
         if not self._is_resp_equal(orig_response, mutant_response):
             return True
-        
+
         return False
 
     def _find_csrf_token(self, freq):
@@ -189,9 +193,9 @@ class csrf(AuditPlugin):
         """
         post_data = freq.get_raw_data()
         querystring = freq.get_querystring()
-        
+
         for token in chain(post_data.iter_tokens(), querystring.iter_tokens()):
-            
+
             if self.is_csrf_token(token.get_name(), token.get_value()):
 
                 msg = 'Found CSRF token %s in parameter %s for URL %s.'
@@ -205,27 +209,28 @@ class csrf(AuditPlugin):
         """
         Please note that this method generates lots of false positives and
         negatives. Read the github issue for more information.
-        
+
         :see: https://github.com/andresriancho/w3af/issues/120
         :return: True if the CSRF token is NOT verified by the web application
         """
         token_pname_lst = token.keys()
         token_value = token[token_pname_lst[0]]
-        
+
         # This will generate mutants for the original fuzzable request using
         # the reversed token value as a CSRF-token (this is a feature: we want
         # to make sure it has the same length as the original token and that
         # it has the same type: digits, hash, etc. in order to pass the first
         # trivial validations)
         #
-        # Only create mutants that modify the token parameter name 
-        mutants = create_mutants(freq, [token_value[::-1]], False, token_pname_lst)
-        
+        # Only create mutants that modify the token parameter name
+        mutants = create_mutants(
+            freq, [token_value[::-1]], False, token_pname_lst)
+
         for mutant in mutants:
             mutant_response = self._uri_opener.send_mutant(mutant)
             if not self._is_resp_equal(orig_response, mutant_response):
                 return True
-            
+
         return False
 
     def shannon_entropy(self, data):
@@ -239,7 +244,7 @@ class csrf(AuditPlugin):
         entropy = 0
 
         for x in xrange(256):
-            p_x = float(data.count(chr(x)))/len(data)
+            p_x = float(data.count(chr(x))) / len(data)
             if p_x > 0:
                 entropy += - p_x * log(p_x, 2)
 
@@ -264,12 +269,12 @@ class csrf(AuditPlugin):
             # parameters which are files in multipart uploads or stuff
             # like that
             return False
-        
+
         # Check for common CSRF token names
         for common_csrf_name in COMMON_CSRF_NAMES:
             if common_csrf_name.lower() in key.lower():
                 return True
-    
+
         # Calculate entropy
         entropy = self.shannon_entropy(smart_str_ignore(value))
         if entropy >= min_entropy:

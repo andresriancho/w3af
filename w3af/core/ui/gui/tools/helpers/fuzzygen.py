@@ -46,6 +46,7 @@ class FuzzyGenerator(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, txt1, txt2):
         # separate the sane and replaceable info
         self.torp1, self.sane1 = self._dissect(txt1)
@@ -79,7 +80,7 @@ class FuzzyGenerator(object):
         namespace = {"string": __import__("string")}
         try:
             it = eval(text, namespace)
-        except Exception, e:
+        except Exception as e:
             msg = _("%s: %s (generated from %r)") % (e.__class__.__name__, e,
                                                      text)
             raise FuzzyError(msg)
@@ -104,7 +105,7 @@ class FuzzyGenerator(object):
             url_string = header.split(' ')[1]
             replaced_url_string = url_string.replace('%24', '$')
             txt = txt.replace(url_string, replaced_url_string)
-        except:
+        except BaseException:
             pass
         #
         #    /fix for bug #164086

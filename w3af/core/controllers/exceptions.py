@@ -29,6 +29,7 @@ class BaseFrameworkException(Exception):
     """
     A small class that defines a BaseFrameworkException.
     """
+
     def __init__(self, message):
         self.value = str(message)
         Exception.__init__(self, self.value)
@@ -41,6 +42,7 @@ class HTTPRequestException(BaseFrameworkException):
     """
     This exception should be raised when **one** HTTP request fails.
     """
+
     def __init__(self, message, request=None):
         BaseFrameworkException.__init__(self, message)
         self.request = request
@@ -61,6 +63,7 @@ class RunOnce(Exception):
     A small class that defines an exception to be raised by plugins that
     run only once and then are useless
     """
+
     def __init__(self, value=''):
         Exception.__init__(self)
         self.value = str(value)
@@ -83,18 +86,19 @@ class ScanMustStopException(Exception):
     process. This exception is raised in a few places. NOT to be used
     extensively.
     """
+
     def __init__(self, msg, errs=()):
         self.msg = str(msg)
         self.errs = errs
 
     def __str__(self):
         msg = str(self.msg)
-        
+
         if self.errs:
             msg += ' The following errors were logged:\n'
             for err in self.errs:
                 msg += '  - %s' % err
-                
+
         return msg
 
     __repr__ = __str__
@@ -114,6 +118,7 @@ class ScanMustStopOnUrlError(ScanMustStopException):
     Please note that HTTPRequestException should be used when only one HTTP
     request failed.
     """
+
     def __init__(self, url_error, req):
         # Call parent's __init__
         ScanMustStopException.__init__(self, url_error)

@@ -31,6 +31,7 @@ class full_width_encode(EvasionPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def modify_request(self, request):
         """
         Mangles the request
@@ -50,7 +51,7 @@ class full_width_encode(EvasionPlugin):
             try:
                 # Only mangle the postdata if it is a url encoded string
                 parse_qs(data)
-            except:
+            except BaseException:
                 pass
             else:
                 # We get here only if the parsing was successful

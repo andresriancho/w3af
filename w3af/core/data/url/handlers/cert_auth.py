@@ -44,6 +44,7 @@ class certHTTPSHandler(urllib2.HTTPSHandler):
     """
     An https handler for urllib2 that knows what to do with cert and key files.
     """
+
     def __init__(self, debuglevel=0):
         urllib2.HTTPSHandler.__init__(self, debuglevel)
         self._sslCertFile = None
@@ -78,7 +79,7 @@ class certHTTPSHandler(urllib2.HTTPSHandler):
 
     def https_open(self, req):
         # Original
-        #return self.do_open(httplib.HTTPSConnection, req)
+        # return self.do_open(httplib.HTTPSConnection, req)
 
         # My version :P
         certHTTPSConnection.cert_file = self.get_ssl_cert_file()

@@ -34,8 +34,10 @@ if __name__ == '__main__':
         try:
             ok = urllib2.urlopen('http://%s/' % domain).read()
             try:
-                bad = urllib2.urlopen('http://%s/not-ex1st.html' % domain).read()
-            except urllib2.HTTPError, error:
+                bad = urllib2.urlopen(
+                    'http://%s/not-ex1st.html' %
+                    domain).read()
+            except urllib2.HTTPError as error:
                 bad = error.read()
         except KeyboardInterrupt:
             break

@@ -43,7 +43,9 @@ class TestURLParameterHandler(unittest.TestCase):
 
         for proto in {'http', 'https'}:
             test_url = URL('%s://mock/abc/def.html' % proto)
-            test_url_param = URL('%s://mock/abc/def.html;%s' % (proto, test_param))
+            test_url_param = URL(
+                '%s://mock/abc/def.html;%s' %
+                (proto, test_param))
             request = HTTPRequest(test_url)
 
             httpretty.register_uri(httpretty.GET,

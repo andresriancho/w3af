@@ -62,9 +62,10 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
 
                 try:
                     # Lets test if the transfer method works.
-                    return self.transfer('test_string\n',
-                                         get_remote_temp_file(self._exec_method))
-                except:
+                    return self.transfer(
+                        'test_string\n', get_remote_temp_file(
+                            self._exec_method))
+                except BaseException:
                     continue
 
         return False

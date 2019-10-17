@@ -34,7 +34,7 @@ class GenericFilterTest(unittest.TestCase):
     CAPACITY = None
     ERROR_RATE = None
     filter = None
-    
+
     def setUp(self):
         # Init the seed to something fixed in order to have always the same
         # "random" numbers used.
@@ -44,7 +44,7 @@ class GenericFilterTest(unittest.TestCase):
     def test_bloom_int(self):
         for i in xrange(0, self.CAPACITY):
             self.filter.add(i)
-            
+
         # After understanding a little bit more about how bloom filters work,
         # I decided to comment this line. Given the probabilistic nature of
         # these filters, it might be the case that the length of the filter is
@@ -79,7 +79,7 @@ class GenericFilterTest(unittest.TestCase):
             self.assertNotIn(saved_str[::-1], self.filter)
 
     @only_if_subclass
-    def test_bloom_url_objects(self):        
+    def test_bloom_url_objects(self):
         for i in xrange(0, self.CAPACITY):
             url_num = URL('http://moth/index%s.html' % i)
             self.filter.add(url_num)
@@ -98,25 +98,24 @@ class GenericFilterTest(unittest.TestCase):
     def test_unicode_string(self):
         unicode_string = u'¡'
         self.filter.add(unicode_string)
-        
+
         self.assertIn(unicode_string, self.filter)
 
     @only_if_subclass
     def test_scale(self):
         if not isinstance(self.filter, ScalableBloomFilter):
             return
-        
+
         count = 12500
         for i in xrange(0, count):
             self.filter.add(i)
-        
+
         self.assertGreater(self.filter.capacity, count)
-        
+
         self.assertEqual(self.filter.capacity, 15000)
         self.assertLessEqual(len(self.filter), count)
-        
-        self.assertLessEqual(
-                             abs((len(self.filter) / float(count)) - 1.0),
-                             self.filter.error_rate
-                             )
 
+        self.assertLessEqual(
+            abs((len(self.filter) / float(count)) - 1.0),
+            self.filter.error_rate
+        )

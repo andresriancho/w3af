@@ -87,11 +87,22 @@ class strange_parameters(GrepPlugin):
                     continue
 
                 for analyzer in analyzers:
-                    if analyzer(request, response, ref, token_name, token_value):
+                    if analyzer(
+                            request,
+                            response,
+                            ref,
+                            token_name,
+                            token_value):
                         # Don't repeat findings
                         self._already_reported.add((ref.uri2url(), token_name))
 
-    def _analyze_strange(self, request, response, ref, token_name, token_value):
+    def _analyze_strange(
+            self,
+            request,
+            response,
+            ref,
+            token_name,
+            token_value):
         if not self._is_strange(request, token_name, token_value):
             return False
 
@@ -184,7 +195,8 @@ class strange_parameters(GrepPlugin):
         # Split the parameter by any character that is not A-Za-z0-9 and if
         # the length is greater than X then report it
         #
-        split_value = [x for x in self.STRANGE_RE_CHARS.split(value) if x != '']
+        split_value = [
+            x for x in self.STRANGE_RE_CHARS.split(value) if x != '']
         if len(split_value) > 4:
             if not request.sent(value):
                 return True

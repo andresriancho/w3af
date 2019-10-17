@@ -59,19 +59,19 @@ class wsdl_greper(GrepPlugin):
 
         self.analyze_wsdl(request, response)
         self.analyze_disco(request, response)
-    
+
     def analyze_wsdl(self, request, response):
         for match in self._multi_in.query(response.body):
             desc = ('The URL: "%s" is a Web Services Description Language'
                     ' page. This requires manual analysis to determine the'
                     ' security of the web service.')
             desc %= response.get_url()
-            
+
             i = Info('WSDL resource', desc, response.id,
                      self.get_name())
             i.set_url(response.get_url())
             i.add_to_highlight(match)
-            
+
             self.kb_append_uniq(self, 'wsdl', i, 'URL')
             break
 
@@ -85,10 +85,10 @@ class wsdl_greper(GrepPlugin):
                          self.get_name())
                 i.set_url(response.get_url())
                 i.add_to_highlight(disco_string)
-                
+
                 self.kb_append_uniq(self, 'disco', i, 'URL')
                 break
-                
+
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.

@@ -11,8 +11,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.HIGHEST
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -36,10 +38,13 @@ def tamper(payload, **kwargs):
     retVal = payload
 
     if payload:
-        match = re.search(r"(?i)(\b(AND|OR)\b\s+)([^>]+?)\s*>\s*(\w+|'[^']+')", payload)
+        match = re.search(
+            r"(?i)(\b(AND|OR)\b\s+)([^>]+?)\s*>\s*(\w+|'[^']+')",
+            payload)
 
         if match:
-            _ = "%sLEAST(%s,%s+1)=%s+1" % (match.group(1), match.group(3), match.group(4), match.group(4))
+            _ = "%sLEAST(%s,%s+1)=%s+1" % (match.group(1),
+                                           match.group(3), match.group(4), match.group(4))
             retVal = retVal.replace(match.group(0), _)
 
     return retVal

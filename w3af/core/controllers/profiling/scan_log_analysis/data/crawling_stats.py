@@ -48,6 +48,9 @@ def get_crawling_stats(scan_log_filename, scan):
     if not new_url_found_by_plugin:
         return
 
-    output.append(ListOutputItem('found URLs (group by plugin)', new_url_found_by_plugin))
+    output.append(
+        ListOutputItem(
+            'found URLs (group by plugin)',
+            new_url_found_by_plugin))
 
     return output

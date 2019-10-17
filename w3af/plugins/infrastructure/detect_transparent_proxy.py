@@ -46,10 +46,10 @@ class detect_transparent_proxy(InfrastructurePlugin):
         if self._is_proxyed_conn(fuzzable_request):
             desc = 'Your ISP seems to have a transparent proxy installed,'\
                    ' this can influence scan results in unexpected ways.'
-           
+
             i = Info('Transparent proxy detected', desc, 1, self.get_name())
             i.set_url(fuzzable_request.get_url())
-            
+
             kb.kb.append(self, 'detect_transparent_proxy', i)
             om.out.information(i.get_desc())
         else:
@@ -62,15 +62,24 @@ class detect_transparent_proxy(InfrastructurePlugin):
 
         :return: True if proxy is present.
         """
-        random_ips = ['1.2.3.4', '5.6.7.8', '9.8.7.6', '1.2.1.2', '1.0.0.1',
-                      '60.60.60.60', '44.44.44.44', '11.22.33.44', '11.22.33.11',
-                      '7.99.7.99', '87.78.87.78']
+        random_ips = [
+            '1.2.3.4',
+            '5.6.7.8',
+            '9.8.7.6',
+            '1.2.1.2',
+            '1.0.0.1',
+            '60.60.60.60',
+            '44.44.44.44',
+            '11.22.33.44',
+            '11.22.33.11',
+            '7.99.7.99',
+            '87.78.87.78']
 
         for ip_address in random_ips:
             sock_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 sock_obj.connect((ip_address, 80))
-            except:
+            except BaseException:
                 return False
             else:
                 continue

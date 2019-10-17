@@ -31,4 +31,3 @@ def get_sqlmap_testenv_http(path='/'):
         sqlmap_testenv_netloc = DEFAULT_SQLMAP_TESTENV
 
     return 'http://%s%s' % (sqlmap_testenv_netloc, path)
-

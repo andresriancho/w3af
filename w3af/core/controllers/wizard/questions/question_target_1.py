@@ -29,6 +29,7 @@ class question_target_1(question):
     """
     This is the first question of the wizard, where you have to specify the target.
     """
+
     def __init__(self, w3af_core):
         question.__init__(self, w3af_core)
 

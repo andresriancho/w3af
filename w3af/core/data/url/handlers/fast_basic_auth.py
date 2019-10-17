@@ -29,8 +29,8 @@ class FastHTTPBasicAuthHandler(urllib2.AbstractBasicAuthHandler,
     The AbstractBasicAuthHandler only sends the basic HTTP credentials after
     receiving a 401 which makes scans much slower (1 returns 401, 1 with the
     credentials returns 200).
-    
-    Created this handler to always send the configured credentials. 
+
+    Created this handler to always send the configured credentials.
     """
     handler_order = 200  # response processing before HTTPEquivProcessor
 

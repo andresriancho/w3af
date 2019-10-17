@@ -16,7 +16,14 @@ from plugins.dbms.db2.syntax import Syntax
 from plugins.dbms.db2.takeover import Takeover
 from plugins.generic.misc import Miscellaneous
 
-class DB2Map(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
+
+class DB2Map(
+        Syntax,
+        Fingerprint,
+        Enumeration,
+        Filesystem,
+        Miscellaneous,
+        Takeover):
     """
     This class defines DB2 methods
     """

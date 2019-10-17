@@ -37,10 +37,11 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     """
     Load profiles from the console UI.
     """
+
     def setUp(self):
         super(TestProfilesConsoleUI, self).setUp()
         self._remove_if_exists(self.get_profile_name())
-    
+
     def tearDown(self):
         super(TestProfilesConsoleUI, self).tearDown()
         self._remove_if_exists(self.get_profile_name())
@@ -51,18 +52,18 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         profile_name = profile_name.replace(':', '-')
         profile_name = profile_name.lower()
         return profile_name
-    
+
     def _remove_if_exists(self, profile_name):
         try:
             profile_inst = profile(profile_name)
             profile_inst.remove()
-        except:
+        except BaseException:
             pass
-    
+
     def _assert_exists(self, profile_name):
         try:
             profile(profile_name)
-        except:
+        except BaseException:
             assert False, 'The %s profile does NOT exist!' % profile_name
 
     def _assert_equal(self, profile_name_a, profile_name_b):
@@ -133,15 +134,17 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
 
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
-        
+
         self._assert_exists(self.get_profile_name())
         self._assert_equal(self.get_profile_name(), 'OWASP_TOP10')
 
     def test_save_as_self_contained_profile(self):
-        commands_to_run = ['profiles',
-                           'use OWASP_TOP10',
-                           'save_as %s self-contained' % self.get_profile_name(),
-                           'exit']
+        commands_to_run = [
+            'profiles',
+            'use OWASP_TOP10',
+            'save_as %s self-contained' %
+            self.get_profile_name(),
+            'exit']
 
         expected = ('Profile saved.',)
 
@@ -169,16 +172,19 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         #
         #   Make the profile self-contained and load it
         #
-        commands_to_run = ['profiles',
-                           'use OWASP_TOP10',
-                           'save_as %s self-contained' % self.get_profile_name(),
-                           'back',
-                           'profiles',
-                           'use %s' % self.get_profile_name(),
-                           'back',
-                           'plugins audit config ssl_certificate',
-                           'view',
-                           'exit']
+        commands_to_run = [
+            'profiles',
+            'use OWASP_TOP10',
+            'save_as %s self-contained' %
+            self.get_profile_name(),
+            'back',
+            'profiles',
+            'use %s' %
+            self.get_profile_name(),
+            'back',
+            'plugins audit config ssl_certificate',
+            'view',
+            'exit']
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
@@ -278,7 +284,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
 
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
-        
+
     def test_save_load_misc_settings(self):
         # Save the settings
         commands_to_run = ['misc-settings set msf_location /etc/',
@@ -292,12 +298,12 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
 
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
-        
+
         self._assert_exists(self.get_profile_name())
-        
+
         # Clean the mocked stdout
         self._mock_stdout.clear()
-        
+
         # Load the settings
         commands_to_run = ['profiles',
                            'use %s' % self.get_profile_name(),

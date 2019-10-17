@@ -33,6 +33,7 @@ class TestExtrusionScanner(unittest.TestCase):
     """
     Test the extrusion scanner's basic features.
     """
+
     def test_basic(self):
         es = extrusionScanner(commands.getoutput)
 

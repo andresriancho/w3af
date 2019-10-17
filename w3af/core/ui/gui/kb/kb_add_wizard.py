@@ -23,18 +23,18 @@ import gobject
 
 from w3af.core.ui.gui.confpanel import ConfigDialog
 from w3af.core.data.kb.vuln_templates.utils import (get_template_names,
-                                               get_template_by_name)
+                                                    get_template_by_name)
 
 
 class KBAddWizard(object):
-    
+
     def __init__(self):
         pass
-    
+
     def start_wizard(self):
         """
         get_template_names()
-        
+
         template = get_template_by_name(chosen_template)
         ConfigDialog(_("Vulnerability settings"), self.w3af, template)
         """

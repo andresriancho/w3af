@@ -34,9 +34,9 @@ from w3af.core.controllers.ci.moth import get_moth_http
 @attr('moth')
 @attr('fails')
 class TestHandleCtrlC(unittest.TestCase):
-    
+
     SCRIPT = '%s/core/ui/console/tests/data/spider_long.w3af' % ROOT_PATH
-    
+
     def prepare_script(self):
         fhandler = tempfile.NamedTemporaryFile(prefix='spider_long-',
                                                suffix='.w3af',
@@ -45,7 +45,7 @@ class TestHandleCtrlC(unittest.TestCase):
         fhandler.write(file(self.SCRIPT).read() % {'moth': get_moth_http()})
         fhandler.close()
         return fhandler.name
-        
+
     def test_scan_ctrl_c(self):
         script = self.prepare_script()
         cmd = ['python', 'w3af_console', '-s', script]
@@ -56,7 +56,7 @@ class TestHandleCtrlC(unittest.TestCase):
                                    stderr=subprocess.PIPE,
                                    shell=False,
                                    universal_newlines=True)
-        
+
         # Let it run until the first new URL is found (and while the process
         # is still running)
         while process.poll() is None:
@@ -64,17 +64,20 @@ class TestHandleCtrlC(unittest.TestCase):
             if 'New URL found by web_spider plugin' in w3af_output:
                 time.sleep(1)
                 break
-        
-        self.assertIs(process.poll(), None, 'w3af died before we could send Ctrl+C')
-        
+
+        self.assertIs(
+            process.poll(),
+            None,
+            'w3af died before we could send Ctrl+C')
+
         # Send Ctrl+C
         process.send_signal(signal.SIGINT)
 
         EXPECTED = (
-                    'User pressed Ctrl+C, stopping scan',
-                    'The user stopped the scan.',
-                    'w3af>>> exit',
-                    )
+            'User pressed Ctrl+C, stopping scan',
+            'The user stopped the scan.',
+            'w3af>>> exit',
+        )
 
         # set signal handler
         signal.signal(signal.SIGALRM, alarm_handler)
@@ -92,21 +95,22 @@ class TestHandleCtrlC(unittest.TestCase):
             process.terminate()
             msg = 'w3af did not stop on Ctrl+C, read() timeout.'
             self.assertTrue(False, msg)
-        
+
         for estr in EXPECTED:
             self.assertIn(estr, w3af_output)
-            
 
         NOT_EXPECTED = ('The list of fuzzable requests is:',)
 
         for estr in NOT_EXPECTED:
             self.assertNotIn(estr, w3af_output)
-        
+
         # We don't need this anymore...
         os.remove(script)
 
+
 class Alarm(Exception):
     pass
+
 
 def alarm_handler(signum, frame):
     raise Alarm

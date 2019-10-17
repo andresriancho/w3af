@@ -27,16 +27,17 @@ class LocalFileReadTemplate(BaseTemplate):
     """
     Vulnerability template for local file read vulnerability.
     """
+
     def __init__(self):
         super(LocalFileReadTemplate, self).__init__()
-        
+
         self.name = self.get_vulnerability_name()
         self.payload = '/etc/passwd'
         self.file_pattern = 'root:x:0:0:'
-        
+
     def get_options(self):
         ol = super(LocalFileReadTemplate, self).get_options()
-        
+
         d = 'Payload used to detect the vulnerability (i.e. ../../etc/passwd)'
         o = opt_factory('payload', self.payload, d, 'string')
         ol.add(o)
@@ -44,14 +45,14 @@ class LocalFileReadTemplate(BaseTemplate):
         d = 'File pattern used to detect the vulnerability (i.e. root:x:0:0:)'
         o = opt_factory('file_pattern', self.file_pattern, d, 'string')
         ol.add(o)
-        
+
         return ol
-    
+
     def set_options(self, options_list):
         super(LocalFileReadTemplate, self).set_options(options_list)
         self.payload = options_list['payload'].get_value()
         self.file_pattern = options_list['file_pattern'].get_value()
-    
+
     def create_vuln(self):
         v = super(LocalFileReadTemplate, self).create_vuln()
 
@@ -59,7 +60,7 @@ class LocalFileReadTemplate(BaseTemplate):
         v['file_pattern'] = self.file_pattern
 
         return v
-    
+
     def get_kb_location(self):
         """
         :return: A tuple with the location where the vulnerability will be

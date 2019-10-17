@@ -35,46 +35,46 @@ from w3af.core.data.url import opener_settings
 
 
 class TestBlacklistHandler(unittest.TestCase):
-    
+
     def setUp(self):
         consecutive_number_generator.reset()
-    
+
     def tearDown(self):
         cf.cf.save('non_targets', [])
-    
+
     def test_blacklist_handler_block(self):
         """Verify that the blacklist handler works as expected"""
-        
+
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
-        cf.cf.save('non_targets', [blocked_url,])
-        
+        cf.cf.save('non_targets', [blocked_url, ])
+
         opener = urllib2.build_opener(BlacklistHandler)
-        
+
         request = urllib2.Request(blocked_url.url_string)
         request.url_object = blocked_url
         response = opener.open(request)
-        
+
         self.assertEqual(response.code, NO_CONTENT)
-    
+
     @attr('moth')
     def test_blacklist_handler_pass(self):
         """Verify that the blacklist handler works as expected"""
         opener = urllib2.build_opener(BlacklistHandler)
-        
+
         request = urllib2.Request(get_moth_http())
         request.url_object = URL(get_moth_http())
         response = opener.open(request)
-        
+
         self.assertEqual(response.code, 200)
-    
+
     def test_handler_order_block(self):
         """Get an instance of the extended urllib and verify that the blacklist
         handler still works, even when mixed with all the other handlers."""
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
-        cf.cf.save('non_targets', [blocked_url,])
-        
+        cf.cf.save('non_targets', [blocked_url, ])
+
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
         opener = settings.get_custom_opener()
@@ -84,10 +84,10 @@ class TestBlacklistHandler(unittest.TestCase):
         request.cookies = True
         request.get_from_cache = False
         response = opener.open(request)
-        
+
         self.assertEqual(response.code, NO_CONTENT)
         self.assertEqual(response.id, 1)
-        
+
     @attr('moth')
     def test_handler_order_pass(self):
         """Get an instance of the extended urllib and verify that the blacklist
@@ -95,8 +95,8 @@ class TestBlacklistHandler(unittest.TestCase):
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
         safe_url = URL(get_moth_http())
-        cf.cf.save('non_targets', [blocked_url,])
-        
+        cf.cf.save('non_targets', [blocked_url, ])
+
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
         opener = settings.get_custom_opener()
@@ -106,6 +106,6 @@ class TestBlacklistHandler(unittest.TestCase):
         request.cookies = True
         request.get_from_cache = False
         response = opener.open(request)
-        
+
         self.assertEqual(response.code, 200)
         self.assertEqual(response.id, 1)

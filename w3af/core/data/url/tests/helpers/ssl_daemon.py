@@ -39,7 +39,9 @@ class RawSSLDaemon(UpperDaemon):
     Echo the data sent by the client, but upper case it first. SSL version of
     UpperDaemon.
     """
-    def __init__(self, handler=UpperTCPHandler, ssl_version=ssl.PROTOCOL_TLSv1):
+
+    def __init__(self, handler=UpperTCPHandler,
+                 ssl_version=ssl.PROTOCOL_TLSv1):
         super(RawSSLDaemon, self).__init__(handler=handler)
         self.ssl_version = ssl_version
 
@@ -68,7 +70,7 @@ class SSLServer(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.name = 'SSLServer'
-        
+
         self.listen = listen
         self.port = port
         self.cert = certfile
@@ -94,7 +96,7 @@ class SSLServer(threading.Thread):
 
         try:
             newsocket.do_handshake()
-        except:
+        except BaseException:
             # The ssl certificate might request a connection with
             # SSL protocol v2 and that will "break" the handshake
             newsocket.close()
@@ -102,7 +104,7 @@ class SSLServer(threading.Thread):
         #print 'Connection from %s port %s, sending HTTP response' % fromaddr
         try:
             newsocket.send(self.http_response)
-        except Exception, e:
+        except Exception as e:
             self.errors.append(e)
             #print 'Failed to send HTTP response to client: "%s"' % e
         finally:
@@ -123,7 +125,7 @@ class SSLServer(threading.Thread):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((self.listen, self.port))
             s.close()
-        except:
+        except BaseException:
             pass
 
     def wait_for_start(self):
@@ -133,5 +135,5 @@ class SSLServer(threading.Thread):
     def get_port(self):
         try:
             return self.sock.getsockname()[1]
-        except:
+        except BaseException:
             return None

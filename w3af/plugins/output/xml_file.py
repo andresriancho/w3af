@@ -100,7 +100,10 @@ class xml_file(OutputPlugin):
         # User configured parameters
         self._file_name = '~/report.xml'
         self._timestamp = str(int(time.time()))
-        self._long_timestamp = str(time.strftime(TIME_FORMAT, time.localtime()))
+        self._long_timestamp = str(
+            time.strftime(
+                TIME_FORMAT,
+                time.localtime()))
 
         # Set defaults for scan metadata
         self._plugins_dict = {}
@@ -199,12 +202,13 @@ class xml_file(OutputPlugin):
 
         try:
             self._add_scan_status_to_context(context)
-        except RuntimeError, rte:
+        except RuntimeError as rte:
             # In some very strange scenarios we get this error:
             #
             #   Can NOT call get_run_time before start()
             #
-            # Just "ignore" this call to flush and write the XML in the next call
+            # Just "ignore" this call to flush and write the XML in the next
+            # call
             msg = 'xml_file.flush() failed to add scan status to context: "%s"'
             om.out.debug(msg % rte)
             return
@@ -227,7 +231,8 @@ class xml_file(OutputPlugin):
     @took
     def _add_scan_info_to_context(self, context):
         if self._scan_targets is None:
-            self._scan_targets = ','.join([t.url_string for t in cf.cf.get('targets')])
+            self._scan_targets = ','.join(
+                [t.url_string for t in cf.cf.get('targets')])
 
         scan_info = ScanInfo(self._jinja2_env,
                              self._scan_targets,
@@ -240,18 +245,26 @@ class xml_file(OutputPlugin):
         om.out.debug('[xml_file.flush()] _add_scan_status_to_context() start')
 
         status = self.get_w3af_core().status.get_status_as_dict()
-        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read status')
+        om.out.debug(
+            '[xml_file.flush()] _add_scan_status_to_context() read status')
 
         all_known_urls = kb.kb.get_all_known_urls()
         total_urls = len(all_known_urls)
-        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read total_urls')
+        om.out.debug(
+            '[xml_file.flush()] _add_scan_status_to_context() read total_urls')
 
         known_urls = self._get_known_urls(all_known_urls)
-        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() read generated URLTree')
+        om.out.debug(
+            '[xml_file.flush()] _add_scan_status_to_context() read generated URLTree')
 
-        scan_status = ScanStatus(self._jinja2_env, status, total_urls, known_urls)
+        scan_status = ScanStatus(
+            self._jinja2_env,
+            status,
+            total_urls,
+            known_urls)
         context.scan_status = scan_status.to_string()
-        om.out.debug('[xml_file.flush()] _add_scan_status_to_context() rendered')
+        om.out.debug(
+            '[xml_file.flush()] _add_scan_status_to_context() rendered')
 
     def _get_known_urls(self, all_known_urls):
         """
@@ -432,8 +445,9 @@ class xml_file(OutputPlugin):
             # Close the temp file so all the content is flushed
             tempfh.close()
 
-            om.out.debug('[xml_file.flush()] write_context_to_file() starting to'
-                         ' copy temp file to destination')
+            om.out.debug(
+                '[xml_file.flush()] write_context_to_file() starting to'
+                ' copy temp file to destination')
 
             # Copy to the real output file
             report_file_name = os.path.expanduser(self._file_name)
@@ -441,11 +455,14 @@ class xml_file(OutputPlugin):
             cmd = 'cp %s %s' % (tempfh.name, report_file_name)
             subprocess.call(cmd, shell=True)
 
-            om.out.debug('[xml_file.flush()] write_context_to_file() finished copy'
-                         ' operation.')
+            om.out.debug(
+                '[xml_file.flush()] write_context_to_file() finished copy'
+                ' operation.')
 
             stat_info = os.stat(report_file_name)
-            om.out.debug('The XML output file size is %s bytes.' % stat_info.st_size)
+            om.out.debug(
+                'The XML output file size is %s bytes.' %
+                stat_info.st_size)
 
         finally:
             os.remove(tempfh.name)
@@ -468,17 +485,17 @@ class xml_file(OutputPlugin):
 
         The generated XML file validates against the report.xsd file which is
         distributed with the plugin.
-        
+
         Some vulnerabilities require special characters to be triggered, those
         special characters might not be valid according to the XML specification,
         in order to be able to write these to the report, tags like the following
         are used:
-        
+
             <character code="hhhh"/>
-        
+
         Where "hhhh" is the hex representation of the character. The XML parser
         should handle these tags and show the real character to the user, encoded
-        as expected in the final format. 
+        as expected in the final format.
         """
 
 
@@ -559,7 +576,9 @@ class CachedXMLNode(XMLNode):
         raise NotImplementedError
 
     def get_filename(self):
-        return os.path.join(CachedXMLNode.get_cache_path(), self.get_cache_key())
+        return os.path.join(
+            CachedXMLNode.get_cache_path(),
+            self.get_cache_key())
 
     def get_node_from_cache(self):
         filename = self.get_filename()
@@ -793,7 +812,8 @@ class Finding(XMLNode):
         context.http_transactions = []
         for transaction in info.get_id():
             try:
-                xml = HTTPTransaction(self._jinja2_env, transaction).to_string()
+                xml = HTTPTransaction(
+                    self._jinja2_env, transaction).to_string()
             except (DBException, TraceReadException) as e:
                 msg = ('Failed to retrieve request with id %s from DB: "%s".'
                        ' The "%s" vulnerability will have an incomplete HTTP'
@@ -825,9 +845,12 @@ ATTR_VALUE_ESCAPES = {
     u'\t': u'    ',
 }
 
-ATTR_VALUE_ESCAPES.update(dict((unichr(i), '&lt;character code=&quot;%04x&quot;/&gt;' % i)
-                               for i in xrange(sys.maxunicode)
-                               if is_unicode_escape(i)))
+ATTR_VALUE_ESCAPES.update(
+    dict(
+        (unichr(i),
+         '&lt;character code=&quot;%04x&quot;/&gt;' %
+         i) for i in xrange(
+            sys.maxunicode) if is_unicode_escape(i)))
 
 ATTR_VALUE_ESCAPES_IGNORE = {'\n', '\r'}
 

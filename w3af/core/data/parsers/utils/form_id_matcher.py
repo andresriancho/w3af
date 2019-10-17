@@ -193,17 +193,18 @@ class FormIDMatcher(object):
             if json_attr not in cls.ALLOWED_ATTRS:
                 raise ValueError(FORM_ID_FORMAT_ERROR)
 
-        # User configured action and hosted_at_url must be valid regular expressions
+        # User configured action and hosted_at_url must be valid regular
+        # expressions
         if action is not None:
             try:
                 action = re.compile(action)
-            except:
+            except BaseException:
                 raise ValueError(FORM_ID_FORMAT_ERROR)
 
         if hosted_at_url is not None:
             try:
                 hosted_at_url = re.compile(hosted_at_url)
-            except:
+            except BaseException:
                 raise ValueError(FORM_ID_FORMAT_ERROR)
 
         # Strict input checks are done in __init__ -> verify_data_types

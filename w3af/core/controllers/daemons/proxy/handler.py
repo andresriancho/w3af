@@ -185,11 +185,12 @@ class ProxyHandler(Master):
         try:
             # Send the request to the remote webserver
             http_response = self._send_http_request(http_request)
-        except Exception, e:
+        except Exception as e:
             trace = str(traceback.format_exc())
             http_response = self._create_error_response(http_request, None, e,
                                                         trace=trace)
 
         # Send the response (success|error) to the browser
-        http_response = self._to_libmproxy_response(flow.request, http_response)
+        http_response = self._to_libmproxy_response(
+            flow.request, http_response)
         flow.reply(http_response)

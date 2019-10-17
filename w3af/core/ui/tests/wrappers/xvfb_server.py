@@ -44,10 +44,10 @@ class XVFBServer(threading.Thread):
     HEIGTH = 768
 
     REQUIRED_BINS = ['convert', 'xvnc4viewer', 'Xvfb', 'x11vnc']
-    
+
     XVFB_BIN = '/usr/bin/Xvfb'
-    START_CMD = '%s %s -screen 0 %sx%sx16 -fbdir %s' % (XVFB_BIN, DISPLAY, WIDTH,
-                                                        HEIGTH, tempfile.gettempdir())
+    START_CMD = '%s %s -screen 0 %sx%sx16 -fbdir %s' % (
+        XVFB_BIN, DISPLAY, WIDTH, HEIGTH, tempfile.gettempdir())
 
     SCREEN_XWD_FILE_0 = '%s/Xvfb_screen0' % tempfile.gettempdir()
 
@@ -59,9 +59,9 @@ class XVFBServer(threading.Thread):
         self.xvfb_process = None
         self.xvfb_start_result = None
         self.vnc_server_running = False
-        
+
         self.verify_required_bins()
-    
+
     def verify_required_bins(self):
         for binary in self.REQUIRED_BINS:
             status, _ = commands.getstatusoutput('which %s' % binary)
@@ -113,7 +113,7 @@ class XVFBServer(threading.Thread):
     def stop(self):
         if self.is_running():
             # pylint: disable=E1101
-            # E1101: Instance of 'Popen' has no 'terminate' member            
+            # E1101: Instance of 'Popen' has no 'terminate' member
             self.xvfb_process.terminate()
             self.xvfb_process = None
 
@@ -130,7 +130,7 @@ class XVFBServer(threading.Thread):
         try:
             self.stop()
             restore_original_display()
-        except:
+        except BaseException:
             pass
 
     def run_x_process(self, cmd, block=False, display=DISPLAY):

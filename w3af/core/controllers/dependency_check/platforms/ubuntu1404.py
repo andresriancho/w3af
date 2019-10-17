@@ -33,4 +33,3 @@ class Ubuntu1404(Ubuntu1204):
     @staticmethod
     def is_current_platform():
         return 'Ubuntu' in platform.dist() and '14.04' in platform.dist()
-

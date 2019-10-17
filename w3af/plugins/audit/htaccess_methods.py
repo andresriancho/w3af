@@ -70,29 +70,30 @@ class htaccess_methods(AuditPlugin):
         for method in ['GET', 'POST', 'ABCD', 'HEAD']:
             method_functor = getattr(self._uri_opener, method)
             try:
-                response = apply(method_functor, (url,), {'debugging_id': debugging_id})
+                response = method_functor(
+                    *(url,), **{'debugging_id': debugging_id})
                 code = response.get_code()
-            except:
+            except BaseException:
                 pass
             else:
                 if code in self.SUCCESS_CODES:
                     allowed_methods.append((method, response.id))
 
         if len(allowed_methods) > 0:
-            
+
             response_ids = [i for m, i in allowed_methods]
             methods = ', '.join([m for m, i in allowed_methods]) + '.'
             desc = ('The resource: "%s" requires authentication but the access'
                     ' is misconfigured and can be bypassed using these'
                     ' methods: %s')
             desc %= (url, methods)
-            
+
             v = Vuln('Misconfigured access control', desc,
                      severity.MEDIUM, response_ids, self.get_name())
 
             v.set_url(url)
             v['methods'] = allowed_methods
-            
+
             self.kb_append(self, 'auth', v)
 
     def get_long_desc(self):

@@ -70,6 +70,7 @@ def getRenderingView(w3af, parentView):
 
 class RenderingView(gtk.VBox):
     """Rendering view."""
+
     def __init__(self, w3af, parentView):
         """Make object."""
         gtk.VBox.__init__(self)
@@ -120,11 +121,11 @@ class GtkHtmlRenderingView(RenderingView):
             document.write_stream(obj.get_body())
             document.close_stream()
             self._renderingWidget.set_document(document)
-        except ValueError, ve:
+        except ValueError as ve:
             # I get here when the mime type is an image or something that I
             # can't display
             pass
-        except Exception, e:
+        except Exception as e:
             print _('gtkhtml2 exception:'), type(e), str(e)
             print _('Please report this issue here:')
             print 'https://github.com/andresriancho/w3af/issues/new'
@@ -194,7 +195,11 @@ class WebKitRenderingView(RenderingView):
             else:
                 raise Exception
         except Exception:
-            load_string(_("Can't render response"), mime_type, 'UTF-8', 'error')
+            load_string(
+                _("Can't render response"),
+                mime_type,
+                'UTF-8',
+                'error')
 
     def clear(self):
         """Clear view."""

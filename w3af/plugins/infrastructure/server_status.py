@@ -83,8 +83,12 @@ class server_status(InfrastructurePlugin):
                    ' enabled which discloses the following remote server'\
                    ' version: "%s".'
             desc %= version
-            
-            i = Info('Apache Server version', desc, response.id, self.get_name())
+
+            i = Info(
+                'Apache Server version',
+                desc,
+                response.id,
+                self.get_name())
             i.set_url(response.get_url())
 
             om.out.information(i.get_desc())
@@ -120,7 +124,8 @@ class server_status(InfrastructurePlugin):
                 self._shared_hosting_hosts.append(domain)
 
     def _report_shared_hosting(self, fuzzable_request, response):
-        # Now that we are outsite the for loop, we can report the possible vulns
+        # Now that we are outsite the for loop, we can report the possible
+        # vulns
         if len(self._shared_hosting_hosts):
             desc = 'The web application under test seems to be in a shared'\
                    ' hosting.'

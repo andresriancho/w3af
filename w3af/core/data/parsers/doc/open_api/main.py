@@ -131,7 +131,7 @@ class OpenAPI(BaseParser):
 
         try:
             load(http_resp.body, Loader=Loader)
-        except:
+        except BaseException:
             return False
         else:
             return True
@@ -190,15 +190,15 @@ class OpenAPI(BaseParser):
         The method also looks for all parameters which are passed to endpoints via headers,
         and stores them in to the fuzzable request
         """
-        self._specification_handler = SpecificationHandler(self.get_http_response(),
-                                                           validate_swagger_spec=self.validate_swagger_spec)
+        self._specification_handler = SpecificationHandler(
+            self.get_http_response(), validate_swagger_spec=self.validate_swagger_spec)
 
         for data in self._specification_handler.get_api_information():
             try:
                 request_factory = RequestFactory(*data)
-                fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers,
-                                                                        self.discover_fuzzable_url_parts)
-            except Exception, e:
+                fuzzable_request = request_factory.get_fuzzable_request(
+                    self.discover_fuzzable_headers, self.discover_fuzzable_url_parts)
+            except Exception as e:
                 #
                 # This is a strange situation because parsing of the OpenAPI
                 # spec can fail awfully for one of the operations but succeed
@@ -214,10 +214,11 @@ class OpenAPI(BaseParser):
                 path, filename, _function, line = get_exception_location(tb)
                 spec_url = self.get_http_response().get_url()
 
-                msg = ('Failed to generate a fuzzable request for one of the'
-                       ' OpenAPI operations. The parser will continue with the'
-                       ' next operation. The OpenAPI specification is at "%s" and'
-                       ' the exception was: "%s" at %s/%s:%s():%s.')
+                msg = (
+                    'Failed to generate a fuzzable request for one of the'
+                    ' OpenAPI operations. The parser will continue with the'
+                    ' next operation. The OpenAPI specification is at "%s" and'
+                    ' the exception was: "%s" at %s/%s:%s():%s.')
 
                 args = (spec_url, e, path, filename, _function, line)
 

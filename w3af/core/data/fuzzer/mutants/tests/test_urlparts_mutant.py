@@ -113,20 +113,22 @@ class TestURLPartsMutant(unittest.TestCase):
                                                           False,
                                                           self.fuzzer_config)
 
-        expected_urls = ['http://www.w3af.com/ls+-+la/bar',
-                         'http://www.w3af.com/ls%2B-%2Bla/bar',
-                         'http://www.w3af.com/ping+127.0.0.1+-c+5/bar',
-                         'http://www.w3af.com/ping%2B127.0.0.1%2B-c%2B5/bar',
-                         'http://www.w3af.com/foo/ls+-+la',
-                         'http://www.w3af.com/foo/ls%2B-%2Bla',
-                         'http://www.w3af.com/foo/ping+127.0.0.1+-c+5',
-                         'http://www.w3af.com/foo/ping%2B127.0.0.1%2B-c%2B5',
-                         'http://www.w3af.com/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F/bar',
-                         'http://www.w3af.com/http%253A%252F%252F127.0.0.1%253A8015%252Ftest%252F/bar',
-                         'http://www.w3af.com/foo/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F',
-                         'http://www.w3af.com/foo/http%253A%252F%252F127.0.0.1%253A8015%252Ftest%252F']
+        expected_urls = [
+            'http://www.w3af.com/ls+-+la/bar',
+            'http://www.w3af.com/ls%2B-%2Bla/bar',
+            'http://www.w3af.com/ping+127.0.0.1+-c+5/bar',
+            'http://www.w3af.com/ping%2B127.0.0.1%2B-c%2B5/bar',
+            'http://www.w3af.com/foo/ls+-+la',
+            'http://www.w3af.com/foo/ls%2B-%2Bla',
+            'http://www.w3af.com/foo/ping+127.0.0.1+-c+5',
+            'http://www.w3af.com/foo/ping%2B127.0.0.1%2B-c%2B5',
+            'http://www.w3af.com/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F/bar',
+            'http://www.w3af.com/http%253A%252F%252F127.0.0.1%253A8015%252Ftest%252F/bar',
+            'http://www.w3af.com/foo/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F',
+            'http://www.w3af.com/foo/http%253A%252F%252F127.0.0.1%253A8015%252Ftest%252F']
 
-        generated_urls = set([m.get_url().url_string for m in generated_mutants])
+        generated_urls = set(
+            [m.get_url().url_string for m in generated_mutants])
 
         self.assertEqual(set(expected_urls), generated_urls)
 
@@ -148,12 +150,14 @@ class TestURLPartsMutant(unittest.TestCase):
                          'http://www.w3af.com/static/foo/bar.abc',
                          'http://www.w3af.com/static/foo/bar.def']
 
-        generated_urls = set([m.get_url().url_string for m in generated_mutants])
+        generated_urls = set(
+            [m.get_url().url_string for m in generated_mutants])
 
         self.assertEqual(set(expected_urls), generated_urls)
 
     def test_forced_url_parts_qs(self):
-        freq = FuzzableRequest(URL('http://www.w3af.com/static/foo/bar.ext?foo=bar'))
+        freq = FuzzableRequest(
+            URL('http://www.w3af.com/static/foo/bar.ext?foo=bar'))
         freq.set_force_fuzzing_url_parts([
             ('/static/', False),
             ('foo', True),
@@ -170,6 +174,7 @@ class TestURLPartsMutant(unittest.TestCase):
                          'http://www.w3af.com/static/foo/bar.abc?foo=bar',
                          'http://www.w3af.com/static/foo/bar.def?foo=bar']
 
-        generated_uris = set([m.get_uri().url_string for m in generated_mutants])
+        generated_uris = set(
+            [m.get_uri().url_string for m in generated_mutants])
 
         self.assertEqual(set(expected_uris), generated_uris)

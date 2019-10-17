@@ -104,7 +104,7 @@ def suggest(tree, part, skipList=[]):
     try:
         list = tree.keys()
         dir = True
-    except:
+    except BaseException:
         dir = False
         list = tree
 
@@ -112,7 +112,7 @@ def suggest(tree, part, skipList=[]):
 #    if allowSet:
 #        chunks = [removePrefix(s) for s in part.split(',')]
 #        if len(chunks) > 1:
-            # skipList is used to not to suggest items which are already in the set
+        # skipList is used to not to suggest items which are already in the set
 #           skipList, part = chunks[:-1], chunks[-1]
 #        else:
 #            part = chunks[0]
@@ -134,7 +134,7 @@ def suggest(tree, part, skipList=[]):
 #    suffix = allowSet and ',' or ' '
     suffix = ' '
 
-    #if not allowSet:
+    # if not allowSet:
     #    completions = [(p, s+' ') for (p, s) in completions]
 
     if part in list:

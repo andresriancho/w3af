@@ -9,7 +9,7 @@ if __name__ == '__main__':
     cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     cs.connect((ip, port))
 
-    while 1:
+    while True:
         data = cs.recv(1024)
         if not data:
             break

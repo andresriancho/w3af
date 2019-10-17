@@ -65,13 +65,15 @@ def start_api():
 
         try:
             response = requests.get(api_url, auth=api_auth, verify=False)
-        except:
+        except BaseException:
             if process.pid is None and i > 25:
                 raise RuntimeError('Failed to start the REST API service')
         else:
             if response.status_code in (200, 404, 401):
                 break
     else:
-        raise RuntimeError('Timed out waiting for REST API service at %s' % api_url)
+        raise RuntimeError(
+            'Timed out waiting for REST API service at %s' %
+            api_url)
 
     return process, port, api_url, api_auth

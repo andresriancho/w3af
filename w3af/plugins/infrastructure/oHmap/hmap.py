@@ -41,6 +41,7 @@ class request(object):
     """
     Collect elements needed to send a Request to an HTTP server
     """
+
     def __init__(self, url, method='GET', local_uri='/', version='1.0'):
         self.url = url
         self.method = method
@@ -72,7 +73,7 @@ class request(object):
             else:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((HOST, PORT))
-        except Exception, e:
+        except Exception as e:
             msg = 'hmap connection failed to %s:%s. Exception: "%s"'
             args = (HOST, PORT, e)
             raise BaseFrameworkException(msg % args)
@@ -81,7 +82,7 @@ class request(object):
         if useSSL:
             try:
                 s2 = ssl.wrap_socket(s)
-            except Exception, e:
+            except Exception as e:
                 msg = 'hmap SSL connection failed to %s:%s. Exception: "%s"'
                 args = (HOST, PORT, e)
                 raise BaseFrameworkException(msg % args)
@@ -107,7 +108,7 @@ class request(object):
             # Send the "HTTP request" to the socket
             try:
                 s.send(str(self))
-            except Exception, e:
+            except Exception as e:
                 om.out.debug('hmap failed to send data to socket: "%s"' % e)
 
                 # Try again
@@ -121,23 +122,26 @@ class request(object):
             # Receive the HTTP response from the server
             try:
                 while True:
-                    readable, writable, exceptional = select.select([s], [], [], 10)
+                    readable, writable, exceptional = select.select(
+                        [s], [], [], 10)
                     if not readable:
                         break
 
-                    # s_read will always be "s", since it is the only socket we have
+                    # s_read will always be "s", since it is the only socket we
+                    # have
                     s_read = readable[0]
                     temp = s_read.recv(1)
 
                     if not temp:
                         break
 
-                    # we were able to read from the socket, append and try again
+                    # we were able to read from the socket, append and try
+                    # again
                     data += temp
-            except KeyboardInterrupt, e:
+            except KeyboardInterrupt as e:
                 raise e
 
-            except socket.sslerror, ssl_err:
+            except socket.sslerror as ssl_err:
                 # When the remote server has no more data to send
                 # It simply closes the remote connection, which raises:
                 # (6, 'TLS/SSL connection has been closed')
@@ -155,7 +159,7 @@ class request(object):
 
                 continue
 
-            except Exception, e:
+            except Exception as e:
                 msg = 'hmap found an exception while reading data from socket: "%s"'
                 om.out.debug(msg % e)
 
@@ -186,6 +190,7 @@ class request(object):
 
 class response(object):
     """Read in Response from HTTP server and parse out elements of interest"""
+
     def __init__(self, raw_text):
         self.raw_text = raw_text
         self.headers = []
@@ -285,12 +290,14 @@ def get_fingerprint(url, threads):
 
         try:
             result = test(url)
-        except Exception, e:
+        except Exception as e:
             args = (test.__name__, e)
             om.out.debug('[hmap] Test %s raised an exception: "%s"' % args)
             raise
         else:
-            om.out.debug('[hmap] Test %s finished successfully' % test.__name__)
+            om.out.debug(
+                '[hmap] Test %s finished successfully' %
+                test.__name__)
             return result
 
     tests = {
@@ -315,7 +322,8 @@ def get_fingerprint(url, threads):
     pool.join()
     pool.terminate()
 
-    fingerprint['SYNTACTIC']['HEADER_ORDER'] = winnow_ordered_list(fingerprint['SYNTACTIC']['HEADER_ORDER'])
+    fingerprint['SYNTACTIC']['HEADER_ORDER'] = winnow_ordered_list(
+        fingerprint['SYNTACTIC']['HEADER_ORDER'])
     return fingerprint
 
 
@@ -344,7 +352,8 @@ def unknown_method(url):
 
 def unauthorized_activity(url):
 
-    # Removed the DELETE method so we don't remove a whole site without wanting to :)
+    # Removed the DELETE method so we don't remove a whole site without
+    # wanting to :)
     unauthorized_activities = ('OPTIONS', 'TRACE', 'GET', 'HEAD',
                                'PUT', 'POST', 'COPY', 'MOVE', 'MKCOL',
                                'PROPFIND', 'PROPPATCH', 'LOCK', 'UNLOCK',
@@ -418,98 +427,98 @@ def malformed_method_line(url):
                          # 30
                          'HEAD /././././././qwerty/.././././././././ HTTP/1.0',
                          #'HEAD ../ HTTP/1.0',
-                          'HEAD /.. HTTP/1.0',
-                          'HEAD /../ HTTP/1.0',
-                          'HEAD /../../../../../ HTTP/1.0',
-                          'HEAD .. HTTP/1.0',
-                          #'HEAD . HTTP/1.0',
-                          'HEAD\t/\tHTTP/1.0',
-                          'HEAD ///////////// HTTP/1.0',
-                          'Head / HTTP/1.0',
-                          '\nHEAD / HTTP/1.0',
-                          ' \nHEAD / HTTP/1.0',  # 40
-                          ' HEAD / HTTP/1.0',
-                          'HEAD / HQWERTY/1.0',
-                          #      'HEAD http://some.host.com/ HTTP/1.0',
-                          #      'HEAD hTTP://some.host.com/ HTTP/1.0',
-                          #      'HEAD http://some.host.com HTTP/1.0',
-                          'HEAD %s HTTP/1.0' % url,
-                          #'HEAD hTTP://$url/ HTTP/1.0',
-                          #'HEAD http://$url HTTP/1.0',
-                          'HEAD %s' % url,
-                          'HEAD http:// HTTP/1.0',
-                          'HEAD http:/ HTTP/1.0',
-                          'HEAD http: HTTP/1.0',
-                          'HEAD http HTTP/1.0',
-                          'HEAD h HTTP/1.0',
-                          #      'HEAD HTTP://some.host.com/ HTTP/1.0',
-                          #'HEAD HTTP://$url/ HTTP/1.0',
-                          'HEAD HTTP://qwerty.asdfg.com/ HTTP/1.0',  # 50
-                          'GET GET GET',
-                          'HELLO',
-                          #      'HEAD%00 / HTTP/1.0',
-                          'GET \0 / HTTP/1.0',
-                          'GET / \0 HTTP/1.0',
-                          'GET / HTTP/1.0\0',
-                          'GET / H',
-                          ' GET / HTTP/1.0',
-                          ' ' * 1000 + 'GET / HTTP/1.0',
-                          'GET' + ' ' * 1000 + '/ HTTP/1.0',
-                          'GET ' + '/' * 1000 + ' HTTP/1.0',  # 60
-                          'GET /' + ' ' * 1000 + 'HTTP/1.0',
-                          'GET / ' + 'H' * 1000 + 'TTP/1.0',
-                          'GET / ' + 'HTTP' + '/' * 1000 + '1.0',
-                          'GET / ' + 'HTTP/' + '1' * 1000 + '.0',
-                          'GET / ' + 'HTTP/1' + '.' * 1000 + '0',
-                          'GET / ' + 'HTTP/1.' + '0' * 1000,
-                          'GET / HTTP/1.0' + ' ' * 1000,
-                          '12345 GET / HTTP/1.0',
-                          '12345 / HTTP/1.0',
-                          # check if \0 is really a null
-                          '\0',  # 70
-                          '\0' * 1000,
-                          '\0' + 'GET / HTTP/1.0',
-                          '\0' * 1000 + 'GET / HTTP/1.0',
-                          '\r\n' * 1000 + 'GET / HTTP/1.0',
-                          'Get / HTTP/1.0',
-                          'GET\0/\0HTTP/1.0',
-                          'GET . HTTP/1.0',
-                          'GET index.html HTTP/1.0',  # is this legal?
-                          'GET / HTTP/1.',
-                          '',  # 80
-                          ' ',
-                          ' ' * 1000,
-                          '/',
-                          '/' * 1000,
-                          'GET FTP://asdfasdf HTTP/1.0',
-                          'GET / HTTP/1.0 X',
-                          # any or all parts or request URL encoded
-                          #>>> [hex(ord(x)) for x in "GET / HTTP/1.0"]
-                          #['0x47', '0x45', '0x54', '0x20', '0x2f', '0x20', '0x48', '0x54', '0x54', '0x50', '0x2f', '0x31', '0x2e', '0x30']
-                          '%47ET / HTTP/1.0',
-                          '%47%45%54 / HTTP/1.0',
-                          'GET %2f HTTP/1.0',
-                          'GET %2F HTTP/1.0',  # 90
-                          'GET%20/ HTTP/1.0',
-                          'GET / FTP/1.0',
-                          'GET \ HTTP/1.0',  # windows style
-                          #'GET \./',
-                          #'GET \.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\. HTTP/1.0'
-                          'GET C:\ HTTP/1.0',
-                          'HTTP/1.0 / GET',  # and other permutations
-                          # try various escape sequences from c etal
-                          # \a = bell
-                          # \b = back space?
-                          'ALL YOUR BASE ARE BELONG TO US',
-                          'GET "/" HTTP/1.0',
-                          "GET '/' HTTP/1.0",
-                          'GET `/` HTTP/1.0',
-                          '"GET / HTTP/1.0"',  # 100
-                          '"GET / HTTP/1.0',
-                          '"GET" / HTTP/1.0',
-                          '""GET / HTTP/1.0',
-                          'GEX\bT / HTTP/1.0',  # espace characters
-                          )
+                         'HEAD /.. HTTP/1.0',
+                         'HEAD /../ HTTP/1.0',
+                         'HEAD /../../../../../ HTTP/1.0',
+                         'HEAD .. HTTP/1.0',
+                         #'HEAD . HTTP/1.0',
+                         'HEAD\t/\tHTTP/1.0',
+                         'HEAD ///////////// HTTP/1.0',
+                         'Head / HTTP/1.0',
+                         '\nHEAD / HTTP/1.0',
+                         ' \nHEAD / HTTP/1.0',  # 40
+                         ' HEAD / HTTP/1.0',
+                         'HEAD / HQWERTY/1.0',
+                         #      'HEAD http://some.host.com/ HTTP/1.0',
+                         #      'HEAD hTTP://some.host.com/ HTTP/1.0',
+                         #      'HEAD http://some.host.com HTTP/1.0',
+                         'HEAD %s HTTP/1.0' % url,
+                         #'HEAD hTTP://$url/ HTTP/1.0',
+                         #'HEAD http://$url HTTP/1.0',
+                         'HEAD %s' % url,
+                         'HEAD http:// HTTP/1.0',
+                         'HEAD http:/ HTTP/1.0',
+                         'HEAD http: HTTP/1.0',
+                         'HEAD http HTTP/1.0',
+                         'HEAD h HTTP/1.0',
+                         #      'HEAD HTTP://some.host.com/ HTTP/1.0',
+                         #'HEAD HTTP://$url/ HTTP/1.0',
+                         'HEAD HTTP://qwerty.asdfg.com/ HTTP/1.0',  # 50
+                         'GET GET GET',
+                         'HELLO',
+                         #      'HEAD%00 / HTTP/1.0',
+                         'GET \0 / HTTP/1.0',
+                         'GET / \0 HTTP/1.0',
+                         'GET / HTTP/1.0\0',
+                         'GET / H',
+                         ' GET / HTTP/1.0',
+                         ' ' * 1000 + 'GET / HTTP/1.0',
+                         'GET' + ' ' * 1000 + '/ HTTP/1.0',
+                         'GET ' + '/' * 1000 + ' HTTP/1.0',  # 60
+                         'GET /' + ' ' * 1000 + 'HTTP/1.0',
+                         'GET / ' + 'H' * 1000 + 'TTP/1.0',
+                         'GET / ' + 'HTTP' + '/' * 1000 + '1.0',
+                         'GET / ' + 'HTTP/' + '1' * 1000 + '.0',
+                         'GET / ' + 'HTTP/1' + '.' * 1000 + '0',
+                         'GET / ' + 'HTTP/1.' + '0' * 1000,
+                         'GET / HTTP/1.0' + ' ' * 1000,
+                         '12345 GET / HTTP/1.0',
+                         '12345 / HTTP/1.0',
+                         # check if \0 is really a null
+                         '\0',  # 70
+                         '\0' * 1000,
+                         '\0' + 'GET / HTTP/1.0',
+                         '\0' * 1000 + 'GET / HTTP/1.0',
+                         '\r\n' * 1000 + 'GET / HTTP/1.0',
+                         'Get / HTTP/1.0',
+                         'GET\0/\0HTTP/1.0',
+                         'GET . HTTP/1.0',
+                         'GET index.html HTTP/1.0',  # is this legal?
+                         'GET / HTTP/1.',
+                         '',  # 80
+                         ' ',
+                         ' ' * 1000,
+                         '/',
+                         '/' * 1000,
+                         'GET FTP://asdfasdf HTTP/1.0',
+                         'GET / HTTP/1.0 X',
+                         # any or all parts or request URL encoded
+                         #>>> [hex(ord(x)) for x in "GET / HTTP/1.0"]
+                         #['0x47', '0x45', '0x54', '0x20', '0x2f', '0x20', '0x48', '0x54', '0x54', '0x50', '0x2f', '0x31', '0x2e', '0x30']
+                         '%47ET / HTTP/1.0',
+                         '%47%45%54 / HTTP/1.0',
+                         'GET %2f HTTP/1.0',
+                         'GET %2F HTTP/1.0',  # 90
+                         'GET%20/ HTTP/1.0',
+                         'GET / FTP/1.0',
+                         'GET \ HTTP/1.0',  # windows style
+                         #'GET \./',
+                         #'GET \.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\. HTTP/1.0'
+                         'GET C:\ HTTP/1.0',
+                         'HTTP/1.0 / GET',  # and other permutations
+                         # try various escape sequences from c etal
+                         # \a = bell
+                         # \b = back space?
+                         'ALL YOUR BASE ARE BELONG TO US',
+                         'GET "/" HTTP/1.0',
+                         "GET '/' HTTP/1.0",
+                         'GET `/` HTTP/1.0',
+                         '"GET / HTTP/1.0"',  # 100
+                         '"GET / HTTP/1.0',
+                         '"GET" / HTTP/1.0',
+                         '""GET / HTTP/1.0',
+                         'GEX\bT / HTTP/1.0',  # espace characters
+                         )
 
     #print len(malformed_methods)
     for index, mm in zip(range(len(malformed_methods)), malformed_methods):
@@ -554,7 +563,8 @@ def find_halfways(ranges):
 
         if (smallest_next[0] - largest_previous[0]) == 1:
             continue
-        hw = ((smallest_next[0] - largest_previous[0]) / 2) + largest_previous[0]
+        hw = ((smallest_next[0] - largest_previous[0]) /
+              2) + largest_previous[0]
         if VERBOSE:
             print largest_previous, hw, smallest_next
         halfways.append(hw)
@@ -637,7 +647,11 @@ def many_header_helper(url, size):
 
 def many_header_ranges(url):
     initial_guesses = [99, 100, 228, 229]
-    ranges = large_binary_searcher(url, many_header_helper, 10000, guesses=initial_guesses)
+    ranges = large_binary_searcher(
+        url,
+        many_header_helper,
+        10000,
+        guesses=initial_guesses)
     add_characteristic('SEMANTIC', 'MANY_HEADER_RANGES', ranges)
 
 
@@ -669,6 +683,7 @@ def fake_content_length(url):
     req.body = 'qwerasdfzxcv'
     res = req.submit()
     get_characteristics('fake_content_length', res)
+
 
 # TODO: put this global declaration somewhere easier to find....
 fingerprint = {'LEXICAL': {},
@@ -725,9 +740,13 @@ def get_characteristics(test_name, res):
 
     if response_code not in ['NO_RESPONSE_CODE', 'NO_RESPONSE']:
         header_names = res.header_names()
-        add_characteristic('SYNTACTIC', 'HEADER_ORDER', header_names, data_type='LIST')
+        add_characteristic(
+            'SYNTACTIC',
+            'HEADER_ORDER',
+            header_names,
+            data_type='LIST')
     else:
-        ### Added by APR to solve a wierd exception....
+        # Added by APR to solve a wierd exception....
         add_characteristic('SYNTACTIC', 'HEADER_ORDER', [], data_type='LIST')
 
     if res.has_header('ETag'):
@@ -818,7 +837,7 @@ def find_most_similar(known_servers, subject):
 
     scores = []
 
-    #TODO: make each of these it's own function....
+    # TODO: make each of these it's own function....
 
     for server in known_servers:
         matches = 0
@@ -862,12 +881,12 @@ def find_most_similar(known_servers, subject):
         else:
             unknowns += 1
 
-        ## etag match
-        #check if server has ETag and subject has ETag
+        # etag match
+        # check if server has ETag and subject has ETag
         #   if either not then unknonw
-        #if subject matches server by regex
+        # if subject matches server by regex
         #   matches += 1
-        #else
+        # else
         #   mismatches += 1
 
         # SEMANTIC
@@ -923,7 +942,7 @@ def partial_same_order(list1, list2):
             common[x] = 0
         common[x] += 1
     common_items = {}
-    #common_items = [common_items[k] = v for k,v in common if v == 2]
+    # common_items = [common_items[k] = v for k,v in common if v == 2]
     for k, v in common:
         if v == 2:
             common[k] = v
@@ -964,6 +983,7 @@ e.g.
 """
     sys.exit()
 
+
 ######################################################################
 # This was added by Andres Riancho to make hmap work inside w3af
 # it is a "copy" of the "main" with a lot of default parameters :P
@@ -981,7 +1001,12 @@ def testServer(ssl, server, port, matchCount, generateFP, threads):
     useSSL = ssl
 
     MATCH_COUNT = matchCount
-    fingerprintDir = os.path.join(ROOT_PATH, 'plugins', 'infrastructure', 'oHmap', 'known.servers/')
+    fingerprintDir = os.path.join(
+        ROOT_PATH,
+        'plugins',
+        'infrastructure',
+        'oHmap',
+        'known.servers/')
 
     # Get the fingerprint
     target_url = server
@@ -992,9 +1017,9 @@ def testServer(ssl, server, port, matchCount, generateFP, threads):
     for f in glob.glob(fingerprintDir + '*'):
         ksf = file(f)
         try:
-            ### FIXME: This eval is awful, I should change it to pickle.
+            # FIXME: This eval is awful, I should change it to pickle.
             ks = eval(ksf.read())
-        except Exception, e:
+        except Exception as e:
             raise BaseFrameworkException(
                 'The signature file "' + f + '" has an invalid syntax.')
         else:
@@ -1006,7 +1031,7 @@ def testServer(ssl, server, port, matchCount, generateFP, threads):
         for i in xrange(10):
             try:
                 fd = open('hmap-fingerprint-' + server + '-' + str(i), 'w')
-            except Exception, e:
+            except Exception as e:
                 raise BaseFrameworkException(
                     'Cannot open fingerprint file. Error:' + str(e))
             else:

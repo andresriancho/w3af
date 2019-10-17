@@ -54,13 +54,15 @@ def get_response_cache_key(http_response,
     #
     if _should_use_xml_bones(http_response):
         body = get_xml_bones(http_response.get_body())
-        normalized_path = FourOhFourResponse.normalize_path(http_response.get_uri())
+        normalized_path = FourOhFourResponse.normalize_path(
+            http_response.get_uri())
     else:
         #
         # Get a clean_response if it was not provided
         #
         if clean_response is None:
-            clean_response = FourOhFourResponse.from_http_response(http_response)
+            clean_response = FourOhFourResponse.from_http_response(
+                http_response)
 
         body = clean_response.body
         normalized_path = clean_response.normalized_path

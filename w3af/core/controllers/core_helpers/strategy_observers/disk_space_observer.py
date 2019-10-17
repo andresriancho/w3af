@@ -65,7 +65,7 @@ class DiskSpaceObserver(StrategyObserver):
         # Get the disk usage, ignore any errors
         try:
             usage = disk_usage(get_home_dir())
-        except:
+        except BaseException:
             return
 
         # Raise an exception if there is no enough space

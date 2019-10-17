@@ -11,8 +11,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.LOW
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -22,4 +24,5 @@ def tamper(payload, **kwargs):
     '1&#39;&#32;AND&#32;SLEEP&#40;5&#41;&#35;'
     """
 
-    return re.sub(r"[^\w]", lambda match: "&#%d;" % ord(match.group(0)), payload) if payload else payload
+    return re.sub(r"[^\w]", lambda match: "&#%d;" %
+                  ord(match.group(0)), payload) if payload else payload

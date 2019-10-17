@@ -104,7 +104,7 @@ def worker(inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
     WARNING: w3af doesn't use this worker anymore!
              See the worker class in threadpool.py
     """
-    assert maxtasks is None or (type(maxtasks) == int and maxtasks > 0)
+    assert maxtasks is None or (isinstance(maxtasks, int) and maxtasks > 0)
     put = outqueue.put
     get = inqueue.get
     if hasattr(inqueue, '_writer'):
@@ -129,7 +129,7 @@ def worker(inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
         job, i, func, args, kwds = task
         try:
             result = (True, func(*args, **kwds))
-        except Exception, e:
+        except Exception as e:
             result = (False, e)
 
         try:
@@ -154,7 +154,7 @@ def create_detailed_pickling_error(exception, instance):
     def can_pickle(data):
         try:
             cPickle.dumps(v)
-        except:
+        except BaseException:
             return False
         else:
             return True
@@ -221,17 +221,16 @@ class Pool(object):
         self._worker_handler = threading.Thread(
             target=Pool._handle_workers,
             args=(self, )
-            )
+        )
         self._worker_handler.daemon = True
         self._worker_handler._state = RUN
         self._worker_handler.start()
-
 
         self._task_handler = threading.Thread(
             target=Pool._handle_tasks,
             args=(self._taskqueue, self._quick_put, self._outqueue,
                   self._pool, self._cache)
-            )
+        )
         self._task_handler.daemon = True
         self._task_handler._state = RUN
         self._task_handler.start()
@@ -239,7 +238,7 @@ class Pool(object):
         self._result_handler = threading.Thread(
             target=Pool._handle_results,
             args=(self._outqueue, self._quick_get, self._cache)
-            )
+        )
         self._result_handler.daemon = True
         self._result_handler._state = RUN
         self._result_handler.start()
@@ -250,7 +249,7 @@ class Pool(object):
                   self._worker_handler, self._task_handler,
                   self._result_handler, self._cache),
             exitpriority=15
-            )
+        )
 
     def get_internal_thread_state(self):
         worker_is_active = None
@@ -305,7 +304,7 @@ class Pool(object):
                              args=(self._inqueue, self._outqueue,
                                    self._initializer,
                                    self._initargs, self._maxtasksperchild)
-                            )
+                             )
             self._pool.append(w)
             w.name = w.name.replace('Process', 'PoolWorker')
             w.daemon = True
@@ -347,14 +346,14 @@ class Pool(object):
         if chunksize == 1:
             result = IMapIterator(self._cache)
             self._taskqueue.put((((result._job, i, func, (x,), {})
-                         for i, x in enumerate(iterable)), result._set_length))
+                                  for i, x in enumerate(iterable)), result._set_length))
             return result
         else:
             assert chunksize > 1
             task_batches = Pool._get_tasks(func, iterable, chunksize)
             result = IMapIterator(self._cache)
             self._taskqueue.put((((result._job, i, mapstar, (x,), {})
-                     for i, x in enumerate(task_batches)), result._set_length))
+                                  for i, x in enumerate(task_batches)), result._set_length))
             return (item for chunk in result for item in chunk)
 
     def imap_unordered(self, func, iterable, chunksize=1):
@@ -365,14 +364,14 @@ class Pool(object):
         if chunksize == 1:
             result = IMapUnorderedIterator(self._cache)
             self._taskqueue.put((((result._job, i, func, (x,), {})
-                         for i, x in enumerate(iterable)), result._set_length))
+                                  for i, x in enumerate(iterable)), result._set_length))
             return result
         else:
             assert chunksize > 1
             task_batches = Pool._get_tasks(func, iterable, chunksize)
             result = IMapUnorderedIterator(self._cache)
             self._taskqueue.put((((result._job, i, mapstar, (x,), {})
-                     for i, x in enumerate(task_batches)), result._set_length))
+                                  for i, x in enumerate(task_batches)), result._set_length))
             return (item for chunk in result for item in chunk)
 
     def apply_async(self, func, args=(), kwds={}, callback=None):
@@ -411,7 +410,8 @@ class Pool(object):
 
         # Keep maintaining workers until the cache gets drained, unless the pool
         # is terminated.
-        while thread._state == RUN or (pool._cache and thread._state != TERMINATE):
+        while thread._state == RUN or (
+                pool._cache and thread._state != TERMINATE):
             pool._maintain_pool()
             time.sleep(0.1)
         # send sentinel to stop workers
@@ -442,7 +442,7 @@ class Pool(object):
                 else:
                     if set_length:
                         debug('doing set_length()')
-                        set_length(i+1)
+                        set_length(i + 1)
                     continue
                 break
             except Exception as ex:
@@ -451,7 +451,7 @@ class Pool(object):
                     cache[job]._set(ind + 1, (False, ex))
                 if set_length:
                     debug('doing set_length()')
-                    set_length(i+1)
+                    set_length(i + 1)
             finally:
                 # https://bugs.python.org/issue29861
                 task = None
@@ -478,7 +478,7 @@ class Pool(object):
     def _handle_results(outqueue, get, cache):
         thread = threading.current_thread()
 
-        while 1:
+        while True:
             try:
                 task = get()
             except (IOError, EOFError):
@@ -545,7 +545,7 @@ class Pool(object):
     @staticmethod
     def _get_tasks(func, it, size):
         it = iter(it)
-        while 1:
+        while True:
             x = tuple(itertools.islice(it, size))
             if not x:
                 return
@@ -553,8 +553,8 @@ class Pool(object):
 
     def __reduce__(self):
         raise NotImplementedError(
-              'pool objects cannot be passed between processes or pickled'
-              )
+            'pool objects cannot be passed between processes or pickled'
+        )
 
     def close(self):
         debug('closing pool')
@@ -607,7 +607,8 @@ class Pool(object):
         outqueue.put(None)                  # sentinel
 
         # We must wait for the worker handler to exit before terminating
-        # workers because we don't want workers to be restarted behind our back.
+        # workers because we don't want workers to be restarted behind our
+        # back.
         debug('joining worker handler')
         if threading.current_thread() is not worker_handler:
             worker_handler.join(1e100)
@@ -709,12 +710,12 @@ class MapResult(ApplyResult):
             self._ready = True
             del cache[self._job]
         else:
-            self._number_left = length//chunksize + bool(length % chunksize)
+            self._number_left = length // chunksize + bool(length % chunksize)
 
     def _set(self, i, success_result):
         success, result = success_result
         if success:
-            self._value[i*self._chunksize:(i+1)*self._chunksize] = result
+            self._value[i * self._chunksize:(i + 1) * self._chunksize] = result
             self._number_left -= 1
             if self._number_left == 0:
                 if self._callback:

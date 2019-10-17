@@ -45,9 +45,9 @@ class helpRepository(object):
 
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     """
-    
+
     DEFAULT_PATH = os.path.join(ROOT_PATH, 'core', 'ui', 'console', 'help.xml')
-    
+
     def __init__(self, path=DEFAULT_PATH):
         self.__doc = ET.parse(path)
         self.__map = {}
@@ -64,7 +64,7 @@ class helpRepository(object):
         :param vars: a dict of variables to replace in the help text
         """
 
-        #a closure to simplify the substitution
+        # a closure to simplify the substitution
         def subst(templ):
             if not vars:
                 return templ
@@ -104,6 +104,7 @@ class helpRepository(object):
 
         return obj
 
+
 # main repository
 helpMainRepository = helpRepository()
 
@@ -112,6 +113,7 @@ class HelpContainer(object):
     """
     Container for help items.
     """
+
     def __init__(self):
         self._table = {}
         self._subj2Gat = {}

@@ -36,11 +36,12 @@ class lnxVd(vdaemon):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def _clean_up(self):
         """
         Removes the created file and the crontab entry.
         """
-        apply(self._exec_method, ('/bin/rm ' + self._remote_filename,))
+        self._exec_method(*('/bin/rm ' + self._remote_filename,))
 
     def _exec_payload(self, remote_filename):
         """
@@ -59,7 +60,8 @@ class lnxVd(vdaemon):
         else:
             wait_time = cH.add_to_schedule(remote_filename)
 
-            om.out.console('Crontab entry successfully added. Waiting for shellcode execution.')
+            om.out.console(
+                'Crontab entry successfully added. Waiting for shellcode execution.')
             time.sleep(wait_time + 3)
 
             om.out.debug(

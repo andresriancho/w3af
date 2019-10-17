@@ -64,24 +64,23 @@ def handle_crash(w3af_core, _type, value, tb, plugins=''):
 def handle_keyboardinterrupt(w3af_core):
     # Kills some threads from the GUI, not from the core
     helpers.end_threads()
-        
+
     w3af_core.quit()
 
     if DEBUG_THREADS:
         import threading
         import pprint
-        
+
         def nice_thread_repr(alive_threads):
-            repr_alive = [repr(x) for x in alive_threads]
-            repr_alive.sort()
+            repr_alive = sorted([repr(x) for x in alive_threads])
             return pprint.pformat(repr_alive)
-        
+
         print nice_thread_repr(threading.enumerate())
-        
+
     om.manager.set_output_plugins(['console'])
     om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af, bye!'))
     om.manager.process_all_messages()
-     
+
     # 130 seems to be the correct exit code for this case
     # http://tldp.org/LDP/abs/html/exitcodes.html
     sys.exit(130)

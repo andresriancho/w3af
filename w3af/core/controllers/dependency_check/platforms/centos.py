@@ -30,15 +30,27 @@ class CentOS(Fedora):
     PKG_MANAGER_CMD = 'sudo yum install'
     PIP_CMD = 'pip-python'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip','npm', 'python-devel', 'python-setuptools',
-                            'libsqlite3x-devel', 'gcc-c++', 'gcc', 'make',
-                            'git', 'libxml2-devel', 'libxslt-devel',
-                            'pyOpenSSL', 'openssl-devel', 'libcom_err-devel',
-                            'libcom_err', 'libffi-devel']
+    CORE_SYSTEM_PACKAGES = [
+        'python-pip',
+        'npm',
+        'python-devel',
+        'python-setuptools',
+        'libsqlite3x-devel',
+        'gcc-c++',
+        'gcc',
+        'make',
+        'git',
+        'libxml2-devel',
+        'libxslt-devel',
+        'pyOpenSSL',
+        'openssl-devel',
+        'libcom_err-devel',
+        'libcom_err',
+        'libffi-devel']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
-    GUI_SYSTEM_PACKAGES.extend(['graphviz', 'gtksourceview2', 'pygtksourceview',
-                                'pywebkitgtk'])
+    GUI_SYSTEM_PACKAGES.extend(
+        ['graphviz', 'gtksourceview2', 'pygtksourceview', 'pywebkitgtk'])
 
     SYSTEM_PACKAGES = {CORE: CORE_SYSTEM_PACKAGES,
                        GUI: GUI_SYSTEM_PACKAGES}

@@ -36,7 +36,7 @@ def read_os_detection(remote_read):
         linux1 = remote_read('/etc/passwd')
         linux2 = remote_read('/etc/mtab')
         linux3 = remote_read('/proc/sys/kernel/ostype')
-    except:
+    except BaseException:
         pass
     else:
         if '/bin/' in linux1 or 'rw' in linux2 or 'linux' in linux3.lower():
@@ -50,7 +50,7 @@ def read_os_detection(remote_read):
         win2 = remote_read('C:\\windows\\win.ini')
         win3 = remote_read('C:\\win32\\win.ini')
         win4 = remote_read('C:\\win\\win.ini')
-    except:
+    except BaseException:
         pass
     else:
         if '[fonts]' in win1 + win2 + win3 + win4:

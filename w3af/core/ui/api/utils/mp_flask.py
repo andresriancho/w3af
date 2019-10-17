@@ -15,6 +15,7 @@ class ThreadedFlask(Flask):
 
     https://circleci.com/gh/andresriancho/w3af-api-docker/50
     """
+
     def run(self, host=None, port=None, debug=None, **options):
         # Override here
         #from werkzeug.serving import run_simple

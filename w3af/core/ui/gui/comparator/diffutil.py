@@ -1,18 +1,18 @@
-### Copyright (C) 2002-2006 Stephen Kennedy <stevek@gnome.org>
+# Copyright (C) 2002-2006 Stephen Kennedy <stevek@gnome.org>
 
-### This program is free software; you can redistribute it and/or modify
-### it under the terms of the GNU General Public License as published by
-### the Free Software Foundation; either version 2 of the License, or
-### (at your option) any later version.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
-### This program is distributed in the hope that it will be useful,
-### but WITHOUT ANY WARRANTY; without even the implied warranty of
-### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-### GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-### You should have received a copy of the GNU General Public License
-### along with this program; if not, write to the Free Software
-### Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
 
 from __future__ import generators
 import difflib
@@ -21,6 +21,7 @@ import difflib
 def _null_or_space(s):
     return len(s.strip()) == 0
 
+
 if 0:
     def _not_equal(s):
         return filter(lambda x: x[0] != "equal", s)
@@ -28,11 +29,11 @@ else:
     def _not_equal(s):
         return s
 
-################################################################################
+##########################################################################
 #
 # Differ
 #
-################################################################################
+##########################################################################
 
 
 class IncrementalSequenceMatcher(difflib.SequenceMatcher):
@@ -61,11 +62,11 @@ class IncrementalSequenceMatcher(difflib.SequenceMatcher):
     def get_difference_opcodes(self):
         return filter(lambda x: x[0] != "equal", self.get_opcodes())
 
-################################################################################
+##########################################################################
 #
 # Differ
 #
-################################################################################
+##########################################################################
 
 
 class Differ(object):
@@ -98,7 +99,9 @@ class Differ(object):
                 None, sequences[1], sequences[2]).get_difference_opcodes()
             self.diffs = seq0, seq1
         else:
-            raise ValueError("Bad number of arguments to Differ constructor (%i)" % len(sequences))
+            raise ValueError(
+                "Bad number of arguments to Differ constructor (%i)" %
+                len(sequences))
 
     def change_sequence(self, sequence, startidx, sizechange, texts):
         assert sequence in (0, 1, 2)
@@ -118,7 +121,8 @@ class Differ(object):
     def _locate_chunk(self, whichdiffs, sequence, line):
         """Find the index of the chunk which contains line."""
         idx = 1 + 2 * (sequence != 1)
-        line_in_chunk = lambda x: line < x[idx + 1]
+
+        def line_in_chunk(x): return line < x[idx + 1]
         i = 0
         for c in self.diffs[whichdiffs]:
             if line_in_chunk(c):
@@ -147,7 +151,8 @@ class Differ(object):
             hirange = diffs[hiidx - 1][4], diffs[hiidx - 1][2]
         else:
             hirange = self.seqlength[x], self.seqlength[1]
-        #print "diffs", loidx, hiidx, len(diffs), lorange, hirange #diffs[loidx], diffs[hiidx-1]
+        # print "diffs", loidx, hiidx, len(diffs), lorange, hirange
+        # #diffs[loidx], diffs[hiidx-1]
         rangex = lorange[0], hirange[0] + lines_added[x]
         range1 = lorange[1], hirange[1] + lines_added[1]
         #print "^^^^^", rangex, range1
@@ -160,11 +165,11 @@ class Differ(object):
         newdiffs = [(c[0], c[1] + range1[0], c[2] + range1[0], c[3]
                      + rangex[0], c[4] + rangex[0]) for c in newdiffs]
         if hiidx < len(self.diffs[which]):
-            self.diffs[which][hiidx:] = [(c[0],
-                                         c[1] + lines_added[
-                                          1], c[2] + lines_added[1],
-                                         c[3] + lines_added[x], c[4] + lines_added[x])
-                                         for c in self.diffs[which][hiidx:]]
+            self.diffs[which][hiidx:] = [(c[0], c[1] +
+                                          lines_added[1], c[2] +
+                                          lines_added[1], c[3] +
+                                          lines_added[x], c[4] +
+                                          lines_added[x]) for c in self.diffs[which][hiidx:]]
         self.diffs[which][loidx:hiidx] = newdiffs
         self.seqlength[sequence] += sizechange
         return loidx, hiidx
@@ -177,7 +182,8 @@ class Differ(object):
             yield c
 
     def all_changes_in_range(self, texts, l0, h0, l1, h1):
-        for c in self._merge_diffs(self.diffs[0][l0:h0], self.diffs[1][l0:h0], texts):
+        for c in self._merge_diffs(
+                self.diffs[0][l0:h0], self.diffs[1][l0:h0], texts):
             yield c
 
     def pair_changes(self, fromindex, toindex, texts):
@@ -253,7 +259,7 @@ class Differ(object):
             using = [[], []]
             using[high_seq].append(high_diff)
 
-            while 1:
+            while True:
                 other_seq = high_seq ^ 1
                 try:
                     other_diff = seq[other_seq][0]
@@ -317,7 +323,9 @@ class Differ(object):
                     yield None
                 diffs[i] = matcher.get_difference_opcodes()
         else:
-            raise ValueError("Bad number of arguments to Differ constructor (%i)" % len(sequences))
+            raise ValueError(
+                "Bad number of arguments to Differ constructor (%i)" %
+                len(sequences))
         self.diffs = diffs
         self.num_sequences = len(sequences)
         self.seqlength = [0, 0, 0]
@@ -336,6 +344,7 @@ def main():
 #    thread1 = IncrementalSequenceMatcher(None, tc, t1).get_difference_opcodes()
 #
 #    texts = (t0,tc,t1)
+
 
 if __name__ == "__main__":
     main()

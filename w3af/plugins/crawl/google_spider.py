@@ -59,11 +59,11 @@ class google_spider(CrawlPlugin):
         try:
             g_results = google_se.get_n_results('site:' + domain,
                                                 self._result_limit)
-        except:
+        except BaseException:
             pass
         else:
             self.worker_pool.map(self.http_get_and_parse,
-                                    [r.URL for r in g_results])
+                                 [r.URL for r in g_results])
 
     def get_options(self):
         """

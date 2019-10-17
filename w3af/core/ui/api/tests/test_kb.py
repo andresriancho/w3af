@@ -46,8 +46,9 @@ class KBApiTest(APIUnitTest):
         #
         # Name filter
         #
-        response = self.app.get('/scans/%s/kb/?name=SQL%%20Injection' % scan_id,
-                                headers=self.HEADERS)
+        response = self.app.get(
+            '/scans/%s/kb/?name=SQL%%20Injection' %
+            scan_id, headers=self.HEADERS)
         self.assertEqual(response.status_code, 200, response.data)
 
         vuln_items = json.loads(response.data)['items']
@@ -71,8 +72,9 @@ class KBApiTest(APIUnitTest):
         vuln_items = json.loads(response.data)['items']
         self.assertEqual(4, len(vuln_items))
 
-        response = self.app.get('/scans/%s/kb/?url=http://google.com/' % scan_id,
-                                headers=self.HEADERS)
+        response = self.app.get(
+            '/scans/%s/kb/?url=http://google.com/' %
+            scan_id, headers=self.HEADERS)
         self.assertEqual(response.status_code, 200, response.data)
 
         vuln_items = json.loads(response.data)['items']

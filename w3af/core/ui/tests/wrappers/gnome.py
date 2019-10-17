@@ -52,11 +52,11 @@ class Gnome(XVFBServer):
         # Kill all previously running instances of "gnome"
         # TODO: This is a little bit rough, huh?
         commands.getoutput("pkill -f %s" % self.XINITRC)
-        
+
         assert os.path.exists(self.XINITRC), 'gnome.xinitrc is required.'
-        
+
         gnome_start = super(Gnome, self).start_sync()
-        
+
         metacity_start = self.run_x_process('metacity --replace')
-        
+
         return gnome_start and metacity_start

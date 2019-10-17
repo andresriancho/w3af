@@ -112,7 +112,8 @@ class Test404FalseNegative(Generic404Test):
 
         foo_url = URL('http://w3af.com/foo/phpinfo.php')
         headers = Headers([('Content-Type', 'text/html')])
-        server_error_resp = HTTPResponse(500, server_error, headers, foo_url, foo_url)
+        server_error_resp = HTTPResponse(
+            500, server_error, headers, foo_url, foo_url)
 
         self.assertTrue(self.fingerprint_404.is_404(server_error_resp))
 
@@ -147,7 +148,8 @@ class Test404FalsePositiveLargeResponsesRandomShort(Generic404Test):
                         'Please wait...']
         body = self.get_body(unique_parts)
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, body, headers, success_url, success_url)
+        success_200 = HTTPResponse(
+            200, body, headers, success_url, success_url)
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
     @httpretty.activate
@@ -167,7 +169,8 @@ class Test404FalsePositiveLargeResponsesRandomShort(Generic404Test):
         body = self.get_random_unique_parts_body()
 
         headers = Headers([('Content-Type', 'text/html')])
-        not_found = HTTPResponse(200, body, headers, not_found_url, not_found_url)
+        not_found = HTTPResponse(
+            200, body, headers, not_found_url, not_found_url)
         self.assertTrue(self.fingerprint_404.is_404(not_found))
 
 
@@ -207,7 +210,8 @@ class Test404With1ByteRandomShort(Generic404Test):
 
         body = self.get_short_body()
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, body, headers, success_url, success_url)
+        success_200 = HTTPResponse(
+            200, body, headers, success_url, success_url)
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
 
@@ -253,7 +257,8 @@ class Test404With1ByteRandomLarge(Generic404Test):
 
         body = self.get_short_body()
         headers = Headers([('Content-Type', 'text/html')])
-        not_found = HTTPResponse(200, body, headers, not_found_url, not_found_url)
+        not_found = HTTPResponse(
+            200, body, headers, not_found_url, not_found_url)
         self.assertTrue(self.fingerprint_404.is_404(not_found))
 
     @httpretty.activate
@@ -272,7 +277,8 @@ class Test404With1ByteRandomLarge(Generic404Test):
 
         body = 'I exist, that is a fact'
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, body, headers, success_url, success_url)
+        success_200 = HTTPResponse(
+            200, body, headers, success_url, success_url)
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
 
@@ -304,7 +310,8 @@ class Test404FalsePositiveLargeResponsesEqual404s(Generic404Test):
                         'Please wait...']
         body = self.get_body(unique_parts)
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, body, headers, success_url, success_url)
+        success_200 = HTTPResponse(
+            200, body, headers, success_url, success_url)
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
     @httpretty.activate
@@ -324,7 +331,8 @@ class Test404FalsePositiveLargeResponsesEqual404s(Generic404Test):
         body = self.get_body_with_unique_params()
 
         headers = Headers([('Content-Type', 'text/html')])
-        not_found = HTTPResponse(200, body, headers, not_found_url, not_found_url)
+        not_found = HTTPResponse(
+            200, body, headers, not_found_url, not_found_url)
         self.assertTrue(self.fingerprint_404.is_404(not_found))
 
 
@@ -355,7 +363,8 @@ class Test404FalsePositiveLargeResponsesWithCSRFToken(Generic404Test):
         unique_parts = [self.generate_csrf_token()]
         body = self.get_body(unique_parts)
         headers = Headers([('Content-Type', 'text/html')])
-        not_found_404 = HTTPResponse(200, body, headers, not_found_url, not_found_url)
+        not_found_404 = HTTPResponse(
+            200, body, headers, not_found_url, not_found_url)
 
         self.assertTrue(self.fingerprint_404.is_404(not_found_404))
 
@@ -375,12 +384,14 @@ class Test404FalsePositiveLargeResponsesWithCSRFToken(Generic404Test):
 
         body = 'I do exist, completely different from the 404 page'
         headers = Headers([('Content-Type', 'text/html')])
-        success_response = HTTPResponse(200, body, headers, success_url, success_url)
+        success_response = HTTPResponse(
+            200, body, headers, success_url, success_url)
 
         self.assertFalse(self.fingerprint_404.is_404(success_response))
 
 
-class Test404FalsePositiveLargeResponsesWithCSRFTokenPartiallyEqual(Generic404Test):
+class Test404FalsePositiveLargeResponsesWithCSRFTokenPartiallyEqual(
+        Generic404Test):
 
     def generate_csrf_token(self):
         part_1 = os.urandom(32).encode('hex')
@@ -435,22 +446,23 @@ class GenericIgnoredPartTest(Generic404Test):
                      '\n'
                      ':-S')
 
-    IGNORED_PATH_PARTS_DOC = ('The is_404() function never supported and does'
-                              ' not currently support sites which do heavy use'
-                              ' of URL-rewriting (see ALL_SAME_BODY), and more'
-                              ' specifically the sites that ignore the filename'
-                              ' or last part of the path while deciding which'
-                              ' HTTP response to generate.'
-                              ''
-                              'The good news is that most likely the get_directories()'
-                              ' in web_spider is helping in these cases. For example,'
-                              ' when http://w3af.org/foo/ignored is found, then the'
-                              ' get_directories() call will test TWO URLs, one with'
-                              ' the filename, and one without. The one without the'
-                              ' ignored filename will most likely not be marked as a'
-                              ' 404 and make it to the audit process.'
-                              ''
-                              'Note written: 11-Dec-2018')
+    IGNORED_PATH_PARTS_DOC = (
+        'The is_404() function never supported and does'
+        ' not currently support sites which do heavy use'
+        ' of URL-rewriting (see ALL_SAME_BODY), and more'
+        ' specifically the sites that ignore the filename'
+        ' or last part of the path while deciding which'
+        ' HTTP response to generate.'
+        ''
+        'The good news is that most likely the get_directories()'
+        ' in web_spider is helping in these cases. For example,'
+        ' when http://w3af.org/foo/ignored is found, then the'
+        ' get_directories() call will test TWO URLs, one with'
+        ' the filename, and one without. The one without the'
+        ' ignored filename will most likely not be marked as a'
+        ' 404 and make it to the audit process.'
+        ''
+        'Note written: 11-Dec-2018')
 
     def request_callback(self, request, uri, headers):
 
@@ -478,7 +490,12 @@ class Test404HandleIgnoredFilename(GenericIgnoredPartTest):
         # This is the URL we found during crawling and want to know if is_404()
         query_url = URL('http://w3af.com/path1/path2/xyz123')
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, self.ALL_SAME_BODY, headers, query_url, query_url)
+        success_200 = HTTPResponse(
+            200,
+            self.ALL_SAME_BODY,
+            headers,
+            query_url,
+            query_url)
 
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
@@ -497,7 +514,12 @@ class Test404HandleIgnoredPath(GenericIgnoredPartTest):
         # This is the URL we found during crawling and want to know if is_404()
         query_url = URL('http://w3af.com/path1/path2/path3/')
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, self.ALL_SAME_BODY, headers, query_url, query_url)
+        success_200 = HTTPResponse(
+            200,
+            self.ALL_SAME_BODY,
+            headers,
+            query_url,
+            query_url)
 
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
@@ -516,7 +538,12 @@ class Test404HandleIgnoredPathAndFilename(GenericIgnoredPartTest):
         # This is the URL we found during crawling and want to know if is_404()
         query_url = URL('http://w3af.com/path1/path2/path3/xyz123')
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, self.ALL_SAME_BODY, headers, query_url, query_url)
+        success_200 = HTTPResponse(
+            200,
+            self.ALL_SAME_BODY,
+            headers,
+            query_url,
+            query_url)
 
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
@@ -535,7 +562,12 @@ class Test404HandleIgnoredPathDeep(GenericIgnoredPartTest):
         # This is the URL we found during crawling and want to know if is_404()
         query_url = URL('http://w3af.com/path1/path2/path3/path4/path5/')
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, self.ALL_SAME_BODY, headers, query_url, query_url)
+        success_200 = HTTPResponse(
+            200,
+            self.ALL_SAME_BODY,
+            headers,
+            query_url,
+            query_url)
 
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
@@ -557,6 +589,11 @@ class Test404HandleAllIs404(GenericIgnoredPartTest):
         # This is the URL we found during crawling and want to know if is_404()
         query_url = URL('http://w3af.com/path1/path2/')
         headers = Headers([('Content-Type', 'text/html')])
-        success_200 = HTTPResponse(200, self.ALL_SAME_BODY, headers, query_url, query_url)
+        success_200 = HTTPResponse(
+            200,
+            self.ALL_SAME_BODY,
+            headers,
+            query_url,
+            query_url)
 
         self.assertTrue(self.fingerprint_404.is_404(success_200))

@@ -47,4 +47,3 @@ class TestScalablePerformance(unittest.TestCase):
         for i in xrange(20000):
             data = (i, i)
             data in ds
-

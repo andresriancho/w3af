@@ -147,7 +147,7 @@ class ClusterCellWindow(entries.RememberingWindow):
         self._cl_data_widget.set_new_level(self._level)
 
     def delete_event(self, widget, event, data=None):
-        #gtk.main_quit()
+        # gtk.main_quit()
         return False
 
 
@@ -181,7 +181,7 @@ class clusterCellData(gtk.TreeView):
 
         # Start with the treeview and liststore creation
         dynamicListStoreTypes = [str for i in xrange(len(self._column_names))]
-        self.liststore = apply(gtk.ListStore, dynamicListStoreTypes)
+        self.liststore = gtk.ListStore(*dynamicListStoreTypes)
 
         gtk.TreeView.__init__(self, self.liststore)
 
@@ -304,9 +304,8 @@ class clusterCellData(gtk.TreeView):
             ]
         """
         # First we find the largest list inside the original list
-        larger_list = [len(i) for i in clusteredData if isinstance(
-            i, type([]))]
-        larger_list.sort()
+        larger_list = sorted([len(i) for i in clusteredData if isinstance(
+            i, type([]))])
         larger_list.reverse()
 
         if len(larger_list) == 0:
@@ -363,7 +362,7 @@ class clusterCellData(gtk.TreeView):
         try:
             current_path, current_column = treeview.get_path_at_pos(
                 int(event.x), int(event.y))[:2]
-        except:
+        except BaseException:
             return (None, None, None, None, None, None)
 
         current_cell_area = treeview.get_cell_area(
@@ -392,7 +391,7 @@ class clusterCellData(gtk.TreeView):
         """
         try:
             obj = [i for i in self._data if i.get_id() == int(id)][0]
-        except Exception, e:
+        except Exception as e:
             return ''
         else:
             msg = '<b><i>Code: </i></b>%s\n<b><i>Message: </i></b>%s' \
@@ -453,6 +452,7 @@ class clusterCellData(gtk.TreeView):
 
 def main():
     gtk.main()
+
 
 if __name__ == "__main__":
 

@@ -74,7 +74,7 @@ def dump_processes():
             except (TypeError, UnicodeDecodeError):
                 try:
                     child_data['args'].append(arg.__class__.__name__)
-                except:
+                except BaseException:
                     child_data['args'].append('undefined')
             else:
                 child_data['args'].append(arg)
@@ -85,7 +85,7 @@ def dump_processes():
             except (TypeError, UnicodeDecodeError):
                 try:
                     child_data['kwargs'][key] = value.__class__.__name__
-                except:
+                except BaseException:
                     child_data['kwargs'][key] = 'undefined'
             else:
                 child_data['kwargs'][key] = value
@@ -102,4 +102,3 @@ def stop_process_dump():
     """
     cancel_thread(SAVE_PROCESS_PTR)
     dump_processes()
-

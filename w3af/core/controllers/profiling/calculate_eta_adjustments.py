@@ -39,9 +39,10 @@ This tool requires a scan log for a finished scan!
 '''
 
 
-CALCULATED_ETA = re.compile('Calculated (.*?) ETA: (.*?) seconds. \(input speed:(.*?),'
-                            ' output speed:(.*?), queue size: (.*?), adjustment known: (.*?),'
-                            ' adjustment unknown: (.*?), average: (.*?), run time: .*?\)')
+CALCULATED_ETA = re.compile(
+    'Calculated (.*?) ETA: (.*?) seconds. \(input speed:(.*?),'
+    ' output speed:(.*?), queue size: (.*?), adjustment known: (.*?),'
+    ' adjustment unknown: (.*?), average: (.*?), run time: .*?\)')
 
 CRAWL = 'crawl'
 AUDIT = 'audit'
@@ -116,7 +117,8 @@ class CalculatedETA(object):
         t_queued = self.queue_size / self.output_speed * self.adjustment_known
         perfect_eta = self.phase_end_timestamp - self.timestamp
 
-        perfect_ratio = perfect_eta - t_queued / ((self.input_speed * t_queued) / self.output_speed)
+        perfect_ratio = perfect_eta - t_queued / \
+            ((self.input_speed * t_queued) / self.output_speed)
         return perfect_ratio
 
     def _calculate_perfect_known(self):
@@ -165,7 +167,8 @@ def create_eta_table(scan):
 
     for line in scan:
         if CRAWL_INFRA_FINISHED in line:
-            phase_end_timestamps[CRAWL] = get_line_epoch(line) - first_timestamp
+            phase_end_timestamps[CRAWL] = get_line_epoch(
+                line) - first_timestamp
 
         if 'seconds to join' not in line:
             continue
@@ -173,9 +176,11 @@ def create_eta_table(scan):
         match = JOIN_TIMES.search(line)
         if match:
             if AUDIT in line.lower():
-                phase_end_timestamps[AUDIT] = get_line_epoch(line) - first_timestamp
+                phase_end_timestamps[AUDIT] = get_line_epoch(
+                    line) - first_timestamp
             if GREP in line.lower():
-                phase_end_timestamps[GREP] = get_line_epoch(line) - first_timestamp
+                phase_end_timestamps[GREP] = get_line_epoch(
+                    line) - first_timestamp
 
     #
     # Find the crawl, audit and grep progress estimations
@@ -242,11 +247,12 @@ def create_eta_table(scan):
 
             adjustment = Adjustment(known=adj_known, unknown=adj_unknown)
 
-            recalculated_eta = status.calculate_eta(calculated_eta.input_speed,
-                                                    calculated_eta.output_speed,
-                                                    calculated_eta.queue_size,
-                                                    _type=phase,
-                                                    adjustment=adjustment)
+            recalculated_eta = status.calculate_eta(
+                calculated_eta.input_speed,
+                calculated_eta.output_speed,
+                calculated_eta.queue_size,
+                _type=phase,
+                adjustment=adjustment)
 
             data = [calculated_eta.timestamp,
                     calculated_eta.phase_end_timestamp,
@@ -275,14 +281,15 @@ def create_eta_table(scan):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='w3af ETA adjustment calculator', usage=HELP)
+    parser = argparse.ArgumentParser(
+        description='w3af ETA adjustment calculator', usage=HELP)
 
     parser.add_argument('scan_log', action='store')
     parsed_args = parser.parse_args()
 
     try:
         scan = file(parsed_args.scan_log)
-    except:
+    except BaseException:
         print('The scan log file does not exist!')
         sys.exit(2)
 

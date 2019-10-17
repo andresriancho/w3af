@@ -27,20 +27,19 @@ from w3af.core.data.kb.vuln_templates.utils import (get_all_templates,
 
 
 class TestUtils(unittest.TestCase):
-    
+
     def test_get_all_templates(self):
         templates = get_all_templates()
         template_names = [t.get_short_name() for t in templates]
-        
+
         self.assertIn('dav', template_names)
-    
+
     def test_get_template_names(self):
         self.assertIn('dav', get_template_names())
-    
+
     def test_get_template_by_name(self):
         template = get_template_by_name('dav')
         self.assertEqual(template.get_short_name(), 'dav')
-    
+
     def test_get_template_by_name_fail(self):
         self.assertRaises(Exception, get_template_by_name, 'foobar')
-        

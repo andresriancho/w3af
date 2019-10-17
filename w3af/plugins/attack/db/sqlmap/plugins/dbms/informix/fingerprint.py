@@ -16,6 +16,7 @@ from lib.core.settings import INFORMIX_ALIASES
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.INFORMIX)
@@ -51,7 +52,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
@@ -66,13 +68,15 @@ class Fingerprint(GenericFingerprint):
         infoMsg = "testing %s" % DBMS.INFORMIX
         logger.info(infoMsg)
 
-        result = inject.checkBooleanExpression("[RANDNUM]=(SELECT [RANDNUM] FROM SYSMASTER:SYSDUAL)")
+        result = inject.checkBooleanExpression(
+            "[RANDNUM]=(SELECT [RANDNUM] FROM SYSMASTER:SYSDUAL)")
 
         if result:
             infoMsg = "confirming %s" % DBMS.INFORMIX
             logger.info(infoMsg)
 
-            result = inject.checkBooleanExpression("(SELECT DBINFO('DBNAME') FROM SYSMASTER:SYSDUAL) IS NOT NULL")
+            result = inject.checkBooleanExpression(
+                "(SELECT DBINFO('DBNAME') FROM SYSMASTER:SYSDUAL) IS NOT NULL")
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.INFORMIX
@@ -91,7 +95,9 @@ class Fingerprint(GenericFingerprint):
             logger.info(infoMsg)
 
             for version in ("12.1", "11.7", "11.5"):
-                output = inject.checkBooleanExpression("EXISTS(SELECT 1 FROM SYSMASTER:SYSDUAL WHERE DBINFO('VERSION,'FULL') LIKE '%%%s%%')" % version)
+                output = inject.checkBooleanExpression(
+                    "EXISTS(SELECT 1 FROM SYSMASTER:SYSDUAL WHERE DBINFO('VERSION,'FULL') LIKE '%%%s%%')" %
+                    version)
 
                 if output:
                     Backend.setVersion(version)

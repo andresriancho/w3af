@@ -8,6 +8,7 @@ See the file 'LICENSE' for copying permission
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from plugins.generic.connector import Connector as GenericConnector
 
+
 class Connector(GenericConnector):
     def __init__(self):
         GenericConnector.__init__(self)

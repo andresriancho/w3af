@@ -11,12 +11,18 @@ from lib.core.settings import WAF_ATTACK_VECTORS
 
 __product__ = "IBM WebSphere DataPower (IBM)"
 
+
 def detect(get_page):
     retval = False
 
     for vector in WAF_ATTACK_VECTORS:
         _, headers, _ = get_page(get=vector)
-        retval = re.search(r"\A(OK|FAIL)", headers.get("X-Backside-Transport", ""), re.I) is not None
+        retval = re.search(
+            r"\A(OK|FAIL)",
+            headers.get(
+                "X-Backside-Transport",
+                ""),
+            re.I) is not None
         if retval:
             break
 

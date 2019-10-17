@@ -51,7 +51,12 @@ class file_upload(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    TEMPLATE_DIR = os.path.join(ROOT_PATH, 'core', 'data', 'constants', 'file_templates')
+    TEMPLATE_DIR = os.path.join(
+        ROOT_PATH,
+        'core',
+        'data',
+        'constants',
+        'file_templates')
 
     MAX_BRUTEFORCE_FINDS = 250
 
@@ -99,7 +104,8 @@ class file_upload(AuditPlugin):
         for file_parameter in freq.get_file_vars():
             for extension in self._extensions:
 
-                _, file_content, file_name = get_template_with_payload(extension, payload)
+                _, file_content, file_name = get_template_with_payload(
+                    extension, payload)
 
                 # Only file handlers are passed to the create_mutants functions
                 named_stringio = NamedStringIO(file_content, file_name)
@@ -142,7 +148,8 @@ class file_upload(AuditPlugin):
         :return: None
         """
         try:
-            doc_parser = parser_cache.dpc.get_document_parser_for(mutant_response)
+            doc_parser = parser_cache.dpc.get_document_parser_for(
+                mutant_response)
         except BaseFrameworkException:
             # Failed to find a suitable parser for the document
             return
@@ -190,8 +197,10 @@ class file_upload(AuditPlugin):
         #   seen in the HTTP response body do contain the file we uploaded
         #
         debugging_id = rand_alnum(8)
-        om.out.debug('audit.file_upload will search for the uploaded file'
-                     ' in URLs extracted from the HTTP response body (did=%s).' % debugging_id)
+        om.out.debug(
+            'audit.file_upload will search for the uploaded file'
+            ' in URLs extracted from the HTTP response body (did=%s).' %
+            debugging_id)
 
         mutant_repeater = repeat(mutant)
         debugging_id_repeater = repeat(debugging_id)
@@ -217,8 +226,10 @@ class file_upload(AuditPlugin):
                               kb.kb.get_all_known_urls())
 
         debugging_id = rand_alnum(8)
-        om.out.debug('audit.file_upload will search for the uploaded file'
-                     ' in all known application paths (did=%s).' % debugging_id)
+        om.out.debug(
+            'audit.file_upload will search for the uploaded file'
+            ' in all known application paths (did=%s).' %
+            debugging_id)
 
         # FIXME: Note that in all cases where I'm using kb's url_object info
         # I'll be making a mistake if the audit plugin is run before all
@@ -314,7 +325,8 @@ class file_upload(AuditPlugin):
         for url in domain_path_list:
             for common_path in self.UPLOAD_PATHS:
                 possible_location = url.url_join(common_path + '/')
-                possible_location = possible_location.url_join(uploaded_file_name)
+                possible_location = possible_location.url_join(
+                    uploaded_file_name)
 
                 if not seen.contains(possible_location):
                     yield possible_location

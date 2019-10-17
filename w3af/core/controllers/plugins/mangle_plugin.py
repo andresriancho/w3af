@@ -33,6 +33,7 @@ class ManglePlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def get_type(self):
         return 'mangle'
 
@@ -113,4 +114,3 @@ class ManglePlugin(Plugin):
         headers[cl] = str(len(response.get_body()))
         response.set_headers(headers)
         return response
-

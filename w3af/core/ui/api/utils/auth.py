@@ -40,7 +40,7 @@ def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
 
-        if not 'PASSWORD' in app.config:
+        if 'PASSWORD' not in app.config:
             # Auth was not enabled at startup
             return f(*args, **kwargs)
 
@@ -49,5 +49,5 @@ def requires_auth(f):
             abort(401, 'Could not verify access. Please specify a username and'
                        ' password for HTTP basic authentication.')
         return f(*args, **kwargs)
-    
+
     return decorated

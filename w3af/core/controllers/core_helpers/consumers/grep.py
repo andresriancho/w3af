@@ -75,7 +75,8 @@ class grep(BaseConsumer):
         # of the framework
         max_in_queue_size = 25
 
-        # thread_pool_size defines how many threads we'll use to run grep plugins
+        # thread_pool_size defines how many threads we'll use to run grep
+        # plugins
         thread_pool_size = 10
 
         # max_pool_queued_tasks defines how many tasks we'll keep in memory waiting
@@ -96,7 +97,8 @@ class grep(BaseConsumer):
         self._target_domains = None
         self._log_queue_sizes_calls = 0
 
-        self._consumer_plugin_dict = dict((plugin.get_name(), plugin) for plugin in self._consumer_plugins)
+        self._consumer_plugin_dict = dict(
+            (plugin.get_name(), plugin) for plugin in self._consumer_plugins)
         self._first_plugin_name = self._consumer_plugin_dict.keys()[0]
 
         self._request_response_lru = SynchronizedLRUDict(thread_pool_size * 3)
@@ -195,7 +197,8 @@ class grep(BaseConsumer):
         # First check if the request and response was already deserialized
         # by another thread and stored in the LRU
         #
-        request_response = self._request_response_lru.get(http_response_id, None)
+        request_response = self._request_response_lru.get(
+            http_response_id, None)
         if request_response is not None:
             request, response = request_response
             return request, response
@@ -217,7 +220,8 @@ class grep(BaseConsumer):
 
             # Read the data from the LRU. There is a 99,9999% chance it is there
             # since the other thread saved it before setting the event
-            request_response = self._request_response_lru.get(http_response_id, None)
+            request_response = self._request_response_lru.get(
+                http_response_id, None)
             if request_response is not None:
                 request, response = request_response
                 return request, response
@@ -236,7 +240,8 @@ class grep(BaseConsumer):
         self._request_response_processes[http_response_id] = event
 
         try:
-            request, response = self._get_request_response_from_id_impl(http_response_id)
+            request, response = self._get_request_response_from_id_impl(
+                http_response_id)
             self._request_response_lru[http_response_id] = (request, response)
         finally:
             event.set()
@@ -308,7 +313,8 @@ class grep(BaseConsumer):
         if plugin is None:
             return
 
-        request, response = self._get_request_response_from_id(http_response_id)
+        request, response = self._get_request_response_from_id(
+            http_response_id)
         if request is None:
             return
 
@@ -322,7 +328,7 @@ class grep(BaseConsumer):
 
         try:
             plugin.grep_wrapper(request, response)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('grep', plugin_name, request, e)
         else:
             took_line.send()
@@ -345,7 +351,7 @@ class grep(BaseConsumer):
         for observer in self._observers:
             try:
                 observer.grep(self, request, response)
-            except Exception, e:
+            except Exception as e:
                 self.handle_exception('grep',
                                       'grep._run_observers()',
                                       'grep._run_observers()',
@@ -412,7 +418,8 @@ class grep(BaseConsumer):
         # or some other value that changes a lot, this issue was reduced by
         # using EXCLUDE_HEADERS_FOR_HASH
         #
-        headers = response.dump_headers(exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
+        headers = response.dump_headers(
+            exclude_headers=self.EXCLUDE_HEADERS_FOR_HASH)
         headers = smart_str_ignore(headers)
 
         #
@@ -421,8 +428,8 @@ class grep(BaseConsumer):
         # as a key. In initial tests using this cache strategy made the
         # `test_should_grep_speed` unittest go from 26 to 9 seconds.
         #
-        response_hash = self._response_cache_key_cache.get_response_cache_key(response,
-                                                                              headers=headers)
+        response_hash = self._response_cache_key_cache.get_response_cache_key(
+            response, headers=headers)
 
         if not self._already_analyzed_body.add(response_hash):
             self._should_grep_stats['reject-seen-body'] += 1

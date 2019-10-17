@@ -76,7 +76,7 @@ class xst(AuditPlugin):
             # If vulnerable record it. This will now become visible on
             # the KB Browser
             desc = 'The web server at "%s" is vulnerable to Cross Site'\
-                  ' Tracing.'
+                ' Tracing.'
             desc = desc % response.get_url()
 
             v = Vuln.from_fr('Cross site tracing vulnerability', desc,
@@ -92,7 +92,7 @@ class xst(AuditPlugin):
         """
         return """
         This plugin finds the Cross Site Tracing (XST) vulnerability.
-        
+
         The TRACE method echos back requests sent to it. This plugin sends a
         TRACE request to the server and if the request is echoed back then XST
         is confirmed.

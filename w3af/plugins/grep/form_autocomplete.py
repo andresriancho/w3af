@@ -36,6 +36,7 @@ class form_autocomplete(GrepPlugin):
     :author: Javier Andalia (jandalia =at= gmail.com)
     :author: Andres Riancho (andres.riancho =at= gmail.com)
     """
+
     def grep(self, request, response):
         """
         Plugin entry point, test existence of HTML auto-completable forms
@@ -88,7 +89,7 @@ class form_autocomplete(GrepPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin greps every page for autocomplete-able forms containing 
+        This plugin greps every page for autocomplete-able forms containing
         password-type inputs.
         """
 

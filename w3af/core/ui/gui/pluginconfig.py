@@ -29,7 +29,7 @@ from w3af.core.ui.gui.misc.text_wrap_label import WrapLabel
 
 from w3af.core.controllers.misc.home_dir import get_home_dir
 
-            
+
 class OptionsPanel(gtk.VBox):
     """Panel with options for configuration.
 
@@ -45,6 +45,7 @@ class OptionsPanel(gtk.VBox):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, plugin_tree, plugin, title, longdesc):
         super(OptionsPanel, self).__init__()
         self.set_spacing(5)
@@ -100,6 +101,7 @@ class ConfigPanel(gtk.VBox):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, profile_description=None):
         super(ConfigPanel, self).__init__(False, 0)
 
@@ -142,7 +144,8 @@ class ConfigPanel(gtk.VBox):
             self.created_panels[idplugin] = newwidg
 
         if newwidg is None:
-            return self.clear(title, longdesc, _("This plugins has no options to configure"))
+            return self.clear(title, longdesc, _(
+                "This plugins has no options to configure"))
 
         self.remove(self.widg)
         self.pack_start(newwidg, expand=True)
@@ -194,6 +197,7 @@ class PluginTree(gtk.TreeView):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, style, config_panel):
         self.mainwin = w3af.mainwin
         self.w3af = w3af
@@ -353,7 +357,8 @@ class PluginTree(gtk.TreeView):
         if len(path) == 1:
             return None
 
-        # here it must use the name in the column 3, as it's always the original
+        # here it must use the name in the column 3, as it's always the
+        # original
         pname = self.treestore[path][3]
         ptype = self.treestore[path[:1]][3]
         plugin = self.w3af.plugins.get_plugin_inst(ptype, pname)
@@ -421,7 +426,7 @@ class PluginTree(gtk.TreeView):
         # Reload the plugin
         try:
             self.w3af.plugins.reload_modified_plugin(plugin_type, plugin_name)
-        except Exception, e:
+        except Exception as e:
             msg = 'The plugin you modified raised the following exception'
             msg += ' while trying to reload it: "%s",' % str(e)
             msg += ' please fix this issue before continuing or w3af will crash.'
@@ -498,13 +503,15 @@ class PluginTree(gtk.TreeView):
             # if yes, ask for confirmation
             user_response = gtk.RESPONSE_YES
 
-            if plugin_fam in banned_fams and treerow[1] == True:
+            if plugin_fam in banned_fams and treerow[1]:
                 # The crawl/evasion family is enabled, and the user is
-                # disabling it we shouldn't ask this when disabling all the family
+                # disabling it we shouldn't ask this when disabling all the
+                # family
                 if plugin_fam == 'crawl':
-                    msg = _("Enabling all crawl plugins will result in a scan process of several"
-                            " hours, and sometimes days. Are you sure that you want to do enable ALL"
-                            " crawl plugins?")
+                    msg = _(
+                        "Enabling all crawl plugins will result in a scan process of several"
+                        " hours, and sometimes days. Are you sure that you want to do enable ALL"
+                        " crawl plugins?")
                 else:  # evasion family
                     msg = _("Using any of the evasion plugins is highly "
                             "discouraged in our current version. Are you "
@@ -525,7 +532,7 @@ class PluginTree(gtk.TreeView):
             father = self.treestore[pathfather]
             plugin_fam = father[0]
 
-            if plugin_fam == 'evasion' and treerow[1] == True:
+            if plugin_fam == 'evasion' and treerow[1]:
                 msg = _("Using any of the evasion plugins is highly "
                         "discouraged in our current version. Are you sure "
                         "that you want to enable this plugin?")
@@ -583,6 +590,7 @@ class PluginConfigBody(gtk.VBox):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, mainwin, w3af):
         super(PluginConfigBody, self).__init__()
         self.w3af = w3af
@@ -595,10 +603,8 @@ class PluginConfigBody(gtk.VBox):
         # entry
         histfile = os.path.join(get_home_dir(), "urlhistory.pkl")
         hint = _("http://target.example/")
-        self.target = entries.ValidatedAdvisedEntry(hint,
-                                                    mainwin.scanok.change,
-                                                    histfile,
-                                                    alertmodif=mainwin.profile_changed)
+        self.target = entries.ValidatedAdvisedEntry(
+            hint, mainwin.scanok.change, histfile, alertmodif=mainwin.profile_changed)
         self.target.connect("activate", mainwin._scan_director)
         self.target.connect("activate", self.target.insert_url)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
@@ -613,8 +619,8 @@ class PluginConfigBody(gtk.VBox):
         targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
 
         # advanced config
-        advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES,
-                                         _("Advanced Target URL configuration"))
+        advbut = entries.SemiStockButton(
+            "", gtk.STOCK_PREFERENCES, _("Advanced Target URL configuration"))
         advbut.connect("clicked", self._advanced_target)
         targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
         targetbox.show_all()
@@ -633,7 +639,8 @@ class PluginConfigBody(gtk.VBox):
     def _buildpan(self, profile_description=None):
         """Builds the panel."""
         pan = entries.RememberingHPaned(self.w3af, "pane-plugconfigbody", 250)
-        leftpan = entries.RememberingVPaned(self.w3af, "pane-plugconfigleft", 320)
+        leftpan = entries.RememberingVPaned(
+            self.w3af, "pane-plugconfigleft", 320)
         self.config_panel = ConfigPanel(profile_description)
 
         # upper left
@@ -720,7 +727,7 @@ class PluginConfigBody(gtk.VBox):
         else:
             return None
 
-        #self.out_plugin_tree
+        # self.out_plugin_tree
         (path, column) = treeToUse.get_cursor()
         # Is it over a plugin name ?
         if path is not None and len(path) > 1:

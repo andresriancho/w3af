@@ -15,6 +15,7 @@ from lib.core.enums import DBMS
 from lib.core.settings import HSQLDB_DEFAULT_SCHEMA
 from lib.request import inject
 
+
 class Enumeration(GenericEnumeration):
     def __init__(self):
         GenericEnumeration.__init__(self)
@@ -28,7 +29,8 @@ class Enumeration(GenericEnumeration):
             logger.info(infoMsg)
 
             query = queries[DBMS.HSQLDB].banner.query
-            kb.data.banner = unArrayizeValue(inject.getValue(query, safeCharEncode=True))
+            kb.data.banner = unArrayizeValue(
+                inject.getValue(query, safeCharEncode=True))
 
         return kb.data.banner
 

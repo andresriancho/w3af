@@ -27,22 +27,22 @@ from w3af.core.data.db.startup_cfg import StartUpConfig
 
 
 class TestDisclaimer(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'disclaimer_accept', 'images')
-    
+
     def start_gui(self):
         """
         Need to override this method in order to avoid waiting for the "real"
         UI to load.
         """
         self.gui_process = subprocess.Popen(["python", "w3af_gui", "-n"],
-                                             stdout=subprocess.PIPE,
-                                             stderr=subprocess.PIPE)
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
         self.gui_process_pid = self.gui_process.pid
 
     def tearDown(self):
         XpresserUnittest.tearDown(self)
-        
+
         # Just in case... we don't want to break other tests
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = True
@@ -52,25 +52,25 @@ class TestDisclaimer(XpresserUnittest):
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = False
         startup_cfg.save()
-        
+
         self.find('accept_terms_conditions')
         self.click('simple_yes')
-        
+
         self.find('owasp_top_10_profile')
 
     def test_disclaimer_shown_not_accept(self):
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = False
         startup_cfg.save()
-        
+
         self.find('accept_terms_conditions')
         self.click('simple_no')
-        
+
         self.not_find('owasp_top_10_profile')
 
     def test_disclaimer_not_shown(self):
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = True
         startup_cfg.save()
-        
+
         self.not_find('accept_terms_conditions')

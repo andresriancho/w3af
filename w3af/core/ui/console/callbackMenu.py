@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.ui.console.history import history
 
 
-#TODO: extract a base class from this one and menu
+# TODO: extract a base class from this one and menu
 class callbackMenu(object):
     """
     This is a menu-wrapper which delegates the command execution
@@ -40,17 +40,17 @@ class callbackMenu(object):
         self._raw = raw
 
     def is_raw(self=None):
-        #TODO: pull up
+        # TODO: pull up
         return self._raw
 
     def get_history(self):
-        #TODO: pull up
+        # TODO: pull up
         return self._history
 
     def execute(self, line):
         return self._callback(line)
 
     def get_path(self):
-        #TODO: pull up
+        # TODO: pull up
         p = self._parent and self._parent.get_path() + '/' or ''
         return p + self._name

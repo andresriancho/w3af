@@ -57,17 +57,17 @@ class UIUpdater(object):
 
     def update(self):
         if self._force_upd in (None, True) and is_git_repo() and \
-        verify_dir_has_perm(W3AF_LOCAL_PATH, os.W_OK, levels=1):
+                verify_dir_has_perm(W3AF_LOCAL_PATH, os.W_OK, levels=1):
             try:
                 resp = self._call_update()
                 self._handle_update_output(resp)
             except KeyboardInterrupt:
                 pass
-            except Exception, ex:
+            except Exception as ex:
                 self._logger('An error occurred while updating: "%s"' % ex)
 
             # TODO: Please read https://github.com/andresriancho/w3af/issues/6
-            # for more information on what's missing here 
+            # for more information on what's missing here
             """
             if repo_has_conflicts():
                 self._log("Oops!... w3af can't be started. It seems that the "

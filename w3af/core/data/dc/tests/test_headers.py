@@ -42,11 +42,11 @@ class TestHeaders(unittest.TestCase):
 
     def test_raises(self):
         self.assertRaises(TypeError, Headers, {})
-        
+
     def test_build_with_headers(self):
         headers = Headers([('a', 'b')])
         headers = Headers(headers)
-        
+
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
 
@@ -68,11 +68,11 @@ class TestHeaders(unittest.TestCase):
     def test_str_strange(self):
         header_value = ''.join(chr(i) for i in xrange(256))
         headers = Headers([(u'Hola', header_value)])
-        
+
         # I don't assert in a stricter way because the output depends on
         # smart_unicode which might change in the future
         self.assertIn('Hola: \x00\x01\x02', str(headers))
-        
+
     def test_repeated_raises(self):
         self.assertRaises(TypeError, Headers, [('a', 'b'), ('a', '3')])
 
@@ -85,7 +85,7 @@ class TestHeaders(unittest.TestCase):
     def test_special_chars_build(self):
         headers_initial = Headers([('á', 'ç')])
         headers_from_headers = Headers(headers_initial)
-        
+
         self.assertIn(u'á', headers_from_headers)
         self.assertEqual(headers_from_headers[u'á'], u'ç')
 
@@ -139,7 +139,7 @@ class TestHeaders(unittest.TestCase):
     def test_to_str_from_string(self):
         headers_from_obj = Headers([('a', 'b')])
         headers_from_str = Headers.from_string(str(headers_from_obj))
-        
+
         self.assertEqual(headers_from_str, headers_from_obj)
 
     def test_from_invalid_string(self):

@@ -210,8 +210,10 @@ class TestVariantDB(unittest.TestCase):
 
     def test_clean_form_fuzzable_request_form(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
-        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "abc")])
+        form_params.add_field_by_attr_items(
+            [("name", "address"), ("value", "")])
         form_params.set_action(URL('http://example.com/?id=1'))
         form_params.set_method('post')
 
@@ -384,8 +386,10 @@ class TestVariantDB(unittest.TestCase):
             url_fmt = 'http://example.com/product/%s'
 
             form_params = FormParameters()
-            form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
-            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.add_field_by_attr_items(
+                [("name", "username"), ("value", "abc")])
+            form_params.add_field_by_attr_items(
+                [("name", "address"), ("value", "")])
             form_params.set_action(URL(url_fmt % _id))
             form_params.set_method('post')
 
@@ -413,8 +417,10 @@ class TestVariantDB(unittest.TestCase):
             url = 'http://example.com/%s' % '/'.join(paths)
 
             form_params = FormParameters()
-            form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
-            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.add_field_by_attr_items(
+                [("name", "username"), ("value", "abc")])
+            form_params.add_field_by_attr_items(
+                [("name", "address"), ("value", "")])
             form_params.set_action(URL(url))
             form_params.set_method('post')
 
@@ -435,8 +441,10 @@ class TestVariantDB(unittest.TestCase):
             url_fmt = 'http://example.com/product/%s'
 
             form_params = FormParameters()
-            form_params.add_field_by_attr_items([("name", "username%s" % _id), ("value", "abc")])
-            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.add_field_by_attr_items(
+                [("name", "username%s" % _id), ("value", "abc")])
+            form_params.add_field_by_attr_items(
+                [("name", "address"), ("value", "")])
             form_params.set_action(URL(url_fmt % _id))
             form_params.set_method('post')
 
@@ -454,8 +462,10 @@ class TestVariantDB(unittest.TestCase):
             url = 'http://example.com/product/1'
 
             form_params = FormParameters()
-            form_params.add_field_by_attr_items([("name", "username%s" % _id), ("value", "abc")])
-            form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+            form_params.add_field_by_attr_items(
+                [("name", "username%s" % _id), ("value", "abc")])
+            form_params.add_field_by_attr_items(
+                [("name", "address"), ("value", "")])
             form_params.set_action(URL(url))
             form_params.set_method('post')
 
@@ -473,7 +483,8 @@ class TestVariantDB(unittest.TestCase):
             url_fmt = 'http://example.com/product/%s'
 
             form_params = FormParameters()
-            form_params.add_field_by_attr_items([("name", "username"), ("value", "abc")])
+            form_params.add_field_by_attr_items(
+                [("name", "username"), ("value", "abc")])
             form_params.set_action(URL(url_fmt % _id))
             form_params.set_method('post')
 

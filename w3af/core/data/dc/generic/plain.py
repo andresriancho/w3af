@@ -36,6 +36,7 @@ class PlainContainer(DataContainer):
     One of the most notable features is that it will save the content-type
     header and echo it back when serialized to send to the wire.
     """
+
     def __init__(self, plain_data, content_type=None, encoding=UTF8):
         super(PlainContainer, self).__init__(encoding=encoding)
         self.plain_data = plain_data

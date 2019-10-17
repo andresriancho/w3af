@@ -45,6 +45,7 @@ class websockets_links(GrepPlugin):
 
     :author: Dmitry Roshchin (nixwizard@gmail.com)
     """
+
     def grep(self, request, response):
         """
         websockets_links

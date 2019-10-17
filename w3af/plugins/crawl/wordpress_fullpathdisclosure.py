@@ -93,7 +93,8 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         if theme:
             theme_name = theme.group(1)
             for fname in ('header', 'footer'):
-                path_fname = 'wp-content/themes/%s/%s.php' % (theme_name, fname)
+                path_fname = 'wp-content/themes/%s/%s.php' % (
+                    theme_name, fname)
                 theme_paths.append(path_fname)
 
         return theme_paths
@@ -119,7 +120,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
                 i = Info('WordPress path disclosure', desc, response.id,
                          self.get_name())
                 i.set_url(pvuln_url)
-                
+
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
                 break

@@ -79,7 +79,7 @@ class shell_shock(AuditPlugin):
             # if you know about other methods, or have improvements on these
             # please let us know. Pull-requests are also welcome.
             for detection_method in [self._with_header_echo_injection,
-                                     #self._with_body_echo_injection,
+                                     # self._with_body_echo_injection,
                                      self._with_time_delay]:
                 if detection_method(freq, debugging_id):
                     break
@@ -99,7 +99,8 @@ class shell_shock(AuditPlugin):
         mutant = self.create_mutant(freq, TEST_HEADER)
         mutant.set_token_value(payload)
 
-        response = self._uri_opener.send_mutant(mutant, debugging_id=debugging_id)
+        response = self._uri_opener.send_mutant(
+            mutant, debugging_id=debugging_id)
         header_value, header_name = response.get_headers().iget(injected_header)
 
         if header_value is not None and injected_value in header_value.lower():
@@ -141,16 +142,20 @@ class shell_shock(AuditPlugin):
         :param freq: A FuzzableRequest
         :return: True if a vulnerability was found
         """
-        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
-                                      iterable=self._generate_delay_tests(freq, debugging_id),
-                                      callback=lambda x, y: None)
+        self._send_mutants_in_threads(
+            func=self._find_delay_in_mutant,
+            iterable=self._generate_delay_tests(
+                freq,
+                debugging_id),
+            callback=lambda x,
+            y: None)
 
     def _generate_delay_tests(self, freq, debugging_id):
         for delay_obj in self.DELAY_TESTS:
             mutant = self.create_mutant(freq, TEST_HEADER)
             yield mutant, delay_obj, debugging_id
 
-    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+    def _find_delay_in_mutant(self, xxx_todo_changeme):
         """
         Try to delay the response and save a vulnerability if successful
 
@@ -158,6 +163,7 @@ class shell_shock(AuditPlugin):
         :param delay_obj: The delay to use
         :param debugging_id: The debugging ID for logging
         """
+        (mutant, delay_obj, debugging_id) = xxx_todo_changeme
         ed = ExactDelayController(mutant, delay_obj, self._uri_opener)
         ed.set_debugging_id(debugging_id)
         success, responses = ed.delay_is_controlled()

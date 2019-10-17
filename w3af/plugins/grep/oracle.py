@@ -30,7 +30,7 @@ class oracle(GrepPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    OAS_TAGS = ['<!-- Created by Oracle ',]
+    OAS_TAGS = ['<!-- Created by Oracle ', ]
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -55,7 +55,7 @@ class oracle(GrepPlugin):
                          self.get_name())
                 i.set_url(response.get_url())
                 i.add_to_highlight(msg)
-                
+
                 self.kb_append(self, 'oracle', i)
 
     def get_long_desc(self):

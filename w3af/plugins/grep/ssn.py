@@ -63,10 +63,10 @@ class ssn(GrepPlugin):
             return
 
         found_ssn, validated_ssn = self._find_SSN(clear_text_body)
-        
+
         if not validated_ssn:
             return
-            
+
         uri = response.get_uri()
         desc = ('The URL: "%s" possibly discloses US Social Security'
                 ' Number: "%s".')
@@ -85,7 +85,7 @@ class ssn(GrepPlugin):
         """
         validated_ssn = None
         ssn = None
-        
+
         for match in self.ssn_regex.finditer(body_without_tags):
             validated_ssn = self._validate_SSN(match)
             if validated_ssn:
@@ -114,7 +114,7 @@ class ssn(GrepPlugin):
             area_number = int(potential_ssn.group(2))
             group_number = int(potential_ssn.group(4))
             serial_number = int(potential_ssn.group(5))
-        except:
+        except BaseException:
             return False
 
         if not group_number:
@@ -130,7 +130,8 @@ class ssn(GrepPlugin):
         even_two = xrange(10, 100, 2)  # (10-98 even only)
         even_three = xrange(2, 10, 2)
         odd_four = xrange(11, 100, 2)  # (11-99 odd only)
-        le_group = lambda x: x <= group
+
+        def le_group(x): return x <= group
         is_ssn = False
 
         # For little odds (odds between 1 and 9)

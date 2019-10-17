@@ -57,9 +57,9 @@ class ExecShell(Shell):
             _help = """\
             read:
                 The read command echoes the content of a file to the console. The
-                command takes only one parameter: the full path of the file to 
+                command takes only one parameter: the full path of the file to
                 read.
-            
+
             Examples:
                 read /etc/passwd
             """
@@ -68,11 +68,11 @@ class ExecShell(Shell):
             download:
                 The download command reads a file in the remote system and saves
                 it to the local filesystem.
-            
+
             Examples:
                 download /etc/passwd /tmp/passwd
             """
-        else:        
+        else:
             _help = """\
             Available commands:
                 help                            Display this information
@@ -81,8 +81,8 @@ class ExecShell(Shell):
                 read <file>                     Read the remote server <file> and echo to this console
                 write <file> <content>          Write <content> to the remote <file>
                 upload <local> <remote>         Upload <local> file to <remote> location
-                execute <cmd>                   
-                exec <cmd>                      
+                execute <cmd>
+                exec <cmd>
                 e <cmd>                         Run <cmd> on the remote operating system
                 exit                            Exit this shell session
             """
@@ -106,7 +106,7 @@ class ExecShell(Shell):
         else:
             try:
                 fh = file(local_filename, 'w')
-            except:
+            except BaseException:
                 return 'Failed to open local file for writing.'
             else:
                 fh.write(remote_content)
@@ -126,7 +126,7 @@ class ExecShell(Shell):
         """
         try:
             fh = file(local_filename, 'r')
-        except:
+        except BaseException:
             return 'Failed to open local file for reading.'
         else:
             file_content = fh.read()
@@ -149,7 +149,7 @@ class ExecShell(Shell):
             try:
                 ptf = payload_transfer_factory(self.execute)
                 self._transfer_handler = ptf.get_transfer_handler()
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 return '%s' % e
 
         if not self._transfer_handler.can_transfer():
@@ -285,8 +285,7 @@ class ExecShell(Shell):
 
         :return: A list with all runnable payloads.
         """
-        payloads = payload_handler.runnable_payloads(self)
-        payloads.sort()
+        payloads = sorted(payload_handler.runnable_payloads(self))
         return '\n'.join(payloads)
 
     def end(self):
@@ -333,7 +332,7 @@ class ExecShell(Shell):
         if not self._rOS:
             self.identify_os()
         fmt = '<%s object (ruser: "%s" | rsystem: "%s")>'
-        return fmt % (self.get_name(), self.get_remote_user(), 
+        return fmt % (self.get_name(), self.get_remote_user(),
                       self.get_remote_system())
 
     __str__ = __repr__

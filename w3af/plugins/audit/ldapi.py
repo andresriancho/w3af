@@ -111,15 +111,15 @@ class ldapi(AuditPlugin):
             ldap_error_list = self._find_ldap_error(response)
             for ldap_error_string in ldap_error_list:
                 if ldap_error_string not in mutant.get_original_response_body():
-                    
+
                     desc = 'LDAP injection was found at: %s' % mutant.found_at()
-                    
+
                     v = Vuln.from_mutant('LDAP injection vulnerability', desc,
                                          severity.HIGH, response.id,
                                          self.get_name(), mutant)
-                    
+
                     v.add_to_highlight(ldap_error_string)
-                    
+
                     self.kb_append_uniq(self, 'ldapi', v)
                     break
 
@@ -132,9 +132,10 @@ class ldapi(AuditPlugin):
         """
         res = []
         for match_string in self._multi_in.query(response.body):
-            msg = ('Found LDAP error string. The error returned by the web'
-                   ' application is (only a fragment is shown): "%s". The error'
-                   ' was found in response with ID %s')
+            msg = (
+                'Found LDAP error string. The error returned by the web'
+                ' application is (only a fragment is shown): "%s". The error'
+                ' was found in response with ID %s')
             om.out.information(msg % (match_string, response.id))
             res.append(match_string)
         return res

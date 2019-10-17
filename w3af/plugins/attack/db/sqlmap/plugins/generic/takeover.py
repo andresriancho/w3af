@@ -29,6 +29,7 @@ from lib.takeover.registry import Registry
 
 from plugins.generic.misc import Miscellaneous
 
+
 class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
     """
     This class defines generic OS takeover functionalities for plugins.
@@ -185,7 +186,11 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                 else:
                     exitfunc = "process"
 
-                self.createMsfShellcode(exitfunc=exitfunc, format="raw", extra="BufferRegister=EAX", encode="x86/alpha_mixed")
+                self.createMsfShellcode(
+                    exitfunc=exitfunc,
+                    format="raw",
+                    extra="BufferRegister=EAX",
+                    encode="x86/alpha_mixed")
 
                 if not goUdf:
                     setupSuccess = self.uploadShellcodeexec(web=web)
@@ -197,7 +202,9 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                             msg = "unable to mount the operating system takeover"
                             raise SqlmapFilePathException(msg)
 
-                if Backend.isOs(OS.WINDOWS) and Backend.isDbms(DBMS.MYSQL) and conf.privEsc:
+                if Backend.isOs(
+                        OS.WINDOWS) and Backend.isDbms(
+                        DBMS.MYSQL) and conf.privEsc:
                     debugMsg = "by default MySQL on Windows runs as SYSTEM "
                     debugMsg += "user, no need to privilege escalate"
                     logger.debug(debugMsg)
@@ -212,7 +219,9 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                         msg = "unable to mount the operating system takeover"
                         raise SqlmapFilePathException(msg)
 
-        if not setupSuccess and Backend.isDbms(DBMS.MYSQL) and not conf.direct and (not isStackingAvailable() or fallbackToWeb):
+        if not setupSuccess and Backend.isDbms(
+                DBMS.MYSQL) and not conf.direct and (
+                not isStackingAvailable() or fallbackToWeb):
             web = True
 
             if fallbackToWeb:
@@ -235,7 +244,11 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
                     logger.warn(warnMsg)
 
                 if tunnel == 1:
-                    self.createMsfShellcode(exitfunc="process", format="raw", extra="BufferRegister=EAX", encode="x86/alpha_mixed")
+                    self.createMsfShellcode(
+                        exitfunc="process",
+                        format="raw",
+                        extra="BufferRegister=EAX",
+                        encode="x86/alpha_mixed")
                     setupSuccess = self.uploadShellcodeexec(web=web)
 
                     if setupSuccess is not True:
@@ -315,7 +328,9 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         if not isStackingAvailable() and not conf.direct:
             return
 
-        if not Backend.isDbms(DBMS.MSSQL) or not Backend.isVersionWithin(("2000", "2005")):
+        if not Backend.isDbms(
+                DBMS.MSSQL) or not Backend.isVersionWithin(
+                ("2000", "2005")):
             errMsg = "the back-end DBMS must be Microsoft SQL Server "
             errMsg += "2000 or 2005 to be able to exploit the heap-based "
             errMsg += "buffer overflow in the 'sp_replwritetovarbin' "
@@ -333,7 +348,11 @@ class Takeover(Abstraction, Metasploit, ICMPsh, Registry, Miscellaneous):
         if readInput(msg, default='N', boolean=True):
             self.initEnv(mandatory=False, detailed=True)
             self.getRemoteTempPath()
-            self.createMsfShellcode(exitfunc="seh", format="raw", extra="-b 27", encode=True)
+            self.createMsfShellcode(
+                exitfunc="seh",
+                format="raw",
+                extra="-b 27",
+                encode=True)
             self.bof()
 
     def uncPathRequest(self):

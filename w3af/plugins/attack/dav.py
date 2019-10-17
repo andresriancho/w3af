@@ -108,9 +108,10 @@ class dav(AttackPlugin):
             response = self._uri_opener.GET(exploit_url)
 
             if shell_handler.SHELL_IDENTIFIER in response.get_body():
-                msg = ('The uploaded shell returned the SHELL_IDENTIFIER, which'
-                       ' verifies that the file was uploaded and is being'
-                       ' executed.')
+                msg = (
+                    'The uploaded shell returned the SHELL_IDENTIFIER, which'
+                    ' verifies that the file was uploaded and is being'
+                    ' executed.')
                 om.out.debug(msg)
                 self._exploit_url = exploit_url
                 return True
@@ -147,12 +148,12 @@ class dav(AttackPlugin):
 
 
 class DAVShell(ExecShell):
-    
+
     def __init__(self, vuln, uri_opener, worker_pool, exploit_url):
         super(DAVShell, self).__init__(vuln, uri_opener, worker_pool)
-        
+
         self.exploit_url = exploit_url
-    
+
     def execute(self, command):
         """
         This method executes a command in the remote operating system by
@@ -175,7 +176,7 @@ class DAVShell(ExecShell):
 
         try:
             self._uri_opener.DELETE(url_to_del)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error('DAVShell cleanup failed with exception: "%s".' % e)
         else:
             om.out.debug('DAVShell cleanup complete, %s deleted.' % url_to_del)

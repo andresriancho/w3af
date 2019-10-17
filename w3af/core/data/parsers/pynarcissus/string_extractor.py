@@ -45,19 +45,21 @@ class StringExtractor(object):
     :see: https://github.com/andresriancho/w3af/issues/2104
     """
     CHILD_ATTRS = ['thenPart', 'elsePart', 'expression', 'body', 'initializer']
- 
+
     def __init__(self, js_source):
         self.js_strings = set()
 
         try:
             root = parse(js_source)
-        except Exception, e:
+        except Exception as e:
             pass
         else:
             self.visit(root)
- 
+
     def visit(self, root):
-        call = lambda n: getattr(self, "visit_%s" % n.type.lower(), self.noop)(n)
+        def call(n): return getattr(
+            self, "visit_%s" %
+            n.type.lower(), self.noop)(n)
 
         call(root)
 
@@ -71,10 +73,10 @@ class StringExtractor(object):
             child = getattr(node, attr, None)
             if child:
                 self.visit(child)
- 
+
     def noop(self, node):
         pass
- 
+
     def visit_string(self, node):
         if node.type == "STRING":
             self.js_strings.add(node.value)

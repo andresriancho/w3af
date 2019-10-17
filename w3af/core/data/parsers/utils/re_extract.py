@@ -66,7 +66,7 @@ class ReExtract(BaseParser):
         if end == doc_string_len:
             return False
 
-        if doc_string[start-1] not in self.QUOTES:
+        if doc_string[start - 1] not in self.QUOTES:
             return False
 
         if doc_string[end] not in self.QUOTES:
@@ -116,7 +116,7 @@ class ReExtract(BaseParser):
                 url_lower = url.url_string.lower()
 
                 if url_lower.startswith('http://') or \
-                url_lower.startswith('https://'):
+                        url_lower.startswith('https://'):
 
                     self._re_urls.add(url)
 

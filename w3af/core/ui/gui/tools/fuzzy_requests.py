@@ -84,6 +84,7 @@ class PreviewWindow(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, parent, fg):
         super(PreviewWindow, self).__init__(w3af, "fuzzypreview", "Preview",
                                             "Fuzzy_Requests")
@@ -124,6 +125,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, initial_request=None):
         super(FuzzyRequests, self).__init__(w3af, "fuzzyreq",
                                             "w3af - Fuzzy Requests",
@@ -150,17 +152,16 @@ class FuzzyRequests(entries.RememberingWindow):
         self.sSB_state.change(self, False)
 
         # Fix content length checkbox
-        self._fix_content_lengthCB = gtk.CheckButton('Fix content length header')
+        self._fix_content_lengthCB = gtk.CheckButton(
+            'Fix content length header')
         self._fix_content_lengthCB.set_active(True)
         self._fix_content_lengthCB.show()
 
         # request
-        self.originalReq = RequestPart(self, w3af,
-                                       [analyzBut.set_sensitive,
-                                        self.sendPlayBut.set_sensitive,
-                                        functools.partial(self.sSB_state.change, 'rRV')],
-                                       editable=True,
-                                       widgname='fuzzyrequest')
+        self.originalReq = RequestPart(
+            self, w3af, [
+                analyzBut.set_sensitive, self.sendPlayBut.set_sensitive, functools.partial(
+                    self.sSB_state.change, 'rRV')], editable=True, widgname='fuzzyrequest')
 
         if initial_request is None:
             self.originalReq.show_raw(FUZZY_REQUEST_EXAMPLE, '')
@@ -347,7 +348,7 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_start(self, widg):
         """Start sending the requests."""
         (request, postbody) = self.originalReq.get_both_texts_raw()
-        
+
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
@@ -356,8 +357,12 @@ class FuzzyRequests(entries.RememberingWindow):
         quant = fg.calculate_quantity()
         if quant > 20:
             msg = "Are you sure you want to send %d requests?" % quant
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
-                                    gtk.BUTTONS_YES_NO, msg)
+            dlg = gtk.MessageDialog(
+                None,
+                gtk.DIALOG_MODAL,
+                gtk.MESSAGE_WARNING,
+                gtk.BUTTONS_YES_NO,
+                msg)
             opt = dlg.run()
             dlg.destroy()
             if opt != gtk.RESPONSE_YES:
@@ -408,16 +413,16 @@ class FuzzyRequests(entries.RememberingWindow):
         self.w3af.uri_opener.clear()
 
         try:
-            http_resp = self.w3af.uri_opener.send_raw_request(realreq, realbody,
-                                                              fixContentLength)
+            http_resp = self.w3af.uri_opener.send_raw_request(
+                realreq, realbody, fixContentLength)
             error_msg = None
             self.result_ok += 1
-        except HTTPRequestException, e:
+        except HTTPRequestException as e:
             # One HTTP request failed
             error_msg = str(e)
             http_resp = None
             self.result_err += 1
-        except ScanMustStopException, e:
+        except ScanMustStopException as e:
             # Many HTTP requests failed and the URL library wants to stop
             error_msg = str(e)
             self.result_err += 1

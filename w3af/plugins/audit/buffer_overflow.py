@@ -44,7 +44,7 @@ class buffer_overflow(AuditPlugin):
         '*** stack smashing detected ***:',
         'Backtrace:',
         'Memory map:',
-        
+
         # Note that the lack of commas after the strings is intentional
         '<html><head>\n<title>500 Internal Server Error</title>\n'
         '</head><body>\n<h1>'
@@ -56,7 +56,14 @@ class buffer_overflow(AuditPlugin):
     # TODO: if lengths = [ 65 , 257 , 513 , 1025, 2049, 4097, 8000 ]
     # then i get a BadStatusLine exception from urllib2, is seems to be an
     # internal error. Tested against tomcat 5.5.7
-    BUFFER_TESTS = ['A' * payload_len for payload_len in [65, 257, 513, 1025, 2049]]
+    BUFFER_TESTS = [
+        'A' *
+        payload_len for payload_len in [
+            65,
+            257,
+            513,
+            1025,
+            2049]]
 
     def __init__(self):
         """
@@ -106,10 +113,12 @@ class buffer_overflow(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
-        mutants = create_mutants(freq, self.BUFFER_TESTS, orig_resp=orig_response)
+        mutants = create_mutants(
+            freq, self.BUFFER_TESTS, orig_resp=orig_response)
         args = zip(repeat(self._send_request), mutants, repeat(debugging_id))
 
-        for result in self.worker_pool.imap_unordered(apply_with_return_error, args):
+        for result in self.worker_pool.imap_unordered(
+                apply_with_return_error, args):
             # re-raise the thread exception in the main thread with this method
             # so we get a nice traceback instead of things like the ones we see
             # in https://github.com/andresriancho/w3af/issues/7287
@@ -136,7 +145,7 @@ class buffer_overflow(AuditPlugin):
 
             i = Info.from_mutant('Potential buffer overflow vulnerability',
                                  desc, [], self.get_name(), mutant)
-            
+
             self.kb_append_uniq(self, 'buffer_overflow', i)
         else:
             self._analyze_result(mutant, response)

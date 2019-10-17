@@ -116,7 +116,7 @@ def verify_dir_has_perm(path, perm, levels=0):
     """
     if not os.path.exists(path):
         raise RuntimeError('%s does NOT exist!' % path)
-    
+
     path = os.path.normpath(path)
     pdepth = len(path.split(os.path.sep))
 
@@ -129,7 +129,7 @@ def verify_dir_has_perm(path, perm, levels=0):
     # From 1st to `levels`th
     for root, dirs, files in os.walk(path):
         currentlevel = len(root.split(os.path.sep)) - pdepth
-        
+
         if currentlevel > levels:
             break
         elif ".git" in dirs:
@@ -141,4 +141,3 @@ def verify_dir_has_perm(path, perm, levels=0):
                     #print('No permissions for "%s".' % file_path)
                     return False
     return True
-

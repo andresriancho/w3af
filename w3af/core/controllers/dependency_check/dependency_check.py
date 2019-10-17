@@ -103,8 +103,12 @@ def get_missing_external_commands(platform):
     return platform.get_missing_external_commands()
 
 
-def write_instructions_to_console(platform, failed_deps, os_packages, script_path,
-                                  external_commands):
+def write_instructions_to_console(
+        platform,
+        failed_deps,
+        os_packages,
+        script_path,
+        external_commands):
     #
     #    Report the missing system packages
     #
@@ -153,8 +157,9 @@ def write_instructions_to_console(platform, failed_deps, os_packages, script_pat
         print(msg)
 
     if external_commands:
-        print('External programs used by w3af are not installed or were not found.'
-              'Run these commands to install them on your system:\n')
+        print(
+            'External programs used by w3af are not installed or were not found.'
+            'Run these commands to install them on your system:\n')
         for cmd in external_commands:
             print('    %s' % cmd)
 
@@ -170,7 +175,7 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
     """
     This function verifies that the dependencies that are needed by the
     framework core are met.
-    
+
     :return: True if the process should exit
     """
     if StartUpConfig().get_skip_dependencies_check():
@@ -197,9 +202,13 @@ def dependency_check(dependency_set=CORE, exit_on_failure=True):
                                          platform.PIP_CMD, failed_deps,
                                          external_commands)
 
-    write_instructions_to_console(platform, failed_deps, os_packages, script_path,
-                                  external_commands)
-    
+    write_instructions_to_console(
+        platform,
+        failed_deps,
+        os_packages,
+        script_path,
+        external_commands)
+
     if exit_on_failure:
         sys.exit(1)
     else:
@@ -217,6 +226,6 @@ def disable_warnings():
 def enable_warnings():
     # Enable warnings once again
     warnings.resetwarnings()
-    
+
     # re-enable the logging module
     logging.disable(logging.NOTSET)

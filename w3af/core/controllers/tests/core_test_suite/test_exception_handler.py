@@ -25,14 +25,15 @@ class TestExceptionHandler(CountTestMixin):
     """
     Inherit from TestW3afCorePause to get the nice setUp().
     """
+
     def test_same_id(self):
         """
         Verify that the exception handler is the same before and after the scan
         """
         before_id_ehandler = id(self.w3afcore.exception_handler)
-        
+
         self.w3afcore.start()
-        
+
         after_id_ehandler = id(self.w3afcore.exception_handler)
-        
+
         self.assertEqual(before_id_ehandler, after_id_ehandler)

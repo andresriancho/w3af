@@ -28,6 +28,7 @@ class question(object):
 
     The idea is that a wizard object has a lot of this question objects.
     """
+
     def __init__(self, w3af_core):
         self._question_id = ''
         self._question_str = ''

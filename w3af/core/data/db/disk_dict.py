@@ -36,6 +36,7 @@ class DiskDict(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, table_prefix=None):
         self.db = get_default_temp_db_instance()
 
@@ -50,7 +51,7 @@ class DiskDict(object):
                    ('key', 'BLOB'),
                    ('value', 'BLOB')]
         pks = ['index_']
-        
+
         self.db.create_table(self.table_name, columns, pks)
         self.db.create_index(self.table_name, ['key'])
         self.db.commit()
@@ -60,21 +61,23 @@ class DiskDict(object):
 
     def keys(self):
         pickled_keys = self.db.select('SELECT key FROM %s' % self.table_name)
-        result_list = [] 
-        
+        result_list = []
+
         for r in pickled_keys:
             result_list.append(cPickle.loads(r[0]))
-        
+
         return result_list
 
     def iterkeys(self):
         pickled_keys = self.db.select('SELECT key FROM %s' % self.table_name)
-        
+
         for r in pickled_keys:
             yield cPickle.loads(r[0])
 
     def iteritems(self):
-        pickled_keys = self.db.select('SELECT key, value FROM %s' % self.table_name)
+        pickled_keys = self.db.select(
+            'SELECT key, value FROM %s' %
+            self.table_name)
 
         for r in pickled_keys:
             yield cPickle.loads(r[0]), cPickle.loads(r[1])
@@ -114,7 +117,7 @@ class DiskDict(object):
     def __getitem__(self, key):
         query = 'SELECT value FROM %s WHERE key=? limit 1' % self.table_name
         r = self.db.select(query, (cpickle_dumps(key),))
-        
+
         if not r:
             args = (key, self.table_name)
             raise KeyError('%s not in %s.' % args)

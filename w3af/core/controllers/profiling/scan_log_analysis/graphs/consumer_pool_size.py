@@ -6,7 +6,8 @@ from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
 
-IDLE_CONSUMER_WORKERS = re.compile('\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
+IDLE_CONSUMER_WORKERS = re.compile(
+    '\[.*? - .*?\] (.*?)% of (.*?) workers are idle.')
 
 
 def get_consumer_pool_size_data(scan_log_filename, scan):
@@ -46,16 +47,23 @@ def get_consumer_pool_size_data(scan_log_filename, scan):
 
 
 def draw_consumer_pool_size(scan_log_filename, scan):
-    (consumer_pool_perc_audit, consumer_pool_timestamps_audit,
-     consumer_pool_perc_crawl, consumer_pool_timestamps_crawl,
-     worker_pool_perc, worker_pool_timestamps) = get_consumer_pool_size_data(scan_log_filename, scan)
+    (consumer_pool_perc_audit,
+     consumer_pool_timestamps_audit,
+     consumer_pool_perc_crawl,
+     consumer_pool_timestamps_crawl,
+     worker_pool_perc,
+     worker_pool_timestamps) = get_consumer_pool_size_data(scan_log_filename,
+                                                           scan)
 
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
-    consumer_pool_timestamps_audit = [ts - first_timestamp for ts in consumer_pool_timestamps_audit]
-    consumer_pool_timestamps_crawl = [ts - first_timestamp for ts in consumer_pool_timestamps_crawl]
-    worker_pool_timestamps = [ts - first_timestamp for ts in worker_pool_timestamps]
+    consumer_pool_timestamps_audit = [
+        ts - first_timestamp for ts in consumer_pool_timestamps_audit]
+    consumer_pool_timestamps_crawl = [
+        ts - first_timestamp for ts in consumer_pool_timestamps_crawl]
+    worker_pool_timestamps = [
+        ts - first_timestamp for ts in worker_pool_timestamps]
 
     if not consumer_pool_perc_audit and not consumer_pool_perc_crawl:
         print('No thread pool data found')
@@ -65,10 +73,12 @@ def draw_consumer_pool_size(scan_log_filename, scan):
     print('    Latest idle core workers %s%%' % worker_pool_perc[-1])
 
     if consumer_pool_perc_audit:
-        print('    Latest idle audit workers %s%%' % consumer_pool_perc_audit[-1])
+        print('    Latest idle audit workers %s%%' %
+              consumer_pool_perc_audit[-1])
 
     if consumer_pool_perc_crawl:
-        print('    Latest idle crawl-infra workers %s%%' % consumer_pool_perc_crawl[-1])
+        print('    Latest idle crawl-infra workers %s%%' %
+              consumer_pool_perc_crawl[-1])
 
     print('')
 

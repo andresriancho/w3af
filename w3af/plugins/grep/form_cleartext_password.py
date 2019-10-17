@@ -33,6 +33,7 @@ class form_cleartext_password(GrepPlugin):
     Finds forms with password inputs on every page and checks if they are secure
     :author: Dmitry Roshchin (nixwizard@gmail.com)
     """
+
     def grep(self, request, response):
         """
         Plugin entry point, test existence of HTML forms containing

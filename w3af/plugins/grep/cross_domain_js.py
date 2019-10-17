@@ -41,12 +41,14 @@ class cross_domain_js(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
         # User configured settings
         # Not 100% secure, but can be considered as safe in 99,9% of the cases
-        # Taken from https://github.com/WPO-Foundation/webpagetest/blob/master/agent/wpthook/cdn.h#L46
+        # Taken from
+        # https://github.com/WPO-Foundation/webpagetest/blob/master/agent/wpthook/cdn.h#L46
         self._secure_js_file = os.path.join(ROOT_PATH, 'plugins', 'grep',
                                             'cross_domain_js',
                                             'secure-js-sources.txt')

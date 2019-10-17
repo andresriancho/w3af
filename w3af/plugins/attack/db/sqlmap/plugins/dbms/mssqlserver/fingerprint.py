@@ -18,6 +18,7 @@ from lib.core.settings import MSSQL_ALIASES
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.MSSQL)
@@ -60,7 +61,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
@@ -82,18 +84,19 @@ class Fingerprint(GenericFingerprint):
         if conf.direct:
             result = True
         else:
-            result = inject.checkBooleanExpression("UNICODE(SQUARE(NULL)) IS NULL")
+            result = inject.checkBooleanExpression(
+                "UNICODE(SQUARE(NULL)) IS NULL")
 
         if result:
             infoMsg = "confirming %s" % DBMS.MSSQL
             logger.info(infoMsg)
 
-            for version, check in (("2000", "HOST_NAME()=HOST_NAME()"), \
-                                    ("2005", "XACT_STATE()=XACT_STATE()"), \
-                                    ("2008", "SYSDATETIME()=SYSDATETIME()"), \
-                                    ("2012", "CONCAT(NULL,NULL)=CONCAT(NULL,NULL)"), \
-                                    ("2014", "CHARINDEX('12.0.2000',@@version)>0"), \
-                                    ("2016", "ISJSON(NULL) IS NULL")):
+            for version, check in (("2000", "HOST_NAME()=HOST_NAME()"),
+                                   ("2005", "XACT_STATE()=XACT_STATE()"),
+                                   ("2008", "SYSDATETIME()=SYSDATETIME()"),
+                                   ("2012", "CONCAT(NULL,NULL)=CONCAT(NULL,NULL)"),
+                                   ("2014", "CHARINDEX('12.0.2000',@@version)>0"),
+                                   ("2016", "ISJSON(NULL) IS NULL")):
                 result = inject.checkBooleanExpression(check)
 
                 if result:
@@ -132,22 +135,25 @@ class Fingerprint(GenericFingerprint):
         infoMsg = "the back-end DBMS operating system is %s" % Backend.getOs()
 
         self.createSupportTbl(self.fileTblName, self.tblField, "varchar(1000)")
-        inject.goStacked("INSERT INTO %s(%s) VALUES (%s)" % (self.fileTblName, self.tblField, "@@VERSION"))
+        inject.goStacked(
+            "INSERT INTO %s(%s) VALUES (%s)" %
+            (self.fileTblName, self.tblField, "@@VERSION"))
 
         # Reference: http://en.wikipedia.org/wiki/Comparison_of_Microsoft_Windows_versions
         # http://en.wikipedia.org/wiki/Windows_NT#Releases
-        versions = { "NT": ("4.0", (6, 5, 4, 3, 2, 1)),
-                     "2000": ("5.0", (4, 3, 2, 1)),
-                     "XP": ("5.1", (3, 2, 1)),
-                     "2003": ("5.2", (2, 1)),
-                     "Vista or 2008": ("6.0", (2, 1)),
-                     "7 or 2008 R2": ("6.1", (1, 0)),
-                     "8 or 2012": ("6.2", (0,)),
-                     "8.1 or 2012 R2": ("6.3", (0,)) }
+        versions = {"NT": ("4.0", (6, 5, 4, 3, 2, 1)),
+                    "2000": ("5.0", (4, 3, 2, 1)),
+                    "XP": ("5.1", (3, 2, 1)),
+                    "2003": ("5.2", (2, 1)),
+                    "Vista or 2008": ("6.0", (2, 1)),
+                    "7 or 2008 R2": ("6.1", (1, 0)),
+                    "8 or 2012": ("6.2", (0,)),
+                    "8.1 or 2012 R2": ("6.3", (0,))}
 
         # Get back-end DBMS underlying operating system version
         for version, data in versions.items():
-            query = "EXISTS(SELECT %s FROM %s WHERE %s " % (self.tblField, self.fileTblName, self.tblField)
+            query = "EXISTS(SELECT %s FROM %s WHERE %s " % (
+                self.tblField, self.fileTblName, self.tblField)
             query += "LIKE '%Windows NT " + data[0] + "%')"
             result = inject.checkBooleanExpression(query)
 
@@ -162,7 +168,8 @@ class Fingerprint(GenericFingerprint):
 
             warnMsg = "unable to fingerprint the underlying operating "
             warnMsg += "system version, assuming it is Windows "
-            warnMsg += "%s Service Pack %d" % (Backend.getOsVersion(), Backend.getOsServicePack())
+            warnMsg += "%s Service Pack %d" % (
+                Backend.getOsVersion(), Backend.getOsServicePack())
             logger.warn(warnMsg)
 
             self.cleanup(onlyFileTbl=True)
@@ -172,7 +179,8 @@ class Fingerprint(GenericFingerprint):
         # Get back-end DBMS underlying operating system service pack
         sps = versions[Backend.getOsVersion()][1]
         for sp in sps:
-            query = "EXISTS(SELECT %s FROM %s WHERE %s " % (self.tblField, self.fileTblName, self.tblField)
+            query = "EXISTS(SELECT %s FROM %s WHERE %s " % (
+                self.tblField, self.fileTblName, self.tblField)
             query += "LIKE '%Service Pack " + getUnicode(sp) + "%')"
             result = inject.checkBooleanExpression(query)
 

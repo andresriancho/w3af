@@ -44,4 +44,3 @@ def get_url_list(scan_id):
 
     data = [str(u) for u in kb.kb.get_all_known_urls()]
     return jsonify({'items': data})
-

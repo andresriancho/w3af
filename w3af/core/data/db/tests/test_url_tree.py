@@ -59,8 +59,8 @@ class TestURLTree(unittest.TestCase):
         tree.add_url(url_2)
 
         expected = {URLNode("http://w3af.org", 0):
-                        {URLNode("foo", 0): {URLNode("bar", 1): {}},
-                         URLNode("spam", 0): {URLNode("eggs", 1): {}}}}
+                    {URLNode("foo", 0): {URLNode("bar", 1): {}},
+                     URLNode("spam", 0): {URLNode("eggs", 1): {}}}}
 
         self.assertEqual(tree.tree, expected)
 
@@ -72,9 +72,24 @@ class TestURLTree(unittest.TestCase):
         tree.add_url(url_1)
         tree.add_url(url_2)
 
-        expected = {URLNode("http://w3af.org", 0):
-                        {URLNode("foo", 0): {URLNode("bar", 1): {}},
-                         URLNode("spam", 0): {URLNode("eggs", 0): {URLNode("123.txt", 1): {}}}}}
+        expected = {
+            URLNode(
+                "http://w3af.org",
+                0): {
+                URLNode(
+                    "foo",
+                    0): {
+                    URLNode(
+                        "bar",
+                        1): {}},
+                URLNode(
+                    "spam",
+                    0): {
+                    URLNode(
+                        "eggs",
+                        0): {
+                        URLNode(
+                            "123.txt",
+                            1): {}}}}}
 
         self.assertEqual(tree.tree, expected)
-

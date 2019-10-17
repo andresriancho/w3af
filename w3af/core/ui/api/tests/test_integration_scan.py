@@ -166,7 +166,7 @@ class APIScanTest(IntegrationTest):
         data = {'scan_profile': profile,
                 'target_urls': [target_url]}
         response = requests.post('%s/scans/' % self.api_url,
-                                 auth=self.api_auth, 
+                                 auth=self.api_auth,
                                  data=json.dumps(data),
                                  headers=self.headers,
                                  verify=False)
@@ -184,7 +184,7 @@ class APIScanTest(IntegrationTest):
         #
         # Now stop the scan
         #
-        response = requests.get('%s/scans/0/stop' % self.api_url, 
+        response = requests.get('%s/scans/0/stop' % self.api_url,
                                 auth=self.api_auth,
                                 verify=False)
         self.assertEqual(response.json(), {u'message': u'Stopping scan'})

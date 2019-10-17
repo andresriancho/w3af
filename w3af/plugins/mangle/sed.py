@@ -42,8 +42,8 @@ class sed(ManglePlugin):
     def __init__(self):
         ManglePlugin.__init__(self)
         self._manglers = {'q': {'b': set(), 'h': set()},
-                          's': {'b': set(), 'h': set()},}
-        
+                          's': {'b': set(), 'h': set()}, }
+
         # User options
         self._user_option_fix_content_len = True
         self._expressions = ''
@@ -60,10 +60,10 @@ class sed(ManglePlugin):
             data = regex.sub(string, data)
 
         header_string = str(request.get_headers())
-        
+
         for regex, string in self._manglers['q']['h']:
             header_string = regex.sub(string, header_string)
-        
+
         headers_inst = Headers.from_string(header_string)
 
         request.set_headers(headers_inst)
@@ -114,13 +114,15 @@ class sed(ManglePlugin):
 
         :return: No value is returned.
         """
-        self._user_option_fix_content_len = option_list['fix_content_len'].get_value()
+        self._user_option_fix_content_len = option_list['fix_content_len'].get_value(
+        )
 
         self._expressions = ','.join(option_list['expressions'].get_value())
         found_expressions = re.findall('([qs])([bh])/(.*?)/(.*?)/;?',
                                        self._expressions)
 
-        if len(found_expressions) == 0 and len(option_list['expressions'].get_value()) != 0:
+        if len(found_expressions) == 0 and len(
+                option_list['expressions'].get_value()) != 0:
             msg = 'The user specified expression is invalid.'
             raise BaseFrameworkException(msg)
 
@@ -140,7 +142,7 @@ class sed(ManglePlugin):
 
             try:
                 regex = re.compile(regex_str)
-            except re.error, re_err:
+            except re.error as re_err:
                 msg = 'Regular expression compilation error at "%s", the'\
                       ' original exception was "%s".'
                 raise BaseFrameworkException(msg % (regex_str, re_err))
@@ -164,7 +166,7 @@ class sed(ManglePlugin):
              ' for the string User and replace it with NotLuser.\n'
              '\n'
              '    - sb/[fF]orm/form\n'
-             '      This will make sed search in the re[s]ponse [b]ody for'\
+             '      This will make sed search in the re[s]ponse [b]ody for'
              ' the strings form or Form and replace it with form.\n'
              '\n'
              'Multiple expressions can be specified separated by commas.')
@@ -192,14 +194,14 @@ class sed(ManglePlugin):
         Stream edition expressions are strings that tell the sed plugin which
         transformations to apply to the HTTP requests and responses. The sed
         plugin uses regular expressions, some examples:
-        
+
             - qh/User/NotLuser/
             This will make sed search in the the re[q]uest [h]eader for the
             string User and replace it with NotLuser.
-            
+
             - sb/[fF]orm/form
             This will make sed search in the re[s]ponse [b]ody for the strings
             form or Form and replace it with form.
-        
+
         Multiple expressions can be specified separated by commas.
         """

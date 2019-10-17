@@ -59,7 +59,8 @@ class blind_sqli(AuditPlugin):
         bsqli_resp_diff.set_eq_limit(self._eq_limit)
         bsqli_resp_diff.set_debugging_id(debugging_id)
 
-        test_iterator = self._generate_response_diff_tests(freq, bsqli_resp_diff)
+        test_iterator = self._generate_response_diff_tests(
+            freq, bsqli_resp_diff)
 
         self._send_mutants_in_threads(func=self._find_response_diff_sql,
                                       iterable=test_iterator,
@@ -77,18 +78,14 @@ class blind_sqli(AuditPlugin):
                                       iterable=test_iterator,
                                       callback=lambda x, y: None)
 
-    def _find_response_diff_sql(self, (bsqli_resp_diff, mutant, statement_type)):
+    def _find_response_diff_sql(self, xxx_todo_changeme):
         """
         :param bsqli_resp_diff: The logic used to find blind sql injections
         :param mutant: The mutant object that I have to inject to
         :param statement_type: The type of statement (string single, string double, int)
         :return: A vulnerability or None
         """
-        #
-        # These tests were already made in _generate_response_diff_tests() but
-        # between the mutant generation and the time it is about to be sent the
-        # framework might have found more vulnerabilities
-        #
+        (bsqli_resp_diff, mutant, statement_type) = xxx_todo_changeme
         if self._has_sql_injection(mutant):
             #
             # If sqli.py was enabled and already detected a vulnerability
@@ -191,18 +188,14 @@ class blind_sqli(AuditPlugin):
             for delay_obj in bsqli_time_delay.get_delays():
                 yield bsqli_time_delay, mutant, delay_obj
 
-    def _find_time_delay_sql(self, (bsqli_time_delay, mutant, delay_obj)):
+    def _find_time_delay_sql(self, xxx_todo_changeme1):
         """
         :param bsqli_time_delay: The logic used to find blind sql injections
         :param mutant: The mutant object that I have to inject to
         :param delay_obj: The exact delay object
         :return: A vulnerability or None
         """
-        #
-        # These tests were already made in _generate_delay_tests() but
-        # between the mutant generation and the time it is about to be sent the
-        # framework might have found more vulnerabilities
-        #
+        (bsqli_time_delay, mutant, delay_obj) = xxx_todo_changeme1
         if self._has_sql_injection(mutant):
             #
             # If sqli.py was enabled and already detected a vulnerability

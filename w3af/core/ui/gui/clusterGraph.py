@@ -76,9 +76,14 @@ class distance_function_selector(entries.RememberingWindow):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, w3af, response_list):
-        super(distance_function_selector, self).__init__(
-            w3af, "distance_function_selector", "w3af - Select distance function",
+        super(
+            distance_function_selector,
+            self).__init__(
+            w3af,
+            "distance_function_selector",
+            "w3af - Select distance function",
             "cluster")
         self.resize(300, 200)
 
@@ -160,7 +165,7 @@ class distance_function_selector(entries.RememberingWindow):
         """
         selected_function = None
         custom_code = None
-        
+
         if self._cl_button.get_active():
             selected_function = CONTENT_LENGTH
         elif self._levenshtein_button.get_active():
@@ -169,7 +174,7 @@ class distance_function_selector(entries.RememberingWindow):
             selected_function = HTTP_RESPONSE
         elif self._custom_button.get_active():
             selected_function = CUSTOM_FUNCTION
-            
+
             # Send the function itself in the selected_function variable
             text_buffer = self._function_tv.get_buffer()
             start_iter = text_buffer.get_start_iter()
@@ -183,7 +188,7 @@ class distance_function_selector(entries.RememberingWindow):
             window = clusterGraphWidget(
                 self.w3af, self.data, distance_function=selected_function,
                 custom_code=custom_code)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = str(w3)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
@@ -290,21 +295,20 @@ class clusterGraphWidget(w3afDotWindow):
         if distance_function == LEVENSHTEIN:
             dotcode = self._generateDotCode(
                 response_list, distance_function=self._relative_distance)
-        
+
         elif distance_function == HTTP_RESPONSE:
             dotcode = self._generateDotCode(
                 response_list, distance_function=self._http_code_distance)
-        
+
         elif distance_function == CONTENT_LENGTH:
-            dotcode = self._generateDotCode(response_list,
-                                            distance_function=
-                                            self._response_length_distance)
-        
+            dotcode = self._generateDotCode(
+                response_list, distance_function=self._response_length_distance)
+
         elif distance_function == CUSTOM_FUNCTION:
-            
+
             try:
                 callable_object = self._create_callable_object(custom_code)
-            except Exception, e:
+            except Exception as e:
                 # TODO: instead of hiding..., which may consume memory...
                 #       why don't killing?
                 self.hide()
@@ -313,9 +317,9 @@ class clusterGraphWidget(w3afDotWindow):
                 raise BaseFrameworkException(msg)
 
             try:
-                dotcode = self._generateDotCode(response_list,
-                                                distance_function=callable_object)
-            except Exception, e:
+                dotcode = self._generateDotCode(
+                    response_list, distance_function=callable_object)
+            except Exception as e:
                 # TODO: instead of hiding..., which may consume memory...
                 # why don't killing?
                 self.hide()
@@ -367,7 +371,13 @@ class clusterGraphWidget(w3afDotWindow):
         """
         distance = 0.1
         for i in [100, 200, 300, 400, 500]:
-            if a.get_code() in xrange(i, i + 100) and not b.get_code() in xrange(i, i + 100):
+            if a.get_code() in xrange(
+                    i,
+                    i +
+                    100) and not b.get_code() in xrange(
+                    i,
+                    i +
+                    100):
                 distance = 1
                 return distance
         return distance
@@ -392,7 +402,10 @@ class clusterGraphWidget(w3afDotWindow):
                 for cc in self._xunique_combinations(items[i + 1:], n - 1):
                     yield [items[i]] + cc
 
-    def _generateDotCode(self, response_list, distance_function=relative_distance):
+    def _generateDotCode(
+            self,
+            response_list,
+            distance_function=relative_distance):
         """
         Generate the dotcode for the current window, based on all the responses.
 

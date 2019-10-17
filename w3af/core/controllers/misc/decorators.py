@@ -40,7 +40,7 @@ def runonce(exc_class=Exception):
         already been called.
     """
     def runonce_meth(meth):
-        
+
         @wraps(meth)
         def inner_runonce_meth(self, *args):
             if not getattr(self, '_already_executed', False):
@@ -48,7 +48,7 @@ def runonce(exc_class=Exception):
                 return meth(self, *args)
             raise exc_class()
         return inner_runonce_meth
-    
+
     return runonce_meth
 
 
@@ -77,7 +77,7 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg='', log_msg=None):
         raise ValueError("'delay' must be non negative.")
 
     def deco_retry(f):
-        
+
         @wraps(f)
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries - 1, delay
@@ -85,7 +85,7 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg='', log_msg=None):
             while mtries >= 0:
                 try:
                     rv = f(*args, **kwargs)
-                except Exception, ex:
+                except Exception as ex:
                     # Ok, fail!
                     if mtries == 0:
                         if exc_class:
@@ -102,7 +102,7 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg='', log_msg=None):
                     om.out.debug(log_msg)
 
         return f_retry
-    
+
     return deco_retry
 
 
@@ -130,6 +130,7 @@ class memoized(object):
     If called later with the same arguments, the cached value is returned
     (not reevaluated).
     """
+
     def __init__(self, func, lru_size=10):
         self.func = func
         self.cache = SynchronizedLRUDict(lru_size)

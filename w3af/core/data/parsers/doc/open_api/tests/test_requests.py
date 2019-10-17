@@ -27,18 +27,19 @@ from w3af.core.data.dc.headers import Headers
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.parsers.doc.open_api.requests import RequestFactory
 from w3af.core.data.parsers.doc.open_api.specification import SpecificationHandler
-from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (NoParams,
-                                                                              IntParamQueryString,
-                                                                              IntParamPath,
-                                                                              StringParamQueryString,
-                                                                              StringParamHeader,
-                                                                              IntParamJson,
-                                                                              IntParamWithExampleJson,
-                                                                              ArrayStringItemsQueryString,
-                                                                              ComplexDereferencedNestedModel,
-                                                                              DereferencedPetStore,
-                                                                              NestedModel,
-                                                                              ArrayModelItems)
+from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (
+    NoParams,
+    IntParamQueryString,
+    IntParamPath,
+    StringParamQueryString,
+    StringParamHeader,
+    IntParamJson,
+    IntParamWithExampleJson,
+    ArrayStringItemsQueryString,
+    ComplexDereferencedNestedModel,
+    DereferencedPetStore,
+    NestedModel,
+    ArrayModelItems)
 
 
 class TestRequests(unittest.TestCase):
@@ -255,7 +256,9 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(fuzzable_request.get_method(), 'POST')
         self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
         self.assertEqual(fuzzable_request.get_headers(), e_headers)
-        self.assertEqual(fuzzable_request.get_data(), '{"pet": {"count": 666999}}')
+        self.assertEqual(
+            fuzzable_request.get_data(),
+            '{"pet": {"count": 666999}}')
 
     def test_no_model_json_object_complex_nested_in_body(self):
         specification_as_string = ComplexDereferencedNestedModel().get_specification()
@@ -275,11 +278,12 @@ class TestRequests(unittest.TestCase):
 
         e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
-        e_data = ('{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
-                  ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'
-                  ' "street2": "Bonsai Street 123", "state": "AK",'
-                  ' "city": "Buenos Aires"}}, "type": "cat", "name": "John",'
-                  ' "birthdate": "2017-06-30"}}')
+        e_data = (
+            '{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
+            ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'
+            ' "street2": "Bonsai Street 123", "state": "AK",'
+            ' "city": "Buenos Aires"}}, "type": "cat", "name": "John",'
+            ' "birthdate": "2017-06-30"}}')
 
         self.assertEqual(fuzzable_request.get_method(), 'POST')
         self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
@@ -395,11 +399,12 @@ class TestRequests(unittest.TestCase):
 
         e_url = 'http://www.w3af.com/pets'
         e_headers = Headers([('Content-Type', 'application/json')])
-        e_data = ('{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
-                  ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'
-                  ' "street2": "Bonsai Street 123", "state": "AK",'
-                  ' "city": "Buenos Aires"}}, "type": "cat", "name": "John",'
-                  ' "birthdate": "2017-06-30"}}')
+        e_data = (
+            '{"pet": {"owner": {"name": {"last": "Smith", "first": "56"},'
+            ' "address": {"postalCode": "90210", "street1": "Bonsai Street 123",'
+            ' "street2": "Bonsai Street 123", "state": "AK",'
+            ' "city": "Buenos Aires"}}, "type": "cat", "name": "John",'
+            ' "birthdate": "2017-06-30"}}')
 
         self.assertEqual(fuzzable_request.get_method(), 'POST')
         self.assertEqual(fuzzable_request.get_uri().url_string, e_url)

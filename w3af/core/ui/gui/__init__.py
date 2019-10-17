@@ -26,7 +26,7 @@ GUI_DATA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 try:
     _('blah')
-except:
+except BaseException:
     import __builtin__
     __builtin__.__dict__['_'] = lambda x: x
 

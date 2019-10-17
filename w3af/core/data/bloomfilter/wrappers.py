@@ -34,6 +34,7 @@ class GenericBloomFilter(object):
     The idea is to give a consistent API to all the other sections of the code
     and allow the use of different bloom filter implementations.
     """
+
     def __init__(self, capacity, error_rate=0.01):
         self.capacity = capacity
         self.error_rate = error_rate

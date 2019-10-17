@@ -109,12 +109,13 @@ class autocomplete(AuthPlugin):
         self._log_debug(msg % self.username)
 
         try:
-            http_response = self._uri_opener.GET(self.check_url,
-                                                 grep=False,
-                                                 cache=False,
-                                                 follow_redirects=True,
-                                                 debugging_id=self._debugging_id)
-        except Exception, e:
+            http_response = self._uri_opener.GET(
+                self.check_url,
+                grep=False,
+                cache=False,
+                follow_redirects=True,
+                debugging_id=self._debugging_id)
+        except Exception as e:
             msg = 'Failed to check if session is active because of exception: %s'
             self._log_debug(msg % e)
             return False
@@ -167,12 +168,13 @@ class autocomplete(AuthPlugin):
         fuzzable_request = FuzzableRequest.from_form(form)
 
         try:
-            http_response = self._uri_opener.send_mutant(fuzzable_request,
-                                                         grep=False,
-                                                         cache=False,
-                                                         follow_redirects=True,
-                                                         debugging_id=self._debugging_id)
-        except Exception, e:
+            http_response = self._uri_opener.send_mutant(
+                fuzzable_request,
+                grep=False,
+                cache=False,
+                follow_redirects=True,
+                debugging_id=self._debugging_id)
+        except Exception as e:
             msg = 'Failed to submit the login form: %s'
             self._log_debug(msg % e)
             return False
@@ -196,11 +198,12 @@ class autocomplete(AuthPlugin):
         # Send the HTTP GET request to retrieve the HTML
         #
         try:
-            http_response = self._uri_opener.GET(self.login_form_url,
-                                                 grep=False,
-                                                 cache=False,
-                                                 follow_redirects=True,
-                                                 debugging_id=self._debugging_id)
+            http_response = self._uri_opener.GET(
+                self.login_form_url,
+                grep=False,
+                cache=False,
+                follow_redirects=True,
+                debugging_id=self._debugging_id)
         except Exception as e:
             msg = 'Failed to HTTP GET the login_form_url: %s'
             self._log_debug(msg % e)
@@ -212,7 +215,8 @@ class autocomplete(AuthPlugin):
         # Extract the form from the HTML document
         #
         try:
-            document_parser = parser_cache.dpc.get_document_parser_for(http_response)
+            document_parser = parser_cache.dpc.get_document_parser_for(
+                http_response)
         except BaseFrameworkException as e:
             msg = 'Failed to find a parser for the login_form_url: %s'
             self._log_debug(msg % e)
@@ -238,17 +242,19 @@ class autocomplete(AuthPlugin):
                 #
                 # There are two or more login forms in this page
                 #
-                self._log_debug('There are two or more login forms in the login_form_url.'
-                                ' This is not supported by the autocomplete authentication'
-                                ' plugin, will use the first identified form and ignore the'
-                                ' second one.')
+                self._log_debug(
+                    'There are two or more login forms in the login_form_url.'
+                    ' This is not supported by the autocomplete authentication'
+                    ' plugin, will use the first identified form and ignore the'
+                    ' second one.')
                 continue
 
             login_form = form_params
 
         if login_form is None:
-            msg = ('Failed to find an HTML login form at %s (id: %s).'
-                   ' The authentication plugin is most likely incorrectly configured.')
+            msg = (
+                'Failed to find an HTML login form at %s (id: %s).'
+                ' The authentication plugin is most likely incorrectly configured.')
             args = (self.login_form_url, http_response.id)
             self._log_error(msg % args)
 
@@ -340,7 +346,7 @@ class autocomplete(AuthPlugin):
         The plugin performs an HTTP GET request on `login_form_url` to obtain
         the HTML form parameters and values, fills the `username` and
         `password` fields and then submits the form (usually with HTTP POST)
-        to authenticate the user. 
+        to authenticate the user.
 
         The following configurable parameters exist:
             - username

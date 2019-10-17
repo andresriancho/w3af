@@ -25,12 +25,14 @@ def get_worker_pool_size_data(scan_log_filename, scan):
 
 
 def draw_worker_pool_size(scan_log_filename, scan):
-    worker_pool_sizes, worker_pool_timestamps = get_worker_pool_size_data(scan_log_filename, scan)
+    worker_pool_sizes, worker_pool_timestamps = get_worker_pool_size_data(
+        scan_log_filename, scan)
 
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
-    worker_pool_timestamps = [ts - first_timestamp for ts in worker_pool_timestamps]
+    worker_pool_timestamps = [
+        ts - first_timestamp for ts in worker_pool_timestamps]
 
     if not worker_pool_sizes:
         print('No worker pool size data found')

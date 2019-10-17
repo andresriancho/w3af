@@ -68,15 +68,16 @@ def factory(module_name, *args):
         # dependencies
         #
         # https://github.com/andresriancho/w3af/issues/9688
-        msg = ('It seems that your Python installation does not have all the'
-               ' modules required by the w3af framework. For more information'
-               ' about how to install and debug dependency issues please browse'
-               ' to http://docs.w3af.org/en/latest/install.html')
+        msg = (
+            'It seems that your Python installation does not have all the'
+            ' modules required by the w3af framework. For more information'
+            ' about how to install and debug dependency issues please browse'
+            ' to http://docs.w3af.org/en/latest/install.html')
         print(msg)
 
         # Raise so the user sees the whole traceback
         raise
-    except Exception, e:
+    except Exception as e:
         msg = 'There was an error while importing %s: "%s".'
         raise BaseFrameworkException(msg % (module_name, e))
 
@@ -95,7 +96,7 @@ def factory(module_name, *args):
 
     try:
         inst = a_class(*args)
-    except Exception, e:
+    except Exception as e:
         msg = ('Failed to create an instance of "%s". The original exception'
                ' was: "%s". Traceback for this error:\n%s')
         msg = msg % (class_name, e, traceback.format_exc())

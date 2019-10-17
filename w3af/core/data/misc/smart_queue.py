@@ -101,6 +101,7 @@ class SmartQueue(QueueSpeedMeasurement):
         * Log how much time a thread waited to put() and item
         * Log how much time an item waited in the queue to get out
     """
+
     def __init__(self, maxsize=0, name='Unknown'):
         super(SmartQueue, self).__init__()
         self.q = Queue.Queue(maxsize=maxsize)
@@ -113,7 +114,7 @@ class SmartQueue(QueueSpeedMeasurement):
     def get(self, block=True, timeout=None):
         try:
             data = self.q.get(block=block, timeout=timeout)
-        except:
+        except BaseException:
             raise
         else:
             if data is None:
@@ -124,12 +125,18 @@ class SmartQueue(QueueSpeedMeasurement):
 
             msg = 'Item waited %.2f seconds to get out of the %s queue. Items in queue: %s / %s'
             block_time = time.time() - timestamp
-            args = (round(block_time, 2), self.get_name(), self.q.qsize(), self.q.maxsize)
+            args = (
+                round(
+                    block_time,
+                    2),
+                self.get_name(),
+                self.q.qsize(),
+                self.q.maxsize)
             om.out.debug(msg % args)
 
             self._item_left_queue()
             return item
-    
+
     def put(self, item, block=True, timeout=None):
         #
         #   This is very useful information for finding bottlenecks in the
@@ -157,8 +164,9 @@ class SmartQueue(QueueSpeedMeasurement):
         timestamp = time.time()
 
         try:
-            put_res = self.q.put((timestamp, item), block=block, timeout=timeout)
-        except:
+            put_res = self.q.put(
+                (timestamp, item), block=block, timeout=timeout)
+        except BaseException:
             raise
         else:
             if block_start_time is not None:
@@ -171,9 +179,9 @@ class SmartQueue(QueueSpeedMeasurement):
 
             self._item_added_to_queue()
             return put_res
-    
+
     def __getattr__(self, attr):
         if attr in self.__dict__:
             return getattr(self, attr)
-        
+
         return getattr(self.q, attr)

@@ -30,11 +30,12 @@ class TestPHPSCA(unittest.TestCase):
     """
     Test unit for PHP Static Code Analyzer
     """
+
     def tearDown(self):
         for temp_file in ('parser.out', 'parsetab.py', 'parsetab.pyc'):
             try:
                 os.remove(temp_file)
-            except:
+            except BaseException:
                 pass
 
     def test_vars(self):

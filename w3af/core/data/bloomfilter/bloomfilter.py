@@ -58,11 +58,11 @@ else:
             bf.add(1)
             assert 1 in bf
             assert 2 not in bf
-        except:
+        except BaseException:
             WrappedBloomFilter = FileSeekFilter
         else:
             WrappedBloomFilter = CMmapFilter
-    except:
+    except BaseException:
         WrappedBloomFilter = FileSeekFilter
 
 

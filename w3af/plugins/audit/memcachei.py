@@ -79,7 +79,9 @@ class memcachei(AuditPlugin):
         :param original_response: The original response for the fuzzable request
         :return: None
         """
-        send_clean = partial(self._uri_opener.send_clean, debugging_id=debugging_id)
+        send_clean = partial(
+            self._uri_opener.send_clean,
+            debugging_id=debugging_id)
         orig_body = original_response.get_body()
 
         # trying to break normal execution flow with ERROR_1 payload
@@ -118,7 +120,8 @@ class memcachei(AuditPlugin):
 
         # ERROR_2 request to just make sure that we're in a memcached case
         mutant.set_token_value(self.ERROR_2)
-        error_2_response, body_error_2_response = send_clean(mutant, grep=False)
+        error_2_response, body_error_2_response = send_clean(
+            mutant, grep=False)
 
         if self.equal_with_limit(orig_body,
                                  body_error_2_response,

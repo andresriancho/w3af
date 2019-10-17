@@ -34,6 +34,7 @@ class KBObserver(object):
     Note that the methods in this class are named just like the ones in
     KnowledgeBase which trigger the calls.
     """
+
     def append(self, location_a, location_b, value, ignore_type=False):
         pass
 

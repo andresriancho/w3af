@@ -29,8 +29,19 @@ class TestNLTKWrapper(unittest.TestCase):
         wn_res = wn.synsets('blue')[0].hypernyms()[0].hyponyms()
         wn_words = set([i.name().split('.')[0] for i in wn_res])
 
-        EXPECTED = {'orange', 'brown', 'green', 'salmon', 'pink', 'red', 'blue',
-                    'blond', 'purple', 'olive', 'yellow', 'pastel',
-                    'complementary_color'}
+        EXPECTED = {
+            'orange',
+            'brown',
+            'green',
+            'salmon',
+            'pink',
+            'red',
+            'blue',
+            'blond',
+            'purple',
+            'olive',
+            'yellow',
+            'pastel',
+            'complementary_color'}
 
         self.assertEqual(wn_words, EXPECTED)

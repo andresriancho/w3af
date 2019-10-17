@@ -59,7 +59,7 @@ def are_variants(uri, other_uri):
             fillvalue=None
         ):
             if None in (vself, vother) or \
-            vself.isdigit() != vother.isdigit():
+                    vself.isdigit() != vother.isdigit():
                 return False
 
         return True

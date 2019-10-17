@@ -119,6 +119,7 @@ class FileLockRead(FileLock):
     Original recipe:
         http://www.evanfosmark.com/2009/01/cross-platform-file-locking-support-in-python/
     """
+
     def __init__(self, file_name, timeout=10, delay=.05):
         FileLock.__init__(self, file_name, timeout, delay)
 

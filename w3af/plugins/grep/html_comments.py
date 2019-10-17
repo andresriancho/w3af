@@ -61,11 +61,11 @@ class html_comments(GrepPlugin):
         'user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack',
         'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit',
         'pass', 'password', 'passwd', 'pwd', 'secret', 'stupid',
-        
+
         # In Spanish
         'tonto', 'porqueria', 'cuidado', 'usuario', u'contraseña',
         'puta', 'email', 'security', 'captcha', 'pinga', 'cojones',
-        
+
         # In Portuguese
         'banco', 'bradesco', 'itau', 'visa', 'bancoreal', u'transfêrencia',
         u'depósito', u'cartão', u'crédito', 'dados pessoais'
@@ -83,12 +83,12 @@ class html_comments(GrepPlugin):
         """
         if not response.is_text_or_html():
             return
-        
+
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
         except BaseFrameworkException:
             return
-        
+
         for comment in dp.get_comments():
             self._interesting_word(comment, request, response)
             self._html_in_comment(comment, request, response)
@@ -188,8 +188,7 @@ class HTMLCommentHidesHTMLInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')
 
 
 class HTMLCommentInterestingWordInfoSet(InfoSet):
@@ -201,5 +200,4 @@ class HTMLCommentInterestingWordInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')

@@ -134,7 +134,7 @@ class archive_dot_org(CrawlPlugin):
 
             try:
                 http_response = self._uri_opener.GET(url, cache=True)
-            except:
+            except BaseException:
                 return []
 
             # Filter the ones we need

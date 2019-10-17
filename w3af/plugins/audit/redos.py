@@ -28,8 +28,8 @@ from w3af.core.data.fuzzer.fuzzer import create_mutants
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.delay_detection.aprox_delay import AproxDelay
-from w3af.core.controllers.delay_detection.aprox_delay_controller import (AproxDelayController,
-                                                                          EXPONENTIALLY)
+from w3af.core.controllers.delay_detection.aprox_delay_controller import (
+    AproxDelayController, EXPONENTIALLY)
 
 
 class redos(AuditPlugin):
@@ -39,6 +39,7 @@ class redos(AuditPlugin):
     :author: Sebastien Duquette ( sebastien.duquette@gmail.com )
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def audit(self, freq, orig_response, debugging_id):
         """
         Tests an URL for ReDoS vulnerabilities using time delays.
@@ -50,16 +51,20 @@ class redos(AuditPlugin):
         if self.ignore_this_request(freq):
             return
 
-        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
-                                      iterable=self._generate_delay_tests(freq, debugging_id),
-                                      callback=lambda x, y: None)
+        self._send_mutants_in_threads(
+            func=self._find_delay_in_mutant,
+            iterable=self._generate_delay_tests(
+                freq,
+                debugging_id),
+            callback=lambda x,
+            y: None)
 
     def _generate_delay_tests(self, freq, debugging_id):
         for mutant in create_mutants(freq, ['', ]):
             for delay_obj in self.get_delays():
                 yield mutant, delay_obj, debugging_id
 
-    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+    def _find_delay_in_mutant(self, xxx_todo_changeme):
         """
         Try to delay the response and save a vulnerability if successful
 
@@ -67,6 +72,7 @@ class redos(AuditPlugin):
         :param delay_obj: The delay to use
         :param debugging_id: The debugging ID for logging
         """
+        (mutant, delay_obj, debugging_id) = xxx_todo_changeme
         adc = AproxDelayController(mutant, delay_obj, self._uri_opener,
                                    delay_setting=EXPONENTIALLY)
         adc.set_debugging_id(debugging_id)
@@ -89,22 +95,22 @@ class redos(AuditPlugin):
     def get_delays(self):
         """
         IMPORTANT NOTE: I need different instances of the delay objects in
-                        order to avoid any threading issues. 
+                        order to avoid any threading issues.
         """
-        return [AproxDelay('%sX!',     'a', 10),
+        return [AproxDelay('%sX!', 'a', 10),
                 AproxDelay('a@a.%sX!', 'a', 10),
-                AproxDelay('%s9!',     '1', 10)]
-                
+                AproxDelay('%s9!', '1', 10)]
+
     def ignore_this_request(self, freq):
         """
         We know for a fact that PHP is NOT vulnerable to this attack
         TODO: Add other frameworks that are not vulnerable!
-        
+
         :return: True if the request should be ignored.
         """
         if 'php' in freq.get_url().get_extension().lower():
             return True
-        
+
         # TODO: Improve the performance for this method since it's doing
         #       two potentially unnecessary SELECT statements to the DB
         #       maybe the way to avoid this is to use the observer pattern
@@ -119,7 +125,7 @@ class redos(AuditPlugin):
         for preg_replace_vuln in kb.kb.get('preg_replace', 'preg_replace'):
             if preg_replace_vuln.get_url() == freq.get_url():
                 return True
-        
+
         return False
 
     def get_plugin_deps(self):

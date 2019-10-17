@@ -31,6 +31,7 @@ class strange_reason(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def grep(self, request, response):
         """
         Analyze if the HTTP response reason messages are strange.

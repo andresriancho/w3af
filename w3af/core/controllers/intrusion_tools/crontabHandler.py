@@ -44,7 +44,8 @@ class crontabHandler(delayedExecution):
         """
         actualCron = self._exec('crontab -l 2>&1')
         if 'not allowed to use this program' in actualCron:
-            om.out.debug('[crontabHandler] The user has no permission to create a cron entry.')
+            om.out.debug(
+                '[crontabHandler] The user has no permission to create a cron entry.')
             return False
         else:
             om.out.debug('[crontabHandler] The user can create a cron entry.')
@@ -105,8 +106,9 @@ class crontabHandler(delayedExecution):
         try:
             # date +"%d-%m-%H:%M:%S-%u"
             day_number, month, hour, week_day = remoteDate.split('-')
-        except:
-            raise BaseFrameworkException('The date command of the remote server returned an unknown format.')
+        except BaseException:
+            raise BaseFrameworkException(
+                'The date command of the remote server returned an unknown format.')
         else:
             hour, minute, sec = hour.split(':')
             wait_time = None
@@ -122,6 +124,6 @@ class crontabHandler(delayedExecution):
             hour, minute, am_pm = self._fix_time(hour, minute)
 
             res_line = '%s %s %s %s %s %s' % (minute, hour, day_number, month,
-                                             week_day, command_to_exec)
-            
+                                              week_day, command_to_exec)
+
         return res_line, wait_time

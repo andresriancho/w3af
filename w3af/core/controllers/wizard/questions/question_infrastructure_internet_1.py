@@ -28,6 +28,7 @@ class question_infrastructure_internet_1(question):
     """
     This is the first question of the wizard, where you have to speficy the target.
     """
+
     def __init__(self, w3af_core):
         question.__init__(self, w3af_core)
 
@@ -56,7 +57,8 @@ class question_infrastructure_internet_1(question):
             plugin_list.append('shared_hosting')
 
         # Set the plugins to be run
-        old_discovery = self.w3af_core.plugins.get_enabled_plugins('infrastructure')
+        old_discovery = self.w3af_core.plugins.get_enabled_plugins(
+            'infrastructure')
         plugin_list.extend(old_discovery)
         self.w3af_core.plugins.set_plugins(plugin_list, 'infrastructure')
 

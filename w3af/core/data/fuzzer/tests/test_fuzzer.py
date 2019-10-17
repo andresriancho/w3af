@@ -183,7 +183,7 @@ class TestFuzzer(unittest.TestCase):
             headers,
             headers,
             Headers([('Referer', 'abc'), ('Foo', 'Bar')]),
-            Headers([('Referer', 'def'), ('Foo', 'Bar')]),]
+            Headers([('Referer', 'def'), ('Foo', 'Bar')]), ]
 
         generated_headers = [m.get_headers() for m in generated_mutants]
         self.assertEqual(expected_headers, generated_headers)
@@ -323,18 +323,23 @@ class TestFuzzer(unittest.TestCase):
         cf_singleton.save('fuzz_url_parts', False)
 
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
-        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "address"), ("value", "")])
 
         form = URLEncodedForm(form_params)
 
-        freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
-                               method='PUT')
+        freq = FuzzableRequest(
+            URL('http://www.w3af.com/?id=3'),
+            post_data=form,
+            method='PUT')
 
         mutants = create_mutants(freq, self.payloads)
 
         self.assertTrue(all(isinstance(m, QSMutant) for m in mutants[:2]))
-        self.assertTrue(all(isinstance(m, PostDataMutant) for m in mutants[4:]))
+        self.assertTrue(all(isinstance(m, PostDataMutant)
+                            for m in mutants[4:]))
 
         self.assertTrue(all(m.get_method() == 'PUT' for m in mutants))
 

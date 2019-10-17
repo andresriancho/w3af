@@ -43,6 +43,7 @@ class frontpage(AuditPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         AuditPlugin.__init__(self)
 
@@ -115,13 +116,16 @@ class frontpage(AuditPlugin):
             res = self._uri_opener.POST(target_url,
                                         data=data,
                                         debugging_id=debugging_id)
-        except BaseFrameworkException, e:
-            om.out.debug('Exception while uploading file using author.dll: %s' % e)
+        except BaseFrameworkException as e:
+            om.out.debug(
+                'Exception while uploading file using author.dll: %s' %
+                e)
             return None
         else:
             if res.get_code() in [200]:
-                om.out.debug('frontpage plugin seems to have successfully uploaded'
-                             ' a file to the remote server.')
+                om.out.debug(
+                    'frontpage plugin seems to have successfully uploaded'
+                    ' a file to the remote server.')
             return res.id
 
     def _verify_upload(self, domain_path, rand_file, upload_id, debugging_id):
@@ -139,9 +143,11 @@ class frontpage(AuditPlugin):
                                        cache=False,
                                        grep=False,
                                        debugging_id=debugging_id)
-        except BaseFrameworkException, e:
-            om.out.debug('Exception while verifying if the file that was uploaded'
-                         'using author.dll was there: %s' % e)
+        except BaseFrameworkException as e:
+            om.out.debug(
+                'Exception while verifying if the file that was uploaded'
+                'using author.dll was there: %s' %
+                e)
         else:
             # The file we uploaded has the reversed filename as body
             if rand_file[::-1] not in res.get_body():
@@ -151,7 +157,10 @@ class frontpage(AuditPlugin):
                     ' allows unauthenticated users to upload files to the'
                     ' remote web server.')
 
-            response_ids = [upload_id, res.id] if upload_id is not None else [res.id]
+            response_ids = [
+                upload_id,
+                res.id] if upload_id is not None else [
+                res.id]
 
             v = Vuln('Insecure Frontpage extensions configuration', desc,
                      severity.HIGH, response_ids, self.get_name())

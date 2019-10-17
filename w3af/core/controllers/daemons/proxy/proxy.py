@@ -103,7 +103,7 @@ class Proxy(Process):
         Process.__init__(self)
         self.daemon = True
         self.name = name
-        
+
         # Internal vars
         self._server = None
         self._running = False
@@ -145,10 +145,10 @@ class Proxy(Process):
         # Start the proxy server
         try:
             self._server = ProxyServer(self._config)
-        except socket.error, se:
+        except socket.error as se:
             raise ProxyException('Socket error while starting proxy: "%s"'
                                  % se.strerror)
-        except ProxyServerError, pse:
+        except ProxyServerError as pse:
             raise ProxyException('%s' % pse)
         else:
             # This is here to support port == 0, which will bind to the first
@@ -179,7 +179,7 @@ class Proxy(Process):
     def get_port(self):
         if self._server is not None:
             return self._server.socket.getsockname()[1]
-    
+
     def wait_for_start(self):
         while self._server is None or self.get_port() is None:
             time.sleep(0.5)

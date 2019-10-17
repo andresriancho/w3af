@@ -18,4 +18,3 @@ if __name__ == '__main__':
     data = {'build_parameters': {'W3AF_REGISTRY_TAG': latest_w3af_tag}}
     data = json.dumps(data)
     requests.post(url % (branch, token), headers=headers, data=data)
-

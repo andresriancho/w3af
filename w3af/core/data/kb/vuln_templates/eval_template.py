@@ -26,10 +26,11 @@ class EvalTemplate(BaseTemplate):
     """
     Vulnerability template for eval vulnerability.
     """
+
     def __init__(self):
         super(EvalTemplate, self).__init__()
         self.name = self.get_vulnerability_name()
-        
+
     def get_kb_location(self):
         """
         :return: A tuple with the location where the vulnerability will be

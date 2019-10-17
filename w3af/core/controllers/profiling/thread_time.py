@@ -36,10 +36,10 @@ The thread could be in three states:
    #3 Running thread code (consuming CPU cycles)
    #4 Running kernel code associated with the thread (consuming CPU cycles)
 
-thread_active_time() returns (#3 + #4) 
+thread_active_time() returns (#3 + #4)
 
-The problem I'm trying to solve is explained by me in an email to the 
-PyAR mailing list [0], and the inspiration for this implementation comes 
+The problem I'm trying to solve is explained by me in an email to the
+PyAR mailing list [0], and the inspiration for this implementation comes
 from the monotonic [1] module.
 
 Please note that this method *only works on linux*, for any other operating
@@ -73,7 +73,7 @@ else:
         except Exception:
             getrusage = ctypes.CDLL(ctypes.util.find_library('rt'),
                                     use_errno=True).getrusage
-    except:
+    except BaseException:
         #
         # Something went wrong, either ctypes is not finding the libraries, or
         # they are not there. Fallback to time.time
@@ -106,7 +106,7 @@ else:
                         ('ru_nsignals', ctypes.c_long),
                         ('ru_nvcsw', ctypes.c_long),
                         ('ru_nivcsw', ctypes.c_long),
-            )
+                        )
 
         # https://github.com/torvalds/linux/blob/master/include/uapi/linux/resource.h#L22
         RUSAGE_THREAD = 1

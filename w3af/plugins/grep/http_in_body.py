@@ -59,7 +59,7 @@ class http_in_body(GrepPlugin):
 
         if not response.is_text_or_html():
             return
-            
+
         body_without_tags = response.get_clear_text_body()
         if body_without_tags is None:
             return
@@ -70,14 +70,22 @@ class http_in_body(GrepPlugin):
 
             if reqres == 'REQUEST':
                 desc = 'An HTTP request was found in the HTTP body of a response.'
-                i = Info('HTTP Request in HTTP body', desc, response.id, self.get_name())
+                i = Info(
+                    'HTTP Request in HTTP body',
+                    desc,
+                    response.id,
+                    self.get_name())
                 i.set_uri(uri)
                 i.add_to_highlight(match.group(0))
                 kb.kb.append(self, 'request', i)
 
             if reqres == 'RESPONSE':
                 desc = 'An HTTP response was found in the HTTP body of a response.'
-                i = Info('HTTP Response in HTTP body', desc, response.id, self.get_name())
+                i = Info(
+                    'HTTP Response in HTTP body',
+                    desc,
+                    response.id,
+                    self.get_name())
                 i.set_uri(uri)
                 i.add_to_highlight(match.group(0))
                 kb.kb.append(self, 'response', i)
@@ -89,12 +97,12 @@ class http_in_body(GrepPlugin):
         item_fmt = '- %s  (id: %s)'
         msg = ('The following URLs have an HTTP %s in the HTTP'
                ' response body:')
-        
+
         for info_type in ['request', 'response']:
             if kb.kb.get('http_in_body', info_type):
-                
+
                 om.out.information(msg % info_type)
-                
+
                 for i in kb.kb.get('http_in_body', info_type):
                     om.out.information(item_fmt % (i.get_uri(), i.get_id()))
 

@@ -31,6 +31,7 @@ class mod_security(EvasionPlugin):
 
     :author: Francisco Amato ( famato |at| infobyte.com.ar )
     """
+
     def modify_request(self, request):
         """
         Mangles the request
@@ -47,7 +48,7 @@ class mod_security(EvasionPlugin):
         # Only mangle the postdata if it is a url encoded string
         try:
             parse_qs(data)
-        except:
+        except BaseException:
             return request
 
         data = '\x00' + data
@@ -76,7 +77,7 @@ class mod_security(EvasionPlugin):
         return """
         This evasion plugin performs a bypass for mod_security version 2.1.0.
         More information about the vulnerability can be found at:
-        
+
             - http://www.php-security.org/MOPB/BONUS-12-2007.html
 
         Important: The evasion only works for postdata.

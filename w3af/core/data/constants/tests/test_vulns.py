@@ -30,9 +30,9 @@ from w3af import ROOT_PATH
 from w3af.core.data.constants.vulns import VULNS
 from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 
-       
+
 class TestVulnsConstants(unittest.TestCase):
-    
+
     LOCATION = os.path.join(ROOT_PATH, 'core', 'data', 'constants', 'vulns.py')
 
     def get_all_vulnerability_names(self):
@@ -183,8 +183,7 @@ class TestVulnsConstants(unittest.TestCase):
 
             missing_list.append(line)
 
-        missing_list = list(set(missing_list))
-        missing_list.sort()
+        missing_list = sorted(set(missing_list))
 
         self.maxDiff = None
         self.assertEqual(missing_list, [])

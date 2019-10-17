@@ -42,6 +42,7 @@ class KeyValueContainer(DataContainer, OrderedDict):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, init_val=(), encoding=UTF8):
         DataContainer.__init__(self, encoding=encoding)
         OrderedDict.__init__(self)
@@ -98,7 +99,8 @@ class KeyValueContainer(DataContainer, OrderedDict):
         """
         Return unicode representation
         """
-        return self._to_str_with_separators(u'=', u'&', errors='percent_encode')
+        return self._to_str_with_separators(
+            u'=', u'&', errors='percent_encode')
 
     def iter_setters(self):
         """

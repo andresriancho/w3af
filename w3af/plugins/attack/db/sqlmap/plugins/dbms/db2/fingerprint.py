@@ -18,6 +18,7 @@ from lib.core.settings import DB2_ALIASES
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.DB2)
@@ -26,13 +27,17 @@ class Fingerprint(GenericFingerprint):
         minor, major = None, None
 
         for version in reversed(xrange(5, 15)):
-            result = inject.checkBooleanExpression("(SELECT COUNT(*) FROM sysibm.sysversions WHERE versionnumber BETWEEN %d000000 AND %d999999)>0" % (version, version))
+            result = inject.checkBooleanExpression(
+                "(SELECT COUNT(*) FROM sysibm.sysversions WHERE versionnumber BETWEEN %d000000 AND %d999999)>0" %
+                (version, version))
 
             if result:
                 major = version
 
                 for version in reversed(xrange(0, 20)):
-                    result = inject.checkBooleanExpression("(SELECT COUNT(*) FROM sysibm.sysversions WHERE versionnumber BETWEEN %d%02d0000 AND %d%02d9999)>0" % (major, version, major, version))
+                    result = inject.checkBooleanExpression(
+                        "(SELECT COUNT(*) FROM sysibm.sysversions WHERE versionnumber BETWEEN %d%02d0000 AND %d%02d9999)>0" %
+                        (major, version, major, version))
                     if result:
                         minor = version
                         version = "%s.%s" % (major, minor)
@@ -64,9 +69,9 @@ class Fingerprint(GenericFingerprint):
             value += DBMS.DB2
             return value
 
-        actVer      = Format.getDbms()
-        blank       = " " * 15
-        value      += "active fingerprint: %s" % actVer
+        actVer = Format.getDbms()
+        blank = " " * 15
+        value += "active fingerprint: %s" % actVer
 
         if kb.bannerFp:
             banVer = kb.bannerFp["dbmsVersion"] if 'dbmsVersion' in kb.bannerFp else None
@@ -76,7 +81,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
@@ -89,7 +95,8 @@ class Fingerprint(GenericFingerprint):
         logMsg = "testing %s" % DBMS.DB2
         logger.info(logMsg)
 
-        result = inject.checkBooleanExpression("[RANDNUM]=(SELECT [RANDNUM] FROM SYSIBM.SYSDUMMY1)")
+        result = inject.checkBooleanExpression(
+            "[RANDNUM]=(SELECT [RANDNUM] FROM SYSIBM.SYSDUMMY1)")
 
         if result:
             logMsg = "confirming %s" % DBMS.DB2
@@ -127,16 +134,17 @@ class Fingerprint(GenericFingerprint):
         infoMsg = "the back-end DBMS operating system is %s" % Backend.getOs()
 
         if result:
-            versions = { "2003": ("5.2", (2, 1)),
-                "2008": ("7.0", (1,)),
-                "2000": ("5.0", (4, 3, 2, 1)),
-                "7": ("6.1", (1, 0)),
-                "XP": ("5.1", (2, 1)),
-                "NT": ("4.0", (6, 5, 4, 3, 2, 1)) }
+            versions = {"2003": ("5.2", (2, 1)),
+                        "2008": ("7.0", (1,)),
+                        "2000": ("5.0", (4, 3, 2, 1)),
+                        "7": ("6.1", (1, 0)),
+                        "XP": ("5.1", (2, 1)),
+                        "NT": ("4.0", (6, 5, 4, 3, 2, 1))}
 
             # Get back-end DBMS underlying operating system version
             for version, data in versions.items():
-                query = "(SELECT LENGTH(OS_VERSION) FROM SYSIBMADM.ENV_SYS_INFO WHERE OS_VERSION = '%s')>0" % data[0]
+                query = "(SELECT LENGTH(OS_VERSION) FROM SYSIBMADM.ENV_SYS_INFO WHERE OS_VERSION = '%s')>0" % data[
+                    0]
                 result = inject.checkBooleanExpression(query)
 
                 if result:

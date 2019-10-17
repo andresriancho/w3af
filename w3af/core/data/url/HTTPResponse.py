@@ -111,7 +111,7 @@ class HTTPResponse(DiskItem):
         if not isinstance(headers, Headers):
             msg = 'Invalid type %s for HTTPResponse ctor param headers.'
             raise TypeError(msg % type(headers))
-        
+
         if not isinstance(read, basestring):
             raise TypeError('Invalid type %s for HTTPResponse ctor param read.'
                             % type(read))
@@ -158,19 +158,23 @@ class HTTPResponse(DiskItem):
         self._alias = alias
         self._doc_type = None
         self._debugging_id = debugging_id
-        
+
         # Internal lock
         self._body_lock = threading.RLock()
 
     @classmethod
-    def from_httplib_resp(cls, httplibresp, original_url=None, binary_response=False):
+    def from_httplib_resp(
+            cls,
+            httplibresp,
+            original_url=None,
+            binary_response=False):
         """
         Factory function. Build a HTTPResponse object from a
         httplib.HTTPResponse instance
-    
+
         :param httplibresp: httplib.HTTPResponse instance
         :param original_url: Optional 'url_object' instance.
-    
+
         :return: A HTTPResponse instance
         """
         resp = httplibresp
@@ -195,7 +199,7 @@ class HTTPResponse(DiskItem):
         else:
             # The encoding attribute is only set on CachedResponse instances
             charset = getattr(resp, 'encoding', None)
-        
+
         return cls(code, body, hdrs, url_inst, original_url,
                    msg, charset=charset, time=httplib_time,
                    binary_response=binary_response)
@@ -207,7 +211,7 @@ class HTTPResponse(DiskItem):
         * msgpack can't serialize python objects,
         * I have to create a dict representation of HTTPResponse to serialize it
         * and a from_dict to have the object back
-        
+
         :param unserialized_dict: A dict just as returned by to_dict()
         """
         code = unserialized_dict['code']
@@ -276,7 +280,7 @@ class HTTPResponse(DiskItem):
         :param string_to_test: String to look for in the body
         """
         return string_to_test in self.body
-    
+
     def __eq__(self, other):
         return (self.id == other.id and
                 self._code == other._code and
@@ -337,7 +341,8 @@ class HTTPResponse(DiskItem):
         with self._body_lock:
             self._body, self._charset = self._charset_handling()
 
-            # The user wants the raw body, without any modifications / decoding?
+            # The user wants the raw body, without any modifications /
+            # decoding?
             if not self._binary_response:
                 self._raw_body = None
 
@@ -352,7 +357,7 @@ class HTTPResponse(DiskItem):
         if not isinstance(body, basestring):
             msg = 'Invalid type %s for set_body parameter body.'
             raise TypeError(msg % type(body))
-            
+
         self._body = None
         self._raw_body = body
 
@@ -404,7 +409,8 @@ class HTTPResponse(DiskItem):
         with self._body_lock:
             self._body, self._charset = self._charset_handling()
 
-            # The user wants the raw body, without any modifications / decoding?
+            # The user wants the raw body, without any modifications /
+            # decoding?
             if not self._binary_response:
                 self._raw_body = None
 
@@ -412,9 +418,9 @@ class HTTPResponse(DiskItem):
 
     def set_charset(self, charset):
         self._charset = charset
-    
+
     charset = property(get_charset, set_charset)
-    
+
     def set_redir_url(self, ru):
         self._redirected_url = ru
 
@@ -449,15 +455,16 @@ class HTTPResponse(DiskItem):
         else:
             self._headers = headers
 
-        find_word = lambda w: content_type.find(w) != -1
+        def find_word(w): return content_type.find(w) != -1
 
         content_type_hvalue, _ = self._headers.iget(CONTENT_TYPE, None)
 
         # we need exactly content type but not charset
         if content_type_hvalue is not None:
             try:
-                self._content_type = content_type_hvalue.split(';', 1)[0].strip().lower()
-            except:
+                self._content_type = content_type_hvalue.split(';', 1)[
+                    0].strip().lower()
+            except BaseException:
                 msg = 'Invalid Content-Type value "%s" sent in HTTP response.'
                 om.out.debug(msg % (content_type_hvalue,))
             else:
@@ -614,7 +621,7 @@ class HTTPResponse(DiskItem):
         content_type, _ = headers.iget(CONTENT_TYPE, None)
 
         # Only try to decode <str> strings. Skip <unicode> strings
-        if type(raw_body) is unicode:
+        if isinstance(raw_body, unicode):
             _body = raw_body
             assert charset is not None, ("HTTPResponse objects containing "
                                          "unicode body must have an associated "
@@ -815,7 +822,7 @@ class HTTPResponse(DiskItem):
         state = {k: getattr(self, k) for k in self.__slots__}
         state.pop('_body_lock')
         return state
-    
+
     def __setstate__(self, state):
         [setattr(self, k, v) for k, v in state.iteritems()]
         self._body_lock = threading.RLock()

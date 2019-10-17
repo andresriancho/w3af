@@ -37,9 +37,15 @@ form_with_radio = [{'name': 'sex', 'type': 'radio', 'value': 'male'},
                    {'name': 'sex', 'type': 'radio', 'value': 'female'}]
 
 # TODO: see checkbox and the `secret_value` thing
-form_with_checkbox = [{'name': 'vehicle', 'type': 'checkbox', 'value': 'Bike'},
-                      {'name': 'vehicle', 'type': 'checkbox', 'value': 'Car'},
-                      {'name': 'vehicle', 'type': 'checkbox', 'value': 'Plane'}]
+form_with_checkbox = [{'name': 'vehicle',
+                       'type': 'checkbox',
+                       'value': 'Bike'},
+                      {'name': 'vehicle',
+                       'type': 'checkbox',
+                       'value': 'Car'},
+                      {'name': 'vehicle',
+                       'type': 'checkbox',
+                       'value': 'Plane'}]
 
 form_select_cars = [
     {'type': 'select', 'name': 'cars',
@@ -222,7 +228,8 @@ class TestFormParams(unittest.TestCase):
         total_variants = 2 * 5 * 10
         variants_set = set()
 
-        for i, form_variant in enumerate(new_bigform.get_variants(mode=MODE_ALL)):
+        for i, form_variant in enumerate(
+                new_bigform.get_variants(mode=MODE_ALL)):
 
             # First element must be the created `new_bigform`
             if i == 0:
@@ -250,7 +257,8 @@ class TestFormParams(unittest.TestCase):
         total_variants = 1
 
         # 'top' mode variants
-        t_form_variants = [fv for fv in new_bigform.get_variants(mode=MODE_T)][1:]
+        t_form_variants = [
+            fv for fv in new_bigform.get_variants(mode=MODE_T)][1:]
         # Ensure we actually got the expected number of variants
         self.assertEquals(total_variants, len(t_form_variants))
 
@@ -258,7 +266,8 @@ class TestFormParams(unittest.TestCase):
             self.assertEquals(values[0], t_form_variants[0][name][0])
 
         # 'bottom' mode variants
-        t_form_variants = [fv for fv in new_bigform.get_variants(mode=MODE_B)][1:]
+        t_form_variants = [
+            fv for fv in new_bigform.get_variants(mode=MODE_B)][1:]
         # Ensure we actually got the expected number of variants
         self.assertEquals(total_variants, len(t_form_variants))
 
@@ -271,8 +280,8 @@ class TestFormParams(unittest.TestCase):
         new_form = create_form_params_helper(form_with_radio +
                                              form_select_cars +
                                              form_select_misc)
-        self.assertEquals(FormParameters.TOP_VARIANTS,
-                          len([fv for fv in new_form.get_variants(mode=MODE_ALL)]) - 1)
+        self.assertEquals(FormParameters.TOP_VARIANTS, len(
+            [fv for fv in new_form.get_variants(mode=MODE_ALL)]) - 1)
 
     def test_max_variants_many_fields(self):
         # Makes sure that the get_variants will return 15 even when we have tons
@@ -293,8 +302,8 @@ class TestFormParams(unittest.TestCase):
 
         start_time = time.time()
 
-        self.assertEquals(FormParameters.TOP_VARIANTS,
-                          len([fv for fv in new_form.get_variants(mode=MODE_TMB)]) - 1)
+        self.assertEquals(FormParameters.TOP_VARIANTS, len(
+            [fv for fv in new_form.get_variants(mode=MODE_TMB)]) - 1)
 
         # With the previous version of our code this took considerable time, because range(10 ** 9)
         # was called (doh!) creating 10 ** 9 integer objects in memory, which took a lot of time
@@ -313,8 +322,9 @@ class TestFormParams(unittest.TestCase):
         new_form = create_form_params_helper(form_with_radio +
                                              form_select_cars +
                                              form_select_misc)
-        get_all_variants = lambda: set(repr(fv) for fv in
-                                       new_form.get_variants(mode=MODE_ALL))
+
+        def get_all_variants(): return set(repr(fv)
+                                           for fv in new_form.get_variants(mode=MODE_ALL))
         variants = get_all_variants()
         for i in xrange(10):
             self.assertEquals(variants, get_all_variants())
@@ -372,7 +382,9 @@ class TestFormParams(unittest.TestCase):
         self.assertEqual(form._autocomplete, form_copy._autocomplete)
 
         self.assertIsNot(form, copy)
-        self.assertEquals(form_copy.get_parameter_type('sex'), INPUT_TYPE_RADIO)
+        self.assertEquals(
+            form_copy.get_parameter_type('sex'),
+            INPUT_TYPE_RADIO)
 
     def test_login_form_utils(self):
         form = FormParameters()

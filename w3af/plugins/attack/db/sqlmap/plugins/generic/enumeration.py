@@ -21,6 +21,7 @@ from plugins.generic.entries import Entries
 from plugins.generic.search import Search
 from plugins.generic.users import Users
 
+
 class Enumeration(Custom, Databases, Entries, Search, Users):
     """
     This class defines generic enumeration functionalities for plugins.
@@ -50,12 +51,14 @@ class Enumeration(Custom, Databases, Entries, Search, Users):
             if Backend.isDbms(DBMS.DB2):
                 rootQuery = queries[DBMS.DB2].banner
                 for query in (rootQuery.query, rootQuery.query2):
-                    kb.data.banner = unArrayizeValue(inject.getValue(query, safeCharEncode=False))
+                    kb.data.banner = unArrayizeValue(
+                        inject.getValue(query, safeCharEncode=False))
                     if kb.data.banner:
                         break
             else:
                 query = queries[Backend.getIdentifiedDbms()].banner.query
-                kb.data.banner = unArrayizeValue(inject.getValue(query, safeCharEncode=False))
+                kb.data.banner = unArrayizeValue(
+                    inject.getValue(query, safeCharEncode=False))
 
             bannerParser(kb.data.banner)
 
@@ -66,7 +69,8 @@ class Enumeration(Custom, Databases, Entries, Search, Users):
                 kb.bannerFp["type"] = set(["Linux"])
 
             elif conf.os:
-                kb.bannerFp["type"] = set(["%s%s" % (conf.os[0].upper(), conf.os[1:])])
+                kb.bannerFp["type"] = set(
+                    ["%s%s" % (conf.os[0].upper(), conf.os[1:])])
 
             if conf.os:
                 setOs()
@@ -80,6 +84,7 @@ class Enumeration(Custom, Databases, Entries, Search, Users):
         query = queries[Backend.getIdentifiedDbms()].hostname.query
 
         if not kb.data.hostname:
-            kb.data.hostname = unArrayizeValue(inject.getValue(query, safeCharEncode=False))
+            kb.data.hostname = unArrayizeValue(
+                inject.getValue(query, safeCharEncode=False))
 
         return kb.data.hostname

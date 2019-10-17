@@ -50,7 +50,7 @@ from w3af.core.ui.gui.exception_handling import user_reports_bug
 from w3af.core.ui.gui.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
 from w3af.core.ui.gui.output.gtk_output import GtkOutput
 from w3af.core.ui.gui.auto_update.gui_updater import GUIUpdater
- 
+
 from w3af.core.ui.gui import scanrun, helpers, profiles, compare
 from w3af.core.ui.gui import export_request
 from w3af.core.ui.gui import entries, pluginconfig, confpanel
@@ -79,6 +79,7 @@ else:
     gtk.gdk.threads_enter()
 # pylint: enable=E1101
 
+
 class FakeShelve(dict):
     def close(self):
         pass
@@ -89,18 +90,26 @@ class AboutDialog(gtk.Dialog):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         super(
-            AboutDialog, self).__init__(_("About..."), None, gtk.DIALOG_MODAL,
-                                        (_("Check the web site"), gtk.RESPONSE_CANCEL,
-                                         gtk.STOCK_OK, gtk.RESPONSE_OK))
+            AboutDialog,
+            self).__init__(
+            _("About..."),
+            None,
+            gtk.DIALOG_MODAL,
+            (_("Check the web site"),
+             gtk.RESPONSE_CANCEL,
+             gtk.STOCK_OK,
+             gtk.RESPONSE_OK))
 
         # content
-        img = gtk.image_new_from_file(os.path.join(GUI_DATA_PATH, 'splash.png'))
+        img = gtk.image_new_from_file(
+            os.path.join(GUI_DATA_PATH, 'splash.png'))
         self.vbox.pack_start(img)
         version = get_w3af_version()
         self.label = gtk.Label(version)
-        #self.label.set_justify(gtk.JUSTIFY_CENTER)
+        # self.label.set_justify(gtk.JUSTIFY_CENTER)
         self.vbox.pack_start(self.label)
 
         # the home button
@@ -188,7 +197,7 @@ class MainApp(object):
         disclaimer = DisclaimerController()
         if not disclaimer.accept_disclaimer():
             return
-    
+
         # First of all, create the nice splash screen so we can show something
         # to the user while all the hard work is done on the background
         splash = Splash()
@@ -198,11 +207,11 @@ class MainApp(object):
         self.window.set_icon_from_file(W3AF_ICON)
         self.window.connect("delete_event", self.quit)
         self.window.connect('key_press_event', self.help_f1)
-        
+
         # This is the way we track if the window is currently maximize or not
         self.is_maximized = False
         self.window.connect("window-state-event", self.on_window_state_event)
-        
+
         splash.push(_("Loading..."))
 
         self.w3af = w3af_core = w3afCore()
@@ -222,9 +231,11 @@ class MainApp(object):
         genconfigfile = os.path.join(get_home_dir(), "gui_config.pkl")
         try:
             self.generalconfig = shelve.open(genconfigfile)
-        except Exception, e:
-            print ("WARNING: something bad happened when trying to open the"
-                   " general config! File: %s. Problem: %s" % (genconfigfile, e))
+        except Exception as e:
+            print (
+                "WARNING: something bad happened when trying to open the"
+                " general config! File: %s. Problem: %s" %
+                (genconfigfile, e))
             self.generalconfig = FakeShelve()
 
         window_size = self.generalconfig.get("mainwindow-size", (1024, 768))
@@ -273,10 +284,22 @@ class MainApp(object):
                 'Exit the program'), lambda w: self.quit(None, None)),
             ('New', gtk.STOCK_NEW, _('_New'), None, _(
                 'Create a new profile'), lambda w: self.profile_action("new")),
-            ('Save', gtk.STOCK_SAVE, _('_Save'), None, _('Save this configuration'), lambda w: self.profile_action("save")),
-            ('SaveAs', gtk.STOCK_SAVE_AS, _('Save _as...'), None, _('Save this configuration in a new profile'), lambda w: self.profile_action("save_as")),
-            ('Revert', gtk.STOCK_REVERT_TO_SAVED, _('_Revert'), None, _('Revert the profile to its saved state'), lambda w: self.profile_action("revert")),
-            ('Delete', gtk.STOCK_DELETE, _('_Delete'), None, _('Delete this profile'), lambda w: self.profile_action("delete")),
+            ('Save', gtk.STOCK_SAVE, _('_Save'), None, _(
+                'Save this configuration'), lambda w: self.profile_action("save")),
+            ('SaveAs',
+             gtk.STOCK_SAVE_AS,
+             _('Save _as...'),
+                None,
+                _('Save this configuration in a new profile'),
+                lambda w: self.profile_action("save_as")),
+            ('Revert',
+             gtk.STOCK_REVERT_TO_SAVED,
+             _('_Revert'),
+                None,
+                _('Revert the profile to its saved state'),
+                lambda w: self.profile_action("revert")),
+            ('Delete', gtk.STOCK_DELETE, _('_Delete'), None, _(
+                'Delete this profile'), lambda w: self.profile_action("delete")),
             ('ProfilesMenu', None, _('_Profiles')),
             ('ViewMenuScan', None, _('_View')),
             ('ViewMenuExploit', None, _('_View')),
@@ -292,9 +315,16 @@ class MainApp(object):
              _('Miscellaneous configuration'), self.menu_config_misc),
             ('ConfigurationMenu', None, _('_Configuration')),
 
-            ('ManualRequest', gtk.STOCK_INDEX, _('_Manual Request'), '<Control>m', _('Generate manual HTTP request'), self._manual_request),
-            ('FuzzyRequest', gtk.STOCK_PROPERTIES, _('_Fuzzy Request'), '<Control>u', _('Generate fuzzy HTTP requests'), self._fuzzy_request),
-            ('EncodeDecode', gtk.STOCK_CONVERT, _('Enc_ode/Decode'), '<Control>o', _('Encodes and Decodes in different ways'), self._encode_decode),
+            ('ManualRequest', gtk.STOCK_INDEX, _('_Manual Request'), '<Control>m', _(
+                'Generate manual HTTP request'), self._manual_request),
+            ('FuzzyRequest',
+             gtk.STOCK_PROPERTIES,
+             _('_Fuzzy Request'),
+                '<Control>u',
+                _('Generate fuzzy HTTP requests'),
+                self._fuzzy_request),
+            ('EncodeDecode', gtk.STOCK_CONVERT, _('Enc_ode/Decode'), '<Control>o',
+             _('Encodes and Decodes in different ways'), self._encode_decode),
             ('ExportRequest', gtk.STOCK_COPY, _('_Export Request'),
              '<Control>e', _('Export HTTP request'), self._export_request),
             ('Compare', gtk.STOCK_ZOOM_100, _('_Compare'), '<Control>r',
@@ -413,7 +443,7 @@ class MainApp(object):
         self.pcbody = pluginconfig.PluginConfigBody(self, self.w3af)
         try:
             self.profiles = profiles.ProfileList(self.w3af, initial=profile)
-        except ValueError, ve:
+        except ValueError as ve:
             # This is raised when the profile doesn't exist
             #
             # I handle this by creating the profiles without an initial profile
@@ -427,9 +457,9 @@ class MainApp(object):
         label = gtk.Label(_("Scan config"))
         self.nb.append_page(pan, label)
         self.viewSignalRecipient = self.pcbody
-        
+
         self.notetabs = {}
-        
+
         # dummy tabs creation for notebook, real ones are done in set_tabs
         for title in (_("Log"), _("Results")):
             dummy = gtk.Label("dummy")
@@ -498,7 +528,7 @@ class MainApp(object):
     def on_window_state_event(self, widget, event, data=None):
         mask = gtk.gdk.WINDOW_STATE_MAXIMIZED
         self.is_maximized = widget.get_window().get_state() & mask == mask
-    
+
     def quit(self, widget, event, data=None):
         """Main quit.
 
@@ -572,17 +602,17 @@ class MainApp(object):
             try:
                 target_option.set_value(url)
                 self.w3af.target.set_options(options)
-            except:
+            except BaseException:
                 pass
             return True
         else:
-            
+
             try:
                 helpers.coreWrap(target_option.set_value, url)
                 helpers.coreWrap(self.w3af.target.set_options, options)
             except BaseFrameworkException:
                 return False
-            
+
         return True
 
     def _scan_start(self):
@@ -599,15 +629,14 @@ class MainApp(object):
                 helpers.coreWrap(self.w3af.verify_environment)
             except BaseFrameworkException:
                 return
-            
+
             self.w3af.start()
 
         def start_scan_wrap():
             # Just in case, make sure we have a GtkOutput in the output manager
             # for the current scan
             om.manager.set_output_plugin_inst(GtkOutput())
-            
-            
+
             try:
                 real_scan_start()
             except KeyboardInterrupt:
@@ -703,7 +732,7 @@ class MainApp(object):
         scan_stop = Process(target=stop_scan_wrap, name='ScanStopper')
         scan_stop.daemon = True
         scan_stop.start()
-        
+
         self.startstopbtns.set_sensitive(False)
         self.toolbut_pause.set_sensitive(False)
         self.sb(_("Stopping the scan..."), 15)
@@ -715,9 +744,8 @@ class MainApp(object):
         This is separated because it's called when the process finishes by
         itself or by the user click.
         """
-        self.startstopbtns.change_internals(_("Clear"),
-                                            gtk.STOCK_CLEAR,
-                                            _("Clear all the obtained results"))
+        self.startstopbtns.change_internals(
+            _("Clear"), gtk.STOCK_CLEAR, _("Clear all the obtained results"))
         self.throbber.running(False)
         self.toolbut_pause.set_sensitive(False)
         self.scan_should = "clear"
@@ -735,7 +763,7 @@ class MainApp(object):
         # After the scan finishes, I want to be able to use the GtkOutput
         # features for exploitation
         om.manager.set_output_plugin_inst(GtkOutput())
-        
+
         exception_list = self.w3af.exception_handler.get_unique_exceptions()
         if exception_list:
             # damn...
@@ -922,7 +950,8 @@ class MainApp(object):
         wizard.WizardChooser(self.w3af)
 
     def help_f1(self, widget, event):
-        if event.keyval != 65470:  # F1, check: gtk.gdk.keyval_name(event.keyval)
+        # F1, check: gtk.gdk.keyval_name(event.keyval)
+        if event.keyval != 65470:
             return
 
         chapter = self.w3af.helpChapters["main"]

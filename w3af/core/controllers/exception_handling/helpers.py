@@ -40,7 +40,8 @@ def pprint_plugins(w3af_core):
 
     for ptype, plugin_list in plugs.iteritems():
         for plugin in plugin_list:
-            if plugin not in chain(*(pt.keys() for pt in plugs_opts.itervalues())):
+            if plugin not in chain(*(pt.keys()
+                                     for pt in plugs_opts.itervalues())):
                 plugs_opts[ptype][plugin] = {}
 
     if not any(plugs_opts.values()):
@@ -84,15 +85,15 @@ def get_versions():
                 '  GTK version: %s\n'
                 '  PyGTK version: %s\n'
                 '  w3af version:\n    %s')
-    
+
     w3af_version = '\n    '.join(get_w3af_version().split('\n'))
-    
+
     versions = versions % (sys.version.replace('\n', ''),
                            get_platform_dist(),
                            gtk_version,
                            pygtk_version,
                            w3af_version)
-        
+
     return versions
 
 

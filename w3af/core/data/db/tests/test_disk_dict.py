@@ -36,15 +36,15 @@ class TestDiskDict(unittest.TestCase):
 
     def test_int(self):
         disk_dict = DiskDict()
-        
+
         for i in xrange(100):
             disk_dict[i] = i
-        
+
         # Do it twice to test that it works as expected (not creating a new)
         # row in the table, but modifying the value
         for i in xrange(100):
             disk_dict[i] = i
-        
+
         self.assertEqual(len(disk_dict), 100)
         self.assertEqual(disk_dict[50], 50)
         self.assertIn(50, disk_dict)
@@ -58,11 +58,11 @@ class TestDiskDict(unittest.TestCase):
         disk_dict = DiskDict()
 
         disk_dict[0] = 'abc'
-        
+
         abc1 = disk_dict.get(0)
         abc2 = disk_dict.get(0, 1)
         two = disk_dict.get(1, 2)
-        
+
         self.assertEqual(abc1, 'abc')
         self.assertEqual(abc2, 'abc')
         self.assertEqual(two, 2)
@@ -128,11 +128,11 @@ class TestDiskDict(unittest.TestCase):
         disk_dict = DiskDict()
         table_name = disk_dict.table_name
         db = get_default_temp_db_instance()
-        
+
         self.assertTrue(db.table_exists(table_name))
-        
+
         disk_dict.cleanup()
-        
+
         self.assertFalse(db.table_exists(table_name))
 
     def test_table_with_prefix(self):

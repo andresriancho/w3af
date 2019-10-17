@@ -62,9 +62,9 @@ class TestDiskList(unittest.TestCase):
         dl.append(1)
         dl.append(2)
         dl.append(3)
-        
+
         self.assertEqual(unicode(dl), u'<DiskList [1, 2, 3]>')
-            
+
     @attr('smoke')
     def test_string(self):
         dl = DiskList()
@@ -160,7 +160,7 @@ class TestDiskList(unittest.TestCase):
         self.assertEqual(dl[1], 1)
         self.assertEqual(dl[2], [3, 2, 1])
         self.assertRaises(IndexError, dl.__getitem__, 3)
-        
+
     def test_getitem_negative(self):
         dl = DiskList()
 
@@ -172,7 +172,7 @@ class TestDiskList(unittest.TestCase):
         self.assertEqual(dl[-2], 'b')
         self.assertEqual(dl[-3], 'a')
         self.assertRaises(IndexError, dl.__getitem__, -4)
-        
+
     def test_not(self):
         dl = DiskList()
         self.assertFalse(dl)
@@ -270,11 +270,11 @@ class TestDiskList(unittest.TestCase):
         disk_list = DiskList()
         table_name = disk_list.table_name
         db = get_default_temp_db_instance()
-        
+
         self.assertTrue(db.table_exists(table_name))
-        
+
         disk_list.cleanup()
-        
+
         self.assertFalse(db.table_exists(table_name))
 
     def test_table_name_with_prefix(self):
@@ -301,30 +301,30 @@ class TestDiskList(unittest.TestCase):
     def test_islice(self):
         disk_list = DiskList()
         disk_list.extend('ABCDEFG')
-        
+
         EXPECTED = 'CDEFG'
         result = ''
-        
+
         for c in itertools.islice(disk_list, 2, None, None):
             result += c
-        
+
         self.assertEqual(EXPECTED, result)
-    
+
     def test_many_instances(self):
         all_instances = []
         amount = 200
-        
+
         for _ in xrange(amount):
             disk_list = DiskList()
             all_instances.append(disk_list)
-        
+
         self.assertEqual(len(all_instances), amount)
-    
+
     def test_slice_all(self):
         disk_list = DiskList()
         disk_list.append('1')
         disk_list.append('2')
-        
+
         dl_copy = disk_list[:]
         self.assertIn('1', dl_copy)
         self.assertIn('2', dl_copy)
@@ -344,7 +344,7 @@ class TestDiskList(unittest.TestCase):
         disk_list.append('1')
         disk_list.append('2')
         disk_list.append('3')
-        
+
         dl_copy = disk_list[:1]
         self.assertIn('1', dl_copy)
         self.assertNotIn('2', dl_copy)
@@ -431,4 +431,3 @@ class TestDiskList(unittest.TestCase):
 
             # This tests the deserialization
             _ = dl[i]
-

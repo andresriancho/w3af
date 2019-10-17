@@ -25,10 +25,10 @@ from w3af.core.data.dc.generic.plain import PlainContainer
 
 
 class TestPlainContainer(unittest.TestCase):
-    
+
     def test_basic(self):
         dc = PlainContainer('abc', 'text/plain')
-        
+
         self.assertEqual('abc', str(dc))
         self.assertNotIn('abc', dc)
         self.assertEqual(dc.content_type_header_value, 'text/plain')

@@ -29,34 +29,36 @@ class TestKBAdd(ConsoleTestHelper):
     """
     Basic test for the console UI.
     """
+
     def test_kb_add(self):
         commands_to_run = ['kb',
-                                'add dav',
-                                    'set url http://target.com/',
-                                    'back',
-                                'list vulns',
-                                'back',
-                            'exit',]
+                           'add dav',
+                           'set url http://target.com/',
+                           'back',
+                           'list vulns',
+                           'back',
+                           'exit', ]
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        expected = ('w3af>>> ',
-                    'w3af/kb>>> ',
-                    'w3af/kb/config:dav>>> ',
-                    'Stored "DAV Misconfiguration" in the knowledge base.',
-                    '| DAV              | This vulnerability was added to the knowledge')
-        
+        expected = (
+            'w3af>>> ',
+            'w3af/kb>>> ',
+            'w3af/kb/config:dav>>> ',
+            'Stored "DAV Misconfiguration" in the knowledge base.',
+            '| DAV              | This vulnerability was added to the knowledge')
+
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
-    
+
     def test_kb_add_with_errors(self):
         commands_to_run = ['kb',
-                                'add',
-                                'add foobar',
-                                'add foo bar',
-                                'back',
-                            'exit',]
+                           'add',
+                           'add foobar',
+                           'add foo bar',
+                           'back',
+                           'exit', ]
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
@@ -66,16 +68,16 @@ class TestKBAdd(ConsoleTestHelper):
                     'Parameter "type" is missing,',
                     'Type foobar is unknown',
                     'Only one parameter is accepted,')
-        
+
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
     def test_kb_add_back_without_config(self):
         commands_to_run = ['kb',
-                                'add',
-                                'add os_commanding',
-                                'back',
-                            'exit',]
+                           'add',
+                           'add os_commanding',
+                           'back',
+                           'exit', ]
 
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
@@ -84,6 +86,6 @@ class TestKBAdd(ConsoleTestHelper):
                     'w3af/kb>>> ',
                     'This vulnerability requires data to be configured.',
                     )
-        
+
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)

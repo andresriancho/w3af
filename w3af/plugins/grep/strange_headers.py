@@ -178,5 +178,4 @@ class StrangeHeaderInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')

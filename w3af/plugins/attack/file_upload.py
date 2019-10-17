@@ -99,7 +99,8 @@ class file_upload(AttackPlugin):
         #   If we got here, there is nothing positive to report
         return None
 
-    def _upload_shell_and_confirm_exec(self, vuln_obj, file_content, file_name):
+    def _upload_shell_and_confirm_exec(
+            self, vuln_obj, file_content, file_name):
         """
         :return: True if we were able to upload and the remote server actually
                  executes the remote file.
@@ -133,7 +134,8 @@ class file_upload(AttackPlugin):
         """
         :yield: Tuples with file_content and file_name for web shells.
         """
-        for shell_str, orig_extension in shell_handler.get_webshells(extension):
+        for shell_str, orig_extension in shell_handler.get_webshells(
+                extension):
             # If the webshell was webshell.php this will return a file_name
             # containing kgiwjxh.php (8 rand and the extension)
             file_name = '%s.%s' % (rand_alpha(8), orig_extension)
@@ -174,9 +176,9 @@ class FileUploadShell(ExecShell):
 
     def __init__(self, vuln, uri_opener, worker_pool, exploit_url):
         super(FileUploadShell, self).__init__(vuln, uri_opener, worker_pool)
-        
+
         self._exploit_url = exploit_url
-            
+
     def get_exploit_url(self):
         return self._exploit_url
 

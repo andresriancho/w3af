@@ -27,12 +27,12 @@ from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 class TestRandomUserAgent(unittest.TestCase):
     def test_get_random_ua(self):
         EXPECTED = ('Mozilla', 'Windows', 'MSIE', 'Opera')
-        
+
         for _ in xrange(100):
             rnd_ua = get_random_user_agent()
-            
+
             for estr in EXPECTED:
                 if estr in rnd_ua:
                     return
-                
+
         self.assertTrue(False, 'Failed to find %s' % (EXPECTED,))

@@ -51,10 +51,10 @@ def start_scan():
         - The URL to the newly created scan (eg. /scans/1)
         - The newly created scan ID (eg. 1)
     """
-    if not request.json or not 'scan_profile' in request.json:
+    if not request.json or 'scan_profile' not in request.json:
         abort(400, 'Expected scan_profile in JSON object')
 
-    if not request.json or not 'target_urls' in request.json:
+    if not request.json or 'target_urls' not in request.json:
         abort(400, 'Expected target_urls in JSON object')
 
     scan_profile = request.json['scan_profile']
@@ -80,7 +80,7 @@ def start_scan():
     try:
         w3af_core.profiles.use_profile(scan_profile_file_name,
                                        workdir=profile_path)
-    except BaseFrameworkException, bfe:
+    except BaseFrameworkException as bfe:
         abort(400, str(bfe))
     finally:
         remove_temp_profile(scan_profile_file_name)
@@ -102,7 +102,7 @@ def start_scan():
     try:
         target_option.set_value([URL(u) for u in target_urls])
         w3af_core.target.set_options(target_options)
-    except BaseFrameworkException, bfe:
+    except BaseFrameworkException as bfe:
         abort(400, str(bfe))
 
     scan_id = get_new_scan_id()
@@ -239,7 +239,10 @@ def scan_stop(scan_id):
     if not scan_info.w3af_core.can_stop():
         abort(403, 'Scan can not be stop')
 
-    t = Process(target=scan_info.w3af_core.stop, name='ScanStopThread', args=())
+    t = Process(
+        target=scan_info.w3af_core.stop,
+        name='ScanStopThread',
+        args=())
     t.daemon = True
     t.start()
 

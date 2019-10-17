@@ -36,6 +36,7 @@ class RelaxedSpec(Spec):
     to be too strict while scanning real-life APIs that may not follow *all*
     of the OpenAPI specification, but are still usable.
     """
+
     def get_format(self, format_name):
         """
         One of the first things I noticed was that developers create custom

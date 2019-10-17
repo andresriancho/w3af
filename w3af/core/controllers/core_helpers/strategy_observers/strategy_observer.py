@@ -27,6 +27,7 @@ class StrategyObserver(object):
     inherit from this class and call CoreStrategy.add_observer(). When the scan
     runs the methods in this class are called.
     """
+
     def crawl(self, craw_consumer, fuzzable_request):
         pass
 

@@ -44,14 +44,14 @@ def notify(msg):
     dlg.set_icon_from_file(W3AF_ICON)
     dlg.run()
     dlg.destroy()
-        
+
 
 class GUIUpdater(UIUpdater):
 
     def __init__(self, force, log):
         UIUpdater.__init__(self, force=force, ask=ask, logger=log)
         self._dot_counter = 1
-        
+
         #  Event registration
         self._register(
             VersionMgr.ON_ACTION_ERROR,
@@ -63,7 +63,7 @@ class GUIUpdater(UIUpdater):
             notify,
             _('New dependencies added, please restart w3af.')
         )
-        
+
         #
         # I register to this event because it will get called once every time
         # the git client has performed some progress, which is ideal for me to
@@ -78,7 +78,7 @@ class GUIUpdater(UIUpdater):
             self._downloading,
             None,
         )
-    
+
     def _downloading(self, ignored_param):
         """
         :return:
@@ -86,18 +86,18 @@ class GUIUpdater(UIUpdater):
             * Updating ..
             * Updating ...
             * Updating ....
-            
+
         And then start again,
         """
         d = self._dot_counter
         self._dot_counter = d + 1 if d < 3 else 1
-        
+
         message = 'Updating %s' % ('.' * self._dot_counter)
         self._logger(message)
-    
+
     def update(self):
         super(GUIUpdater, self).update()
-    
+
     def _generate_report(self, changelog, local_commit_id, remote_commit_id):
         """
         :return: A string with a report of the latest update from local commit
@@ -107,18 +107,18 @@ class GUIUpdater(UIUpdater):
         rshort = to_short_id(remote_commit_id)
         ldate = get_commit_id_date(local_commit_id)
         rdate = get_commit_id_date(remote_commit_id)
-        
+
         report = 'The following changes were applied to the local w3af'\
                  ' installation during the last update from %s (%s) to'\
                  ' %s (%s):\n\n%s'
-        
+
         return report % (lshort, ldate, rshort, rdate, changelog)
-    
+
     def _handle_update_output(self, upd_output):
         if upd_output is not None:
-            
+
             changelog, local_commit_id, remote_commit_id = upd_output
-            
+
             if changelog.get_changes():
 
                 dlg = entries.TextDialog("Update report",
@@ -131,4 +131,3 @@ class GUIUpdater(UIUpdater):
 
     def _log(self, msg):
         notify(msg)
-

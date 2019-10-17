@@ -5,7 +5,8 @@ from utils.output import KeyValueOutput
 from utils.output import ListOutput, ListOutputItem
 
 SCAN_TOOK_RE = re.compile('took (\d*\.\d\d)s to run')
-PLUGIN_TOOK_RE = re.compile('\] (.*?)\.(grep|audit|discover)\(.*?\) took (.*?)s to run')
+PLUGIN_TOOK_RE = re.compile(
+    '\] (.*?)\.(grep|audit|discover)\(.*?\) took (.*?)s to run')
 
 
 def show_generic_spent_time(scan, name, must_have):
@@ -69,7 +70,8 @@ def get_plugin_time(scan_log_filename, scan):
         spent_time_dict = dict(spent_time_items)
 
         # round
-        spent_time_dict = dict((plugin_name, round(took)) for plugin_name, took in spent_time_dict.iteritems())
+        spent_time_dict = dict((plugin_name, round(took))
+                               for plugin_name, took in spent_time_dict.iteritems())
 
         title = 'Top10 wall time used by %s plugins (seconds)'
         output.append(ListOutputItem(title % plugin_type, spent_time_dict))

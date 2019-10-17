@@ -72,7 +72,8 @@ class WMLParser(SGMLParser):
         else:
             action = self._decode_url(action)
             try:
-                action = self._base_url.url_join(action, encoding=self._encoding)
+                action = self._base_url.url_join(
+                    action, encoding=self._encoding)
             except ValueError:
                 # The URL in the action is invalid, the best thing we can do
                 # is to guess, and our best guess is that the URL will be the

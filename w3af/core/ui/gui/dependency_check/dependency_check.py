@@ -31,14 +31,14 @@ def dependency_check():
     This dependency check function uses the information stored in the platforms
     module to call the function in core.controllers.dependency_check which
     actually checks for the dependencies.
-    
+
     The data in the core.ui.gui.dependency_check.platforms module is actually
     based on the data stored in core.controllers.dependency_check.platforms,
     we extend() the lists present in the base module before passing them to
-    mdep_check() 
+    mdep_check()
     """
     should_exit = mdep_check(dependency_set=GUI, exit_on_failure=False)
-    
+
     try:
         import pygtk
         pygtk.require('2.0')
@@ -46,7 +46,7 @@ def dependency_check():
         import gobject
         assert gtk.gtk_version >= (2, 12)
         assert gtk.pygtk_version >= (2, 12)
-    except:
+    except BaseException:
         msg = 'The GTK package requirements are not met, please make sure your'\
               ' system meets these requirements:\n'\
               '    - PyGTK >= 2.12\n'\

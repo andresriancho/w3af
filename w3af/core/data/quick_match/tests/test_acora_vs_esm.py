@@ -52,7 +52,8 @@ class TestAcoraPerformanceVsESM(unittest.TestCase):
         i = 0
 
         for j in xrange(self.ITERATIONS):
-            for end_index, (insert_order, original_value) in autom.iter(HTTP_RESPONSE):
+            for end_index, (insert_order, original_value) in autom.iter(
+                    HTTP_RESPONSE):
                 i += 1
 
         self.assertEqual(i, self.ITERATIONS * 2)

@@ -28,6 +28,7 @@ class question_infrastructure_1(question):
     """
     This is the first question of the wizard, where you have to speficy the target.
     """
+
     def __init__(self, w3af_core):
         question.__init__(self, w3af_core)
 
@@ -52,7 +53,8 @@ class question_infrastructure_1(question):
         return ol
 
     def get_next_question_id(self, options_list):
-        # I don't care about the target OS for these tests, so I add them here with the default value
+        # I don't care about the target OS for these tests, so I add them here
+        # with the default value
         o2 = opt_factory('target_os', 'unknown', '', 'string')
         o3 = opt_factory('target_framework', 'unknown', '', 'string')
 
@@ -61,7 +63,8 @@ class question_infrastructure_1(question):
         for o in options_list:
             ol_copy.add(o)
 
-        # Get the "Target URL" and change it back to "target" so the core can understand it
+        # Get the "Target URL" and change it back to "target" so the core can
+        # understand it
         o1 = ol_copy['target']
         ol_copy.add(o2)
         ol_copy.add(o3)

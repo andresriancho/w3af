@@ -64,7 +64,7 @@ class ConfigMenu(menu):
         # https://github.com/andresriancho/w3af/issues/291
         self._options = self._configurable.get_options()
         self._group_options_by_tabid()
-        
+
         table = [['Setting', 'Value', 'Modified', 'Description']]
         for tabid in self._tabbed_options.keys():
             tab_opts = self._tabbed_options[tabid]
@@ -74,7 +74,11 @@ class ConfigMenu(menu):
 
                 if opt_name in self._unsaved_options:
                     unsaved_name = opt_name
-                    row = [unsaved_name, self._unsaved_options[opt_name], 'Yes', opt.get_desc()]
+                    row = [
+                        unsaved_name,
+                        self._unsaved_options[opt_name],
+                        'Yes',
+                        opt.get_desc()]
                 else:
                     row = [opt_name, opt.get_value_str(), '', opt.get_desc()]
                 table.append(row)
@@ -102,20 +106,20 @@ class ConfigMenu(menu):
             om.out.console('Invalid call to set, please see the help:')
             self._cmd_help(['set'])
             return
-            
+
         if params[0] not in self._options:
             raise BaseFrameworkException('Unknown option: "%s".' % params[0])
-        
+
         name = params[0]
         value = ' '.join(params[1:])
-        
+
         # This set_value might raise a BaseFrameworkException, for example this
         # might happen when the configuration parameter is an integer and
         # the user sets it to 'abc'
         try:
             self._options[name].set_value(value)
             self._unsaved_options[name] = value
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error(str(e))
         else:
             if value not in self._memory[name]:
@@ -136,7 +140,7 @@ class ConfigMenu(menu):
         # The first one has an implied save:
         if self._child_call:
             self._cmd_save([])
-    
+
     def _cmd_save(self, tokens):
         try:
             for unsaved_opt_name, unsaved_val in self._unsaved_options.iteritems():
@@ -151,7 +155,7 @@ class ConfigMenu(menu):
                     self._configurable.get_name(),
                     self._options)
 
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'Identified an error with the user-defined settings:\n\n'\
                   '    - %s \n\n'\
                   'No information has been saved.'
@@ -159,11 +163,11 @@ class ConfigMenu(menu):
         else:
             om.out.console('The configuration has been saved.')
             self._unsaved_options = {}
-    
+
     def _cmd_back(self, tokens):
         try:
             self._cmd_save(tokens)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error(str(e))
 
         return self._console.back
@@ -180,7 +184,8 @@ class ConfigMenu(menu):
             opt = self._options[paramName]
             paramType = opt.get_type()
             if paramType == 'boolean':
-                values = [opt.get_default_value() == 'True' and 'False' or 'True']
+                values = [
+                    opt.get_default_value() == 'True' and 'False' or 'True']
             else:
                 values = self._memory[paramName]
 

@@ -40,7 +40,7 @@ class TestCoreExceptions(unittest.TestCase):
           being tagged as 'moth'.
     """
     PLUGIN = 'w3af.core.controllers.tests.exception_raise'
-    
+
     def setUp(self):
         """
         This is a rather complex setUp since I need to move the
@@ -50,7 +50,7 @@ class TestCoreExceptions(unittest.TestCase):
         In the tearDown method, I'll remove the file.
         """
         self.w3afcore = w3afCore()
-        
+
         target_opts = create_target_option_list(URL(get_moth_http()))
         self.w3afcore.target.set_options(target_opts)
 
@@ -59,25 +59,26 @@ class TestCoreExceptions(unittest.TestCase):
         plugin_inst.set_worker_pool(self.w3afcore.worker_pool)
 
         self.w3afcore.plugins.plugins['crawl'] = [plugin_inst]
-        self.w3afcore.plugins._plugins_names_dict['crawl'] = ['exception_raise']
+        self.w3afcore.plugins._plugins_names_dict['crawl'] = [
+            'exception_raise']
         self.exception_plugin = plugin_inst
-        
+
         # Verify env and start the scan
         self.w3afcore.plugins.initialized = True
-        self.w3afcore.verify_environment()        
-    
+        self.w3afcore.verify_environment()
+
     def tearDown(self):
         self.w3afcore.quit()
-                        
+
     def test_stop_on_must_stop_exception(self):
         """
         Verify that the ScanMustStopException stops the scan.
         """
         self.exception_plugin.exception_to_raise = ScanMustStopException
-        
+
         with patch('w3af.core.controllers.w3afCore.om.out') as om_mock:
             self.w3afcore.start()
-            
+
             error = ('The following error was detected and could not be'
                      ' resolved:\nTest exception.\n')
             self.assertIn(call.error(error), om_mock.mock_calls)
@@ -88,15 +89,15 @@ class TestCoreExceptions(unittest.TestCase):
         """
         self.exception_plugin.exception_to_raise = ScanMustStopByUnknownReasonExc
         self.assertRaises(ScanMustStopByUnknownReasonExc, self.w3afcore.start)
-                
+
     def test_stop_by_user_request(self):
         """
         Verify that the ScanMustStopByUserRequest stops the scan.
         """
         self.exception_plugin.exception_to_raise = ScanMustStopByUserRequest
-        
+
         with patch('w3af.core.controllers.w3afCore.om.out') as om_mock:
             self.w3afcore.start()
-            
+
             message = 'Test exception.'
             self.assertIn(call.information(message), om_mock.mock_calls)

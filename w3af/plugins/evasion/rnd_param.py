@@ -31,6 +31,7 @@ class rnd_param(EvasionPlugin):
     Add a random parameter.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def modify_request(self, request):
         """
         Mangles the request
@@ -53,7 +54,7 @@ class rnd_param(EvasionPlugin):
             try:
                 # Only mangle the postdata if it is a url encoded string
                 post_data = parse_qs(data)
-            except:
+            except BaseException:
                 pass
             else:
                 data = str(self._mutate(post_data))

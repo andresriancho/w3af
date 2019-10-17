@@ -47,7 +47,8 @@ class TestFuzzyStringCompare(unittest.TestCase):
         acceptance_tests.append(('a', 'ab', 0.66666666666))
         acceptance_tests.append(('a', 'aab', 0.5))
         acceptance_tests.append(('a', 'aaab', 0.4))
-        acceptance_tests.append(('a', 'aaaab', 0.33333333333333333333333333333333333333333333333333333333))
+        acceptance_tests.append(
+            ('a', 'aaaab', 0.33333333333333333333333333333333333333333333333333333333))
 
         acceptance_tests.append(('a' * 25, 'a', 1.0))
         acceptance_tests.append(('aaa', 'aa', 1.0))
@@ -61,7 +62,7 @@ class TestFuzzyStringCompare(unittest.TestCase):
         for e, d, f in acceptance_tests:
             res1 = fuzzy_equal(e, d, f)
             res2 = relative_distance(e, d) >= f
-            
+
             msg = ('fuzzy_equal and relative_distance returned'
                    ' different results for the same parameters:\n'
                    '    - Parameter #1: %s\n'
@@ -69,8 +70,9 @@ class TestFuzzyStringCompare(unittest.TestCase):
                    '    - Threshold: %s\n'
                    '    - Result fuzzy_equal: %s\n'
                    '    - Result relative_distance: %s\n')
-            
-            self.assertEqual(res1, res2, msg % (e, d, f, res1, relative_distance(e, d)))
+
+            self.assertEqual(res1, res2, msg %
+                             (e, d, f, res1, relative_distance(e, d)))
 
     def test_relative_distance(self):
         acceptance_tests = [('a', 'a', 1.0),

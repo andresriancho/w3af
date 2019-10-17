@@ -86,15 +86,15 @@ class DiskDeque(object):
         data = self.data
         if i < 0:
             i += size
-        for j in xrange(self.left+i, self.right-1):
-            data[j] = data[j+1]
+        for j in xrange(self.left + i, self.right - 1):
+            data[j] = data[j + 1]
         self.pop()
 
     def __len__(self):
         return self.right - self.left
 
     def __cmp__(self, other):
-        if type(self) != type(other):
+        if not isinstance(self, type(other)):
             return cmp(type(self), type(other))
         return cmp(list(self), list(other))
 
@@ -124,4 +124,3 @@ class DiskDeque(object):
         memo[id(self)] = result
         result.__init__(deepcopy(tuple(self), memo))
         return result
-

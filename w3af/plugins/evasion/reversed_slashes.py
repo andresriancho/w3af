@@ -27,6 +27,7 @@ class reversed_slashes(EvasionPlugin):
     Change the slashes from / to \\
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def modify_request(self, request):
         """
         Mangles the request

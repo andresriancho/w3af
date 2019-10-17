@@ -25,13 +25,15 @@ def get_queue_size_grep_data(scan_log_filename, scan):
 
 
 def draw_queue_size_grep(scan_log_filename, scan):
-    grep_queue_sizes, grep_queue_timestamps = get_queue_size_grep_data(scan_log_filename, scan)
+    grep_queue_sizes, grep_queue_timestamps = get_queue_size_grep_data(
+        scan_log_filename, scan)
 
     # Get the last timestamp to use as max in the graphs
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
-    grep_queue_timestamps = [ts - first_timestamp for ts in grep_queue_timestamps]
+    grep_queue_timestamps = [
+        ts - first_timestamp for ts in grep_queue_timestamps]
 
     if not grep_queue_sizes:
         print('No grep consumer queue size data found')

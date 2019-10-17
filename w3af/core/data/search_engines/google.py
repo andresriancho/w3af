@@ -31,9 +31,10 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 
 
-GOOGLE_SORRY_PAGES = {'http://www.google.com/support/bin/answer.py?answer=86640',
-                      'http://www.google.com/sorry/index?continue',
-                      'Our systems have detected unusual traffic from'}
+GOOGLE_SORRY_PAGES = {
+    'http://www.google.com/support/bin/answer.py?answer=86640',
+    'http://www.google.com/sorry/index?continue',
+    'Our systems have detected unusual traffic from'}
 
 # Set the order in which the Google API searchers will be called by the
 # google class
@@ -137,7 +138,7 @@ class GoogleAPISearch(object):
         if self._status == IS_NEW:
             try:
                 self._pages = self._do_google_search()
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 om.out.debug('%s' % w3)
                 self._status = FINISHED_BAD
             else:
@@ -164,7 +165,8 @@ class GoogleAPISearch(object):
             # mobile search.
             headers = Headers([('User-Agent', '')])
 
-        return self._uri_opener.GET(url, headers=headers, follow_redirects=True)
+        return self._uri_opener.GET(
+            url, headers=headers, follow_redirects=True)
 
     def _do_google_search(self):
         """
@@ -222,7 +224,7 @@ class GAjaxSearch(GoogleAPISearch):
             # Do the request
             try:
                 resp = self._do_GET(google_url_instance)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Failed to GET google.com AJAX API: "%s"'
                 raise BaseFrameworkException(msg % e)
 
@@ -236,8 +238,9 @@ class GAjaxSearch(GoogleAPISearch):
 
             # Expected response code is 200; otherwise raise Exception
             if parsed_resp.get('responseStatus') != 200:
-                msg = ('Invalid JSON format returned by Google, response status'
-                       ' needs to be 200, got "%s" instead.')
+                msg = (
+                    'Invalid JSON format returned by Google, response status'
+                    ' needs to be 200, got "%s" instead.')
                 msg %= parsed_resp.get('responseDetails')
                 raise BaseFrameworkException(msg)
 
@@ -412,6 +415,7 @@ class GoogleResult(object):
     """
     This is a dummy class that represents a search engine result.
     """
+
     def __init__(self, url):
         if not isinstance(url, URL):
             msg = ('The url __init__ parameter of a GoogleResult object must'

@@ -35,7 +35,7 @@ def get_virtual_daemon(exec_method):
     """
     try:
         os = os_detection_exec(exec_method)
-    except BaseFrameworkException, w3:
+    except BaseFrameworkException as w3:
         raise w3
     else:
         if os == 'windows':

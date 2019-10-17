@@ -36,7 +36,13 @@ class TimeStamp(object):
 
 
 class TookLine(object):
-    def __init__(self, w3af_core, plugin_name, method_name, debugging_id=None, method_params=None):
+    def __init__(
+            self,
+            w3af_core,
+            plugin_name,
+            method_name,
+            debugging_id=None,
+            method_params=None):
         """
         Write the "took X seconds" line to the debug log
 
@@ -57,13 +63,13 @@ class TookLine(object):
         self._end = None
 
         self.start()
-    
+
     def start(self):
         self._start = TimeStamp()
-    
+
     def end(self):
         self._end = TimeStamp()
-        
+
     def send(self):
         """
         Write the "took X seconds" line to the debug log
@@ -89,12 +95,14 @@ class TookLine(object):
         if self._debugging_id:
             method_params['did'] = self._debugging_id
 
-        params_str = ','.join('%s="%s"' % (key, value) for key, value in method_params.iteritems())
+        params_str = ','.join('%s="%s"' % (key, value)
+                              for key, value in method_params.iteritems())
 
         #
         #   Query the extended urllib to check if it has RTT data regarding this debugging_id
         #
-        rtt = self._w3af_core.uri_opener.get_rtt_for_debugging_id(self._debugging_id)
+        rtt = self._w3af_core.uri_opener.get_rtt_for_debugging_id(
+            self._debugging_id)
 
         if rtt is not None and rtt >= 0.01:
             #

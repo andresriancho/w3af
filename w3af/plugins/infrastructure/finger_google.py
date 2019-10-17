@@ -40,6 +40,7 @@ class finger_google(InfrastructurePlugin):
     Search Google using the Google API to get a list of users for a domain.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -79,7 +80,8 @@ class finger_google(InfrastructurePlugin):
         Only search for mail addresses in the google result page.
         """
         search_string = '@' + self._domain_root
-        result_page_objects = self._google.get_n_result_pages(search_string, self._result_limit)
+        result_page_objects = self._google.get_n_result_pages(
+            search_string, self._result_limit)
 
         for result in result_page_objects:
             self._parse_document(result)
@@ -146,11 +148,11 @@ class finger_google(InfrastructurePlugin):
         :return: A list of option objects for this plugin.
         """
         ol = OptionList()
-        
+
         d = 'Fetch the first "result_limit" results from the Google search'
         o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
-        
+
         d = ('Do a fast search, when this feature is enabled, not all mail'
              ' addresses are found')
         h = ('This method is faster, because it only searches for emails in'
@@ -158,7 +160,7 @@ class finger_google(InfrastructurePlugin):
              ' performing a common search.')
         o = opt_factory('fast_search', self._fast_search, d, 'boolean', help=h)
         ol.add(o)
-        
+
         return ol
 
     def set_options(self, options_list):

@@ -198,7 +198,7 @@ class click_jacking(GrepPlugin):
             return
 
         response_ids = [_id for _id in self._vuln_ids]
-        
+
         if self._total_http_request_count == self._vuln_count:
             # If none of the URLs implement protection, simply report
             # ONE vulnerability that says that
@@ -214,14 +214,17 @@ class click_jacking(GrepPlugin):
             # don't, report ONE vulnerability saying: "Most are protected,
             # but x, y are not
             if len(response_ids) >= self.MAX_SAMPLES:
-                desc = ('Multiple application URLs have no protection against'
-                        ' Click-Jacking attacks. Only the first %s samples were'
-                        ' captured as proof. The list of vulnerable URLs is:'
-                        '\n\n - ' % self.MAX_SAMPLES)
+                desc = (
+                    'Multiple application URLs have no protection against'
+                    ' Click-Jacking attacks. Only the first %s samples were'
+                    ' captured as proof. The list of vulnerable URLs is:'
+                    '\n\n - ' %
+                    self.MAX_SAMPLES)
             else:
-                desc = ('Multiple application URLs have no protection against'
-                        ' Click-Jacking attacks. The list of vulnerable URLs is:'
-                        '\n\n - ')
+                desc = (
+                    'Multiple application URLs have no protection against'
+                    ' Click-Jacking attacks. The list of vulnerable URLs is:'
+                    '\n\n - ')
 
             desc += ' - '.join([str(url) + '\n' for url in self._vuln_urls])
 
@@ -230,9 +233,9 @@ class click_jacking(GrepPlugin):
                  severity.MEDIUM,
                  response_ids,
                  self.get_name())
-        
+
         self.kb_append(self, 'click_jacking', v)
-        
+
         self._vuln_urls.cleanup()
         self._vuln_ids.cleanup()
 

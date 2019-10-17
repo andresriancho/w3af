@@ -31,6 +31,7 @@ class file_upload(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def grep(self, request, response):
         """
         Plugin entry point, verify if the HTML has a form with file uploads.
@@ -41,7 +42,7 @@ class file_upload(GrepPlugin):
         """
         if not response.is_text_or_html():
             return
-        
+
         for tag in parser_cache.dpc.get_tags_by_filter(response, ('input',)):
             # pylint: disable=E1101
             input_type = tag.attrib.get('type', None)

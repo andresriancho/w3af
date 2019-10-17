@@ -25,12 +25,14 @@ def get_active_threads_data(scan_log_filename, scan):
 
 
 def draw_active_threads(scan_log_filename, scan):
-    active_threads, active_threads_timestamps = get_active_threads_data(scan_log_filename, scan)
+    active_threads, active_threads_timestamps = get_active_threads_data(
+        scan_log_filename, scan)
 
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_epoch = last_timestamp - first_timestamp
-    active_threads_timestamps = [ts - first_timestamp for ts in active_threads_timestamps]
+    active_threads_timestamps = [
+        ts - first_timestamp for ts in active_threads_timestamps]
 
     if not active_threads:
         print('No active thread data found')

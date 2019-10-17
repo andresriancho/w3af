@@ -59,7 +59,7 @@ class zone_h(InfrastructurePlugin):
 
         try:
             response = self._uri_opener.GET(zone_h_url)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'An exception was raised while running zone-h plugin.'
             msg += ' Exception: "%s"' % e
             om.out.debug(msg)
@@ -81,14 +81,16 @@ class zone_h(InfrastructurePlugin):
         #
 
         # This is the string I have to parse:
-        # in the zone_h response, they are two like this, the first has to be ignored!
+        # in the zone_h response, they are two like this, the first has to be
+        # ignored!
         regex = 'Total notifications: <b>(\d*)</b> of which <b>(\d*)</b> single ip and <b>(\d*)</b> mass'
         regex_result = re.findall(regex, response.get_body())
 
         try:
             total_attacks = int(regex_result[0][0])
         except IndexError:
-            om.out.debug('An error was generated during the parsing of the zone_h website.')
+            om.out.debug(
+                'An error was generated during the parsing of the zone_h website.')
         else:
 
             # Do the if...
@@ -96,11 +98,11 @@ class zone_h(InfrastructurePlugin):
                 desc = 'The target site was defaced more than one time in the'\
                        ' past. For more information please visit the following'\
                        ' URL: "%s".' % response.get_url()
-                       
+
                 v = Vuln('Previous defacements', desc,
                          severity.MEDIUM, response.id, self.get_name())
                 v.set_url(response.get_url())
-                
+
                 kb.kb.append(self, 'defacements', v)
                 om.out.information(v.get_desc())
             elif total_attacks == 1:

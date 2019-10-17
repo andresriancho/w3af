@@ -28,37 +28,37 @@ from w3af.core.data.dc.utils.token import DataToken
 
 
 class TestKeyValueContainer(unittest.TestCase):
-    
+
     def test_basic(self):
         dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
-        
+
         self.assertIn('a', dc)
         self.assertIn('b', dc)
-        
+
         self.assertEqual(dc['a'], ['1'])
         self.assertEqual(dc['b'], ['2', '3'])
-    
+
     def test_str(self):
-        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2','3'])])
+        dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
         str_dc = str(dc)
         self.assertEqual(str_dc, 'a=1&b=2&b=3')
-        self.assertIsInstance(str_dc, str) 
-        
+        self.assertIsInstance(str_dc, str)
+
         dc = KeyValueContainer([(u'aaa', [''])])
         self.assertEqual(str(dc), 'aaa=')
-        
+
         dc = KeyValueContainer([(u'aaa', ('', ''))])
         self.assertEqual(str(dc), 'aaa=&aaa=')
-    
+
     def test_str_special_chars(self):
         dc = KeyValueContainer([(u'a', ['1']), (u'u', [u'Ú-ú-Ü-ü'])], 'latin1')
         decoded_str = urllib.unquote(str(dc)).decode('latin-1')
         self.assertEquals(u'a=1&u=Ú-ú-Ü-ü', decoded_str)
-        
+
     def test_unicode(self):
         dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', u'3'])])
         udc = unicode(dc)
-        
+
         self.assertEqual(udc, u'a=1&b=2&b=3')
         self.assertIsInstance(udc, unicode)
 

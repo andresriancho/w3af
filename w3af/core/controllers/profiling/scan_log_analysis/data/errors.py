@@ -16,7 +16,8 @@ IGNORES = [u'The fuzzable request router loop will break']
 #
 #     AuditorWorker worker pool internal thread state: (worker: True, task: True, result: True)
 #
-# When there is ONE missing True, we have issues, when the pool finishes all three are False
+# When there is ONE missing True, we have issues, when the pool finishes
+# all three are False
 POOL_INTERNAL = 'pool internal thread state'
 
 
@@ -52,7 +53,8 @@ def get_errors(scan_log_filename, scan):
         line = line.strip()
         errors.append(line)
 
-    output = KeyValueOutput('errors', 'errors and exceptions', {'count': len(errors),
-                                                                'errors': errors})
+    output = KeyValueOutput(
+        'errors', 'errors and exceptions', {
+            'count': len(errors), 'errors': errors})
 
     return output

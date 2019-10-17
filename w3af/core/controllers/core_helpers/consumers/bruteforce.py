@@ -26,8 +26,8 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.exceptions import ScanMustStopException
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.profiling.took_helper import TookLine
-from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
-                                                                        task_decorator)
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (
+    BaseConsumer, task_decorator)
 
 
 class bruteforce(BaseConsumer):
@@ -70,7 +70,7 @@ class bruteforce(BaseConsumer):
                            ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-            except Exception, e:
+            except Exception as e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
                            ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
@@ -92,7 +92,7 @@ class bruteforce(BaseConsumer):
         try:
             for observer in self._observers:
                 observer.bruteforce(self, fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('bruteforce',
                                   'bruteforce._run_observers()',
                                   'bruteforce._run_observers()', e)
@@ -106,7 +106,8 @@ class bruteforce(BaseConsumer):
                                          (plugin, work_unit,),
                                          callback=self._plugin_finished_cb)
 
-    def _plugin_finished_cb(self, ((plugin, input_fuzzable_request), plugin_result)):
+    def _plugin_finished_cb(self, xxx_todo_changeme):
+        ((plugin, input_fuzzable_request), plugin_result) = xxx_todo_changeme
         for new_fuzzable_request in plugin_result:
             self._out_queue.put((plugin.get_name(),
                                  input_fuzzable_request,
@@ -139,14 +140,15 @@ class bruteforce(BaseConsumer):
                              method_params={'uri': fuzzable_request.get_uri()})
 
         # Status
-        self._w3af_core.status.set_running_plugin('bruteforce', plugin.get_name())
+        self._w3af_core.status.set_running_plugin(
+            'bruteforce', plugin.get_name())
         self._w3af_core.status.set_current_fuzzable_request('bruteforce',
                                                             fuzzable_request)
 
         # TODO: Report progress to the core.
         try:
             new_frs = plugin.bruteforce_wrapper(fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('bruteforce', plugin.get_name(),
                                   fuzzable_request, e)
         else:

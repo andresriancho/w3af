@@ -45,7 +45,7 @@ class extrusionClient:
             try:
                 sock.connect((host, port))
                 sock.close()
-            except:
+            except BaseException:
                 pass
 
         for port in self._tcpPorts:
@@ -56,8 +56,9 @@ class extrusionClient:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
                 s.sendto('', (self._host, int(port)))
-            except:
+            except BaseException:
                 pass
+
 
 if __name__ == "__main__":
     # do the work
@@ -65,7 +66,7 @@ if __name__ == "__main__":
         ipAddress = sys.argv[1]
         tcpPorts = sys.argv[2].split(',')
         udpPorts = sys.argv[3].split(',')
-    except:
+    except BaseException:
         print 'Bad parameters.'
     else:
         ec = extrusionClient(ipAddress, tcpPorts, udpPorts)

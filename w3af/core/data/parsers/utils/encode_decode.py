@@ -57,7 +57,7 @@ def htmldecode(text, use_repr=False):
                 return unichr(name2codepoint[entity])
             else:
                 return match.group(0)
-        except:
+        except BaseException:
             return match.group(0)
 
     # TODO: Requires more analysis
@@ -144,7 +144,7 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
             else:
                 ele = to_encodable_string(ele, encoding)
                 to_append = k + '=' + urllib.quote(ele, safe)
-                
+
             l.append(to_append)
 
     return '&'.join(l)

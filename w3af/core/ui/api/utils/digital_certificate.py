@@ -71,7 +71,9 @@ class SSLCertificate(object):
                     - Certificate path
                     - Key path
         """
-        if not os.path.exists(self.cert_path) or not os.path.exists(self.cert_path):
+        if not os.path.exists(
+                self.cert_path) or not os.path.exists(
+                self.cert_path):
             self.generate(host=host)
 
         # context = SSL.Context(SSL.TLSv1_2_METHOD)

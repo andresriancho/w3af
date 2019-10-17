@@ -38,29 +38,29 @@ class TestExtendedUrllibProxy(unittest.TestCase):
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
-        
+
         # Start the proxy daemon
         self._proxy = Proxy('127.0.0.2', 0, ExtendedUrllib(), ProxyHandler)
         self._proxy.start()
         self._proxy.wait_for_start()
-        
+
         port = self._proxy.get_port()
-        
+
         # Configure the proxy
         settings = OpenerSettings()
         options = settings.get_options()
         proxy_address_opt = options['proxy_address']
         proxy_port_opt = options['proxy_port']
-        
+
         proxy_address_opt.set_value('127.0.0.2')
         proxy_port_opt.set_value(port)
-        
+
         settings.set_options(options)
         self.uri_opener.settings = settings
-    
+
     def tearDown(self):
         self.uri_opener.end()
-        
+
     def test_http_default_port_via_proxy(self):
         # TODO: Write this test
         pass
@@ -88,8 +88,9 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertEqual(http_response.get_code(), 500)
         self.assertIn('Connection refused', http_response.body)
-    
+
     def test_POST_via_proxy(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
-        http_response = self.uri_opener.POST(url, data='text=123456abc', cache=False)
+        http_response = self.uri_opener.POST(
+            url, data='text=123456abc', cache=False)
         self.assertIn('123456abc', http_response.body)

@@ -110,4 +110,3 @@ class rosetta_flash(AuditPlugin):
         return """
         This plugin finds JSONP endpoints which are vulnerable to Rosetta Flash.
         """
-

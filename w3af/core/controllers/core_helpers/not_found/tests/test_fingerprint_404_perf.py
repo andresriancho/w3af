@@ -33,7 +33,11 @@ from w3af.tests.helpers.parse_http_log import iter_http_request_responses
 
 class TestFingerprint404Perf(unittest.TestCase):
 
-    HTTP_FILE = os.path.join(ROOT_PATH, '..', 'scan-logs', 'kryptera-ktCKJ.http')
+    HTTP_FILE = os.path.join(
+        ROOT_PATH,
+        '..',
+        'scan-logs',
+        'kryptera-ktCKJ.http')
     MAX_REQUEST_RESPONSE = 2000
 
     RECORDED_200_EVERY = 18
@@ -81,7 +85,8 @@ class TestFingerprint404Perf(unittest.TestCase):
         fingerprint_404 = Fingerprint404()
         fingerprint_404.set_url_opener(urllib)
 
-        for count, (request, response) in enumerate(iter_http_request_responses(self.HTTP_FILE)):
+        for count, (request, response) in enumerate(
+                iter_http_request_responses(self.HTTP_FILE)):
 
             if response.get_code() == 404:
                 if len(recorded_404s) <= self.MAX_RECORDED_404:

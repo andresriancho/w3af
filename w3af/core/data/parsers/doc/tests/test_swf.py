@@ -39,7 +39,7 @@ class TestSWFParser(unittest.TestCase):
     DEMO_SAMPLE = os.path.join(SAMPLE_DIR, 'subscribe.swf')
     DOMAIN_DECODE_1 = os.path.join(SAMPLE_DIR, 'test-5925-1.swf')
     DOMAIN_DECODE_2 = os.path.join(SAMPLE_DIR, 'test-5925-2.swf')
-    
+
     def parse(self, filename):
         body = file(filename).read()
         swf_mime = 'application/x-shockwave-flash'
@@ -48,29 +48,29 @@ class TestSWFParser(unittest.TestCase):
                                 URL('http://moth/xyz/'),
                                 URL('http://moth/xyz/'),
                                 _id=1)
-        
+
         parser = SWFParser(response)
         parser.parse()
         return parser
-    
+
     def test_swf_parser_wivet(self):
         parser = self.parse(self.WIVET_SAMPLE)
         parsed, re_refs = parser.get_references()
-        
+
         expected = {URL('http://moth/innerpages/19_1f52a.php'),
                     URL('http://purl.org/dc/elements/1.1'),
                     URL('http://www.adobe.com/products/flex'),
                     URL('http://www.w3.org/1999/02/22-rdf-syntax-ns')}
-        
+
         self.assertEqual(parsed, [])
         self.assertEqual(set(re_refs), expected)
-        
+
     def test_swf_parser_subscribe(self):
         parser = self.parse(self.DEMO_SAMPLE)
         parsed, re_refs = parser.get_references()
-        
+
         expected = {URL('http://moth/xyz/subscribe.aspx')}
-        
+
         self.assertEqual(parsed, [])
         self.assertEqual(set(re_refs), expected)
 
@@ -95,11 +95,12 @@ class TestSWFParser(unittest.TestCase):
         parser = self.parse(self.DOMAIN_DECODE_2)
         parsed, re_refs = parser.get_references()
 
-        expected = {URL('http://mail.stiei.edu.cn/'),
-                    URL('http://e-learning.stiei.edu.cn/eol/homepage/common/index_newjpk.jsp'),
-                    URL('http://xxgk.stiei.edu.cn/'),
-                    URL('http://portal1.stiei.edu.cn:8081/'),
-                    URL('http://e-learning.stiei.edu.cn/')}
+        expected = {
+            URL('http://mail.stiei.edu.cn/'),
+            URL('http://e-learning.stiei.edu.cn/eol/homepage/common/index_newjpk.jsp'),
+            URL('http://xxgk.stiei.edu.cn/'),
+            URL('http://portal1.stiei.edu.cn:8081/'),
+            URL('http://e-learning.stiei.edu.cn/')}
 
         self.assertEqual(parsed, [])
         self.assertEqual(set(re_refs), expected)

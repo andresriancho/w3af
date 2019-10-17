@@ -56,7 +56,7 @@ def load_http_response_from_temp_file(filename, remove=True):
     try:
         data = msgpack.load(file(filename, 'rb'), raw=False)
         result = HTTPResponse.from_dict(data)
-    except:
+    except BaseException:
         if remove:
             remove_file_if_exists(filename)
         raise
@@ -89,7 +89,7 @@ def load_tags_from_temp_file(filename, remove=True):
     try:
         data = msgpack.load(file(filename, 'rb'), raw=False)
         result = [Tag.from_dict(t) for t in data]
-    except:
+    except BaseException:
         if remove:
             remove_file_if_exists(filename)
         raise
@@ -133,7 +133,7 @@ def load_object_from_temp_file(filename, remove=True):
     """
     try:
         result = cPickle.load(file(filename, 'rb'))
-    except:
+    except BaseException:
         if remove:
             remove_file_if_exists(filename)
         raise
@@ -152,5 +152,5 @@ def remove_file_if_exists(filename):
     """
     try:
         os.remove(filename)
-    except:
+    except BaseException:
         pass

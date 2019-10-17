@@ -118,12 +118,12 @@ class MacOSX(Platform):
         else:
             print TWO_PYTHON_MSG % sys.executable
 
-        #check if scapy is correctly installed/working on OSX
+        # check if scapy is correctly installed/working on OSX
         try:
             from scapy.all import traceroute
         except ImportError:
             # The user just needs to work on his dependencies.
             pass
-        except OSError, ose:
+        except OSError as ose:
             if "Device not configured" in str(ose):
                 print(TRACEROUTE_SCAPY_MSG)

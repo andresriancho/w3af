@@ -7,6 +7,7 @@ See the file 'LICENSE' for copying permission
 
 from plugins.generic.syntax import Syntax as GenericSyntax
 
+
 class Syntax(GenericSyntax):
     def __init__(self):
         GenericSyntax.__init__(self)
@@ -22,6 +23,8 @@ class Syntax(GenericSyntax):
         """
 
         def escaper(value):
-            return "(%s)"  % "||".join("CHR(%d)" % ord(_) for _ in value)  # Postgres CHR() function already accepts Unicode code point of character(s)
+            # Postgres CHR() function already accepts Unicode code point of
+            # character(s)
+            return "(%s)" % "||".join("CHR(%d)" % ord(_) for _ in value)
 
         return Syntax._escape(expression, quote, escaper)

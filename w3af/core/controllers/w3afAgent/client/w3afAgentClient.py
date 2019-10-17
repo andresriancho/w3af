@@ -24,6 +24,7 @@ def is_routable(address):
 def is_port(port):
     return (port > 0) and (port < 65536)
 
+
 # SOCKS 4 protocol constant values.
 SOCKS_VERSION = 4
 
@@ -133,7 +134,7 @@ class logger:
         try:
             msg = ' '.join([str(x) for x in list(msg)])
             return msg
-        except:
+        except BaseException:
             return msg
 
     def info(self, *msg):
@@ -151,6 +152,7 @@ class logger:
         msg = '[ ' + now() + ' ][debug] ' + msg + '\n'
         if self._printDebug:
             sys.stdout.write(msg)
+
 
 # Global log object
 log = None
@@ -184,7 +186,10 @@ class w3afAgentClient(threading.Thread):
     module :)
     """
 
-    def __init__(self, w3afAgentServer_address='127.0.0.1', w3afAgentServer_port=9092):
+    def __init__(
+            self,
+            w3afAgentServer_address='127.0.0.1',
+            w3afAgentServer_port=9092):
         """
         Constructor of the server.
         """
@@ -208,7 +213,8 @@ class w3afAgentClient(threading.Thread):
         hostname, aliaslist, ipaddrlist = socket.gethostbyname_ex(
             socket.gethostname())
 
-        # Finding the internet address of the server. If none is found, the first ip is choosed
+        # Finding the internet address of the server. If none is found, the
+        # first ip is choosed
 
         self.socks_bind_address = None
         for ip in ipaddrlist:
@@ -234,7 +240,12 @@ class ConnectionManager(threading.Thread):
     for SOCKS requests to arrive on those connections. When a request arrives, I parse the request
     and create a handler instance manage the SOCKS connection.
     """
-    def __init__(self, w3afAgentServer_address, w3afAgentServer_port, connectionPoolLen=20):
+
+    def __init__(
+            self,
+            w3afAgentServer_address,
+            w3afAgentServer_port,
+            connectionPoolLen=20):
         threading.Thread.__init__(self)
         self._connections = []
         self._w3afAgentServer_address = w3afAgentServer_address
@@ -253,15 +264,17 @@ class ConnectionManager(threading.Thread):
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 s.connect((self._w3afAgentServer_address,
-                          self._w3afAgentServer_port))
-            except Exception, e:
-                log.debug('Failed to connect to the w3afAgentServer, exception: ' + str(e))
+                           self._w3afAgentServer_port))
+            except Exception as e:
+                log.debug(
+                    'Failed to connect to the w3afAgentServer, exception: ' +
+                    str(e))
                 sys.exit(1)
             else:
                 self._connections.append(s)
 
     def run(self):
-        while 1:
+        while True:
             # Here I listen for data on all the connections I have and if I get anything I
             # parse the request, after parsing I create a new SocksHandler that will
             # manage all the SOCKS protocol
@@ -321,6 +334,7 @@ class ConnectionManager(threading.Thread):
 
 class SocksHandler(threading.Thread):
     """This request handler class handles Socks 4 requests."""
+
     def __init__(self, client_socketet, request):
         threading.Thread.__init__(self)
         self.client_socketet = client_socketet
@@ -452,7 +466,8 @@ class SocksHandler(threading.Thread):
                 # the connection.
                 exception, value, traceback = sys.exc_info()
                 if value[0] == ERR_CONNECTION_RESET_BY_PEER:
-                    raise Client_Connection_Closed((ERR_CONNECTION_RESET_BY_PEER, socket.errorTab[ERR_CONNECTION_RESET_BY_PEER]))
+                    raise Client_Connection_Closed(
+                        (ERR_CONNECTION_RESET_BY_PEER, socket.errorTab[ERR_CONNECTION_RESET_BY_PEER]))
                 else:
                     # We may be able to make a more precise diagnostic, but
                     # in fact, it doesn't seem useful here for now.
@@ -481,7 +496,7 @@ class SocksHandler(threading.Thread):
 
                 # An incoming connection is pending. Let us accept it
                 incoming, peer = remote.accept()
-            except:
+            except BaseException:
                 # We try to keep a trace of the previous exception
                 # for debugging purpose.
                 raise Remote_Connection_Failed(sys.exc_info())
@@ -538,10 +553,11 @@ class SocksHandler(threading.Thread):
             except socket.error:
                 exception, value, traceback = sys.exc_info()
                 if value[0] == ERR_CONNECTION_RESET_BY_PEER:
-                    raise Client_Connection_Closed((ERR_CONNECTION_RESET_BY_PEER, socket.errorTab[ERR_CONNECTION_RESET_BY_PEER]))
+                    raise Client_Connection_Closed(
+                        (ERR_CONNECTION_RESET_BY_PEER, socket.errorTab[ERR_CONNECTION_RESET_BY_PEER]))
                 else:
                     raise Remote_Connection_Failed
-            except:
+            except BaseException:
                 raise Remote_Connection_Failed
 
             # From now on we will already have answered to the client.
@@ -565,7 +581,11 @@ class SocksHandler(threading.Thread):
         """This function sends a REQUEST_GRANTED answer to the client."""
         self.answer(REQUEST_GRANTED, dst_ip, dst_port)  # !/usr/bin/env python
 
-    def answer_rejected(self, reason=REQUEST_REJECTED_FAILED, dst_ip='0.0.0.0', dst_port=0):
+    def answer_rejected(
+            self,
+            reason=REQUEST_REJECTED_FAILED,
+            dst_ip='0.0.0.0',
+            dst_port=0):
         """This function send a REQUEST_REJECTED answer to the client."""
         self.answer(reason, dst_ip, dst_port)
 
@@ -586,7 +606,7 @@ factorised because all answers follow the same format."""
             log.debug(thread.get_ident(), 'Sending back:',
                       code, string2port(port), socket.inet_ntoa(ip))
             self.client_socketet.send(packet)
-        except:
+        except BaseException:
             # Trying to keep a trace of the original exception.
             raise Client_Connection_Closed(sys.exc_info())
 
@@ -607,7 +627,7 @@ simultaneously and to implement an inactivity timeout."""
             try:
                 # Here are the sockets we will be listening.
                 sockslist = [client_sock, server_sock]
-                while 1:
+                while True:
                     # Let us listen...
                     readables, writeables, exceptions = select.select(
                         sockslist, [], [],
@@ -615,8 +635,8 @@ simultaneously and to implement an inactivity timeout."""
                     # If the "exceptions" list is not empty or if we are here
                     # because of the timer (i.e. all lists are empty), then
                     # we must must bail out, we have finished our work.
-                    if (exceptions
-                            or (readables, writeables, exceptions) == ([], [], [])):
+                    if (exceptions or (readables, writeables,
+                                       exceptions) == ([], [], [])):
                         raise Connection_Closed
 
                     # Only a precaution.

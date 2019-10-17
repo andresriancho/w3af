@@ -7,6 +7,7 @@ See the file 'LICENSE' for copying permission
 
 __product__ = "Proventia Web Application Security (IBM)"
 
+
 def detect(get_page):
     page, _, _ = get_page()
     if page is None:

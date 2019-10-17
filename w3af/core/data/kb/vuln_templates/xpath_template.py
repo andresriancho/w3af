@@ -26,20 +26,21 @@ class XPathTemplate(BaseTemplate):
     """
     Vulnerability template for eval vulnerability.
     """
+
     def __init__(self):
         super(XPathTemplate, self).__init__()
-        
+
         self.name = self.get_vulnerability_name()
-        
+
     def create_vuln(self):
         v = super(XPathTemplate, self).create_vuln()
-        
+
         mutant = self.create_mutant_from_params()
         mutant.set_dc(self.data)
         mutant.set_token((self.vulnerable_parameter, 0))
 
         v.set_mutant(mutant)
-        
+
         return v
 
     def get_kb_location(self):

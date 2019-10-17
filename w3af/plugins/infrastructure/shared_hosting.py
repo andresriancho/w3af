@@ -56,20 +56,20 @@ class shared_hosting(InfrastructurePlugin):
         """
         domain = fuzzable_request.get_url().get_domain()
         is_public = self._is_public(domain)
-        
+
         if is_public:
-            
+
             ip_address_list = self._get_ip_addresses(domain)
             self._analyze_ips(ip_address_list, fuzzable_request)
-    
+
     def _is_public(self, domain):
-        
+
         if is_private_site(domain):
             msg = 'shared_hosting plugin is not checking for subdomains for'\
                   ' domain: "%s" because it is a private address.' % domain
             om.out.debug(msg)
             return False
-        
+
         return True
 
     def _get_ip_addresses(self, domain):
@@ -78,26 +78,25 @@ class shared_hosting(InfrastructurePlugin):
         """
         try:
             addrinfo = socket.getaddrinfo(domain, 0)
-        except:
+        except BaseException:
             om.out.error('Failed to resolve address: "%s"' % domain)
             return []
 
         ip_address_list = [info[4][0] for info in addrinfo]
         ip_address_list = list(set(ip_address_list))
         return ip_address_list
-    
-    
+
     def _analyze_ips(self, ip_address_list, fuzzable_request):
         """
         Search all IP addresses in Bing and determine if they have more than
         one domain hosted on it. Store findings in KB.
         """
         bing_wrapper = bing(self._uri_opener)
-        
+
         # This is the best way to search, one by one!
         for ip_address in ip_address_list:
             results = bing_wrapper.get_n_results('ip:' + ip_address,
-                                               self._result_limit)
+                                                 self._result_limit)
 
             results = [r.URL.base_url() for r in results]
             results = list(set(results))
@@ -118,7 +117,7 @@ class shared_hosting(InfrastructurePlugin):
                     try:
                         res0 = socket.gethostbyname(results[0].get_domain())
                         res1 = socket.gethostbyname(results[1].get_domain())
-                    except:
+                    except BaseException:
                         pass
                     else:
                         if res0 == res1:
@@ -129,22 +128,22 @@ class shared_hosting(InfrastructurePlugin):
                        ' hosting. This list of domains, and the domain of the ' \
                        ' web application under test, all point to the same IP' \
                        ' address (%s):\n' % ip_address
-                
+
                 domain_list = kb.kb.raw_read(self, 'domains')
-                
+
                 for url in results:
                     domain = url.get_domain()
                     desc += '- %s\n' % domain
-                    
+
                     domain_list.append(domain)
-                    
+
                 kb.kb.raw_write(self, 'domains', domain_list)
-                    
+
                 v = Vuln.from_fr('Shared hosting', desc, severity.MEDIUM, 1,
                                  self.get_name(), fuzzable_request)
 
                 v['also_in_hosting'] = results
-                
+
                 om.out.vulnerability(desc, severity=severity.MEDIUM)
                 kb.kb.append(self, 'shared_hosting', v)
 

@@ -42,13 +42,21 @@ class global_redirect(AuditPlugin):
     BASIC_PAYLOADS = {'http://www.%s/' % TEST_DOMAIN,
                       '//%s' % TEST_DOMAIN}
 
-    SCRIPT_RE = re.compile('<script.*?>(.*?)</script>', re.IGNORECASE | re.DOTALL)
-    META_URL_RE = re.compile('.*?; *?URL *?= *?(.*)', re.IGNORECASE | re.DOTALL)
+    SCRIPT_RE = re.compile(
+        '<script.*?>(.*?)</script>',
+        re.IGNORECASE | re.DOTALL)
+    META_URL_RE = re.compile(
+        '.*?; *?URL *?= *?(.*)',
+        re.IGNORECASE | re.DOTALL)
 
-    JS_REDIR_GENERIC_FMT = ['window\.location.*?=.*?["\'].*?%s.*?["\']',
-                            '(self|top)\.location.*?=.*?["\'].*?%s.*?["\']',
-                            'window\.location\.(replace|assign)\(["\'].*?%s.*?["\']\)']
-    REDIR_TO_TEST_DOMAIN_JS_RE = [re.compile(r % TEST_DOMAIN) for r in JS_REDIR_GENERIC_FMT]
+    JS_REDIR_GENERIC_FMT = [
+        'window\.location.*?=.*?["\'].*?%s.*?["\']',
+        '(self|top)\.location.*?=.*?["\'].*?%s.*?["\']',
+        'window\.location\.(replace|assign)\(["\'].*?%s.*?["\']\)']
+    REDIR_TO_TEST_DOMAIN_JS_RE = [
+        re.compile(
+            r %
+            TEST_DOMAIN) for r in JS_REDIR_GENERIC_FMT]
     JS_REDIR_RE = [re.compile(r % '') for r in JS_REDIR_GENERIC_FMT]
 
     def audit(self, freq, orig_response, debugging_id):
@@ -68,14 +76,16 @@ class global_redirect(AuditPlugin):
         #
         #   Always send the most basic tests
         #
-        self._find_open_redirect_with_payloads(freq, self.BASIC_PAYLOADS, debugging_id)
+        self._find_open_redirect_with_payloads(
+            freq, self.BASIC_PAYLOADS, debugging_id)
 
         #
         #   Send the more complex tests only if the original response was a redirect
         #
         if self._response_has_redirect(orig_response):
             extended_payloads = self._get_extended_payloads(freq)
-            self._find_open_redirect_with_payloads(freq, extended_payloads, debugging_id)
+            self._find_open_redirect_with_payloads(
+                freq, extended_payloads, debugging_id)
 
     def _response_has_redirect(self, orig_response):
         """
@@ -168,7 +178,7 @@ class global_redirect(AuditPlugin):
         """
         if self._find_redirect(response):
             desc = 'Global redirect was found at: ' + mutant.found_at()
-            
+
             v = Vuln.from_mutant('Insecure redirection', desc, severity.MEDIUM,
                                  response.id, self.get_name(), mutant)
 
@@ -181,7 +191,7 @@ class global_redirect(AuditPlugin):
         try:
             redir_domain = URL(redir_url).get_domain()
             return redir_domain.endswith(self.TEST_DOMAIN)
-        except:
+        except BaseException:
             return False
 
     def _find_redirect(self, response):
@@ -196,9 +206,9 @@ class global_redirect(AuditPlugin):
         lheaders = response.get_lower_case_headers()
 
         return self._30x_code_redirect(response, lheaders) or \
-               self._refresh_redirect(response, lheaders) or \
-               self._meta_redirect(response) or \
-               self._javascript_redirect(response)
+            self._refresh_redirect(response, lheaders) or \
+            self._meta_redirect(response) or \
+            self._javascript_redirect(response)
 
     def _30x_code_redirect(self, response, lheaders):
         """
@@ -210,7 +220,8 @@ class global_redirect(AuditPlugin):
                 header_value = header_value.strip()
 
                 if self._domain_equals_test_domain(header_value):
-                    # The script sent a 302 and the header contains the test URL
+                    # The script sent a 302 and the header contains the test
+                    # URL
                     return True
 
         return False

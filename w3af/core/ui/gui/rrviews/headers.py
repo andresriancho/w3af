@@ -53,7 +53,10 @@ class HttpHeadersView(RememberingVPaned):
         # Column for Name
         renderer = gtk.CellRendererText()
         renderer.set_property('editable', editable)
-        renderer.connect('edited', self._header_name_edited, self._header_store)
+        renderer.connect(
+            'edited',
+            self._header_name_edited,
+            self._header_store)
         column = gtk.TreeViewColumn(_('Name'), renderer, text=0)
         column.set_sort_column_id(0)
         column.set_resizable(True)
@@ -62,7 +65,10 @@ class HttpHeadersView(RememberingVPaned):
         renderer = gtk.CellRendererText()
         renderer.set_property('editable', editable)
         renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
-        renderer.connect('edited', self._header_value_edited, self._header_store)
+        renderer.connect(
+            'edited',
+            self._header_value_edited,
+            self._header_store)
         column = gtk.TreeViewColumn(_('Value'), renderer, text=1)
         column.set_resizable(True)
         column.set_expand(True)

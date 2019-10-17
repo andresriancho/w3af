@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 
 from w3af.core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
-from w3af.core.ui.gui.exception_handling.common_windows import (SimpleBaseWindow,
-                                                                GithubBugReport)
+from w3af.core.ui.gui.exception_handling.common_windows import (
+    SimpleBaseWindow, GithubBugReport)
 
 
 class BugReportWindow(SimpleBaseWindow, GithubBugReport):
@@ -111,7 +111,7 @@ class BugReportWindow(SimpleBaseWindow, GithubBugReport):
 
         self.vbox.pack_start(self.hbox, True, False, 10)
 
-        #self.resize(400,450)
+        # self.resize(400,450)
         self.add(self.vbox)
         self.show_all()
 

@@ -35,7 +35,8 @@ def get_http_requests_over_time_data(scan_log_filename, scan):
 
 
 def draw_http_requests_over_time(scan_log_filename, scan):
-    requests_by_minute = get_http_requests_over_time_data(scan_log_filename, scan)
+    requests_by_minute = get_http_requests_over_time_data(
+        scan_log_filename, scan)
 
     print('HTTP requests sent by minute')
     print('')

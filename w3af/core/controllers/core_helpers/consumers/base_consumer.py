@@ -42,7 +42,7 @@ def task_decorator(method):
     Makes sure that for each task we call _add_task() and _task_done()
     which will avoid some ugly race conditions.
     """
-    
+
     @wraps(method)
     def _wrapper(self, *args, **kwds):
         rnd_id = os.urandom(32).encode('hex')
@@ -52,13 +52,13 @@ def task_decorator(method):
 
         try:
             result = method(self, function_id, *args, **kwds)
-        except:
+        except BaseException:
             self._task_done(function_id)
             raise
         else:
             self._task_done(function_id)
             return result
-    
+
     return _wrapper
 
 
@@ -175,7 +175,7 @@ class BaseConsumer(Process):
             if work_unit == POISON_PILL:
                 try:
                     self._process_poison_pill()
-                except Exception, e:
+                except Exception as e:
                     msg = 'An exception was found while processing poison pill: "%s"'
                     om.out.debug(msg % e)
                 finally:
@@ -222,14 +222,14 @@ class BaseConsumer(Process):
 
         try:
             self._shutdown_threadpool()
-        except:
+        except BaseException:
             # All the logging is done inside the method, an empty
             # except clause is acceptable in this case
             pass
 
         try:
             self._call_teardown()
-        except:
+        except BaseException:
             # All the logging is done inside the method, an empty
             # except clause is acceptable in this case
             pass
@@ -258,7 +258,7 @@ class BaseConsumer(Process):
 
         try:
             pool.close()
-        except Exception, e:
+        except Exception as e:
             args = ('closing', self.get_name(), e)
             om.out.debug(msg_fmt % args)
 
@@ -267,7 +267,7 @@ class BaseConsumer(Process):
 
         try:
             pool.join()
-        except Exception, e:
+        except Exception as e:
             args = ('joining', self.get_name(), e)
             om.out.debug(msg_fmt % args)
 
@@ -275,7 +275,7 @@ class BaseConsumer(Process):
             # tasks to complete. If that fails, then call terminate()
             try:
                 pool.terminate()
-            except Exception, e:
+            except Exception as e:
                 args = ('terminating', self.get_name(), e)
                 om.out.debug(msg_fmt % args)
             else:
@@ -289,7 +289,7 @@ class BaseConsumer(Process):
         # Finish this consumer and everyone consuming the output
         try:
             self._teardown()
-        except Exception, e:
+        except Exception as e:
             msg = 'Exception found while calling teardown() in %s consumer: "%s"'
             args = (self.get_name(), e)
             om.out.debug(msg % args)
@@ -341,7 +341,7 @@ class BaseConsumer(Process):
 
         So, for each _add_task() there has to be a _task_done() even if the
         task ends in an error or exception.
-        
+
         Recommendation: Do NOT set the callback for apply_async to call
         _task_done, the Python2.7 pool implementation won't call it if the
         function raised an exception and you'll end up with tasks in progress
@@ -350,7 +350,9 @@ class BaseConsumer(Process):
         try:
             self._tasks_in_progress.pop(function_id)
         except KeyError:
-            raise AssertionError('The function with ID %s was not found!' % function_id)
+            raise AssertionError(
+                'The function with ID %s was not found!' %
+                function_id)
 
     def _add_task(self, function_id):
         """
@@ -382,7 +384,7 @@ class BaseConsumer(Process):
         # https://github.com/andresriancho/w3af/pull/16063
         if self._poison_pill_sent and not force:
             return
-        
+
         return self.in_queue.put(work)
 
     def in_queue_put_iter(self, work_iter):
@@ -416,7 +418,7 @@ class BaseConsumer(Process):
 
             if self._threadpool._outqueue.qsize() > 0:
                 return True
-        
+
         return False
 
     @property
@@ -475,7 +477,9 @@ class BaseConsumer(Process):
         self._shutdown_threadpool()
 
         spent_time = time.time() - start_time
-        om.out.debug('%s took %.2f seconds to join()' % (self._thread_name, spent_time))
+        om.out.debug(
+            '%s took %.2f seconds to join()' %
+            (self._thread_name, spent_time))
 
     def _clear_input_output_queues(self):
         #
@@ -528,7 +532,12 @@ class BaseConsumer(Process):
     def get_result_nowait(self):
         return self._out_queue.get_nowait()
 
-    def handle_exception(self, phase, plugin_name, fuzzable_request, _exception):
+    def handle_exception(
+            self,
+            phase,
+            plugin_name,
+            fuzzable_request,
+            _exception):
         """
         Get the exception information, and put it into the output queue
         then, the strategy will get the items from the output queue and

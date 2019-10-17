@@ -8,7 +8,8 @@ from utils.utils import (get_first_timestamp,
 
 SCAN_FINISHED_IN = re.compile('Scan finished in (.*).')
 JOIN_TIMES = re.compile('(.*?) took (.*?) seconds to join\(\)')
-SCAN_PROGRESS = re.compile('The scan will finish in .*? seconds \((.*?)% done\)')
+SCAN_PROGRESS = re.compile(
+    'The scan will finish in .*? seconds \((.*?)% done\)')
 CALCULATED_ETA = re.compile('Calculated (.*?) ETA: (.*?) seconds')
 CRAWL_INFRA_FINISHED = 'Producer CrawlInfra has finished'
 
@@ -63,7 +64,8 @@ def show_progress_delta(scan_log_filename, scan):
                 eta = '0.0'
 
             eta = float(eta)
-            percentage = (ts - first_timestamp) / (ts - first_timestamp + eta) * 100
+            percentage = (ts - first_timestamp) / \
+                (ts - first_timestamp + eta) * 100
 
             if 'crawl' in line.lower():
                 crawl_progress_timestamps.append(ts)
@@ -78,9 +80,12 @@ def show_progress_delta(scan_log_filename, scan):
                 grep_progress.append(percentage)
 
     # Make the timestamps relative to the scan finish
-    crawl_progress_timestamps = [ts - first_timestamp for ts in crawl_progress_timestamps]
-    audit_progress_timestamps = [ts - first_timestamp for ts in audit_progress_timestamps]
-    grep_progress_timestamps = [ts - first_timestamp for ts in grep_progress_timestamps]
+    crawl_progress_timestamps = [
+        ts - first_timestamp for ts in crawl_progress_timestamps]
+    audit_progress_timestamps = [
+        ts - first_timestamp for ts in audit_progress_timestamps]
+    grep_progress_timestamps = [
+        ts - first_timestamp for ts in grep_progress_timestamps]
 
     #
     # Find the overall progress estimations
@@ -135,7 +140,8 @@ def show_progress_delta(scan_log_filename, scan):
         crawl_real_progress_timestamps = range(int(first_timestamp),
                                                int(crawl_end_timestamp),
                                                1)
-        crawl_real_progress_timestamps = [ts - first_timestamp for ts in crawl_real_progress_timestamps]
+        crawl_real_progress_timestamps = [
+            ts - first_timestamp for ts in crawl_real_progress_timestamps]
 
         crawl_real_progress = []
 
@@ -170,7 +176,8 @@ def show_progress_delta(scan_log_filename, scan):
         audit_real_progress_timestamps = range(int(first_timestamp),
                                                int(audit_end_timestamp),
                                                1)
-        audit_real_progress_timestamps = [ts - first_timestamp for ts in audit_real_progress_timestamps]
+        audit_real_progress_timestamps = [
+            ts - first_timestamp for ts in audit_real_progress_timestamps]
 
         audit_real_progress = []
 
@@ -205,7 +212,8 @@ def show_progress_delta(scan_log_filename, scan):
         grep_real_progress_timestamps = range(int(first_timestamp),
                                               int(grep_end_timestamp),
                                               1)
-        grep_real_progress_timestamps = [ts - first_timestamp for ts in grep_real_progress_timestamps]
+        grep_real_progress_timestamps = [
+            ts - first_timestamp for ts in grep_real_progress_timestamps]
 
         grep_real_progress = []
 

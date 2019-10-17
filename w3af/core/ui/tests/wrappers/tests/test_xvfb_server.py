@@ -33,8 +33,14 @@ from w3af.core.ui.tests.wrappers.tests.utils import is_black_image
 
 class TestEnvironment(unittest.TestCase):
 
-    X_TEST_COMMAND = 'python %s' % os.path.join(ROOT_PATH, 'core', 'ui', 'tests',
-                                                'wrappers', 'tests', 'helloworld.py')
+    X_TEST_COMMAND = 'python %s' % os.path.join(
+        ROOT_PATH,
+        'core',
+        'ui',
+        'tests',
+        'wrappers',
+        'tests',
+        'helloworld.py')
 
     def setUp(self):
         self.xvfb_server = XVFBServer()
@@ -98,7 +104,7 @@ class TestEnvironment(unittest.TestCase):
         self.xvfb_server.start_sync()
         self.assertTrue(self.xvfb_server.is_running(),
                         'xvfb server failed to start.')
-            
+
         output_file = self.xvfb_server.get_screenshot()
 
         screenshot_img = Image.open(output_file)

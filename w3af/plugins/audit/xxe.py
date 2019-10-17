@@ -115,7 +115,7 @@ class xxe(AuditPlugin):
         'Error unmarshaling XML',
         'conflicts with field',
         'illegal character code'
-        
+
         # .NET
         'XML Parsing Error',
         'SyntaxError',
@@ -215,13 +215,15 @@ class xxe(AuditPlugin):
             for file_name in itertools.chain(self.WINDOWS_FILES,
                                              self.LINUX_FILES):
                 dtd = self.ENTITY_DEF % file_name
-                xml_body = etree.tostring(xml_root).replace(self.TOKEN_XXE, self.ENTITY)
+                xml_body = etree.tostring(xml_root).replace(
+                    self.TOKEN_XXE, self.ENTITY)
                 yield dtd + xml_body
 
             # Restore the original value to inject in the next parameter
             tag.text = tag_orig
 
-            # Test XXE in the first MAX_XML_PARAM_MUTANTS parameters found in the XML
+            # Test XXE in the first MAX_XML_PARAM_MUTANTS parameters found in
+            # the XML
             xml_mutant_count += 1
             if xml_mutant_count > self.MAX_XML_PARAM_MUTANTS:
                 break
@@ -242,7 +244,7 @@ class xxe(AuditPlugin):
 
         try:
             original_value_str = smart_str_ignore(original_value)
-        except Exception, e:
+        except Exception as e:
             msg = ('Failed to encode unicode original value to string'
                    ' in _parse_xml(). Exception: "%s"')
             om.out.debug(msg % e)
@@ -255,7 +257,7 @@ class xxe(AuditPlugin):
 
         try:
             xml_root = etree.fromstring(original_value_str, parser=parser)
-        except Exception, e:
+        except Exception as e:
             msg = ('Failed to parse "%s..." as XML to inject XXE tests.'
                    ' The parameter name where injection failed was "%s".'
                    ' Exception: "%s"')
@@ -294,10 +296,13 @@ class xxe(AuditPlugin):
         # Create some fake mutants to check the fuzzable request original value
         mutants = create_mutants(freq, [''], orig_resp=orig_response)
 
-        self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                      self._injectable_mutants_iterator(freq, mutants),
-                                      self._analyze_result,
-                                      debugging_id=debugging_id)
+        self._send_mutants_in_threads(
+            self._uri_opener.send_mutant,
+            self._injectable_mutants_iterator(
+                freq,
+                mutants),
+            self._analyze_result,
+            debugging_id=debugging_id)
 
     def _analyze_result(self, mutant, response):
         """
@@ -375,7 +380,7 @@ class xxe(AuditPlugin):
         """
         return """
         This plugin finds XML External Entity injections.
-        
+
         To find this vulnerabilities the plugin sends multiple specially crafted
         XML documents to all parameters which are used by the application to send
         XML data, and searches for specific strings in the response body.

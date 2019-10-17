@@ -87,12 +87,12 @@ class ContextDetectorHTMLParser(HTMLParser):
 
     def untidy(self, content):
         return content.replace(CONTEXT_DETECTOR, self.payload)
-    
+
     def append_context(self, context):
         # We just ignore all the contexts which are inside <noscript>
         if self.noscript_parent:
             return
-        
+
         self.contexts.append(context)
 
     def handle_starttag(self, tag, attrs):

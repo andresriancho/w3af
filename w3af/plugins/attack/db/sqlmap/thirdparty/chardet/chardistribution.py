@@ -88,7 +88,7 @@ class CharDistributionAnalysis:
 
         if self._mTotalChars != self._mFreqChars:
             r = (self._mFreqChars / ((self._mTotalChars - self._mFreqChars)
-                 * self._mTypicalDistributionRatio))
+                                     * self._mTypicalDistributionRatio))
             if r < SURE_YES:
                 return r
 

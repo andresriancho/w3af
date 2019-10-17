@@ -153,10 +153,10 @@ def http_request_parser(head, postdata):
             headers_inst[header_name] = header_value
 
     host, _ = headers_inst.iget('host', None)
-    
+
     try:
         uri = URL(check_uri_syntax(uri, host))
-    except ValueError, ve:
+    except ValueError as ve:
         raise BaseFrameworkException(str(ve))
 
     return FuzzableRequest.from_parts(uri, method, postdata, headers_inst)

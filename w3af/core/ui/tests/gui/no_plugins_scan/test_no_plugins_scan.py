@@ -25,19 +25,16 @@ from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestNoPluginsScan(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'no_plugins_scan', 'images')
-    
+
     def test_no_plugins_enabled(self):
         self.click('insert_target_url_here')
         self.type('http://moth/', False)
-        self.type(['<Enter>',], False)
+        self.type(['<Enter>', ], False)
         # For some reason this moves the mouse pointer to the right location
         # but then it doesn't seem to click on it
-        #self.click('scan_start')
-        
+        # self.click('scan_start')
+
         self.find('no_plugins')
         self.click('ok')
-        
-        
-        

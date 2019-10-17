@@ -57,7 +57,7 @@ class path_disclosure(GrepPlugin):
             regex_string = '[^A-Za-z0-9\._\-\\/\+~](%s.*?)[^A-Za-z0-9\._\-\\/\+~]'
             regex_string = regex_string % common_directory
             all_signatures.append(regex_string)
-            
+
         self._signature_re = MultiRE(all_signatures, hint_len=1)
 
     def grep(self, request, response):
@@ -221,7 +221,7 @@ class path_disclosure(GrepPlugin):
         """
         path_disc_vulns = kb.kb.get('path_disclosure', 'path_disclosure')
         url_list = kb.kb.get_all_known_urls()
-        
+
         # Now I find the longest match between one of the URLs that w3af has
         # discovered, and one of the path disclosure strings that this plugin
         # has found. I use the longest match because with small match_list I
@@ -254,7 +254,7 @@ class path_disclosure(GrepPlugin):
         #
         if not webroot:
             return
-        
+
         # Check what path separator we should use (linux / windows)
         path_sep = '/' if webroot.startswith('/') else '\\'
 

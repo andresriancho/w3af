@@ -63,8 +63,8 @@ class TestMultipartPostUpload(unittest.TestCase):
         form_params.add_field_by_attr_items([('name', 'uploadedfile')])
         form_params['uploadedfile'][0] = 'this is not a file'
         form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
-                       ('type', 'hidden'),
-                       ('value', '10000')])
+                                             ('type', 'hidden'),
+                                             ('value', '10000')])
 
         mpc = MultipartContainer(form_params)
 
@@ -88,8 +88,8 @@ class TestMultipartPostUpload(unittest.TestCase):
         form_params = FormParameters()
         form_params.add_field_by_attr_items([('name', 'uploadedfile')])
         form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
-                               ('type', 'hidden'),
-                               ('value', '10000')])
+                                             ('type', 'hidden'),
+                                             ('value', '10000')])
 
         mpc = MultipartContainer(form_params)
         mpc['uploadedfile'][0] = _file
@@ -102,10 +102,11 @@ class TestMultipartPostUpload(unittest.TestCase):
     def test_upload_file_using_fuzzable_request(self):
         form_params = FormParameters()
         form_params.add_field_by_attr_items([('name', 'uploadedfile')])
-        form_params['uploadedfile'][0] = NamedStringIO('file content', name='test.txt')
+        form_params['uploadedfile'][0] = NamedStringIO(
+            'file content', name='test.txt')
         form_params.add_field_by_attr_items([('name', 'MAX_FILE_SIZE'),
-                       ('type', 'hidden'),
-                       ('value', '10000')])
+                                             ('type', 'hidden'),
+                                             ('value', '10000')])
 
         mpc = MultipartContainer(form_params)
 
@@ -115,4 +116,3 @@ class TestMultipartPostUpload(unittest.TestCase):
         resp = self.opener.send_mutant(freq)
 
         self.assertIn('was successfully uploaded', resp.get_body())
-

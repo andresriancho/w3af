@@ -61,30 +61,32 @@ class hash_analysis(GrepPlugin):
             #    This is a performance enhancement that cuts the execution
             #    time of this plugin in half.
             if len(possible_hash) < 31 or\
-            len(possible_hash) > 129 :
+                    len(possible_hash) > 129:
                 return
-            
+
             hash_type = self._get_hash_type(possible_hash)
             if not hash_type:
                 return
 
             possible_hash = possible_hash.lower()
             if self._has_hash_distribution(possible_hash):
-                if (possible_hash, response.get_url()) not in self._already_reported:
+                if (possible_hash, response.get_url()
+                        ) not in self._already_reported:
                     desc = 'The URL: "%s" returned a response that may contain'\
-                          ' a "%s" hash. The hash string is: "%s". This is'\
-                          ' uncommon and requires human verification.'
-                    desc = desc % (response.get_url(), hash_type, possible_hash)
-                    
+                        ' a "%s" hash. The hash string is: "%s". This is'\
+                        ' uncommon and requires human verification.'
+                    desc = desc % (response.get_url(),
+                                   hash_type, possible_hash)
+
                     i = Info('Hash string in HTML content', desc,
                              response.id, self.get_name())
                     i.set_url(response.get_url())
                     i.add_to_highlight(possible_hash)
-                    
+
                     self.kb_append(self, 'hash_analysis', i)
 
-                    self._already_reported.add( (possible_hash,
-                                                 response.get_url()) )
+                    self._already_reported.add((possible_hash,
+                                                response.get_url()))
 
     def _has_hash_distribution(self, possible_hash):
         """
@@ -127,17 +129,17 @@ class hash_analysis(GrepPlugin):
         # When adding something here, please review the code above where
         # we also check the length.
         hash_type_len = {
-                         'MD5': 32,
-                         'SHA1': 40,
-                         'SHA224': 56,
-                         'SHA256': 64,
-                         'SHA384': 96,
-                         'SHA512': 128,
-                         }
-        for hash_type, hash_len in hash_type_len.items():                
+            'MD5': 32,
+            'SHA1': 40,
+            'SHA224': 56,
+            'SHA256': 64,
+            'SHA384': 96,
+            'SHA512': 128,
+        }
+        for hash_type, hash_len in hash_type_len.items():
             if len(possible_hash) == hash_len:
                 return hash_type
-            
+
         return None
 
     def get_long_desc(self):

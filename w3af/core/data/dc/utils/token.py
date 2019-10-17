@@ -108,4 +108,3 @@ class DataToken(object):
 
     def __len__(self):
         return len(str(self))
-

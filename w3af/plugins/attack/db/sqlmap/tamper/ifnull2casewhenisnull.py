@@ -9,8 +9,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.HIGHEST
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -55,11 +57,10 @@ def tamper(payload, **kwargs):
             if comma and end:
                 _ = payload[index + len("IFNULL("):comma]
                 __ = payload[comma + 1:end].lstrip()
-                newVal = "CASE WHEN ISNULL(%s) THEN (%s) ELSE (%s) END" % (_, __, _)
+                newVal = "CASE WHEN ISNULL(%s) THEN (%s) ELSE (%s) END" % (
+                    _, __, _)
                 payload = payload[:index] + newVal + payload[end + 1:]
             else:
                 break
 
     return payload
-
-

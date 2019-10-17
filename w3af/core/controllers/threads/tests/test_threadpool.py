@@ -48,10 +48,12 @@ class TestWorkerPool(unittest.TestCase):
 
         try:
             [i for i in answers]
-        except TypeError, te:
+        except TypeError as te:
             self.assertEqual(str(te), '1 Boom!')
             # pylint: disable=E1101
-            self.assertIn("raise TypeError('%s Boom!' % foo)", te.original_traceback_string)
+            self.assertIn(
+                "raise TypeError('%s Boom!' % foo)",
+                te.original_traceback_string)
 
     def test_terminate_join_after_tasks(self):
         worker_pool = Pool(processes=4,
@@ -173,7 +175,8 @@ class TestWorkerPool(unittest.TestCase):
 
     def test_worker_stats_idle(self):
         worker_pool = Pool(processes=1, worker_names='WorkerThread')
-        func_name, func_args = worker_pool._pool[0].worker.get_real_func_name_args()
+        func_name, func_args = worker_pool._pool[0].worker.get_real_func_name_args(
+        )
         self.assertIsNone(func_name)
         self.assertIsNone(func_args)
         self.assertTrue(worker_pool._pool[0].worker.is_idle())
@@ -191,7 +194,8 @@ class TestWorkerPool(unittest.TestCase):
         # Let the worker get the task
         time.sleep(0.3)
 
-        func_name, func_args = worker_pool._pool[0].worker.get_real_func_name_args()
+        func_name, func_args = worker_pool._pool[0].worker.get_real_func_name_args(
+        )
         # Got it?
         self.assertFalse(worker_pool._pool[0].worker.is_idle())
         self.assertEqual(func_name, 'sleep')

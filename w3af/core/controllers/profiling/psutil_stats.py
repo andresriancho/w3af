@@ -45,7 +45,7 @@ if user_wants_psutil():
     try:
         # User's don't need this module
         import psutil
-    except ImportError, ie:
+    except ImportError as ie:
         print('Failed to import psutil: %s' % ie)
         sys.exit(-1)
 
@@ -124,13 +124,13 @@ def dump_psutil():
                    'Disk IO counters': psutil.disk_io_counters(),
                    'Disk usage': disk_usage,
                    'Thread CPU usage': get_threads_cpu_percent()}
-    
+
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
 
 
 def ps_mem_to_json(sorted_cmds, shareds, count, total):
     result = []
-    
+
     for cmd in sorted_cmds:
         private = cmd[1] - shareds[cmd[0]]
         shared = shareds[cmd[0]]
@@ -159,7 +159,7 @@ def get_threads_cpu_percent(interval=0.1):
     # pylint: disable=E1101
     for thread in proc.get_threads():
         thread_time = thread.system_time + thread.user_time
-        thread_percent = total_percent * (thread_time/total_time)
+        thread_percent = total_percent * (thread_time / total_time)
         result[thread.id] = {'Thread total time': thread_time,
                              'Thread CPU usage %': thread_percent}
     # pylint: enable=E1101
@@ -177,9 +177,10 @@ def stop_psutil_dump():
 
 
 def get_human_readable_size(num):
-    exp_str = [(0, 'B'), (10, 'KB'), (20, 'MB'), (30, 'GB'), (40, 'TB'), (50, 'PB')]
+    exp_str = [(0, 'B'), (10, 'KB'), (20, 'MB'),
+               (30, 'GB'), (40, 'TB'), (50, 'PB')]
     i = 0
-    while i+1 < len(exp_str) and num >= (2 ** exp_str[i+1][0]):
+    while i + 1 < len(exp_str) and num >= (2 ** exp_str[i + 1][0]):
         i += 1
         rounded_val = round(float(num) / 2 ** exp_str[i][0], 2)
     return '%s %s' % (int(rounded_val), exp_str[i][1])

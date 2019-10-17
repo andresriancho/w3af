@@ -31,6 +31,7 @@ class TestLinkExtractor(unittest.TestCase, JSParserMixin):
     """
     :see: Docstring in StringExtractor
     """
+
     def test_jquery(self):
         e = JSLinkExtractor(self.get_file_contents('jquery.js'))
         expected = set()

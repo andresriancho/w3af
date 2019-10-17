@@ -55,7 +55,11 @@ class meta_generator(GrepPlugin):
     def _save_to_kb(self, request, response, generator):
         desc = 'Found generator meta tag value: "%s"' % generator
 
-        info = Info('Generator information', desc, response.id, self.get_name())
+        info = Info(
+            'Generator information',
+            desc,
+            response.id,
+            self.get_name())
         info.set_uri(response.get_uri())
         info.add_to_highlight(generator)
         info[MetaTagsInfoSet.ITAG] = generator
@@ -99,7 +103,7 @@ class meta_generator(GrepPlugin):
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
-        This plugin inspects pages looking for the meta generator value, 
+        This plugin inspects pages looking for the meta generator value,
         often used by CMS frameworks to identify their software and version.
         """
 
@@ -115,5 +119,4 @@ class MetaTagsInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')

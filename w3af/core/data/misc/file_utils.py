@@ -74,6 +74,3 @@ def get_days_since_last_update(path):
     time_delta = today_date - last_commit_date
 
     return time_delta.days
-    
-
-

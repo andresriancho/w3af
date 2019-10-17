@@ -28,6 +28,7 @@ class JSLinkExtractor(StringExtractor):
     """
     :see: Docstring in StringExtractor
     """
+
     def get_links(self):
         return self.extract_full_urls()
 

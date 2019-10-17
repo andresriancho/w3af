@@ -6,7 +6,8 @@ from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
 
-SOCKET_TIMEOUT = re.compile('Updating socket timeout for .* from .* to (.*?) seconds')
+SOCKET_TIMEOUT = re.compile(
+    'Updating socket timeout for .* from .* to (.*?) seconds')
 
 
 def get_timeout_data(scan_log_filename, scan):

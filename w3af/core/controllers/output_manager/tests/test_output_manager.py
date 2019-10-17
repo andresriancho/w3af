@@ -86,7 +86,7 @@ class TestOutputManager(unittest.TestCase):
         catch-all, just the ones I define!"""
         try:
             self.assertRaises(AttributeError, om.out.foobar, ('abc',))
-        except AttributeError, ae:
+        except AttributeError as ae:
             self.assertTrue(True, ae)
 
     def test_kwds(self):
@@ -107,7 +107,7 @@ class TestOutputManager(unittest.TestCase):
         om.manager.process_all_messages()
 
         plugin_action.assert_called_once_with(msg, False)
-    
+
     def test_ignore_plugins(self):
         """The output manager implements ignore_plugins to avoid sending a
         message to a specific plugin. Test this feature."""
@@ -127,17 +127,17 @@ class TestOutputManager(unittest.TestCase):
         om_action(msg, False, ignore_plugins=set(['fake']))
         # This one will make it and we'll assert it below
         om_action(msg, False)
-        
+
         om.manager.process_all_messages()
 
-        plugin_action.assert_called_once_with(msg, False)        
+        plugin_action.assert_called_once_with(msg, False)
 
     def test_error_handling(self):
-        
+
         class InvalidPlugin(object):
             def flush(self):
                 pass
-            
+
             def information(self, msg, new_line=True):
                 raise Exception('Test')
 
@@ -180,7 +180,8 @@ class TestOutputManager(unittest.TestCase):
                                      initializer=log_sink_factory,
                                      initargs=(log_queue,))
 
-        result = _pool.apply(apply_with_return_error, ((send_log_message, msg),))
+        result = _pool.apply(apply_with_return_error,
+                             ((send_log_message, msg),))
         if isinstance(result, Error):
             result.reraise()
 

@@ -38,6 +38,7 @@ class PDFParser(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, http_response):
         super(PDFParser, self).__init__(http_response)
 
@@ -52,7 +53,8 @@ class PDFParser(BaseParser):
         :return: True if the document parameter is a string that contains a PDF
                  document.
         """
-        if http_resp.content_type not in ('application/x-pdf', 'application/pdf'):
+        if http_resp.content_type not in (
+                'application/x-pdf', 'application/pdf'):
             return False
 
         document = http_resp.body
@@ -128,7 +130,7 @@ def pdf_to_text(pdf_string):
             interpreter.process_page(page)
     except PDFSyntaxError:
         return u''
-    
+
     device.close()
     output.seek(0)
     output_str = output.read().decode('utf-8')

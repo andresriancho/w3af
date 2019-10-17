@@ -32,7 +32,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
     """
 
     def test_SQL_scan(self):
-        target = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
+        target = get_moth_http(
+            '/audit/sql_injection/where_string_single_qs.py')
         qs = '?uname=pablo'
         commands_to_run = ['plugins',
                            'output console,text_file',
@@ -72,7 +73,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
     @attr('smoke')
     @attr('ci_fails')
     def test_two_scans(self):
-        target_1 = get_moth_http('/audit/sql_injection/where_string_single_qs.py')
+        target_1 = get_moth_http(
+            '/audit/sql_injection/where_string_single_qs.py')
         qs_1 = '?uname=pablo'
         scan_commands_1 = ['plugins',
                            'output console,text_file',

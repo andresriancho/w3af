@@ -25,26 +25,25 @@ import unittest
 from mock import patch
 
 from w3af.core.controllers.dependency_check.helper_requirements_txt import generate_requirements_txt
-from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency 
+from w3af.core.controllers.dependency_check.pip_dependency import PIPDependency
 
 
 class TestGenerateTXT(unittest.TestCase):
-    
+
     MOCK_TARGET = 'w3af.core.controllers.ci.only_ci_decorator.is_running_on_ci'
-    
+
     @patch(MOCK_TARGET, return_value=True)
     def test_generate_requirements_txt_empty(self, ci_mock):
         requirements_file = generate_requirements_txt([])
-        
+
         self.assertEqual(0, len(file(requirements_file).read()))
         os.unlink(requirements_file)
 
     @patch(MOCK_TARGET, return_value=True)
     def test_generate_requirements_txt(self, ci_mock):
         EXPECTED = 'a==1.2.3\nc==3.2.1\n'
-        requirements_file = generate_requirements_txt([PIPDependency('a', 'a', '1.2.3'),
-                                                       PIPDependency('b', 'c', '3.2.1'),])
-        
+        requirements_file = generate_requirements_txt(
+            [PIPDependency('a', 'a', '1.2.3'), PIPDependency('b', 'c', '3.2.1'), ])
+
         self.assertEqual(EXPECTED, file(requirements_file).read())
         os.unlink(requirements_file)
-        

@@ -63,13 +63,13 @@ class svn_users(GrepPlugin):
                 desc = 'The URL: "%s" contains a SVN versioning signature'\
                        ' with the username "%s".'
                 desc = desc % (uri, user)
-                
+
                 v = Vuln('SVN user disclosure vulnerability', desc,
                          severity.LOW, response.id, self.get_name())
                 v.add_to_highlight(user)
                 v.set_uri(uri)
                 v[SVNUserInfoSet.ITAG] = user
-                
+
                 self.kb_append_uniq_group(self, 'users', v,
                                           group_klass=SVNUserInfoSet)
 

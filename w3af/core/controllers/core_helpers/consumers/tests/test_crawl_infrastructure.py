@@ -53,9 +53,9 @@ class TestTimeLimit(PluginTest):
         #
         cf.cf.save('max_discovery_time', 1)
         cfg = self._run_configs['basic']
-        
+
         start_time = time.time()
-        
+
         self._scan(self.target_url, cfg['plugins'])
 
         end_time = time.time()
@@ -64,22 +64,22 @@ class TestTimeLimit(PluginTest):
         len_first_urls = len(self.kb.get_all_known_urls())
         self.assertGreater(len_first_urls, 500)
         self.assertLess(first_scan_time, 120)
-        
+
         # Cleanup
         self.w3afcore.quit()
         self.kb.cleanup()
         self.w3afcore = w3afCore()
-        
+
         #
         #    Second scan
         #
         cf.cf.save('max_discovery_time', 2)
         cfg = self._run_configs['basic']
-        
+
         start_time = time.time()
-        
+
         self._scan(self.target_url, cfg['plugins'])
-        
+
         end_time = time.time()
         second_scan_time = end_time - start_time
 
@@ -87,15 +87,15 @@ class TestTimeLimit(PluginTest):
         self.assertGreater(len_second_urls, 900)
         self.assertGreater(len_second_urls, len_first_urls)
         self.assertLess(second_scan_time, 150)
-        
+
         # The setup delta is the time it takes w3af to setup the scan, and
         # finish once the should_stop_scan method returns true. The 60 in the
         # next line is the initial scan time of 1 minute
         setup_delta = first_scan_time - 60
-        
+
         # Scan should take at least the setup time, 2 minutes which is the time
         # delay and because the setup_delta might be a little bit off, we just
         # substract some seconds from it
         at_least_takes = setup_delta + 120 - 10
-        
+
         self.assertGreater(second_scan_time, at_least_takes)

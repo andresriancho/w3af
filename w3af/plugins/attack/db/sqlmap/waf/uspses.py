@@ -12,12 +12,18 @@ from lib.core.settings import WAF_ATTACK_VECTORS
 
 __product__ = "USP Secure Entry Server (United Security Providers)"
 
+
 def detect(get_page):
     retval = False
 
     for vector in WAF_ATTACK_VECTORS:
         _, headers, _ = get_page(get=vector)
-        retval = re.search(r"Secure Entry Server", headers.get(HTTP_HEADER.SERVER, ""), re.I) is not None
+        retval = re.search(
+            r"Secure Entry Server",
+            headers.get(
+                HTTP_HEADER.SERVER,
+                ""),
+            re.I) is not None
         if retval:
             break
 

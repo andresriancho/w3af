@@ -63,4 +63,5 @@ class wordnet_loader(LazyCorpusLoader):
         # __class__ to something new:
         return getattr(self, attr)
 
+
 wn = wordnet_loader('wordnet', WordNetCorpusReader)

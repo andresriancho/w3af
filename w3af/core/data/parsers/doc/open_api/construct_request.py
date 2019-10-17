@@ -81,8 +81,11 @@ def construct_params(operation, request, op_kwargs):
 
     # Check required params and non-required params with a 'default' value
     for remaining_param in itervalues(current_params):
-        if remaining_param.location == 'header' and remaining_param.name in request['headers']:
-            marshal_param(remaining_param, request['headers'][remaining_param.name], request)
+        if remaining_param.location == 'header' and remaining_param.name in request[
+                'headers']:
+            marshal_param(remaining_param,
+                          request['headers'][remaining_param.name],
+                          request)
         else:
             if remaining_param.required:
                 raise SwaggerMappingError(

@@ -92,7 +92,7 @@ class detailed(AuthPlugin):
                                     cache=False,
                                     follow_redirects=self.follow_redirects,
                                     debugging_id=self._debugging_id)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to login to the application because of exception: %s'
             self._log_debug(msg % e)
             return False
@@ -126,12 +126,13 @@ class detailed(AuthPlugin):
         self._log_debug(msg % self.username)
 
         try:
-            http_response = self._uri_opener.GET(self.check_url,
-                                                 grep=False,
-                                                 cache=False,
-                                                 follow_redirects=True,
-                                                 debugging_id=self._debugging_id)
-        except Exception, e:
+            http_response = self._uri_opener.GET(
+                self.check_url,
+                grep=False,
+                cache=False,
+                follow_redirects=True,
+                debugging_id=self._debugging_id)
+        except Exception as e:
             msg = 'Failed to check if session is active because of exception: %s'
             self._log_debug(msg % e)
             return False

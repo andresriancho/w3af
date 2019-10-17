@@ -76,21 +76,26 @@ class form_auth(BruteforcePlugin):
 
         try:
             session = self._create_new_session(mutant, debugging_id)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             msg = 'Failed to create new session during form bruteforce setup: "%s"'
             om.out.debug(msg % bfe)
             return
 
         try:
-            login_failed_bodies = self._id_failed_login_pages(mutant, session, debugging_id)
-        except BaseFrameworkException, bfe:
+            login_failed_bodies = self._id_failed_login_pages(
+                mutant, session, debugging_id)
+        except BaseFrameworkException as bfe:
             msg = 'Failed to ID failed login page during form bruteforce setup: "%s"'
             om.out.debug(msg % bfe)
             return
 
         try:
-            self._signature_test(mutant, session, login_failed_bodies, debugging_id)
-        except BaseFrameworkException, bfe:
+            self._signature_test(
+                mutant,
+                session,
+                login_failed_bodies,
+                debugging_id)
+        except BaseFrameworkException as bfe:
             msg = 'Signature test failed during form bruteforce setup: "%s"'
             om.out.debug(msg % bfe)
             return
@@ -151,7 +156,13 @@ class form_auth(BruteforcePlugin):
 
         return session
 
-    def _bruteforce_pool(self, mutant, login_failed_res, generator, session, debugging_id):
+    def _bruteforce_pool(
+            self,
+            mutant,
+            login_failed_res,
+            generator,
+            session,
+            debugging_id):
         args_iter = izip(repeat(mutant),
                          repeat(login_failed_res),
                          generator,
@@ -162,9 +173,20 @@ class form_auth(BruteforcePlugin):
                                         args_iter,
                                         chunksize=100)
 
-    def _bruteforce_test(self, mutant, login_failed_res, generator, session, debugging_id):
+    def _bruteforce_test(
+            self,
+            mutant,
+            login_failed_res,
+            generator,
+            session,
+            debugging_id):
         for combination in generator:
-            self._brute_worker(mutant, login_failed_res, combination, session, debugging_id)
+            self._brute_worker(
+                mutant,
+                login_failed_res,
+                combination,
+                session,
+                debugging_id)
 
     def _password_only_login(self, form):
         user_token, pass_token = form.get_login_tokens()
@@ -263,7 +285,12 @@ class form_auth(BruteforcePlugin):
 
         return login_failed_result_list
 
-    def _signature_test(self, mutant, session, login_failed_bodies, debugging_id):
+    def _signature_test(
+            self,
+            mutant,
+            session,
+            login_failed_bodies,
+            debugging_id):
         """
         Perform a signature test before starting the brute-force process. This
         test makes sure that the signatures captured in _id_failed_login_pages
@@ -373,7 +400,13 @@ class form_auth(BruteforcePlugin):
 
         return http_response.body
 
-    def _brute_worker(self, mutant, login_failed_result_list, combination, session, debugging_id):
+    def _brute_worker(
+            self,
+            mutant,
+            login_failed_result_list,
+            combination,
+            session,
+            debugging_id):
         """
         :param mutant: A Mutant holding a QsMutant of PostDataMutant, created
                        using form_pointer_factory
@@ -446,7 +479,7 @@ class form_auth(BruteforcePlugin):
         body_2 = self._clean_body(verify_resp_2, user, password_2)
 
         potential_captcha_page = FailedLoginPage(body_1, body_2)
-        
+
         if self._matches_any_failed_page(body, [potential_captcha_page]):
             om.out.debug('The form brute-force plugin detected a response'
                          ' that might indicate that a user exists or CAPTCHA'

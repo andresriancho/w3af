@@ -86,10 +86,10 @@ class cors_origin(AuditPlugin):
         # TODO: Does it make any sense to add these Origins? If so, how will it
         #       affect our tests? And which vulnerabilities are we going to
         #       detect with them?
-        #origin_list.append("http://www.google.com/")
-        #origin_list.append("null")
-        #origin_list.append("*")
-        #origin_list.append("")
+        # origin_list.append("http://www.google.com/")
+        # origin_list.append("null")
+        # origin_list.append("*")
+        # origin_list.append("")
         #origin_list.append( url.url_string )
 
         # Perform check(s)
@@ -99,7 +99,8 @@ class cors_origin(AuditPlugin):
             forged_req = build_cors_request(url, origin)
 
             # Send forged request and retrieve response information
-            response = self._uri_opener.send_mutant(forged_req, debugging_id=debugging_id)
+            response = self._uri_opener.send_mutant(
+                forged_req, debugging_id=debugging_id)
 
             allow_origin = retrieve_cors_header(response, ACAO)
             allow_credentials = retrieve_cors_header(response, ACAC)
@@ -167,7 +168,12 @@ class cors_origin(AuditPlugin):
             msg %= (url, ACCESS_CONTROL_ALLOW_METHODS,
                     allow_methods, ', '.join(report_sensitive))
 
-            v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
+            v = Vuln(
+                name,
+                msg,
+                severity.LOW,
+                response.get_id(),
+                self.get_name())
             v.set_url(forged_req.get_url())
             v[METHODS] = allow_methods_set
 
@@ -184,7 +190,12 @@ class cors_origin(AuditPlugin):
             msg %= (url, ACCESS_CONTROL_ALLOW_METHODS,
                     allow_methods, ', '.join(report_strange))
 
-            v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
+            v = Vuln(
+                name,
+                msg,
+                severity.LOW,
+                response.get_id(),
+                self.get_name())
             v.set_url(forged_req.get_url())
             v[METHODS] = allow_methods_set
 
@@ -204,7 +215,7 @@ class cors_origin(AuditPlugin):
                   ' an %s header with the value set to "*" which is insecure'\
                   ' and leaves the application open to Cross-domain attacks.'
             msg %= (forged_req.get_url(), ACCESS_CONTROL_ALLOW_ORIGIN)
-            
+
             v = Vuln('Access-Control-Allow-Origin set to "*"', msg,
                      severity.LOW, response.get_id(), self.get_name())
             v.set_url(forged_req.get_url())
@@ -296,20 +307,21 @@ class cors_origin(AuditPlugin):
 
         if allow_credentials and allow_origin == '*':
 
-            msg = ('The remote Web application, specifically "%s", returned'
-                   ' a "%s" header with the value set to "*"  and an %s header'
-                   ' with the value set to "true" which according to Mozilla\'s'
-                   ' documentation is invalid. This implementation error might'
-                   ' affect the application behavior.')
+            msg = (
+                'The remote Web application, specifically "%s", returned'
+                ' a "%s" header with the value set to "*"  and an %s header'
+                ' with the value set to "true" which according to Mozilla\'s'
+                ' documentation is invalid. This implementation error might'
+                ' affect the application behavior.')
             msg = msg % (forged_req.get_url(),
                          ACCESS_CONTROL_ALLOW_ORIGIN,
                          ACCESS_CONTROL_ALLOW_CREDENTIALS)
-            
+
             v = Vuln('Incorrect withCredentials implementation', msg,
                      severity.INFORMATION, response.get_id(), self.get_name())
             v.set_url(forged_req.get_url())
             v[DOMAIN] = forged_req.get_url().get_domain()
-            
+
             self.kb_append_uniq_group(self, 'cors_origin', v,
                                       group_klass=IncorrectWithCredsInfoSet)
 
@@ -334,7 +346,7 @@ class cors_origin(AuditPlugin):
 
         # Check set options
         if self.origin_header_value is None or \
-        len(self.origin_header_value.strip()) == 0:
+                len(self.origin_header_value.strip()) == 0:
             msg = 'Please enter a valid value for the "Origin" HTTP header.'
             raise BaseFrameworkException(msg)
 
@@ -368,8 +380,7 @@ class SensitiveMethodsInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')
 
 
 class StrangeMethodsInfoSet(InfoSet):
@@ -430,8 +441,7 @@ class OriginEchoWithCredsInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')
 
 
 class IncorrectWithCredsInfoSet(InfoSet):
@@ -446,5 +456,4 @@ class IncorrectWithCredsInfoSet(InfoSet):
         ''
         '{% for url in uris[:10] %}'
         ' - {{ url }}\n'
-        '{% endfor %}'
-    )
+        '{% endfor %}')

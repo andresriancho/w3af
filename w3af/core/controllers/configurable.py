@@ -30,6 +30,7 @@ class Configurable(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def set_options(self, options_list):
         """
         Sets the Options given on the options_list to self. The options

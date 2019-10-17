@@ -187,7 +187,8 @@ class VariantDB(object):
         #
         # Is the fuzzable request already known to us? (exactly the same)
         #
-        request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
+        request_hash = fuzzable_request.get_request_hash(
+            self.HASH_IGNORE_HEADERS)
         if request_hash in self._variants_eq:
             return True
 
@@ -217,9 +218,10 @@ class VariantDB(object):
             return True
 
         if count >= self.max_equal_form_variants:
-            self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
+            self._log_return_false(
+                fuzzable_request,
+                'need_more_variants_for_form')
             return False
 
         self._variants_form[clean_dict_key_form] = count + 1
         return True
-

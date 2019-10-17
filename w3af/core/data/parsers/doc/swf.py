@@ -28,12 +28,13 @@ from w3af.core.data.parsers.utils.re_extract import ReExtract
 class SWFParser(BaseParser):
     """
     This class is a SWF (flash) parser which just focuses on extracting URLs.
-    
+
     The parser is based on "SWF File Format Specification Version 10"
     http://www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, http_response):
         BaseParser.__init__(self, http_response)
 
@@ -76,7 +77,7 @@ class SWFParser(BaseParser):
         compressed_data = swf_document[8:]
         try:
             uncompressed_data = zlib.decompress(compressed_data)
-        except zlib.error, e:
+        except zlib.error as e:
             raise ValueError('Failed to inflate: ' + str(e))
         else:
             # TODO: Strings in SWF are NULL-Byte delimited. Maybe we can
@@ -114,21 +115,21 @@ class SWFParser(BaseParser):
         """
         After reading a couple of SWF files with a hex editor it was possible
         to identify the following pattern:
-        
+
             0x83    0xLENGTH    0x00    (0xLENGTH - 2 chars)    0x00
-        
+
         0x83 is the bytecode for Adobe's getURL
         0xLENGTH is the string length of the first parameter including the two
                  0x00 string delimiters.
-        
+
         So, with this information I'll extract links!
-        
+
         :return: Store new URLs in self._re_urls, None is returned.
         """
         for index, char in enumerate(swf_body):
             if char == '\x83':
                 try:
-                    plus_two_zero = swf_body[index+2] == '\x00'
+                    plus_two_zero = swf_body[index + 2] == '\x00'
                 except IndexError:
                     continue
                 else:
@@ -138,7 +139,7 @@ class SWFParser(BaseParser):
                 # potential getURL with string as first parameter
                 # lets get the length and verify that there is a 0x00 where
                 # we expect it to be
-                str_len = ord(swf_body[index+1])
+                str_len = ord(swf_body[index + 1])
 
                 try:
                     str_end = swf_body[index + 1 + str_len]
@@ -154,14 +155,14 @@ class SWFParser(BaseParser):
                 # counts the delimiters, so a length of 2 or less is useless
                 if str_len <= 2:
                     continue
-                
+
                 if str_end == '\x00':
                     # Getting closer... lets reduce more false positives by
                     # verifying that all chars in the url are ASCII
                     start = index + 3
                     end = start + str_len - 2
                     url_str = swf_body[start:end]
-                    
+
                     if all(32 < ord(c) < 127 for c in url_str):
                         # All chars are ASCII, we've got a URL!
                         #
@@ -198,4 +199,3 @@ class SWFParser(BaseParser):
     get_references_of_tag = get_forms = BaseParser._return_empty_list
     get_comments = BaseParser._return_empty_list
     get_meta_redir = get_meta_tags = get_emails = BaseParser._return_empty_list
-

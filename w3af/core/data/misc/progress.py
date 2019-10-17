@@ -74,7 +74,8 @@ class Progress(object):
             # Simple calculation to find out how much time it is going to take
             #
             try:
-                time_for_all_requests = (self._max_value * time_already_elapsed) / self._current_value
+                time_for_all_requests = (
+                    self._max_value * time_already_elapsed) / self._current_value
             except ZeroDivisionError:
                 # I should never get here...
                 time_for_all_requests = time_already_elapsed * \

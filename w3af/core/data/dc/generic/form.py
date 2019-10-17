@@ -170,7 +170,8 @@ class Form(KeyValueContainer):
         file_variables = self.get_file_vars()
 
         for var_name, value, path, setter in self.iter_setters():
-            if self.get_parameter_type(var_name) in self.AVOID_FILLING_FORM_TYPES:
+            if self.get_parameter_type(
+                    var_name) in self.AVOID_FILLING_FORM_TYPES:
                 continue
 
             if isinstance(value, DataToken):

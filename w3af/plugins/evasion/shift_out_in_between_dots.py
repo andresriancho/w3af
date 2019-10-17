@@ -26,9 +26,10 @@ class shift_out_in_between_dots(EvasionPlugin):
     """
     Insert between dots shift-in and shift-out control characters which are
     cancelled each other when they are below
-    
+
     :author: Jose Ramon Palanco( jose.palanco@hazent.com )
     """
+
     def modify_request(self, request):
         """
         Mangles the request

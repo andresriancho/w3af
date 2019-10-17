@@ -98,29 +98,29 @@ def ioctl_GWINSZ(fd):  # TABULATION FUNCTIONS
         import struct
         cr = struct.unpack('hh',
                            fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
-    except:
+    except BaseException:
         return None
     return cr
 
 
 def terminal_size():
-    ### decide on *some* terminal size
+    # decide on *some* terminal size
     # try open fds
     cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
     if not cr:
-    # ...then ctty
+        # ...then ctty
         try:
             fd = os.open(os.ctermid(), os.O_RDONLY)
             cr = ioctl_GWINSZ(fd)
             os.close(fd)
-        except:
+        except BaseException:
             pass
 
     if not cr:
         # env vars or finally defaults
         try:
             cr = (os.environ['LINES'], os.environ['COLUMNS'])
-        except:
+        except BaseException:
             cr = (25, 80)
     # reverse rows, cols
     return int(cr[1]), int(cr[0])
@@ -134,12 +134,12 @@ try:
     import tty
     import termios
     from w3af.core.ui.console.io.unixctrl import *
-except Exception, e:
+except Exception as e:
     # We aren't on unix !
     try:
         import msvcrt
         from w3af.core.ui.console.io.winctrl import *
-    except Exception, a:
+    except Exception as a:
         print str(e + '\n' + a)
         # We arent on windows nor unix
         raise BaseFrameworkException(

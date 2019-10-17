@@ -41,6 +41,6 @@ class IntegerOption(BaseOption):
     def validate(self, value):
         try:
             return int(value)
-        except:
+        except BaseException:
             msg = 'Invalid integer option value "%s".' % value
             raise BaseFrameworkException(msg)

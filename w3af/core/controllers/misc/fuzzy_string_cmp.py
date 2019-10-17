@@ -65,12 +65,14 @@ def fuzzy_equal(a_str, b_str, threshold=0.6):
                       0 <= threshold <= 1.0
     :return: A boolean value
     """
-    optimization_result = _get_optimized_fuzzy_equal(a_str, b_str, threshold=threshold)
+    optimization_result = _get_optimized_fuzzy_equal(
+        a_str, b_str, threshold=threshold)
 
     if optimization_result is not None:
         return optimization_result
 
-    # Bad, we can't optimize anything better, just calculate the relative distance
+    # Bad, we can't optimize anything better, just calculate the relative
+    # distance
     distance = relative_distance(a_str, b_str)
     return distance > threshold
 
@@ -87,12 +89,14 @@ def fuzzy_equal_return_distance(a_str, b_str, threshold=0.6):
                 - A boolean indicating the fuzzy_equal result
                 - The distance between the two strings, if it was calculated
     """
-    optimization_result = _get_optimized_fuzzy_equal(a_str, b_str, threshold=threshold)
+    optimization_result = _get_optimized_fuzzy_equal(
+        a_str, b_str, threshold=threshold)
 
     if optimization_result is not None:
         return optimization_result, None
 
-    # Bad, we can't optimize anything better, just calculate the relative distance
+    # Bad, we can't optimize anything better, just calculate the relative
+    # distance
     distance = relative_distance(a_str, b_str)
     return distance > threshold, distance
 
@@ -168,4 +172,3 @@ def relative_distance(a_str, b_str):
     return difflib.SequenceMatcher(None,
                                    a_split,
                                    b_split).quick_ratio()
-

@@ -117,15 +117,17 @@ def _create_instance_from_form_params(data_container_cls, params):
     form_params = FormParameters()
 
     for param_name, param_value in params.iteritems():
-        form_params.add_field_by_attrs({'name': param_name, 'value': param_value})
+        form_params.add_field_by_attrs(
+            {'name': param_name, 'value': param_value})
 
     return data_container_cls(form_params)
 
 
 def _create_instance(data_container_cls, params):
-    post_data_container_builder = {MultipartContainer: _create_instance_from_form_params,
-                                   JSONContainer: _create_instance_from_json_string,
-                                   URLEncodedForm: _create_instance_from_form_params}
+    post_data_container_builder = {
+        MultipartContainer: _create_instance_from_form_params,
+        JSONContainer: _create_instance_from_json_string,
+        URLEncodedForm: _create_instance_from_form_params}
 
     builder_func = post_data_container_builder[data_container_cls]
     return builder_func(data_container_cls, params)

@@ -43,6 +43,7 @@ class FakeMutant(Mutant):
     In order to test the Mutant base class methods, I had to create this "fake"
     mutant, which helps with the implementation of required methods.
     """
+
     def get_dc(self):
         return self.get_fuzzable_request().get_uri().querystring
 
@@ -92,7 +93,8 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(token_2.get_value(), 'abc')
 
         self.assertTrue(all(isinstance(m, Mutant) for m in created_mutants))
-        self.assertTrue(all(m.get_mutant_class() == 'FakeMutant' for m in created_mutants))
+        self.assertTrue(all(m.get_mutant_class() ==
+                            'FakeMutant' for m in created_mutants))
 
     def test_alternative_mutant_creation(self):
         freq = FuzzableRequest(URL('http://moth/?a=1&b=2'))
@@ -159,9 +161,12 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_post_data(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
-        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
-        form_params.add_field_by_attr_items([("name", "image"), ("type", "file")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "image"), ("type", "file")])
 
         form = MultipartContainer(form_params)
         freq = FuzzableRequest(self.url, post_data=form)
@@ -170,10 +175,8 @@ class TestMutant(unittest.TestCase):
 
         with patch(ph) as mock_rand_alpha:
             mock_rand_alpha.return_value = 'upload'
-            generated_mutants = PostDataMutant.create_mutants(freq,
-                                                              self.payloads, [],
-                                                              False,
-                                                              self.fuzzer_config)
+            generated_mutants = PostDataMutant.create_mutants(
+                freq, self.payloads, [], False, self.fuzzer_config)
 
         self.assertEqual(len(generated_mutants), 6, generated_mutants)
 
@@ -227,11 +230,14 @@ class TestMutant(unittest.TestCase):
         boundary = get_boundary()
         noop = '1' * len(boundary)
 
-        expected_data = [encode_as_multipart(f, boundary) for f in expected_forms]
+        expected_data = [
+            encode_as_multipart(
+                f, boundary) for f in expected_forms]
         expected_data = set([s.replace(boundary, noop) for s in expected_data])
 
         generated_forms = [m.get_dc() for m in generated_mutants]
-        generated_data = [str(f).replace(f.boundary, noop) for f in generated_forms]
+        generated_data = [str(f).replace(f.boundary, noop)
+                          for f in generated_forms]
 
         self.assertEqual(expected_data, set(generated_data))
 
@@ -256,7 +262,7 @@ class TestMutant(unittest.TestCase):
                                                     True, self.fuzzer_config)
 
         expected_dcs = ['a=1abc&b=2', 'a=1&b=2abc',
-                        'a=1def&b=2', 'a=1&b=2def',]
+                        'a=1def&b=2', 'a=1&b=2def', ]
 
         created_dcs = [str(i.get_dc()) for i in created_mutants]
 
@@ -295,17 +301,18 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_qs_and_postdata(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
-        form_params.add_field_by_attr_items([("name", "password"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "password"), ("value", "")])
 
         url = URL('http://moth/foo.bar?action=login')
 
         form = URLEncodedForm(form_params)
         freq = FuzzableRequest(url, post_data=form)
 
-        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
-                                                        False,
-                                                        self.fuzzer_config)
+        created_mutants = PostDataMutant.create_mutants(
+            freq, self.payloads, [], False, self.fuzzer_config)
         created_dcs = [str(i.get_dc()) for i in created_mutants]
 
         expected_dcs = ['username=abc&password=FrAmE30.',

@@ -25,37 +25,35 @@ from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestInvalidURL(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'invalid_target_url', 'images')
-    
+
     def test_invalid_url(self):
         self.click('insert_target_url_here')
         self.type('http:', False)
-        self.type(['<Enter>',], False)
+        self.type(['<Enter>', ], False)
         # For some reason this moves the mouse pointer to the right location
         # but then it doesn't seem to click on it
-        #self.click('scan_start')
-        
+        # self.click('scan_start')
+
         self.find('invalid_url')
         self.click('ok')
 
     def test_invalid_url_correct_mistake(self):
         first = 'http:'
         second = '//moth/w3af/audit/xss/simple_xss.php?text=1'
-        
+
         self.click('insert_target_url_here')
         self.type(first, False)
-        self.type(['<Enter>',], False)
-        
+        self.type(['<Enter>', ], False)
+
         self.find('invalid_url')
         self.click('ok')
 
-        self.sleep(1)        
+        self.sleep(1)
         self.type(second, False)
-        self.type(['<Enter>',], False)
-        
+        self.type(['<Enter>', ], False)
+
         # The scan actually started
         self.find('no_audit_grep_plugins')
-        self.type(['<Enter>',], False)
-        
-        
+        self.type(['<Enter>', ], False)

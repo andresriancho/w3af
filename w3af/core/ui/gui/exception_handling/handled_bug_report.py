@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 
 from w3af.core.controllers.exception_handling.helpers import gettempdir
-from w3af.core.ui.gui.exception_handling.common_windows import (SimpleBaseWindow,
-                                                                GithubMultiBugReport)
+from w3af.core.ui.gui.exception_handling.common_windows import (
+    SimpleBaseWindow, GithubMultiBugReport)
 
 
 class BugReportWindow(SimpleBaseWindow, GithubMultiBugReport):
@@ -109,15 +109,16 @@ class BugReportWindow(SimpleBaseWindow, GithubMultiBugReport):
         # the label for the rest of the message
         self.label = gtk.Label()
         self.label.set_line_wrap(True)
-        label_text = _("<i>All these exceptions were stored in '%s' for your later"
-                       ' review.</i>\n\nReporting these is recommended and will'
-                       ' help us improve w3af. <b>You can contribute</b> to the'
-                       ' w3af project and submit these exceptions to our'
-                       ' bug tracking system from within this window only using'
-                       ' <i>two clicks</i>.\n\n'
-                       'w3af will only send the exception traceback and the'
-                       ' version information to Github, no personal or '
-                       ' confidential information is collected.')
+        label_text = _(
+            "<i>All these exceptions were stored in '%s' for your later"
+            ' review.</i>\n\nReporting these is recommended and will'
+            ' help us improve w3af. <b>You can contribute</b> to the'
+            ' w3af project and submit these exceptions to our'
+            ' bug tracking system from within this window only using'
+            ' <i>two clicks</i>.\n\n'
+            'w3af will only send the exception traceback and the'
+            ' version information to Github, no personal or '
+            ' confidential information is collected.')
         self.label.set_markup(label_text % gettempdir())
         self.label.show()
 
@@ -138,7 +139,7 @@ class BugReportWindow(SimpleBaseWindow, GithubMultiBugReport):
 
         self.vbox.pack_start(self.hbox, True, False, 10)
 
-        #self.resize(400,450)
+        # self.resize(400,450)
         self.add(self.vbox)
         self.show_all()
 

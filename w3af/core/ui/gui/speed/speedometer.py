@@ -31,9 +31,9 @@ MAX_SPEED = 400
 
 
 class Speedometer(gtk.DrawingArea):
-    
+
     # pylint: disable-msg=E1101
-    
+
     def __init__(self):
         super(Speedometer, self).__init__()
         self.connect("expose_event", self.do_expose_event)
@@ -198,6 +198,6 @@ def run(Widget):
     window.present()
     gtk.main()
 
+
 if __name__ == '__main__':
     run(Speedometer)
-    

@@ -79,6 +79,7 @@ class MutableWrapper(object):
     Wrapper around string, int and float which allows me to provide a setter
     around them. The
     """
+
     def __init__(self, wrapped_obj):
         self._wrapped_obj = wrapped_obj
 
@@ -148,7 +149,8 @@ def _json_iter_setters(marbitrary_python_obj, key_names=[]):
             array_key_names.append(KEY_OBJECT)
             array_key_names.append(key)
 
-            for k, v, s in _json_iter_setters(value, key_names=array_key_names):
+            for k, v, s in _json_iter_setters(
+                    value, key_names=array_key_names):
                 yield k, v, s
 
 

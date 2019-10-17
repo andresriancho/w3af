@@ -14,7 +14,7 @@ def watch(scan_log_filename, scan, function_name):
             output = globals()[function_name](scan_log_filename, scan)
         except KeyboardInterrupt:
             sys.exit(0)
-        except Exception, e:
+        except Exception as e:
             print('Exception: %s' % e)
             sys.exit(1)
         else:

@@ -11,8 +11,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.HIGH
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -32,6 +34,8 @@ def tamper(payload, **kwargs):
 
     match = re.search(r"(?i)LIMIT\s*(\d+),\s*(\d+)", payload or "")
     if match:
-        retVal = retVal.replace(match.group(0), "LIMIT %s OFFSET %s" % (match.group(2), match.group(1)))
+        retVal = retVal.replace(
+            match.group(0), "LIMIT %s OFFSET %s" %
+            (match.group(2), match.group(1)))
 
     return retVal

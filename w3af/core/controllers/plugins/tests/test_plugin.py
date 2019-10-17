@@ -29,12 +29,11 @@ class TestPlugin(unittest.TestCase):
     def test_get_desc_trivial(self):
         p = Plugin()
         p.__doc__ = 'abc'
-        
+
         self.assertEqual(p.get_desc(), 'abc')
 
     def test_get_desc_complex(self):
         p = find_dvcs()
         desc = p.get_desc()
-        
-        self.assertNotIn('author', desc)
 
+        self.assertNotIn('author', desc)

@@ -99,8 +99,9 @@ class pks(SearchEngine):
                     if domain == query:
                         if account not in accounts:
                             accounts.append(account)
-                            
-                            pksr = PKSResult(name, account, domain, response.id)
+
+                            pksr = PKSResult(
+                                name, account, domain, response.id)
                             results.append(pksr)
 
         return results

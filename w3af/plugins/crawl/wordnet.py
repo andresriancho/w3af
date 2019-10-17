@@ -75,15 +75,15 @@ class wordnet(CrawlPlugin):
             return
 
         if fuzzy_not_equal(original_response.body, response.body, 0.85):
-            
+
             # Verify against something random
             rand = rand_alpha()
             rand_mutant = mutant.copy()
             rand_mutant.set_token_value(rand)
             rand_response = self._uri_opener.send_mutant(rand_mutant)
-            
+
             if fuzzy_not_equal(response.body, rand_response.body, 0.85):
-                
+
                 fr = FuzzableRequest(response.get_uri())
                 self.output_queue.put(fr)
 
@@ -103,12 +103,13 @@ class wordnet(CrawlPlugin):
         :return: A list of mutants.
         """
         query_string = fuzzable_request.get_uri().querystring
-        
+
         for token in query_string.iter_tokens():
             wordnet_results = self._search_wn(token.get_value())
 
-            mutants = QSMutant.create_mutants(fuzzable_request, wordnet_results,
-                                              [token.get_name()], False, {})
+            mutants = QSMutant.create_mutants(
+                fuzzable_request, wordnet_results, [
+                    token.get_name()], False, {})
 
             for mutant in mutants:
                 yield mutant
@@ -120,7 +121,7 @@ class wordnet(CrawlPlugin):
         :return: A list of related words.
         """
         result = []
-        
+
         if not word or word.isdigit():
             return result
 
@@ -128,16 +129,16 @@ class wordnet(CrawlPlugin):
             # Now the magic that gets me a lot of results:
             try:
                 result.extend(wn.synsets(word)[0].hypernyms()[0].hyponyms())
-            except:
+            except BaseException:
                 pass
-    
+
             synset_list = wn.synsets(word)
-    
+
             for synset in synset_list:
-    
+
                 # first I add the synset as it is:
                 result.append(synset)
-    
+
                 # Now some variations...
                 result.extend(synset.hypernyms())
                 result.extend(synset.hyponyms())
@@ -190,25 +191,25 @@ class wordnet(CrawlPlugin):
         url = fuzzable_request.get_url()
         fname_ext = url.get_file_name()
         splitted_fname_ext = fname_ext.split('.')
-        
+
         if not len(splitted_fname_ext) == 2:
             return []
-        
+
         name = splitted_fname_ext[0]
 
         wordnet_result = self._search_wn(name)
-        
+
         # Given that we're going to be testing these as filenames, we're
         # going to remove the ones with spaces, since that's very strange
         # to find online
         wordnet_result = [word for word in wordnet_result if ' ' not in word]
-        
+
         fuzzer_config = {'fuzz_url_filenames': True}
 
         mutants = FileNameMutant.create_mutants(fuzzable_request,
                                                 wordnet_result, [0], False,
                                                 fuzzer_config)
-        
+
         return mutants
 
     def get_options(self):

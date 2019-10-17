@@ -36,7 +36,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 class genexus_xml(CrawlPlugin):
     """
     Analyze the execute.xml and DeveloperMenu.xml files and find new URLs
-    
+
     :author: Daniel Maldonado (daniel_5502@yahoo.com.ar)
     :url: http://caceriadespammers.com.ar
     """
@@ -53,11 +53,11 @@ class genexus_xml(CrawlPlugin):
                                 (among other things) the URL to test.
         """
         base_url = fuzzable_request.get_url().base_url()
-        
+
         for file_name in self.GENEXUS_DB:
             genexus_url = base_url.url_join(file_name)
             http_response = self._uri_opener.GET(genexus_url, cache=True)
-            
+
             if '</ObjLink>' not in http_response:
                 return
 
@@ -88,7 +88,7 @@ class genexus_xml(CrawlPlugin):
         om.out.debug('Parsing xml file with xml.dot.minidom.')
         try:
             dom = xml.dom.minidom.parseString(http_response.get_body())
-        except Exception, e:
+        except Exception as e:
             msg = 'Error while parsing "%s": "%s"'
             args = (http_response.get_url(), e)
             om.out.debug(msg % args)
@@ -101,10 +101,10 @@ class genexus_xml(CrawlPlugin):
             try:
                 url = url.childNodes[0].data
                 url = base_url.url_join(url)
-            except ValueError, ve:
+            except ValueError as ve:
                 msg = '"%s" file had an invalid URL "%s"'
                 om.out.debug(msg % (file_name, ve))
-            except:
+            except BaseException:
                 msg = '"%s" file had an invalid format'
                 om.out.debug(msg % file_name)
             else:

@@ -102,13 +102,14 @@ class TestFileNameMutant(unittest.TestCase):
                                                           False,
                                                           self.fuzzer_config)
 
-        expected_urls = ['http://www.w3af.com/ls+-+la.htm',
-                         'http://www.w3af.com/bar.ls+-+la',
-                         'http://www.w3af.com/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F.htm',
-                         'http://www.w3af.com/http%3A//127.0.0.1%3A8015/test/.htm',
-                         'http://www.w3af.com/bar.http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F',
-                         'http://www.w3af.com/bar.http%3A//127.0.0.1%3A8015/test/']
+        expected_urls = [
+            'http://www.w3af.com/ls+-+la.htm',
+            'http://www.w3af.com/bar.ls+-+la',
+            'http://www.w3af.com/http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F.htm',
+            'http://www.w3af.com/http%3A//127.0.0.1%3A8015/test/.htm',
+            'http://www.w3af.com/bar.http%3A%2F%2F127.0.0.1%3A8015%2Ftest%2F',
+            'http://www.w3af.com/bar.http%3A//127.0.0.1%3A8015/test/']
 
         generated_urls = [m.get_url().url_string for m in generated_mutants]
-        
+
         self.assertEqual(set(expected_urls), set(generated_urls))

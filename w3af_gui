@@ -14,7 +14,7 @@ dependency_check()
 
 import w3af.core.controllers.output_manager as om
 
-      
+
 USAGE_DOC = '''
 w3af - Web Application Attack and Audit Framework
 
@@ -28,18 +28,18 @@ Options:
         Display this help message.
 
     -n or --no-update
-        No update check will be made when starting. This option takes 
+        No update check will be made when starting. This option takes
         precedence over the 'auto-update' setting in 'startup.conf' file.
-     
+
     -f or --force-update
-        An update check will be made when starting. This option takes 
+        An update check will be made when starting. This option takes
         precedence over the 'auto-update' setting in 'startup.conf' file.
-    
+
     -p <profile> or --profile=<profile>
         Run with the selected <profile>
 
 For more info visit http://w3af.org/
-'''    
+'''
 
 
 def _configure_output_manager():
@@ -67,10 +67,10 @@ def main():
         # print help information and exit:
         usage()
         return -3
-    
+
     profile = None
     doupdate = None
-    
+
     for o, a in opts:
         if o in ("-e"):
             # easter egg
@@ -87,7 +87,6 @@ def main():
             doupdate = True
         elif o in ('-n', '--no-update'):
             doupdate = False
-    
 
     # go with GTK, but first check about DISPLAY environment variable
     if sys.platform != "win32":

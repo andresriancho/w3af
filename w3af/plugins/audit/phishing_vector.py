@@ -122,8 +122,9 @@ class phishing_vector(AuditPlugin):
                 self.kb_append_uniq(self, 'phishing_vector', v)
                 break
 
-        msg = ('Performed HTTP response analysis at audit.phishing_vector URL %s,'
-               ' HTTP response ID %s.')
+        msg = (
+            'Performed HTTP response analysis at audit.phishing_vector URL %s,'
+            ' HTTP response ID %s.')
         args = (response.get_uri(), response.id)
         om.out.debug(msg % args)
 

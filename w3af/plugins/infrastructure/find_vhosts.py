@@ -69,8 +69,9 @@ class find_vhosts(InfrastructurePlugin):
         if self._first_exec:
             self._first_exec = False
 
-            self._check_potential_vhosts(fuzzable_request,
-                                         self._get_common_virtual_hosts(fuzzable_request))
+            self._check_potential_vhosts(
+                fuzzable_request,
+                self._get_common_virtual_hosts(fuzzable_request))
 
         # Also test for ""dead links"" that the web developer left in the
         # page. For example, if w3af finds a link to:
@@ -89,7 +90,8 @@ class find_vhosts(InfrastructurePlugin):
         :return: Yield domains that can not be resolved or resolve to a private
                  IP address
         """
-        original_response = self._uri_opener.GET(fuzzable_request.get_uri(), cache=True)
+        original_response = self._uri_opener.GET(
+            fuzzable_request.get_uri(), cache=True)
 
         try:
             dp = parser_cache.dpc.get_document_parser_for(original_response)
@@ -121,8 +123,9 @@ class find_vhosts(InfrastructurePlugin):
             if not is_private_site(domain):
                 continue
 
-            desc = (u'The content of "%s" references a non existent domain: "%s".'
-                    u' This can be a broken link, or an internal domain name.')
+            desc = (
+                u'The content of "%s" references a non existent domain: "%s".'
+                u' This can be a broken link, or an internal domain name.')
             desc %= (fuzzable_request.get_url(), domain)
 
             i = Info(u'Internal hostname in HTML link', desc,
@@ -151,7 +154,8 @@ class find_vhosts(InfrastructurePlugin):
 
         for vhost, vhost_response in self._send_in_threads(base_url, vhosts):
 
-            if not self._response_is_different(vhost_response, orig_resp_body, non_existent_responses):
+            if not self._response_is_different(
+                    vhost_response, orig_resp_body, non_existent_responses):
                 continue
 
             domain = fuzzable_request.get_url().get_domain()
@@ -170,7 +174,11 @@ class find_vhosts(InfrastructurePlugin):
             kb.kb.append(self, 'find_vhosts', v)
             om.out.information(v.get_desc())
 
-    def _response_is_different(self, vhost_response, orig_resp_body, non_existent_responses):
+    def _response_is_different(
+            self,
+            vhost_response,
+            orig_resp_body,
+            non_existent_responses):
         """
         Note that we use 0.35 in fuzzy_equal because we want the responses to be
         *really different*.
@@ -217,7 +225,8 @@ class find_vhosts(InfrastructurePlugin):
         base_url = fuzzable_request.get_url().base_url()
 
         # One for the TLD
-        non_existent_domain = 'iDoNotExistPleaseGoAwayNowOrDie%s.com' % rand_alnum(4)
+        non_existent_domain = 'iDoNotExistPleaseGoAwayNowOrDie%s.com' % rand_alnum(
+            4)
 
         # One for subdomain
         args = (rand_alnum(4), base_url.get_domain())
@@ -228,7 +237,7 @@ class find_vhosts(InfrastructurePlugin):
         for ne_domain in (non_existent_domain, non_existent_subdomain):
             try:
                 http_response = self._http_get_vhost(base_url, ne_domain)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Failed to generate invalid domain fingerprint: %s'
                 om.out.debug(msg % e)
             else:

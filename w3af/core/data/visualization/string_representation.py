@@ -40,12 +40,12 @@ class StringRepresentation(object):
         :param width: The width of the string to generate
         :param height: The width of the string to generate
         """
-        linecount = lambda ln: sum(map(ord, (char for char in ln)))
+        def linecount(ln): return sum(map(ord, (char for char in ln)))
         split = instr.split('\n')
         length = max(len(split), width)
         step, extra = divmod(length, width)
 
-        sumlinecounts = lambda st, en: \
+        def sumlinecounts(st, en): return \
             sum(linecount(ln) for ln in split[st:en])
 
         for i, j in enumerate(xrange(0, length - extra, step)):

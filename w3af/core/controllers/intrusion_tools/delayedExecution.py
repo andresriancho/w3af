@@ -26,6 +26,7 @@ class delayedExecution(object):
     """
     This class is a base class for crontabHandler and atHandler.
     """
+
     def __init__(self, exec_method):
         self._exec_method = exec_method
 
@@ -34,9 +35,9 @@ class delayedExecution(object):
         A wrapper for executing commands
         """
         om.out.debug('Executing: "%s".' % command)
-        response = apply(self._exec_method, (command,))
-        om.out.debug('"%s" returned "%s".' % (command, response) )
-        
+        response = self._exec_method(*(command,))
+        om.out.debug('"%s" returned "%s".' % (command, response))
+
         return response
 
     def _fix_time(self, hour, minute, am_pm=''):

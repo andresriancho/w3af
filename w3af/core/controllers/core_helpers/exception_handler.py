@@ -115,7 +115,8 @@ class ExceptionHandler(object):
         # the way we want to.
         #
         with self._lock:
-            edata = ExceptionData(current_status, exception, tb, enabled_plugins)
+            edata = ExceptionData(
+                current_status, exception, tb, enabled_plugins)
 
             count = 0
             for stored_edata in self._exception_data:
@@ -254,7 +255,13 @@ class ExceptionHandler(object):
                  systems.
         """
         if not self._scan_id:
-            hash_data = str(random.randint(1, 50000000) * random.randint(1, 50000000))
+            hash_data = str(
+                random.randint(
+                    1,
+                    50000000) *
+                random.randint(
+                    1,
+                    50000000))
 
             m = hashlib.md5(hash_data)
             self._scan_id = m.hexdigest()[:10]
@@ -314,7 +321,8 @@ class ExceptionData(object):
         self.status = current_status
         self.status.set_w3af_core(None)
 
-        self.fuzzable_request = current_status.get_current_fuzzable_request(self.phase)
+        self.fuzzable_request = current_status.get_current_fuzzable_request(
+            self.phase)
         self.fuzzable_request = cleanup_bug_report(str(self.fuzzable_request))
 
     def _initialize_from_plugins(self, enabled_plugins):
@@ -335,7 +343,8 @@ class ExceptionData(object):
             self.traceback = tb
 
         # Extract the filename and line number where the exception was raised
-        path, filename, self.function_name, self.lineno = get_exception_location(tb)
+        path, filename, self.function_name, self.lineno = get_exception_location(
+            tb)
         if path is not None:
             self.filename = os.path.join(path, filename)
 

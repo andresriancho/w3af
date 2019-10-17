@@ -40,7 +40,8 @@ class motw(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._motw_re = re.compile('<!--\s*saved from url=\((\d\d\d\d)\)(.*?)\s*-->')
+        self._motw_re = re.compile(
+            '<!--\s*saved from url=\((\d\d\d\d)\)(.*?)\s*-->')
 
     def grep(self, request, response):
         """
@@ -52,10 +53,10 @@ class motw(GrepPlugin):
         """
         if not response.is_text_or_html():
             return
-        
+
         body = response.get_body()
         body = body[:2048]
-        
+
         if self.STRING_MATCH not in body:
             return
 
@@ -120,7 +121,7 @@ class motw(GrepPlugin):
         return """
         This plugin will specify whether the page is compliant against the MOTW
         standard. The standard is explained in:
-        
+
             - http://msdn2.microsoft.com/en-us/library/ms537628.aspx
 
         This plugin tests if the length of the URL specified by "(XYZW)" is

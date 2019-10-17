@@ -27,16 +27,17 @@ class OSCommandingTemplate(BaseTemplate):
     """
     Vulnerability template for eval vulnerability.
     """
+
     def __init__(self):
         super(OSCommandingTemplate, self).__init__()
-        
+
         self.name = self.get_vulnerability_name()
         self.operating_system = 'linux'
         self.separator = '&'
-        
+
     def get_options(self):
         ol = super(OSCommandingTemplate, self).get_options()
-        
+
         d = 'Command separator used for injecting commands. Usually one of'\
             '&, |, &&, || or ; .'
         o = opt_factory('separator', self.separator, d, 'string')
@@ -45,22 +46,22 @@ class OSCommandingTemplate(BaseTemplate):
         d = 'Remote operating system (linux or windows).'
         o = opt_factory('operating_system', self.operating_system, d, 'string')
         ol.add(o)
-        
+
         return ol
-    
+
     def set_options(self, options_list):
         super(OSCommandingTemplate, self).set_options(options_list)
         self.separator = options_list['separator'].get_value()
         self.operating_system = options_list['operating_system'].get_value()
-    
+
     def create_vuln(self):
         v = super(OSCommandingTemplate, self).create_vuln()
-        
+
         v['separator'] = self.separator
         v['os'] = self.operating_system
-        
+
         return v
-        
+
     def get_kb_location(self):
         """
         :return: A tuple with the location where the vulnerability will be

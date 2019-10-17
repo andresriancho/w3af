@@ -67,7 +67,8 @@ class vulners_db(GrepPlugin):
         GrepPlugin.__init__(self)
 
         # Vulners rules JSON url
-        self._vulners_rules_url = URL('https://raw.githubusercontent.com/vulnersCom/detect-rules/master/rules.json')
+        self._vulners_rules_url = URL(
+            'https://raw.githubusercontent.com/vulnersCom/detect-rules/master/rules.json')
 
         # Vulners shared objects
         self._vulners_api = None
@@ -119,17 +120,20 @@ class vulners_db(GrepPlugin):
         # Here we will store unique vulnerability map
         vulnerabilities_summary = {}
 
-        for match, _, regex_comp, software_list in self._multi_re.query(raw_response):
+        for match, _, regex_comp, software_list in self._multi_re.query(
+                raw_response):
             detected_version = match.group(1)
 
             for software_name in software_list:
                 matched_rule = self.rules_table[software_name]
 
-                vulnerabilities_map = self.check_vulners(software_name=matched_rule['alias'].encode(),
-                                                         software_version=detected_version,
-                                                         check_type=matched_rule['type'].encode())
+                vulnerabilities_map = self.check_vulners(
+                    software_name=matched_rule['alias'].encode(),
+                    software_version=detected_version,
+                    check_type=matched_rule['type'].encode())
 
-                flattened_vulnerability_list = [item for sublist in vulnerabilities_map.values() for item in sublist]
+                flattened_vulnerability_list = [
+                    item for sublist in vulnerabilities_map.values() for item in sublist]
                 for bulletin in flattened_vulnerability_list:
                     if bulletin['id'] not in vulnerabilities_summary:
                         vulnerabilities_summary[bulletin['id']] = bulletin
@@ -137,11 +141,19 @@ class vulners_db(GrepPlugin):
         # Now add KB's for found vulnerabilities
         for bulletin in vulnerabilities_summary.values():
 
-            v = Vuln(name=bulletin['id'],
-                     desc=bulletin['description'] or bulletin.get('sourceData', bulletin['title']),
-                     severity=cvss_to_severity(bulletin.get('cvss', {}).get('score', 0)),
-                     response_ids=response.id,
-                     plugin_name=self.get_name())
+            v = Vuln(
+                name=bulletin['id'],
+                desc=bulletin['description'] or bulletin.get(
+                    'sourceData',
+                    bulletin['title']),
+                severity=cvss_to_severity(
+                    bulletin.get(
+                        'cvss',
+                        {}).get(
+                        'score',
+                        0)),
+                response_ids=response.id,
+                plugin_name=self.get_name())
 
             v.set_url(response.get_url())
 
@@ -175,30 +187,35 @@ class vulners_db(GrepPlugin):
             return
 
         if http_response.get_code() != 200:
-            msg = ('Failed to download the Vulners regex rules table, unexpected'
-                   ' HTTP response code %s')
+            msg = (
+                'Failed to download the Vulners regex rules table, unexpected'
+                ' HTTP response code %s')
             om.out.error(msg % http_response.get_code())
             return
 
         json_table = http_response.get_raw_body()
         self.rules_table = json.loads(json_table)
 
-        # Adapt it for MultiRe structure [(regex,alias)] removing regex duplicated
+        # Adapt it for MultiRe structure [(regex,alias)] removing regex
+        # duplicated
         regex_aliases = collections.defaultdict(list)
         for software_name in self.rules_table:
-            regex_aliases[self.rules_table[software_name].get('regex')] += [software_name]
+            regex_aliases[self.rules_table[software_name].get(
+                'regex')] += [software_name]
 
         # Now create fast RE filter
         # Using re.IGNORECASE because w3af is modifying headers when making RAW dump.
         # Why so? Raw must be raw!
-        self._multi_re = MultiRE(((regex, regex_aliases.get(regex)) for regex in regex_aliases),
-                                 re.IGNORECASE)
+        self._multi_re = MultiRE(
+            ((regex, regex_aliases.get(regex)) for regex in regex_aliases), re.IGNORECASE)
 
     def setup_vulners_api(self):
         try:
-            self._vulners_api = vulners.Vulners(api_key=self._vulners_api_key or None)
+            self._vulners_api = vulners.Vulners(
+                api_key=self._vulners_api_key or None)
         except Exception as e:
-            # If API key is wrong or API key is not a string it will raise exception
+            # If API key is wrong or API key is not a string it will raise
+            # exception
             msg = 'Failed to initialize Vulners API: "%s"'
             om.out.error(msg % e)
             return
@@ -210,7 +227,8 @@ class vulners_db(GrepPlugin):
         if not software_version:
             return {}
 
-        cached_result = self._vulnerability_cache.get((software_name, software_version, check_type))
+        cached_result = self._vulnerability_cache.get(
+            (software_name, software_version, check_type))
         if cached_result:
             return cached_result
 
@@ -225,10 +243,12 @@ class vulners_db(GrepPlugin):
         # connectivity problem or in case Vulners is down.
         try:
             if check_type == 'software':
-                vulnerabilities = self._vulners_api.softwareVulnerabilities(software_name, software_version)
+                vulnerabilities = self._vulners_api.softwareVulnerabilities(
+                    software_name, software_version)
             elif check_type == 'cpe':
                 cpe_string = "%s:%s" % (software_name, software_version)
-                vulnerabilities = self._vulners_api.cpeVulnerabilities(cpe_string.encode())
+                vulnerabilities = self._vulners_api.cpeVulnerabilities(
+                    cpe_string.encode())
         except Exception as e:
             msg = 'Failed to make Vulners API request: "%s"'
             om.out.error(msg % e)
@@ -237,7 +257,8 @@ class vulners_db(GrepPlugin):
             return {}
 
         # If call was OK cache the data and return results
-        self._vulnerability_cache[(software_name, software_version, check_type)] = vulnerabilities
+        self._vulnerability_cache[(
+            software_name, software_version, check_type)] = vulnerabilities
         return vulnerabilities
 
     def get_options(self):
@@ -268,11 +289,11 @@ class vulners_db(GrepPlugin):
         return """
         This plugin extracts software banners and checks vulnerabilities online
         at vulners.com database.
-        
+
         By default the grep plugin uses anonymous Vulners API entry point
         (rate-limited to ~10 rps), it is possible to get a free API key at
         https://vulners.com/ to avoid rate limits.
-        
+
         Configure the API key using the vulners_api_key user-configured
         parameter.
         """

@@ -136,8 +136,8 @@ class TestDCFactory(unittest.TestCase):
         form_params = FormParameters()
 
         form_params.add_field_by_attr_items([('name', 'a'),
-                               ('type', 'text'),
-                               ('value', 'bcd')])
+                                             ('type', 'text'),
+                                             ('value', 'bcd')])
 
         urlencode_dc = dc_from_form_params(form_params)
 
@@ -163,7 +163,11 @@ class TestDCFactoryFromRawParams(unittest.TestCase):
         self.assertEqual(dc['bye'], ['bye'])
 
     def test_multipart_with_files(self):
-        params = {'hello': 'world', 'file': smart_fill_file('image', 'cat.png')}
+        params = {
+            'hello': 'world',
+            'file': smart_fill_file(
+                'image',
+                'cat.png')}
         dc = dc_from_content_type_and_raw_params('multipart/form-data', params)
 
         self.assertIsInstance(dc, MultipartContainer)
@@ -172,7 +176,8 @@ class TestDCFactoryFromRawParams(unittest.TestCase):
 
     def test_urlencoded_form(self):
         params = {'hello': 'world', 'bye': 'bye'}
-        dc = dc_from_content_type_and_raw_params('application/x-www-form-urlencoded', params)
+        dc = dc_from_content_type_and_raw_params(
+            'application/x-www-form-urlencoded', params)
 
         self.assertIsInstance(dc, URLEncodedForm)
         self.assertEqual(dc['hello'], ['world'])

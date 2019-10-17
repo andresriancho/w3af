@@ -28,7 +28,8 @@ from w3af.core.controllers.misc.io import NamedStringIO
 class TestMultipartEncode(unittest.TestCase):
 
     def test_encode_vars(self):
-        _, encoded = multipart_encode([('a', 'b')], {}, boundary='fakeboundary')
+        _, encoded = multipart_encode(
+            [('a', 'b')], {}, boundary='fakeboundary')
         EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data; name="a"'\
                    '\r\n\r\nb\r\n--fakeboundary--\r\n\r\n'
         self.assertEqual(EXPECTED, encoded)

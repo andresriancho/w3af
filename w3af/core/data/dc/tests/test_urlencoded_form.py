@@ -28,10 +28,8 @@ from nose.plugins.attrib import attr
 from w3af.core.data.dc.urlencoded_form import URLEncodedForm
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.utils.form_constants import INPUT_TYPE_TEXT
-from w3af.core.data.parsers.utils.tests.test_form_params import (form_with_radio,
-                                                                 form_with_checkbox,
-                                                                 form_select_cars,
-                                                                 create_form_params_helper)
+from w3af.core.data.parsers.utils.tests.test_form_params import (
+    form_with_radio, form_with_checkbox, form_select_cars, create_form_params_helper)
 
 
 @attr('smoke')

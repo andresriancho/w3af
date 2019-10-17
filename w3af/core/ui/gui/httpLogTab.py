@@ -41,6 +41,7 @@ class httpLogTab(RememberingHPaned):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, w3af, padding=10, time_refresh=False):
         """Init object."""
         super(httpLogTab, self).__init__(w3af, "pane-httplogtab", 300)
@@ -72,10 +73,17 @@ class httpLogTab(RememberingHPaned):
         self._sw = gtk.ScrolledWindow()
         self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_BOOLEAN,
-                                     gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING,
-                                     gobject.TYPE_UINT, gobject.TYPE_STRING,
-                                     gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_FLOAT)
+        self._lstore = gtk.ListStore(
+            gobject.TYPE_UINT,
+            gobject.TYPE_BOOLEAN,
+            gobject.TYPE_STRING,
+            gobject.TYPE_STRING,
+            gobject.TYPE_STRING,
+            gobject.TYPE_UINT,
+            gobject.TYPE_STRING,
+            gobject.TYPE_UINT,
+            gobject.TYPE_STRING,
+            gobject.TYPE_FLOAT)
         # Create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
@@ -95,7 +103,7 @@ class httpLogTab(RememberingHPaned):
         treeselection.set_mode(gtk.SELECTION_MULTIPLE)
 
         self._sw.add(self._lstoreTreeview)
-        #self._sw.set_sensitive(False)
+        # self._sw.set_sensitive(False)
         self._sw.show_all()
         # I want all sections to be resizable
         self._vpan = RememberingVPaned(self.w3af, "pane-swandrRV", 100)
@@ -231,8 +239,8 @@ class httpLogTab(RememberingHPaned):
         treeview.append_column(column)
 
         # Column for bookmark
-        #TODO: Find a better way to do this. The "B" and the checkbox aren't nice
-        #what we aim for is something like the stars in gmail.
+        # TODO: Find a better way to do this. The "B" and the checkbox aren't nice
+        # what we aim for is something like the stars in gmail.
         """
         renderer = gtk.CellRendererToggle()
         renderer.set_property('activatable', True)
@@ -306,7 +314,7 @@ class httpLogTab(RememberingHPaned):
         self._searchText.set_text("")
         try:
             self.find_request_response()
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             self._empty_results()
         return
 
@@ -346,11 +354,11 @@ class httpLogTab(RememberingHPaned):
         # IDs
         try:
             minId = int(self.pref.get_value('trans_id', 'min'))
-        except:
+        except BaseException:
             minId = 0
         try:
             maxId = int(self.pref.get_value('trans_id', 'max'))
-        except:
+        except BaseException:
             maxId = 0
         if maxId > 0:
             search_data.append(('id', maxId, "<"))
@@ -383,9 +391,9 @@ class httpLogTab(RememberingHPaned):
 
         try:
             # Please see the 5000 below
-            searchResultObjects = self._historyItem.find(search_data,
-                                                         result_limit=5001, order_data=[("id", "")])
-        except BaseFrameworkException, w3:
+            searchResultObjects = self._historyItem.find(
+                search_data, result_limit=5001, order_data=[("id", "")])
+        except BaseFrameworkException as w3:
             self._empty_results()
             return
         if len(searchResultObjects) == 0:
@@ -406,13 +414,13 @@ class httpLogTab(RememberingHPaned):
             lastItem = searchResultObjects[-1]
             self._lastId = int(lastItem.id)
             self._show_list_view(searchResultObjects, appendMode=refresh)
-            
+
             self._sw.set_sensitive(True)
             self._req_res_viewer.set_sensitive(True)
-            
+
             if not refresh:
                 self._lstoreTreeview.set_cursor((0,))
-            
+
             return
 
     def _empty_results(self):
@@ -438,7 +446,7 @@ class httpLogTab(RememberingHPaned):
             position = 13 + 48 * len(results)
         else:
             position = 13 + 120
-        #self._vpan.set_position(position)
+        # self._vpan.set_position(position)
         if not appendMode:
             self._sw.show_all()
 
@@ -478,7 +486,7 @@ class httpLogTab(RememberingHPaned):
             # from disk and if they aren't there an exception will rise
             history_item.request
             history_item.response
-        except IOError, ioe:
+        except IOError as ioe:
             self._show_message(_('Error'), str(ioe))
             return
 
@@ -540,7 +548,8 @@ class FilterOptions(gtk.HBox, Preferences):
                     if not opt.widg.is_valid():
                         invalid.append(opt.get_name())
         if invalid:
-            msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
+            msg = _(
+                "The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
             msg += "\n-".join(invalid)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)

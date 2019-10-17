@@ -53,7 +53,8 @@ class get_emails(GrepPlugin):
         :return: None
         """
         try:
-            document_parser = parser_cache.dpc.get_document_parser_for(response)
+            document_parser = parser_cache.dpc.get_document_parser_for(
+                response)
         except BaseFrameworkException:
             return
 
@@ -66,7 +67,12 @@ class get_emails(GrepPlugin):
             analysis_data.append(('external_emails', None))
 
         for kb_key, domain in analysis_data:
-            self._grep_worker(request, response, document_parser, kb_key, domain)
+            self._grep_worker(
+                request,
+                response,
+                document_parser,
+                kb_key,
+                domain)
 
     def _grep_worker(self, request, response, document_parser, kb_key, domain):
         emails = set(document_parser.get_emails(domain))
@@ -102,7 +108,8 @@ class get_emails(GrepPlugin):
                                       group_klass=EmailInfoSet)
 
     def set_options(self, options_list):
-        self._only_target_domain = options_list['only_target_domain'].get_value()
+        self._only_target_domain = options_list['only_target_domain'].get_value(
+        )
 
     def get_options(self):
         """

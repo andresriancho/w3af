@@ -53,14 +53,14 @@ else:
 
 
 def debug_notify(meth):
-    
+
     name = meth.__name__
-    
+
     @wraps(meth)
     def debug(self, *args, **kwds):
         try:
             result = meth(self, *args, **kwds)
-        except ImageNotFound, inf:
+        except ImageNotFound as inf:
             title = 'Error'
             message = 'Error found while running %s%s: %s'
             message = message % (name, args, inf)
@@ -79,18 +79,18 @@ def debug_notify(meth):
             notification.show()
             """
             return result
-    
+
     return debug
 
 
 @attr('ci_fails')
 class XpresserUnittest(unittest.TestCase):
-    
+
     GENERIC_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'main_window', 'images')
     EXTRA_IMAGES = None
     IMAGES = None
-    
-    """    
+
+    """
     @classmethod
     def setUpClass(cls):
         cls.gnome = Gnome()
@@ -102,26 +102,26 @@ class XpresserUnittest(unittest.TestCase):
         cls.gnome.stop()
         restore_original_display()
     """
-         
+
     def setUp(self):
         self.xp = Xpresser()
-        
+
         all_image_paths = [self.GENERIC_IMAGES, self.EXTRA_IMAGES, self.IMAGES]
-        
+
         for image_path in all_image_paths:
             if image_path is not None:
                 self.xp.load_images(image_path)
-            
+
         Notify.init('Xpresser')
-        
+
         self.start_gui()
-        
+
     def start_gui(self):
         self.gui_process = subprocess.Popen(["python", "w3af_gui", "-n"],
-                                             stdout=subprocess.PIPE,
-                                             stderr=subprocess.PIPE)
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
         self.gui_process_pid = self.gui_process.pid
-        
+
         # Move the mouse pointer somewhere where it shouldn't break any image
         # matching (screenshot with pointer vs. stored image)
         self.xp.hover(600, 600)
@@ -129,57 +129,57 @@ class XpresserUnittest(unittest.TestCase):
         # This is an easy way to wait for the GUI to be available before
         # starting any specific tests.
         self.xp.find('insert_target_url_here', timeout=5)
-        self.sleep(0.5)       
-    
+        self.sleep(0.5)
+
     def process_is_alive(self):
         return self.gui_process.poll() is None
-    
+
     def stop_gui(self):
         if self.process_is_alive():
             self.not_find('bug_detected', timeout=1)
             try:
                 self.xp.find('throbber_stopped')
-                self.type(['<Alt>','<F4>'], False)
+                self.type(['<Alt>', '<F4>'], False)
                 self.click('yes')
             except ImageNotFound:
                 if self.gui_process_pid == self.gui_process.pid:
                     self.gui_process.kill()
-    
+
     def tearDown(self):
         self.stop_gui()
-    
+
     @debug_notify
     def click(self, image):
         self.xp.click(image)
-    
+
     @debug_notify
     def find(self, image, timeout=5):
         self.xp.find(image, timeout=timeout)
-    
+
     @debug_notify
     def not_find(self, image, timeout=3):
         try:
             self.xp.find(image, timeout=timeout)
-        except:
+        except BaseException:
             return
         else:
             raise ImageFound('%s was found and should NOT be there' % image)
-        
+
     @debug_notify
     def hover(self, *args):
         self.xp.hover(*args)
-    
+
     @debug_notify
     def double_click(self, image):
         self.xp.double_click(image)
-    
+
     @debug_notify
     def right_click(self, image):
         self.xp.right_click(image)
-    
+
     @debug_notify
     def type(self, chars, hold):
         self.xp.type(chars, hold)
-    
+
     def sleep(self, secs):
         time.sleep(secs)

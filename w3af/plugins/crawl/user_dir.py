@@ -36,15 +36,22 @@ from w3af.plugins.crawl.user_db.user_db import (OS, APPLICATION,
 class user_dir(CrawlPlugin):
     """
     Identify user directories like "http://test/~user/" and infer the remote OS.
-    
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     EMAIL_TAG = 'email'
     COMMON_TAG = 'common'
     EMAIL_USER_DESC = 'username extracted from email'
     COMMON_USER_DESC = 'common operating system username'
-    COMMON_USERS = ['www-data', 'www', 'nobody', 'root', 'admin', 'test', 'ftp',
-                    'backup']
+    COMMON_USERS = [
+        'www-data',
+        'www',
+        'nobody',
+        'root',
+        'admin',
+        'test',
+        'ftp',
+        'backup']
 
     @runonce(exc_class=RunOnce)
     def crawl(self, fuzzable_request, debugging_id):
@@ -75,7 +82,7 @@ class user_dir(CrawlPlugin):
         try:
             response = self._uri_opener.GET(test_url, cache=True,
                                             headers=headers)
-        except:
+        except BaseException:
             msg = 'user_dir failed to create a non existent signature.'
             raise BaseFrameworkException(msg)
 
@@ -93,7 +100,7 @@ class user_dir(CrawlPlugin):
                  directory, None otherwise.
         """
         resp = self.http_get_and_parse(mutated_url)
-        
+
         path = mutated_url.get_path()
         response_body = resp.get_body().replace(path, '')
 

@@ -14,6 +14,7 @@ def python_major():
     result = sys.version_info[0]
     return result
 
+
 if python_major() == 2:
     empty_bytes = ''
     null_byte = '\0'

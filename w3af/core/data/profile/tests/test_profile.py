@@ -58,4 +58,3 @@ class TestProfiles(unittest.TestCase):
         p.remove()
 
         self.assertFalse(os.path.exists(target_tmp))
-

@@ -72,4 +72,3 @@ class ms15_034(InfrastructurePlugin):
         Warning: In some strange scenarios this test can cause a Denial of
         Service.
         """
-

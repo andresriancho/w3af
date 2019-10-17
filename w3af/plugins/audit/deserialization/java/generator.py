@@ -61,7 +61,8 @@ def get_payload_bin_for_command_len(payload, command_len):
 
     offsets = []
 
-    for a_index, b_index, size in difflib.SequenceMatcher(None, payload_bin_1, payload_bin_2).get_matching_blocks():
+    for a_index, b_index, size in difflib.SequenceMatcher(
+            None, payload_bin_1, payload_bin_2).get_matching_blocks():
 
         # The last match is a dummy with size 0, we want to skip it
         if size == 0:
@@ -70,8 +71,10 @@ def get_payload_bin_for_command_len(payload, command_len):
         equals_1 = False
         equals_2 = False
 
-        bytes_at_p1 = payload_bin_1[a_index + size: a_index + size + command_len]
-        bytes_at_p2 = payload_bin_2[b_index + size: b_index + size + command_len]
+        bytes_at_p1 = payload_bin_1[a_index +
+                                    size: a_index + size + command_len]
+        bytes_at_p2 = payload_bin_2[b_index +
+                                    size: b_index + size + command_len]
 
         if bytes_at_p1 == sample_1:
             equals_1 = True
@@ -91,7 +94,7 @@ def main(payloads):
         try:
             p1, o1 = get_payload_bin_for_command_len(payload, 1)
             p2, o2 = get_payload_bin_for_command_len(payload, 2)
-        except Exception, e:
+        except Exception as e:
             args = (payload, e)
             msg = 'Failed to create %s.json, exception: "%s"'
             print(msg % args)
@@ -103,7 +106,13 @@ def main(payloads):
                         "2": {"payload": base64.b64encode(p2),
                               "offsets": o2}}
 
-        file('%s.json' % payload, 'w').write(json.dumps(payload_json, indent=4))
+        file(
+            '%s.json' %
+            payload,
+            'w').write(
+            json.dumps(
+                payload_json,
+                indent=4))
         print('Successfully created %s.json' % payload)
         print('\n\n\n')
 

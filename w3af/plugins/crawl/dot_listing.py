@@ -40,7 +40,7 @@ class dot_listing(CrawlPlugin):
     # -rw-r--r--    1 andresr   w3af         8139 Apr 12 13:23 foo.zip
     regex_str = r'[a-z-]{10}\s*\d+\s*(.*?)\s+(.*?)\s+\d+\s+\w+\s+\d+\s+[0-9:]{4,5}\s+(.*)'
     LISTING_PARSER_RE = re.compile(regex_str)
-    
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -113,11 +113,12 @@ class dot_listing(CrawlPlugin):
         real_groups = set([g for g in groups if not g.isdigit()])
 
         if real_users or real_groups:
-            desc = ('A .listing file which leaks operating system user names'
-                    ' and groups was identified at %s. The leaked users are %s,'
-                    ' and the groups are %s. This information can be used'
-                    ' during a bruteforce attack of the Web application,'
-                    ' SSH or FTP services.')
+            desc = (
+                'A .listing file which leaks operating system user names'
+                ' and groups was identified at %s. The leaked users are %s,'
+                ' and the groups are %s. This information can be used'
+                ' during a bruteforce attack of the Web application,'
+                ' SSH or FTP services.')
             desc %= (response.get_url(),
                      ', '.join(real_users),
                      ', '.join(real_groups))
@@ -140,7 +141,8 @@ class dot_listing(CrawlPlugin):
 
         :return: A list with the information extracted from the listing_file_content
         """
-        for user, group, filename in self.LISTING_PARSER_RE.findall(listing_file_content):
+        for user, group, filename in self.LISTING_PARSER_RE.findall(
+                listing_file_content):
             yield user, group, filename.strip()
 
     def get_long_desc(self):
@@ -151,11 +153,11 @@ class dot_listing(CrawlPlugin):
         This plugin searches for the .listing file in all the directories and
         subdirectories that are sent as input. If the file is found extract new
         URLs from its content.
-        
+
         The .listing file holds information about the list of files in the current
         directory. These files are created when download files from FTP with command
         "wget" and argument "-m" or "--no-remove-listing".
-        
+
         For example, if the input is:
             - http://host.tld/w3af/index.php
 

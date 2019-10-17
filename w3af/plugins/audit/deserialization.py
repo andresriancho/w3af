@@ -62,10 +62,12 @@ class deserialization(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
-        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
-                                      iterable=self._generate_delay_tests(freq),
-                                      callback=lambda x, y: None,
-                                      debugging_id=debugging_id)
+        self._send_mutants_in_threads(
+            func=self._find_delay_in_mutant,
+            iterable=self._generate_delay_tests(freq),
+            callback=lambda x,
+            y: None,
+            debugging_id=debugging_id)
 
     def _should_inject(self, mutant, language):
         """
@@ -174,7 +176,7 @@ class deserialization(AuditPlugin):
                     json_str = file(os.path.join(root, file_name)).read()
                     yield language, json.loads(json_str)
 
-    def _find_delay_in_mutant(self, (mutant, delay_obj), debugging_id=None):
+    def _find_delay_in_mutant(self, xxx_todo_changeme, debugging_id=None):
         """
         Try to delay the response and save a vulnerability if successful
 
@@ -182,6 +184,7 @@ class deserialization(AuditPlugin):
         :param delay_obj: The delay to use
         :param debugging_id: The debugging ID for logging
         """
+        (mutant, delay_obj) = xxx_todo_changeme
         if self._has_bug(mutant):
             return
 
@@ -214,14 +217,14 @@ class deserialization(AuditPlugin):
         return """
         This plugin finds vulnerabilities in the deserialization of untrusted
         data.
-        
+
         These vulnerabilities are found when the application loads an untrusted,
         user-controlled, binary blob into an instance using methods such as
         pickle (Python) or unserialize (Node JS).
-        
+
         The plugin will send various payloads to identify vulnerabilities in
         different languages and programming frameworks, all payloads use time
-        delays to confirm the vulnerability. 
+        delays to confirm the vulnerability.
         """
 
 
@@ -255,6 +258,7 @@ class DeserializationExactDelay(ExactDelay):
     python, etc. in order to avoid this ugly solution, but that would have taken
     a few weeks of work to complete.
     """
+
     def __init__(self, delay_data, delta=0, mult=1):
         super(DeserializationExactDelay, self).__init__(delay_data,
                                                         delta=delta,
@@ -294,10 +298,13 @@ class B64DeserializationExactDelay(DeserializationExactDelay):
     Subclass in order to provide base64 encoded data as a result of
     get_string_for_delay().
     """
+
     def get_string_for_delay(self, seconds):
         """
         Applies :param seconds to self._delay_fmt and returns a base64 encoded
         string.
         """
-        payload = super(B64DeserializationExactDelay, self).get_string_for_delay(seconds)
+        payload = super(
+            B64DeserializationExactDelay,
+            self).get_string_for_delay(seconds)
         return base64.b64encode(payload)

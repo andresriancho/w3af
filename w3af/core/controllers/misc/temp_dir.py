@@ -47,7 +47,7 @@ def create_temp_dir():
     if not os.path.exists(complete_dir):
         try:
             os.makedirs(complete_dir)
-        except OSError, ose:
+        except OSError as ose:
             # I don't care if someone already created it in a different thread,
             # but if we have any other exception, we raise!
             if ose.errno != errno.EEXIST:
@@ -62,4 +62,3 @@ def remove_temp_dir(ignore_errors=False):
     Remove the temp directory.
     """
     shutil.rmtree(get_temp_dir(), ignore_errors=ignore_errors)
-

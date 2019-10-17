@@ -40,7 +40,7 @@ class TestRedirectHandlerLowLevel(unittest.TestCase):
 
     def setUp(self):
         consecutive_number_generator.reset()
-        
+
     @httpretty.activate
     def test_redirect_handler(self):
         """
@@ -55,7 +55,7 @@ class TestRedirectHandlerLowLevel(unittest.TestCase):
 
         redirect_url = URL(self.REDIR_SRC)
         opener = urllib2.build_opener(HTTP30XHandler)
-        
+
         request = urllib2.Request(redirect_url.url_string)
 
         # This is because the 30x handler doesn't implement default error handling
@@ -78,14 +78,14 @@ class TestRedirectHandlerLowLevel(unittest.TestCase):
 
         # Configure the handler
         redirect_url = URL(self.REDIR_SRC)
-        
+
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
         opener = settings.get_custom_opener()
 
         request = HTTPRequest(redirect_url)
         response = opener.open(request)
-        
+
         self.assertEqual(response.code, FOUND)
         self.assertEqual(response.id, 1)
 

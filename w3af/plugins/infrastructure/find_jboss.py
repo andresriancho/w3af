@@ -98,7 +98,12 @@ class find_jboss(InfrastructurePlugin):
             if vuln_db_instance['type'] == 'info':
                 o = Info(name, desc, response.id, self.get_name())
             else:
-                o = Vuln(name, desc, severity.LOW, response.id, self.get_name())
+                o = Vuln(
+                    name,
+                    desc,
+                    severity.LOW,
+                    response.id,
+                    self.get_name())
 
             o.set_url(vuln_url)
             kb.kb.append(self, 'find_jboss', o)

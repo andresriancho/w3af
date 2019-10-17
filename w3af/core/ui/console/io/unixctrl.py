@@ -54,35 +54,36 @@ SEQ_PREFIX = '\x1B'
 def read(amt):
     return sys.stdin.read(amt)
 
+
 old_settings = None
 
 
 def set_raw_input_mode(raw):
     """
     Sets the raw input mode for the linux terminal.
-    
+
     :param raw: Boolean to indicate if we want to turn raw mode on or off.
     """
     if not os.isatty(sys.stdin.fileno()):
         return
-    
+
     global old_settings
-    
+
     if raw and old_settings is None:
         fd = sys.stdin.fileno()
         try:
             old_settings = termios.tcgetattr(fd)
             tty.setraw(sys.stdin.fileno())
-        except Exception, e:
+        except Exception as e:
             om.out.console('termios error: ' + str(e))
-    
+
     elif not (raw or old_settings is None):
         try:
             termios.tcsetattr(sys.stdin.fileno(),
                               termios.TCSADRAIN,
                               old_settings)
             old_settings = None
-        except Exception, e:
+        except Exception as e:
             om.out.console('termios error: ' + str(e))
 
 

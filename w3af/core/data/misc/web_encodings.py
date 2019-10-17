@@ -85,7 +85,8 @@ def generate_url_encoding_functions():
         {unichr(c) for c in xrange(256) if unichr(c) not in string.printable},
 
         # All not in digits, letters and dot
-        {unichr(c) for c in xrange(256) if unichr(c) not in string.digits + string.letters + u'.'},
+        {unichr(c) for c in xrange(256) if unichr(c)
+         not in string.digits + string.letters + u'.'},
 
         # All characters are replaced
         HEX_MAP,
@@ -189,12 +190,13 @@ def generate_html_encoding_functions():
             for replace_by_code in replace_by_codes:
                 for replace_by_name in replace_by_names:
                     for should_upper in should_uppers:
-                        functor = functools.partial(html_encode,
-                                                    by_code_replacer=by_code_replacer,
-                                                    by_name_replacer=by_name_replacer,
-                                                    replace_by_code=replace_by_code,
-                                                    replace_by_name=replace_by_name,
-                                                    should_upper=should_upper)
+                        functor = functools.partial(
+                            html_encode,
+                            by_code_replacer=by_code_replacer,
+                            by_name_replacer=by_name_replacer,
+                            replace_by_code=replace_by_code,
+                            replace_by_name=replace_by_name,
+                            should_upper=should_upper)
 
                         HTML_ENCODING_FUNCTIONS.append(functor)
 

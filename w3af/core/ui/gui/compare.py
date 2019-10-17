@@ -53,6 +53,7 @@ class Compare(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, commHandler):
         entries.RememberingWindow.__init__(
             self, w3af, "compare", "w3af - Compare", "Comparing_HTTP_traffic",
@@ -80,13 +81,29 @@ class Compare(entries.RememberingWindow):
             return gtk.IconSet(gtk.gdk.pixbuf_new_from_file(path))
 
         iconfactory.add(
-            'req_head', make_iconset(os.path.join(GUI_DATA_PATH, 'request-headers.png')))
+            'req_head',
+            make_iconset(
+                os.path.join(
+                    GUI_DATA_PATH,
+                    'request-headers.png')))
         iconfactory.add(
-            'req_body', make_iconset(os.path.join(GUI_DATA_PATH, 'request-body.png')))
+            'req_body',
+            make_iconset(
+                os.path.join(
+                    GUI_DATA_PATH,
+                    'request-body.png')))
         iconfactory.add(
-            'res_head', make_iconset(os.path.join(GUI_DATA_PATH, 'response-headers.png')))
+            'res_head',
+            make_iconset(
+                os.path.join(
+                    GUI_DATA_PATH,
+                    'response-headers.png')))
         iconfactory.add(
-            'res_body', make_iconset(os.path.join(GUI_DATA_PATH, 'response-body.png')))
+            'res_body',
+            make_iconset(
+                os.path.join(
+                    GUI_DATA_PATH,
+                    'response-body.png')))
 
         gtk.stock_add((
             ('req_head', "Show Request Headers", 0,
@@ -105,7 +122,8 @@ class Compare(entries.RememberingWindow):
              'Show/Hide the request headers', self._toggle_reqhead, False),
             ('ReqBody', 'req_body', '_Request Body', None,
              'Show/Hide the request body', self._toggle_reqbody, False),
-            ('RespHeaders', 'res_head', '_Response Headers', None, 'Show/Hide the response headers', self._toggle_resphead, True),
+            ('RespHeaders', 'res_head', '_Response Headers', None,
+             'Show/Hide the response headers', self._toggle_resphead, True),
             ('RespBody', 'res_body', '_Response Body', None,
              'Show/Hide the response body', self._toggle_respbody, True),
         ])
@@ -123,10 +141,16 @@ class Compare(entries.RememberingWindow):
 
         # the line with the "send to" buttons
         self.sendto_box = hbox = gtk.HBox()
-        b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send the Request of the Left to Manual Editor")
+        b = entries.SemiStockButton(
+            "",
+            gtk.STOCK_INDEX,
+            "Send the Request of the Left to Manual Editor")
         b.connect("clicked", self._send_requests, "manual", "left")
         hbox.pack_start(b, False, False, padding=2)
-        b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send the Request of the Left to Fuzzy Editor")
+        b = entries.SemiStockButton(
+            "",
+            gtk.STOCK_PROPERTIES,
+            "Send the Request of the Left to Fuzzy Editor")
         b.connect("clicked", self._send_requests, "fuzzy", "left")
         hbox.pack_start(b, False, False, padding=2)
 
@@ -140,10 +164,16 @@ class Compare(entries.RememberingWindow):
         self.clusterbut.connect("clicked", self._sendCluster)
         self.clusterbut.set_sensitive(False)
         hbox.pack_end(self.clusterbut, False, False, padding=2)
-        b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send the Request of the Right to Fuzzy Editor")
+        b = entries.SemiStockButton(
+            "",
+            gtk.STOCK_PROPERTIES,
+            "Send the Request of the Right to Fuzzy Editor")
         b.connect("clicked", self._send_requests, "fuzzy", "right")
         hbox.pack_end(b, False, False, padding=2)
-        b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send the Request of the Right to Manual Editor")
+        b = entries.SemiStockButton(
+            "",
+            gtk.STOCK_INDEX,
+            "Send the Request of the Right to Manual Editor")
         b.connect("clicked", self._send_requests, "manual", "right")
         hbox.pack_end(b, False, False, padding=2)
         self.vbox.pack_start(hbox, False, False, padding=10)

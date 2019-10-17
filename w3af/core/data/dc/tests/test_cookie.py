@@ -29,28 +29,29 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
 class TestCookieDc(unittest.TestCase):
-    
+
     def test_basic(self):
         cookie_obj = Cookie('test=123; foobar=abc def; path=/')
-        
+
         self.assertIn('test', cookie_obj)
         self.assertIn('foobar', cookie_obj)
         self.assertIn('path', cookie_obj)
 
         self.assertEqual(cookie_obj['test'], ['123'])
         self.assertEqual(cookie_obj['foobar'], ['abc def'])
-        
+
     def test_repeated(self):
         cookie_obj = Cookie('test=123; test=abc def; path=/')
-        
+
         self.assertIn('test', cookie_obj)
         self.assertIn('path', cookie_obj)
-        
+
         self.assertEqual(cookie_obj['test'], ['123', 'abc def'])
 
     def test_create_cookie(self):
         url = URL('http://www.w3af.com/')
-        headers = Headers([('content-type', 'text/html'), ('Cookie', 'abc=def')])
+        headers = Headers(
+            [('content-type', 'text/html'), ('Cookie', 'abc=def')])
         response = HTTPResponse(200, '', headers, url, url)
 
         cookie = Cookie.from_http_response(response)

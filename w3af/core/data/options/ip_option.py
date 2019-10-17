@@ -42,9 +42,9 @@ class IPOption(BaseOption):
     def validate(self, value):
         if value is None:
             return None
-        
+
         if not is_ip_address(value):
             msg = 'Invalid IP address specified ("%s")' % value
             raise BaseFrameworkException(msg)
-        
+
         return value

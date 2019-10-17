@@ -45,9 +45,9 @@ BLIND_SQLI_REFS = [{"url": "http://capec.mitre.org/data/definitions/7.html",
                     "title": "OWASP"}]
 
 BLIND_SQLI_TOP10_REFS = [
-   {u'link': u'https://www.owasp.org/index.php/Top_10_2013-A1',
-    u'owasp_version': u'2013',
-    u'risk_id': 1}
+    {u'link': u'https://www.owasp.org/index.php/Top_10_2013-A1',
+     u'owasp_version': u'2013',
+     u'risk_id': 1}
 ]
 
 
@@ -97,7 +97,7 @@ class TestInfo(unittest.TestCase):
     def test_set_uri(self):
         i = MockInfo()
         self.assertRaises(TypeError, i.set_uri, 'http://www.w3af.com/')
-        
+
         uri = URL('http://www.w3af.com/')
         i.set_uri(uri)
         self.assertEqual(i.get_uri(), uri)
@@ -105,20 +105,20 @@ class TestInfo(unittest.TestCase):
     def test_set_url(self):
         i = MockInfo()
         self.assertRaises(TypeError, i.set_url, 'http://www.w3af.com/?id=1')
-        
+
         uri = URL('http://www.w3af.com/?id=1')
         url = URL('http://www.w3af.com/')
-        
+
         i.set_url(uri)
-        
+
         self.assertEqual(i.get_uri(), uri)
         self.assertEqual(i.get_url(), url)
-    
+
     def test_set_desc(self):
         i = MockInfo()
-        
+
         self.assertRaises(ValueError, i.set_desc, 'abc')
-        
+
         desc = 'abc ' * 30
         i.set_desc(desc)
         self.assertTrue(i.get_desc().startswith(desc))
@@ -146,16 +146,16 @@ class TestInfo(unittest.TestCase):
 
     def test_from_info(self):
         url = URL('http://moth/')
-        
+
         inst1 = MockInfo()
         inst1.set_uri(url)
         inst1['eggs'] = 'spam'
-        
+
         inst2 = Info.from_info(inst1)
-        
+
         self.assertNotEqual(id(inst1), id(inst2))
         self.assertIsInstance(inst2, Info)
-        
+
         self.assertEqual(inst1.get_uri(), inst2.get_uri())
         self.assertEqual(inst1.get_uri(), url)
         self.assertEqual(inst1.get_url(), inst2.get_url())
@@ -171,17 +171,17 @@ class TestInfo(unittest.TestCase):
 
         freq = FuzzableRequest(url)
         fuzzer_config = {}
-        
+
         created_mutants = QSMutant.create_mutants(freq, payloads, [], False,
                                                   fuzzer_config)
-                
+
         mutant = created_mutants[0]
-        
+
         inst = Info.from_mutant('TestCase', 'desc' * 30, 1, 'plugin_name',
                                 mutant)
-        
+
         self.assertIsInstance(inst, Info)
-        
+
         self.assertEqual(inst.get_uri(), mutant.get_uri())
         self.assertEqual(inst.get_url(), mutant.get_url())
         self.assertEqual(inst.get_method(), mutant.get_method())
@@ -251,7 +251,10 @@ class TestInfo(unittest.TestCase):
         # lazy calculation
         self.assertIsNone(i._vulndb)
 
-        expected_references = [Reference(d['url'], d['title']) for d in BLIND_SQLI_REFS]
+        expected_references = [
+            Reference(
+                d['url'],
+                d['title']) for d in BLIND_SQLI_REFS]
 
         self.assertTrue(i.has_db_details())
         self.assertEqual(i.get_vulndb_id(), 46)
@@ -304,4 +307,3 @@ class TestInfo(unittest.TestCase):
         self.assertEqual(jd['severity'], i.get_severity())
         self.assertEqual(jd['attributes'], i.copy())
         self.assertEqual(jd['highlight'], list(i.get_to_highlight()))
-

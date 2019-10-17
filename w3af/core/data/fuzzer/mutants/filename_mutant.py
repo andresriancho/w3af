@@ -66,7 +66,8 @@ class FileNameMutant(URLPartsMutant):
         """
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' filename, with value: "%s".'
-        return fmt % (self.get_url(), self.get_method(), self.get_token_value())
+        return fmt % (self.get_url(), self.get_method(),
+                      self.get_token_value())
 
     @classmethod
     def create_mutants(cls, freq, mutant_str_list, fuzzable_param_list,
@@ -74,7 +75,7 @@ class FileNameMutant(URLPartsMutant):
         """
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
-        
+
         :param fuzzable_param_list: Please note that in this case the user
                                     specifies the chunk of the filename that
                                     he wants to fuzz. Chunks:
@@ -113,7 +114,7 @@ class FileNameMutant(URLPartsMutant):
                     freq_copy = copy.deepcopy(freq)
                     m2 = cls(freq_copy)
                     m2.set_dc(url_parts_container)
-                    #m2.set_double_encoding(True)
+                    # m2.set_double_encoding(True)
                     m2.set_safe_encode_chars('/')
 
                     if m2.get_url() != m.get_url():

@@ -27,19 +27,19 @@ from w3af.core.controllers.auto_update.utils import (get_current_branch,
 
 DOC_ROOT_FMT = 'http://docs.w3af.org/en/%s/gui/'
 DOC_ROUTER = {
-              'wizards': 'tools.html#wizards',
-              'fuzzy_requests': 'tools.html#fuzzy-requests',
-              'using_the_proxy': 'tools.html#using-the-proxy',
-              'manual_requests': 'tools.html#manual-requests',
-              'browsing_the_knowledge_base': 'analyzing-results.html#browsing-the-knowledge-base',
-              # TODO: missing documentation for export requests
-              #'export_requests': '',
-              'encode_and_decode': 'tools.html#encode-and-decode',
-              'cluster': 'tools.html?highlight=cluster#fuzzy-requests',
-              'comparing_http_traffic': 'tools.html#comparing-http-traffic',
-              'configuring_the_scan': 'scanning.html',
-              'exploitation': 'exploitation.html'
-              }
+    'wizards': 'tools.html#wizards',
+    'fuzzy_requests': 'tools.html#fuzzy-requests',
+    'using_the_proxy': 'tools.html#using-the-proxy',
+    'manual_requests': 'tools.html#manual-requests',
+    'browsing_the_knowledge_base': 'analyzing-results.html#browsing-the-knowledge-base',
+    # TODO: missing documentation for export requests
+    #'export_requests': '',
+    'encode_and_decode': 'tools.html#encode-and-decode',
+    'cluster': 'tools.html?highlight=cluster#fuzzy-requests',
+    'comparing_http_traffic': 'tools.html#comparing-http-traffic',
+    'configuring_the_scan': 'scanning.html',
+    'exploitation': 'exploitation.html'
+}
 
 
 def open_help(chapter=''):

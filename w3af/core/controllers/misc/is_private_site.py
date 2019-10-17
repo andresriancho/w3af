@@ -33,7 +33,7 @@ def is_private_site(domain_or_ip_address):
 
     try:
         ip_address = socket.gethostbyname(domain_or_ip_address)
-    except socket.gaierror, se:
+    except socket.gaierror as se:
         # raises exception when it's not found
         if se.errno in (socket.EAI_NODATA, socket.EAI_NONAME):
             return True
@@ -47,5 +47,5 @@ def is_private_site(domain_or_ip_address):
 def matches_private_ip(ip_address):
     try:
         return ipaddress.ip_address(ip_address).is_private
-    except:
+    except BaseException:
         return False

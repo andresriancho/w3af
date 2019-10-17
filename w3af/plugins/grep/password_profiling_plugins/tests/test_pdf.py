@@ -27,13 +27,13 @@ from w3af.plugins.grep.password_profiling_plugins.pdf import pdf
 
 
 class TestPDF(unittest.TestCase):
-    
+
     def test_extract_pdf(self):
         fname = os.path.join(ROOT_PATH, 'plugins', 'grep',
                              'password_profiling_plugins', 'tests', 'test.pdf')
-        
+
         pdf_inst = pdf()
-        
+
         words = pdf_inst._get_pdf_content(file(fname).read())
 
         EXPECTED_RESULT = ['Testing,', 'testing,', '123.', 'Text', 'in',

@@ -9,6 +9,7 @@ import re
 
 from lib.core.exception import SqlmapUndefinedMethod
 
+
 class Syntax:
     """
     This class defines generic syntax functionalities for plugins.

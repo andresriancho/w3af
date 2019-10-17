@@ -35,7 +35,7 @@ def register_globals(response):
 
     if not register_globals_mo:
         return
-    
+
     rg = register_globals_mo.group(1)
     if rg == 'On':
         desc = 'The phpinfo()::register_globals is on.'
@@ -134,7 +134,8 @@ def lowest_privilege_test(response):
     lpt_gid = lowest_privilege_test_mo.group(3)
     lpt_gid = int(lpt_gid)
 
-    is_privileged_username_mo = re.match('root|apache|daemon|bin|operator|adm', lpt_uname, re.I)
+    is_privileged_username_mo = re.match(
+        'root|apache|daemon|bin|operator|adm', lpt_uname, re.I)
 
     if lpt_uid < 99 or lpt_gid < 99 or is_privileged_username_mo:
 
@@ -154,7 +155,11 @@ def lowest_privilege_test(response):
 
         desc %= (lpt_uname, lpt_uid, lpt_gid)
 
-        i = Info('PHP running as low privileged user', desc, response.id, 'phpinfo')
+        i = Info(
+            'PHP running as low privileged user',
+            desc,
+            response.id,
+            'phpinfo')
         i.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', i)
@@ -253,7 +258,8 @@ def cgi_force_redirect(response):
 
 def session_cookie_httponly(response):
     regex_str = 'session\.cookie_httponly</td><td class="v">(Off|no|0)</td>'
-    session_cookie_httponly_mo = re.search(regex_str, response.get_body(), re.I)
+    session_cookie_httponly_mo = re.search(
+        regex_str, response.get_body(), re.I)
 
     if not session_cookie_httponly_mo:
         return
@@ -398,7 +404,8 @@ def post_max_size(response):
 
 def upload_max_filesize(response):
     regex_str = 'upload_max_filesize</td><td class="v">(\d.*?)</td>'
-    upload_max_filesize_mo = re.search(regex_str, response.get_body(), re.IGNORECASE)
+    upload_max_filesize_mo = re.search(
+        regex_str, response.get_body(), re.IGNORECASE)
 
     if not upload_max_filesize_mo:
         return

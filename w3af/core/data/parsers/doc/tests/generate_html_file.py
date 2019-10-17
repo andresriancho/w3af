@@ -14,8 +14,9 @@ def main():
     :return: None, we write the file to data/huge.html
     """
     output = file(OUTPUT_FILE, 'w')
-    write = lambda s: output.write('%s\n' % s)
-    
+
+    def write(s): return output.write('%s\n' % s)
+
     write('<html>')
     write('<title>%s</title>' % SOME_TEXT)
 

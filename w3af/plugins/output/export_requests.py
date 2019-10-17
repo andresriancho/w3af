@@ -55,12 +55,12 @@ class export_requests(OutputPlugin):
         Exports a list of fuzzable requests to the user configured file.
         """
         fuzzable_request_set = kb.kb.get_all_known_fuzzable_requests()
-        
+
         filename = os.path.expanduser(self.output_file)
 
         try:
             out_file = open(filename, 'w')
-        except IOError, ioe:
+        except IOError as ioe:
             msg = 'Failed to open the output file for writing: "%s"'
             om.out.error(msg % ioe)
             return
@@ -69,7 +69,7 @@ class export_requests(OutputPlugin):
             for fr in fuzzable_request_set:
                 out_file.write(fr.to_base64() + '\n')
 
-        except Exception, e:
+        except Exception as e:
             msg = ('An exception was raised while trying to export fuzzable'
                    ' requests to the output file: "%s".' % e)
             om.out.error(msg)

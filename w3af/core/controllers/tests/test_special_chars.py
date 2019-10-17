@@ -60,6 +60,6 @@ class TestSpecialChars(PluginTest):
         cfg = self._run_configs['cfg']
 
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         xss_vulns = self.kb.get('xss', 'xss')
         self.assertEqual(len(xss_vulns), 2, xss_vulns)

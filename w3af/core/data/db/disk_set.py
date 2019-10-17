@@ -35,7 +35,7 @@ class DiskSet(DiskList):
         super(DiskSet, self).__init__(table_prefix=table_prefix)
 
         self.lock = threading.RLock()
-    
+
     def add(self, value):
         """
         Append a value to the DiskSet (only if the value is not already
@@ -70,5 +70,5 @@ class DiskSet(DiskList):
 
     def __unicode__(self):
         return u'<DiskSet [%s]>' % ', '.join([unicode(i) for i in self])
-    
+
     __str__ = __unicode__

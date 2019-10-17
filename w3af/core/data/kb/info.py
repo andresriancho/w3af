@@ -38,9 +38,10 @@ from w3af.core.controllers.ci.constants import ARTIFACTS_DIR
 class Info(dict):
     """
     This class represents an information that is saved to the kb.
-    
+
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, name, desc, response_ids, plugin_name, vulndb_id=None):
         """
         :param name: The vulnerability name, will be checked against the values
@@ -90,10 +91,10 @@ class Info(dict):
         """
         if not isinstance(mutant, Mutant):
             raise TypeError('Mutant expected in from_mutant.')
-        
+
         inst = cls(name, desc, response_ids, plugin_name)
         inst.set_mutant(mutant)
-            
+
         return inst
 
     @classmethod
@@ -112,16 +113,16 @@ class Info(dict):
     @classmethod
     def from_info(cls, other_info):
         """
-        :return: A clone of other_info. 
+        :return: A clone of other_info.
         """
         if not isinstance(other_info, Info):
             raise TypeError('Info expected in from_info.')
-        
+
         name = other_info.get_name()
         desc = other_info.get_desc(with_id=False)
         response_ids = other_info.get_id()
         plugin_name = other_info.get_plugin_name()
-        
+
         inst = cls(name, desc, response_ids, plugin_name)
         inst._string_matches = other_info.get_to_highlight()
         inst._mutant = other_info.get_mutant()
@@ -267,10 +268,10 @@ class Info(dict):
     def set_desc(self, desc):
         if not isinstance(desc, basestring):
             raise TypeError('Descriptions need to be strings.')
-        
+
         if len(desc) <= 15:
             raise ValueError('Description too short.')
-        
+
         self._desc = desc
 
     def get_desc(self, with_id=True):
@@ -442,7 +443,8 @@ class Info(dict):
         dist = 0
         res = []
         last_in_seq = seq[-1]
-        is_last_in_seq = lambda num: num == last_in_seq
+
+        def is_last_in_seq(num): return num == last_in_seq
 
         for num in seq[1:]:
             # Is it a new sub-sequence?
@@ -472,23 +474,23 @@ class Info(dict):
 
     def __repr__(self):
         return '<info object for issue: "%s">' % self._desc
-    
+
     def get_uniq_id(self):
         """
         :return: A uniq identifier for this info object. Since info objects are
                  persisted to SQLite and then re-generated for showing them to
                  the user, we can't use id() to know if two info objects are
                  the same or not.
-                 
+
                  Also, for some special cases it's not enough to be able to use
                  __eq__ since the code was already designed to use id().
-                 
+
                  This method was added as part of the KB to SQLite migration
                  and might disappear in the future. If possible use __eq__
                  to verify if two instances are the same.
         """
         return self._uniq_id
-    
+
     def __eq__(self, other):
         return (self.get_uri() == other.get_uri() and
                 self.get_method() == other.get_method() and
@@ -628,6 +630,5 @@ class Info(dict):
         for s in str_match:
             if not isinstance(s, basestring):
                 raise TypeError('Only able to highlight strings.')
-            
-            self._string_matches.add(s)
 
+            self._string_matches.add(s)

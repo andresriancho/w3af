@@ -28,6 +28,7 @@ class elf:
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, arch='32bit'):
         self._arch = arch
         self._shellcode = '\x90'
@@ -51,6 +52,7 @@ class elf:
         _exit = '\x31\xc0\x40\xcd\x80'
 
         return _header + self._shellcode + _exit
+
 
 if __name__ == '__main__':
     e = elf()

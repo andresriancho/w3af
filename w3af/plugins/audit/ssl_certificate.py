@@ -59,10 +59,10 @@ class ssl_certificate(AuditPlugin):
         """
         It is possible to update this file by downloading the latest
         cacert.pem from curl:
-        
+
             wget https://curl.haxx.se/ca/cacert.pem -O w3af/plugins/audit/ssl_certificate/ca.pem
             git commit w3af/plugins/audit/ssl_certificate/ca.pem -m "Update ca.pem"
-        
+
         """
         self._ca_file = os.path.join(ROOT_PATH, 'plugins', 'audit',
                                      'ssl_certificate', 'ca.pem')
@@ -84,7 +84,7 @@ class ssl_certificate(AuditPlugin):
 
         if url.get_protocol().lower() == 'http':
             return
-        
+
         with self._plugin_lock:
 
             if domain in self._already_tested:
@@ -104,12 +104,13 @@ class ssl_certificate(AuditPlugin):
 
         try:
             cert, cert_der, cipher = self._get_ssl_cert(domain, port)
-        except Exception, e:
+        except Exception as e:
             om.out.debug('Failed to retrieve SSL certificate: "%s"' % e)
         else:
-            self._cert_expiration_analysis(domain, port, cert, cert_der, cipher)
+            self._cert_expiration_analysis(
+                domain, port, cert, cert_der, cipher)
             self._ssl_info_to_kb(domain, port, cert, cert_der, cipher)
-        
+
     def _allows_ssl_v2(self, domain, port):
         """
         Check if the server allows SSLv2 connections
@@ -140,10 +141,11 @@ class ssl_certificate(AuditPlugin):
 
             self.kb_append(self, 'ssl_v2', v)
 
-        self._ssl_connect_specific_protocol(domain,
-                                            port,
-                                            ssl_version=OpenSSL.SSL.SSLv2_METHOD,
-                                            on_success=on_success)
+        self._ssl_connect_specific_protocol(
+            domain,
+            port,
+            ssl_version=OpenSSL.SSL.SSLv2_METHOD,
+            on_success=on_success)
 
     def _url_from_parts(self, domain, port):
         return URL('https://%s:%s/' % (domain, port))
@@ -163,8 +165,10 @@ class ssl_certificate(AuditPlugin):
             """
             try:
                 peer_cert = ssl_sock.getpeercert()
-            except ssl.SSLError, ssl_error:
-                om.out.debug('Failed to retrieve the peer certificate: "%s"' % ssl_error)
+            except ssl.SSLError as ssl_error:
+                om.out.debug(
+                    'Failed to retrieve the peer certificate: "%s"' %
+                    ssl_error)
                 return
 
             if not peer_cert:
@@ -173,14 +177,15 @@ class ssl_certificate(AuditPlugin):
 
             try:
                 match_hostname(peer_cert, _domain)
-            except CertificateError, cve:
+            except CertificateError as cve:
                 self._handle_certificate_validation_error(cve, _domain, _port)
 
-        self._ssl_connect(domain,
-                          port,
-                          cert_reqs=ssl.CERT_REQUIRED,
-                          on_certificate_validation_error=self._handle_certificate_validation_error,
-                          on_success=on_success)
+        self._ssl_connect(
+            domain,
+            port,
+            cert_reqs=ssl.CERT_REQUIRED,
+            on_certificate_validation_error=self._handle_certificate_validation_error,
+            on_success=on_success)
 
     def _get_procotols(self):
         """
@@ -218,16 +223,17 @@ class ssl_certificate(AuditPlugin):
 
         for protocol in self._get_procotols():
             om.out.debug('Trying to connect with SSL protocol %s' % protocol)
-            
+
             try:
-                result = connect(domain,
-                                 port,
-                                 ssl_version=protocol,
-                                 ca_certs=ca_certs,
-                                 cert_reqs=cert_reqs,
-                                 on_certificate_validation_error=on_certificate_validation_error,
-                                 on_success=on_success,
-                                 on_exception=on_exception)
+                result = connect(
+                    domain,
+                    port,
+                    ssl_version=protocol,
+                    ca_certs=ca_certs,
+                    cert_reqs=cert_reqs,
+                    on_certificate_validation_error=on_certificate_validation_error,
+                    on_success=on_success,
+                    on_exception=on_exception)
             except (OpenSSL.SSL.Error, ssl.SSLError):
                 # The protocol failed, try the next one
                 continue
@@ -260,7 +266,7 @@ class ssl_certificate(AuditPlugin):
 
         try:
             s.connect((domain, port))
-        except socket.error, se:
+        except socket.error as se:
             msg = 'Failed to connect to %s:%s. Socket error: "%s"'
             args = (domain, port, se)
             om.out.debug(msg % args)
@@ -285,7 +291,7 @@ class ssl_certificate(AuditPlugin):
                 # Raise SSL errors
                 raise
 
-        except Exception, e:
+        except Exception as e:
             msg = 'Unhandled %s exception in _ssl_connect_specific_protocol(): "%s"'
             args = (e.__class__.__name__, e)
             om.out.debug(msg % args)
@@ -300,8 +306,10 @@ class ssl_certificate(AuditPlugin):
 
             try:
                 ssl_sock.close()
-            except Exception, e:
-                om.out.debug('Exception found while closing SSL socket: "%s"' % e)
+            except Exception as e:
+                om.out.debug(
+                    'Exception found while closing SSL socket: "%s"' %
+                    e)
 
             return result
 
@@ -312,7 +320,7 @@ class ssl_certificate(AuditPlugin):
     def _get_ssl_error_details(self, cve):
         try:
             return cve.args[0][0][2]
-        except:
+        except BaseException:
             return str(cve)
 
     def _handle_certificate_validation_error(self, cve, domain, port):
@@ -398,10 +406,10 @@ class ssl_certificate(AuditPlugin):
         args = (domain, self._dump_ssl_info(cert, cert_der, cipher))
         desc = 'SSL certificate used for %s:\n%s'
         desc %= args
-        
+
         i = Info('SSL Certificate dump', desc, 1, self.get_name())
         i.set_url(self._url_from_parts(domain, port))
-        
+
         self.kb_append(self, 'certificate', i)
 
     def _dump_ssl_info(self, cert, cert_der, cipher):
@@ -416,7 +424,7 @@ class ssl_certificate(AuditPlugin):
 
         res += '\n\n== Certificate dump ==\n\n'
         res += ssl.DER_cert_to_PEM_cert(cert_der)
-        
+
         # Indent
         res = res.replace('\n', '\n    ')
         res = '    ' + res
@@ -433,13 +441,18 @@ class ssl_certificate(AuditPlugin):
         h = ('If the certificate will expire in period of minExpireDays w3af'
              ' will show an alert about it, which is useful for admins to'
              ' remember to renew the certificate.')
-        o = opt_factory('min_expire_days', self._min_expire_days, d, 'integer', help=h)
+        o = opt_factory(
+            'min_expire_days',
+            self._min_expire_days,
+            d,
+            'integer',
+            help=h)
         ol.add(o)
-        
+
         d = 'Path to the ca.pem file containing all root certificates'
         o = opt_factory('ca_file_name', self._ca_file, d, INPUT_FILE)
         ol.add(o)
-        
+
         return ol
 
     def set_options(self, options_list):
@@ -509,16 +522,16 @@ def match_hostname(cert, hostname):
     """
     if not cert:
         raise ValueError("empty or no certificate")
-    
+
     dnsnames = []
     san = cert.get('subjectAltName', ())
-    
+
     for key, value in san:
         if key == 'DNS':
             if _dnsname_to_pat(value).match(hostname):
                 return
             dnsnames.append(value)
-    
+
     if not dnsnames:
         # The subject is only checked when there is no dNSName entry
         # in subjectAltName
@@ -530,11 +543,11 @@ def match_hostname(cert, hostname):
                     if _dnsname_to_pat(value).match(hostname):
                         return
                     dnsnames.append(value)
-    
+
     if len(dnsnames) > 1:
         raise CertificateError("hostname %s doesn't match either of %s"
                                % (hostname, ', '.join(map(str, dnsnames))))
-    
+
     elif len(dnsnames) == 1:
         raise CertificateError("hostname %s doesn't match %s"
                                % (hostname, dnsnames[0]))

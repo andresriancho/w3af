@@ -74,7 +74,8 @@ def create_mutants(freq,
         else:
             count_data[mutant.get_mutant_type()] = 1
 
-    count_summary = ', '.join(['%s: %s' % (i, j) for i, j in count_data.items()])
+    count_summary = ', '.join(['%s: %s' % (i, j)
+                               for i, j in count_data.items()])
     om.out.debug(msg % (len(result), freq, count_summary))
 
     #

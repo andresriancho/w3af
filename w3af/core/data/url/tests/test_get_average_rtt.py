@@ -57,7 +57,8 @@ class TestGetAverageRTT(unittest.TestCase):
 
         mock_url = URL(self.MOCK_URL)
         fuzzable_request = FuzzableRequest(mock_url)
-        average_rtt = self.uri_opener.get_average_rtt_for_mutant(fuzzable_request)
+        average_rtt = self.uri_opener.get_average_rtt_for_mutant(
+            fuzzable_request)
 
         # Check the response
         self.assertGreater(average_rtt, 0.45)
@@ -77,7 +78,8 @@ class TestGetAverageRTT(unittest.TestCase):
 
         mock_url = URL(self.MOCK_URL)
         fuzzable_request = FuzzableRequest(mock_url)
-        average_rtt = self.uri_opener.get_average_rtt_for_mutant(fuzzable_request)
+        average_rtt = self.uri_opener.get_average_rtt_for_mutant(
+            fuzzable_request)
 
         # Check the response
         self.assertGreater(average_rtt, 0.45)
@@ -96,7 +98,8 @@ class TestGetAverageRTT(unittest.TestCase):
 
         mock_url = URL(self.MOCK_URL)
         fuzzable_request = FuzzableRequest(mock_url)
-        average_rtt = self.uri_opener.get_average_rtt_for_mutant(fuzzable_request)
+        average_rtt = self.uri_opener.get_average_rtt_for_mutant(
+            fuzzable_request)
 
         # Check the response
         self.assertGreater(average_rtt, 0.80)

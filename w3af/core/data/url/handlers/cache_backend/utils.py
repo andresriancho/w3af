@@ -10,9 +10,11 @@ def gen_hash(request):
         * https://github.com/andresriancho/w3af/issues/1917
     """
     req = request
-    headers_1 = ''.join('%s%s' % (safe_str(h), safe_str(v)) for h, v in req.headers.iteritems())
-    headers_2 = ''.join('%s%s' % (safe_str(h), safe_str(v)) for h, v in req.unredirected_hdrs.iteritems())
-    
+    headers_1 = ''.join('%s%s' % (safe_str(h), safe_str(v))
+                        for h, v in req.headers.iteritems())
+    headers_2 = ''.join('%s%s' % (safe_str(h), safe_str(v))
+                        for h, v in req.unredirected_hdrs.iteritems())
+
     the_str = '%s%s%s%s%s' % (safe_str(req.get_method()),
                               safe_str(req.get_full_url()),
                               headers_1,

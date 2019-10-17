@@ -44,7 +44,7 @@ class TestWrappedW3afConsole(unittest.TestCase):
         # find the "correct" / "virtual" python executable using which and
         # then pass that one to Popen
         python_executable = sys.executable
-        
+
         p = subprocess.Popen([python_executable, 'w3af_console', '-n'],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,

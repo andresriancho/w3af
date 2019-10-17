@@ -29,13 +29,13 @@ from w3af.core.data.kb.info import Info
 
 class url_session(GrepPlugin):
     """
-    Finds URLs which have a parameter that holds the session ID. 
+    Finds URLs which have a parameter that holds the session ID.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    
+
     SESSID_PARAMS = ALL_COOKIES
-    
+
     def __init__(self):
         GrepPlugin.__init__(self)
         self._already_reported = ScalableBloomFilter()
@@ -50,7 +50,7 @@ class url_session(GrepPlugin):
         """
         self.analyze_uri(request, response)
         self.analyze_document_links(request, response)
-    
+
     def _has_sessid(self, uri):
         """
         :return: A set which contains the session ID parameters (if any)
@@ -61,21 +61,21 @@ class url_session(GrepPlugin):
             params = set(query_string.keys())
             sessid_in_uri = self.SESSID_PARAMS.intersection(params)
         return sessid_in_uri
-        
+
     def analyze_document_links(self, request, response):
         """
         Find session IDs in the URI and store them in the KB.
         """
         try:
             doc_parser = parser_cache.dpc.get_document_parser_for(response)
-        except:
+        except BaseException:
             pass
         else:
             parsed_refs, _ = doc_parser.get_references()
-            
+
             for link_uri in parsed_refs:
                 if self._has_sessid(link_uri) and \
-                response.get_url() not in self._already_reported:
+                        response.get_url() not in self._already_reported:
                     #   report these informations only once
                     self._already_reported.add(response.get_url())
 
@@ -84,12 +84,12 @@ class url_session(GrepPlugin):
                            ' to third party domains through the referrer'\
                            ' header.'
                     desc = desc % (response.get_url(), link_uri)
-                    
+
                     #   append the info object to the KB.
                     i = Info('Session ID in URL', desc, response.id,
                              self.get_name())
                     i.set_uri(response.get_uri())
-                    
+
                     self.kb_append(self, 'url_session', i)
                     break
 
@@ -99,21 +99,21 @@ class url_session(GrepPlugin):
         """
         request_uri = request.get_uri()
         if self._has_sessid(request_uri) and \
-        response.get_url() not in self._already_reported:
+                response.get_url() not in self._already_reported:
                 #   report these informations only once
-                self._already_reported.add(response.get_url())
-                
-                desc = 'The URL "%s" contains a session id which could be'\
-                       ' leaked to third party domains through the referrer'\
-                       ' header.'
-                desc %= request_uri
-                
-                #   append the info object to the KB.
-                i = Info('Session ID in URL', desc, response.id,
-                         self.get_name())
-                i.set_uri(response.get_uri())
+            self._already_reported.add(response.get_url())
 
-                self.kb_append(self, 'url_session', i)
+            desc = 'The URL "%s" contains a session id which could be'\
+                   ' leaked to third party domains through the referrer'\
+                   ' header.'
+            desc %= request_uri
+
+            #   append the info object to the KB.
+            i = Info('Session ID in URL', desc, response.id,
+                     self.get_name())
+            i.set_uri(response.get_uri())
+
+            self.kb_append(self, 'url_session', i)
 
     def get_long_desc(self):
         """
@@ -122,7 +122,7 @@ class url_session(GrepPlugin):
         return """
         This plugin finds URLs which contain a parameter that stores the
         session ID.
-        
+
         This configuration leaves the session id exposed in browser
         and server logs, and is also leaked through the HTTP referrer
         header.

@@ -7,6 +7,7 @@ See the file 'LICENSE' for copying permission
 
 __product__ = "webApp.secure (webScurity)"
 
+
 def detect(get_page):
     _, _, code = get_page()
     if code == 403:

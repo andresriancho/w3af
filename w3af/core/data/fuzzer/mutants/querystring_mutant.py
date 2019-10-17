@@ -26,6 +26,7 @@ class QSMutant(Mutant):
     """
     This class is a query string mutant.
     """
+
     def __init__(self, freq):
         Mutant.__init__(self, freq)
 

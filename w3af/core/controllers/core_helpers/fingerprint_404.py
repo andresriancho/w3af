@@ -191,7 +191,8 @@ class Fingerprint404(object):
         :return: True if the HTTP response is a 404
         """
         response_did = http_response.get_debugging_id()
-        debugging_id = response_did if response_did is not None else rand_alnum(8)
+        debugging_id = response_did if response_did is not None else rand_alnum(
+            8)
 
         #
         # Compare query with a known 404 from the DB (or a generated one
@@ -241,7 +242,8 @@ class Fingerprint404(object):
             om.out.debug(msg % args)
             return True
 
-        is_fuzzy_equal = fuzzy_equal(known_404.body, query.body, IS_EQUAL_RATIO)
+        is_fuzzy_equal = fuzzy_equal(
+            known_404.body, query.body, IS_EQUAL_RATIO)
 
         if not is_fuzzy_equal:
             msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
@@ -304,7 +306,12 @@ class Fingerprint404(object):
                                                      known_404,
                                                      debugging_id)
 
-    def _handle_large_http_responses(self, http_response, query, known_404, debugging_id):
+    def _handle_large_http_responses(
+            self,
+            http_response,
+            query,
+            known_404,
+            debugging_id):
         """
         When HTTP response bodies are large the fuzzy_equal() will generate
         404 false positives. This is explained in a comment above,
@@ -346,7 +353,8 @@ class Fingerprint404(object):
                                                     debugging_id,
                                                     exclude=[known_404_1.url])
 
-            known_404_1.diff, _ = chunked_diff(known_404_1.body, known_404_2.body)
+            known_404_1.diff, _ = chunked_diff(
+                known_404_1.body, known_404_2.body)
             known_404_1.diff_with_id = known_404_2.id
             self._404_responses[query.normalized_path] = known_404_1.dumps()
 
@@ -398,7 +406,8 @@ class Fingerprint404(object):
                     with a randomly generated path or name to force a 404,
                     save the data to the DB and then return it.
         """
-        serialized_known_404 = self._404_responses.get(query.normalized_path, None)
+        serialized_known_404 = self._404_responses.get(
+            query.normalized_path, None)
 
         if serialized_known_404 is not None:
             return FourOhFourResponse.loads(serialized_known_404)
@@ -425,6 +434,3 @@ def is_404(http_response):
     # Get an instance of the 404 database
     fp_404_db = fingerprint_404_singleton()
     return fp_404_db.is_404(http_response)
-
-
-

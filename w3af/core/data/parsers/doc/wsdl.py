@@ -65,7 +65,7 @@ class WSDLParser(object):
                 self._proxy = SOAPpy.WSDL.Proxy(xmlData)
             except expat.ExpatError:
                 raise BaseFrameworkException('The body content is not a WSDL.')
-            except Exception, e:
+            except Exception as e:
                 msg = 'The body content is not a WSDL.'
                 msg += ' Unhandled exception in SOAPpy: "' + str(e) + '".'
                 om.out.debug(msg)
@@ -127,7 +127,7 @@ class WSDLParser(object):
         @methodName: The method name
         :return: The soap action.
         """
-        if not methodName in self._proxy.methods.keys():
+        if methodName not in self._proxy.methods.keys():
             raise BaseFrameworkException('Unknown method name.')
         else:
             res = []
@@ -146,6 +146,7 @@ class parameter:
     """
     This class represents a parameter in a SOAP call.
     """
+
     def __init__(self):
         self._type = ''
         self._name = ''
@@ -174,6 +175,7 @@ class remoteMethod:
     """
     This class represents a remote method call.
     """
+
     def __init__(self):
         self._name = ''
         self._action = ''

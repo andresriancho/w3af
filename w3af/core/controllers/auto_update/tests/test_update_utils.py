@@ -29,30 +29,34 @@ from w3af.core.controllers.auto_update.utils import (is_git_repo,
 
 
 class TestGitUtils(unittest.TestCase):
-    
+
     def test_is_git_repo(self):
         self.assertTrue(is_git_repo('.'))
-    
+
     def test_is_git_repo_negative(self):
         self.assertFalse(is_git_repo('/etc/'))
-    
+
     def test_get_latest_commit(self):
         latest_commit = get_latest_commit()
-        
+
         self.assertEqual(len(latest_commit), 40)
         self.assertIsInstance(latest_commit, basestring)
-        
+
     def test_get_latest_commit_negative(self):
-        self.assertRaises(git.exc.InvalidGitRepositoryError, get_latest_commit, '/etc/')
+        self.assertRaises(
+            git.exc.InvalidGitRepositoryError,
+            get_latest_commit,
+            '/etc/')
 
     def test_get_current_branch(self):
         # For some strange reason jenkins creates a branch called
         # jenkins-<job name> during the build, which makes this test FAIL
         # if we don't take that into account
-        
+
         current_branch = get_current_branch()
-        
+
         branches = subprocess.check_output(['git', 'branch']).splitlines()
-        parsed_branch = [l.strip()[2:] for l in branches if l.startswith('*')][0]
-        
+        parsed_branch = [l.strip()[2:]
+                         for l in branches if l.startswith('*')][0]
+
         self.assertEqual(current_branch, parsed_branch)

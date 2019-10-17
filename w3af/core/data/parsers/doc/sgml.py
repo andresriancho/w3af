@@ -59,11 +59,12 @@ class Tag(object):
 
     def __eq__(self, other):
         return self.name == other.name and \
-               self.attrib == other.attrib and \
-               self.text == other.text
+            self.attrib == other.attrib and \
+            self.text == other.text
 
     def __str__(self):
-        return '<Tag (name:%s, attrib:%s, text:%s)' % (self.name, self.attrib, self.text)
+        return '<Tag (name:%s, attrib:%s, text:%s)' % (
+            self.name, self.attrib, self.text)
 
     __repr__ = __str__
 
@@ -78,10 +79,12 @@ class SGMLParser(BaseParser):
     """
     ANY_TAG_MATCH = re.compile('(<.*?>)', re.UNICODE)
 
-    EMAIL_RE = re.compile('([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
-                          re.I | re.U)
+    EMAIL_RE = re.compile(
+        '([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
+        re.I | re.U)
 
-    META_URL_REDIR_RE = re.compile(r".*?URL.*?='?\"?([^'\"]*)'?\"?", re.I | re.U)
+    META_URL_REDIR_RE = re.compile(
+        r".*?URL.*?='?\"?([^'\"]*)'?\"?", re.I | re.U)
 
     TAGS_WITH_URLS = {
         'go', 'a', 'anchor', 'img', 'link', 'script', 'iframe', 'object',
@@ -149,13 +152,13 @@ class SGMLParser(BaseParser):
         else:
             try:
                 method(tag, tag_name, attrs)
-            except Exception, ex:
+            except Exception as ex:
                 self._handle_exception('parsing %s tag' % tag_name, ex)
 
         try:
             if tag_name in self.TAGS_WITH_URLS:
                 self._find_references(tag, tag_name, attrs)
-        except Exception, ex:
+        except Exception as ex:
             self._handle_exception('extracting references', ex)
 
         try:
@@ -164,7 +167,7 @@ class SGMLParser(BaseParser):
             # changed it to this for performance
             if tag_name == 'a':
                 self._find_emails(tag, tag_name, attrs)
-        except Exception, ex:
+        except Exception as ex:
             self._handle_exception('finding emails', ex)
 
     def end(self, tag):
@@ -200,7 +203,7 @@ class SGMLParser(BaseParser):
 
         try:
             self._parse_response_body_as_string(resp_body, errors='ignore')
-        except etree.XMLSyntaxError, xse:
+        except etree.XMLSyntaxError as xse:
             #
             # This is too common, we don't want to raise an exception because
             # of invalid / broken HTML
@@ -248,7 +251,7 @@ class SGMLParser(BaseParser):
         for event, elem in context:
             try:
                 event_map[event](elem)
-            except Exception, e:
+            except Exception as e:
                 msg = ('Found a parser exception while handling tag "%s" with'
                        ' event "%s". The exception was: "%s"')
                 args = (elem.tag, event, e)
@@ -399,7 +402,7 @@ class SGMLParser(BaseParser):
                 and not value.startswith('callto:')
                 and not value.startswith('mailto:')
                 and not value.startswith('data:image/')
-                and not value in self.APACHE_INDEXING)
+                and value not in self.APACHE_INDEXING)
 
     def _find_references(self, tag, tag_name, attrs):
         """
@@ -444,7 +447,8 @@ class SGMLParser(BaseParser):
 
             for form in self._forms:
                 form_id = form.get_form_id()
-                matches_one_config_filter = form_id.matches_one_of(form_id_list)
+                matches_one_config_filter = form_id.matches_one_of(
+                    form_id_list)
 
                 if matches_one_config_filter and form_id_action == INCLUDE:
                     filtered_forms.append(form)

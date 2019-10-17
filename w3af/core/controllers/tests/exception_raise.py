@@ -25,14 +25,14 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 class exception_raise(CrawlPlugin):
     """
     This is a test plugin that will simply raise an exception
-    
+
     Only useful for testing, see test_w3afcore.py
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     # pylint: disable=E1102
     exception_to_raise = None
-    
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 

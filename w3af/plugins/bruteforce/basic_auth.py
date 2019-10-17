@@ -39,6 +39,7 @@ class basic_auth(BruteforcePlugin):
     Bruteforce HTTP basic authentication.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def audit(self, freq, debugging_id=None):
         """
         Tries to bruteforce a basic HTTP auth. This is not fast!
@@ -109,7 +110,7 @@ class basic_auth(BruteforcePlugin):
                                                     cache=False,
                                                     grep=False,
                                                     debugging_id=debugging_id)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = ('Exception raised while brute-forcing basic authentication,'
                    ' error message: "%s".')
             om.out.debug(msg % w3)

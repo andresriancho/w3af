@@ -209,4 +209,3 @@ def guess_extension(var_name, file_name):
 
     # Oops!
     return cf.cf.get('fuzzed_files_extension', 'gif')
-

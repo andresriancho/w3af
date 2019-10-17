@@ -70,10 +70,11 @@ class strange_http_codes(GrepPlugin):
         if response.get_code() not in self.DOS_HTTP_CODES:
             return False
 
-        desc = ('The remote web server sent an HTTP response code: "%s" with'
-                ' the message: "%s", this is usually associated with the server'
-                ' being under heavy load. The scan results might be inaccurate'
-                ' if many of these HTTP responses are found.')
+        desc = (
+            'The remote web server sent an HTTP response code: "%s" with'
+            ' the message: "%s", this is usually associated with the server'
+            ' being under heavy load. The scan results might be inaccurate'
+            ' if many of these HTTP responses are found.')
         desc %= (response.get_code(), response.get_msg())
 
         i = Info('Server under heavy load', desc, response.id, self.get_name())

@@ -32,7 +32,13 @@ from w3af.core.controllers.misc.diff import chunked_diff, diff_difflib, diff_dmp
 
 class TestDiffPerformance(unittest.TestCase):
 
-    DATA = os.path.join(ROOT_PATH, 'core', 'controllers', 'misc', 'tests', 'data')
+    DATA = os.path.join(
+        ROOT_PATH,
+        'core',
+        'controllers',
+        'misc',
+        'tests',
+        'data')
     FUNCTIONS = [chunked_diff, diff_dmp]
     ROUNDS = 5
 

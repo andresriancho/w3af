@@ -49,7 +49,7 @@ class Test404Errors(unittest.TestCase):
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
 
         with patch('w3af.plugins.grep.meta_tags.is_404') as is_404_mock,\
-        patch('w3af.core.controllers.plugins.grep_plugin.om.out') as om_mock:
+                patch('w3af.core.controllers.plugins.grep_plugin.om.out') as om_mock:
             msg = 'Exception found while detecting 404: "UnitTest"'
             is_404_mock.side_effect = FourOhFourDetectionException(msg)
 
@@ -74,7 +74,7 @@ class Test404Errors(unittest.TestCase):
 
             try:
                 self.plugin.grep_wrapper(request, resp)
-            except Exception, e:
+            except Exception as e:
                 self.assertEqual(str(e), msg)
             else:
                 self.assertTrue(False, 'Expected exception, success found!')

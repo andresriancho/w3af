@@ -97,7 +97,7 @@ class phishtank(CrawlPlugin):
         def root_domain(url):
             if not is_ip_address(url.get_domain()):
                 return [url.get_root_domain(), ]
-            
+
             return []
 
         res = set()
@@ -121,7 +121,7 @@ class phishtank(CrawlPlugin):
         """
         try:
             phishtank_db_fd = file(self.PHISHTANK_DB, 'r')
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to open phishtank database: "%s", exception: "%s".'
             raise BaseFrameworkException(msg % (self.PHISHTANK_DB, e))
 
@@ -153,7 +153,7 @@ class phishtank(CrawlPlugin):
             target_host_url = URL(query_result[0])
 
             if target_host_url.get_domain() == phish_url.get_domain() or \
-            phish_url.get_domain().endswith('.' + target_host_url.get_domain()):
+                    phish_url.get_domain().endswith('.' + target_host_url.get_domain()):
 
                 phish_detail_url = URL(phishtank_detail_url)
                 ptm = PhishTankMatch(phish_url, phish_detail_url)
@@ -177,6 +177,7 @@ class PhishTankMatch(object):
     Represents a phishtank match between the site I'm scanning and
     something in the index.xml file.
     """
+
     def __init__(self, url, more_info_url):
         self.url = url
         self.more_info_url = more_info_url

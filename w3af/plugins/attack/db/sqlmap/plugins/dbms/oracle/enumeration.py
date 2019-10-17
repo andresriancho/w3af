@@ -23,6 +23,7 @@ from lib.core.exception import SqlmapNoneDataException
 from lib.request import inject
 from plugins.generic.enumeration import Enumeration as GenericEnumeration
 
+
 class Enumeration(GenericEnumeration):
     def __init__(self):
         GenericEnumeration.__init__(self)
@@ -41,7 +42,11 @@ class Enumeration(GenericEnumeration):
         # Set containing the list of DBMS administrators
         areAdmins = set()
 
-        if any(isTechniqueAvailable(_) for _ in (PAYLOAD.TECHNIQUE.UNION, PAYLOAD.TECHNIQUE.ERROR, PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
+        if any(
+            isTechniqueAvailable(_) for _ in (
+                PAYLOAD.TECHNIQUE.UNION,
+                PAYLOAD.TECHNIQUE.ERROR,
+                PAYLOAD.TECHNIQUE.QUERY)) or conf.direct:
             if query2:
                 query = rootQuery.inband.query2
                 condition = rootQuery.inband.condition2
@@ -52,7 +57,8 @@ class Enumeration(GenericEnumeration):
             if conf.user:
                 users = conf.user.split(',')
                 query += " WHERE "
-                query += " OR ".join("%s = '%s'" % (condition, user) for user in sorted(users))
+                query += " OR ".join("%s = '%s'" %
+                                     (condition, user) for user in sorted(users))
 
             values = inject.getValue(query, blind=False, time=False)
 
@@ -80,7 +86,8 @@ class Enumeration(GenericEnumeration):
                             roles.add(role)
 
                     if user in kb.data.cachedUsersRoles:
-                        kb.data.cachedUsersRoles[user] = list(roles.union(kb.data.cachedUsersRoles[user]))
+                        kb.data.cachedUsersRoles[user] = list(
+                            roles.union(kb.data.cachedUsersRoles[user]))
                     else:
                         kb.data.cachedUsersRoles[user] = list(roles)
 
@@ -114,7 +121,12 @@ class Enumeration(GenericEnumeration):
                     query = rootQuery.blind.count2 % queryUser
                 else:
                     query = rootQuery.blind.count % queryUser
-                count = inject.getValue(query, union=False, error=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+                count = inject.getValue(
+                    query,
+                    union=False,
+                    error=False,
+                    expected=EXPECTED.INT,
+                    charsetType=CHARSET_TYPE.DIGITS)
 
                 if not isNumPosStrValue(count):
                     if count != 0 and not query2:

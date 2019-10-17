@@ -31,6 +31,7 @@ class delayedExecutionFactory(object):
     """
     This class constructs a delayedExecution based on the remote operating system.
     """
+
     def __init__(self, exec_method):
         self._exec_method = exec_method
 

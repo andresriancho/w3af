@@ -32,6 +32,7 @@ class FormID(object):
 
     :see: https://github.com/andresriancho/w3af/issues/15161
     """
+
     def __init__(self, action=None, inputs=None, attributes=None,
                  hosted_at_url=None, method=None):
         """

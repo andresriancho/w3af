@@ -37,7 +37,7 @@ try:
     from w3af.core.ui.console.util import commonPrefix
     from w3af.core.ui.console.history import historyTable
     from w3af.core.ui.console.auto_update.auto_update import ConsoleUIUpdater
-    
+
     from w3af.core.data.constants.disclaimer import DISCLAIMER
     from w3af.core.data.db.startup_cfg import StartUpConfig
 
@@ -98,7 +98,7 @@ class ConsoleUI(object):
         # Core initialization
         self._w3af = w3afCore()
         self._w3af.plugins.set_plugins(['console'], 'output')
-        
+
     def __initFromParent(self, parent):
         self._context = parent._context
         self._w3af = parent._w3af
@@ -161,7 +161,7 @@ class ConsoleUI(object):
                 try:
                     c = term.getch()
                     self._handleKey(c)
-                except Exception, e:
+                except Exception as e:
                     om.out.console(str(e))
 
             term.set_raw_input_mode(False)
@@ -180,9 +180,9 @@ class ConsoleUI(object):
                 #     https://github.com/andresriancho/w3af/issues/148
                 #
                 # Since we don't want to show any tracebacks on this situation
-                # just "pass". 
+                # just "pass".
                 pass
-            
+
             return 0
 
     def _executePending(self):
@@ -230,7 +230,7 @@ class ConsoleUI(object):
                 self._handlers[key]()
             else:
                 self._paste(key)
-        except Exception, e:
+        except Exception as e:
             # TODO
             traceback.print_exc()
 
@@ -290,7 +290,7 @@ class ConsoleUI(object):
                 menu = None
                 self.exit()
 
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 menu = None
                 om.out.console(e.value)
 
@@ -444,7 +444,7 @@ class ConsoleUI(object):
 
         try:
             result = shlex.split(line)
-        except ValueError, ve:
+        except ValueError as ve:
             term.write(str(ve) + '\n')
             return []
         else:
@@ -494,9 +494,11 @@ class ConsoleUI(object):
             term.moveBack(len(toWrite))
 
     def _random_message(self):
-        
-        messages_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                     'exitmessages.txt')
+
+        messages_file = os.path.join(
+            os.path.dirname(
+                os.path.realpath(__file__)),
+            'exitmessages.txt')
         f = file(messages_file, 'r')
         lines = f.readlines()
         idx = random.randrange(len(lines))

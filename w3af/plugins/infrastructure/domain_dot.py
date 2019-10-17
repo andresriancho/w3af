@@ -71,7 +71,7 @@ class domain_dot(InfrastructurePlugin):
                 headers = Headers([('Host', domain_dot)])
                 response = self._uri_opener.GET(orig_url, cache=False,
                                                 headers=headers)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 om.out.error(str(w3))
             else:
                 self._analyze_response(original_response, response)
@@ -86,15 +86,15 @@ class domain_dot(InfrastructurePlugin):
         if fuzzy_not_equal(original_resp.get_body(), resp.get_body(), 0.7):
             response_ids = [original_resp.id, resp.id]
             desc = '[Manual verification required] The response body for a ' \
-                  'request with a trailing dot in the domain, and the response ' \
-                  'body without a trailing dot in the domain differ. This could ' \
-                  'indicate a misconfiguration in the virtual host settings. In ' \
-                  'some cases, this misconfiguration permits the attacker to ' \
-                  'read the source code of the web application.'
-            
+                'request with a trailing dot in the domain, and the response ' \
+                'body without a trailing dot in the domain differ. This could ' \
+                'indicate a misconfiguration in the virtual host settings. In ' \
+                'some cases, this misconfiguration permits the attacker to ' \
+                'read the source code of the web application.'
+
             i = Info('Potential virtual host misconfiguration', desc,
                      response_ids, self.get_name())
-            
+
             om.out.information(desc)
             kb.kb.append(self, 'domain_dot', i)
 

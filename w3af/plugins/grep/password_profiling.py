@@ -45,13 +45,13 @@ class password_profiling(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._need_init = True
         self.captured_lang = None
-        
+
         # TODO: develop more plugins, there is a, pure-python metadata reader
         # named hachoir-metadata it will be useful for writing A LOT of plugins
-        
+
         # Plugins to run
         self._plugins_names_dict = ['html', 'pdf']
         self._plugins = []
@@ -83,7 +83,8 @@ class password_profiling(GrepPlugin):
         with self._plugin_lock:
             old_data = kb.kb.raw_read(self, self.get_name())
 
-            new_data = self.merge_maps(old_data, data, request, self.captured_lang)
+            new_data = self.merge_maps(
+                old_data, data, request, self.captured_lang)
             new_data = self._trim_data(new_data)
 
             # save the updated map
@@ -93,7 +94,7 @@ class password_profiling(GrepPlugin):
         """
         Initial setup that's run until we have the language or lang plugin
         gave up
-        
+
         :return: True if we were able to get the language from the lang plugin
         """
         if self._need_init:
@@ -106,9 +107,9 @@ class password_profiling(GrepPlugin):
                 kb.kb.raw_write(self.get_name(), self.get_name(), {})
                 self._need_init = False
                 return True
-        
+
         return True
-    
+
     def _trim_data(self, data):
         """
         If the password profiling information dict grows too large, we want to
@@ -130,7 +131,7 @@ class password_profiling(GrepPlugin):
             new_data[key] = value
 
         return new_data
-                
+
     def merge_maps(self, old_data, data, request, lang):
         """
         "merge" both maps and update the repetitions, the maps contain:
@@ -146,7 +147,7 @@ class password_profiling(GrepPlugin):
                 old_data[word] += data[word]
             else:
                 old_data[word] = data[word]
-        
+
         return old_data
 
     def _should_ignore_word(self, word, lang, request):
@@ -185,7 +186,7 @@ class password_profiling(GrepPlugin):
         """
         Runs password profiling plugins to collect data from HTML, TXT,
         PDF, etc files.
-        
+
         :param response: A HTTPResponse object
         :return: A map with word:repetitions
         """

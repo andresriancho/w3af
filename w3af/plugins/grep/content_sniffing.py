@@ -34,6 +34,7 @@ class content_sniffing(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         super(content_sniffing, self).__init__()
         self._reports = 0
@@ -88,4 +89,3 @@ class CTSniffingInfoSet(InfoSet):
         ' - {{ url }}\n'
         '{% endfor %}'
     )
-

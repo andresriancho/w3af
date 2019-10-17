@@ -69,5 +69,3 @@ class FuzzableRequestsTest(APIUnitTest):
 
         self.assertEqual(set(decoded_fuzzable_requests),
                          set(EXPECTED_FUZZABLE_REQUESTS))
-
-

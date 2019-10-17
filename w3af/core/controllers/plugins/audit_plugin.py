@@ -40,9 +40,10 @@ class AuditPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         Plugin.__init__(self)
-        
+
         self._uri_opener = None
         self._store_kb_vulns = False
         self._audit_return_vulns_lock = threading.RLock()
@@ -65,28 +66,29 @@ class AuditPlugin(Plugin):
         :return: The vulnerabilities found when running this audit plugin.
         """
         with self._audit_return_vulns_lock:
-            
+
             self._store_kb_vulns = True
             debugging_id = rand_alnum(8)
-            
+
             try:
                 orig_response = self.get_original_response(fuzzable_request)
-                self.audit_with_copy(fuzzable_request, orig_response, debugging_id)
-            except Exception, e:
+                self.audit_with_copy(
+                    fuzzable_request, orig_response, debugging_id)
+            except Exception as e:
                 om.out.error(str(e))
             finally:
                 self._store_kb_vulns = False
-                
+
                 new_vulnerabilities = self._newly_found_vulns
                 self._newly_found_vulns = []
-                
+
                 return new_vulnerabilities
 
     def _audit_return_vulns_in_caller(self):
         """
         This is a helper method that returns True if the method
         audit_return_vulns is in the call stack.
-        
+
         Please note that this method is *very* slow (because of the inspect
         module being slow) and should only be called when audit_return_vulns
         was previously called.
@@ -96,7 +98,7 @@ class AuditPlugin(Plugin):
         for _, _, _, function_name, _, _ in the_stack:
             if function_name == 'audit_return_vulns':
                 return True
-            
+
         return False
 
     def kb_append_uniq(self, location_a, location_b, info):
@@ -106,9 +108,14 @@ class AuditPlugin(Plugin):
         if self._store_kb_vulns:
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
-        
-        return super(AuditPlugin, self).kb_append_uniq(location_a, location_b, info)
-        
+
+        return super(
+            AuditPlugin,
+            self).kb_append_uniq(
+            location_a,
+            location_b,
+            info)
+
     def kb_append(self, location_a, location_b, info):
         """
         kb.kb.append a vulnerability to the KB
@@ -116,7 +123,7 @@ class AuditPlugin(Plugin):
         if self._store_kb_vulns:
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
-        
+
         super(AuditPlugin, self).kb_append(location_a, location_b, info)
 
     def audit_with_copy(self, fuzzable_request, orig_resp, debugging_id):
@@ -136,7 +143,7 @@ class AuditPlugin(Plugin):
 
         try:
             return self.audit(fuzzable_request, orig_resp, debugging_id)
-        except FourOhFourDetectionException, ffde:
+        except FourOhFourDetectionException as ffde:
             # We simply ignore any exceptions we find during the 404 detection
             # process. FYI: This doesn't break the xurllib error handling which
             # happens at lower layers.

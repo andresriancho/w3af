@@ -72,7 +72,8 @@ class MultiRE(object):
             if isinstance(item, tuple):
                 regex = item[0]
                 regex = regex.encode(DEFAULT_ENCODING)
-                self._re_cache[regex] = re.compile(regex, self._re_compile_flags)
+                self._re_cache[regex] = re.compile(
+                    regex, self._re_compile_flags)
 
                 if regex in self._translator:
                     raise ValueError('Duplicated regex "%s"' % regex)
@@ -80,7 +81,8 @@ class MultiRE(object):
                 self._translator[regex] = item[1:]
             elif isinstance(item, basestring):
                 regex = item.encode(DEFAULT_ENCODING)
-                self._re_cache[regex] = re.compile(regex, self._re_compile_flags)
+                self._re_cache[regex] = re.compile(
+                    regex, self._re_compile_flags)
             else:
                 raise ValueError('Can NOT build MultiRE with provided values.')
 
@@ -107,7 +109,8 @@ class MultiRE(object):
             regex_keyword = regex_keyword.lower()
             builder.add(regex_keyword)
 
-            regexes_matching_keyword = self._keyword_to_re.get(regex_keyword, [])
+            regexes_matching_keyword = self._keyword_to_re.get(
+                regex_keyword, [])
             regexes_matching_keyword.append(regex)
             self._keyword_to_re[regex_keyword] = regexes_matching_keyword
 

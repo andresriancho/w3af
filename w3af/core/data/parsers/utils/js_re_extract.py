@@ -53,5 +53,5 @@ class JSReExtract(ReExtract):
 
             if not inside_string and c in self.STRING_DELIMS:
                 pass
-            
+
         return ' \n'.join(string_vals)

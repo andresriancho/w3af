@@ -31,6 +31,7 @@ class Vuln(Info):
     This class represents a web vulnerability.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, name, desc, severity, response_ids, plugin_name,
                  vulndb_id=None):
         """
@@ -52,26 +53,33 @@ class Vuln(Info):
         self.set_severity(severity)
 
     @classmethod
-    def from_mutant(cls, name, desc, severity, response_ids, plugin_name, mutant):
+    def from_mutant(
+            cls,
+            name,
+            desc,
+            severity,
+            response_ids,
+            plugin_name,
+            mutant):
         """
         TODO: I wanted to use super(Vuln, cls).from_mutant here but I was
         unable to make it work. Refactoring required to avoid code duplication
         with info.py. The same applies to all classmethods
-        
+
         :return: A vuln instance with the proper data set based on the values
                  taken from the mutant.
         """
         if not isinstance(mutant, Mutant):
             raise TypeError('Mutant expected in from_mutant.')
-        
+
         inst = cls(name, desc, severity, response_ids, plugin_name)
 
         inst.set_uri(mutant.get_uri())
         inst.set_method(mutant.get_method())
         inst.set_mutant(mutant)
-            
+
         return inst
-        
+
     @classmethod
     def from_fr(cls, name, desc, severity, response_ids, plugin_name, freq):
         """
@@ -80,26 +88,31 @@ class Vuln(Info):
         """
         if not isinstance(freq, FuzzableRequest):
             raise TypeError('FuzzableRequest expected in from_fr.')
-        
+
         mutant = EmptyMutant(freq)
-            
-        return Vuln.from_mutant(name, desc, severity, response_ids, plugin_name,
-                                mutant)
-    
+
+        return Vuln.from_mutant(
+            name,
+            desc,
+            severity,
+            response_ids,
+            plugin_name,
+            mutant)
+
     @classmethod
     def from_vuln(cls, other_vuln):
         """
-        :return: A clone of other_vuln. 
+        :return: A clone of other_vuln.
         """
         if not isinstance(other_vuln, Vuln):
             raise TypeError('Vuln expected in from_vuln.')
-        
+
         name = other_vuln.get_name()
         desc = other_vuln.get_desc()
         response_ids = other_vuln.get_id()
         plugin_name = other_vuln.get_plugin_name()
         severity = other_vuln.get_severity()
-        
+
         inst = cls(name, desc, severity, response_ids, plugin_name)
         inst._string_matches = other_vuln.get_to_highlight()
         inst._mutant = other_vuln.get_mutant()
@@ -107,8 +120,8 @@ class Vuln(Info):
         for k in other_vuln.keys():
             inst[k] = other_vuln[k]
 
-        return inst        
-        
+        return inst
+
     def get_severity(self):
         return self._severity
 

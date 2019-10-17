@@ -43,6 +43,7 @@ class BaseTemplate(Configurable):
     workflow in which the user will be able to add a vulnerability to the KB
     for later exploitation.
     """
+
     def __init__(self):
         self.name = ''
         self.url = URL('http://host.tld/')
@@ -95,7 +96,8 @@ class BaseTemplate(Configurable):
         self.url = options_list['url'].get_value()
         self.data = parse_qs(options_list['data'].get_value())
         self.method = options_list['method'].get_value()
-        self.vulnerable_parameter = options_list['vulnerable_parameter'].get_value()
+        self.vulnerable_parameter = options_list['vulnerable_parameter'].get_value(
+        )
 
         if not self.data:
             msg = 'This vulnerability requires data to be configured.'
@@ -108,14 +110,16 @@ class BaseTemplate(Configurable):
 
         try:
             self.create_vuln()
-            
-        except RuntimeError, rte:
+
+        except RuntimeError as rte:
             # https://github.com/andresriancho/w3af/issues/4310
             raise ValueError('%s' % rte)
 
-        except KeyError, ke:
+        except KeyError as ke:
             # https://github.com/andresriancho/w3af/issues/4310
-            raise ValueError('The vulnerable parameter "%s" was not found' % ke)
+            raise ValueError(
+                'The vulnerable parameter "%s" was not found' %
+                ke)
 
     def store_in_kb(self):
         """
@@ -136,7 +140,8 @@ class BaseTemplate(Configurable):
             freq = FuzzableRequest(url, method=self.method)
             MutantKlass = QSMutant
         else:
-            freq = FuzzableRequest(url, method=self.method, post_data=self.data)
+            freq = FuzzableRequest(
+                url, method=self.method, post_data=self.data)
             MutantKlass = PostDataMutant
 
         return MutantKlass(freq)
@@ -148,10 +153,10 @@ class BaseTemplate(Configurable):
         desc = 'This vulnerability was added to the knowledge-base by the'\
                ' user and represents a "%s" vulnerability.'
         desc %= self.get_vulnerability_name()
-        
+
         v = Vuln('Manually added vulnerability', desc, severity.HIGH,
                  self.get_vuln_id(), 'manual')
-        
+
         return v
 
     def create_vuln(self):
@@ -182,10 +187,10 @@ class BaseTemplate(Configurable):
 
     def get_method(self):
         return self.method
-    
+
     def get_vulnerable_parameter(self):
         return self.vulnerable_parameter
-    
+
     def get_kb_location(self):
         """
         :return: A tuple with the location where the vulnerability will be
@@ -209,4 +214,3 @@ class BaseTemplate(Configurable):
                  file uploads using the HTTP PUT method'
         """
         raise NotImplementedError
-

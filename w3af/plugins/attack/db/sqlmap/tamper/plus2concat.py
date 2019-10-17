@@ -12,8 +12,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.HIGHEST
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -50,13 +52,15 @@ def tamper(payload, **kwargs):
                         last = i
 
                 start = retVal[:indexes[first]].rfind(' ') + 1
-                end = (retVal[indexes[last] + 1:].find(' ') + indexes[last] + 1) if ' ' in retVal[indexes[last] + 1:] else len(retVal) - 1
+                end = (retVal[indexes[last] + 1:].find(' ') + indexes[last] +
+                       1) if ' ' in retVal[indexes[last] + 1:] else len(retVal) - 1
 
                 chars = [char for char in retVal]
                 for index in indexes[first:last + 1]:
                     chars[index] = ','
 
-                retVal = "%sCONCAT(%s)%s" % (retVal[:start], ''.join(chars)[start:end], retVal[end:])
+                retVal = "%sCONCAT(%s)%s" % (
+                    retVal[:start], ''.join(chars)[start:end], retVal[end:])
             else:
                 match = re.search(r"\((CHAR\(\d+.+CHAR\(\d+\))\)", retVal)
                 if match:

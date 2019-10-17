@@ -72,9 +72,10 @@ class frontpage_version(InfrastructurePlugin):
             try:
                 response = self._uri_opener.GET(frontpage_info_url,
                                                 cache=True)
-            except BaseFrameworkException, w3:
-                fmt = ('Failed to GET Frontpage Server _vti_inf.html file: "%s". '
-                       'Exception: "%s".')
+            except BaseFrameworkException as w3:
+                fmt = (
+                    'Failed to GET Frontpage Server _vti_inf.html file: "%s". '
+                    'Exception: "%s".')
                 om.out.debug(fmt % (frontpage_info_url, w3))
             else:
                 # Check if it's a Frontpage Info file
@@ -108,7 +109,7 @@ class frontpage_version(InfrastructurePlugin):
                      self.get_name())
             i.set_url(response.get_url())
             i['version'] = version_mo.group(1)
-            
+
             kb.kb.append(self, 'frontpage_version', i)
             om.out.information(i.get_desc())
 
@@ -140,16 +141,16 @@ class frontpage_version(InfrastructurePlugin):
         """
         admin_location = response.get_url().get_domain_path().url_join(
             frontpage_admin.group(1))
-        
+
         # Check for anomalies in the location of admin.exe
         if frontpage_admin.group(1) != '_vti_bin/_vti_adm/admin.exe':
             name = 'Customized frontpage configuration'
-            
+
             desc = 'The FPAdminScriptUrl is at: "%s" instead of the default'\
                    ' location "_vti_bin/_vti_adm/admin.exe". This is very'\
                    ' uncommon.'
             desc = desc % admin_location
-            
+
         else:
             name = 'FrontPage FPAdminScriptUrl'
 
@@ -159,7 +160,7 @@ class frontpage_version(InfrastructurePlugin):
         i = Info(name, desc, response.id, self.get_name())
         i.set_url(admin_location)
         i['FPAdminScriptUrl'] = admin_location
-        
+
         kb.kb.append(self, 'frontpage_version', i)
         om.out.information(i.get_desc())
 
@@ -191,7 +192,7 @@ class frontpage_version(InfrastructurePlugin):
         i = Info(name, desc, response.id, self.get_name())
         i.set_url(author_location)
         i['FPAuthorScriptUrl'] = author_location
-        
+
         kb.kb.append(self, 'frontpage_version', i)
         om.out.information(i.get_desc())
 

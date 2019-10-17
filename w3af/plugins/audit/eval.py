@@ -77,9 +77,15 @@ class eval(AuditPlugin):
         # Note: The Sleep in ASP.NET is uppercase
         ExactDelay("Thread.Sleep(%s);", mult=1000),
         # NodeJS eval
-        ExactDelay("var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)", mult=1000),
-        ExactDelay(";var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)", mult=1000),
-        ExactDelay('";var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s);var x="', mult=1000)
+        ExactDelay(
+            "var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)",
+            mult=1000),
+        ExactDelay(
+            ";var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s)",
+            mult=1000),
+        ExactDelay(
+            '";var cd;var d=new Date();do{cd=new Date();}while(cd-d<%s);var x="',
+            mult=1000)
     )
 
     def __init__(self):
@@ -128,9 +134,13 @@ class eval(AuditPlugin):
         Tests an URL for eval() usage vulnerabilities using time delays.
         :param freq: A FuzzableRequest
         """
-        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
-                                      iterable=self._generate_delay_tests(freq, debugging_id),
-                                      callback=lambda x, y: None)
+        self._send_mutants_in_threads(
+            func=self._find_delay_in_mutant,
+            iterable=self._generate_delay_tests(
+                freq,
+                debugging_id),
+            callback=lambda x,
+            y: None)
 
     def _generate_delay_tests(self, freq, debugging_id):
         for mutant in create_mutants(freq, ['', ]):
@@ -144,7 +154,7 @@ class eval(AuditPlugin):
             for delay_obj in self.WAIT_OBJ:
                 yield mutant, delay_obj, debugging_id
 
-    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+    def _find_delay_in_mutant(self, xxx_todo_changeme):
         """
         Try to delay the response and save a vulnerability if successful
 
@@ -152,6 +162,7 @@ class eval(AuditPlugin):
         :param delay_obj: The delay to use
         :param debugging_id: The debugging ID for logging
         """
+        (mutant, delay_obj, debugging_id) = xxx_todo_changeme
         if self._has_bug(mutant):
             return
 

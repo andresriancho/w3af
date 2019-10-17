@@ -40,8 +40,8 @@ class ParameterHandler(object):
                               'integer': 42,
                               'float': 4.2,
                               'double': 4.2,
-                              'date': datetime.date(2017, 06, 30),
-                              'date-time': datetime.datetime(2017, 06, 30, 23, 59, 45),
+                              'date': datetime.date(2017, 0o6, 30),
+                              'date-time': datetime.datetime(2017, 0o6, 30, 23, 59, 45),
                               'boolean': True}
 
     def __init__(self, spec, operation):
@@ -284,7 +284,8 @@ class ParameterHandler(object):
         # A default
         return 42
 
-    def _get_param_value_for_type_and_spec(self, parameter_type, parameter_spec):
+    def _get_param_value_for_type_and_spec(
+            self, parameter_type, parameter_spec):
         """
         :param parameter_type: The type of parameter (string, int32, array, etc.)
         :param parameter_spec: The parameter spec
@@ -506,7 +507,8 @@ class ParameterHandler(object):
                     merged['required'].append(required)
 
             if 'properties' in object_definition:
-                for property_name, property_def in object_definition['properties'].iteritems():
+                for property_name, property_def in object_definition['properties'].iteritems(
+                ):
                     merged['properties'][property_name] = property_def
 
         return merged
@@ -571,7 +573,8 @@ class ParameterHandler(object):
 
         created_object = {}
 
-        for property_name, property_data in param_spec.get('properties', {}).iteritems():
+        for property_name, property_data in param_spec.get(
+                'properties', {}).iteritems():
 
             # This helps us choose a better value for filling the parameter
             if 'name' not in property_data:
@@ -607,7 +610,8 @@ class ParameterHandler(object):
         :param parameter: The parameter which we need to check.
         :return: True if the parameter is a header with defined default value, False otherwise.
         """
-        return ParameterHandler._is_header(parameter) and ParameterHandler._parameter_has_default(parameter)
+        return ParameterHandler._is_header(
+            parameter) and ParameterHandler._parameter_has_default(parameter)
 
     @staticmethod
     def _is_header(parameter):

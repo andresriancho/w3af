@@ -86,13 +86,16 @@ class time_analysis:
             sentTime = self._getRequestTime(uri, method, dc)
             self._removeRequest(uri, method, dc)
 
-            if (receiveTime - sentTime) > (self._average * TIME_DEVIATION_MULTIPLIER):
+            if (receiveTime -
+                sentTime) > (self._average *
+                             TIME_DEVIATION_MULTIPLIER):
                 # The time deviation was to big, report it.
-                ### TODO: Check WHY this AINT working and enable output again
-                #om.out.vulnerability('time_analysis detected a big time deviation when ' +
+                # TODO: Check WHY this AINT working and enable output again
+                # om.out.vulnerability('time_analysis detected a big time deviation when ' +
                 #'requesting the URI: ' + uri + ' with method: ' + method +
                 #' and the following data: ' + str(dc) + ' . The average time for a response is: ' +
-                #str(self._average) + ' , this response took: ' + str(receiveTime - sentTime))
+                # str(self._average) + ' , this response took: ' +
+                # str(receiveTime - sentTime))
                 pass
 
     def _calculateAvg(self, uri, method, dc):
@@ -109,7 +112,8 @@ class time_analysis:
             # It should be registered now.
             self._registerRequest(uri, method, dc)
         elif (uri, method, str(dc)) not in self._incomingResponses.keys():
-            # This tuple has been registered before and now it has arrived for analysis
+            # This tuple has been registered before and now it has arrived for
+            # analysis
             self._numberOfRequests += 1
             self._registerResponse(uri, method, dc)
         else:

@@ -48,8 +48,8 @@ class TestOptionFactory(unittest.TestCase):
                 STRING: [('hello world', 'hello world')],
                 URL: [('http://moth/', URL_KLASS('http://moth/'))],
                 URL_LIST: [('http://moth/1 , http://moth/2',
-                           [URL_KLASS('http://moth/1'),
-                            URL_KLASS('http://moth/2')])],
+                            [URL_KLASS('http://moth/1'),
+                             URL_KLASS('http://moth/2')])],
                 IPPORT: [('127.0.0.1:8080', '127.0.0.1:8080')],
                 LIST: [('a,b,c', ['a', 'b', 'c'])],
                 REGEX: [('.*', '.*')],
@@ -65,7 +65,7 @@ class TestOptionFactory(unittest.TestCase):
             for user_value, parsed_value in data[_type]:
                 opt = opt_factory('name', user_value, 'desc', _type,
                                   'help', 'tab1')
-    
+
                 self.assertEqual(opt.get_name(), 'name')
                 self.assertEqual(opt.get_desc(), 'desc')
                 self.assertEqual(opt.get_type(), _type)
@@ -73,7 +73,7 @@ class TestOptionFactory(unittest.TestCase):
                 self.assertEqual(opt.get_value(), parsed_value)
                 self.assertEqual(opt.get_help(), 'help')
                 self.assertEqual(opt.get_tabid(), 'tab1')
-    
+
                 self.assertIsInstance(opt.get_name(), basestring)
                 self.assertIsInstance(opt.get_desc(), basestring)
                 self.assertIsInstance(opt.get_type(), basestring)

@@ -29,6 +29,7 @@ class TestSaveConsoleUI(ConsoleTestHelper):
     """
     Save test for the console UI.
     """
+
     def test_menu_simple_save(self):
         commands_to_run = ['plugins crawl config dir_file_bruter',
                            'set file_wordlist /etc/passwd',
@@ -42,7 +43,8 @@ class TestSaveConsoleUI(ConsoleTestHelper):
 
         expected_start_with = (' /etc/passwd   ',
                                'The configuration has been saved.')
-        assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
+        assert_result, msg = self.all_expected_substring_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)
 
     def test_menu_save_with_dependencies_error(self):
@@ -57,8 +59,10 @@ class TestSaveConsoleUI(ConsoleTestHelper):
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
 
-        expected_start_with = ('Identified an error with the user-defined settings',)
-        assert_result, msg = self.startswith_expected_in_output(expected_start_with)
+        expected_start_with = (
+            'Identified an error with the user-defined settings',)
+        assert_result, msg = self.startswith_expected_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)
 
     def test_menu_save_with_dependencies_success(self):
@@ -76,7 +80,8 @@ class TestSaveConsoleUI(ConsoleTestHelper):
 
         expected_start_with = ('127.0.0.1',
                                '8081')
-        assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
+        assert_result, msg = self.all_expected_substring_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)
 
     def test_menu_simple_save_with_view(self):
@@ -98,5 +103,6 @@ class TestSaveConsoleUI(ConsoleTestHelper):
 
         expected_start_with = (' /etc/passwd   ',
                                'The configuration has been saved.')
-        assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
+        assert_result, msg = self.all_expected_substring_in_output(
+            expected_start_with)
         self.assertTrue(assert_result, msg)

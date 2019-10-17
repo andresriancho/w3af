@@ -42,7 +42,7 @@ class StartUpConfig(object):
     DEFAULTS = {'auto-update': 'true', 'frequency': 'D',
                 'last-update': 'None', 'last-commit': '',
                 'accepted-disclaimer': 'false',
-                'skip-dependencies-check': 'false',}
+                'skip-dependencies-check': 'false', }
 
     def __init__(self, cfg_file=CFG_FILE):
 
@@ -56,7 +56,7 @@ class StartUpConfig(object):
          self._accepted_disclaimer, self._skip_dependencies_check) = configs
 
     ### METHODS #
-    
+
     def get_last_upd(self):
         """
         Getter method.
@@ -91,10 +91,15 @@ class StartUpConfig(object):
 
     def set_last_commit_id(self, commit_id):
         if not isinstance(commit_id, basestring):
-            raise TypeError('Expected string got %s instead.' % type(commit_id))
-        
+            raise TypeError(
+                'Expected string got %s instead.' %
+                type(commit_id))
+
         self._last_commit_id = commit_id
-        self._config.set(self._start_section, 'last-commit', self._last_commit_id)
+        self._config.set(
+            self._start_section,
+            'last-commit',
+            self._last_commit_id)
 
     def get_freq(self):
         return self._freq
@@ -141,14 +146,20 @@ class StartUpConfig(object):
         # Try to parse it
         try:
             lastupd = datetime.strptime(lastupdstr, self.ISO_DATE_FMT).date()
-        except:
+        except BaseException:
             # Provide default value that enforces the update to happen
             lastupd = date.today() - timedelta(days=31)
         try:
             lastrev = config.get(startsection, 'last-commit')
         except TypeError:
             lastrev = 0
-        return (auto_upd, freq, lastupd, lastrev, accepted_disclaimer, skip_dependencies_check)
+        return (
+            auto_upd,
+            freq,
+            lastupd,
+            lastrev,
+            accepted_disclaimer,
+            skip_dependencies_check)
 
     def save(self):
         """
@@ -156,12 +167,13 @@ class StartUpConfig(object):
         """
         with open(self._start_cfg_file, 'wb') as configfile:
             self._config.write(configfile)
-    
+
     ### PROPERTIES #
-    
+
     freq = property(get_freq)
     auto_upd = property(get_auto_upd)
     last_commit_id = property(get_last_commit_id, set_last_commit_id)
-    accepted_disclaimer = property(get_accepted_disclaimer, set_accepted_disclaimer)
+    accepted_disclaimer = property(
+        get_accepted_disclaimer,
+        set_accepted_disclaimer)
     last_upd = property(get_last_upd, set_last_upd)
-    

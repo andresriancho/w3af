@@ -55,5 +55,3 @@ class RequireJSONTest(APIUnitTest):
         self.assertEqual(error['code'], 400)
         self.assertEqual(error['message'], INVALID_JSON)
         self.assertEqual(response.status_code, 400)
-
-

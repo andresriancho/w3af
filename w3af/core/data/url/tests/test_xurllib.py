@@ -58,17 +58,17 @@ class TestXUrllib(unittest.TestCase):
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
-    
+
     def tearDown(self):
         self.uri_opener.end()
         httpretty.reset()
-        
+
     def test_basic(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
-        
+
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
-        
+
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
@@ -82,9 +82,11 @@ class TestXUrllib(unittest.TestCase):
         self.assertNotEqual(http_response.id, None)
 
     def test_github_ssl(self):
-        url = URL('https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
+        url = URL(
+            'https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
 
-        http_response = self.uri_opener.GET(url, cache=False, binary_response=True, respect_size_limit=False)
+        http_response = self.uri_opener.GET(
+            url, cache=False, binary_response=True, respect_size_limit=False)
 
         self.assertIn('jquery', http_response.body)
 
@@ -199,7 +201,7 @@ class TestXUrllib(unittest.TestCase):
 
         try:
             self.uri_opener.GET(url)
-        except HTTPRequestException, hre:
+        except HTTPRequestException as hre:
             self.assertEqual(hre.value, "Bad HTTP response status line: ''")
         else:
             self.assertTrue(False, 'Expected HTTPRequestException.')
@@ -222,10 +224,10 @@ class TestXUrllib(unittest.TestCase):
                 self.uri_opener.GET(url)
             except HTTPRequestException:
                 http_request_e += 1
-            except ScanMustStopException, smse:
+            except ScanMustStopException as smse:
                 scan_must_stop_e += 1
                 break
-            except Exception, e:
+            except Exception as e:
                 msg = 'Not expecting "%s".'
                 self.assertTrue(False, msg % e.__class__.__name__)
 
@@ -258,7 +260,8 @@ class TestXUrllib(unittest.TestCase):
         if not hasattr(ssl, 'PROTOCOL_SSLv23'):
             return
 
-        ssl_daemon = RawSSLDaemon(Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv23)
+        ssl_daemon = RawSSLDaemon(
+            Ok200Handler, ssl_version=ssl.PROTOCOL_SSLv23)
         ssl_daemon.start()
         ssl_daemon.wait_for_start()
 
@@ -350,7 +353,7 @@ class TestXUrllib(unittest.TestCase):
             try:
                 http_response = uri_opener.GET(url)
                 output.put(http_response)
-            except:
+            except BaseException:
                 output.put(None)
 
         th = Process(target=send, args=(self.uri_opener, output))
@@ -368,7 +371,7 @@ class TestXUrllib(unittest.TestCase):
             try:
                 http_response = uri_opener.GET(url)
                 output.put(http_response)
-            except:
+            except BaseException:
                 output.put(None)
 
         th = Process(target=send, args=(self.uri_opener, output))
@@ -382,30 +385,30 @@ class TestXUrllib(unittest.TestCase):
         http_response = output.get()
         self.assertNotIsInstance(http_response, types.NoneType,
                                  'Error in send thread.')
-        
+
         th.join()
-        
+
         self.assertEqual(http_response.get_code(), 200)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
-    
+
     def test_removes_cache(self):
         url = URL(get_moth_http())
         self.uri_opener.GET(url, cache=False)
-        
+
         # Please note that this line, together with the tearDown() act as
         # a test for a "double call to end()".
         self.uri_opener.end()
-        
+
         db_fmt = 'db_unittest-%s'
         trace_fmt = 'db_unittest-%s_traces/'
         temp_dir = get_temp_dir()
-        
+
         for i in xrange(100):
             test_db_path = os.path.join(temp_dir, db_fmt % i)
             test_trace_path = os.path.join(temp_dir, trace_fmt % i)
             self.assertFalse(os.path.exists(test_db_path), test_db_path)
             self.assertFalse(os.path.exists(test_trace_path), test_trace_path)
-    
+
     def test_special_char_header(self):
         url = URL(get_moth_http('/core/headers/echo-headers.py'))
         header_content = u'name=ábc'

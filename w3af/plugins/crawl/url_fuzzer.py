@@ -134,7 +134,11 @@ class url_fuzzer(CrawlPlugin):
         desc = 'A potentially interesting file was found at: "%s".'
         desc %= response.get_url()
 
-        i = Info('Potentially interesting file', desc, response.id, self.get_name())
+        i = Info(
+            'Potentially interesting file',
+            desc,
+            response.id,
+            self.get_name())
         i.set_url(response.get_url())
 
         kb.kb.append(self, 'files', i)
@@ -301,7 +305,7 @@ class url_fuzzer(CrawlPlugin):
         allowed_methods = []
         for info in allowed_methods_infos:
             allowed_methods.extend(info['methods'])
-        
+
         if 'HEAD' in allowed_methods:
             self._head = True
         else:

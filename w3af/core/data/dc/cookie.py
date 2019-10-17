@@ -33,6 +33,7 @@ class Cookie(KeyValueContainer):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, cookie_str='', encoding=DEFAULT_ENCODING):
 
         super(Cookie, self).__init__(encoding=encoding)
@@ -98,7 +99,7 @@ class Cookie(KeyValueContainer):
         for key in ['path', 'expires', 'domain', 'max-age']:
             try:
                 del cookie_inst[key]
-            except:
+            except BaseException:
                 pass
 
         return cookie_inst

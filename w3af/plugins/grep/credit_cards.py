@@ -31,7 +31,7 @@ def passes_luhn_check(value):
     """
     The Luhn check against the value which can be an array of digits,
     numeric string or a positive integer.
-    
+
     Example credit card numbers can be found here:
 
     https://www.paypal.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm

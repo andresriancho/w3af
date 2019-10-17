@@ -64,13 +64,14 @@ class wizard:
         :return: The next question that has to be asked to the user.
         """
         # Special case for first iteration
-        if self._firstQuestion == True:
+        if self._firstQuestion:
             self._firstQuestion = False
             self._currentQuestion = self._question_lst[0]
             return self._question_lst[0]
 
         # Save the user completed values, so we can handle previous button
-        self._currentQuestion.set_previously_answered_values(self._user_options)
+        self._currentQuestion.set_previously_answered_values(
+            self._user_options)
         self._already_asked.append(self._currentQuestion)
 
         # Special case to end iteration
@@ -94,7 +95,8 @@ class wizard:
 
         :return: The previous question, with the answers the user selected.
         """
-        # Special case, we can't go back because we don't have a previous question
+        # Special case, we can't go back because we don't have a previous
+        # question
         if self._firstQuestion:
             return None
 
@@ -132,5 +134,6 @@ class wizard:
         self._nextQuestionId = self._currentQuestion.get_next_question_id(
             options_list)
 
-        # save the options selected by the user, to be able to perform a "previous"
+        # save the options selected by the user, to be able to perform a
+        # "previous"
         self._user_options = options_list

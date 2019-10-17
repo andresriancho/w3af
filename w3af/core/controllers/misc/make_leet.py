@@ -25,7 +25,7 @@ LEET_LETTERS_OPTIONALS = dict(zip("sStT", "5577"))
 
 def basic_leet(string, LEETERS):
     outlist = []
-    
+
     for letter in string:
         if letter in LEETERS:
             letter = LEETERS[letter]
@@ -39,13 +39,14 @@ def basic_leet(string, LEETERS):
 def make_leet(original_string):
     leeted_pass = []
 
-    if  basic_leet(original_string, LEET_LETTERS) != original_string:
+    if basic_leet(original_string, LEET_LETTERS) != original_string:
         leeted_pass.append(basic_leet(original_string, LEET_LETTERS))
 
-    if  basic_leet(original_string, LEET_LETTERS_OPTIONALS) != original_string:
+    if basic_leet(original_string, LEET_LETTERS_OPTIONALS) != original_string:
         leeted_pass.append(basic_leet(original_string, LEET_LETTERS_OPTIONALS))
 
-    if  basic_leet(basic_leet(original_string, LEET_LETTERS), LEET_LETTERS_OPTIONALS) != original_string:
+    if basic_leet(basic_leet(original_string, LEET_LETTERS),
+                  LEET_LETTERS_OPTIONALS) != original_string:
         leeted_pass.append(basic_leet(basic_leet(
             original_string, LEET_LETTERS), LEET_LETTERS_OPTIONALS))
 

@@ -30,6 +30,7 @@ class MessageConsumer(object):
 
     :author: Andres Riancho <andres.riancho@gmail.com>
     """
+
     def __init__(self):
         super(MessageConsumer, self).__init__()
 
@@ -37,7 +38,7 @@ class MessageConsumer(object):
         subscribe_to_messages(self._message_observer)
         self.messages = Queue.Queue()
         gobject.idle_add(self._process_queue().next)
-        
+
     def _message_observer(self, message):
         self.messages.put(message)
 
@@ -51,7 +52,7 @@ class MessageConsumer(object):
         """
         while True:
             yield True
-            
+
             try:
                 # Sleeping here prevents the GUI from running at 100% cpu
                 msg = self.messages.get(timeout=0.01)
@@ -60,7 +61,7 @@ class MessageConsumer(object):
             else:
                 if msg is None:
                     continue
-                
+
                 # Given that in some cases the handle_message takes some
                 # time to run, we've implemented this loop to give the method
                 # the opportunity to give the control back to the mainloop
@@ -73,5 +74,5 @@ class MessageConsumer(object):
         """
         if not isinstance(msg, Message):
             raise TypeError('Expected Message and got %s instead.' % type(msg))
-        
+
         yield True

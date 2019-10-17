@@ -91,10 +91,10 @@ class TestKeepalive(unittest.TestCase):
 
         ## Verify ##
         kah._start_transaction.assert_called_once_with(conn, req)
-        conn_mgr_mock.get_available_connection.assert_called_once_with(req,
-                                                                       conn_factory)
-        conn_mgr_mock.remove_connection.assert_called_once_with(conn,
-                                                                reason='will close')
+        conn_mgr_mock.get_available_connection.assert_called_once_with(
+            req, conn_factory)
+        conn_mgr_mock.remove_connection.assert_called_once_with(
+            conn, reason='will close')
 
     def test_timeout(self):
         """
@@ -125,7 +125,8 @@ class TestKeepalive(unittest.TestCase):
         self.assertRaises(URLTimeoutError, kah.do_open, req)
         self.assertRaises(URLTimeoutError, kah.do_open, req)
 
-        self.assertEqual(len(conn_mgr.get_available_connection.call_args_list), 2)
+        self.assertEqual(
+            len(conn_mgr.get_available_connection.call_args_list), 2)
         self.assertEqual(len(conn_mgr.remove_connection.call_args_list), 3)
 
     def test_free_connection(self):
@@ -152,7 +153,7 @@ class TestKeepalive(unittest.TestCase):
         """
         conn_mgr_http = HTTPHandler()._cm
         conn_mgr_https = HTTPSHandler(':')._cm
-        
+
         self.assertIsNot(conn_mgr_http, conn_mgr_https)
 
     def test_close_all_established_sockets(self):
@@ -161,7 +162,7 @@ class TestKeepalive(unittest.TestCase):
     def test_close_all_close_wait_sockets(self):
         # Give the socket time to move to close_wait
         self.close_all_sockets(20)
-        
+
     def close_all_sockets(self, wait):
         keep_alive_http = HTTPHandler()
 
@@ -177,16 +178,16 @@ class TestKeepalive(unittest.TestCase):
         pid = os.getpid()
         p = psutil.Process(pid)
         connections_before = p.get_connections()
-        
+
         keep_alive_http.close_all()
 
         time.sleep(1)
         connections_after = p.get_connections()
         # pylint: enable=E1101
-        
+
         self.assertLess(len(connections_after), len(connections_before))
-        
-        
+
+
 class TestConnectionMgr(unittest.TestCase):
 
     def setUp(self):
@@ -233,7 +234,7 @@ class TestConnectionMgr(unittest.TestCase):
         self.assertEquals(0, len(self.cm._free_conns))
 
         # Get connection
-        cf = lambda h: Mock()
+        def cf(h): return Mock()
         conn_1 = self.cm.get_available_connection(self.request, cf)
         self.assertEquals(1, len(self.cm._used_conns))
         self.assertEquals(0, len(self.cm._free_conns))
@@ -248,7 +249,7 @@ class TestConnectionMgr(unittest.TestCase):
         self.assertIsNot(conn_1, conn_2)
 
     def test_replace_conn(self):
-        cf = lambda h: Mock()
+        def cf(h): return Mock()
         bad_conn = Mock()
         self.cm.replace_connection(bad_conn, self.request, cf)
         bad_conn = self.cm.get_available_connection(self.request, cf)

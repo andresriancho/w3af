@@ -54,7 +54,7 @@ class find_captchas(CrawlPlugin):
                                     (among other things) the URL to test.
         """
         result, captchas = self._identify_captchas(fuzzable_request)
-        
+
         if not result:
             return
 
@@ -62,7 +62,11 @@ class find_captchas(CrawlPlugin):
             desc = 'Found a CAPTCHA image at: "%s".' % captcha.img_src
             response_ids = [response.id for response in captcha.http_responses]
 
-            i = Info('Captcha image detected', desc, response_ids, self.get_name())
+            i = Info(
+                'Captcha image detected',
+                desc,
+                response_ids,
+                self.get_name())
             i.set_uri(captcha.img_src)
 
             kb.kb.append(self, 'CAPTCHA', i)
@@ -79,7 +83,7 @@ class find_captchas(CrawlPlugin):
         """
         found_captcha = False
         captchas = []
-        
+
         # GET the document, and fetch the images
         images_1 = self._get_images(fuzzable_request)
 
@@ -101,7 +105,9 @@ class find_captchas(CrawlPlugin):
                     # The image is in both lists, can't be a CAPTCHA
                     break
             else:
-                not_in_2.append((img_src_1, img_hash_1, [http_response_1, http_response_2]))
+                not_in_2.append(
+                    (img_src_1, img_hash_1, [
+                        http_response_1, http_response_2]))
 
         # Results
         #
@@ -119,9 +125,9 @@ class find_captchas(CrawlPlugin):
                 found_captcha = True
 
                 captchas.append(CaptchaInfo(img_src, http_responses))
-                    
+
         return found_captcha, captchas
-        
+
     def _get_images(self, fuzzable_request):
         """
         Get all img tags and retrieve the src.
@@ -134,7 +140,7 @@ class find_captchas(CrawlPlugin):
         try:
             response = self._uri_opener.GET(fuzzable_request.get_uri(),
                                             cache=False)
-        except:
+        except BaseException:
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
             # Do not use parser_cache here, it's not good since CAPTCHA implementations
@@ -146,14 +152,14 @@ class find_captchas(CrawlPlugin):
                 document_parser = DocumentParser.DocumentParser(response)
             except BaseFrameworkException:
                 return []
-            
+
             image_path_list = document_parser.get_references_of_tag('img')
 
             GET = self._uri_opener.GET
             sha1 = hashlib.sha1
-            
+
             result_iter = self.worker_pool.imap_unordered(GET, image_path_list)
-            
+
             for image_response in result_iter:
                 if image_response.is_image():
                     img_src = image_response.get_uri()

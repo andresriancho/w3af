@@ -94,7 +94,8 @@ class wordpress_enumerate_users(CrawlPlugin):
                 continue
 
             if response_author.was_redirected():
-                extracted_from_redir = self._extract_from_redir(response_author)
+                extracted_from_redir = self._extract_from_redir(
+                    response_author)
 
                 if extracted_from_redir:
                     gap = 0
@@ -132,7 +133,8 @@ class wordpress_enumerate_users(CrawlPlugin):
     def _extract_from_redir(self, response_author):
         path = response_author.get_redir_uri().get_path()
         if 'author' in path:
-            # A redirect to /author/<username> was made, username probably found
+            # A redirect to /author/<username> was made, username probably
+            # found
             username = path.split("/")[-2]
             self._kb_info_user(response_author.get_uri(),
                                response_author.id, username)
@@ -148,11 +150,11 @@ class wordpress_enumerate_users(CrawlPlugin):
         """
         desc = 'WordPress user "%s" found during username enumeration.'
         desc = desc % username
-        
+
         i = Info('Identified WordPress user', desc, response_id,
                  self.get_name())
         i.set_url(url)
-        
+
         kb.kb.append(self, 'users', i)
         om.out.information(i.get_desc())
 
@@ -163,9 +165,9 @@ class wordpress_enumerate_users(CrawlPlugin):
         return """
         This plugin finds user names in WordPress installations.
 
-        The author's archive page is tried using "?author=ID" query and 
+        The author's archive page is tried using "?author=ID" query and
         incrementing the ID for each request until a 404 response is received.
-        
+
         If the response is a redirect, the blog is affected by TALSOFT-2011-0526
         (http://seclists.org/fulldisclosure/2011/May/493) advisory. If no
         redirect is done, the plugin will try to fetch the username from title.

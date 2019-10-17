@@ -75,7 +75,8 @@ class CachedResponse(StringIO.StringIO):
     @property
     def encoding(self):
         if not self._encoding:
-            self._encoding = self._get_from_response(CachedResponse.PART_CHARSET)
+            self._encoding = self._get_from_response(
+                CachedResponse.PART_CHARSET)
         return self._encoding
 
     def get_wait_time(self):
@@ -152,4 +153,3 @@ class CachedResponse(StringIO.StringIO):
         in most cases this means creating a file, directory or database.
         """
         raise NotImplementedError
-

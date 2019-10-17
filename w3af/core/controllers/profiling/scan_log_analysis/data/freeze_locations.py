@@ -31,6 +31,7 @@ def get_freeze_locations(scan_log_filename, scan):
 
         previous_line_time = current_line_epoch
 
-    return KeyValueOutput('debug_log_freeze',
-                          'Delays greater than 5 seconds between two log lines',
-                          freezes)
+    return KeyValueOutput(
+        'debug_log_freeze',
+        'Delays greater than 5 seconds between two log lines',
+        freezes)

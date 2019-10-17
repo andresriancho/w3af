@@ -33,7 +33,8 @@ def get_not_found_requests_over_time_data(scan_log_filename, scan):
 
 
 def draw_not_found_requests_over_time(scan_log_filename, scan):
-    requests_by_minute = get_not_found_requests_over_time_data(scan_log_filename, scan)
+    requests_by_minute = get_not_found_requests_over_time_data(
+        scan_log_filename, scan)
 
     print('HTTP requests sent by is_404() by minute')
     print('')

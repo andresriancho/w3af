@@ -7,7 +7,7 @@ See the file 'LICENSE' for copying permission
 
 try:
     import pymysql
-except:
+except BaseException:
     pass
 
 import logging
@@ -17,6 +17,7 @@ from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.exception import SqlmapConnectionException
 from plugins.generic.connector import Connector as GenericConnector
+
 
 class Connector(GenericConnector):
     """
@@ -36,10 +37,17 @@ class Connector(GenericConnector):
         self.initConnection()
 
         try:
-            self.connector = pymysql.connect(host=self.hostname, user=self.user, passwd=self.password, db=self.db, port=self.port, connect_timeout=conf.timeout, use_unicode=True)
-        except (pymysql.OperationalError, pymysql.InternalError), msg:
+            self.connector = pymysql.connect(
+                host=self.hostname,
+                user=self.user,
+                passwd=self.password,
+                db=self.db,
+                port=self.port,
+                connect_timeout=conf.timeout,
+                use_unicode=True)
+        except (pymysql.OperationalError, pymysql.InternalError) as msg:
             raise SqlmapConnectionException(msg[1])
-        except struct.error, msg:
+        except struct.error as msg:
             raise SqlmapConnectionException(msg)
 
         self.initCursor()
@@ -48,8 +56,11 @@ class Connector(GenericConnector):
     def fetchall(self):
         try:
             return self.cursor.fetchall()
-        except pymysql.ProgrammingError, msg:
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
+        except pymysql.ProgrammingError as msg:
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[1])
             return None
 
     def execute(self, query):
@@ -58,9 +69,12 @@ class Connector(GenericConnector):
         try:
             self.cursor.execute(query)
             retVal = True
-        except (pymysql.OperationalError, pymysql.ProgrammingError), msg:
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
-        except pymysql.InternalError, msg:
+        except (pymysql.OperationalError, pymysql.ProgrammingError) as msg:
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[1])
+        except pymysql.InternalError as msg:
             raise SqlmapConnectionException(msg[1])
 
         self.connector.commit()

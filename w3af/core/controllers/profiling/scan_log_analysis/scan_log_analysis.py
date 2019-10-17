@@ -36,12 +36,16 @@ you want to watch.
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='w3af scan log analyzer', usage=HELP)
+    parser = argparse.ArgumentParser(
+        description='w3af scan log analyzer', usage=HELP)
 
     parser.add_argument('scan_log', action='store')
 
-    parser.add_argument('--watch', action='store', dest='watch',
-                        help='Show only one graph and refresh every 5 seconds.')
+    parser.add_argument(
+        '--watch',
+        action='store',
+        dest='watch',
+        help='Show only one graph and refresh every 5 seconds.')
 
     parser.add_argument('--output', action='store', dest='output',
                         help='Filename where JSON output will be written to.')
@@ -50,7 +54,7 @@ if __name__ == '__main__':
 
     try:
         scan = file(parsed_args.scan_log)
-    except:
+    except BaseException:
         print('The scan log file does not exist!')
         sys.exit(2)
 

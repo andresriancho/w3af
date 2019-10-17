@@ -12,6 +12,7 @@ from lib.core.data import logger
 from lib.core.exception import SqlmapFilePathException
 from lib.core.exception import SqlmapUndefinedMethod
 
+
 class Connector:
     """
     This class defines generic dbms protocol functionalities for plugins.
@@ -50,7 +51,7 @@ class Connector:
                 self.cursor.close()
             if self.connector:
                 self.connector.close()
-        except Exception, msg:
+        except Exception as msg:
             logger.debug(msg)
         finally:
             self.closed()

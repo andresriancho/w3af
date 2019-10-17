@@ -32,6 +32,7 @@ class TestUpperDaemon(unittest.TestCase):
 
     @author: Andres Riancho <andres . riancho | gmail . com>
     """
+
     def setUp(self):
         self.ssl_daemon = RawSSLDaemon()
         self.ssl_daemon.start()

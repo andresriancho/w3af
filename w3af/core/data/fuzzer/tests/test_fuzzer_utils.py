@@ -25,14 +25,14 @@ from w3af.core.data.fuzzer.utils import rand_alpha, rand_alnum, rand_number
 
 
 class TestFuzzerUtils(unittest.TestCase):
-    
+
     def test_rand_number(self):
         x = rand_number(length=1)
         self.assertIn(int(x), range(10))
 
         x = rand_number(length=2)
         self.assertIn(int(x), range(100))
-    
+
         x = rand_number(length=3)
         self.assertIn(int(x), range(1000))
 
@@ -41,14 +41,14 @@ class TestFuzzerUtils(unittest.TestCase):
         z = rand_number(length=5)
         w = rand_number(length=5)
         self.assertTrue(x != y != z != w)
-    
+
     def test_rand_alnum(self):
         x = rand_alnum(length=10)
         self.assertEqual(len(x), 10)
-        
+
         x = rand_alnum(length=20)
         self.assertEqual(len(x), 20)
-        
+
         x = rand_alnum(length=5)
         y = rand_alnum(length=5)
         z = rand_alnum(length=5)
@@ -58,10 +58,10 @@ class TestFuzzerUtils(unittest.TestCase):
     def test_rand_alpha(self):
         x = rand_alpha(length=10)
         self.assertEqual(len(x), 10)
-        
+
         x = rand_alpha(length=20)
         self.assertEqual(len(x), 20)
-        
+
         x = rand_alpha(length=5)
         y = rand_alpha(length=5)
         z = rand_alpha(length=5)

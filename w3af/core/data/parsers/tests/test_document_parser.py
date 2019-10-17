@@ -48,7 +48,7 @@ class TestDocumentParserFactory(unittest.TestCase):
 
     PDF_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
                             'tests', 'data', 'links.pdf')
-    
+
     HTML_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',
                              'tests', 'data', 'sharepoint-pl.html')
 
@@ -57,14 +57,16 @@ class TestDocumentParserFactory(unittest.TestCase):
                       'application/xhtml+xml']
 
         for mtype in mime_types:
-            parser = document_parser_factory(_build_http_response('body', mtype))
+            parser = document_parser_factory(
+                _build_http_response('body', mtype))
 
             self.assertIsInstance(parser, DocumentParser)
             self.assertIsInstance(parser._parser, HTMLParser)
             self.assertEqual(parser.get_clear_text_body(), 'body')
 
     def test_html_upper(self):
-        parser = document_parser_factory(_build_http_response('', u'TEXT/HTML'))
+        parser = document_parser_factory(
+            _build_http_response('', u'TEXT/HTML'))
 
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, HTMLParser)
@@ -87,11 +89,11 @@ class TestDocumentParserFactory(unittest.TestCase):
                               response)
 
     def test_no_parser_binary(self):
-        all_chars = ''.join([chr(i) for i in xrange(0,255)])
+        all_chars = ''.join([chr(i) for i in xrange(0, 255)])
         response = _build_http_response(all_chars, u'application/bar')
         self.assertRaises(BaseFrameworkException, document_parser_factory,
                           response)
-        
+
     def test_issue_106_invalid_url(self):
         """
         Issue to verify https://github.com/andresriancho/w3af/issues/106
@@ -102,12 +104,12 @@ class TestDocumentParserFactory(unittest.TestCase):
 
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, HTMLParser)
-        
+
         paths = []
         paths.extend(url.get_path_qs() for url in parser.get_references()[0])
         paths.extend(url.get_path_qs() for url in parser.get_references()[1])
-        
+
         expected_paths = {'/szukaj/_vti_bin/search.asmx',
                           '/_vti_bin/search.asmx?disco='}
-        
+
         self.assertEqual(expected_paths, set(paths))

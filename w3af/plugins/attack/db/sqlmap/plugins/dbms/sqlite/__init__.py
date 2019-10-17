@@ -15,7 +15,14 @@ from plugins.dbms.sqlite.syntax import Syntax
 from plugins.dbms.sqlite.takeover import Takeover
 from plugins.generic.misc import Miscellaneous
 
-class SQLiteMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
+
+class SQLiteMap(
+        Syntax,
+        Fingerprint,
+        Enumeration,
+        Filesystem,
+        Miscellaneous,
+        Takeover):
     """
     This class defines SQLite methods
     """

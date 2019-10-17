@@ -84,7 +84,7 @@ class user_defined_regex(GrepPlugin):
                     # because the info_inst is an empty dict {}
                     # which evaluates to false
                     # but an info object is not the same as None
-                    if not info_inst is None:
+                    if info_inst is not None:
                         ids = info_inst.get_id()
                         ids.append(response.id)
                         info_inst.set_id(ids)
@@ -92,18 +92,22 @@ class user_defined_regex(GrepPlugin):
                         str_match = match_object.group(0)
                         if len(str_match) > 20:
                             str_match = str_match[:20] + '...'
-                            
+
                         desc = 'User defined regular expression "%s" matched a' \
                                ' response. The matched string is: "%s".'
                         desc %= (regex.pattern, str_match)
-                        
-                        info_inst = Info('User defined regular expression match',
-                                         desc, response.id, self.get_name())
+
+                        info_inst = Info(
+                            'User defined regular expression match',
+                            desc,
+                            response.id,
+                            self.get_name())
                         info_inst.set_url(response.get_url())
-                        
+
                         om.out.information(desc)
 
-                        self.kb_append_uniq(self, 'user_defined_regex', info_inst, 'URL')
+                        self.kb_append_uniq(
+                            self, 'user_defined_regex', info_inst, 'URL')
 
                     # Save the info_inst
                     self._regexlist_compiled[index] = (regex, info_inst)
@@ -125,7 +129,7 @@ class user_defined_regex(GrepPlugin):
 
             try:
                 f = file(self._regex_file_path)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Unable to open file "%s", error: "%s".'
                 raise BaseFrameworkException(msg % (self._regex_file_path, e))
             else:
@@ -133,7 +137,7 @@ class user_defined_regex(GrepPlugin):
                     current_regex = regex.strip()
                     try:
                         re_inst = re.compile(current_regex, re.I | re.DOTALL)
-                    except:
+                    except BaseException:
                         msg = 'Invalid regex in input file: "%s"'
                         raise BaseFrameworkException(msg % current_regex)
                     else:

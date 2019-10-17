@@ -26,6 +26,7 @@ class ErrorHandler(urllib2.HTTPDefaultErrorHandler):
     """
     A simple handler that assigns IDs to errors.
     """
+
     def http_error_default(self, req, resp, code, msg, hdrs):
         err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)
         err.id = req.id
@@ -38,6 +39,7 @@ class NoOpErrorHandler(urllib2.HTTPErrorProcessor):
     which have 200 <= code < 300) the same way we handle the rest of the
     HTTP responses.
     """
+
     def http_response(self, request, response):
         return response
 

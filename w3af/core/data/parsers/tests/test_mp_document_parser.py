@@ -66,7 +66,7 @@ class TestMPDocumentParser(unittest.TestCase):
 
         try:
             self.mpdoc.get_document_parser_for(resp)
-        except Exception, e:
+        except Exception as e:
             self.assertEqual(str(e), 'There is no parser for images.')
         else:
             self.assertTrue(False, 'Expected exception!')
@@ -81,9 +81,9 @@ class TestMPDocumentParser(unittest.TestCase):
         modp = 'w3af.core.data.parsers.document_parser.%s'
 
         with patch(mmpdp % 'om.out') as om_mock,\
-             patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
-             patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
-             patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
+                patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
+                patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
+                patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
 
             #
             #   Test the timeout
@@ -97,7 +97,7 @@ class TestMPDocumentParser(unittest.TestCase):
 
             try:
                 self.mpdoc.get_document_parser_for(http_resp)
-            except TimeoutError, toe:
+            except TimeoutError as toe:
                 self._is_timeout_exception_message(toe, om_mock, http_resp)
             else:
                 self.assertTrue(False)
@@ -127,9 +127,9 @@ class TestMPDocumentParser(unittest.TestCase):
         modp = 'w3af.core.data.parsers.document_parser.%s'
 
         with patch(mmpdp % 'om.out') as om_mock,\
-             patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
-             patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
-             patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
+                patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
+                patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
+                patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
 
             # Prepare the HTTP responses
             html_trigger_delay = '<html>DelayedParser!</html>%s'
@@ -146,11 +146,13 @@ class TestMPDocumentParser(unittest.TestCase):
             # Lets timeout many sequentially
             #
             for i in xrange(ITERATIONS):
-                http_resp = _build_http_response(html_trigger_delay % i, u'text/html')
+                http_resp = _build_http_response(
+                    html_trigger_delay %
+                    i, u'text/html')
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except TimeoutError, toe:
+                except TimeoutError as toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
@@ -164,7 +166,7 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except TimeoutError, toe:
+                except TimeoutError as toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
@@ -201,9 +203,9 @@ class TestMPDocumentParser(unittest.TestCase):
         modp = 'w3af.core.data.parsers.document_parser.%s'
 
         with patch(mmpdp % 'om.out') as om_mock,\
-             patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
-             patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
-             patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
+                patch(kmpdp % 'PARSER_TIMEOUT', new_callable=PropertyMock) as timeout_mock,\
+                patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
+                patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
 
             # Prepare the HTTP responses
             html_trigger_delay = '<html>HugeClassAttrValueParser!</html>%s'
@@ -220,11 +222,13 @@ class TestMPDocumentParser(unittest.TestCase):
             # Lets timeout many sequentially
             #
             for i in xrange(ITERATIONS):
-                http_resp = _build_http_response(html_trigger_delay % i, u'text/html')
+                http_resp = _build_http_response(
+                    html_trigger_delay %
+                    i, u'text/html')
 
                 try:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except TimeoutError, toe:
+                except TimeoutError as toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertTrue(False)
@@ -238,7 +242,7 @@ class TestMPDocumentParser(unittest.TestCase):
 
                 try:
                     parser = self.mpdoc.get_document_parser_for(http_resp)
-                except TimeoutError, toe:
+                except TimeoutError as toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
                     self.assertIsInstance(parser._parser, HTMLParser)
@@ -261,9 +265,9 @@ class TestMPDocumentParser(unittest.TestCase):
         modp = 'w3af.core.data.parsers.document_parser.%s'
 
         with patch(mmpdp % 'om.out') as om_mock,\
-             patch(kmpdp % 'MEMORY_LIMIT', new_callable=PropertyMock) as memory_mock,\
-             patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
-             patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
+                patch(kmpdp % 'MEMORY_LIMIT', new_callable=PropertyMock) as memory_mock,\
+                patch(kmpdp % 'MAX_WORKERS', new_callable=PropertyMock) as max_workers_mock,\
+                patch(modp % 'DocumentParser.PARSERS', new_callable=PropertyMock) as parsers_mock:
 
             #
             #   Test the memory usage
@@ -277,7 +281,7 @@ class TestMPDocumentParser(unittest.TestCase):
 
             try:
                 self.mpdoc.get_document_parser_for(http_resp)
-            except MemoryError, me:
+            except MemoryError as me:
                 self.assertIn('OOM issues', str(me))
             else:
                 self.assertTrue(False)
@@ -373,7 +377,8 @@ class TestMPDocumentParser(unittest.TestCase):
         headers['content-type'] = 'text/html'
         resp = HTTPResponse(200, body, headers, url, url, charset='utf-8')
 
-        tags = self.mpdoc.get_tags_by_filter(resp, ('script',), yield_text=True)
+        tags = self.mpdoc.get_tags_by_filter(
+            resp, ('script',), yield_text=True)
 
         # Note that lxml returns None for this tag text:
         self.assertEqual([Tag('script', {'src': 'foo.js'}, None)], tags)

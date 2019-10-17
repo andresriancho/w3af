@@ -79,7 +79,8 @@ class GetAverageRTTForMutant(object):
         # Only perform one of these checks at the time, this is useful to prevent
         # different threads which need the same result from duplicating efforts
         #
-        specific_rtt_mutant_lock = self._get_specific_rtt_mutant_lock(cache_key)
+        specific_rtt_mutant_lock = self._get_specific_rtt_mutant_lock(
+            cache_key)
 
         with specific_rtt_mutant_lock:
             cached_value = self._rtt_mutant_cache.get(cache_key, default=None)
@@ -165,7 +166,8 @@ class GetAverageRTTForMutant(object):
 
     def _get_specific_rtt_mutant_lock(self, cache_key):
         with self._rtt_mutant_lock:
-            specific_rtt_mutant_lock = self._specific_rtt_mutant_locks.get(cache_key)
+            specific_rtt_mutant_lock = self._specific_rtt_mutant_locks.get(
+                cache_key)
 
             if specific_rtt_mutant_lock is not None:
                 return specific_rtt_mutant_lock

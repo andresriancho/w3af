@@ -58,8 +58,9 @@ class ExactDelayController(object):
                           the remote server (ie. sleep(%s) )
         """
         if not isinstance(delay_obj, ExactDelay):
-            raise TypeError('ExactDelayController requires ExactDelay as input')
-        
+            raise TypeError(
+                'ExactDelayController requires ExactDelay as input')
+
         self.mutant = mutant
         self.mutant.set_token_value(mutant.get_token().get_original_value())
 
@@ -100,8 +101,8 @@ class ExactDelayController(object):
 
             # Please note that this call is cached, it will only generate HTTP
             # requests every N calls for the same HTTP request.
-            original_rtt = self.uri_opener.get_average_rtt_for_mutant(mutant=self.mutant,
-                                                                      debugging_id=self.get_debugging_id())
+            original_rtt = self.uri_opener.get_average_rtt_for_mutant(
+                mutant=self.mutant, debugging_id=self.get_debugging_id())
 
             # Try to introduce the delay
             success, response = self.delay_for(delay, original_rtt, grep)
@@ -149,9 +150,10 @@ class ExactDelayController(object):
         return True, responses
 
     def _log_success(self, delay, response):
-        msg = (u'[did: %s] [id: %s] Successfully controlled HTTP response delay for'
-               u' URL %s - parameter "%s" for %s seconds using %r, response'
-               u' wait time was: %s seconds and response ID: %s.')
+        msg = (
+            u'[did: %s] [id: %s] Successfully controlled HTTP response delay for'
+            u' URL %s - parameter "%s" for %s seconds using %r, response'
+            u' wait time was: %s seconds and response ID: %s.')
         self._log_generic(msg, delay, response)
 
     def _log_failure(self, delay, response):
@@ -161,12 +163,13 @@ class ExactDelayController(object):
         self._log_generic(msg, delay, response)
 
     def _log_failure_with_reverse(self, delay, response):
-        msg = (u'[did: %s] [id: %s] Successfully controlled the HTTP response'
-               u' delay using the reverse payload, this is a false positive test'
-               u' and should have failed. The previous delay was most likely'
-               u' generated because of the server being under heavy load.'
-               u' URL %s - parameter "%s" delayed for %s seconds using %r,'
-               u' response wait time was: %s seconds and response ID: %s.')
+        msg = (
+            u'[did: %s] [id: %s] Successfully controlled the HTTP response'
+            u' delay using the reverse payload, this is a false positive test'
+            u' and should have failed. The previous delay was most likely'
+            u' generated because of the server being under heavy load.'
+            u' URL %s - parameter "%s" delayed for %s seconds using %r,'
+            u' response wait time was: %s seconds and response ID: %s.')
         self._log_generic(msg, delay, response)
 
     def _log_generic(self, msg, delay, response):
@@ -242,11 +245,12 @@ class ExactDelayController(object):
         # Send, it is important to notice that we don't use the cache
         # to avoid any interference
         try:
-            response = self.uri_opener.send_mutant(mutant,
-                                                   grep=grep,
-                                                   cache=False,
-                                                   timeout=upper_bound,
-                                                   debugging_id=self.get_debugging_id())
+            response = self.uri_opener.send_mutant(
+                mutant,
+                grep=grep,
+                cache=False,
+                timeout=upper_bound,
+                debugging_id=self.get_debugging_id())
         except HTTPRequestException:
             #
             # We reach this part of the code when the server response times out
@@ -270,7 +274,12 @@ class ExactDelayController(object):
         # We reach this code when the HTTP timeout wasn't reached, but we might still
         # have a working delay. This is most of the cases I've seen.
         current_response_wait_time = response.get_wait_time()
-        args = (id(self), current_response_wait_time, lower_bound, delay, upper_bound)
+        args = (
+            id(self),
+            current_response_wait_time,
+            lower_bound,
+            delay,
+            upper_bound)
         msg = (u'[id: %s] HTTP response delay was %.2f.'
                u' (lower, expected, upper): %.2f, %.2f, %.2f.')
         out.debug(msg % args)

@@ -26,13 +26,15 @@ def get_not_found_cache_rate_data(scan_log_filename, scan):
 
 
 def draw_not_found_cache_rate_over_time(scan_log_filename, scan):
-    cache_rate, cache_rate_timestamps = get_not_found_cache_rate_data(scan_log_filename, scan)
+    cache_rate, cache_rate_timestamps = get_not_found_cache_rate_data(
+        scan_log_filename, scan)
 
     # Get the last timestamp to use as max in the graphs
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
-    grep_queue_timestamps = [ts - first_timestamp for ts in cache_rate_timestamps]
+    grep_queue_timestamps = [
+        ts - first_timestamp for ts in cache_rate_timestamps]
 
     if not cache_rate:
         print('No 404 cache rate data found')

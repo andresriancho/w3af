@@ -78,7 +78,8 @@ class TestFourOhFourResponse(unittest.TestCase):
         clean_response.diff_with_id = 1
 
         clean_response_dict = clean_response.to_dict()
-        clean_response_from_dict = FourOhFourResponse.from_dict(clean_response_dict)
+        clean_response_from_dict = FourOhFourResponse.from_dict(
+            clean_response_dict)
 
         self.assertEqual(clean_response, clean_response_from_dict)
 
@@ -94,6 +95,7 @@ class TestFourOhFourResponse(unittest.TestCase):
         clean_response.diff_with_id = 1
 
         clean_response_serialized = clean_response.dumps()
-        clean_response_from_msgpack = FourOhFourResponse.loads(clean_response_serialized)
+        clean_response_from_msgpack = FourOhFourResponse.loads(
+            clean_response_serialized)
 
         self.assertEqual(clean_response, clean_response_from_msgpack)

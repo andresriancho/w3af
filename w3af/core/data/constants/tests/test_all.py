@@ -38,6 +38,7 @@ class TestAll(unittest.TestCase):
     they do NOT have any syntax errors. Importing one of the constants will
     simply trigger the whole file to be run.
     """
+
     def test_all(self):
         self.assertEqual(INTERNET_EXPLORER_7, INTERNET_EXPLORER_7)
         self.assertEqual(MYSQL, MYSQL)

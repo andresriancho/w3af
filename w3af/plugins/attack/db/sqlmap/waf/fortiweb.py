@@ -12,13 +12,24 @@ from lib.core.settings import WAF_ATTACK_VECTORS
 
 __product__ = "FortiWeb Web Application Firewall (Fortinet)"
 
+
 def detect(get_page):
     retval = False
 
     for vector in WAF_ATTACK_VECTORS:
         page, headers, _ = get_page(get=vector)
-        retval = re.search(r"\AFORTIWAFSID=", headers.get(HTTP_HEADER.SET_COOKIE, ""), re.I) is not None
-        retval |= all(_ in (page or "") for _ in (".fgd_icon", ".blocked", ".authenticate"))
+        retval = re.search(
+            r"\AFORTIWAFSID=",
+            headers.get(
+                HTTP_HEADER.SET_COOKIE,
+                ""),
+            re.I) is not None
+        retval |= all(
+            _ in (
+                page or "") for _ in (
+                ".fgd_icon",
+                ".blocked",
+                ".authenticate"))
         if retval:
             break
 

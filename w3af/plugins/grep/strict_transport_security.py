@@ -33,6 +33,7 @@ class strict_transport_security(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         super(strict_transport_security, self).__init__()
         self._reports = 0
@@ -90,4 +91,3 @@ class STSInfoSet(InfoSet):
         ' - {{ url }}\n'
         '{% endfor %}'
     )
-

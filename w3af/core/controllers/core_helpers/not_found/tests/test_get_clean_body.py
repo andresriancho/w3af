@@ -65,9 +65,10 @@ class TestGetCleanBody(unittest.TestCase):
         # get_clean_body wasn't removing the URL from the body
         #
         # Also, after this URL is not removed
-        body = ('<head><title>Document Moved</title></head>'
-                '<body><h1>Object Moved</h1>This document may be found '
-                '<a HREF="https://w3af.org/install.php?mode=phpinfo">here</a></body>')
+        body = (
+            '<head><title>Document Moved</title></head>'
+            '<body><h1>Object Moved</h1>This document may be found '
+            '<a HREF="https://w3af.org/install.php?mode=phpinfo">here</a></body>')
 
         resp = HTTPResponse(200, body, headers, url, url)
 

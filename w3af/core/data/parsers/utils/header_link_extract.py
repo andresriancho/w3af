@@ -89,7 +89,8 @@ def extract_link_from_link_header(http_response, header_name, header_value):
             om.out.debug(msg % (header_name, header_value))
 
 
-def extract_link_from_set_cookie_header(http_response, header_name, header_value):
+def extract_link_from_set_cookie_header(
+        http_response, header_name, header_value):
     """
     Extract links from the "path" key of a cookie
 
@@ -104,7 +105,7 @@ def extract_link_from_set_cookie_header(http_response, header_name, header_value
     """
     try:
         cookie = parse_cookie(header_value)
-    except:
+    except BaseException:
         raise StopIteration
 
     for key in cookie.keys():

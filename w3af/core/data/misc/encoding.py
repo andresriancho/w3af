@@ -92,7 +92,7 @@ def smart_unicode(s,
     """
     if _isinstance(s, _unicode):
         return s
-    
+
     if _isinstance(s, _str):
         try:
             s = s.decode(encoding, errors)

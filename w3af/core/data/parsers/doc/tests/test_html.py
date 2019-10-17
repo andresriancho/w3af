@@ -50,7 +50,7 @@ class RaiseHTMLParser(HTMLParser):
 
 @attr('smoke')
 class TestHTMLParser(unittest.TestCase):
-    
+
     url = URL('http://w3af.com')
 
     def test_forms(self):
@@ -167,12 +167,12 @@ class TestHTMLParser(unittest.TestCase):
         body2 = HTML_DOC % \
             {'head': '',
              'body': FORM_WITHOUT_METHOD %
-            {'form_content':
-             INPUT_TEXT_WITH_NAME + INPUT_TEXT_WITH_ID +
-             INPUT_FILE_WITH_NAME + INPUT_SUBMIT_WITH_NAME +
-             INPUT_RADIO_WITH_NAME + INPUT_CHECKBOX_WITH_NAME +
-             INPUT_HIDDEN
-             }
+             {'form_content':
+              INPUT_TEXT_WITH_NAME + INPUT_TEXT_WITH_ID +
+              INPUT_FILE_WITH_NAME + INPUT_SUBMIT_WITH_NAME +
+              INPUT_RADIO_WITH_NAME + INPUT_CHECKBOX_WITH_NAME +
+              INPUT_HIDDEN
+              }
              }
         resp2 = build_http_response(self.url, body2)
         p2 = RaiseHTMLParser(resp2)

@@ -53,7 +53,8 @@ class HeadersMutant(Mutant):
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
         """
-        fuzzable_headers = fuzzer_config['fuzzable_headers'] + freq.get_force_fuzzing_headers()
+        fuzzable_headers = fuzzer_config['fuzzable_headers'] + \
+            freq.get_force_fuzzing_headers()
 
         if not fuzzable_headers:
             return []

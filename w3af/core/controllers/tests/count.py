@@ -30,7 +30,7 @@ class count(CrawlPlugin):
     """
     This is a test plugin that will count how many times it called
     xurllib.GET and expose that as an attribute.
-    
+
     Only useful for testing, see test_w3afcore.py
 
     :author: Andres Riancho (andres.riancho@gmail.com)

@@ -46,13 +46,16 @@ for i, version in enumerate(extracted_links):
         version_md5 = urllib2.urlopen(version_md5_url).read().strip()
     except KeyboardInterrupt:
         break
-    except:
+    except BaseException:
         errors += 1
         if DEBUG:
             print '%s is a 404' % version_md5_url
     else:
         if i % 15 == 0:
-            print '[%s/%s] %s %s' % (i, len(extracted_links), version_md5, version)
+            print '[%s/%s] %s %s' % (i,
+                                     len(extracted_links),
+                                     version_md5,
+                                     version)
         release_db.write('%s,%s\n' % (version_md5, version))
 
     if errors > 10:

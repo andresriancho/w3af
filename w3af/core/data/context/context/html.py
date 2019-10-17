@@ -66,6 +66,7 @@ class ScriptText(HtmlText):
     """
     Matches <script>PAYLOAD</script>
     """
+
     def can_break(self):
         # If we can break out of the context then we're done
         if super(ScriptText, self).can_break():
@@ -97,6 +98,7 @@ class CSSText(HtmlText):
     """
     Matches <style>PAYLOAD</style>
     """
+
     def can_break(self):
         # If we can break out of the context then we're done
         if super(CSSText, self).can_break():

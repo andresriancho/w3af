@@ -51,8 +51,8 @@ class XmlRpcContainer(KeyValueContainer):
         self.parse_xml_data(xml_post_data)
 
     def __reduce__(self):
-        return self.__class__, (self._xml_post_data,), {'token': self.token,
-                                                        'encoding': self.encoding}
+        return self.__class__, (self._xml_post_data,), {
+            'token': self.token, 'encoding': self.encoding}
 
     def get_type(self):
         return 'XML-RPC'
@@ -67,7 +67,7 @@ class XmlRpcContainer(KeyValueContainer):
         """
         try:
             read_handler = parse_xmlrpc(xml_post_data)
-        except:
+        except BaseException:
             raise ValueError(ERR_MSG % xml_post_data[:50])
         else:
             # Tried to do this with self.update but it was failing :S

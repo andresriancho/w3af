@@ -47,7 +47,6 @@ class DisclaimerController(object):
         if startup_cfg.accepted_disclaimer:
             return True
 
-
         QUESTION = 'Do you accept the terms and conditions?'
         msg = DISCLAIMER + '\n\n' + QUESTION
         user_response = ask(msg)

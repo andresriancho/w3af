@@ -65,7 +65,8 @@ class favicon_identification(InfrastructurePlugin):
         """
         domain_path = fuzzable_request.get_url().get_domain_path()
 
-        # TODO: Maybe I should also parse the html to extract the favicon location?
+        # TODO: Maybe I should also parse the html to extract the favicon
+        # location?
         favicon_url = domain_path.url_join('favicon.ico')
         response = self._uri_opener.GET(favicon_url, cache=True)
         remote_fav_md5 = hashlib.md5(response.get_body()).hexdigest()
@@ -80,7 +81,7 @@ class favicon_identification(InfrastructurePlugin):
                     i = Info('Favicon identification', desc, response.id,
                              self.get_name())
                     i.set_url(favicon_url)
-                    
+
                     kb.kb.append(self, 'info', i)
                     om.out.information(i.get_desc())
                     break
@@ -108,7 +109,7 @@ class favicon_identification(InfrastructurePlugin):
         try:
             # read MD5 database.
             db_file = open(self._db_file, "r")
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to open the MD5 database at %s. Exception: "%s".'
             om.out.error(msg % (self._db_file, e))
         else:

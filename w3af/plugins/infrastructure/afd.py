@@ -62,7 +62,7 @@ class afd(InfrastructurePlugin):
         try:
             filtered, not_filtered = self._send_requests(fuzzable_request,
                                                          debugging_id)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             om.out.error(str(bfe))
         else:
             self._analyze_results(filtered, not_filtered)
@@ -85,7 +85,7 @@ class afd(InfrastructurePlugin):
             http_resp = self._uri_opener.GET(original_url,
                                              cache=True,
                                              debugging_id=debugging_id)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             msg = ('Active filter detection plugin failed to receive a'
                    ' response for the first request. The exception was: "%s".'
                    ' Can not perform analysis.')
@@ -143,10 +143,10 @@ class afd(InfrastructurePlugin):
                     ' result of all the other plugins will be inaccurate, web'
                     ' applications could be vulnerable but "protected" by the'
                     ' active filter.')
-                   
+
             i = Info('Active filter detected', desc, 1, self.get_name())
             i['filtered'] = filtered
-            
+
             kb.kb.append(self, 'afd', i)
             om.out.information(i.get_desc())
 
@@ -197,9 +197,9 @@ class afd(InfrastructurePlugin):
         first one (usually implemented by IPS devices) is easy to verify: if afd
         requests a specially crafted URL and the connection is closed, then
         its being probably blocked by an active filter.
-        
+
         The second protection type, usually implemented by Web Application
-        Firewalls like mod_security, is a little harder to identify: first afd 
+        Firewalls like mod_security, is a little harder to identify: first afd
         requests a page without adding any payloads, afterwards it requests the
         same URL but with a fake parameter and customized values; if the response
         bodies differ, then its safe to say that the remote end has an active

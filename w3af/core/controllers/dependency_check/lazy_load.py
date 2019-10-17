@@ -34,7 +34,7 @@ def _module_load_worker(module_name):
 def lazy_load(module_name):
     return _module_load_worker(module_name)
 
-    #TODO: Why isn't this working?
+    # TODO: Why isn't this working?
     #pool = Pool(processes=1)
     #result = pool.apply_async(_module_load_worker, [module_name])
-    #return result.get(timeout=5)
+    # return result.get(timeout=5)

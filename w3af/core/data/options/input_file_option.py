@@ -66,7 +66,8 @@ class InputFileOption(BaseOption):
         # I want to make the paths shorter, so we're going to make them
         # relative, at least in the case where they are inside the cwd
         current_dir = os.path.abspath(os.curdir)
-        configured_value_dir = os.path.abspath(os.path.dirname(validated_value))
+        configured_value_dir = os.path.abspath(
+            os.path.dirname(validated_value))
 
         if configured_value_dir.startswith(current_dir):
             self._value = os.path.relpath(validated_value)
@@ -95,7 +96,7 @@ class InputFileOption(BaseOption):
         if self_contained or self.should_base64_encode_file(self._value):
             try:
                 return self.encode_b64_data(self._value)
-            except Exception, e:
+            except Exception as e:
                 msg = ('An exception occurred while encoding "%s" for storing'
                        ' into the profile: "%s"')
                 raise BaseFrameworkException(msg % (self._value, e))
@@ -179,7 +180,8 @@ class InputFileOption(BaseOption):
         :return: True if the filename matches the pattern used to decode
                  base64:// data
         """
-        if filename.endswith(self.DATA_SUFFIX) and self.DATA_PREFIX in filename:
+        if filename.endswith(
+                self.DATA_SUFFIX) and self.DATA_PREFIX in filename:
             return True
 
         return False
@@ -221,4 +223,3 @@ class InputFileOption(BaseOption):
         """
         data = base64.b64encode(file(filename).read().encode('zlib')).strip()
         return '%s%s' % (self.DATA_PROTO, data)
-

@@ -39,6 +39,7 @@ class ssi(AuditPlugin):
     Find server side inclusion vulnerabilities.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         AuditPlugin.__init__(self)
 
@@ -206,7 +207,8 @@ class ssi(AuditPlugin):
         msg = 'Analyzing HTTP response %s to verify if SSI string is found'
         om.out.debug(msg % response.get_uri())
 
-        for matched_expected_result in self._persistent_multi_in.query(response.get_body()):
+        for matched_expected_result in self._persistent_multi_in.query(
+                response.get_body()):
             # We found one of the expected results, now we search the
             # self._expected_mutant_dict to find which of the mutants sent it
             # and create the vulnerability
@@ -217,9 +219,13 @@ class ssi(AuditPlugin):
                     ' to "%s".')
             desc %= (mutant.found_at(), freq.get_url())
 
-            v = Vuln.from_mutant('Persistent server side include vulnerability',
-                                 desc, severity.HIGH, response.id,
-                                 self.get_name(), mutant)
+            v = Vuln.from_mutant(
+                'Persistent server side include vulnerability',
+                desc,
+                severity.HIGH,
+                response.id,
+                self.get_name(),
+                mutant)
 
             v.add_to_highlight(matched_expected_result)
             self.kb_append(self, 'ssi', v)

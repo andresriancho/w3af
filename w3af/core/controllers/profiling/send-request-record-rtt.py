@@ -39,7 +39,7 @@ def send_forever(target):
 if __name__ == '__main__':
     try:
         target = sys.argv[1]
-    except:
+    except BaseException:
         print('Target URL is missing')
         print('')
         print('python w3af/core/controllers/profiling/send-request-record-rtt.py http://target.com/?rtt-measurement=')

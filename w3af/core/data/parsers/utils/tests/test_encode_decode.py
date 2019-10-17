@@ -46,13 +46,13 @@ class TestHTMLDecode(unittest.TestCase):
     def test_bug_trigger_case01(self):
         """
         u'í'.decode('utf-8')
-        
+
         UnicodeEncodeError: 'ascii' codec can't encode character u'\xed' in
                             position 9745: ordinal not in range(128)
         """
         html = u'Aquí encontrará'
         self.assertEqual(htmldecode(html), html)
-    
+
     def test_bug_trigger_case02(self):
         html_utf8_raw = 'Aqu\xc3\xad encontrar\xc3\xa1'
         html_unicode = 'Aqu\xc3\xad encontrar\xc3\xa1'.decode('utf-8')
@@ -100,10 +100,18 @@ class TestURLEncode(unittest.TestCase):
         self.assertEqual(urlencode(parse_qs(u'a=1&a=c'), 'latin1'), 'a=1&a=c')
 
     def test_tilde_case01(self):
-        self.assertEqual(urlencode(parse_qs(u'a=á&a=2'), 'latin1'), 'a=%E1&a=2')
+        self.assertEqual(
+            urlencode(
+                parse_qs(u'a=á&a=2'),
+                'latin1'),
+            'a=%E1&a=2')
 
     def test_tilde_case02(self):
-        self.assertEqual(urlencode(parse_qs(u'a=á&a=2'), 'utf-8'), 'a=%C3%A1&a=2')
+        self.assertEqual(
+            urlencode(
+                parse_qs(u'a=á&a=2'),
+                'utf-8'),
+            'a=%C3%A1&a=2')
 
     def test_raises(self):
         self.assertRaises(TypeError, urlencode, u'a=b&c=d', 'utf-8')

@@ -54,7 +54,7 @@ def cleanup_bug_report(_input):
     if targets is not None:
         domains = [url.get_domain() for url in targets]
         paths = [url.get_path() for url in targets if len(url.get_path()) >= 3]
-        
+
         for domain in domains:
             _input = _input.replace(domain, 'domain')
 

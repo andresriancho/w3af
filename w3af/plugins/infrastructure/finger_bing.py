@@ -83,7 +83,7 @@ class finger_bing(InfrastructurePlugin):
         except ScanMustStopOnUrlError:
             # Just ignore it
             pass
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'ExtendedUrllib exception raised while fetching page in' \
                   ' finger_bing, error description: "%s"'
             om.out.debug(msg % w3)
@@ -92,7 +92,8 @@ class finger_bing(InfrastructurePlugin):
             get_document_parser_for = parser_cache.dpc.get_document_parser_for
 
             try:
-                document_parser = get_document_parser_for(response, cache=False)
+                document_parser = get_document_parser_for(
+                    response, cache=False)
             except BaseFrameworkException:
                 # Failed to find a suitable parser for the document
                 pass
@@ -101,7 +102,7 @@ class finger_bing(InfrastructurePlugin):
                 for mail in document_parser.get_emails(self._domain_root):
                     if mail not in self._accounts:
                         self._accounts.append(mail)
-                        
+
                         desc = 'The mail account: "%s" was found at: "%s".'
                         desc = desc % (mail, page.URL)
 
@@ -111,7 +112,7 @@ class finger_bing(InfrastructurePlugin):
                         i['mail'] = mail
                         i['user'] = mail.split('@')[0]
                         i['url_list'] = {page.URL}
-                        
+
                         self.kb_append('emails', 'emails', i)
 
     def get_options(self):

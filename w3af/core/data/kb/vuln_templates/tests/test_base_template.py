@@ -26,17 +26,17 @@ from w3af.core.data.kb.vuln_templates.base_template import BaseTemplate
 
 
 class BaseTemplateTest(unittest.TestCase):
-    
+
     def test_basic(self):
         bt = BaseTemplate()
-        
+
         options_list = bt.get_options()
         name = options_list['name']
         url = options_list['url']
         data = options_list['data']
         method = options_list['method']
         vulnerable_parameter = options_list['vulnerable_parameter']
-        
+
         name.set_value('SQL injection')
         url.set_value('http://host.tld/foo.php')
         data.set_value('id=3')
@@ -45,8 +45,8 @@ class BaseTemplateTest(unittest.TestCase):
 
         bt.get_vulnerability_name = Mock(return_value='unittest')
         bt.set_options(options_list)
-        
+
         one = bt.get_vuln_id()
         two = bt.get_vuln_id()
-        
+
         self.assertEqual(one + 1, two)

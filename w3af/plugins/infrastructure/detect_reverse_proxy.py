@@ -51,7 +51,9 @@ class detect_reverse_proxy(InfrastructurePlugin):
                                     (among other things) the URL to test.
         """
         # detect using GET
-        if not kb.kb.get('detect_transparent_proxy', 'detect_transparent_proxy'):
+        if not kb.kb.get(
+            'detect_transparent_proxy',
+                'detect_transparent_proxy'):
             response = self._uri_opener.GET(
                 fuzzable_request.get_url(), cache=True)
             if self._has_proxy_headers(response):
@@ -86,7 +88,8 @@ class detect_reverse_proxy(InfrastructurePlugin):
 
         # Report failure to detect reverse proxy
         if not kb.kb.get('detect_reverse_proxy', 'detect_reverse_proxy'):
-            om.out.information('The remote web server doesn\'t seem to have a reverse proxy.')
+            om.out.information(
+                'The remote web server doesn\'t seem to have a reverse proxy.')
 
     def _report_finding(self, response):
         """
@@ -96,7 +99,11 @@ class detect_reverse_proxy(InfrastructurePlugin):
         """
         desc = 'The remote web server seems to have a reverse proxy installed.'
 
-        i = Info('Reverse proxy identified', desc, response.id, self.get_name())
+        i = Info(
+            'Reverse proxy identified',
+            desc,
+            response.id,
+            self.get_name())
         i.set_url(response.get_url())
 
         kb.kb.append(self, 'detect_reverse_proxy', i)
@@ -121,7 +128,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         :return: True if the remote web server has a reverse proxy
         """
         response_body = response.get_body().upper()
-        #remove duplicated spaces from body
+        # remove duplicated spaces from body
         whitespace = re.compile('\s+')
         response_body = re.sub(whitespace, ' ', response_body)
 

@@ -89,13 +89,13 @@ class LRUCache404(Decorator):
             # thread modifies the cache and changes the __first item in
             # the cache.
             result = None
-            
+
         if result is not None:
             self._log_success(http_response, result, 'URL')
             return result
 
-        body_cache_key = self._response_cache_key_cache.get_response_cache_key(http_response,
-                                                                               clean_response=query)
+        body_cache_key = self._response_cache_key_cache.get_response_cache_key(
+            http_response, clean_response=query)
 
         try:
             result = self._is_404_by_body_lru.get(body_cache_key, None)
@@ -140,7 +140,8 @@ class LRUCache404(Decorator):
         self._stats_from_cache += 1
 
         response_did = http_response.get_debugging_id()
-        debugging_id = response_did if response_did is not None else rand_alnum(8)
+        debugging_id = response_did if response_did is not None else rand_alnum(
+            8)
 
         is_is_not = 'is a 404' if result else 'is NOT a 404'
 
@@ -252,9 +253,10 @@ class PreventMultipleThreads(Decorator):
                 #
                 # This will reduce the processing / HTTP requests, etc. for a
                 # scan that is most likely having really bad performance.
-                msg = ('is_404() took more than %s seconds to run on %s,'
-                       ' returning true to reduce CPU usage and HTTP requests.'
-                       ' This error is very rare and should be manually analyzed.')
+                msg = (
+                    'is_404() took more than %s seconds to run on %s,'
+                    ' returning true to reduce CPU usage and HTTP requests.'
+                    ' This error is very rare and should be manually analyzed.')
                 args = (self.TIMEOUT, http_response.get_uri())
                 om.out.error(msg % args)
                 return True

@@ -59,7 +59,7 @@ class symfony(GrepPlugin):
         """
         if not response.is_text_or_html():
             return
-        
+
         if not self.symfony_detected(response):
             return
 

@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.data.options.list_option import ListOption 
+from w3af.core.data.options.list_option import ListOption
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.options.option_types import URL_LIST
 
@@ -35,12 +35,12 @@ class URLListOption(ListOption):
     def validate(self, value):
         parsed_list = super(URLListOption, self).validate(value)
         res = []
-        
+
         for input_url in parsed_list:
             try:
                 res.append(URL(input_url))
-            except Exception, e:
+            except Exception as e:
                 msg = 'Invalid URL configured by user, error: %s.' % e
                 raise BaseFrameworkException(msg)
-        
+
         return res

@@ -61,4 +61,3 @@ class URLParameterHandler(urllib2.BaseHandler):
         return new_request
 
     https_request = http_request
-

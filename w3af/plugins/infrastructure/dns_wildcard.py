@@ -96,7 +96,10 @@ class dns_wildcard(InfrastructurePlugin):
         if is_no_content_response(modified_response):
             return
 
-        if fuzzy_equal(modified_response.get_body(), original_response.get_body(), 0.35):
+        if fuzzy_equal(
+                modified_response.get_body(),
+                original_response.get_body(),
+                0.35):
             return
 
         desc = 'The contents of %s and %s differ.'
@@ -119,16 +122,18 @@ class dns_wildcard(InfrastructurePlugin):
         headers = Headers([('Host', dns_wildcard_url.get_domain())])
 
         try:
-            modified_response = self._uri_opener.GET(original_response.get_url(),
-                                                     cache=True,
-                                                     headers=headers)
+            modified_response = self._uri_opener.GET(
+                original_response.get_url(), cache=True, headers=headers)
         except BaseFrameworkException as bfe:
             msg = ('An error occurred while fetching IP address URL in '
                    ' dns_wildcard plugin: "%s"')
             om.out.debug(msg % bfe)
             return
 
-        if fuzzy_not_equal(modified_response.get_body(), original_response.get_body(), 0.35):
+        if fuzzy_not_equal(
+                modified_response.get_body(),
+                original_response.get_body(),
+                0.35):
             desc = ('The target site has NO DNS wildcard, and the contents'
                     ' of "%s" differ from the contents of "%s".')
             desc %= (dns_wildcard_url, original_response.get_url())

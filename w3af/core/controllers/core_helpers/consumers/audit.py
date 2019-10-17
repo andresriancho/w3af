@@ -26,8 +26,8 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.exceptions import ScanMustStopException
 from w3af.core.controllers.profiling.took_helper import TookLine
-from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
-                                                                        task_decorator)
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (
+    BaseConsumer, task_decorator)
 
 
 class audit(BaseConsumer):
@@ -76,12 +76,13 @@ class audit(BaseConsumer):
                            ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-            except Exception, e:
+            except Exception as e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
                            ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-                self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)
+                self.handle_exception(
+                    'audit', plugin.get_name(), 'plugin.end()', e)
 
             else:
                 msg_fmt = 'Spent %.2f seconds running %s.end()'
@@ -92,25 +93,25 @@ class audit(BaseConsumer):
     def get_original_response(self, fuzzable_request):
         plugin = self._consumer_plugins[0]
         return plugin.get_original_response(fuzzable_request)
-        
+
     def _consume(self, fuzzable_request):
         """
         Consume a fuzzable_request that was found by the crawl/infrastructure
         plugins. Basically perform these steps:
-        
+
             * GET the FuzzableRequest and get a handler to the HTTPResponse inst
             * Send the fuzzable_request and http_response instances to all
               plugins in different threads in order for them to work on them
-        
+
         Getting the original response at this level is a performance
         enhancement to avoid sending the same HTTP request many times, once
         for each audit plugin that needed the http_response.
-        
+
         :param fuzzable_request: A FuzzableRequest instance
         """
         try:
             orig_resp = self.get_original_response(fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('audit',
                                   'audit.get_original_response()',
                                   'audit.get_original_response()', e)
@@ -125,8 +126,8 @@ class audit(BaseConsumer):
             # will see things "moving" and will be happy
             self._w3af_core.status.set_running_plugin('audit',
                                                       plugin.get_name())
-            self._w3af_core.status.set_current_fuzzable_request('audit',
-                                                                fuzzable_request)
+            self._w3af_core.status.set_current_fuzzable_request(
+                'audit', fuzzable_request)
 
             # Note that if we don't limit the input queue size for the thread
             # pool we might end up with a lot of queued calls here! The calls
@@ -147,13 +148,19 @@ class audit(BaseConsumer):
         try:
             for observer in self._observers:
                 observer.audit(self, fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('audit',
                                   'audit._run_observers()',
                                   'audit._run_observers()', e)
 
     @task_decorator
-    def _audit(self, function_id, plugin, fuzzable_request, orig_resp, debugging_id):
+    def _audit(
+            self,
+            function_id,
+            plugin,
+            fuzzable_request,
+            orig_resp,
+            debugging_id):
         """
         Since threadpool's apply_async runs the callback only when the call to
         this method ends without any exceptions, it is *very important* to
@@ -175,7 +182,7 @@ class audit(BaseConsumer):
 
         try:
             plugin.audit_with_copy(fuzzable_request, orig_resp, debugging_id)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('audit',
                                   plugin.get_name(),
                                   fuzzable_request,

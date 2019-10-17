@@ -100,14 +100,15 @@ class CoreTarget(Configurable):
         """
         protocol = target_url.get_protocol()
         is_file = file_target and protocol == 'file'
-        is_http = protocol in ('http', 'https') and target_url.is_valid_domain()
-                
+        is_http = protocol in (
+            'http', 'https') and target_url.is_valid_domain()
+
         if not is_file and not is_http:
             msg = ('Invalid format for target URL "%s", you have to specify '
                    'the protocol (http/https/file) and a domain or IP address.'
                    ' Examples: http://host.tld/ ; https://127.0.0.1/ .')
             raise BaseFrameworkException(msg % target_url)
-        
+
         return True
 
     def get_urls_from_target(self, options_list):
@@ -119,7 +120,7 @@ class CoreTarget(Configurable):
         """
         configured_target_urls = options_list['target'].get_value()
         target_urls = []
-        
+
         for target_url in configured_target_urls:
 
             self._verify_url(target_url)
@@ -127,11 +128,11 @@ class CoreTarget(Configurable):
             if not target_url.url_string.startswith('file:///'):
                 # It's a common URL just like http://w3af.com/
                 target_urls.append(target_url)
-                
+
             else:
                 try:
                     f = urllib2.urlopen(target_url.url_string)
-                except:
+                except BaseException:
                     msg = 'Cannot open target file: "%s"'
                     raise BaseFrameworkException(msg % target_url)
                 else:
@@ -161,7 +162,8 @@ class CoreTarget(Configurable):
                             raise BaseFrameworkException(msg % args)
 
                         # Some more validation before we're done...
-                        self._verify_url(target_in_file_inst, file_target=False)
+                        self._verify_url(
+                            target_in_file_inst, file_target=False)
                         target_urls.append(target_in_file_inst)
 
                     f.close()
@@ -179,11 +181,12 @@ class CoreTarget(Configurable):
         target_urls = self.get_urls_from_target(options_list)
 
         # Now we perform a check to see if the user has specified more than
-        # one target domain, for example: "http://google.com, http://yahoo.com".
+        # one target domain, for example: "http://google.com,
+        # http://yahoo.com".
         domain_list = [target_url.get_net_location() for target_url in
                        target_urls]
         domain_list = list(set(domain_list))
-        
+
         if len(domain_list) > 1:
             msg = ('You specified more than one target domain: %s.'
                    ' And w3af can only scan one target domain at a time.')
@@ -192,7 +195,7 @@ class CoreTarget(Configurable):
         # This doesn't seem to be possible with the current framework design,
         # since we need "empty" targets to be an option for profiles
         #
-        #if len(domain_list) == 0:
+        # if len(domain_list) == 0:
         #    msg = ('There is something wrong with the configured target URLs,'
         #           ' w3af was unable to extract at least one domain name from'
         #           ' the user configured setting: "%s"')
@@ -202,7 +205,8 @@ class CoreTarget(Configurable):
         # Save in the config, the target URLs, this may be useful for some
         # plugins
         cf.cf.save('targets', target_urls)
-        cf.cf.save('target_domains', list(set([u.get_domain() for u in target_urls])))
+        cf.cf.save('target_domains', list(
+            set([u.get_domain() for u in target_urls])))
         cf.cf.save('baseURLs', [i.base_url() for i in target_urls])
 
         # Advanced target selection

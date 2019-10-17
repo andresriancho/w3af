@@ -92,7 +92,7 @@ class pluginsMenu(menu):
         try:
             type = params[0]
             subMenu = self._children[type]
-        except:
+        except BaseException:
             self._cmd_help(['list'])
         else:
             subMenu._list(params[1:])
@@ -113,6 +113,7 @@ class pluginsTypeMenu(menu):
         Common menu for all types of plugins.
         The type of plugins is defined by the menu's own name.
     """
+
     def __init__(self, name, console, w3af, parent):
         menu.__init__(self, name, console, w3af, parent)
         plugins = w3af.plugins.get_plugin_list(name)
@@ -121,7 +122,7 @@ class pluginsTypeMenu(menu):
             try:
                 options = self._w3af.plugins.get_plugin_inst(
                     self._name, p).get_options()
-            except Exception, e:
+            except Exception as e:
                 om.out.error('Error while reading plugin options: "%s"' % e)
                 sys.exit(-8)
             else:
@@ -184,7 +185,7 @@ class pluginsTypeMenu(menu):
         #       are going to remove the console output plugin, and if someone
         #       else does, he will realize that he fucked up ;)
         #
-        #if self._name == 'output' and 'console' not in enabled:
+        # if self._name == 'output' and 'console' not in enabled:
         #    om.out.console("You can't disable the console output plugin")
         #    enabled.append('console')
         #
@@ -274,8 +275,14 @@ class pluginsTypeMenu(menu):
         if name in self._configs:
             config = self._configs[name]
         else:
-            config = ConfigMenu(name, self._console, self._w3af, self,
-                                self._w3af.plugins.get_plugin_inst(self._name, params[0]))
+            config = ConfigMenu(
+                name,
+                self._console,
+                self._w3af,
+                self,
+                self._w3af.plugins.get_plugin_inst(
+                    self._name,
+                    params[0]))
             self._configs[name] = config
 
         return config

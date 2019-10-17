@@ -39,7 +39,7 @@ OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
 
 @attr('smoke')
 class TestTarget(unittest.TestCase):
-    
+
     def test_basic(self):
         opt_lst = CoreTarget().get_options()
 
@@ -61,31 +61,35 @@ class TestTarget(unittest.TestCase):
 
         self.assertRaises(BaseFrameworkException, ctarget._verify_url,
                           URL_KLASS('ftp://www.google.com/'))
-        
-        self.assertTrue(ctarget._verify_url(URL_KLASS('http://www.google.com/')))
-        self.assertTrue(ctarget._verify_url(URL_KLASS('http://www.google.com:39/')))
+
+        self.assertTrue(
+            ctarget._verify_url(
+                URL_KLASS('http://www.google.com/')))
+        self.assertTrue(
+            ctarget._verify_url(
+                URL_KLASS('http://www.google.com:39/')))
 
     def test_verify_file_target(self):
         ctarget = CoreTarget()
 
         target_file = '/tmp/moth.target'
         target = 'file://%s' % target_file
-        
+
         target_file_handler = file(target_file, 'w')
         target_file_handler.write('http://moth/1\n')
         target_file_handler.write('http://moth/2\n')
         target_file_handler.close()
-        
+
         options = ctarget.get_options()
         options['target'].set_value(target)
         ctarget.set_options(options)
-        
+
         moth1 = URL_KLASS('http://moth/1')
         moth2 = URL_KLASS('http://moth/2')
-        
+
         self.assertIn(moth1, cf.cf.get('targets'))
         self.assertIn(moth2, cf.cf.get('targets'))
-    
+
     def tearDown(self):
         if os.path.exists('/tmp/moth.target'):
             os.unlink('/tmp/moth.target')

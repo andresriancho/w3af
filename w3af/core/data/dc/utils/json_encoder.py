@@ -32,6 +32,7 @@ class DateTimeJSONEncoder(json.JSONEncoder):
     doing "json.dumps()"
     """
     # pylint: disable=E0202
+
     def default(self, obj):
         if isinstance(obj, (datetime.datetime, datetime.date)):
             return obj.isoformat()

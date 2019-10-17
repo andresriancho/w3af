@@ -91,7 +91,7 @@ class OrderedCachedQueue(Queue.Queue, QueueSpeedMeasurement):
     def _get_class_name(self, obj):
         try:
             return obj.__class__.__name__
-        except:
+        except BaseException:
             return type(obj)
 
     def _get_hash(self, item):

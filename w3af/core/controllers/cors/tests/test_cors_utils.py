@@ -36,7 +36,12 @@ from w3af.core.controllers.cors.utils import (build_cors_request,
 class TestUtils(unittest.TestCase):
 
     def test_provides_cors_features_fails(self):
-        self.assertRaises(AttributeError, provides_cors_features, None, None, None)
+        self.assertRaises(
+            AttributeError,
+            provides_cors_features,
+            None,
+            None,
+            None)
 
     def test_provides_cors_features_false(self):
         url = URL('http://moth/')

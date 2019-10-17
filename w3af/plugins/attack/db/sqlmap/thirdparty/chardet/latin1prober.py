@@ -83,14 +83,14 @@ Latin1_CharToClass = (
 # 3 : very likely
 Latin1ClassModel = (
     # UDF OTH ASC ASS ACV ACO ASV ASO
-    0,  0,  0,  0,  0,  0,  0,  0,  # UDF
-    0,  3,  3,  3,  3,  3,  3,  3,  # OTH
-    0,  3,  3,  3,  3,  3,  3,  3,  # ASC
-    0,  3,  3,  3,  1,  1,  3,  3,  # ASS
-    0,  3,  3,  3,  1,  2,  1,  2,  # ACV
-    0,  3,  3,  3,  3,  3,  3,  3,  # ACO
-    0,  3,  1,  3,  1,  1,  1,  3,  # ASV
-    0,  3,  1,  3,  1,  1,  3,  3,  # ASO
+    0, 0, 0, 0, 0, 0, 0, 0,  # UDF
+    0, 3, 3, 3, 3, 3, 3, 3,  # OTH
+    0, 3, 3, 3, 3, 3, 3, 3,  # ASC
+    0, 3, 3, 3, 1, 1, 3, 3,  # ASS
+    0, 3, 3, 3, 1, 2, 1, 2,  # ACV
+    0, 3, 3, 3, 3, 3, 3, 3,  # ACO
+    0, 3, 1, 3, 1, 1, 1, 3,  # ASV
+    0, 3, 1, 3, 1, 1, 3, 3,  # ASO
 )
 
 
@@ -129,8 +129,11 @@ class Latin1Prober(CharSetProber):
         if total < 0.01:
             confidence = 0.0
         else:
-            confidence = ((self._mFreqCounter[3] - self._mFreqCounter[1] * 20.0)
-                          / total)
+            confidence = (
+                (self._mFreqCounter[3] -
+                 self._mFreqCounter[1] *
+                 20.0) /
+                total)
         if confidence < 0.0:
             confidence = 0.0
         # lower the confidence of latin1 so that other more accurate

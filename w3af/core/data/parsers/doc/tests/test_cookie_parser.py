@@ -32,4 +32,3 @@ class TestParseCookie(unittest.TestCase):
     def test_with_path(self):
         cookie = parse_cookie('abc=def; path=/x')
         self.assertEqual(cookie['abc']['path'], '/x')
-

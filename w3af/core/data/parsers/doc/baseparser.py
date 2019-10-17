@@ -122,9 +122,9 @@ class BaseParser(object):
         #    http://www.w3.org/TR/REC-html40/appendix/notes.html#h-B.2
         #
 ##        index = dec_url.find('?')
-##        if index > -1:
-##            dec_url = (dec_url[:index].decode(enc, 'ignore') +
-##                       dec_url[index:].decode('utf-8', 'ignore'))
+# if index > -1:
+# dec_url = (dec_url[:index].decode(enc, 'ignore') +
+# dec_url[index:].decode('utf-8', 'ignore'))
 
         return dec_url
 

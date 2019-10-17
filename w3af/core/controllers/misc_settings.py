@@ -136,8 +136,9 @@ class MiscSettings(Configurable):
                           help=h)
         ol.add(opt)
 
-        d = ('Indicates if w3af plugins will send fuzzed file names in order to'
-             ' find vulnerabilities')
+        d = (
+            'Indicates if w3af plugins will send fuzzed file names in order to'
+            ' find vulnerabilities')
         h = ('For example, if the discovered URL is http://test/filename.php,'
              ' and fuzz_url_filenames is enabled, w3af will request among'
              ' other things: http://test/file\'a\'a\'name.php in order to'
@@ -183,10 +184,11 @@ class MiscSettings(Configurable):
 
         d = ('Indicates what HTML form combo values w3af plugins will use:'
              ' all, tb, tmb, t, b')
-        h = ('Indicates what HTML form combo values, e.g. select options values,'
-             ' w3af plugins will use: all (All values), tb (only top and bottom'
-             ' values), tmb (top, middle and bottom values), t (top values), b'
-             ' (bottom values).')
+        h = (
+            'Indicates what HTML form combo values, e.g. select options values,'
+            ' w3af plugins will use: all (All values), tb (only top and bottom'
+            ' values), tmb (top, middle and bottom values), t (top values), b'
+            ' (bottom values).')
         options = ['tmb', 'all', 'tb', 't', 'b']
         opt = opt_factory('form_fuzzing_mode',
                           options,
@@ -359,11 +361,12 @@ class MiscSettings(Configurable):
         # Language options
         #
         d = 'Set the language to use when reading from the vulnerability database'
-        h = ('The vulnerability database stores descriptions, fix guidance, tags,'
-             ' references and much more about each vulnerability the scanner can'
-             ' identify. The database supports translations, so this information'
-             ' can be in many languages. Use this setting to choose the language'
-             ' in which the information will be displayed and stored in reports.')
+        h = (
+            'The vulnerability database stores descriptions, fix guidance, tags,'
+            ' references and much more about each vulnerability the scanner can'
+            ' identify. The database supports translations, so this information'
+            ' can be in many languages. Use this setting to choose the language'
+            ' in which the information will be displayed and stored in reports.')
         options = DBVuln.get_all_languages()
         opt = opt_factory('vulndb_language',
                           options,

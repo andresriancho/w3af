@@ -16,7 +16,14 @@ from plugins.dbms.informix.syntax import Syntax
 from plugins.dbms.informix.takeover import Takeover
 from plugins.generic.misc import Miscellaneous
 
-class InformixMap(Syntax, Fingerprint, Enumeration, Filesystem, Miscellaneous, Takeover):
+
+class InformixMap(
+        Syntax,
+        Fingerprint,
+        Enumeration,
+        Filesystem,
+        Miscellaneous,
+        Takeover):
     """
     This class defines Informix methods
     """

@@ -249,7 +249,7 @@ class OutputManager(Process):
 
         try:
             o_plugin.flush()
-        except Exception, exception:
+        except Exception as exception:
             self._handle_output_plugin_exception(o_plugin, exception)
         finally:
             o_plugin.is_running_flush = False
@@ -348,7 +348,7 @@ class OutputManager(Process):
         for o_plugin in self._output_plugin_instances:
             try:
                 o_plugin.end()
-            except:
+            except BaseException:
                 exc_info = sys.exc_info()
                 continue
 
@@ -395,11 +395,11 @@ class OutputManager(Process):
         """
         Internal method used to invoke the requested action on each plugin
         in the output plugin list.
-        
+
         A caller to any of the METHODS can specify that the call he's doing
         should NOT go to a specific plugin set specified in the ignore_plugins
         keyword argument.
-        
+
         """
         encoded_params = []
 
@@ -418,7 +418,7 @@ class OutputManager(Process):
             encoded_params.append(arg)
 
         args = tuple(encoded_params)
-        
+
         # A caller to any of the METHODS can specify that the call he's doing
         # should NOT go to a specific plugin set specified in the ignore_plugins
         # keyword argument
@@ -436,14 +436,14 @@ class OutputManager(Process):
         ignored_plugins = kwds.pop('ignore_plugins', set())
 
         for o_plugin in self._output_plugin_instances:
-            
+
             if o_plugin.get_name() in ignored_plugins:
                 continue
-            
+
             try:
                 opl_func_ptr = getattr(o_plugin, action_name)
-                apply(opl_func_ptr, args, kwds)
-            except Exception, exception:
+                opl_func_ptr(*args, **kwds)
+            except Exception as exception:
                 self._handle_output_plugin_exception(o_plugin, exception)
 
     def set_output_plugin_inst(self, output_plugin_inst):
@@ -451,7 +451,7 @@ class OutputManager(Process):
 
     def get_output_plugin_inst(self):
         return self._output_plugin_instances
-        
+
     def set_output_plugins(self, output_plugins):
         """
         :param output_plugins: A list with the names of Output Plugins that
@@ -486,10 +486,15 @@ class OutputManager(Process):
         :return: No value is returned.
         """
         if output_plugin_name == 'all':
-            file_list = os.listdir(os.path.join(ROOT_PATH, 'plugins', 'output'))
+            file_list = os.listdir(
+                os.path.join(
+                    ROOT_PATH,
+                    'plugins',
+                    'output'))
 
             sext = os.path.splitext
-            str_req_plugins = [sext(f)[0] for f in file_list if sext(f)[1] == '.py']
+            str_req_plugins = [sext(f)[0]
+                               for f in file_list if sext(f)[1] == '.py']
             str_req_plugins.remove('__init__')
 
             for plugin_name in str_req_plugins:

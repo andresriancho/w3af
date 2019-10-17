@@ -34,6 +34,7 @@ class ProfileList(gtk.TreeView):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, initial=None):
         self.w3af = w3af
 
@@ -385,7 +386,7 @@ class ProfileList(gtk.TreeView):
 
         try:
             self.w3af.profiles.use_profile(profile_obj.get_profile_file())
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_WARNING, gtk.BUTTONS_OK,
                                     str(w3))
@@ -419,7 +420,7 @@ class ProfileList(gtk.TreeView):
         # use the empty profile
         try:
             self.w3af.profiles.use_profile(None)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_WARNING,
                                     gtk.BUTTONS_OK, str(w3))
@@ -436,7 +437,7 @@ class ProfileList(gtk.TreeView):
                 self.w3af.profiles.save_current_to_new_profile,
                 filename, description)
         except BaseFrameworkException:
-            #FIXME: This message should be more descriptive
+            # FIXME: This message should be more descriptive
             self.w3af.mainwin.sb(_("Problem hit!"))
             return
         self.w3af.mainwin.sb(_("New profile created"))
@@ -462,9 +463,10 @@ class ProfileList(gtk.TreeView):
         if not self.w3af.mainwin.save_state_to_core(relaxedTarget=True):
             return
 
-        self.w3af.profiles.save_current_to_profile(profile_obj.get_name(),
-                                                   prof_desc=profile_obj.get_desc(),
-                                                   prof_path=profile_obj.get_profile_file())
+        self.w3af.profiles.save_current_to_profile(
+            profile_obj.get_name(),
+            prof_desc=profile_obj.get_desc(),
+            prof_path=profile_obj.get_profile_file())
         self.w3af.mainwin.sb(_('Profile saved'))
         path = self.get_cursor()[0]
         row = self.liststore[path]
@@ -485,8 +487,8 @@ class ProfileList(gtk.TreeView):
             filename, description = dlgResponse
             filename = cgi.escape(filename)
             try:
-                profile_obj = helpers.coreWrap(self.w3af.profiles.save_current_to_new_profile,
-                                               filename, description)
+                profile_obj = helpers.coreWrap(
+                    self.w3af.profiles.save_current_to_new_profile, filename, description)
             except BaseFrameworkException:
                 self.w3af.mainwin.sb(
                     _("There was a problem saving the profile!"))

@@ -6,7 +6,8 @@ from utils.utils import (get_first_timestamp,
                          get_last_timestamp,
                          get_line_epoch)
 
-CRAWLINFRA_DISK_DICT = re.compile('The current CrawlInfraIn DiskDict size is (\d*).')
+CRAWLINFRA_DISK_DICT = re.compile(
+    'The current CrawlInfraIn DiskDict size is (\d*).')
 
 
 def get_queue_size_crawl_data(scan_log_filename, scan):
@@ -25,13 +26,15 @@ def get_queue_size_crawl_data(scan_log_filename, scan):
 
 
 def draw_queue_size_crawl(scan_log_filename, scan):
-    crawl_queue_sizes, crawl_queue_timestamps = get_queue_size_crawl_data(scan_log_filename, scan)
+    crawl_queue_sizes, crawl_queue_timestamps = get_queue_size_crawl_data(
+        scan_log_filename, scan)
 
     # Get the last timestamp to use as max in the graphs
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_time_epoch = last_timestamp - first_timestamp
-    crawl_queue_timestamps = [ts - first_timestamp for ts in crawl_queue_timestamps]
+    crawl_queue_timestamps = [
+        ts - first_timestamp for ts in crawl_queue_timestamps]
 
     if not crawl_queue_sizes:
         print('No crawl consumer queue size data found')

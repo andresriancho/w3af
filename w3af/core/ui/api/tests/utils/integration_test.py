@@ -72,10 +72,10 @@ class IntegrationTest(unittest.TestCase):
         for _ in xrange(10):
             time.sleep(0.5)
 
-            response = requests.get('%s/scans/' % self.api_url, 
+            response = requests.get('%s/scans/' % self.api_url,
                                     auth=self.api_auth,
                                     verify=False)
-                                    
+
             self.assertEqual(response.status_code, 200, response.text)
             if response.json()['items'][0]['status'] != 'Stopped':
                 return response
@@ -90,7 +90,7 @@ class IntegrationTest(unittest.TestCase):
         for _ in xrange(wait_loops):
             time.sleep(0.5)
 
-            response = requests.get('%s/scans/' % self.api_url, 
+            response = requests.get('%s/scans/' % self.api_url,
                                     auth=self.api_auth,
                                     verify=False)
             self.assertEqual(response.status_code, 200, response.text)
@@ -104,7 +104,7 @@ class IntegrationTest(unittest.TestCase):
         :return: A string with a message I can use to debug issues, contains
                  the scan log information available in the REST API (if any)
         """
-        response = requests.get('%s/scans/' % self.api_url, 
+        response = requests.get('%s/scans/' % self.api_url,
                                 auth=self.api_auth,
                                 verify=False)
         scan_id = response.json()['items'][0]['id']
@@ -112,7 +112,8 @@ class IntegrationTest(unittest.TestCase):
         response = requests.get('%s/scans/%s/log' % (self.api_url, scan_id),
                                 auth=self.api_auth,
                                 verify=False)
-        scan_log = '\n'.join([m['message'] for m in response.json()['entries']])
+        scan_log = '\n'.join([m['message']
+                              for m in response.json()['entries']])
 
         self.maxDiff = None
         return 'Assertion failed! The scan log contains:\n\n%s' % scan_log

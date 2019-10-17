@@ -79,7 +79,7 @@ class dav(AuditPlugin):
         for apply_res in results:
             apply_res.get()
 
-    #pylint: disable=C0103
+    # pylint: disable=C0103
     def _SEARCH(self, domain_path):
         """
         Test SEARCH method.
@@ -99,16 +99,16 @@ class dav(AuditPlugin):
         if content_matches and res.get_code() in xrange(200, 300):
             msg = ('Directory listing with HTTP SEARCH method was found at'
                    'directory: "%s".' % domain_path)
-                  
+
             v = Vuln('Insecure DAV configuration', msg, severity.MEDIUM,
                      res.id, self.get_name())
 
             v.set_url(res.get_url())
             v.set_method('SEARCH')
-            
+
             self.kb_append(self, 'dav', v)
 
-    #pylint: disable=C0103
+    # pylint: disable=C0103
     def _PROPFIND(self, domain_path):
         """
         Test PROPFIND method
@@ -138,7 +138,7 @@ class dav(AuditPlugin):
 
             self.kb_append(self, 'dav', v)
 
-    #pylint: disable=C0103
+    # pylint: disable=C0103
     def _PUT(self, domain_path):
         """
         Tests PUT method.
@@ -157,13 +157,13 @@ class dav(AuditPlugin):
             msg = ('File upload with HTTP PUT method was found at resource:'
                    ' "%s". A test file was uploaded to: "%s".')
             msg = msg % (domain_path, res.get_url())
-            
+
             v = Vuln('Publicly writable directory', msg, severity.HIGH,
                      [put_response.id, res.id], self.get_name())
 
             v.set_url(url)
             v.set_method('PUT')
-            
+
             self.kb_append(self, 'dav', v)
 
         # Report some common errors
@@ -173,11 +173,12 @@ class dav(AuditPlugin):
                    ' that the DAV extension failed in some way. This error was'
                    ' found at: "%s".' % put_response.get_url())
 
-            i = Info('DAV incorrect configuration', msg, res.id, self.get_name())
+            i = Info('DAV incorrect configuration',
+                     msg, res.id, self.get_name())
 
             i.set_url(url)
             i.set_method('PUT')
-            
+
             self.kb_append(self, 'dav', i)
 
         # Report some common errors
@@ -186,19 +187,19 @@ class dav(AuditPlugin):
             # https://github.com/andresriancho/w3af/pull/2724/files
             if 'supported' in put_response.get_body().lower():
                 return
-            
+
             msg = ('DAV seems to be correctly configured and allowing you to'
                    ' use the PUT method but the directory does not have the'
                    ' right permissions that would allow the web server to'
                    ' write to it. This error was found at: "%s".')
             msg = msg % put_response.get_url()
-            
+
             i = Info('DAV incorrect configuration', msg,
                      [put_response.id, res.id], self.get_name())
 
             i.set_url(url)
             i.set_method('PUT')
-            
+
             self.kb_append(self, 'dav', i)
 
     def get_plugin_deps(self):

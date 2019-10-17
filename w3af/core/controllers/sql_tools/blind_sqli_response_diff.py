@@ -70,7 +70,7 @@ class BlindSqliResponseDiff(object):
 
     def set_debugging_id(self, debugging_id):
         self._debugging_id = debugging_id
-    
+
     def get_debugging_id(self):
         return self._debugging_id
 
@@ -105,12 +105,14 @@ class BlindSqliResponseDiff(object):
 
             # One of the confirmation rounds yields "no vuln found"
             if vuln is None:
-                msg = 'Confirmation round %s for %s failed.' % (confirmations, statement_type)
+                msg = 'Confirmation round %s for %s failed.' % (
+                    confirmations, statement_type)
                 self.debug(msg, mutant=mutant)
                 break
 
             # One confirmation round succeeded
-            msg = 'Confirmation round %s for %s succeeded.' % (confirmations, statement_type)
+            msg = 'Confirmation round %s for %s succeeded.' % (
+                confirmations, statement_type)
             self.debug(msg, mutant=mutant)
             confirmations += 1
 
@@ -179,14 +181,12 @@ class BlindSqliResponseDiff(object):
         debugging_id = self.get_debugging_id()
 
         mutant.set_token_value(true_statement)
-        true_response, body_true_response = send_clean(mutant,
-                                                       debugging_id=debugging_id,
-                                                       grep=True)
+        true_response, body_true_response = send_clean(
+            mutant, debugging_id=debugging_id, grep=True)
 
         mutant.set_token_value(false_statement)
-        false_response, body_false_response = send_clean(mutant,
-                                                         debugging_id=debugging_id,
-                                                         grep=False)
+        false_response, body_false_response = send_clean(
+            mutant, debugging_id=debugging_id, grep=False)
 
         if body_true_response == body_false_response:
             msg = ('There is NO CHANGE between the true and false responses.'
@@ -217,9 +217,8 @@ class BlindSqliResponseDiff(object):
             compare_diff = True
 
         mutant.set_token_value(self.SYNTAX_ERROR)
-        syntax_error_response, body_syntax_error_response = send_clean(mutant,
-                                                                       debugging_id=debugging_id,
-                                                                       grep=False)
+        syntax_error_response, body_syntax_error_response = send_clean(
+            mutant, debugging_id=debugging_id, grep=False)
 
         msg = 'Comparing body_true_response and body_syntax_error_response.'
         self.debug(msg,
@@ -236,9 +235,8 @@ class BlindSqliResponseDiff(object):
         # Check if its a search engine before we dig any deeper...
         search_disambiguator = self._remove_all_special_chars(true_statement)
         mutant.set_token_value(search_disambiguator)
-        search_response, body_search_response = send_clean(mutant,
-                                                           grep=False,
-                                                           debugging_id=debugging_id)
+        search_response, body_search_response = send_clean(
+            mutant, grep=False, debugging_id=debugging_id)
 
         # If they are equal then we have a search engine
         msg = 'Comparing body_true_response and body_search_response.'
@@ -288,14 +286,12 @@ class BlindSqliResponseDiff(object):
         second_false_stm = statements[statement_type][1]
 
         mutant.set_token_value(second_true_stm)
-        second_true_response, body_second_true_response = send_clean(mutant,
-                                                                     grep=False,
-                                                                     debugging_id=debugging_id)
+        second_true_response, body_second_true_response = send_clean(
+            mutant, grep=False, debugging_id=debugging_id)
 
         mutant.set_token_value(second_false_stm)
-        second_false_response, body_second_false_response = send_clean(mutant,
-                                                                       grep=False,
-                                                                       debugging_id=debugging_id)
+        second_false_response, body_second_false_response = send_clean(
+            mutant, grep=False, debugging_id=debugging_id)
 
         msg = 'Comparing body_second_true_response and body_true_response.'
         self.debug(msg,
@@ -320,7 +316,7 @@ class BlindSqliResponseDiff(object):
                                      body_false_response,
                                      compare_diff):
             return None
-            
+
         response_ids = [second_false_response.id,
                         second_true_response.id]
 
@@ -405,4 +401,3 @@ class BlindSqliResponseDiff(object):
         self.debug('Took %.2f seconds to run equal_with_limit' % spent)
 
         return cmp_res
-

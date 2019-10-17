@@ -33,6 +33,7 @@ class Searchable(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, textview, small=False):
         self.textview = textview
         self.small = small
@@ -143,7 +144,7 @@ class Searchable(object):
         butCase.connect("clicked", self._matchCase)
         # FIXME
         # current version of gtk.TextIter doesn't support SEARCH_CASE_INSENSITIVE
-        #butCase.show()
+        # butCase.show()
         #self.srchtab.pack_start(butCase, expand=False, fill=False, padding=3)
         self.pack_start(self.srchtab, expand=False, fill=False)
         # Results
@@ -201,7 +202,8 @@ class Searchable(object):
 
         # Before searching, I clean the text parameter, as it might contain
         # null bytes, which will trigger an error like:
-        # TypeError: GtkTextIter.forward_search() argument 1 must be string without null bytes, not str
+        # TypeError: GtkTextIter.forward_search() argument 1 must be string
+        # without null bytes, not str
         text = str(text)
         text = text.replace('\x00', '')
         # TODO: Will the highlighting succeed? How's the text with \0's actually

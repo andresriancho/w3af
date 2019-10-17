@@ -33,6 +33,7 @@ class keys(GrepPlugin):
 
     :author: Yvonne Kim
     """
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
@@ -44,42 +45,44 @@ class keys(GrepPlugin):
 
         KEY_FORMATS = (
             # RSA (PKCS1)
-            ('-----BEGIN RSA PRIVATE KEY-----', ('RSA-PRIVATE', PRIVATE)), 
+            ('-----BEGIN RSA PRIVATE KEY-----', ('RSA-PRIVATE', PRIVATE)),
             ('-----BEGIN RSA PUBLIC KEY-----', ('RSA-PUBLIC', PUBLIC)),
             ('ssh-rsa', ('RSA-PUBLIC', PUBLIC)),
-            
+
             # DSA
             ('-----BEGIN DSA PRIVATE KEY-----', ('DSA-PRIVATE', PRIVATE)),
             ('-----BEGIN DSA PUBLIC KEY-----', ('DSA-PUBLIC', PUBLIC)),
             ('ssh-dss', ('DSA-PUBLIC', PUBLIC)),
-            
+
             # Elliptic Curve
             ('-----BEGIN EC PRIVATE KEY-----', ('EC-PRIVATE', PRIVATE)),
             ('-----BEGIN EC PUBLIC KEY-----', ('EC-PUBLIC', PUBLIC)),
             ('ecdsa-sha2-nistp256', ('EC-PUBLIC', PUBLIC)),
-            
+
             # SSH2
             ('---- BEGIN SSH2 PUBLIC KEY ----', ('SSH2-PRIVATE', PRIVATE)),
             ('---- BEGIN SSH2 PRIVATE KEY ----', ('SSH2-PUBLIC', PUBLIC)),
 
             # ed25519 (OpenSSH)
-            ('-----BEGIN OPENSSH PRIVATE KEY-----', ('ED25519-SSH-PRIVATE', PRIVATE)),
+            ('-----BEGIN OPENSSH PRIVATE KEY-----',
+             ('ED25519-SSH-PRIVATE', PRIVATE)),
             ('-----BEGIN OPENSSH PUBLIC KEY-----', ('ED25519-SSH-PUBLIC', PUBLIC)),
             ('ssh-ed25519', ('ED25519-SSH-PUBLIC', PUBLIC)),
-            
+
             # PKCS8
             ('-----BEGIN PRIVATE KEY-----', ('PKCS8-PRIVATE', PRIVATE)),
             ('-----BEGIN PUBLIC KEY-----', ('PKCS8-PUBLIC', PUBLIC)),
-            ('-----BEGIN ENCRYPTED PRIVATE KEY-----', ('PKCS8-ENCRYPTED-PRIVATE', PRIVATE)),
-            ('-----BEGIN ENCRYPTED PUBLIC KEY-----', ('PKCS8-ENCRYPTED-PUBLIC', PUBLIC)),
-            
+            ('-----BEGIN ENCRYPTED PRIVATE KEY-----',
+             ('PKCS8-ENCRYPTED-PRIVATE', PRIVATE)),
+            ('-----BEGIN ENCRYPTED PUBLIC KEY-----',
+             ('PKCS8-ENCRYPTED-PUBLIC', PUBLIC)),
+
             # XML
             ('<RSAKeyPair>', ('XML-RSA', PRIVATE)),
             ('<RSAKeyValue>', ('.NET-XML-RSA', PUBLIC))
-        )        
+        )
 
         self._multi_in = MultiIn(KEY_FORMATS)
-
 
     def grep(self, request, response):
         """
@@ -101,17 +104,23 @@ class keys(GrepPlugin):
 
             if keypair_type == self.PUBLIC:
                 item = Info(
-                    'Public key disclosure', desc, response.id, self.get_name())
+                    'Public key disclosure',
+                    desc,
+                    response.id,
+                    self.get_name())
 
             elif keypair_type == self.PRIVATE:
                 item = Vuln(
-                    'Private key disclosure', desc, severity.HIGH, response.id, self.get_name())                
+                    'Private key disclosure',
+                    desc,
+                    severity.HIGH,
+                    response.id,
+                    self.get_name())
 
             item.set_url(response.get_url())
             item.add_to_highlight(key)
 
             self.kb_append(self, 'keys', item)
-        
 
     def get_long_desc(self):
         """
@@ -121,6 +130,6 @@ class keys(GrepPlugin):
         return """
         This plugin scans responses for keys in a few of the most common formats.
         Private keys are classified as vulnerabilities while public keys are stored
-        as information. 
+        as information.
 
         """

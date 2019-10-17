@@ -26,6 +26,7 @@ class EmptyFuzzableRequest(FuzzableRequest):
     """
     A FuzzableRequest which can be created without knowing the URI.
     """
+
     def __init__(self):
         super(EmptyFuzzableRequest, self).__init__(None, method='GET',
                                                    headers=None, cookie=None,

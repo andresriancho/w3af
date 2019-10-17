@@ -67,7 +67,7 @@ def get_w3af_version():
     :return: A string with the w3af version.
     """
     version_dict = get_w3af_version_as_dict()
-    
+
     return ('w3af - Web Application Attack and Audit Framework\n'
             'Version: %(version)s\n'
             'Revision: %(revision)s\n'

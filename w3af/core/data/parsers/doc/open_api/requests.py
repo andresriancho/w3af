@@ -84,7 +84,8 @@ class RequestFactory(object):
                                            method=method)
 
         if discover_fuzzable_headers:
-            fuzzable_request.set_force_fuzzing_headers(self._get_parameter_headers())
+            fuzzable_request.set_force_fuzzing_headers(
+                self._get_parameter_headers())
 
         if discover_fuzzable_url_parts:
             fuzzable_request.set_force_fuzzing_url_parts(self._get_url_parts())
@@ -109,7 +110,7 @@ class RequestFactory(object):
 
     def _get_url_parts(self):
         """
-        Builds a forced url parts string based in 
+        Builds a forced url parts string based in
         """
         path = self.operation.path_name
         segments = self.URL_PARTS_RE.split(path)
@@ -151,7 +152,8 @@ class RequestFactory(object):
                                  **parameters)
 
     def _get_filled_parameters(self):
-        return dict((name, value.fill) for (name, value) in self.parameters.iteritems())
+        return dict((name, value.fill)
+                    for (name, value) in self.parameters.iteritems())
 
     def get_method(self):
         """
@@ -187,7 +189,8 @@ class RequestFactory(object):
                 parameters[param_name] = parameters[param_name][0]
 
         if parameters:
-            formatted_params = [(k, [str(v)]) for k, v in parameters.items() if v is not None]
+            formatted_params = [(k, [str(v)])
+                                for k, v in parameters.items() if v is not None]
             query_string = QueryString(formatted_params)
         else:
             # If there are no parameters, we create an empty query string, which is
@@ -248,7 +251,8 @@ class RequestFactory(object):
 
         container_types = [JSONContainer, MultipartContainer, URLEncodedForm]
         for container_type in container_types:
-            content_type = self._look_for_consuming_content_type(container_type)
+            content_type = self._look_for_consuming_content_type(
+                container_type)
             if content_type is not None:
                 return content_type
 
@@ -293,7 +297,9 @@ class RequestFactory(object):
         # Create the data container
         dc = dc_from_content_type_and_raw_params(content_type, parameters)
         if dc is None:
-            om.out.error("No data container for content type '%s'" % content_type)
+            om.out.error(
+                "No data container for content type '%s'" %
+                content_type)
             return None
 
         dc.set_header('Content-Type', content_type)

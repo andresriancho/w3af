@@ -39,7 +39,7 @@ if user_wants_pytracemalloc():
         # User's don't need this module, and installation is complex
         # http://pytracemalloc.readthedocs.org/install.html
         import tracemalloc
-    except ImportError, ie:
+    except ImportError as ie:
         print('Failed to import tracemalloc: %s' % ie)
         sys.exit(-1)
 
@@ -72,7 +72,10 @@ def start_tracemalloc_dump():
     # save 25 frames
     tracemalloc.start(25)
 
-    dump_data_every_thread(dump_tracemalloc, DELAY_MINUTES, SAVE_TRACEMALLOC_PTR)
+    dump_data_every_thread(
+        dump_tracemalloc,
+        DELAY_MINUTES,
+        SAVE_TRACEMALLOC_PTR)
 
 
 def dump_tracemalloc():

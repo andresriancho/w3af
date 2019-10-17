@@ -30,6 +30,7 @@ class rnd_case(EvasionPlugin):
     Change the case of random letters.
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def modify_request(self, request):
         """
         Mangles the request
@@ -53,7 +54,7 @@ class rnd_case(EvasionPlugin):
             try:
                 # Only mangle the postdata if it is a url encoded string
                 parse_qs(data)
-            except:
+            except BaseException:
                 pass
             else:
                 data = self._mutate(data)

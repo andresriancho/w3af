@@ -67,8 +67,8 @@ class JSONContainer(DataContainer):
         self.parse_json(json_post_data)
 
     def __reduce__(self):
-        return self.__class__, (self._raw_json, self._headers), {'token': self.token,
-                                                                 'encoding': self.encoding}
+        return self.__class__, (self._raw_json, self._headers), {
+            'token': self.token, 'encoding': self.encoding}
 
     def get_type(self):
         return 'JSON'
@@ -82,7 +82,7 @@ class JSONContainer(DataContainer):
     def is_json(post_data):
         try:
             json.loads(post_data)
-        except:
+        except BaseException:
             return False
         else:
             return True
@@ -102,7 +102,7 @@ class JSONContainer(DataContainer):
         try:
             self._json = JSONContainer.get_mutable_json(json_post_data)
             self._raw_json = json_post_data
-        except:
+        except BaseException:
             raise ValueError(ERR_MSG % json_post_data[:50])
 
     @classmethod
@@ -163,7 +163,7 @@ class JSONContainer(DataContainer):
             token = self.get_token()
             dt_str = '%s=%s' % (filter_non_printable(token.get_name()),
                                 filter_non_printable(token.get_value()))
-            return '...%s...' % dt_str[:self.MAX_PRINTABLE-6]
+            return '...%s...' % dt_str[:self.MAX_PRINTABLE - 6]
         else:
             # I'll simply show the first N parameter and values until the
             # MAX_PRINTABLE is achieved

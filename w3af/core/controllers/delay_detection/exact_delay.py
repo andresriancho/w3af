@@ -24,6 +24,7 @@ class ExactDelay(object):
     """
     A simple representation of a delay string like "sleep(%s)"
     """
+
     def __init__(self, delay_fmt, delta=0, mult=1):
         """
         :param delay_fmt: The format that should be use to generate the delay
@@ -75,6 +76,5 @@ class ExactDelay(object):
         self._delay_multiplier = mult
 
     def __repr__(self):
-        return u'<ExactDelay (fmt:%s, delta:%s, mult:%s)>' % (self._delay_fmt,
-                                                              self._delay_delta,
-                                                              self._delay_multiplier)
+        return u'<ExactDelay (fmt:%s, delta:%s, mult:%s)>' % (
+            self._delay_fmt, self._delay_delta, self._delay_multiplier)

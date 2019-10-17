@@ -28,6 +28,7 @@ class OptionList(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         self._internal_opt_list = []
 
@@ -42,7 +43,8 @@ class OptionList(object):
         """
         A nice way of printing your object =)
         """
-        return '<OptionList: ' + '|'.join([i.get_name() for i in self._internal_opt_list]) + '>'
+        return '<OptionList: ' + \
+            '|'.join([i.get_name() for i in self._internal_opt_list]) + '>'
 
     def __eq__(self, other):
         if not isinstance(other, OptionList):
@@ -75,7 +77,7 @@ class OptionList(object):
         """
         try:
             item_name = int(item_name)
-        except:
+        except BaseException:
             # A string
             for o in self._internal_opt_list:
                 if o.get_name() == item_name:

@@ -11,6 +11,7 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.LOW
 
+
 def tamper(payload, **kwargs):
     """
     Add a comment to the end of all occurrences of (blacklisted) "information_schema" identifier

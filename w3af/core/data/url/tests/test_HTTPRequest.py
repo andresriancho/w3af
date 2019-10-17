@@ -38,7 +38,7 @@ class TestHTTPRequest(unittest.TestCase):
     def test_basic(self):
         u = URL('http://www.w3af.com')
         req = HTTPRequest(u)
-        
+
         self.assertEqual(req.get_full_url(), 'http://www.w3af.com/')
         self.assertEqual(req.get_uri().url_string, 'http://www.w3af.com/')
 
@@ -63,7 +63,7 @@ class TestHTTPRequest(unittest.TestCase):
         req = HTTPRequest.from_fuzzable_request(freq)
 
         msgpack.dumps(req.to_dict())
-            
+
     def test_dump_case01(self):
         expected = '\r\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
                                 'Hello: World',
@@ -72,7 +72,7 @@ class TestHTTPRequest(unittest.TestCase):
         u = URL('http://w3af.com/a/b/c.php')
         headers = Headers([('Hello', 'World')])
         req = HTTPRequest(u, headers=headers)
-        
+
         self.assertEqual(req.dump(), expected)
 
     def test_dump_case02(self):
@@ -83,5 +83,5 @@ class TestHTTPRequest(unittest.TestCase):
         u = URL('http://w3af.com/a/b/c.php')
         headers = Headers([('Hola', 'Múndo')])
         req = HTTPRequest(u, headers=headers)
-        
+
         self.assertEqual(req.dump(), expected.encode('utf-8'))

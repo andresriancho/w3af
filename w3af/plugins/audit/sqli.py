@@ -177,7 +177,8 @@ class sqli(AuditPlugin):
         :param orig_response: The HTTP response associated with the fuzzable request
         :param debugging_id: A unique identifier for this call to audit()
         """
-        mutants = create_mutants(freq, self.SQLI_STRINGS, orig_resp=orig_response)
+        mutants = create_mutants(
+            freq, self.SQLI_STRINGS, orig_resp=orig_response)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -197,14 +198,14 @@ class sqli(AuditPlugin):
                     # Create the vuln,
                     desc = 'SQL injection in a %s was found at: %s'
                     desc %= dbms_type, mutant.found_at()
-                                        
+
                     v = Vuln.from_mutant('SQL injection', desc, severity.HIGH,
                                          response.id, self.get_name(), mutant)
 
                     v.add_to_highlight(sql_error_string)
                     v['error'] = sql_error_string
                     v['db'] = dbms_type
-                    
+
                     self.kb_append_uniq(self, 'sqli', v)
                     break
 
@@ -222,8 +223,11 @@ class sqli(AuditPlugin):
             dbms_type = [x[1] for x in self.SQL_ERRORS_STR if x[0] == match][0]
             res.append((match, dbms_type))
 
-        for match, _, regex_comp, dbms_type in self._multi_re.query(response.body):
-            om.out.information(self.SQLI_MESSAGE % (match.group(0), response.id))
+        for match, _, regex_comp, dbms_type in self._multi_re.query(
+                response.body):
+            om.out.information(
+                self.SQLI_MESSAGE %
+                (match.group(0), response.id))
             res.append((match.group(0), dbms_type))
 
         return res

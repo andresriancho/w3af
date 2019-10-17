@@ -60,7 +60,7 @@ class ProfilesMenu(menu):
 
             try:
                 self._w3af.profiles.use_profile(profile, workdir=workdir)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 om.out.console(str(w3))
 
             om.out.console('The plugins configured by the scan profile have '
@@ -101,7 +101,8 @@ class ProfilesMenu(menu):
             self_contained = params[1]
 
             if 'self-contained' != self_contained:
-                om.out.console('Invalid profile save flag, please see the help:')
+                om.out.console(
+                    'Invalid profile save flag, please see the help:')
                 self._cmd_help(['save_as'])
                 return
             else:
@@ -115,15 +116,14 @@ class ProfilesMenu(menu):
         # Validate the profile name
         try:
             Profile.is_valid_profile_name(profile_name)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             om.out.console('%s' % bfe)
             return
 
         description = 'Profile generated using the console UI.'
-        self._w3af.profiles.save_current_to_new_profile(profile_name,
-                                                        description,
-                                                        self_contained=self_contained)
-        
+        self._w3af.profiles.save_current_to_new_profile(
+            profile_name, description, self_contained=self_contained)
+
         om.out.console('Profile saved.')
 
     def _para_use(self, params, part):

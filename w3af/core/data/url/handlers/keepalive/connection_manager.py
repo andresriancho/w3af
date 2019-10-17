@@ -103,7 +103,13 @@ class ConnectionManager(object):
         # General stats
         free = len(self.get_all_free_for_host_port(host_port))
         in_use = list(self.get_all_used_for_host_port(host_port))
-        args = (host_port, free, len(in_use), self.MAX_CONNECTIONS, len(in_use) + free)
+        args = (
+            host_port,
+            free,
+            len(in_use),
+            self.MAX_CONNECTIONS,
+            len(in_use) +
+            free)
 
         msg = '%s connection pool stats (free:%s / in_use:%s / max:%s / total:%s)'
         return msg % args
@@ -146,7 +152,9 @@ class ConnectionManager(object):
 
         if connection_info:
             connection_info = ' '.join(connection_info)
-            om.out.debug('Connections with more in use time: %s' % connection_info)
+            om.out.debug(
+                'Connections with more in use time: %s' %
+                connection_info)
             return
 
         if not top_offenders:
@@ -261,7 +269,8 @@ class ConnectionManager(object):
             #        the total connections exceed the MAX_CONNECTIONS
             #
             if conn_total < self.MAX_CONNECTIONS:
-                conn = self._create_new_connection(req, conn_factory, host_port, conn_total)
+                conn = self._create_new_connection(
+                    req, conn_factory, host_port, conn_total)
 
                 self._log_waited_time_for_conn(waited_time_for_conn)
                 return conn
@@ -289,7 +298,8 @@ class ConnectionManager(object):
                     conn = self.get_free_connection_to_close()
 
                     if conn is not None:
-                        self.remove_connection(conn, reason='need fresh connection')
+                        self.remove_connection(
+                            conn, reason='need fresh connection')
 
                         self._log_waited_time_for_conn(waited_time_for_conn)
                         return self._create_new_connection(req,
@@ -354,7 +364,9 @@ class ConnectionManager(object):
                ' as attackers) or the configured number of threads in w3af'
                ' is too high compared with the connection manager'
                ' MAX_CONNECTIONS.')
-        raise ConnectionPoolException(msg % self.GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME)
+        raise ConnectionPoolException(
+            msg %
+            self.GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME)
 
     def cleanup_broken_connections(self):
         """
@@ -373,8 +385,9 @@ class ConnectionManager(object):
             time_in_used_state = now - current_request_start
 
             if time_in_used_state > self.FORCEFULLY_CLOSE_CONN_TIME:
-                reason = ('Connection %s has been in "used_conns" for more than'
-                          ' %.2f seconds, forcefully closing it')
+                reason = (
+                    'Connection %s has been in "used_conns" for more than'
+                    ' %.2f seconds, forcefully closing it')
                 args = (conn, self.FORCEFULLY_CLOSE_CONN_TIME)
 
                 om.out.debug(reason % args)
@@ -394,8 +407,9 @@ class ConnectionManager(object):
             time_in_free_state = now - connection_manager_move_ts
 
             if time_in_free_state > self.FORCEFULLY_CLOSE_CONN_TIME:
-                reason = ('Connection %s has been in "free_conns" for more than'
-                          ' %.2f seconds, forcefully closing it')
+                reason = (
+                    'Connection %s has been in "free_conns" for more than'
+                    ' %.2f seconds, forcefully closing it')
                 args = (conn, self.FORCEFULLY_CLOSE_CONN_TIME)
 
                 om.out.debug(reason % args)

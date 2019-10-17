@@ -51,7 +51,7 @@ class OutputManagerHandler(urllib2.BaseHandler):
             resp.set_id(response.id)
         else:
             resp = response
-            
+
         if not isinstance(request, HTTPRequest):
             msg = ('There is something odd going on in OutputManagerHandler,'
                    ' request should be of type HTTPRequest got %s'

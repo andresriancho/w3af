@@ -13,8 +13,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.NORMAL
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -48,7 +50,8 @@ def tamper(payload, **kwargs):
                     _ = ""
 
                     for i in xrange(len(word)):
-                        _ += word[i].upper() if randomRange(0, 1) else word[i].lower()
+                        _ += word[i].upper() if randomRange(0,
+                                                            1) else word[i].lower()
 
                     if len(_) > 1 and _ not in (_.lower(), _.upper()):
                         break

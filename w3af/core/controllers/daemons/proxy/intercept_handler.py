@@ -32,6 +32,7 @@ class InterceptProxyHandler(ProxyHandler):
     """
     The handler that traps requests and adds them to the queue.
     """
+
     def handle_request_in_thread(self, flow):
         """
         The handle_request method is run in the same thread each time, so we
@@ -50,13 +51,14 @@ class InterceptProxyHandler(ProxyHandler):
             else:
                 # Send the request to the remote webserver
                 http_response = self._send_http_request(http_request)
-        except Exception, e:
+        except Exception as e:
             trace = str(traceback.format_exc())
             http_response = self._create_error_response(http_request, None, e,
                                                         trace=trace)
 
         # Send the response (success|error) to the browser
-        http_response = self._to_libmproxy_response(flow.request, http_response)
+        http_response = self._to_libmproxy_response(
+            flow.request, http_response)
         flow.reply(http_response)
 
     def on_request_drop(self, http_request):
@@ -95,7 +97,7 @@ class InterceptProxyHandler(ProxyHandler):
         try:
             http_request = http_request_parser(head, post_data)
             http_response = self._send_http_request(http_request)
-        except Exception, e:
+        except Exception as e:
             trace = str(traceback.format_exc())
             http_response = self._create_error_response(orig_http_request,
                                                         None, e, trace=trace)
@@ -129,7 +131,7 @@ class InterceptProxyHandler(ProxyHandler):
             return False
 
         if (len(self.parent_process.methods_to_trap) and
-        http_request.get_method() not in self.parent_process.methods_to_trap):
+                http_request.get_method() not in self.parent_process.methods_to_trap):
             return False
 
         url_string = http_request.get_uri().uri2url().url_string

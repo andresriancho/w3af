@@ -86,7 +86,7 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
         for decompression_method in self._decompression_methods:
             try:
                 decompressed_body = decompression_method(body)
-            except:
+            except BaseException:
                 continue
             else:
                 break
@@ -98,7 +98,7 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
             # The decompression method that worked should be moved to the
             # beginning of the list (if not there yet)
             if self._decompression_methods.index(decompression_method) != 0:
-            
+
                 dm_temp = self._decompression_methods[:]
                 dm_temp.remove(decompression_method)
                 dm_temp.insert(0, decompression_method)

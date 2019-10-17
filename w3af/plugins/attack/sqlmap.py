@@ -127,7 +127,7 @@ class sqlmap(AttackPlugin):
 
             try:
                 is_vuln = sqlmap.is_vulnerable()
-            except:
+            except BaseException:
                 sqlmap.cleanup()
 
                 if sqlmap.last_stdout is None or sqlmap.last_stderr is None:
@@ -153,7 +153,7 @@ class sqlmap(AttackPlugin):
                 return True
             else:
                 sqlmap.cleanup()
-        
+
         return False
 
     def get_root_probability(self):
@@ -174,7 +174,7 @@ class sqlmap(AttackPlugin):
         return """
         This plugin exploits SQL injection vulnerabilities using sqlmap. For
         more information about sqlmap please visit:
-        
+
             http://sqlmap.org/
         """
 
@@ -184,40 +184,40 @@ class RunFunctor(Process):
         super(RunFunctor, self).__init__()
         self.daemon = True
         self.name = 'SQLMapWrapper'
-        
+
         self.functor = functor
         self.params = params
         self.user_input = Queue.Queue()
-        
+
         class FakeProcess(object):
             def poll(self):
                 return None
         self.process = FakeProcess()
-        
+
     def run(self):
-        cmd, process = apply(self.functor, self.params)
+        cmd, process = self.functor(*self.params)
 
         if process is None:
             # Something really bad happen with sqlmap
             om.out.console('Failed to start the sqlmap subprocess')
             return
-        
+
         self.process = process
-        
+
         om.out.information('Wrapped SQLMap command: %s' % cmd)
-        
+
         try:
             while process.poll() is None:
                 read_ready, _, _ = select.select([process.stdout], [], [], 0.1)
-                
+
                 if read_ready:
                     line = process.stdout.read(1)
                     om.out.console(line, new_line=False)
-                    
+
         except KeyboardInterrupt:
             om.out.information('Terminating SQLMap after Ctrl+C.')
             process.terminate()
-        
+
         final_content = process.stdout.read()
         om.out.console(final_content, new_line=False)
 
@@ -242,49 +242,49 @@ class SQLMapShell(ReadShell):
         #   http://thomas-cokelaer.info/blog/2011/09/382/
         resp = ReadShell.specific_user_input(self, command, params,
                                              return_err=False)
-        
+
         if resp is not None:
             return resp
-        
+
         # SQLMap specific code starts
         params = tuple(params)
         functor = None
-        
+
         if command in self.ALIAS:
             functor = getattr(self.sqlmap, command)
-        
+
         if command == 'sqlmap':
             functor = self.sqlmap.direct
-        
+
         if functor is not None:
             # TODO: I run this in a different thread in order to be able to
             #       (in the future) handle stdin and all other UI inputs.
             sqlmap_thread = RunFunctor(functor, params)
             sqlmap_thread.start()
             sqlmap_thread.join()
-            
+
             # Returning this empty string makes the console avoid printing
             # a message that says that the command was not found
             return ''
-        
+
         return
-    
-    @read_debug        
+
+    @read_debug
     def read(self, filename):
         return self.sqlmap.read(filename)
-    
+
     def get_name(self):
         return 'sqlmap'
-    
+
     def end(self):
         self.sqlmap.cleanup()
-    
+
     def __repr__(self):
         """
         :return: A string representation of this shell.
         """
         return '<sqlmap shell object>'
-    
+
     def identify_os(self):
         """
         Identify the remote operating system by reading different files from
@@ -292,27 +292,27 @@ class SQLMapShell(ReadShell):
         """
         try:
             self._rOS = read_os_detection(self.read)
-        except OSDetectionException, osde:
+        except OSDetectionException as osde:
             om.out.debug('%s' % osde)
             self._rOS = 'unknown'
-        
+
         # TODO: Could we determine this by calling some payloads?
         self._rSystem = 'sqlmap'
         self._rSystemName = 'db'
         self._rUser = 'sqlmap'
-        
+
     def help(self, command):
         """
         Handle the help command.
         """
         if command in ('read', 'download'):
             return super(SQLMapShell, self).help(command)
-        
+
         elif command == 'sqlmap':
             _help = """\
             sqlmap:
                 Run sqlmap and specify any extra parameters.
-            
+
             Examples:
                 sqlmap -T users -D example_db --dump
                 sqlmap --tables
@@ -322,20 +322,20 @@ class SQLMapShell(ReadShell):
             _help = """\
             Available commands:
                 help                            Display this information
-                
+
                 lsp                             List payloads
                 payload <payload>               Execute "payload" and get the result
                 read <file>                     Read the remote server <file> and echo to this console
                 download <remote> <local>       Download <remote> file to <local> file system location
-                
+
                 dbs                             List DBMS databases
-                tables                          List DBMS tables for the current database 
+                tables                          List DBMS tables for the current database
                 users                           List DBMS users
                 dump                            Dump table information
-                
+
                 sqlmap                          Run a sqlmap command. For example, the "dbs" command
                                                 is an alias for "sqlmap --dbs".
-                
+
                 exit                            Exit this shell session
             """
         return textwrap.dedent(_help)

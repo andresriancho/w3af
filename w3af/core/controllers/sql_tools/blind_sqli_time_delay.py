@@ -140,7 +140,7 @@ class BlindSQLTimeDelay(object):
         """
         :return: A list of statements that are going to be used to test for
                  blind SQL injections. The statements are objects.
-                 
+
                  IMPORTANT: Note that I need this function that generates
                  unique instances of the delay objects! Adding this to a list
                  that's defined at the class level will bring threading issues

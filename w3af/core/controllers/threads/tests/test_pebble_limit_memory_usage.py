@@ -65,7 +65,8 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         for future in results:
             self.assertEqual(future.result(), secs)
 
-    def test_sub_process_with_high_memory_usage_but_not_so_much_is_not_killed(self):
+    def test_sub_process_with_high_memory_usage_but_not_so_much_is_not_killed(
+            self):
         #
         # Run a task that requires a lot of memory but doesn't trigger the limit
         # The process shouldn't die
@@ -76,13 +77,16 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         pool.schedule(just_sleep, args=(0.1,))
 
         # Get the worker pids
-        workers_before_test = pool._pool_manager.worker_manager.workers.keys()[:]
+        workers_before_test = pool._pool_manager.worker_manager.workers.keys()[
+            :]
 
         usage = self.MEMORY_LIMIT / 2.0
         future = pool.schedule(use_memory_in_string, args=(usage,))
 
         self.assertEqual(future.result(), usage)
-        self.assertEqual(workers_before_test, pool._pool_manager.worker_manager.workers.keys()[:])
+        self.assertEqual(
+            workers_before_test,
+            pool._pool_manager.worker_manager.workers.keys()[:])
 
     def test_effective_kill_limit(self):
         #
@@ -123,7 +127,8 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         pool.schedule(just_sleep, args=(0.1,))
 
         # Get the worker pids
-        workers_before_test = pool._pool_manager.worker_manager.workers.keys()[:]
+        workers_before_test = pool._pool_manager.worker_manager.workers.keys()[
+            :]
 
         usage = self.MEMORY_LIMIT * 5.0
         future = pool.schedule(use_memory_in_string, args=(usage,))
@@ -142,9 +147,12 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         for future in results:
             self.assertEqual(future.result(), secs)
 
-        self.assertEqual(workers_before_test, pool._pool_manager.worker_manager.workers.keys()[:])
+        self.assertEqual(
+            workers_before_test,
+            pool._pool_manager.worker_manager.workers.keys()[:])
 
-    def test_main_process_high_memory_usage_after_starting_nothing_killed(self):
+    def test_main_process_high_memory_usage_after_starting_nothing_killed(
+            self):
         #
         # Run a task that sleeps for a while and start consuming a lot of
         # memory in the MAIN process. Assert that the main process is not
@@ -165,7 +173,8 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         for future in results:
             self.assertEqual(future.result(), secs)
 
-    def test_main_process_high_memory_usage_before_starting_nothing_killed(self):
+    def test_main_process_high_memory_usage_before_starting_nothing_killed(
+            self):
         #
         # Consume a lot of memory in the MAIN process, and then run a task in
         # pebble pool that sleeps for a while. Assert that the main process is

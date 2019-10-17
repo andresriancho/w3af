@@ -35,6 +35,7 @@ from w3af.core.ui.gui import entries
 
 class SimpleTextView(gtk.TextView):
     """Simple abstraction of the text view."""
+
     def __init__(self):
         gtk.TextView.__init__(self)
         self.buffer = self.get_buffer()
@@ -82,7 +83,7 @@ class SimpleTextView(gtk.TextView):
 
             try:
                 newtext = unicode(newtext)
-            except:
+            except BaseException:
                 newtext = repr(newtext)[1:-1]
 
         self.buffer.insert(iterl, newtext)
@@ -101,6 +102,7 @@ class EncodeDecode(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         super(EncodeDecode, self).__init__(
             w3af, "encodedecode", _("w3af - Encode / Decode"),
@@ -209,6 +211,7 @@ class EncodeDecode(entries.RememberingWindow):
 
 class ThreadedProc(threading.Thread):
     """Encodes or decodes the text in a different thread."""
+
     def __init__(self, event, func, text):
         self.event = event
         self.func = func
@@ -222,7 +225,7 @@ class ThreadedProc(threading.Thread):
         try:
             self.result = self.func(self.text)
             self.ok = True
-        except Exception, e:
+        except Exception as e:
             self.exception = e
             self.ok = False
         finally:
@@ -237,7 +240,7 @@ def _get_nibbles(char):
     """
     try:
         x, y = hex(ord(char))[2:]
-    except:
+    except BaseException:
         # We get here with chars like \t
         # that translate to 0x9 (they "don't have" first and second nibble")
         x = '0'
@@ -589,4 +592,3 @@ _butNameFunc_dec = [
     (_("Base64 Decode"), b64decode),
     (_("Hex Decoding"), hex_decoding),
 ]
-

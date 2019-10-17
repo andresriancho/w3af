@@ -27,7 +27,7 @@ class SilentJoinableQueue(JoinableQueue):
             wacquire = None
 
         try:
-            while 1:
+            while True:
                 nacquire()
                 try:
                     if not buffer:
@@ -35,7 +35,7 @@ class SilentJoinableQueue(JoinableQueue):
                 finally:
                     nrelease()
                 try:
-                    while 1:
+                    while True:
                         obj = bpopleft()
                         if obj is sentinel:
                             debug('feeder thread got sentinel -- exiting')
@@ -58,7 +58,7 @@ class SilentJoinableQueue(JoinableQueue):
                 except Exception as e:
                     if getattr(e, 'errno', 0) == errno.EPIPE:
                         return
-        except Exception, e:
+        except Exception as e:
             # Since this runs in a daemon thread the resources it uses
             # may be become unusable while the process is cleaning up.
             # We ignore errors which happen after the process has
@@ -71,6 +71,7 @@ class SilentJoinableQueue(JoinableQueue):
                     traceback.print_exc()
             except Exception:
                 pass
+
 
 # monkey-patch
 import multiprocessing.queues

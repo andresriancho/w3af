@@ -31,6 +31,7 @@ from lib.core.exception import SqlmapUndefinedMethod
 from lib.core.settings import UNICODE_ENCODING
 from lib.request import inject
 
+
 class Filesystem:
     """
     This class defines generic OS file system functionalities for plugins.
@@ -48,10 +49,21 @@ class Filesystem:
             lengthQuery = "SELECT SUM(LENGTH(data)) FROM pg_largeobject WHERE loid=%d" % self.oid
 
         elif Backend.isDbms(DBMS.MSSQL):
-            self.createSupportTbl(self.fileTblName, self.tblField, "VARBINARY(MAX)")
-            inject.goStacked("INSERT INTO %s(%s) SELECT %s FROM OPENROWSET(BULK '%s', SINGLE_BLOB) AS %s(%s)" % (self.fileTblName, self.tblField, self.tblField, remoteFile, self.fileTblName, self.tblField));
+            self.createSupportTbl(
+                self.fileTblName,
+                self.tblField,
+                "VARBINARY(MAX)")
+            inject.goStacked(
+                "INSERT INTO %s(%s) SELECT %s FROM OPENROWSET(BULK '%s', SINGLE_BLOB) AS %s(%s)" %
+                (self.fileTblName,
+                 self.tblField,
+                 self.tblField,
+                 remoteFile,
+                 self.fileTblName,
+                 self.tblField))
 
-            lengthQuery = "SELECT DATALENGTH(%s) FROM %s" % (self.tblField, self.fileTblName)
+            lengthQuery = "SELECT DATALENGTH(%s) FROM %s" % (
+                self.tblField, self.fileTblName)
 
         try:
             localFileSize = os.path.getsize(localFile)
@@ -61,27 +73,40 @@ class Filesystem:
             localFileSize = 0
 
         if fileRead and Backend.isDbms(DBMS.PGSQL):
-            logger.info("length of read file '%s' cannot be checked on PostgreSQL" % remoteFile)
+            logger.info(
+                "length of read file '%s' cannot be checked on PostgreSQL" %
+                remoteFile)
             sameFile = True
         else:
-            logger.debug("checking the length of the remote file '%s'" % remoteFile)
-            remoteFileSize = inject.getValue(lengthQuery, resumeValue=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+            logger.debug(
+                "checking the length of the remote file '%s'" %
+                remoteFile)
+            remoteFileSize = inject.getValue(
+                lengthQuery,
+                resumeValue=False,
+                expected=EXPECTED.INT,
+                charsetType=CHARSET_TYPE.DIGITS)
             sameFile = None
 
             if isNumPosStrValue(remoteFileSize):
                 remoteFileSize = long(remoteFileSize)
-                localFile = getUnicode(localFile, encoding=sys.getfilesystemencoding() or UNICODE_ENCODING)
+                localFile = getUnicode(
+                    localFile, encoding=sys.getfilesystemencoding() or UNICODE_ENCODING)
                 sameFile = False
 
                 if localFileSize == remoteFileSize:
                     sameFile = True
                     infoMsg = "the local file '%s' and the remote file " % localFile
-                    infoMsg += "'%s' have the same size (%d B)" % (remoteFile, localFileSize)
+                    infoMsg += "'%s' have the same size (%d B)" % (
+                        remoteFile, localFileSize)
                 elif remoteFileSize > localFileSize:
-                    infoMsg = "the remote file '%s' is larger (%d B) than " % (remoteFile, remoteFileSize)
-                    infoMsg += "the local file '%s' (%dB)" % (localFile, localFileSize)
+                    infoMsg = "the remote file '%s' is larger (%d B) than " % (
+                        remoteFile, remoteFileSize)
+                    infoMsg += "the local file '%s' (%dB)" % (
+                        localFile, localFileSize)
                 else:
-                    infoMsg = "the remote file '%s' is smaller (%d B) than " % (remoteFile, remoteFileSize)
+                    infoMsg = "the remote file '%s' is smaller (%d B) than " % (
+                        remoteFile, remoteFileSize)
                     infoMsg += "file '%s' (%d B)" % (localFile, localFileSize)
 
                 logger.info(infoMsg)
@@ -105,10 +130,15 @@ class Filesystem:
 
         for fcEncodedLine in fcEncodedList:
             if counter == 0:
-                sqlQueries.append("INSERT INTO %s(%s) VALUES (%s)" % (self.fileTblName, self.tblField, fcEncodedLine))
+                sqlQueries.append(
+                    "INSERT INTO %s(%s) VALUES (%s)" %
+                    (self.fileTblName, self.tblField, fcEncodedLine))
             else:
-                updatedField = agent.simpleConcatenate(self.tblField, fcEncodedLine)
-                sqlQueries.append("UPDATE %s SET %s=%s" % (self.fileTblName, self.tblField, updatedField))
+                updatedField = agent.simpleConcatenate(
+                    self.tblField, fcEncodedLine)
+                sqlQueries.append(
+                    "UPDATE %s SET %s=%s" %
+                    (self.fileTblName, self.tblField, updatedField))
 
             counter += 1
 
@@ -189,12 +219,22 @@ class Filesystem:
         errMsg += "into the specific DBMS plugin"
         raise SqlmapUndefinedMethod(errMsg)
 
-    def unionWriteFile(self, localFile, remoteFile, fileType, forceCheck=False):
+    def unionWriteFile(
+            self,
+            localFile,
+            remoteFile,
+            fileType,
+            forceCheck=False):
         errMsg = "'unionWriteFile' method must be defined "
         errMsg += "into the specific DBMS plugin"
         raise SqlmapUndefinedMethod(errMsg)
 
-    def stackedWriteFile(self, localFile, remoteFile, fileType, forceCheck=False):
+    def stackedWriteFile(
+            self,
+            localFile,
+            remoteFile,
+            fileType,
+            forceCheck=False):
         errMsg = "'stackedWriteFile' method must be defined "
         errMsg += "into the specific DBMS plugin"
         raise SqlmapUndefinedMethod(errMsg)
@@ -271,7 +311,12 @@ class Filesystem:
 
         return localFilePaths
 
-    def writeFile(self, localFile, remoteFile, fileType=None, forceCheck=False):
+    def writeFile(
+            self,
+            localFile,
+            remoteFile,
+            fileType=None,
+            forceCheck=False):
         written = False
 
         checkFile(localFile)
@@ -287,14 +332,16 @@ class Filesystem:
                 debugMsg += "stacked query SQL injection technique"
                 logger.debug(debugMsg)
 
-            written = self.stackedWriteFile(localFile, remoteFile, fileType, forceCheck)
+            written = self.stackedWriteFile(
+                localFile, remoteFile, fileType, forceCheck)
             self.cleanup(onlyFileTbl=True)
         elif isTechniqueAvailable(PAYLOAD.TECHNIQUE.UNION) and Backend.isDbms(DBMS.MYSQL):
             debugMsg = "going to upload the file '%s' with " % fileType
             debugMsg += "UNION query SQL injection technique"
             logger.debug(debugMsg)
 
-            written = self.unionWriteFile(localFile, remoteFile, fileType, forceCheck)
+            written = self.unionWriteFile(
+                localFile, remoteFile, fileType, forceCheck)
         else:
             errMsg = "none of the SQL injection techniques detected can "
             errMsg += "be used to write files to the underlying file "

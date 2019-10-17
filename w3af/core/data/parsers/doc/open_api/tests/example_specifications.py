@@ -46,22 +46,30 @@ class IntParamJson(object):
 
 class IntParamWithExampleJson(object):
     def get_specification(self):
-        return file('%s/data/int_param_with_example_json.json' % CURRENT_PATH).read()
+        return file(
+            '%s/data/int_param_with_example_json.json' %
+            CURRENT_PATH).read()
 
 
 class IntParamNoModelJson(object):
     def get_specification(self):
-        return file('%s/data/int_param_no_model_json.json' % CURRENT_PATH).read()
+        return file(
+            '%s/data/int_param_no_model_json.json' %
+            CURRENT_PATH).read()
 
 
 class ComplexDereferencedNestedModel(object):
     def get_specification(self):
-        return file('%s/data/complex_dereferenced_nested_model.json' % CURRENT_PATH).read()
+        return file(
+            '%s/data/complex_dereferenced_nested_model.json' %
+            CURRENT_PATH).read()
 
 
 class DereferencedPetStore(object):
     def get_specification(self):
-        return file('%s/data/dereferenced_pet_store.json' % CURRENT_PATH).read()
+        return file(
+            '%s/data/dereferenced_pet_store.json' %
+            CURRENT_PATH).read()
 
 
 class NestedModel(object):
@@ -81,7 +89,9 @@ class StringParamHeader(object):
 
 class MultiplePathsAndHeaders(object):
     def get_specification(self):
-        return file('%s/data/multiple_paths_and_headers.json' % CURRENT_PATH).read()
+        return file(
+            '%s/data/multiple_paths_and_headers.json' %
+            CURRENT_PATH).read()
 
 
 class PetstoreSimpleModel(object):
@@ -136,8 +146,8 @@ class IntParamPath(object):
         specification_as_string = json.dumps(spec.to_dict(), indent=4)
 
         # Kludge! I was unable to do this via `apispec`
-        specification_as_string = specification_as_string.replace('"required": false,',
-                                                                  '"required": true,')
+        specification_as_string = specification_as_string.replace(
+            '"required": false,', '"required": true,')
 
         return specification_as_string
 
@@ -159,7 +169,9 @@ class ArrayIntItemsQueryString(object):
 
 class ArrayModelItems(object):
     def get_specification(self):
-        return file('%s/data/array_model_items_json.json' % CURRENT_PATH).read()
+        return file(
+            '%s/data/array_model_items_json.json' %
+            CURRENT_PATH).read()
 
 
 class NoParams(object):

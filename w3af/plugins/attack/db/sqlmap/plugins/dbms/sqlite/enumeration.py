@@ -9,6 +9,7 @@ from lib.core.data import logger
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from plugins.generic.enumeration import Enumeration as GenericEnumeration
 
+
 class Enumeration(GenericEnumeration):
     def __init__(self):
         GenericEnumeration.__init__(self)

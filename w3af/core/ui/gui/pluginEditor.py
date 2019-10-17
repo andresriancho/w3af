@@ -59,7 +59,7 @@ class EditWindow(gtk.Window):
             self.dirname = os.path.dirname(self.fname)
             self.buffer.set_modified(False)
             self.new = 0
-        except:
+        except BaseException:
             dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
                                     gtk.MESSAGE_ERROR, gtk.BUTTONS_OK,
                                     _("Can't open ") + fname)
@@ -192,7 +192,7 @@ class EditWindow(gtk.Window):
             fd.close()
             self.buffer.set_modified(False)
             ret = True
-        except:
+        except BaseException:
             dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
                                     gtk.MESSAGE_ERROR, gtk.BUTTONS_OK,
                                     _("Error saving file ") + self.fname)
@@ -283,13 +283,16 @@ class EditWindow(gtk.Window):
         self._search(self.search_string, self.last_search_iter)
 
     def help_about(self, mi):
-        dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
-                                gtk.MESSAGE_INFO, gtk.BUTTONS_OK,
-                                _("Text editor creators:\n\n") +
-                                _("Copyright (C)\n") +
-                                _("1998 James Henstridge\n") +
-                                _("2004 John Finlay\n\n") +
-                                _("The edit.py program is covered by the GPL>=2"))
+        dlg = gtk.MessageDialog(
+            self,
+            gtk.DIALOG_DESTROY_WITH_PARENT,
+            gtk.MESSAGE_INFO,
+            gtk.BUTTONS_OK,
+            _("Text editor creators:\n\n") +
+            _("Copyright (C)\n") +
+            _("1998 James Henstridge\n") +
+            _("2004 John Finlay\n\n") +
+            _("The edit.py program is covered by the GPL>=2"))
         dlg.run()
         dlg.hide()
         return

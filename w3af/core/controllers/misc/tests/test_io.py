@@ -23,8 +23,9 @@ import unittest
 
 from w3af.core.controllers.misc.io import NamedStringIO
 
+
 class TestIO(unittest.TestCase):
-    
+
     def test_named_string_io(self):
         content = 'content'
         name = 'name'

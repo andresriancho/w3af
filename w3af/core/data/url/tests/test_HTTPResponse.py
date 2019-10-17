@@ -36,11 +36,21 @@ from w3af import ROOT_PATH
 
 
 TEST_RESPONSES = {
-    'hebrew': (u'ולהכיר טוב יותר את המוסכמות, האופי', 'Windows-1255'),
-    'japanese': (u'頴英 衛詠鋭液疫 益駅悦謁越榎厭円', 'EUC-JP'),
-    'russian': (u'Вы действительно хотите удалить? Данное действие', 'Windows-1251'),
-    'hungarian': (u'Üdvözöljük a SZTAKI webkeresőjében', 'ISO-8859-2'),
-    'greek': (u'Παρακαλούμε πριν προχωρήσετε καταχώρηση', 'ISO-8859-7'),
+    'hebrew': (
+        u'ולהכיר טוב יותר את המוסכמות, האופי',
+        'Windows-1255'),
+    'japanese': (
+        u'頴英 衛詠鋭液疫 益駅悦謁越榎厭円',
+        'EUC-JP'),
+    'russian': (
+        u'Вы действительно хотите удалить? Данное действие',
+        'Windows-1251'),
+    'hungarian': (
+        u'Üdvözöljük a SZTAKI webkeresőjében',
+        'ISO-8859-2'),
+    'greek': (
+        u'Παρακαλούμε πριν προχωρήσετε καταχώρηση',
+        'ISO-8859-7'),
 }
 
 
@@ -98,9 +108,13 @@ class TestHTTPResponse(unittest.TestCase):
 
         # Image
         image_mime_types = (
-            'image/gif', 'image/jpeg', 'image/pjpeg', 'image/png', 'image/tiff',
-            'image/svg+xml', 'image/vnd.microsoft.icon'
-        )
+            'image/gif',
+            'image/jpeg',
+            'image/pjpeg',
+            'image/png',
+            'image/tiff',
+            'image/svg+xml',
+            'image/vnd.microsoft.icon')
         for mimetype in image_mime_types:
             resp = self.create_resp(Headers([('Content-Type', mimetype)]))
             self.assertEquals(
@@ -171,22 +185,22 @@ class TestHTTPResponse(unittest.TestCase):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         headers = Headers([('Content-Type', 'text/html')])
         resp = self.create_resp(headers, html)
-        
+
         pickled_resp = cPickle.dumps(resp)
         unpickled_resp = cPickle.loads(pickled_resp)
-        
+
         self.assertEqual(unpickled_resp, resp)
 
     def test_from_dict(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         headers = Headers([('Content-Type', 'text/html')])
         orig_resp = self.create_resp(headers, html)
-        
+
         msg = msgpack.dumps(orig_resp.to_dict())
         loaded_dict = msgpack.loads(msg)
-        
+
         loaded_resp = HTTPResponse.from_dict(loaded_dict)
-        
+
         self.assertEqual(orig_resp, loaded_resp)
 
         cmp_attrs = list(orig_resp.__slots__)
@@ -194,16 +208,16 @@ class TestHTTPResponse(unittest.TestCase):
 
         self.assertEqual({k: getattr(orig_resp, k) for k in cmp_attrs},
                          {k: getattr(loaded_resp, k) for k in cmp_attrs})
-    
+
     def test_from_dict_encodings(self):
         for body, charset in TEST_RESPONSES.values():
             html = body.encode(charset)
             resp = self.create_resp(Headers([('Content-Type', 'text/xml')]),
                                     html)
-            
+
             msg = msgpack.dumps(resp.to_dict())
             loaded_dict = msgpack.loads(msg)
-            
+
             loaded_resp = HTTPResponse.from_dict(loaded_dict)
 
             self.assertEquals(
@@ -216,7 +230,14 @@ class TestHTTPResponse(unittest.TestCase):
         url = URL('http://w3af.com')
         headers = Headers([('Content-Type', 'application/pdf')])
         body = None
-        self.assertRaises(TypeError, HTTPResponse, 200, body, headers, url, url)
+        self.assertRaises(
+            TypeError,
+            HTTPResponse,
+            200,
+            body,
+            headers,
+            url,
+            url)
 
     def test_dump_response_head_3661(self):
         """
@@ -244,19 +265,31 @@ class TestHTTPResponse(unittest.TestCase):
         msg = 'D\xe9plac\xe9 Temporairement'
         resp = HTTPResponse(200, '', headers, url, url, msg=msg)
 
-        expected_dump = u'HTTP/1.1 200 Déplacé Temporairement\r\n'.encode('utf8')
+        expected_dump = u'HTTP/1.1 200 Déplacé Temporairement\r\n'.encode(
+            'utf8')
 
         self.assertEqual(resp.dump_response_head(), expected_dump)
 
     def test_http_response_with_binary_no_escape(self):
 
-        raise SkipTest('See: https://github.com/andresriancho/w3af/issues/15741')
+        raise SkipTest(
+            'See: https://github.com/andresriancho/w3af/issues/15741')
 
         # This test reproduces issue
         # https://github.com/andresriancho/w3af/issues/15741
-        CONTENT_TYPES = ['application/binary', 'image/jpeg', 'binary', 'text/html']
-        TEST_FILE = os.path.join(ROOT_PATH, 'core', 'controllers', 'misc', 'tests',
-                                 'data', 'code-detect-false-positive.jpg')
+        CONTENT_TYPES = [
+            'application/binary',
+            'image/jpeg',
+            'binary',
+            'text/html']
+        TEST_FILE = os.path.join(
+            ROOT_PATH,
+            'core',
+            'controllers',
+            'misc',
+            'tests',
+            'data',
+            'code-detect-false-positive.jpg')
 
         body = file(TEST_FILE).read()
 
@@ -288,4 +321,6 @@ class TestHTTPResponse(unittest.TestCase):
         self.assertEqual(header_dump, u'Content-Type: text/html\r\n')
 
         header_dump = resp.dump_headers(exclude_headers={})
-        self.assertEqual(header_dump, u'Content-Type: text/html\r\nDate: 2019-02-02 10:11:12 am\r\n')
+        self.assertEqual(
+            header_dump,
+            u'Content-Type: text/html\r\nDate: 2019-02-02 10:11:12 am\r\n')

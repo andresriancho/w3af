@@ -200,7 +200,7 @@ class HTTPResponse(httplib.HTTPResponse):
         # does the body have a fixed length? (of zero)
         if (status == NO_CONTENT or status == httplib.NOT_MODIFIED or
             100 <= status < 200 or      # 1xx codes
-            self._method == 'HEAD'):
+                self._method == 'HEAD'):
             self.length = 0
 
         # if the connection remains open, and we aren't using chunked, and
@@ -308,7 +308,7 @@ class HTTPResponse(httplib.HTTPResponse):
     def readlines(self, sizehint=0):
         total = 0
         line_list = []
-        while 1:
+        while True:
             line = self.readline()
             if not line:
                 break

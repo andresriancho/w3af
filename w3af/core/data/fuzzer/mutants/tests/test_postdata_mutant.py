@@ -37,12 +37,16 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_found_at(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
-        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "address"), ("value", "")])
 
         form = URLEncodedForm(form_params)
-        freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
-                               method='PUT')
+        freq = FuzzableRequest(
+            URL('http://www.w3af.com/?id=3'),
+            post_data=form,
+            method='PUT')
         m = PostDataMutant(freq)
         m.get_dc().set_token(('username', 0))
 
@@ -53,16 +57,19 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "")])
-        form_params.add_field_by_attr_items([("name", "address"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "")])
+        form_params.add_field_by_attr_items(
+            [("name", "address"), ("value", "")])
 
         form = URLEncodedForm(form_params)
-        freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'), post_data=form,
-                               method='PUT')
+        freq = FuzzableRequest(
+            URL('http://www.w3af.com/?id=3'),
+            post_data=form,
+            method='PUT')
 
-        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
-                                                        False,
-                                                        self.fuzzer_config)
+        created_mutants = PostDataMutant.create_mutants(
+            freq, self.payloads, [], False, self.fuzzer_config)
 
         expected_dcs = ['username=def&address=Bonsai%20Street%20123',
                         'username=abc&address=Bonsai%20Street%20123',
@@ -108,9 +115,8 @@ class TestPostDataMutant(unittest.TestCase):
         freq = FuzzableRequest(URL('http://w3af.com/?foo=3'), post_data=form,
                                method='GET')
 
-        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
-                                                        False,
-                                                        self.fuzzer_config)
+        created_mutants = PostDataMutant.create_mutants(
+            freq, self.payloads, [], False, self.fuzzer_config)
 
         expected_dcs = ['id=def&id=3419',
                         'id=3419&id=def',
@@ -137,8 +143,10 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_mutant_creation_file(self):
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([("name", "username"), ("value", "default")])
-        form_params.add_field_by_attr_items([("name", "file_upload"), ("type", "file")])
+        form_params.add_field_by_attr_items(
+            [("name", "username"), ("value", "default")])
+        form_params.add_field_by_attr_items(
+            [("name", "file_upload"), ("type", "file")])
 
         form = MultipartContainer(form_params)
         freq = FuzzableRequest(URL('http://www.w3af.com/upload'),
@@ -151,9 +159,8 @@ class TestPostDataMutant(unittest.TestCase):
                                                         self.fuzzer_config)
 
         self.assertEqual(len(created_mutants), 1, created_mutants)
-        
+
         mutant = created_mutants[0]
-        
+
         self.assertIsInstance(mutant.get_token().get_value(), file)
         self.assertEqual(mutant.get_dc()['username'][0], 'default')
-

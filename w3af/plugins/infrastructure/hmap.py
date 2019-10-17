@@ -37,6 +37,7 @@ class hmap(InfrastructurePlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -66,12 +67,13 @@ class hmap(InfrastructurePlugin):
             ssl = True
 
         try:
-            results = upstream_hmap.testServer(ssl, server, port, 1, self._gen_fp, self._threads)
-        except BaseFrameworkException, w3:
+            results = upstream_hmap.testServer(
+                ssl, server, port, 1, self._gen_fp, self._threads)
+        except BaseFrameworkException as w3:
             msg = 'A BaseFrameworkException occurred while running hmap: "%s"'
             om.out.error(msg % w3)
             return
-        except Exception, e:
+        except Exception as e:
             msg = 'An unhandled exception occurred while running hmap: "%s"'
             om.out.error(msg % e)
             return
@@ -165,10 +167,10 @@ class hmap(InfrastructurePlugin):
         Fingerprint files are used to identify web servers, if you generate new
         files please send them to the w3af-develop mailing list so we can add it
         to the framework.
-        
+
         Hmap will use the user-configured number of threads to perform the
         fingerprinting process. This indicates how many requests are concurrently
-        sent to the server by hmap.        
+        sent to the server by hmap.
 
         One important thing to notice is that hmap connects directly to the
         remote web server, without using the framework's HTTP configurations

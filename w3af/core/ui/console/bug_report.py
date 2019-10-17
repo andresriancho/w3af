@@ -24,11 +24,8 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.ui.console.menu import menu
 from w3af.core.ui.console.util import suggest
-from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
-                                                                   OAUTH_TOKEN,
-                                                                   OAUTH_AUTH_FAILED,
-                                                                   LoginFailed,
-                                                                   OAuthTokenInvalid)
+from w3af.core.controllers.easy_contribution.github_issues import (
+    GithubIssues, OAUTH_TOKEN, OAUTH_AUTH_FAILED, LoginFailed, OAuthTokenInvalid)
 
 
 class bug_report_menu(menu):
@@ -38,6 +35,7 @@ class bug_report_menu(menu):
 
     :author: Andres Riancho (andres.riancho |at| gmail.com)
     """
+
     def __init__(self, name, console, w3af_core, parent=None, **other):
         menu.__init__(self, name, console, w3af_core, parent)
         self._load_help('bug-report')

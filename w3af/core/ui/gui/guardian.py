@@ -36,6 +36,7 @@ from w3af.core.data.constants.severity import INFORMATION, MEDIUM, HIGH, LOW
 
 class _Guarded(object):
     """Helper for the guardian."""
+
     def __init__(self, objtype):
         self.icon = helpers.KB_ICONS[objtype, None]
         self.quant = 0
@@ -44,7 +45,7 @@ class _Guarded(object):
     def inc(self):
         self.quant += 1
         gobject.idle_add(self.update_label)
-    
+
     def update_label(self):
         self.label.set_text(str(self.quant).ljust(5))
         return False
@@ -115,6 +116,7 @@ class FoundExceptionsStatusBar(gtk.EventBox):
 
     :author: Andres Riancho <andres.riancho =at= gmail.com>
     """
+
     def __init__(self, w3af):
         super(FoundExceptionsStatusBar, self).__init__()
         self.w3af = w3af

@@ -138,7 +138,8 @@ class TestGetCleanBody(unittest.TestCase):
             body = 'abc %s def' % urllib.quote_plus(payload)
             url = URL('http://w3af.com')
             headers = Headers([('Content-Type', 'text/html')])
-            response = HTTPResponse(200, body, headers, url, url, charset='utf-8')
+            response = HTTPResponse(
+                200, body, headers, url, url, charset='utf-8')
 
             freq = FuzzableRequest(URL('http://w3af.com/?a=1'))
             created_mutants = FakeMutant.create_mutants(freq, [payload], [],
@@ -170,8 +171,8 @@ class TestGetCleanBody(unittest.TestCase):
 
         tests = [(False, 1),
                  (False, 3),
-                 (True,  1000),
-                 (True,  None)]
+                 (True, 1000),
+                 (True, None)]
 
         for expected_result, max_escape_count in tests:
             clean_body = get_clean_body(mutant,
@@ -359,7 +360,14 @@ class TestApplyMultiEscapeTable(unittest.TestCase):
         escaped = apply_multi_escape_table('a&', max_len=6)
         escaped = [i for i in escaped]
 
-        expected = ['a&', 'a%26', '%61%26', 'a&amp;', 'a&#38;', '&#97;&', 'a%2526']
+        expected = [
+            'a&',
+            'a%26',
+            '%61%26',
+            'a&amp;',
+            'a&#38;',
+            '&#97;&',
+            'a%2526']
         self.assertEqual(escaped, expected)
 
     def test_apply_multi_escape_table_max_count_1(self):

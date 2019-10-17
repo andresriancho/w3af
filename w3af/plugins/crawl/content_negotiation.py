@@ -341,7 +341,7 @@ class content_negotiation(CrawlPlugin):
             - Perform a brute force attack in order to find new resources.
 
         One configurable parameter exists:
-        
+
             - wordlist: The wordlist to be used in the bruteforce process.
 
         The first reference to this technique was written by Stefano Di Paola

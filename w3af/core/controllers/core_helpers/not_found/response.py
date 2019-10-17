@@ -61,7 +61,8 @@ class FourOhFourResponse(object):
 
     @classmethod
     def from_http_response(cls, http_response):
-        normalized_path = FourOhFourResponse.normalize_path(http_response.get_url())
+        normalized_path = FourOhFourResponse.normalize_path(
+            http_response.get_url())
 
         return cls(http_response=http_response,
                    clean_body=None,

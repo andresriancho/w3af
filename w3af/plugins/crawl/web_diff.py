@@ -187,7 +187,7 @@ class web_diff(CrawlPlugin):
 
                 try:
                     local_content = open(file_name, 'r').read()
-                except:
+                except BaseException:
                     om.out.debug('Failed to open file: "%s".' % file_name)
                 else:
                     if local_content == response.get_body():

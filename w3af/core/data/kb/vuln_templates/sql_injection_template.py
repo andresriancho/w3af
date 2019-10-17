@@ -26,9 +26,10 @@ class SQLiTemplate(BaseTemplate):
     """
     Vulnerability template for SQL injection vulnerability.
     """
+
     def __init__(self):
         super(SQLiTemplate, self).__init__()
-        
+
         self.name = self.get_vulnerability_name()
 
     def get_kb_location(self):

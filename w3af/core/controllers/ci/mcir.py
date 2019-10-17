@@ -31,6 +31,3 @@ def get_mcir_http(path='/'):
         mcir_netloc = DEFAULT_MCIR
 
     return 'http://%s%s' % (mcir_netloc, path)
-
-
-

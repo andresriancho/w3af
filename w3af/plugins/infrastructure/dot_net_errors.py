@@ -139,7 +139,7 @@ class dot_net_errors(InfrastructurePlugin):
         Request specially crafted URLs that generate ASP.NET errors in order to
         gather information like the ASP.NET version. Some examples of URLs that
         generate errors are:
-        
+
             - default|.aspx
             - default~.aspx
         """

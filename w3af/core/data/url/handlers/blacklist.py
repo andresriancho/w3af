@@ -34,7 +34,7 @@ class BlacklistHandler(urllib2.BaseHandler):
     """
     If the user blacklisted a URL, this handler will know about it and
     return an empty HTTP response.
-    
+
     This feature was in the extended_urllib.py module before, but the problem
     there was that any HTTP responses created and returned at that level did
     not pass through all the other configured handlers and in some cases
@@ -58,12 +58,12 @@ class BlacklistHandler(urllib2.BaseHandler):
         if self._is_blacklisted(req.url_object):
             nncr = new_no_content_resp(req.url_object)
             addinfo_inst = http_response_to_httplib(nncr)
-            
+
             return addinfo_inst
 
-        # This means: I don't know how to handle this, call the next opener        
+        # This means: I don't know how to handle this, call the next opener
         return None
-        
+
     def _is_blacklisted(self, uri):
         """
         If the user configured w3af to ignore a URL, we are going to be applying
@@ -82,7 +82,7 @@ class BlacklistHandler(urllib2.BaseHandler):
 def http_response_to_httplib(nncr):
     header_string = cStringIO.StringIO(str(nncr.get_headers()))
     headers = mimetools.Message(header_string)
-    
+
     addinfo_inst = urllib.addinfourl(cStringIO.StringIO(nncr.get_body()),
                                      headers,
                                      nncr.get_url().url_string,

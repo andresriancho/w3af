@@ -12,8 +12,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.HIGHEST
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -51,7 +53,8 @@ def tamper(payload, **kwargs):
                         last = i
 
                 start = retVal[:indexes[first]].rfind(' ') + 1
-                end = (retVal[indexes[last] + 1:].find(' ') + indexes[last] + 1) if ' ' in retVal[indexes[last] + 1:] else len(retVal) - 1
+                end = (retVal[indexes[last] + 1:].find(' ') + indexes[last] +
+                       1) if ' ' in retVal[indexes[last] + 1:] else len(retVal) - 1
 
                 count = 0
                 chars = [char for char in retVal]
@@ -62,7 +65,8 @@ def tamper(payload, **kwargs):
                         chars[index] = '\x01'
                     count += 1
 
-                retVal = "%s%s%s)}%s" % (retVal[:start], "{fn CONCAT(" * count, ''.join(chars)[start:end].replace('\x01', ")},"), retVal[end:])
+                retVal = "%s%s%s)}%s" % (retVal[:start], "{fn CONCAT(" * count, ''.join(chars)[
+                                         start:end].replace('\x01', ")},"), retVal[end:])
             else:
                 match = re.search(r"\((CHAR\(\d+.+CHAR\(\d+\))\)", retVal)
                 if match:
@@ -81,7 +85,8 @@ def tamper(payload, **kwargs):
                                 chars[i] = '\x01'
                             count += 1
 
-                    replacement = "%s%s}" % (("{fn CONCAT(" * count)[:-1], "".join(chars).replace('\x01', ")},"))
+                    replacement = "%s%s}" % (
+                        ("{fn CONCAT(" * count)[:-1], "".join(chars).replace('\x01', ")},"))
                     retVal = retVal.replace(part, replacement)
                 else:
                     break

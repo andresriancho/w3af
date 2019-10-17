@@ -52,6 +52,7 @@ class ValidatedEntry(gtk.Entry):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, orig_value):
         super(ValidatedEntry, self).__init__()
         self.connect("changed", self._changed)
@@ -60,7 +61,7 @@ class ValidatedEntry(gtk.Entry):
         self.orig_value = orig_value
         self.esc_key = gtk.gdk.keyval_from_name("Escape")
         self.set_width_chars(50)
-        
+
         # color handling
         colormap = self.get_colormap()
         self.bg_normal = colormap.alloc_color("white")
@@ -196,6 +197,7 @@ class TextInput(ValidatedEntry, ModifiedMixIn):
 
     :author: Andres Riancho
     """
+
     def __init__(self, alert, opt):
         self.opt_instance = opt
         ValidatedEntry.__init__(self, opt.get_value_str())
@@ -221,6 +223,7 @@ class BooleanInput(gtk.CheckButton, ModifiedMixIn):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, alert, opt):
         gtk.CheckButton.__init__(self)
         if opt.get_value_str() == "True":
@@ -236,6 +239,7 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
 
     :author: Andres Riancho
     """
+
     def __init__(self, alert, opt):
         self._opt = opt
 
@@ -254,7 +258,12 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
         # default option
         self.set_active(idx_selected)
 
-        ModifiedMixIn.__init__(self, alert, "changed", "get_value", "set_value")
+        ModifiedMixIn.__init__(
+            self,
+            alert,
+            "changed",
+            "get_value",
+            "set_value")
 
         cell = gtk.CellRendererText()
         self.pack_start(cell, True)
@@ -288,6 +297,7 @@ class EmailEntry(ValidatedEntry, ModifiedMixIn):
 
     :author: Andres Riancho <andres.riancho =at= gmail.com>
     """
+
     def __init__(self, alert):
         ValidatedEntry.__init__(self, '')
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
@@ -318,6 +328,7 @@ class SemiStockButton(gtk.Button):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, text, image, tooltip=None):
         super(SemiStockButton, self).__init__(stock=image)
         # Icons in menus and buttons are not shown by default in GNOME 2.28
@@ -351,10 +362,13 @@ class ToolbuttonWrapper(object):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, toolbar, position):
         self.toolbut = toolbar.get_nth_item(position)
         if self.toolbut is None:
-            raise ValueError("The toolbar does not have a button in position %d" % position)
+            raise ValueError(
+                "The toolbar does not have a button in position %d" %
+                position)
 
     def change_internals(self, newlabel, newimage, newtooltip):
         """Changes the image and label of the widget.
@@ -383,7 +397,13 @@ class AdvisedEntry(gtk.Entry):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
-    def __init__(self, message, alertb=None, historyfile=None, alertmodif=None):
+
+    def __init__(
+            self,
+            message,
+            alertb=None,
+            historyfile=None,
+            alertmodif=None):
         super(AdvisedEntry, self).__init__()
         self.connect("focus-in-event", self._focus)
         self.firstfocus = True
@@ -462,7 +482,13 @@ class ValidatedAdvisedEntry(AdvisedEntry):
     For now I'm only using this one for URLs, but we could make a more generic
     one for any configurable option.
     """
-    def __init__(self, message, alertb=None, historyfile=None, alertmodif=None):
+
+    def __init__(
+            self,
+            message,
+            alertb=None,
+            historyfile=None,
+            alertmodif=None):
         super(ValidatedAdvisedEntry, self).__init__(message, alertb=alertb,
                                                     historyfile=historyfile,
                                                     alertmodif=alertmodif)
@@ -484,9 +510,18 @@ class EntryDialog(gtk.Dialog):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, title, stockok, options):
-        super(EntryDialog, self).__init__(title, None, gtk.DIALOG_MODAL,
-             (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, stockok, gtk.RESPONSE_OK))
+        super(
+            EntryDialog,
+            self).__init__(
+            title,
+            None,
+            gtk.DIALOG_MODAL,
+            (gtk.STOCK_CANCEL,
+             gtk.RESPONSE_CANCEL,
+             stockok,
+             gtk.RESPONSE_OK))
 
         # the text entries
         self.entries = []
@@ -547,9 +582,10 @@ class TextDialog(gtk.Dialog):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, title, tabnames=(), icon=None):
         super(TextDialog, self).__init__(title, None, gtk.DIALOG_MODAL,
-             (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+                                         (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
 
         self.textviews = []
         if len(tabnames) > 1:
@@ -653,7 +689,15 @@ class RememberingWindow(gtk.Window):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
-    def __init__(self, w3af, idstring, title, helpid='', onDestroy=None, guessResize=True):
+
+    def __init__(
+            self,
+            w3af,
+            idstring,
+            title,
+            helpid='',
+            onDestroy=None,
+            guessResize=True):
         super(RememberingWindow, self).__init__(gtk.WINDOW_TOPLEVEL)
         self.set_icon_from_file(W3AF_ICON)
         self.onDestroy = onDestroy
@@ -679,7 +723,8 @@ class RememberingWindow(gtk.Window):
         self.connect('key_press_event', self.help_f1)
 
     def help_f1(self, widget, event):
-        if event.keyval != 65470:  # F1, check: gtk.gdk.keyval_name(event.keyval)
+        # F1, check: gtk.gdk.keyval_name(event.keyval)
+        if event.keyval != 65470:
             return
 
         self.open_help()
@@ -751,6 +796,7 @@ class PagesControl(gtk.HBox):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, callback, maxpages=None):
         self.w3af = w3af
         gtk.HBox.__init__(self)
@@ -835,6 +881,7 @@ class EasyTable(gtk.Table):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, *arg, **kw):
         super(EasyTable, self).__init__(*arg, **kw)
         self.auto_rowcounter = 0
@@ -855,6 +902,7 @@ class EasyTable(gtk.Table):
                             xpadding=5, xoptions=gtk.FILL, yoptions=0)
                 widg.show()
         self.auto_rowcounter += 1
+
 
 # Decision of which widget implements the option to each type, most of them are
 # just implemented as a TextInput where the user can input any text and then it
@@ -881,6 +929,7 @@ class _RememberingPane(object):
     :param defaultInitPos: the default position for the first time
                            (overrides "half of the screen").
     """
+
     def __init__(self, w3af, widgname, dimension, defaultInitPos=None):
         self.connect('notify', self.move_handle)
         self.winconfig = w3af.mainwin.generalconfig
@@ -938,6 +987,7 @@ class RememberingHPaned(gtk.HPaned, _RememberingPane):
     :param defPos: the default position for the first time (overrides
                    "half of the screen").
     """
+
     def __init__(self, w3af, widgname, defPos=None):
         gtk.HPaned.__init__(self)
         _RememberingPane.__init__(self, w3af, widgname, 0, defPos)
@@ -951,6 +1001,7 @@ class RememberingVPaned(gtk.VPaned, _RememberingPane):
     :param defPos: the default position for the first time (overrides
                    "half of the screen").
     """
+
     def __init__(self, w3af, widgname, defPos=None):
         gtk.VPaned.__init__(self)
         _RememberingPane.__init__(self, w3af, widgname, 1, defPos)
@@ -964,11 +1015,12 @@ class StatusBar(gtk.Statusbar):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, initmsg=None, others=[]):
         super(StatusBar, self).__init__()
         self._context = self.get_context_id("unique_sb")
         self._active_counter = 0
-        
+
         # add the others
         for oth in others[::-1]:
             self.pack_end(oth, False)
@@ -982,7 +1034,7 @@ class StatusBar(gtk.Statusbar):
     def __call__(self, msg, timeout=5):
         """Inserts a message in the statusbar."""
         self.push(self._context, msg)
-        
+
         # Wait 7 seconds and then call clear
         #
         # The active_counter avoids the clear() from message #1 to clear
@@ -993,10 +1045,10 @@ class StatusBar(gtk.Statusbar):
     def clear(self):
         """Clears the statusbar content."""
         self._active_counter -= 1
-        
+
         if not self._active_counter:
             self.push(self._context, "")
-        
+
         # Don't call me again please
         return False
 
@@ -1006,6 +1058,7 @@ class ConfigOptions(gtk.VBox, Preferences):
     :param w3af: The Core
     :param parentWidg: The parentWidg widget with *reload_options* method
     """
+
     def __init__(self, w3af, parentWidg, label='config'):
         gtk.VBox.__init__(self)
         Preferences.__init__(self, label)
@@ -1102,7 +1155,7 @@ class ConfigOptions(gtk.VBox, Preferences):
             labl.set_markup(chng)
         self.propagAnyWidgetChanged.change(widg, like_initial)
         #propag = self.propagLabels[widg]
-        #if propag is not None:
+        # if propag is not None:
         #   propag.change(widg, like_initial)
 
     def _save_panel(self, widg):

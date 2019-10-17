@@ -47,6 +47,7 @@ class URLPartsMutant(Mutant):
     """
     This class is a urlparts mutant.
     """
+
     def __init__(self, freq):
         Mutant.__init__(self, freq)
 
@@ -125,7 +126,8 @@ class URLPartsMutant(Mutant):
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' path, with value: "%s".'
 
-        return fmt % (self.get_url(), self.get_method(), self.get_token_value())
+        return fmt % (self.get_url(), self.get_method(),
+                      self.get_token_value())
 
     @classmethod
     def create_mutants(cls, freq, mutant_str_list, fuzzable_param_list,
@@ -137,15 +139,26 @@ class URLPartsMutant(Mutant):
         forced_parts = freq.get_force_fuzzing_url_parts()
 
         if forced_parts:
-            return cls._create_mutants_forced_parts(freq, mutant_str_list, fuzzable_param_list,
-                                                    append, fuzzer_config, forced_parts)
+            return cls._create_mutants_forced_parts(
+                freq,
+                mutant_str_list,
+                fuzzable_param_list,
+                append,
+                fuzzer_config,
+                forced_parts)
 
-        return cls._create_mutants_all_parts(freq, mutant_str_list, fuzzable_param_list,
-                                             append, fuzzer_config)
+        return cls._create_mutants_all_parts(
+            freq, mutant_str_list, fuzzable_param_list, append, fuzzer_config)
 
     @classmethod
-    def _create_mutants_forced_parts(cls, freq, mutant_str_list, fuzzable_param_list,
-                                     append, fuzzer_config, forced_parts):
+    def _create_mutants_forced_parts(
+            cls,
+            freq,
+            mutant_str_list,
+            fuzzable_param_list,
+            append,
+            fuzzer_config,
+            forced_parts):
         res = []
         path_sep = '/'
         for idx, part in enumerate(forced_parts):
@@ -179,8 +192,13 @@ class URLPartsMutant(Mutant):
         return res
 
     @classmethod
-    def _create_mutants_all_parts(cls, freq, mutant_str_list, fuzzable_param_list,
-                                  append, fuzzer_config):
+    def _create_mutants_all_parts(
+            cls,
+            freq,
+            mutant_str_list,
+            fuzzable_param_list,
+            append,
+            fuzzer_config):
         if not fuzzer_config['fuzz_url_parts']:
             return []
 

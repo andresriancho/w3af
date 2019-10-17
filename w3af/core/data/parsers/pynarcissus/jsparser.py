@@ -48,105 +48,116 @@ __author_email__ = "jtolds@xnet5.com"
 __date__ = "2009-03-24"
 __all__ = ["ParseError", "parse", "tokens"]
 
-import re, sys, types
+import re
+import sys
+import types
 
-class Object: pass
-class Error_(Exception): pass
-class ParseError(Error_): pass
+
+class Object:
+    pass
+
+
+class Error_(Exception):
+    pass
+
+
+class ParseError(Error_):
+    pass
+
 
 tokens = dict(enumerate((
-        # End of source.
-        "END",
+    # End of source.
+    "END",
 
-        # Operators and punctuators. Some pair-wise order matters, e.g. (+, -)
-        # and (UNARY_PLUS, UNARY_MINUS).
-        "\n", ";",
-        ",",
-        "=",
-        "?", ":", "CONDITIONAL",
-        "||",
-        "&&",
-        "|",
-        "^",
-        "&",
-        "==", "!=", "===", "!==",
-        "<", "<=", ">=", ">",
-        "<<", ">>", ">>>",
-        "+", "-",
-        "*", "/", "%",
-        "!", "~", "UNARY_PLUS", "UNARY_MINUS",
-        "++", "--",
-        ".",
-        "[", "]",
-        "{", "}",
-        "(", ")",
+    # Operators and punctuators. Some pair-wise order matters, e.g. (+, -)
+    # and (UNARY_PLUS, UNARY_MINUS).
+    "\n", ";",
+    ",",
+    "=",
+    "?", ":", "CONDITIONAL",
+    "||",
+    "&&",
+    "|",
+    "^",
+    "&",
+    "==", "!=", "===", "!==",
+    "<", "<=", ">=", ">",
+    "<<", ">>", ">>>",
+    "+", "-",
+    "*", "/", "%",
+    "!", "~", "UNARY_PLUS", "UNARY_MINUS",
+    "++", "--",
+    ".",
+    "[", "]",
+    "{", "}",
+    "(", ")",
 
-        # Nonterminal tree node type codes.
-        "SCRIPT", "BLOCK", "LABEL", "FOR_IN", "CALL", "NEW_WITH_ARGS", "INDEX",
-        "ARRAY_INIT", "OBJECT_INIT", "PROPERTY_INIT", "GETTER", "SETTER",
-        "GROUP", "LIST",
+    # Nonterminal tree node type codes.
+    "SCRIPT", "BLOCK", "LABEL", "FOR_IN", "CALL", "NEW_WITH_ARGS", "INDEX",
+    "ARRAY_INIT", "OBJECT_INIT", "PROPERTY_INIT", "GETTER", "SETTER",
+    "GROUP", "LIST",
 
-        # Terminals.
-        "IDENTIFIER", "NUMBER", "STRING", "REGEXP",
+    # Terminals.
+    "IDENTIFIER", "NUMBER", "STRING", "REGEXP",
 
-        # Keywords.
-        "break",
-        "case", "catch", "const", "continue",
-        "debugger", "default", "delete", "do",
-        "else", "enum",
-        "false", "finally", "for", "function",
-        "if", "in", "instanceof",
-        "new", "null",
-        "return",
-        "switch",
-        "this", "throw", "true", "try", "typeof",
-        "var", "void",
-        "while", "with")))
+    # Keywords.
+    "break",
+    "case", "catch", "const", "continue",
+    "debugger", "default", "delete", "do",
+    "else", "enum",
+    "false", "finally", "for", "function",
+    "if", "in", "instanceof",
+    "new", "null",
+    "return",
+    "switch",
+    "this", "throw", "true", "try", "typeof",
+    "var", "void",
+    "while", "with")))
 
 # Operator and punctuator mapping from token to tree node type name.
 # NB: superstring tokens (e.g., ++) must come before their substring token
 # counterparts (+ in the example), so that the opRegExp regular expression
 # synthesized from this list makes the longest possible match.
 opTypeNames = [
-        ('\n',   "NEWLINE"),
-        (';',    "SEMICOLON"),
-        (',',    "COMMA"),
-        ('?',    "HOOK"),
-        (':',    "COLON"),
-        ('||',   "OR"),
-        ('&&',   "AND"),
-        ('|',    "BITWISE_OR"),
-        ('^',    "BITWISE_XOR"),
-        ('&',    "BITWISE_AND"),
-        ('===',  "STRICT_EQ"),
-        ('==',   "EQ"),
-        ('=',    "ASSIGN"),
-        ('!==',  "STRICT_NE"),
-        ('!=',   "NE"),
-        ('<<',   "LSH"),
-        ('<=',   "LE"),
-        ('<',    "LT"),
-        ('>>>',  "URSH"),
-        ('>>',   "RSH"),
-        ('>=',   "GE"),
-        ('>',    "GT"),
-        ('++',   "INCREMENT"),
-        ('--',   "DECREMENT"),
-        ('+',    "PLUS"),
-        ('-',    "MINUS"),
-        ('*',    "MUL"),
-        ('/',    "DIV"),
-        ('%',    "MOD"),
-        ('!',    "NOT"),
-        ('~',    "BITWISE_NOT"),
-        ('.',    "DOT"),
-        ('[',    "LEFT_BRACKET"),
-        (']',    "RIGHT_BRACKET"),
-        ('{',    "LEFT_CURLY"),
-        ('}',    "RIGHT_CURLY"),
-        ('(',    "LEFT_PAREN"),
-        (')',    "RIGHT_PAREN"),
-    ]
+    ('\n', "NEWLINE"),
+    (';', "SEMICOLON"),
+    (',', "COMMA"),
+    ('?', "HOOK"),
+    (':', "COLON"),
+    ('||', "OR"),
+    ('&&', "AND"),
+    ('|', "BITWISE_OR"),
+    ('^', "BITWISE_XOR"),
+    ('&', "BITWISE_AND"),
+    ('===', "STRICT_EQ"),
+    ('==', "EQ"),
+    ('=', "ASSIGN"),
+    ('!==', "STRICT_NE"),
+    ('!=', "NE"),
+    ('<<', "LSH"),
+    ('<=', "LE"),
+    ('<', "LT"),
+    ('>>>', "URSH"),
+    ('>>', "RSH"),
+    ('>=', "GE"),
+    ('>', "GT"),
+    ('++', "INCREMENT"),
+    ('--', "DECREMENT"),
+    ('+', "PLUS"),
+    ('-', "MINUS"),
+    ('*', "MUL"),
+    ('/', "DIV"),
+    ('%', "MOD"),
+    ('!', "NOT"),
+    ('~', "BITWISE_NOT"),
+    ('.', "DOT"),
+    ('[', "LEFT_BRACKET"),
+    (']', "RIGHT_BRACKET"),
+    ('{', "LEFT_CURLY"),
+    ('}', "RIGHT_CURLY"),
+    ('(', "LEFT_PAREN"),
+    (')', "RIGHT_PAREN"),
+]
 
 keywords = {}
 
@@ -165,31 +176,39 @@ for i, t in tokens.copy().iteritems():
 assignOps = {}
 
 # Map assignment operators to their indexes in the tokens array.
-for i, t in enumerate(['|', '^', '&', '<<', '>>', '>>>', '+', '-', '*', '/', '%']):
+for i, t in enumerate(
+        ['|', '^', '&', '<<', '>>', '>>>', '+', '-', '*', '/', '%']):
     assignOps[t] = tokens[t]
     assignOps[i] = t
 
 # Build a regexp that recognizes operators and punctuators (except newline).
 opRegExpSrc = "^"
 for i, j in opTypeNames:
-    if i == "\n": continue
-    if opRegExpSrc != "^": opRegExpSrc += "|^"
-    opRegExpSrc += re.sub(r'[?|^&(){}\[\]+\-*\/\.]', lambda x: "\\%s" % x.group(0), i)
+    if i == "\n":
+        continue
+    if opRegExpSrc != "^":
+        opRegExpSrc += "|^"
+    opRegExpSrc += re.sub(r'[?|^&(){}\[\]+\-*\/\.]',
+                          lambda x: "\\%s" % x.group(0), i)
 opRegExp = re.compile(opRegExpSrc)
 
-# Convert opTypeNames to an actual dictionary now that we don't care about ordering
+# Convert opTypeNames to an actual dictionary now that we don't care about
+# ordering
 opTypeNames = dict(opTypeNames)
 
 # A regexp to match floating point literals (but not integer literals).
-fpRegExp = re.compile(r'^\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?')
+fpRegExp = re.compile(
+    r'^\d+\.\d*(?:[eE][-+]?\d+)?|^\d+(?:\.\d*)?[eE][-+]?\d+|^\.\d+(?:[eE][-+]?\d+)?')
 
 # A regexp to match regexp literals.
 reRegExp = re.compile(r'^\/((?:\\.|\[(?:\\.|[^\]])*\]|[^\/])+)\/([gimy]*)')
 
+
 class SyntaxError_(ParseError):
     def __init__(self, message, filename, lineno):
         ParseError.__init__(self, "Syntax error: %s\n%s:%s" %
-                (message, filename, lineno))
+                            (message, filename, lineno))
+
 
 class Tokenizer(object):
     def __init__(self, s, f, l):
@@ -219,7 +238,7 @@ class Tokenizer(object):
         if self.lookahead:
             next = self.tokens.get((self.tokenIndex + self.lookahead) & 3)
             if self.scanNewlines and (getattr(next, "lineno", None) !=
-                    getattr(self, "lineno", None)):
+                                      getattr(self, "lineno", None)):
                 tt = NEWLINE
             else:
                 tt = getattr(next, "type_", None)
@@ -312,7 +331,7 @@ class Tokenizer(object):
             match = opRegExp.match(input__)
             if match:
                 op = match.group(0)
-                if assignOps.has_key(op) and input__[len(op)] == '=':
+                if op in assignOps and input__[len(op)] == '=':
                     token.type_ = ASSIGN
                     token.assignOp = globals()[opTypeNames[op]]
                     token.value = op
@@ -340,11 +359,13 @@ class Tokenizer(object):
 
     def unget(self):
         self.lookahead += 1
-        if self.lookahead == 4: raise "PANIC: too much lookahead!"
+        if self.lookahead == 4:
+            raise "PANIC: too much lookahead!"
         self.tokenIndex = (self.tokenIndex - 1) & 3
 
     def newSyntaxError(self, m):
         return SyntaxError_(m, self.filename, self.lineno)
+
 
 class CompilerContext(object):
     def __init__(self, inFunction):
@@ -359,12 +380,14 @@ class CompilerContext(object):
         self.ecmaStrictMode = False
         self.inForLoopInit = False
 
+
 def Script(t, x):
     n = Statements(t, x)
     n.type_ = SCRIPT
     n.funDecls = x.funDecls
     n.varDecls = x.varDecls
     return n
+
 
 class Node(list):
 
@@ -391,7 +414,8 @@ class Node(list):
 
     type = property(lambda self: tokenstr(self.type_))
 
-    # Always use push to add operands to an expression, to update start and end.
+    # Always use push to add operands to an expression, to update start and
+    # end.
     def append(self, kid, numbers=[]):
         if kid:
             if hasattr(self, "start") and kid.start < self.start:
@@ -405,16 +429,18 @@ class Node(list):
     def __str__(self):
         a = list((str(i), v) for i, v in enumerate(self))
         for attr in dir(self):
-            if attr[0] == "_": continue
+            if attr[0] == "_":
+                continue
             elif attr == "tokenizer":
                 a.append((attr, "[object Object]"))
             elif attr in ("append", "count", "extend", "getSource", "index",
-                    "insert", "pop", "remove", "reverse", "sort", "type_",
-                    "target", "filename", "indentLevel", "type"):
+                          "insert", "pop", "remove", "reverse", "sort", "type_",
+                          "target", "filename", "indentLevel", "type"):
                 continue
             else:
                 a.append((attr, getattr(self, attr)))
-        if len(self): a.append(("length", len(self)))
+        if len(self):
+            a.append(("length", len(self)))
         a.sort(lambda a, b: cmp(a[0], b[0]))
         INDENTATION = "    "
         Node.indentLevel += 1
@@ -430,7 +456,7 @@ class Node(list):
                 s += "false"
             elif value is True:
                 s += "true"
-            elif type(value) == list:
+            elif isinstance(value, list):
                 s += ','.join((str(x) for x in value))
             else:
                 s += str(value)
@@ -454,18 +480,23 @@ class Node(list):
     def __nonzero__(self): return True
 
 # Statement stack and nested statement handler.
+
+
 def nest(t, x, node, func, end=None):
     x.stmtStack.append(node)
     n = func(t, x)
     x.stmtStack.pop()
-    if end: t.mustMatch(end)
+    if end:
+        t.mustMatch(end)
     return n
+
 
 def tokenstr(tt):
     t = tokens[tt]
     if re.match(r'^\W', t):
         return opTypeNames[t]
     return t.upper()
+
 
 def Statements(t, x):
     n = Node(t, BLOCK)
@@ -475,15 +506,18 @@ def Statements(t, x):
     x.stmtStack.pop()
     return n
 
+
 def Block(t, x):
     t.mustMatch(LEFT_CURLY)
     n = Statements(t, x)
     t.mustMatch(RIGHT_CURLY)
     return n
 
+
 DECLARED_FORM = 0
 EXPRESSED_FORM = 1
 STATEMENT_FORM = 2
+
 
 def Statement(t, x):
     tt = t.get()
@@ -525,7 +559,8 @@ def Statement(t, x):
         t.mustMatch(LEFT_CURLY)
         while True:
             tt = t.get()
-            if tt == RIGHT_CURLY: break
+            if tt == RIGHT_CURLY:
+                break
 
             if tt in (DEFAULT, CASE):
                 if tt == DEFAULT and n.defaultIndex >= 0:
@@ -541,7 +576,8 @@ def Statement(t, x):
             n2.statements = Node(t, BLOCK)
             while True:
                 tt = t.peek()
-                if(tt == CASE or tt == DEFAULT or tt == RIGHT_CURLY): break
+                if(tt == CASE or tt == DEFAULT or tt == RIGHT_CURLY):
+                    break
                 n2.statements.append(Statement(t, x))
             n.cases.append(n2)
         x.stmtStack.pop()
@@ -567,7 +603,7 @@ def Statement(t, x):
             if n2.type_ == VAR:
                 if len(n2) != 1:
                     raise SyntaxError("Invalid for..in left-hand side",
-                            t.filename, n2.lineno)
+                                      t.filename, n2.lineno)
 
                 # NB: n2[0].type_ == INDENTIFIER and n2[0].value == n2[0].name
                 n.iterator = n2[0]
@@ -627,7 +663,8 @@ def Statement(t, x):
                 i -= 1
                 if i < 0:
                     raise t.newSyntaxError("Label not found")
-                if getattr(ss[i], "label", None) == label: break
+                if getattr(ss[i], "label", None) == label:
+                    break
         else:
             while True:
                 i -= 1
@@ -637,7 +674,7 @@ def Statement(t, x):
                     else:
                         raise t.newSyntaxError("Invalid continue")
                 if (getattr(ss[i], "isLoop", None) or (tt == BREAK and
-                        ss[i].type_ == SWITCH)):
+                                                       ss[i].type_ == SWITCH)):
                     break
         n.target = ss[i]
 
@@ -729,6 +766,7 @@ def Statement(t, x):
     t.match(SEMICOLON)
     return n
 
+
 def FunctionDefinition(t, x, requireName, functionForm):
     f = Node(t)
     if f.type_ != FUNCTION:
@@ -745,7 +783,8 @@ def FunctionDefinition(t, x, requireName, functionForm):
     f.params = []
     while True:
         tt = t.get()
-        if tt == RIGHT_PAREN: break
+        if tt == RIGHT_PAREN:
+            break
         if tt != IDENTIFIER:
             raise t.newSyntaxError("Missing formal parameter")
         f.params.append(t.token.value)
@@ -763,6 +802,7 @@ def FunctionDefinition(t, x, requireName, functionForm):
         x.funDecls.append(f)
     return f
 
+
 def Variables(t, x):
     n = Node(t)
     while True:
@@ -776,14 +816,17 @@ def Variables(t, x):
         n2.readOnly = not not (n.type_ == CONST)
         n.append(n2)
         x.varDecls.append(n2)
-        if not t.match(COMMA): break
+        if not t.match(COMMA):
+            break
     return n
+
 
 def ParenExpression(t, x):
     t.mustMatch(LEFT_PAREN)
     n = Expression(t, x)
     t.mustMatch(RIGHT_PAREN)
     return n
+
 
 opPrecedence = {
     "SEMICOLON": 0,
@@ -838,6 +881,7 @@ opArity = {
 for i in opArity.copy():
     opArity[globals()[i]] = opArity[i]
 
+
 def Expression(t, x, stop=None):
     operators = []
     operands = []
@@ -872,11 +916,13 @@ def Expression(t, x, stop=None):
         operands.append(n)
         return n
 
-    class BreakOutOfLoops(Exception): pass
+    class BreakOutOfLoops(Exception):
+        pass
     try:
         while True:
             tt = t.get()
-            if tt == END: break
+            if tt == END:
+                break
             if (tt == stop and x.bracketLevel == bl and x.curlyLevel == cl and
                     x.parenLevel == pl and x.hookLevel == hl):
                 # Stop only if tt matches the optional stop parameter, and that
@@ -889,9 +935,8 @@ def Expression(t, x, stop=None):
             elif tt in (ASSIGN, HOOK, COLON):
                 if t.scanOperand:
                     raise BreakOutOfLoops
-                while ((operators and opPrecedence.get(operators[-1].type_,
-                        None) > opPrecedence.get(tt)) or (tt == COLON and
-                        operators and operators[-1].type_ == ASSIGN)):
+                while ((operators and opPrecedence.get(operators[-1].type_, None) > opPrecedence.get(
+                        tt)) or (tt == COLON and operators and operators[-1].type_ == ASSIGN)):
                     reduce_()
                 if tt == COLON:
                     if operators:
@@ -909,9 +954,9 @@ def Expression(t, x, stop=None):
                 t.scanOperand = True
 
             elif tt in (IN, COMMA, OR, AND, BITWISE_OR, BITWISE_XOR,
-                    BITWISE_AND, EQ, NE, STRICT_EQ, STRICT_NE, LT, LE, GE, GT,
-                    INSTANCEOF, LSH, RSH, URSH, PLUS, MINUS, MUL, DIV, MOD,
-                    DOT):
+                        BITWISE_AND, EQ, NE, STRICT_EQ, STRICT_NE, LT, LE, GE, GT,
+                        INSTANCEOF, LSH, RSH, URSH, PLUS, MINUS, MUL, DIV, MOD,
+                        DOT):
                 # We're treating comma as left-associative so reduce can fold
                 # left-heavy COMMA trees into a single array.
                 if tt == IN:
@@ -935,24 +980,24 @@ def Expression(t, x, stop=None):
                     t.scanOperand = True
 
             elif tt in (DELETE, VOID, TYPEOF, NOT, BITWISE_NOT, UNARY_PLUS,
-                    UNARY_MINUS, NEW):
+                        UNARY_MINUS, NEW):
                 if not t.scanOperand:
                     raise BreakOutOfLoops
                 operators.append(Node(t))
 
             elif tt in (INCREMENT, DECREMENT):
                 if t.scanOperand:
-                    operators.append(Node(t)) # prefix increment or decrement
+                    operators.append(Node(t))  # prefix increment or decrement
                 else:
                     # Don't cross a line boundary for postfix {in,de}crement.
                     if (t.tokens.get((t.tokenIndex + t.lookahead - 1)
-                            & 3).lineno != t.lineno):
+                                     & 3).lineno != t.lineno):
                         raise BreakOutOfLoops
 
                     # Use >, not >=, so postfix has higher precedence than
                     # prefix.
-                    while (operators and opPrecedence.get(operators[-1].type_,
-                            None) > opPrecedence.get(tt)):
+                    while (operators and opPrecedence.get(
+                            operators[-1].type_, None) > opPrecedence.get(tt)):
                         reduce_()
                     n = Node(t, tt, [operands.pop()])
                     n.postfix = True
@@ -961,11 +1006,13 @@ def Expression(t, x, stop=None):
             elif tt == FUNCTION:
                 if not t.scanOperand:
                     raise BreakOutOfLoops
-                operands.append(FunctionDefinition(t, x, False, EXPRESSED_FORM))
+                operands.append(
+                    FunctionDefinition(
+                        t, x, False, EXPRESSED_FORM))
                 t.scanOperand = False
 
             elif tt in (NULL, THIS, TRUE, FALSE, IDENTIFIER, NUMBER, STRING,
-                    REGEXP):
+                        REGEXP):
                 if not t.scanOperand:
                     raise BreakOutOfLoops
                 operands.append(Node(t))
@@ -978,7 +1025,8 @@ def Expression(t, x, stop=None):
                     n = Node(t, ARRAY_INIT)
                     while True:
                         tt = t.peek()
-                        if tt == RIGHT_BRACKET: break
+                        if tt == RIGHT_BRACKET:
+                            break
                         if tt == COMMA:
                             t.get()
                             n.append(None)
@@ -1009,7 +1057,8 @@ def Expression(t, x, stop=None):
                 x.curlyLevel += 1
                 n = Node(t, OBJECT_INIT)
 
-                class BreakOutOfObjectInit(Exception): pass
+                class BreakOutOfObjectInit(Exception):
+                    pass
                 try:
                     if not t.match(RIGHT_CURLY):
                         while True:
@@ -1019,26 +1068,31 @@ def Expression(t, x, stop=None):
                                     t.peek == IDENTIFIER):
                                 if x.ecmaStrictMode:
                                     raise t.newSyntaxError("Illegal property "
-                                            "accessor")
+                                                           "accessor")
                                 n.append(FunctionDefinition(t, x, True,
-                                        EXPRESSED_FORM))
+                                                            EXPRESSED_FORM))
                             else:
                                 if tt in (IDENTIFIER, NUMBER, STRING):
                                     id_ = Node(t)
                                 elif tt == RIGHT_CURLY:
                                     if x.ecmaStrictMode:
                                         raise t.newSyntaxError("Illegal "
-                                                "trailing ,")
+                                                               "trailing ,")
                                     raise BreakOutOfObjectInit
                                 else:
                                     raise t.newSyntaxError("Invalid property "
-                                            "name")
+                                                           "name")
                                 t.mustMatch(COLON)
-                                n.append(Node(t, PROPERTY_INIT, [id_,
-                                        Expression(t, x, COMMA)]))
-                            if not t.match(COMMA): break
+                                n.append(
+                                    Node(
+                                        t, PROPERTY_INIT, [
+                                            id_, Expression(
+                                                t, x, COMMA)]))
+                            if not t.match(COMMA):
+                                break
                         t.mustMatch(RIGHT_CURLY)
-                except BreakOutOfObjectInit, e: pass
+                except BreakOutOfObjectInit as e:
+                    pass
                 operands.append(n)
                 t.scanOperand = False
                 x.curlyLevel -= 1
@@ -1097,7 +1151,7 @@ def Expression(t, x, stop=None):
                         else:
                             n[1].type_ = LIST
                     else:
-                        raise ParseError, "Unexpected amount of operands"
+                        raise ParseError("Unexpected amount of operands")
                 x.parenLevel -= 1
 
             # Automatic semicolon insertion means we may scan across a newline
@@ -1105,7 +1159,8 @@ def Expression(t, x, stop=None):
             # the while loop and let the t.scanOperand logic handle errors.
             else:
                 raise BreakOutOfLoops
-    except BreakOutOfLoops, e: pass
+    except BreakOutOfLoops as e:
+        pass
 
     if x.hookLevel != hl:
         raise t.newSyntaxError("Missing : after ?")
@@ -1121,6 +1176,7 @@ def Expression(t, x, stop=None):
     while operators:
         reduce_()
     return operands.pop()
+
 
 def parse(source, filename=None, starting_line_number=1):
     """Parse some Javascript
@@ -1142,5 +1198,6 @@ def parse(source, filename=None, starting_line_number=1):
         raise t.newSyntaxError("Syntax error")
     return n
 
+
 if __name__ == "__main__":
-    print str(parse(file(sys.argv[1]).read(),sys.argv[1]))
+    print str(parse(file(sys.argv[1]).read(), sys.argv[1]))

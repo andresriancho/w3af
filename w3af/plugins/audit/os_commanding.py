@@ -39,7 +39,7 @@ class os_commanding(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    FILE_PATTERNS = FILE_PATTERNS 
+    FILE_PATTERNS = FILE_PATTERNS
     _multi_in = MultiIn(FILE_PATTERNS)
 
     def __init__(self):
@@ -160,9 +160,13 @@ class os_commanding(AuditPlugin):
 
         :param freq: A FuzzableRequest
         """
-        self._send_mutants_in_threads(func=self._find_delay_in_mutant,
-                                      iterable=self._generate_delay_tests(freq, debugging_id),
-                                      callback=lambda x, y: None)
+        self._send_mutants_in_threads(
+            func=self._find_delay_in_mutant,
+            iterable=self._generate_delay_tests(
+                freq,
+                debugging_id),
+            callback=lambda x,
+            y: None)
 
     def _generate_delay_tests(self, freq, debugging_id):
         fake_mutants = create_mutants(freq, ['', ])
@@ -179,7 +183,7 @@ class os_commanding(AuditPlugin):
             for delay_obj in self._get_wait_commands():
                 yield mutant, delay_obj, debugging_id
 
-    def _find_delay_in_mutant(self, (mutant, delay_obj, debugging_id)):
+    def _find_delay_in_mutant(self, xxx_todo_changeme):
         """
         Try to delay the response and save a vulnerability if successful
 
@@ -187,6 +191,7 @@ class os_commanding(AuditPlugin):
         :param delay_obj: The delay to use
         :param debugging_id: The debugging ID for logging
         """
+        (mutant, delay_obj, debugging_id) = xxx_todo_changeme
         if self._has_bug(mutant):
             return
 
@@ -230,7 +235,9 @@ class os_commanding(AuditPlugin):
 
         # Now I filter the commands based on the target_os:
         target_os = cf.cf.get('target_os').lower()
-        commands = [c for c in commands if target_os in (c.get_OS(), 'unknown')]
+        commands = [
+            c for c in commands if target_os in (
+                c.get_OS(), 'unknown')]
 
         return commands
 
@@ -267,7 +274,9 @@ class os_commanding(AuditPlugin):
 
         # Now I filter the commands based on the target_os:
         target_os = cf.cf.get('target_os').lower()
-        commands = [c for c in commands if target_os in (c.get_OS(), 'unknown')]
+        commands = [
+            c for c in commands if target_os in (
+                c.get_OS(), 'unknown')]
 
         return commands
 
@@ -299,6 +308,7 @@ class Command(object):
     """
     Defines a command that is going to be sent to the remote web app.
     """
+
     def __init__(self, comm, os, sep):
         self._comm = comm
         self._os = os

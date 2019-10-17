@@ -7,8 +7,8 @@ import hashlib
 
 from itertools import ifilterfalse
 
-from w3af.core.controllers.ci.nosetests_wrapper.constants import (NOISE,
-                                                                  NOSE_IGNORE_SELECTOR)
+from w3af.core.controllers.ci.nosetests_wrapper.constants import (
+    NOISE, NOSE_IGNORE_SELECTOR)
 
 
 def unique_everseen(iterable, key=None):
@@ -35,14 +35,14 @@ def unique_everseen(iterable, key=None):
 def print_info_console(cmd, stdout, stderr, exit_code, output_fname):
     fmt = '%s (%s)'
     logging.info(fmt % (cmd, output_fname))
-    
+
     stdout = clean_noise(stdout)
     stderr = clean_noise(stderr)
-    
+
     # Print to the output
     print(stdout)
     print(stderr)
-    
+
     # Write it to the output file
     logging.debug(stdout)
     logging.debug(stderr)
@@ -113,10 +113,11 @@ def print_summary(all_tests, run_tests, ignored_tests):
     """
     logging.info('%s out of %s tests run' % (len(run_tests._tests),
                                              len(all_tests._tests)))
-    
-    missing = unique_everseen(sorted([test.id() for test in ignored_tests._tests]))
+
+    missing = unique_everseen(
+        sorted([test.id() for test in ignored_tests._tests]))
     missing_str = '\n'.join(missing)
-    
+
     msg = 'The following %s tests were NOT run due to selector "%s":\n%s'
     logging.debug(msg % (len(ignored_tests._tests), NOSE_IGNORE_SELECTOR,
                          missing_str))

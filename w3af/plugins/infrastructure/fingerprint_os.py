@@ -75,7 +75,7 @@ class fingerprint_os(InfrastructurePlugin):
             original_response = self._uri_opener.GET(freq_url)
 
             if fuzzy_equal(original_response.get_body(),
-                                    windows_response.get_body(), 0.98):
+                           windows_response.get_body(), 0.98):
                 desc = 'Fingerprinted this host as a Microsoft Windows system.'
                 os_str = 'windows'
             else:
@@ -88,7 +88,7 @@ class fingerprint_os(InfrastructurePlugin):
             i = Info('Operating system', desc, response_ids,
                      self.get_name())
             i.set_url(windows_response.get_url())
-            
+
             kb.kb.raw_write(self, 'operating_system_str', os_str)
             kb.kb.append(self, 'operating_system', i)
             om.out.information(i.get_desc())

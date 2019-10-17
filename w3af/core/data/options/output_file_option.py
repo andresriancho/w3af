@@ -44,7 +44,7 @@ class OutputFileOption(BaseOption):
         self._value = self.validate(value)
 
     def validate(self, value):
-        
+
         expanded_path = os.path.expanduser(value)
 
         # In some scenarios we want to allow the end-user to choose an output

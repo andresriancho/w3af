@@ -36,8 +36,8 @@ from w3af.core.controllers.profiling.took_helper import TookLine
 from w3af.core.controllers.threads.threadpool import return_args
 from w3af.core.controllers.core_helpers.consumers.constants import POISON_PILL
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce, ScanMustStopException
-from w3af.core.controllers.core_helpers.consumers.base_consumer import (BaseConsumer,
-                                                                        task_decorator)
+from w3af.core.controllers.core_helpers.consumers.base_consumer import (
+    BaseConsumer, task_decorator)
 
 
 class CrawlInfrastructure(BaseConsumer):
@@ -113,7 +113,7 @@ class CrawlInfrastructure(BaseConsumer):
 
                     try:
                         self._process_poison_pill()
-                    except Exception, e:
+                    except Exception as e:
                         msg = 'An exception was found while processing poison pill: "%s"'
                         om.out.debug(msg % e)
                     finally:
@@ -166,12 +166,13 @@ class CrawlInfrastructure(BaseConsumer):
                            ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-            except Exception, e:
+            except Exception as e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
                            ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-                self.handle_exception('crawl', plugin.get_name(), 'plugin.end()', e)
+                self.handle_exception(
+                    'crawl', plugin.get_name(), 'plugin.end()', e)
 
             else:
                 msg_fmt = 'Spent %.2f seconds running %s.end()'
@@ -212,15 +213,15 @@ class CrawlInfrastructure(BaseConsumer):
         try:
             for observer in self._observers:
                 observer.crawl(self, fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('CrawlInfrastructure',
                                   'CrawlInfrastructure._run_observers()',
                                   'CrawlInfrastructure._run_observers()', e)
 
     @task_decorator
     def _plugin_finished_cb(self,
-                            function_id,
-                            ((plugin, fuzzable_request), plugin_result)):
+                            function_id, xxx_todo_changeme):
+        ((plugin, fuzzable_request), plugin_result) = xxx_todo_changeme
         if not self._running:
             return
 
@@ -349,8 +350,7 @@ class CrawlInfrastructure(BaseConsumer):
         # print the URLs
         om.out.information('The URL list is:')
 
-        tmp_url_list = ['- %s' % u.url_string for u in tmp_url_list]
-        tmp_url_list.sort()
+        tmp_url_list = sorted(['- %s' % u.url_string for u in tmp_url_list])
         map(om.out.information, tmp_url_list)
 
         # Now I simply print the list that I have after the filter.
@@ -468,8 +468,8 @@ class CrawlInfrastructure(BaseConsumer):
             else:
                 msg = ('Ignoring form "%s" with parameters [%s] since it is'
                        ' simply a variant of another form seen before.')
-                args = (fuzzable_request.get_uri(),
-                        ', '.join(fuzzable_request.get_raw_data().get_param_names()))
+                args = (fuzzable_request.get_uri(), ', '.join(
+                    fuzzable_request.get_raw_data().get_param_names()))
                 om.out.debug(msg % args)
 
             return False
@@ -525,7 +525,7 @@ class CrawlInfrastructure(BaseConsumer):
 
         try:
             result = plugin.discover_wrapper(fuzzable_request, debugging_id)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'An exception was found while running "%s" with "%s": "%s" (did: %s)'
             args = (plugin.get_name(), fuzzable_request, debugging_id)
             om.out.error(msg % args, e)
@@ -534,7 +534,7 @@ class CrawlInfrastructure(BaseConsumer):
             # that is implemented by raising a RunOnce
             # exception
             self._remove_discovery_plugin(plugin)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception(plugin.get_type(),
                                   plugin.get_name(),
                                   fuzzable_request,

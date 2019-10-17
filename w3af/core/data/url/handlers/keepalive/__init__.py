@@ -8,6 +8,3 @@ from .handler import (KeepAliveHandler,
                       HTTPSHandler,
                       HTTPHandler,
                       URLTimeoutError)
-
-
-

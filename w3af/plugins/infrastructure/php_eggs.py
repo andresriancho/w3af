@@ -127,7 +127,8 @@ class php_eggs(InfrastructurePlugin):
         HTTP GET the URLs for PHP Eggs
         :return: A list with the HTTP response objects
         """
-        def http_get(fuzzable_request, (egg_url, egg_desc)):
+        def http_get(fuzzable_request, xxx_todo_changeme):
+            (egg_url, egg_desc) = xxx_todo_changeme
             egg_url = fuzzable_request.get_url().uri2url().url_join(egg_url)
             response = self._uri_opener.GET(egg_url, cache=True, grep=False)
             return response, egg_url, egg_desc
@@ -177,11 +178,11 @@ class php_eggs(InfrastructurePlugin):
                         ' "%s" easter egg, access to the PHP egg is possible'
                         ' through the URL: "%s".')
                 desc %= (query_result.egg_desc, query_result.egg_URL)
-                
+
                 i = Info('PHP Egg', desc, query_result.http_response.id,
                          self.get_name())
                 i.set_url(query_result.egg_URL)
-                
+
                 kb.kb.append(self, 'eggs', i)
                 om.out.information(i.get_desc())
 
@@ -228,13 +229,14 @@ class php_eggs(InfrastructurePlugin):
 
                 versions = '\n- '.join(matching_versions)
                 desc %= versions
-                
-                response_ids = [r.http_response.get_id() for r in query_results]
-                
+
+                response_ids = [r.http_response.get_id()
+                                for r in query_results]
+
                 i = Info('Fingerprinted PHP version', desc, response_ids,
                          self.get_name())
                 i['version'] = matching_versions
-                
+
                 kb.kb.append(self, 'version', i)
                 om.out.information(i.get_desc())
 
@@ -255,10 +257,11 @@ class php_eggs(InfrastructurePlugin):
                     except IndexError:
                         pass
 
-                msg = ('The PHP version could not be identified using PHP eggs,'
-                       ' please send this signature and the PHP version to the'
-                       ' w3af project develop mailing list. Signature:'
-                       ' EGG_DB[\'%s\'] = %r\n')
+                msg = (
+                    'The PHP version could not be identified using PHP eggs,'
+                    ' please send this signature and the PHP version to the'
+                    ' w3af project develop mailing list. Signature:'
+                    ' EGG_DB[\'%s\'] = %r\n')
                 msg = msg % (version, desc_hashes)
                 om.out.information(msg)
 

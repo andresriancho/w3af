@@ -12,6 +12,7 @@ from lib.core.settings import WAF_ATTACK_VECTORS
 
 __product__ = "SonicWALL (Dell)"
 
+
 def detect(get_page):
     retval = False
 
@@ -19,8 +20,16 @@ def detect(get_page):
         page, headers, _ = get_page(get=vector)
         retval = "This request is blocked by the SonicWALL" in (page or "")
         retval |= all(_ in page or "" for _ in ("#shd", "#nsa_banner"))
-        retval |= re.search(r"Web Site Blocked.+\bnsa_banner", page or "", re.I) is not None
-        retval |= re.search(r"SonicWALL", headers.get(HTTP_HEADER.SERVER, ""), re.I) is not None
+        retval |= re.search(
+            r"Web Site Blocked.+\bnsa_banner",
+            page or "",
+            re.I) is not None
+        retval |= re.search(
+            r"SonicWALL",
+            headers.get(
+                HTTP_HEADER.SERVER,
+                ""),
+            re.I) is not None
         if retval:
             break
 

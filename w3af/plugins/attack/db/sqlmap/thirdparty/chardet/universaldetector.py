@@ -117,8 +117,9 @@ class UniversalDetector:
             if not self._mEscCharSetProber:
                 self._mEscCharSetProber = EscCharSetProber()
             if self._mEscCharSetProber.feed(aBuf) == constants.eFoundIt:
-                self.result = {'encoding': self._mEscCharSetProber.get_charset_name(),
-                               'confidence': self._mEscCharSetProber.get_confidence()}
+                self.result = {
+                    'encoding': self._mEscCharSetProber.get_charset_name(),
+                    'confidence': self._mEscCharSetProber.get_confidence()}
                 self.done = True
         elif self._mInputState == eHighbyte:
             if not self._mCharSetProbers:

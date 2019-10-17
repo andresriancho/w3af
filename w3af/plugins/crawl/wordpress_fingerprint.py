@@ -48,7 +48,7 @@ class wordpress_fingerprint(CrawlPlugin):
     WP_VERSIONS_XML = os.path.join(ROOT_PATH, 'plugins', 'crawl',
                                    'wordpress_fingerprint',
                                    'wp_versions.xml')
-    
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -126,22 +126,23 @@ class wordpress_fingerprint(CrawlPlugin):
                 try:
                     line = line.strip()
                     release_db_hash, release_db_name = line.split(',')
-                except:
+                except BaseException:
                     continue
 
                 if release_db_hash == remote_release_hash:
 
-                    desc = ('The sysadmin used WordPress version "%s" during the'
-                            ' installation, which was found by matching the contents'
-                            ' of "%s" with the hashes of known releases. If the'
-                            ' sysadmin did not update wordpress, the current version'
-                            ' will still be the same.')
+                    desc = (
+                        'The sysadmin used WordPress version "%s" during the'
+                        ' installation, which was found by matching the contents'
+                        ' of "%s" with the hashes of known releases. If the'
+                        ' sysadmin did not update wordpress, the current version'
+                        ' will still be the same.')
                     desc %= (release_db_name, install_url)
 
-                    i = Info('Fingerprinted Wordpress version', desc, response.id,
-                             self.get_name())
+                    i = Info('Fingerprinted Wordpress version',
+                             desc, response.id, self.get_name())
                     i.set_url(install_url)
-                    
+
                     kb.kb.append(self, 'info', i)
                     om.out.information(i.get_desc())
 
@@ -170,7 +171,7 @@ class wordpress_fingerprint(CrawlPlugin):
             i = Info('Fingerprinted WordPress version', desc, response.id,
                      self.get_name())
             i.set_url(wp_readme_url)
-            
+
             kb.kb.append(self, 'info', i)
             om.out.information(i.get_desc())
 
@@ -201,7 +202,7 @@ class wordpress_fingerprint(CrawlPlugin):
             i = Info('Fingerprinted WordPress version', desc, response.id,
                      self.get_name())
             i.set_url(wp_index_url)
-            
+
             kb.kb.append(self, 'info', i)
             om.out.information(i.get_desc())
 
@@ -214,7 +215,7 @@ class wordpress_fingerprint(CrawlPlugin):
         Find wordpress version from data
         """
         for wp_fingerprint in self._get_wp_fingerprints():
-            
+
             # The URL in the XML is relative AND it has two different variables
             # that we need to replace:
             #        $wp-content$    -> wp-content/
@@ -223,7 +224,7 @@ class wordpress_fingerprint(CrawlPlugin):
             path = path.replace('$wp-content$', 'wp-content/')
             path = path.replace('$wp-plugins$', 'wp-content/plugins/')
             test_url = domain_path.url_join(path)
-            
+
             response = self._uri_opener.GET(test_url, cache=True)
 
             response_hash = hashlib.md5(response.get_body()).hexdigest()
@@ -232,14 +233,15 @@ class wordpress_fingerprint(CrawlPlugin):
                 version = wp_fingerprint.version
 
                 # Save it to the kb!
-                desc = ('WordPress version "%s" fingerprinted by matching known md5'
-                        ' hashes to HTTP responses of static resources available at'
-                        ' the remote WordPress install.')
+                desc = (
+                    'WordPress version "%s" fingerprinted by matching known md5'
+                    ' hashes to HTTP responses of static resources available at'
+                    ' the remote WordPress install.')
                 desc %= version
                 i = Info('Fingerprinted WordPress version', desc, response.id,
                          self.get_name())
                 i.set_url(test_url)
-        
+
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
 
@@ -256,26 +258,26 @@ class wordpress_fingerprint(CrawlPlugin):
         try:
             wordpress_fp_fd = codecs.open(self.WP_VERSIONS_XML, 'r', 'utf-8',
                                           errors='ignore')
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to open wordpress fingerprint database "%s": "%s".'
             args = (self.WP_VERSIONS_XML, e)
             raise BaseFrameworkException(msg % args)
-        
+
         parser = make_parser()
         wp_handler = WPVersionsHandler()
         parser.setContentHandler(wp_handler)
         om.out.debug('Starting the wordpress fingerprint xml parsing. ')
-        
+
         try:
             parser.parse(wordpress_fp_fd)
-        except Exception, e:
+        except Exception as e:
             msg = 'XML parsing error in wordpress version DB, exception: "%s".'
             raise BaseFrameworkException(msg % e)
-        
+
         om.out.debug('Finished xml parsing. ')
-        
+
         return wp_handler.fingerprints
-    
+
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
@@ -293,26 +295,27 @@ class wordpress_fingerprint(CrawlPlugin):
 class WPVersionsHandler(ContentHandler):
     """
     Parse https://github.com/wpscanteam/wpscan/blob/master/data/wp_versions.xml
-    
+
     Example content:
-    
+
     <file src="wp-layout.css">
       <hash md5="7140e06c00ed03d2bb3dad7672557510">
         <version>1.2.1</version>
       </hash>
-    
+
       <hash md5="1bcc9253506c067eb130c9fc4f211a2f">
         <version>1.2-delta</version>
       </hash>
     </file>
     """
+
     def __init__(self):
         self.file_src = ''
         self.hash_md5 = ''
         self.version = ''
-        
+
         self.inside_version = False
-        
+
         self.fingerprints = []
 
     def startElement(self, name, attrs):
@@ -337,4 +340,6 @@ class WPVersionsHandler(ContentHandler):
             self.fingerprints.append(fp)
 
 
-FileFingerPrint = namedtuple('FileFingerPrint', ['filepath', 'hash', 'version'])
+FileFingerPrint = namedtuple(
+    'FileFingerPrint', [
+        'filepath', 'hash', 'version'])

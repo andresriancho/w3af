@@ -27,6 +27,7 @@ class PostDataMutant(Mutant):
     """
     This class is a post data mutant.
     """
+
     def set_dc(self, data_container):
         self._freq.set_data(data_container)
 

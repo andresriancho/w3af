@@ -93,4 +93,3 @@ def stop_thread_stack_dump():
     """
     cancel_thread(SAVE_THREAD_PTR)
     dump_thread_stack()
-

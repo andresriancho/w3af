@@ -47,13 +47,14 @@ from w3af.core.controllers.profiling.memory_usage import user_wants_memory_profi
 from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemalloc
 from w3af.core.controllers.profiling.cpu_usage import user_wants_cpu_profiling
 from w3af.core.data.parsers.document_parser import DocumentParser
-from w3af.core.data.parsers.ipc.serialization import (write_object_to_temp_file,
-                                                      write_http_response_to_temp_file,
-                                                      write_tags_to_temp_file,
-                                                      load_object_from_temp_file,
-                                                      load_http_response_from_temp_file,
-                                                      load_tags_from_temp_file,
-                                                      remove_file_if_exists)
+from w3af.core.data.parsers.ipc.serialization import (
+    write_object_to_temp_file,
+    write_http_response_to_temp_file,
+    write_tags_to_temp_file,
+    load_object_from_temp_file,
+    load_http_response_from_temp_file,
+    load_tags_from_temp_file,
+    remove_file_if_exists)
 
 # 128 MB
 DEFAULT_MEMORY_LIMIT = 128 * 1024 * 1024
@@ -81,7 +82,8 @@ class MultiProcessingDocumentParser(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     DEBUG = core_profiling_is_enabled()
-    MAX_WORKERS = 2 if is_running_on_ci() else (multiprocessing.cpu_count() / 2) or 1
+    MAX_WORKERS = 2 if is_running_on_ci() else (
+        multiprocessing.cpu_count() / 2) or 1
 
     # Increasing the timeout when profiling is enabled seems to fix issue #9713
     #
@@ -116,10 +118,13 @@ class MultiProcessingDocumentParser(object):
 
                 # Start the process pool
                 log_queue = om.manager.get_in_queue()
-                self._pool = ProcessPool(self.MAX_WORKERS,
-                                         max_tasks=20,
-                                         initializer=init_worker,
-                                         initargs=(log_queue, self.MEMORY_LIMIT))
+                self._pool = ProcessPool(
+                    self.MAX_WORKERS,
+                    max_tasks=20,
+                    initializer=init_worker,
+                    initargs=(
+                        log_queue,
+                        self.MEMORY_LIMIT))
 
         return self._pool
 
@@ -159,7 +164,7 @@ class MultiProcessingDocumentParser(object):
             future = self._pool.schedule(apply_with_return_error,
                                          args=(apply_args,),
                                          timeout=self.PARSER_TIMEOUT)
-        except RuntimeError, rte:
+        except RuntimeError as rte:
             # Remove the temp file used to send data to the process
             remove_file_if_exists(filename)
 
@@ -208,7 +213,7 @@ class MultiProcessingDocumentParser(object):
 
         try:
             parser_output = load_object_from_temp_file(process_result)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to deserialize sub-process result. Exception: "%s"'
             args = (e,)
             raise Exception(msg % args)
@@ -262,7 +267,7 @@ class MultiProcessingDocumentParser(object):
             future = self._pool.schedule(apply_with_return_error,
                                          args=(apply_args,),
                                          timeout=self.PARSER_TIMEOUT)
-        except RuntimeError, rte:
+        except RuntimeError as rte:
             # Remove the temp file used to send data to the process
             remove_file_if_exists(filename)
 
@@ -302,7 +307,7 @@ class MultiProcessingDocumentParser(object):
 
         try:
             filtered_tags = load_tags_from_temp_file(process_result)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to deserialize sub-process result. Exception: "%s"'
             args = (e,)
             raise Exception(msg % args)
@@ -356,7 +361,7 @@ def process_document_parser(filename, debug):
     try:
         # Parse
         document_parser = DocumentParser(http_resp)
-    except Exception, e:
+    except Exception as e:
         if debug:
             msg = ('[mp_document_parser] PID %s finished parsing %s with'
                    ' exception: "%s"')
@@ -365,8 +370,9 @@ def process_document_parser(filename, debug):
         raise
     else:
         if debug:
-            msg = ('[mp_document_parser] PID %s finished parsing %s without any'
-                   ' exception')
+            msg = (
+                '[mp_document_parser] PID %s finished parsing %s without any'
+                ' exception')
             args = (pid, http_resp.get_url())
             om.out.debug(msg % args)
 

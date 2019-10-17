@@ -32,12 +32,12 @@ from w3af import ROOT_PATH
 class WritableObject(object):
     def __init__(self):
         self.content = []
-        
+
     def write(self, st):
         if st == '\n':
             return
         self.content.append(st)
-        
+
     def read(self):
         return self.content
 
@@ -46,7 +46,7 @@ class WritableObject(object):
 class PylintRunner(unittest.TestCase):
 
     maxDiff = None
-    
+
     def run_pylint(self, directory):
         pylint_rc = os.path.join(ROOT_PATH, 'core', 'controllers', 'tests',
                                  'pylint.rc')
@@ -54,7 +54,7 @@ class PylintRunner(unittest.TestCase):
         pylint_output = WritableObject()
         lint.Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
         return pylint_output
-    
+
     def test_pylint_plugins(self):
         pylint_output = self.run_pylint('%s/plugins/' % ROOT_PATH)
         output = pylint_output.read()

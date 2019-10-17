@@ -95,7 +95,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         try:
             lock_response2 = self._uri_opener.GET(fuzzable_request.get_url(),
                                                   headers=headers, cache=True)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             om.out.debug(
                 'Failed to identify secure IIS, exception: ' + str(w3))
         else:
@@ -118,11 +118,15 @@ class fingerprint_WAF(InfrastructurePlugin):
         for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 protected_by = response.get_headers()[header_name]
-                if re.match('^AL[_-]?(SESS|LB)(-S)?=', protected_by, re.IGNORECASE):
+                if re.match(
+                    '^AL[_-]?(SESS|LB)(-S)?=',
+                    protected_by,
+                        re.IGNORECASE):
                     self._report_finding('Airlock', response, protected_by)
                     return
             # else
-                # more checks, like path /error_path or encrypted URL in response
+                # more checks, like path /error_path or encrypted URL in
+                # response
 
     def _fingerprint_Barracuda(self, fuzzable_request):
         """
@@ -134,7 +138,10 @@ class fingerprint_WAF(InfrastructurePlugin):
             if header_name.lower() == 'set-cookie':
                 # ToDo: not sure if this is always there (08jul08 Achim)
                 protected_by = response.get_headers()[header_name]
-                if re.match('^barra_counter_session=', protected_by, re.IGNORECASE):
+                if re.match(
+                    '^barra_counter_session=',
+                    protected_by,
+                        re.IGNORECASE):
                     self._report_finding('Barracuda', protected_by)
                     return
             # else
@@ -249,7 +256,10 @@ class fingerprint_WAF(InfrastructurePlugin):
         for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 protected_by = response.get_headers()[header_name]
-                if re.match('^(incap_ses|visid_incap)=', protected_by, re.IGNORECASE):
+                if re.match(
+                    '^(incap_ses|visid_incap)=',
+                    protected_by,
+                        re.IGNORECASE):
                     self._report_finding('Incapsula', response, protected_by)
                     return
             # else
@@ -264,8 +274,12 @@ class fingerprint_WAF(InfrastructurePlugin):
         for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 protected_by = response.get_headers()[header_name]
-                if re.match('^X-Backside-Transport=', protected_by, re.IGNORECASE):
-                    self._report_finding('IBM WebSphere', response, protected_by)
+                if re.match(
+                    '^X-Backside-Transport=',
+                    protected_by,
+                        re.IGNORECASE):
+                    self._report_finding(
+                        'IBM WebSphere', response, protected_by)
                     return
             # else
                 # don't know ...
@@ -283,7 +297,10 @@ class fingerprint_WAF(InfrastructurePlugin):
                     self._report_finding('Profense', response, protected_by)
                     return
             elif header_name.lower() == 'Server':
-                if re.match('^Profense', response.get_headers()[header_name], re.IGNORECASE):
+                if re.match(
+                    '^Profense',
+                    response.get_headers()[header_name],
+                        re.IGNORECASE):
                     self._report_finding('Profense', response, protected_by)
                     return
 
@@ -403,10 +420,10 @@ class fingerprint_WAF(InfrastructurePlugin):
         desc = 'The remote network seems to have a "%s" WAF deployed to' \
                ' protect access to the web server.'
         desc = desc % name
-        
+
         if protected_by:
             desc += ' The following is the WAF\'s version: "%s".' % protected_by
-        
+
         i = Info('Web Application Firewall fingerprint', desc, response.id,
                  self.get_name())
         i.set_url(response.get_url())

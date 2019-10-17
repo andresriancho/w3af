@@ -40,10 +40,10 @@ class cache_control(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    
+
     SAFE_CONFIG = {'pragma': 'no-cache',
                    'cache-control': 'no-store'}
-    
+
     def __init__(self):
         GrepPlugin.__init__(self)
 
@@ -61,7 +61,7 @@ class cache_control(GrepPlugin):
 
         if 300 < response.get_code() < 310:
             return
-        
+
         if response.body == '':
             return
 
@@ -72,7 +72,7 @@ class cache_control(GrepPlugin):
 
         cache_control_settings = self._get_cache_control(response)
         self._analyze_cache_control(cache_control_settings, response)
-    
+
     def _get_cache_control(self, response):
         """
         :param response: The http response we want to extract the information
@@ -84,12 +84,12 @@ class cache_control(GrepPlugin):
 
         cache_control_headers = self.SAFE_CONFIG.keys()
         headers = response.get_headers()
-        
+
         for _type in cache_control_headers:
             header_value, _ = headers.iget(_type, None)
             if header_value is not None:
                 res.append(CacheSettings(_type, header_value.lower()))
-                
+
         try:
             doc_parser = parser_cache.dpc.get_document_parser_for(response)
         except BaseFrameworkException:
@@ -103,7 +103,7 @@ class cache_control(GrepPlugin):
                     header_value = header_value.lower()
                     if header_name in cache_control_headers:
                         res.append(CacheSettings(header_name, header_value))
-        
+
         return res
 
     def _analyze_cache_control(self, cache_control_settings, response):
@@ -112,7 +112,7 @@ class cache_control(GrepPlugin):
         store the information to report the vulnerabilities.
         """
         received_headers = set()
-        
+
         for cache_setting in cache_control_settings:
             expected_header = self.SAFE_CONFIG[cache_setting.type]
             received_header = cache_setting.value.lower()
@@ -121,17 +121,17 @@ class cache_control(GrepPlugin):
                 # The header has an incorrect value
                 self.is_vuln(response)
                 return
-        
+
         if len(received_headers) != len(self.SAFE_CONFIG):
             # No cache control header found
             self.is_vuln(response)
-    
+
     def is_vuln(self, response):
         self._vuln_count += 1
         if response.get_url() not in self._vulns:
             self._vulns.append(response.get_url())
             self._ids.append(response.id)
-    
+
     def end(self):
         # If all URLs implement protection, don't report anything.
         if not self._vuln_count:
@@ -140,25 +140,27 @@ class cache_control(GrepPlugin):
         # If none of the URLs implement protection, simply report
         # ONE vulnerability that says that.
         if self._total_count == self._vuln_count:
-            desc = ('The whole target web application has no protection (Pragma'
-                    ' and Cache-Control headers) against sensitive content'
-                    ' caching.')
-            
+            desc = (
+                'The whole target web application has no protection (Pragma'
+                ' and Cache-Control headers) against sensitive content'
+                ' caching.')
+
         # If most of the URLs implement the protection but some
         # don't, report ONE vulnerability saying: "Most are protected, but x, y
         # are not.
         if self._total_count > self._vuln_count:
-            desc = ('Some URLs have no protection (Pragma and Cache-Control'
-                    ' headers) against sensitive content caching. Among them:\n')
+            desc = (
+                'Some URLs have no protection (Pragma and Cache-Control'
+                ' headers) against sensitive content caching. Among them:\n')
             desc += ' '.join([str(url) + '\n' for url in self._vulns])
-        
+
         response_ids = [_id for _id in self._ids]
-        
+
         v = Vuln('Missing cache control for HTTPS content', desc,
                  severity.LOW, response_ids, self.get_name())
-        
+
         self.kb_append_uniq(self, 'cache_control', v, 'URL')
-        
+
         self._vulns.cleanup()
         self._ids.cleanup()
 
@@ -167,7 +169,7 @@ class cache_control(GrepPlugin):
         This plugin analyzes every HTTPS response and reports instances of
         incorrect cache control which might lead the user's browser to cache
         sensitive contents on their system.
-        
+
         The expected headers for HTTPS responses are:
             - Pragma: No-cache
             - Cache-control: No-store

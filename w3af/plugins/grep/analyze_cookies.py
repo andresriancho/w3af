@@ -158,7 +158,11 @@ class analyze_cookies(GrepPlugin):
                    ' incorrect format: "%s" that does NOT respect the RFC.'
             desc = desc % cookie_header_value
 
-            i = CookieInfo('Invalid cookie', desc, response.id, self.get_name())
+            i = CookieInfo(
+                'Invalid cookie',
+                desc,
+                response.id,
+                self.get_name())
             i.set_url(response.get_url())
             i.set_cookie_string(cookie_header_value)
 
@@ -321,7 +325,7 @@ class analyze_cookies(GrepPlugin):
         :return: None
         """
         if self.SECURE_RE.search(cookie_header_value) and \
-        response.get_url().get_protocol().lower() == 'http':
+                response.get_url().get_protocol().lower() == 'http':
 
             desc = 'A cookie marked with the secure flag was sent over' \
                    ' an insecure channel (HTTP) when requesting the URL:'\
@@ -350,7 +354,7 @@ class analyze_cookies(GrepPlugin):
         :return: None
         """
         if response.get_url().get_protocol().lower() == 'https' and \
-        not self.SECURE_RE.search(cookie_header_value):
+                not self.SECURE_RE.search(cookie_header_value):
             desc = 'A cookie without the secure flag was sent in an HTTPS' \
                    ' response at "%s". The secure flag prevents the browser' \
                    ' from sending a "secure" cookie over an insecure HTTP' \
@@ -393,7 +397,7 @@ class CookieMixIn(object):
 
     def get_cookie_object(self):
         return self[COOKIE_OBJECT]
-    
+
 
 class CookieInfo(Info, CookieMixIn):
     pass

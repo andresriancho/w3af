@@ -50,7 +50,7 @@ class OpenBSD5(Platform):
 
         try:
             pkg_info_output = subprocess.check_output(command, shell=True)
-        except:
+        except BaseException:
             # We're not on an openbsd based system
             return None
         else:

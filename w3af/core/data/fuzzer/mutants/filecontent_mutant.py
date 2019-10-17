@@ -81,6 +81,7 @@ class OnlyTokenFilesMultipartContainer(MultipartContainer):
     Also, when fuzzing I'll be creating my tokens using FileDataToken: a great
     way to abstract the fact that payloads are sent in the content of a file.
     """
+
     def set_token(self, token_path):
         """
         Modified to pass the filename to the FileDataToken
@@ -93,7 +94,8 @@ class OnlyTokenFilesMultipartContainer(MultipartContainer):
                     token = val
                 else:
                     if key in self.get_file_vars():
-                        fname = val.filename if hasattr(val, 'filename') else None
+                        fname = val.filename if hasattr(
+                            val, 'filename') else None
                         token = FileDataToken(key, val, fname, ipath)
                     else:
                         token = DataToken(key, val, ipath)

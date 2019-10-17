@@ -31,4 +31,3 @@ def get_wivet_http(path='/'):
         wivet_netloc = DEFAULT_WIVET
 
     return 'http://%s%s' % (wivet_netloc, path)
-

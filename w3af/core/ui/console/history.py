@@ -27,6 +27,7 @@ class historyTable(object):
     A wrapper around a dictionary which stores menu-related history objects.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     """
+
     def __init__(self):
         self._table = {}
 

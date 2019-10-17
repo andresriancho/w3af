@@ -37,9 +37,12 @@ class PasswordBruteforcer(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, url):
-        self.passwd_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                        'passwords.txt')
+        self.passwd_file = os.path.join(
+            os.path.dirname(
+                os.path.realpath(__file__)),
+            'passwords.txt')
         self.l337_p4sswd = True
         self.use_profiling = True
         self.profiling_number = 50
@@ -64,7 +67,7 @@ class PasswordBruteforcer(object):
     def _special_passwords(self):
         yield self._url.get_domain()
         yield self._url.get_root_domain()
-        
+
         if self.use_profiling:
             for pwd in get_profiling_results(self.profiling_number):
                 yield pwd
@@ -84,8 +87,10 @@ class UserPasswordBruteforcer(object):
 
     def __init__(self, url):
         # Config params for user generation
-        self.users_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                       'users.txt')
+        self.users_file = os.path.join(
+            os.path.dirname(
+                os.path.realpath(__file__)),
+            'users.txt')
         self.combo_file = ''
         self.combo_separator = ":"
         self.use_emails = True
@@ -93,8 +98,10 @@ class UserPasswordBruteforcer(object):
         self.pass_eq_user = True
 
         # Config params for password generation
-        self.passwd_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                        'passwords.txt')
+        self.passwd_file = os.path.join(
+            os.path.dirname(
+                os.path.realpath(__file__)),
+            'passwords.txt')
         self.l337_p4sswd = True
         self.use_profiling = True
         self.profiling_number = 50

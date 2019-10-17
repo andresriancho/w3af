@@ -22,6 +22,7 @@ from lib.core.settings import METADB_SUFFIX
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.ACCESS)
@@ -37,7 +38,8 @@ class Fingerprint(GenericFingerprint):
             table = "MSysAccessStorage"
 
         if table is not None:
-            result = inject.checkBooleanExpression("EXISTS(SELECT CURDIR() FROM %s)" % table)
+            result = inject.checkBooleanExpression(
+                "EXISTS(SELECT CURDIR() FROM %s)" % table)
             retVal = "not sandboxed" if result else "sandboxed"
 
         return retVal
@@ -48,11 +50,11 @@ class Fingerprint(GenericFingerprint):
 
         # Microsoft Access table reference updated on 01/2010
         sysTables = {
-                      "97":           ("MSysModules2", "MSysAccessObjects"),
-                      "2000" :        ("!MSysModules2", "MSysAccessObjects"),
-                      "2002-2003" :   ("MSysAccessStorage", "!MSysNavPaneObjectIDs"),
-                      "2007" :        ("MSysAccessStorage", "MSysNavPaneObjectIDs"),
-                    }
+            "97": ("MSysModules2", "MSysAccessObjects"),
+            "2000": ("!MSysModules2", "MSysAccessObjects"),
+            "2002-2003": ("MSysAccessStorage", "!MSysNavPaneObjectIDs"),
+            "2007": ("MSysAccessStorage", "MSysNavPaneObjectIDs"),
+        }
         # MSysAccessXML is not a reliable system table because it doesn't always exist
         # ("Access through Access", p6, should be "normally doesn't exist" instead of "is normally empty")
 
@@ -66,7 +68,8 @@ class Fingerprint(GenericFingerprint):
                     negate = True
                     table = table[1:]
 
-                result = inject.checkBooleanExpression("EXISTS(SELECT * FROM %s WHERE [RANDNUM]=[RANDNUM])" % table)
+                result = inject.checkBooleanExpression(
+                    "EXISTS(SELECT * FROM %s WHERE [RANDNUM]=[RANDNUM])" % table)
                 if result is None:
                     result = False
 
@@ -90,11 +93,15 @@ class Fingerprint(GenericFingerprint):
         logger.info(infoMsg)
 
         randStr = randomStr()
-        inject.checkBooleanExpression("EXISTS(SELECT * FROM %s.%s WHERE [RANDNUM]=[RANDNUM])" % (randStr, randStr))
+        inject.checkBooleanExpression(
+            "EXISTS(SELECT * FROM %s.%s WHERE [RANDNUM]=[RANDNUM])" %
+            (randStr, randStr))
 
         if wasLastResponseDBMSError():
             threadData = getCurrentThreadData()
-            match = re.search(r"Could not find file\s+'([^']+?)'", threadData.lastErrorPage[1])
+            match = re.search(
+                r"Could not find file\s+'([^']+?)'",
+                threadData.lastErrorPage[1])
 
             if match:
                 retVal = match.group(1).rstrip("%s.mdb" % randStr)
@@ -139,7 +146,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         value += "\ndatabase directory: '%s'" % self._getDatabaseDir()
 
@@ -160,7 +168,8 @@ class Fingerprint(GenericFingerprint):
             infoMsg = "confirming %s" % DBMS.ACCESS
             logger.info(infoMsg)
 
-            result = inject.checkBooleanExpression("IIF(ATN(2)>0,1,0) BETWEEN 2 AND 0")
+            result = inject.checkBooleanExpression(
+                "IIF(ATN(2)>0,1,0) BETWEEN 2 AND 0")
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.ACCESS

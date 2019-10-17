@@ -37,13 +37,14 @@ class PromptView(gtk.TextView, MessageConsumer):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, prompt_text, procfunc):
         gtk.TextView.__init__(self)
         MessageConsumer.__init__(self)
 
         self.prompt_text = prompt_text
         self.procfunc = procfunc
-        
+
         self.set_wrap_mode(gtk.WRAP_CHAR)
 
         # keys
@@ -85,13 +86,13 @@ class PromptView(gtk.TextView, MessageConsumer):
         :return: True to keep running
         """
         super(PromptView, self).handle_message(msg)
-        
+
         if msg.get_type() == 'console':
             # Handling new lines
             text = msg.get_msg()
             if msg.get_new_line():
                 text += '\n'
-    
+
             self.insert_into_textbuffer(text)
             yield True
 
@@ -244,7 +245,7 @@ class PromptView(gtk.TextView, MessageConsumer):
         iterl = self.textbuffer.get_end_iter()
         self.textbuffer.insert(iterl, self.prompt_text + "> ")
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
-        
+
         iterl = self.textbuffer.get_end_iter()
         self.textbuffer.place_cursor(iterl)
         self.cursorLimit = self.textbuffer.get_property("cursor-position")
@@ -260,8 +261,10 @@ class PromptView(gtk.TextView, MessageConsumer):
 
         # reset the cursor after moving it with the mouse
         if self.cursorPosition is not None:
-            # special: don't reset for ctrl-C, as we want to copy the selected stuff
-            if event.state & gtk.gdk.CONTROL_MASK and event.keyval == gtk.gdk.keyval_from_name("c"):
+            # special: don't reset for ctrl-C, as we want to copy the selected
+            # stuff
+            if event.state & gtk.gdk.CONTROL_MASK and event.keyval == gtk.gdk.keyval_from_name(
+                    "c"):
                 return False
             iterl = self.textbuffer.get_iter_at_offset(self.cursorPosition)
             self.textbuffer.place_cursor(iterl)
@@ -279,6 +282,7 @@ class PromptDialog(gtk.Dialog):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, title, prompt_text, procfunc):
         super(PromptDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file(os.path.join(GUI_DATA_PATH, 'shell.png'))

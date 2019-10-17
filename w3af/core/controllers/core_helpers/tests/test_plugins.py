@@ -75,7 +75,8 @@ class TestW3afCorePlugins(unittest.TestCase):
         self.assertEquals(plugin_inst.get_name(), 'sqli')
 
     def test_get_plugin_inst_all(self):
-        for plugin_type in itertools.chain(self.core.plugins.get_plugin_types(), ['attack']):
+        for plugin_type in itertools.chain(
+                self.core.plugins.get_plugin_types(), ['attack']):
             for plugin_name in self.core.plugins.get_plugin_list(plugin_type):
                 plugin_inst = self.core.plugins.get_plugin_inst(
                     plugin_type, plugin_name)
@@ -89,7 +90,11 @@ class TestW3afCorePlugins(unittest.TestCase):
 
     def test_set_plugins_negative(self):
         enabled = ['fake', ]
-        self.assertRaises(ValueError, self.core.plugins.set_plugins, enabled, 'output')
+        self.assertRaises(
+            ValueError,
+            self.core.plugins.set_plugins,
+            enabled,
+            'output')
 
     def test_set_plugins_negative_without_raise(self):
         enabled = ['fake', ]

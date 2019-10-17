@@ -33,26 +33,26 @@ def generate_helper_script(pkg_manager_cmd, os_packages, pip_cmd, failed_deps,
     """
     Generates a helper script to be run by the user to install all the
     dependencies.
-    
+
     :return: The path to the script name.
     """
     temp_dir = tempfile.gettempdir()
-    
+
     script_path = os.path.join(temp_dir, SCRIPT_NAME)
-    
+
     script_file = file(script_path, 'w')
     script_file.write('#!/bin/bash\n')
-    
+
     #
     #    Report the missing system packages
     #
     if os_packages:
         missing_pkgs = ' '.join(os_packages)
         script_file.write('%s %s\n' % (pkg_manager_cmd, missing_pkgs))
-        
+
     #
     #    Report all missing python modules
-    #    
+    #
     if failed_deps:
         script_file.write('\n')
 
@@ -61,11 +61,11 @@ def generate_helper_script(pkg_manager_cmd, os_packages, pip_cmd, failed_deps,
 
         not_git_pkgs = [fdep for fdep in failed_deps if not fdep.is_git]
         git_pkgs = [fdep.git_src for fdep in failed_deps if fdep.is_git]
-        
+
         if not_git_pkgs:
             cmd = generate_pip_install_non_git(pip_cmd, not_git_pkgs)
             script_file.write('%s\n' % cmd)
-        
+
         if git_pkgs:
             for missing_git_pkg in git_pkgs:
                 cmd = generate_pip_install_git(pip_cmd, missing_git_pkg)
@@ -75,7 +75,7 @@ def generate_helper_script(pkg_manager_cmd, os_packages, pip_cmd, failed_deps,
         script_file.write('%s\n' % cmd)
 
     # Make it executable
-    os.chmod(script_path, 0755)
+    os.chmod(script_path, 0o755)
 
     script_file.close()
     return script_path
@@ -91,7 +91,7 @@ def generate_pip_install_non_git(pip_cmd, not_git_pkgs):
     for fdep in not_git_pkgs:
         install_specs.append('%s==%s' % (fdep.package_name,
                                          fdep.package_version))
-        
+
     cmd = cmd_fmt % (pip_cmd, ' '.join(install_specs))
     return cmd
 

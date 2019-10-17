@@ -81,12 +81,15 @@ class TestHistoryItem(unittest.TestCase):
             h1.save()
 
         h2 = HistoryItem()
-        self.assertEqual(len(h2.find([('tag', "%" + tag_value + "%", 'like')])), 1)
+        self.assertEqual(
+            len(h2.find([('tag', "%" + tag_value + "%", 'like')])), 1)
         self.assertEqual(len(h2.find([('code', 302, '=')])), 1)
         self.assertEqual(len(h2.find([('mark', 1, '=')])), 1)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')])), 500)
-        self.assertEqual(len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
-        results = h2.find([('has_qs', 1, '=')], result_limit=1, order_data=[('id', 'desc')])
+        self.assertEqual(
+            len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
+        results = h2.find([('has_qs', 1, '=')], result_limit=1,
+                          order_data=[('id', 'desc')])
         self.assertEqual(results[0].id, 499)
         search_data = [('id', find_id + 1, "<"),
                        ('id', find_id - 1, ">")]
@@ -95,7 +98,7 @@ class TestHistoryItem(unittest.TestCase):
     def test_mark(self):
         mark_id = 3
         url = URL('http://w3af.org/a/b/c.php')
-        
+
         for i in xrange(0, 500):
             request = HTTPRequest(url, data='a=1')
             hdr = Headers([('Content-Type', 'text/html')])
@@ -113,7 +116,7 @@ class TestHistoryItem(unittest.TestCase):
         self.assertTrue(h2.mark)
 
         h3 = HistoryItem()
-        h3.load(mark_id-1)
+        h3.load(mark_id - 1)
         self.assertFalse(h3.mark)
 
     def test_save_load(self):
@@ -141,7 +144,8 @@ class TestHistoryItem(unittest.TestCase):
         self.assertRaises(DBException, h.load, 1)
 
     def test_save_load_compressed(self):
-        force_compression_count = HistoryItem._UNCOMPRESSED_FILES + HistoryItem._COMPRESSED_FILE_BATCH
+        force_compression_count = HistoryItem._UNCOMPRESSED_FILES + \
+            HistoryItem._COMPRESSED_FILE_BATCH
         force_compression_count += 150
 
         url = URL('http://w3af.com/a/b/c.php')
@@ -162,10 +166,16 @@ class TestHistoryItem(unittest.TestCase):
         compressed_file = os.path.join(h.get_session_dir(), '1-150.zip')
         self.assertTrue(os.path.exists(compressed_file))
 
-        compressed_file_temp = os.path.join(h.get_session_dir(), '1-150.zip.tmp')
+        compressed_file_temp = os.path.join(
+            h.get_session_dir(), '1-150.zip.tmp')
         self.assertFalse(os.path.exists(compressed_file_temp))
 
-        expected_files = ['%s.trace' % i for i in range(1, HistoryItem._COMPRESSED_FILE_BATCH + 1)]
+        expected_files = [
+            '%s.trace' %
+            i for i in range(
+                1,
+                HistoryItem._COMPRESSED_FILE_BATCH +
+                1)]
 
         _zip = zipfile.ZipFile(compressed_file, mode='r')
         self.assertEqual(_zip.namelist(), expected_files)
@@ -180,23 +190,23 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_delete(self):
         i = random.randint(1, 499)
-        
+
         url = URL('http://w3af.com/a/b/c.php')
         request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
         res.set_id(i)
-        
+
         h1 = HistoryItem()
         h1.request = request
         h1.response = res
         h1.save()
-        
+
         fname = h1._get_trace_filename_for_id(i)
         self.assertTrue(os.path.exists(fname))
-        
+
         h1.delete(i)
-        
+
         self.assertRaises(DBException, h1.read, i)
         self.assertFalse(os.path.exists(fname))
 
@@ -205,7 +215,7 @@ class TestHistoryItem(unittest.TestCase):
         request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
-        
+
         h1 = HistoryItem()
         h1.request = request
         res.set_id(1)
@@ -214,31 +224,31 @@ class TestHistoryItem(unittest.TestCase):
 
         table_name = h1.get_table_name()
         db = get_default_temp_db_instance()
-        
+
         self.assertTrue(db.table_exists(table_name))
-        
+
         clear_result = h1.clear()
-        
+
         self.assertTrue(clear_result)
         self.assertFalse(os.path.exists(h1._session_dir),
                          '%s exists.' % h1._session_dir)
-        
+
         # Changed the meaning of clear a little bit... now it simply removes
         # all rows from the table, not the table itself
-        self.assertTrue(db.table_exists(table_name))        
+        self.assertTrue(db.table_exists(table_name))
 
     def test_clear_clear(self):
         url = URL('http://w3af.com/a/b/c.php')
         request = HTTPRequest(url, data='a=1')
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
-        
+
         h1 = HistoryItem()
         h1.request = request
         res.set_id(1)
         h1.response = res
         h1.save()
-        
+
         h1.clear()
         h1.clear()
 

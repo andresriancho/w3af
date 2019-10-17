@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 
 from w3af.core.data.url.handlers.cache_backend.db import SQLCachedResponse
-from w3af.core.controllers.misc.number_generator import (consecutive_number_generator
-                                                         as core_num_gen)
+from w3af.core.controllers.misc.number_generator import (
+    consecutive_number_generator as core_num_gen)
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
@@ -42,6 +42,7 @@ class CacheHandler(urllib2.BaseHandler):
     :author: Version 0.2 by Andres Riancho
     :author: Version 0.3 by Javier Andalia <jandalia =at= gmail.com>
     """
+
     def __init__(self):
         CacheClass.init()
 

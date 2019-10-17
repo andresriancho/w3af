@@ -29,10 +29,10 @@ from w3af.core.data.url.tests.helpers.http_daemon import HTTPDaemon
 
 
 class TestProxy(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'proxy', 'images')
     EXTRA_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'tools_menu', 'images')
-    
+
     def setUp(self):
         XpresserUnittest.setUp(self)
         self.click('proxy-menu-icon')
@@ -46,22 +46,24 @@ class TestProxy(XpresserUnittest):
         proxy_support = urllib2.ProxyHandler({'http': proxy_url,
                                               'https': proxy_url})
         self.opener = urllib2.build_opener(proxy_support)
-        
+
     def tearDown(self):
         self.click('close-with-cross')
         self.click('yes')
-        
+
         self.http_daemon.shutdown()
-        
+
         XpresserUnittest.tearDown(self)
-    
+
     def test_basic_forwarding(self):
         port = self.http_daemon.get_port()
-        http_response = self.opener.open('http://127.0.0.1:%s/foo' % port).read()
+        http_response = self.opener.open(
+            'http://127.0.0.1:%s/foo' %
+            port).read()
         self.assertEqual('ABCDEF\n', http_response)
 
     def test_intercept(self):
-        
+
         self.click('intercept')
 
         def ui_clicker():
@@ -72,14 +74,16 @@ class TestProxy(XpresserUnittest):
                 self.find('200_OK')
                 self.click('next_request')
                 self.find('empty_intercept')
-            except:
+            except BaseException:
                 pass
 
         t = threading.Thread(target=ui_clicker)
         t.start()
 
         port = self.http_daemon.get_port()
-        http_response = self.opener.open('http://127.0.0.1:%s/foo' % port).read()
+        http_response = self.opener.open(
+            'http://127.0.0.1:%s/foo' %
+            port).read()
         self.assertEqual('ABCDEF\n', http_response)
 
         t.join()

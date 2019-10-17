@@ -38,7 +38,7 @@ class TestBaseConsumer(unittest.TestCase):
         fr = FuzzableRequest(url)
         try:
             raise Exception()
-        except Exception, e:
+        except Exception as e:
             self.bc.handle_exception('audit', 'sqli', fr, e)
 
         exception_data = self.bc.out_queue.get()
@@ -47,14 +47,14 @@ class TestBaseConsumer(unittest.TestCase):
         self.assertEqual(exception_data.phase, 'audit')
         self.assertEqual(exception_data.plugin, 'sqli')
         self.assertEqual(exception_data.exception, e)
-    
+
     def test_terminate(self):
         self.bc.start()
-        
+
         self.bc._teardown = Mock()
-        
+
         self.bc.terminate()
-        
+
         self.assertEqual(self.bc._teardown.call_count, 1)
 
     def test_terminate_terminate(self):

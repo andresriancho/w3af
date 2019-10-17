@@ -40,8 +40,10 @@ class TestVariantIdentification(unittest.TestCase):
                                       URL('http://w3af.com/foo.php?foo=1')))
 
     def test_diff_domain(self):
-        self.assertFalse(are_variants(URL('http://w3af.com/foo.php?id=1'),
-                                      URL('http://bonsai-sec.com/foo.php?id=1')))
+        self.assertFalse(
+            are_variants(
+                URL('http://w3af.com/foo.php?id=1'),
+                URL('http://bonsai-sec.com/foo.php?id=1')))
 
     def test_diff_domain_params(self):
         self.assertFalse(

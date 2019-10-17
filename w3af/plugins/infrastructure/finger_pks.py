@@ -51,7 +51,7 @@ class finger_pks(InfrastructurePlugin):
 
         for result in results:
             mail = result.username + '@' + root_domain
-            
+
             desc = 'The mail account: "%s" was found at: "%s".'
             desc %= (mail, pks_url)
 
@@ -61,7 +61,7 @@ class finger_pks(InfrastructurePlugin):
             i['user'] = result.username
             i['name'] = result.name
             i['url_list'] = {URL(pks_url)}
-            
+
             kb.kb.append('emails', 'emails', i)
             om.out.information(i.get_desc())
 

@@ -21,6 +21,7 @@ from lib.core.settings import METADB_SUFFIX
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.FIREBIRD)
@@ -61,24 +62,28 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
     def _sysTablesCheck(self):
         retVal = None
         table = (
-                    ("1.0", ("EXISTS(SELECT CURRENT_USER FROM RDB$DATABASE)",)),
-                    ("1.5", ("NULLIF(%d,%d) IS NULL", "EXISTS(SELECT CURRENT_TRANSACTION FROM RDB$DATABASE)")),
-                    ("2.0", ("EXISTS(SELECT CURRENT_TIME(0) FROM RDB$DATABASE)", "BIT_LENGTH(%d)>0", "CHAR_LENGTH(%d)>0")),
-                    ("2.1", ("BIN_XOR(%d,%d)=0", "PI()>0.%d", "RAND()<1.%d", "FLOOR(1.%d)>=0")),
-                    # TODO: add test for Firebird 2.5
-                 )
+            ("1.0", ("EXISTS(SELECT CURRENT_USER FROM RDB$DATABASE)",)),
+            ("1.5", ("NULLIF(%d,%d) IS NULL",
+                     "EXISTS(SELECT CURRENT_TRANSACTION FROM RDB$DATABASE)")),
+            ("2.0", ("EXISTS(SELECT CURRENT_TIME(0) FROM RDB$DATABASE)",
+                     "BIT_LENGTH(%d)>0", "CHAR_LENGTH(%d)>0")),
+            ("2.1", ("BIN_XOR(%d,%d)=0", "PI()>0.%d", "RAND()<1.%d", "FLOOR(1.%d)>=0")),
+            # TODO: add test for Firebird 2.5
+        )
 
         for i in xrange(len(table)):
             version, checks = table[i]
             failed = False
-            check = checks[randomRange(0, len(checks) - 1)].replace("%d", getUnicode(randomRange(1, 100)))
+            check = checks[randomRange(
+                0, len(checks) - 1)].replace("%d", getUnicode(randomRange(1, 100)))
             result = inject.checkBooleanExpression(check)
 
             if result:
@@ -96,7 +101,8 @@ class Fingerprint(GenericFingerprint):
         retVal = None
 
         if Backend.getIdentifiedDbms():
-            result = inject.checkBooleanExpression("EXISTS(SELECT CURRENT_DATE FROM RDB$DATABASE)")
+            result = inject.checkBooleanExpression(
+                "EXISTS(SELECT CURRENT_DATE FROM RDB$DATABASE)")
             retVal = "dialect 3" if result else "dialect 1"
 
         return retVal
@@ -112,13 +118,15 @@ class Fingerprint(GenericFingerprint):
         infoMsg = "testing %s" % DBMS.FIREBIRD
         logger.info(infoMsg)
 
-        result = inject.checkBooleanExpression("(SELECT COUNT(*) FROM RDB$DATABASE WHERE [RANDNUM]=[RANDNUM])>0")
+        result = inject.checkBooleanExpression(
+            "(SELECT COUNT(*) FROM RDB$DATABASE WHERE [RANDNUM]=[RANDNUM])>0")
 
         if result:
             infoMsg = "confirming %s" % DBMS.FIREBIRD
             logger.info(infoMsg)
 
-            result = inject.checkBooleanExpression("EXISTS(SELECT CURRENT_USER FROM RDB$DATABASE)")
+            result = inject.checkBooleanExpression(
+                "EXISTS(SELECT CURRENT_USER FROM RDB$DATABASE)")
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.FIREBIRD

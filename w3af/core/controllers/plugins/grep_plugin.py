@@ -33,6 +33,7 @@ class GrepPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         super(GrepPlugin, self).__init__()
 
@@ -53,7 +54,7 @@ class GrepPlugin(Plugin):
         # filters which are applied before analyzing a response.
         try:
             self.grep(fuzzable_request, response)
-        except FourOhFourDetectionException, ffde:
+        except FourOhFourDetectionException as ffde:
             # We simply ignore any exceptions we find during the 404 detection
             # process. FYI: This doesn't break the xurllib error handling which
             # happens at lower layers.

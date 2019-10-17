@@ -87,7 +87,7 @@ class un_ssl(AuditPlugin):
 
         try:
             insecure_response = send_mutant(insecure_fr, **kwargs)
-            secure_response = send_mutant(secure_fr,  **kwargs)
+            secure_response = send_mutant(secure_fr, **kwargs)
         except (HTTPRequestException, ScanMustStopException):
             # No vulnerability to report since one of these threw an error
             # (because there is nothing listening on that port). It makes
@@ -107,9 +107,9 @@ class un_ssl(AuditPlugin):
                 return
 
             if insecure_response.get_code() == secure_response.get_code()\
-            and fuzzy_equal(insecure_response.get_body(),
-                            secure_response.get_body(),
-                            0.95):
+                and fuzzy_equal(insecure_response.get_body(),
+                                secure_response.get_body(),
+                                0.95):
 
                 desc = ('Secure content can be accessed using the insecure'
                         ' HTTP protocol. The vulnerable URLs used to verify'
@@ -146,10 +146,10 @@ class un_ssl(AuditPlugin):
         """
         if insecure_response.was_redirected():
             redirect_target = insecure_response.get_redir_url()
-            
+
             if redirect_target.get_protocol() == 'https':
                 return True
-        
+
         return False
 
     def get_long_desc(self):

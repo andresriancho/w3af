@@ -24,9 +24,8 @@ import unittest
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.parsers.doc.http_request_parser import (http_request_parser,
-                                                            check_version_syntax,
-                                                            check_uri_syntax)
+from w3af.core.data.parsers.doc.http_request_parser import (
+    http_request_parser, check_version_syntax, check_uri_syntax)
 
 
 class TestHttpRequestParser(unittest.TestCase):
@@ -103,10 +102,19 @@ class TestHttpRequestParser(unittest.TestCase):
     def test_check_version_syntax(self):
         self.assertTrue(check_version_syntax('HTTP/1.0'))
 
-        self.assertRaises(BaseFrameworkException, check_version_syntax, 'HTTPS/1.0')
-        self.assertRaises(BaseFrameworkException, check_version_syntax, 'HTTP/1.00000000000000')
-        self.assertRaises(BaseFrameworkException, check_version_syntax, 'ABCDEF')
-    
+        self.assertRaises(
+            BaseFrameworkException,
+            check_version_syntax,
+            'HTTPS/1.0')
+        self.assertRaises(
+            BaseFrameworkException,
+            check_version_syntax,
+            'HTTP/1.00000000000000')
+        self.assertRaises(
+            BaseFrameworkException,
+            check_version_syntax,
+            'ABCDEF')
+
     def test_check_uri_syntax(self):
         self.assertEqual(check_uri_syntax('http://abc/def.html'),
                          'http://abc/def.html')

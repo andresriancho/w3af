@@ -8,7 +8,7 @@ See the file 'LICENSE' for copying permission
 try:
     import jaydebeapi
     import jpype
-except:
+except BaseException:
     pass
 
 import logging
@@ -19,6 +19,7 @@ from lib.core.data import conf
 from lib.core.data import logger
 from lib.core.exception import SqlmapConnectionException
 from plugins.generic.connector import Connector as GenericConnector
+
 
 class Connector(GenericConnector):
     """
@@ -41,17 +42,18 @@ class Connector(GenericConnector):
             args = "-Djava.class.path=%s" % jar
             jvm_path = jpype.getDefaultJVMPath()
             jpype.startJVM(jvm_path, args)
-        except Exception, msg:
+        except Exception as msg:
             raise SqlmapConnectionException(msg[0])
 
         try:
             driver = 'org.hsqldb.jdbc.JDBCDriver'
-            connection_string = 'jdbc:hsqldb:mem:.' #'jdbc:hsqldb:hsql://%s/%s' % (self.hostname, self.db)
+            # 'jdbc:hsqldb:hsql://%s/%s' % (self.hostname, self.db)
+            connection_string = 'jdbc:hsqldb:mem:.'
             self.connector = jaydebeapi.connect(driver,
-                                        connection_string,
-                                        str(self.user),
-                                        str(self.password))
-        except Exception, msg:
+                                                connection_string,
+                                                str(self.user),
+                                                str(self.password))
+        except Exception as msg:
             raise SqlmapConnectionException(msg[0])
 
         self.initCursor()
@@ -60,8 +62,11 @@ class Connector(GenericConnector):
     def fetchall(self):
         try:
             return self.cursor.fetchall()
-        except Exception, msg:
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
+        except Exception as msg:
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[1])
             return None
 
     def execute(self, query):
@@ -70,8 +75,11 @@ class Connector(GenericConnector):
         try:
             self.cursor.execute(query)
             retVal = True
-        except Exception, msg: #todo fix with specific error
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
+        except Exception as msg:  # todo fix with specific error
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[1])
 
         self.connector.commit()
 
@@ -82,10 +90,12 @@ class Connector(GenericConnector):
 
         upper_query = query.upper()
 
-        if query and not (upper_query.startswith("SELECT ") or upper_query.startswith("VALUES ")):
+        if query and not (upper_query.startswith("SELECT ")
+                          or upper_query.startswith("VALUES ")):
             query = "VALUES %s" % query
 
-        if query and upper_query.startswith("SELECT ") and " FROM " not in upper_query:
+        if query and upper_query.startswith(
+                "SELECT ") and " FROM " not in upper_query:
             query = "%s FROM (VALUES(0))" % query
 
         self.cursor.execute(query)

@@ -69,9 +69,9 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         try:
             self.uri_opener.GET(url)
-        except HTTPRequestException, hre:
+        except HTTPRequestException as hre:
             self.assertEqual(hre.message, 'HTTP timeout error')
-        except Exception, e:
+        except Exception as e:
             msg = 'Not expecting: "%s"'
             self.assertTrue(False, msg % e.__class__.__name__)
         else:
@@ -79,7 +79,7 @@ class TestXUrllibTimeout(unittest.TestCase):
 
         end = time.time()
         self.uri_opener.settings.set_default_values()
-        self.assertLess(end-start, 1.5)
+        self.assertLess(end - start, 1.5)
 
     def test_timeout_ssl(self):
         ssl_daemon = RawSSLDaemon(TimeoutTCPHandler)
@@ -105,7 +105,7 @@ class TestXUrllibTimeout(unittest.TestCase):
         # some very relaxed handshake it needs to timeout a SSL protocol 3
         # connection which passes handshake phase but then fails to send/get
         # the headers
-        self.assertLess(end-start, 80)
+        self.assertLess(end - start, 80)
 
     def test_timeout_many(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
@@ -126,14 +126,14 @@ class TestXUrllibTimeout(unittest.TestCase):
         for _ in xrange(MAX_ERROR_COUNT):
             try:
                 self.uri_opener.GET(url)
-            except HTTPRequestException, hre:
+            except HTTPRequestException as hre:
                 http_request_e += 1
                 self.assertEqual(hre.message, 'HTTP timeout error')
             except ScanMustStopException:
                 scan_stop_e += 1
                 self.assertTrue(True)
                 break
-            except Exception, e:
+            except Exception as e:
                 msg = 'Not expecting: "%s"'
                 self.assertTrue(False, msg % e.__class__.__name__)
             else:
@@ -197,7 +197,8 @@ class TestXUrllibTimeout(unittest.TestCase):
         self.assertEqual(sent_requests, TIMEOUT_ADJUST_LIMIT)
 
     def test_timeout_parameter_overrides_global_timeout(self):
-        upper_daemon = UpperDaemon(Ok200SmallDelayWithLongTriggeredTimeoutHandler)
+        upper_daemon = UpperDaemon(
+            Ok200SmallDelayWithLongTriggeredTimeoutHandler)
         upper_daemon.start()
         upper_daemon.wait_for_start()
 
@@ -258,7 +259,8 @@ class Ok200SmallDelayHandler(SocketServer.BaseRequestHandler):
                              '\r\n' + self.body)
 
 
-class Ok200SmallDelayWithLongTriggeredTimeoutHandler(SocketServer.BaseRequestHandler):
+class Ok200SmallDelayWithLongTriggeredTimeoutHandler(
+        SocketServer.BaseRequestHandler):
     body = 'abc'
     regular_sleep = 0.1
     long_sleep = 7.0

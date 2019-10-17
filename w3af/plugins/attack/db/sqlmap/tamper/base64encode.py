@@ -12,8 +12,10 @@ from lib.core.settings import UNICODE_ENCODING
 
 __priority__ = PRIORITY.LOWEST
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -23,4 +25,5 @@ def tamper(payload, **kwargs):
     'MScgQU5EIFNMRUVQKDUpIw=='
     """
 
-    return base64.b64encode(payload.encode(UNICODE_ENCODING)) if payload else payload
+    return base64.b64encode(payload.encode(
+        UNICODE_ENCODING)) if payload else payload

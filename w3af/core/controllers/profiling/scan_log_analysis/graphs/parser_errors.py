@@ -47,14 +47,21 @@ def get_parser_errors_summary(scan_log_filename, scan):
 
 
 def draw_parser_errors(scan_log_filename, scan):
-    (timeout_count, timeout_errors, timeout_errors_timestamps,
-     memory_count, memory_errors, memory_errors_timestamps) = get_parser_errors_data(scan_log_filename, scan)
+    (timeout_count,
+     timeout_errors,
+     timeout_errors_timestamps,
+     memory_count,
+     memory_errors,
+     memory_errors_timestamps) = get_parser_errors_data(scan_log_filename,
+                                                        scan)
 
     first_timestamp = get_first_timestamp(scan)
     last_timestamp = get_last_timestamp(scan)
     spent_epoch = last_timestamp - first_timestamp
-    timeout_errors_timestamps = [ts - first_timestamp for ts in timeout_errors_timestamps]
-    memory_errors_timestamps = [ts - first_timestamp for ts in memory_errors_timestamps]
+    timeout_errors_timestamps = [
+        ts - first_timestamp for ts in timeout_errors_timestamps]
+    memory_errors_timestamps = [
+        ts - first_timestamp for ts in memory_errors_timestamps]
 
     if not memory_errors and not timeout_errors:
         print('No parser errors found')

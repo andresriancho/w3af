@@ -47,11 +47,12 @@ import w3af.core.data.kb.knowledge_base as kb
 RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"
 
-DB_VULN_NOT_FOUND = markdown('The detailed description for this vulnerability'
-                             ' is not available in our database, please'
-                             ' contribute to the open source'
-                             ' [vulndb/data project](https://github.com/vulndb/data)'
-                             ' to improve w3af\'s output.')
+DB_VULN_NOT_FOUND = markdown(
+    'The detailed description for this vulnerability'
+    ' is not available in our database, please'
+    ' contribute to the open source'
+    ' [vulndb/data project](https://github.com/vulndb/data)'
+    ' to improve w3af\'s output.')
 
 FILE = 'file:///'
 
@@ -100,7 +101,7 @@ class FullKBTree(KBTree):
         instance = self.get_instance(path)
         if not isinstance(instance, Info):
             return
-        
+
         summary = instance.get_desc()
         self.kbbrowser.explanation.set_text(summary)
         self.kbbrowser.vuln_notebook.set_current_page(0)
@@ -114,7 +115,8 @@ class FullKBTree(KBTree):
 
             self.kbbrowser.description.load_html_string(desc, FILE)
         else:
-            self.kbbrowser.description.load_html_string(DB_VULN_NOT_FOUND, FILE)
+            self.kbbrowser.description.load_html_string(
+                DB_VULN_NOT_FOUND, FILE)
 
         if not instance.get_id():
             self.clear_request_response_viewer()
@@ -155,7 +157,7 @@ class FullKBTree(KBTree):
                 # from disk and if they aren't there an exception will rise
                 history_item.request
                 history_item.response
-            except IOError, ioe:
+            except IOError as ioe:
                 self._show_message(_('Error'), str(ioe))
                 return
 
@@ -201,6 +203,7 @@ class KBBrowser(entries.RememberingHPaned):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         super(KBBrowser, self).__init__(w3af, "pane-kbbrowser", 250)
 
@@ -283,7 +286,8 @@ class KBBrowser(entries.RememberingHPaned):
         summary_tv.show()
 
         summary_scrollwin = gtk.ScrolledWindow()
-        summary_scrollwin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        summary_scrollwin.set_policy(
+            gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         summary_scrollwin.add_with_viewport(summary_tv)
         summary_scrollwin.show()
 
@@ -338,7 +342,7 @@ class KBBrowser(entries.RememberingHPaned):
             request_id = self.req_res_ids[page]
             try:
                 historyItem = self._historyItem.read(request_id)
-            except:
+            except BaseException:
                 # the request brought problems
                 self.rrV.request.clear_panes()
                 self.rrV.response.clear_panes()
@@ -356,6 +360,7 @@ class URLsGraph(gtk.VBox):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         super(URLsGraph, self).__init__()
         self.w3af = w3af
@@ -407,10 +412,10 @@ class URLsGraph(gtk.VBox):
         new_widget = WrappedDotWidget()
         self._somethingnew = False
         dotcode = "graph G {%s}" % "\n".join(self.nodos_code)
-        
+
         try:
             new_widget.set_dotcode(dotcode)
-        except ValueError, ve:
+        except ValueError as ve:
             msg = ('A ValueError exception with message "%s" was found while'
                    ' trying to render a new dotcode. Please create a new'
                    ' bug report at %s including the following info:\n\n%s')
@@ -486,6 +491,7 @@ class URLsTree(gtk.TreeView):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, grapher):
         self.w3af = w3af
         self.grapher = grapher
@@ -559,13 +565,13 @@ class URLsTree(gtk.TreeView):
             nodes.insert(0, ini)
             nodes.append(end)
             parts = [x for x in nodes if x]
-            
+
             self._insertNodes(None, parts, self.treeholder, 1)
 
             # TODO: Automatically sort after each insertion
             # Order the treeview
             self.treestore.sort_column_changed()
-        
+
         return True
 
     def _insertNodes(self, parent, parts, holder, rec_cntr):
@@ -662,6 +668,7 @@ class ScanRunBody(gtk.Notebook):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         super(ScanRunBody, self).__init__()
         self.w3af = w3af

@@ -63,17 +63,51 @@ class find_dvcs(CrawlPlugin):
         self._analyzed_dirs = ScalableBloomFilter()
         self._analyzed_filenames = ScalableBloomFilter()
 
-        self._dvcs = [DVCSTest('.git/index', 'git repository', self.git_index),
-                      DVCSTest('.gitignore', 'git ignore', self.ignore_file),
-                      DVCSTest('.hg/dirstate', 'hg repository', self.hg_dirstate),
-                      DVCSTest('.hgignore', 'hg ignore', self.ignore_file),
-                      DVCSTest('.bzr/checkout/dirstate', 'bzr repository', self.bzr_checkout_dirstate),
-                      DVCSTest('.bzrignore', 'bzr ignore', self.ignore_file),
-                      DVCSTest('.svn/entries', 'svn repository', self.svn_entries),
-                      DVCSTest('.svn/wc.db', 'svn repository db', self.svn_wc_db),
-                      DVCSTest('.svnignore', 'svn ignore', self.ignore_file),
-                      DVCSTest('CVS/Entries', 'cvs repository', self.cvs_entries),
-                      DVCSTest('.cvsignore', 'cvs ignore', self.ignore_file)]
+        self._dvcs = [
+            DVCSTest(
+                '.git/index',
+                'git repository',
+                self.git_index),
+            DVCSTest(
+                '.gitignore',
+                'git ignore',
+                self.ignore_file),
+            DVCSTest(
+                '.hg/dirstate',
+                'hg repository',
+                self.hg_dirstate),
+            DVCSTest(
+                '.hgignore',
+                'hg ignore',
+                self.ignore_file),
+            DVCSTest(
+                '.bzr/checkout/dirstate',
+                'bzr repository',
+                self.bzr_checkout_dirstate),
+            DVCSTest(
+                '.bzrignore',
+                'bzr ignore',
+                self.ignore_file),
+            DVCSTest(
+                '.svn/entries',
+                'svn repository',
+                self.svn_entries),
+            DVCSTest(
+                '.svn/wc.db',
+                'svn repository db',
+                self.svn_wc_db),
+            DVCSTest(
+                '.svnignore',
+                'svn ignore',
+                self.ignore_file),
+            DVCSTest(
+                'CVS/Entries',
+                'cvs repository',
+                self.cvs_entries),
+            DVCSTest(
+                '.cvsignore',
+                'cvs ignore',
+                self.ignore_file)]
 
     def crawl(self, fuzzable_request, debugging_id):
         """
@@ -160,7 +194,7 @@ class find_dvcs(CrawlPlugin):
 
         try:
             filenames = repo_get_files(http_response.get_raw_body())
-        except Exception, e:
+        except Exception as e:
             # We get here when the HTTP response is NOT a 404, but the response
             # body couldn't be properly parsed. This is usually because of a false
             # positive in the is_404 function, OR a new version-format of the file
@@ -168,7 +202,9 @@ class find_dvcs(CrawlPlugin):
             #
             # Log in order to be able to improve the framework.
             args = (e, repo_get_files.__name__, repo_url)
-            om.out.debug('Got a "%s" exception while running "%s" on "%s"' % args)
+            om.out.debug(
+                'Got a "%s" exception while running "%s" on "%s"' %
+                args)
             return
 
         parsed_url_set = set()
@@ -359,9 +395,10 @@ class find_dvcs(CrawlPlugin):
         temp_db_fh.write(body)
         temp_db_fh.close()
 
-        query = ('SELECT local_relpath, '
-                 ' ".svn/pristine/" || substr(checksum,7,2) || "/" || substr(checksum,7) || ".svn-base" AS svn'
-                 ' FROM NODES WHERE kind="file"')
+        query = (
+            'SELECT local_relpath, '
+            ' ".svn/pristine/" || substr(checksum,7,2) || "/" || substr(checksum,7) || ".svn-base" AS svn'
+            ' FROM NODES WHERE kind="file"')
 
         try:
             conn = sqlite3.connect(temp_db.name)
@@ -373,7 +410,7 @@ class find_dvcs(CrawlPlugin):
             for path, svn_path in query_result:
                 filenames.add(path)
                 filenames.add(svn_path)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to extract filenames from wc.db file. The exception was: "%s"'
             args = (e,)
             om.out.debug(msg % args)

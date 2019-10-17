@@ -13,8 +13,10 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.HIGH
 
+
 def dependencies():
     pass
+
 
 def tamper(payload, **kwargs):
     """
@@ -36,8 +38,12 @@ def tamper(payload, **kwargs):
     warnMsg += "tamper script '%s'" % os.path.basename(__file__).split(".")[0]
     singleTimeWarnMessage(warnMsg)
 
-    match = re.search(r"(?i)MID\((.+?)\s*,\s*(\d+)\s*\,\s*(\d+)\s*\)", payload or "")
+    match = re.search(
+        r"(?i)MID\((.+?)\s*,\s*(\d+)\s*\,\s*(\d+)\s*\)",
+        payload or "")
     if match:
-        retVal = retVal.replace(match.group(0), "MID(%s FROM %s FOR %s)" % (match.group(1), match.group(2), match.group(3)))
+        retVal = retVal.replace(
+            match.group(0), "MID(%s FROM %s FOR %s)" %
+            (match.group(1), match.group(2), match.group(3)))
 
     return retVal

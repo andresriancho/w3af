@@ -42,6 +42,7 @@ class FormIDMatcherList(object):
 
     :see: https://github.com/andresriancho/w3af/issues/15161
     """
+
     def __init__(self, form_id_list_as_str):
         """
         :param form_id_list_as_str: The form ids as a string. This comes from
@@ -75,4 +76,3 @@ class FormIDMatcherList(object):
 
     def __str__(self):
         return self.to_json()
-

@@ -53,7 +53,7 @@ class URLEncodedForm(Form):
     def can_parse(post_data):
         try:
             parse_qs(post_data)
-        except:
+        except BaseException:
             return False
         else:
             return True
@@ -99,4 +99,3 @@ class URLEncodedForm(Form):
 
     def get_type(self):
         return 'URL encoded form'
-

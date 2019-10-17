@@ -40,7 +40,7 @@ class ImprovedMozillaCookieJar(MozillaCookieJar):
             raise LoadError(msg % filename)
 
         try:
-            while 1:
+            while True:
                 line = f.readline()
                 if line == "":
                     break
@@ -75,18 +75,20 @@ class ImprovedMozillaCookieJar(MozillaCookieJar):
 
                 if domain_specified != initial_dot:
                     if domain_specified:
-                        msg = ('The second tab delimited field (domain_specified) is'
-                               ' set to %s and the domain does NOT start with a dot (%s).'
-                               ' This is not acceptable by the Mozilla Cookie format.'
-                               ' Issue found at %s: %s')
+                        msg = (
+                            'The second tab delimited field (domain_specified) is'
+                            ' set to %s and the domain does NOT start with a dot (%s).'
+                            ' This is not acceptable by the Mozilla Cookie format.'
+                            ' Issue found at %s: %s')
                         args = (domain_specified, domain, filename, line)
                         raise LoadError(msg % args)
 
                     else:
-                        msg = ('The second tab delimited field (domain_specified) is'
-                               ' set to %s and the domain starts with a dot (%s).'
-                               ' This is not acceptable by the Mozilla Cookie format.'
-                               ' Issue found at %s: %s')
+                        msg = (
+                            'The second tab delimited field (domain_specified) is'
+                            ' set to %s and the domain starts with a dot (%s).'
+                            ' This is not acceptable by the Mozilla Cookie format.'
+                            ' Issue found at %s: %s')
                         args = (domain_specified, domain, filename, line)
                         raise LoadError(msg % args)
 
@@ -116,4 +118,6 @@ class ImprovedMozillaCookieJar(MozillaCookieJar):
             raise
         except Exception:
             _warn_unhandled_exception()
-            raise LoadError("invalid Netscape format cookies file %r: %r" % (filename, line))
+            raise LoadError(
+                "invalid Netscape format cookies file %r: %r" %
+                (filename, line))

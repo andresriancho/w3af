@@ -33,11 +33,12 @@ class TestGTKOutput(unittest.TestCase):
 
     def test_gtk_output(self):
         messages = []
+
         def observer(message):
             messages.append((message.get_type(), message.get_msg()))
-            
+
         self.gtk_output.subscribe(observer)
-        
+
         self.gtk_output.console('1')
         self.gtk_output.information('2')
         self.gtk_output.vulnerability('3')
@@ -52,7 +53,7 @@ class TestGTKOutput(unittest.TestCase):
             ('console', '1'),
             ('information', '2'),
             ('vulnerability', '3'),
-            ('debug', ''), # Note that this empty string is correct
+            ('debug', ''),  # Note that this empty string is correct
             ('error', '5'), ]
         )
 

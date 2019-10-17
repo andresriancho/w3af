@@ -48,6 +48,7 @@ class html_file(OutputPlugin):
 
     :author: Andres Riancho ((andres.riancho@gmail.com))
     """
+
     def __init__(self):
         OutputPlugin.__init__(self)
 
@@ -184,7 +185,8 @@ class html_file(OutputPlugin):
 
         enabled_plugins = self._enabled_plugins
         findings = kb.kb.get_all_findings_iter()
-        debug_log = ((t, l, smart_unicode(m)) for (t, l, m) in self._additional_info)
+        debug_log = ((t, l, smart_unicode(m))
+                     for (t, l, m) in self._additional_info)
         known_urls = kb.kb.get_all_known_urls()
 
         context = {'target_urls': target_urls,
@@ -208,7 +210,8 @@ class html_file(OutputPlugin):
         :param context: A dict containing target urls, enabled plugins, etc.
         :return: True on successful rendering
         """
-        severity_icon = functools.partial(get_severity_icon, self.template_root)
+        severity_icon = functools.partial(
+            get_severity_icon, self.template_root)
 
         env_config = {'undefined': StrictUndefined,
                       'trim_blocks': True,

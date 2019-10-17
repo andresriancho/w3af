@@ -27,7 +27,6 @@ from w3af.core.controllers.misc.which import which
 class TestWhich(unittest.TestCase):
     def test_which_simple(self):
         python_executables = which('python')
-        
+
         for exec_name in python_executables:
             self.assertTrue(exec_name.endswith('python'))
-        

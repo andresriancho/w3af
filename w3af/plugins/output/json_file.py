@@ -48,13 +48,16 @@ class json_file(OutputPlugin):
         OutputPlugin.__init__(self)
         self.output_file = '~/output-w3af.json'
         self._timestamp = str(int(time.time()))
-        self._long_timestamp = str(time.strftime(TIME_FORMAT, time.localtime()))
+        self._long_timestamp = str(
+            time.strftime(
+                TIME_FORMAT,
+                time.localtime()))
 
         # Set defaults for scan metadata
         self._plugins_dict = {}
-        self._options_dict = {}        
-        self._enabled_plugins = {}        
-    
+        self._options_dict = {}
+        self._enabled_plugins = {}
+
     def do_nothing(self, *args, **kwargs):
         pass
 
@@ -76,7 +79,7 @@ class json_file(OutputPlugin):
         """
         # TODO: Improve so it contains the plugin configuration too
         for plugin_type, enabled in plugins_dict.iteritems():
-            self._enabled_plugins[plugin_type] = enabled        
+            self._enabled_plugins[plugin_type] = enabled
 
     def flush(self):
         """
@@ -87,7 +90,7 @@ class json_file(OutputPlugin):
 
         try:
             output_handler = file(self.output_file, 'wb')
-        except IOError, ioe:
+        except IOError as ioe:
             msg = 'Failed to open the output file for writing: "%s"'
             om.out.error(msg % ioe)
             return
@@ -106,26 +109,39 @@ class json_file(OutputPlugin):
             except AttributeError:
                 return None
 
-        findings = filter(None, [_get_desc(x) for x in kb.kb.get_all_findings_iter()])
+        findings = filter(None, [_get_desc(x)
+                                 for x in kb.kb.get_all_findings_iter()])
         known_urls = [str(x) for x in kb.kb.get_all_known_urls()]
-                        
+
         items = []
         for info in kb.kb.get_all_findings_iter():
             try:
-                item = {"Severity": info.get_severity(),
-                        "Name": info.get_name(),
-                        "HTTP method": info.get_method(),
-                        "URL": str(info.get_url()),
-                        "Vulnerable parameter": info.get_token_name(),
-                        "POST data": base64.b64encode(info.get_mutant().get_data()),
-                        "Vulnerability IDs": info.get_id(),
-                        "CWE IDs": getattr(info, "cwe_ids", []),
-                        "WASC IDs": getattr(info, "wasc_ids", []),
-                        "Tags": getattr(info, "tags", []),
-                        "VulnDB ID": info.get_vulndb_id(),
-                        "Description": info.get_desc()}
+                item = {
+                    "Severity": info.get_severity(),
+                    "Name": info.get_name(),
+                    "HTTP method": info.get_method(),
+                    "URL": str(
+                        info.get_url()),
+                    "Vulnerable parameter": info.get_token_name(),
+                    "POST data": base64.b64encode(
+                        info.get_mutant().get_data()),
+                    "Vulnerability IDs": info.get_id(),
+                    "CWE IDs": getattr(
+                        info,
+                        "cwe_ids",
+                        []),
+                    "WASC IDs": getattr(
+                        info,
+                        "wasc_ids",
+                        []),
+                    "Tags": getattr(
+                        info,
+                        "tags",
+                        []),
+                    "VulnDB ID": info.get_vulndb_id(),
+                    "Description": info.get_desc()}
                 items.append(item)
-            except Exception, e:
+            except Exception as e:
                 msg = ('An exception was raised while trying to write the '
                        ' vulnerabilities to the output file. Exception: "%s"')
                 om.out.error(msg % e)
@@ -152,7 +168,7 @@ class json_file(OutputPlugin):
         """
         return """
         This plugin exports all identified vulnerabilities to a JSON file.
-        
+
         Each report contains information about the scan
           * w3af-version
           * Start time
@@ -161,7 +177,7 @@ class json_file(OutputPlugin):
           * Target URLs
           * Target domain
           * Findings
-        
+
         Each finding in the sequence contains the following fields:
           * Severity
           * Name
@@ -176,12 +192,12 @@ class json_file(OutputPlugin):
           * VulnDB ID
           * Severity
           * Description
-            
+
         The JSON plugin should be used for quick and easy integrations with w3af,
         external tools which require more details, such as the HTTP request and
         response associated with each vulnerability, should use the xml_file
         output plugin.
-        
+
         One configurable parameter exists:
             - output_file
         """
@@ -206,4 +222,4 @@ class json_file(OutputPlugin):
         o = opt_factory('output_file', self.output_file, d, OUTPUT_FILE)
         ol.add(o)
 
-        return ol    
+        return ol

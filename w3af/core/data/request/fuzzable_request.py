@@ -460,7 +460,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             raise TypeError('headers should not be null')
 
         if not isinstance(headers, collections.Iterable):
-            raise TypeError(TYPE_ERROR % ('_force_fuzzing_headers', 'iterable'))
+            raise TypeError(
+                TYPE_ERROR %
+                ('_force_fuzzing_headers', 'iterable'))
 
         self._force_fuzzing_headers = set(headers)
 
@@ -480,7 +482,9 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             raise TypeError('url_parts should not be null')
 
         if not isinstance(url_parts, collections.Iterable):
-            raise TypeError(TYPE_ERROR % ('_force_fuzzing_url_parts', 'iterable'))
+            raise TypeError(
+                TYPE_ERROR %
+                ('_force_fuzzing_url_parts', 'iterable'))
 
         self._force_fuzzing_url_parts = tuple(url_parts)
 

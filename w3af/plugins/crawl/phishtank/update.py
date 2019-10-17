@@ -55,10 +55,14 @@ class PhishTankHandler(object):
         </status>
     </entry>
     """
+
     def __init__(self, output_csv_file):
         self.output_csv_file = output_csv_file
-        self.entry_writer = csv.writer(output_csv_file, delimiter=' ',
-                                       quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        self.entry_writer = csv.writer(
+            output_csv_file,
+            delimiter=' ',
+            quotechar='|',
+            quoting=csv.QUOTE_MINIMAL)
 
         self.url = u''
         self.phish_detail_url = u''
@@ -133,13 +137,13 @@ def convert_xml_to_csv():
         #
         # <?xml version="1.0" encoding="utf-8"?>
         phishtank_db_fd = file(XML_DB_FILE, 'r')
-    except Exception, e:
+    except Exception as e:
         msg = 'Failed to open XML phishtank database: "%s", exception: "%s".'
         sys.exit(msg % (XML_DB_FILE, e))
 
     try:
         output_csv_file = file(CSV_DB_FILE, 'w')
-    except Exception, e:
+    except Exception as e:
         msg = 'Failed to open CSV phishtank database: "%s", exception: "%s".'
         sys.exit(msg % (CSV_DB_FILE, e))
 
@@ -150,7 +154,7 @@ def convert_xml_to_csv():
 
     try:
         etree.parse(phishtank_db_fd, parser)
-    except Exception, e:
+    except Exception as e:
         msg = 'XML parsing error in phishtank DB, exception: "%s".'
         sys.exit(msg % e)
 

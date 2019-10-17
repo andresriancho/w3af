@@ -37,11 +37,12 @@ from w3af.core.data.url.handlers.keepalive import URLTimeoutError
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
-from w3af.core.data.misc.web_encodings import (URL_ENCODING_FUNCTIONS,
-                                               HTML_ENCODING_FUNCTIONS,
-                                               JSON_ENCODING_FUNCTIONS,
-                                               generate_html_encoding_functions,
-                                               generate_url_encoding_functions)
+from w3af.core.data.misc.web_encodings import (
+    URL_ENCODING_FUNCTIONS,
+    HTML_ENCODING_FUNCTIONS,
+    JSON_ENCODING_FUNCTIONS,
+    generate_html_encoding_functions,
+    generate_url_encoding_functions)
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 
@@ -60,7 +61,7 @@ NO_CONTENT_MSG = 'No Content'
 def new_no_content_resp(uri, add_id=False):
     """
     Return a new NO_CONTENT HTTPResponse object.
-    
+
     :param uri: URI string or request object
     :param add_id: Add ID to the HTTP response
     """
@@ -315,9 +316,8 @@ def get_clean_body_impl(body, strings_to_replace_list, multi_encode=True,
 
             # Note that we also do something similar with the max_len=body_len
             # parameter we send to apply_multi_escape_table
-            for encoded_to_repl in apply_multi_escape_table(unicode_to_repl,
-                                                            max_len=body_len,
-                                                            max_count=max_escape_count):
+            for encoded_to_repl in apply_multi_escape_table(
+                    unicode_to_repl, max_len=body_len, max_count=max_escape_count):
                 encoded_payloads.add(encoded_to_repl)
     else:
         # Just leave the the two we have
@@ -329,7 +329,8 @@ def get_clean_body_impl(body, strings_to_replace_list, multi_encode=True,
     encoded_payloads = [i.lower() for i in encoded_payloads]
 
     for to_replace in encoded_payloads:
-        body, body_lower = remove_using_lower_case(body, body_lower, to_replace)
+        body, body_lower = remove_using_lower_case(
+            body, body_lower, to_replace)
 
     return body
 

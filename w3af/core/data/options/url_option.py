@@ -39,12 +39,12 @@ class URLOption(BaseOption):
         """
         if isinstance(value, URL):
             value = value.url_string
-            
+
         self._value = self.validate(value)
 
     def validate(self, value):
         try:
             return URL(value)
-        except Exception, e:
+        except Exception as e:
             msg = 'Invalid URL configured by user, error: %s.' % e
             raise BaseFrameworkException(msg)

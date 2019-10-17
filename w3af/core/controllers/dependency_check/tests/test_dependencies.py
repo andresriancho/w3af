@@ -14,5 +14,5 @@ class TestDependenciesInstalled(unittest.TestCase):
                    "dependency_check import dependency_check; dependency_check()'"
         try:
             subprocess.check_output(shlex.split(DEPS_CMD % sys.executable))
-        except subprocess.CalledProcessError, cpe:
+        except subprocess.CalledProcessError as cpe:
             self.assertEqual(False, True, cpe.output)

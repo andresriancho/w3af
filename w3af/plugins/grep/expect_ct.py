@@ -26,11 +26,13 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 ECT_HEADER = 'Expect-CT'
 MAX_REPORTS = 50
 
+
 class expect_ct(GrepPlugin):
     """
     Check if HTTPS responses have the Expect-CT header set.
 
     """
+
     def __init__(self):
         super(expect_ct, self).__init__()
         self._reports = 0
@@ -46,8 +48,7 @@ class expect_ct(GrepPlugin):
 
         if self._reports > MAX_REPORTS:
             return
-        
-        
+
         if request.get_url().get_protocol() != 'https':
             return
 
@@ -90,6 +91,3 @@ class ECTInfoSet(InfoSet):
         ' - {{ url }}\n'
         '{% endfor %}'
     )
-
-
-

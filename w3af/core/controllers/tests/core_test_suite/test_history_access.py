@@ -27,14 +27,15 @@ class TestHistoryAccess(CountTestMixin):
     """
     Test that we're able to access the HTTP request and response History after
     the scan has finished.
-    
+
     @see: Inherit from TestW3afCorePause to get the nice setUp().
     """
+
     def test_history_access(self):
         self.count_plugin.loops = 1
         self.w3afcore.start()
-        
-        history_item = HistoryItem() 
+
+        history_item = HistoryItem()
         self.assertTrue(history_item.load(1))
         self.assertEqual(history_item.id, 1)
         self.assertEqual(history_item.get_request().get_uri().url_string,

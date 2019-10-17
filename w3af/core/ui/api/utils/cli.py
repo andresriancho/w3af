@@ -52,8 +52,9 @@ def parse_arguments():
     Parses the command line arguments
     :return: The parse result from argparse
     """
-    parser = argparse.ArgumentParser(description='REST API for w3af',
-                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description='REST API for w3af',
+        formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument('host:port', action='store',
                         help='Specify address where the REST API will listen'
@@ -67,13 +68,14 @@ def parse_arguments():
                         action="store_true",
                         help="Disable SSL support")
 
-    parser.add_argument('-c',
-                        default=False,
-                        dest='config_file',
-                        type=argparse.FileType('r'),
-                        help='Path to a config file in YAML format. At minimum,'
-                             ' either this OR the "-p" (password) option MUST'
-                             ' be provided.')
+    parser.add_argument(
+        '-c',
+        default=False,
+        dest='config_file',
+        type=argparse.FileType('r'),
+        help='Path to a config file in YAML format. At minimum,'
+        ' either this OR the "-p" (password) option MUST'
+        ' be provided.')
 
     opts = parser.add_argument_group('server options',
                                      'Server options can be specified here or'
@@ -108,8 +110,9 @@ def parse_arguments():
     try:
         args.host, args.port = getattr(args, 'host:port').split(':')
     except ValueError:
-        raise argparse.ArgumentTypeError('Please specify a valid host and port'
-                                         ' as HOST:PORT (eg "127.0.0.1:5000").')
+        raise argparse.ArgumentTypeError(
+            'Please specify a valid host and port'
+            ' as HOST:PORT (eg "127.0.0.1:5000").')
     except AttributeError:
         # Expect AttributeError if host_port was not entered
         pass
@@ -128,21 +131,22 @@ def process_cmd_args_config(app):
     if args.config_file:
         try:
             yaml_conf = yaml.safe_load(args.config_file)
-        except:
+        except BaseException:
             file.close(args.config_file)
-            raise ArgumentTypeError('Error loading config file %s. Please check'
-                                    ' it exists and is a valid YAML file.'
-                                    % args.config_file.name)
+            raise ArgumentTypeError(
+                'Error loading config file %s. Please check'
+                ' it exists and is a valid YAML file.' %
+                args.config_file.name)
 
         for k in yaml_conf:
             if type(yaml_conf[k]).__name__ not in ['str', 'int', 'bool']:
                 pass
             elif k.lower() in vars(args) and vars(args)[k.lower()]:
-                raise ArgumentTypeError('Error: you appear to have specified'
-                                        ' options in the config file and on the'
-                                        ' command line. Please resolve any'
-                                        ' conflicting options and try again: %s'
-                                        % k)
+                raise ArgumentTypeError(
+                    'Error: you appear to have specified'
+                    ' options in the config file and on the'
+                    ' command line. Please resolve any'
+                    ' conflicting options and try again: %s' % k)
             else:
                 # Flask contains a number of built-in server options that can
                 # also be modified by setting them in the config YAML:
@@ -158,25 +162,26 @@ def process_cmd_args_config(app):
             app.config[i.upper()] = vars(args)[i]
 
     for k in DEFAULTS:
-        if not k in app.config:
+        if k not in app.config:
             app.config[k] = DEFAULTS[k]
 
     if 'PASSWORD' in app.config:
         try:
             # Check password has been specified and is a 512-bit hex string
             # (ie, that it looks like a SHA512 hash)
-            int(app.config['PASSWORD'], 16) and len(app.config['PASSWORD']) == 128
-        except:
+            int(app.config['PASSWORD'], 16) and len(
+                app.config['PASSWORD']) == 128
+        except BaseException:
             raise ArgumentTypeError('Error: Please specify a valid'
                                     ' SHA512-hashed plaintext as password,'
                                     ' either inside a config file with "-c" or'
                                     ' using the "-p" flag.')
 
-    app.config['HOST'], app.config['PORT'] = parse_host_port(app.config['HOST'],
-                                                             app.config['PORT'])
+    app.config['HOST'], app.config['PORT'] = parse_host_port(
+        app.config['HOST'], app.config['PORT'])
 
     if (app.config['HOST'] != '127.0.0.1' and
-        app.config['HOST'] != 'localhost'):
+            app.config['HOST'] != 'localhost'):
 
         print('')
         if 'PASSWORD' not in app.config:
@@ -189,9 +194,10 @@ def process_cmd_args_config(app):
                   ' "-p <SHA512 hash>") or in a configuration file.\n')
 
         if app.config['DISABLE_SSL']:
-            print('WARNING! Traffic to this API is not encrypted and could be'
-                  ' sniffed. Please consider using an SSL-enabled proxy such as'
-                  ' nginx, or removing --no-ssl from the command line.\n')
+            print(
+                'WARNING! Traffic to this API is not encrypted and could be'
+                ' sniffed. Please consider using an SSL-enabled proxy such as'
+                ' nginx, or removing --no-ssl from the command line.\n')
         else:
             print('WARNING! Traffic to this API is encrypted using self-signed'
                   ' certificates.\n')

@@ -164,10 +164,10 @@ class error_pages(GrepPlugin):
         """
         if not response.is_text_or_html():
             return
-        
+
         self.find_error_page(request, response)
         self.find_version_numbers(request, response)
-    
+
     def find_error_page(self, request, response):
         # There is no need to report more than one info for the
         # same result, the user will read the info object and
@@ -224,7 +224,11 @@ class error_pages(GrepPlugin):
                     ' vulnerabilities for this issue type was reached'
                     ' and no more issues will be reported.')
 
-            i = Info('Multiple descriptive error pages', desc, [], self.get_name())
+            i = Info(
+                'Multiple descriptive error pages',
+                desc,
+                [],
+                self.get_name())
             self.kb_append_uniq(self, 'error_page', i)
 
         return True
@@ -273,10 +277,10 @@ class error_pages(GrepPlugin):
                     i.set_url(response.get_url())
                     i.add_to_highlight(server)
                     i.add_to_highlight(match_string)
-                    
+
                     kb.kb.append(self, 'server', i)
                     kb.kb.raw_write(self, 'server', match_string)
-                    
+
                     self._already_reported_versions.append(match_string)
 
     def get_long_desc(self):

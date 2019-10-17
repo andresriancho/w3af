@@ -52,6 +52,7 @@ class URLTimeoutError(urllib2.URLError):
     """
     Our own URLError timeout exception. Basically a wrapper for socket.timeout.
     """
+
     def __init__(self):
         urllib2.URLError.__init__(self, (408, 'timeout'))
 
@@ -186,8 +187,9 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, reason='socket error')
             raise
 
-        except Exception, e:
-            # We better discard this connection, we don't even know what happen!
+        except Exception as e:
+            # We better discard this connection, we don't even know what
+            # happen!
             reason = 'unexpected exception "%s"' % e
             self._cm.remove_connection(conn, reason=reason)
             raise
@@ -214,8 +216,9 @@ class KeepAliveHandler(object):
             # https://github.com/andresriancho/w3af/issues/2074
             self._cm.remove_connection(conn, reason='http connection died')
             raise HTTPRequestException('The HTTP connection died')
-        except Exception, e:
-            # We better discard this connection, we don't even know what happen!
+        except Exception as e:
+            # We better discard this connection, we don't even know what
+            # happen!
             reason = 'unexpected exception while reading "%s"' % e
             self._cm.remove_connection(conn, reason=reason)
             raise
@@ -265,17 +268,17 @@ class KeepAliveHandler(object):
             resp = conn.getresponse()
             # note: just because we got something back doesn't mean it
             # worked.  We'll check the version below, too.
-        except (socket.error, httplib.HTTPException), e:
+        except (socket.error, httplib.HTTPException) as e:
             self._cm.remove_connection(conn, reason='socket error')
             resp = None
             reason = e
-        except OpenSSL.SSL.ZeroReturnError, e:
+        except OpenSSL.SSL.ZeroReturnError as e:
             # According to the pyOpenSSL docs ZeroReturnError means that the
             # SSL connection has been closed cleanly
             self._cm.remove_connection(conn, reason='ZeroReturnError')
             resp = None
             reason = e
-        except OpenSSL.SSL.SysCallError, e:
+        except OpenSSL.SSL.SysCallError as e:
             # Not sure why we're getting this exception when trying to reuse a
             # connection (but not when doing the initial request). So we just
             # ignore the exception and go on.
@@ -285,7 +288,7 @@ class KeepAliveHandler(object):
             self._cm.remove_connection(conn, reason='OpenSSL.SSL.SysCallError')
             resp = None
             reason = e
-        except Exception, e:
+        except Exception as e:
             # adding this block just in case we've missed something we will
             # still raise the exception, but lets try and close the connection
             # and remove it first.  We previously got into a nasty loop where
@@ -430,7 +433,9 @@ class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
         return self.do_open(req)
 
     def get_connection(self, request):
-        return HTTPConnection(request.get_host(), timeout=request.get_timeout())
+        return HTTPConnection(
+            request.get_host(),
+            timeout=request.get_timeout())
 
 
 class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
@@ -441,7 +446,7 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         self._proxy = proxy
         try:
             host, port = self._proxy.split(':')
-        except:
+        except BaseException:
             msg = ('The proxy you are specifying (%s) is invalid! The expected'
                    ' format is <ip_address>:<port> is expected.')
             raise BaseFrameworkException(msg % proxy)
@@ -462,6 +467,3 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         else:
             return HTTPSConnection(request.get_host(),
                                    timeout=request.get_timeout())
-
-
-

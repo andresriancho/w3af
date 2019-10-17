@@ -39,23 +39,23 @@ from .elementaryOS02 import ElementaryOS02
 from .default import DefaultPlatform
 
 KNOWN_PLATFORMS = [
-                   CentOS65,
-                   CentOS,
-                   Debian76,
-                   Debian78,
-                   Debian80,
-                   ElementaryOS02,
-                   Fedora,
-                   Kali,
-                   Kali2,
-                   MacOSX,
-                   OpenBSD5,
-                   SuSE,
-                   Ubuntu1204,
-                   Ubuntu1404,
-                   Ubuntu1410,
-                   Ubuntu1604,
-                   Ubuntu1804
+    CentOS65,
+    CentOS,
+    Debian76,
+    Debian78,
+    Debian80,
+    ElementaryOS02,
+    Fedora,
+    Kali,
+    Kali2,
+    MacOSX,
+    OpenBSD5,
+    SuSE,
+    Ubuntu1204,
+    Ubuntu1404,
+    Ubuntu1410,
+    Ubuntu1604,
+    Ubuntu1804
 ]
 
 

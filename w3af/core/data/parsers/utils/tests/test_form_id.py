@@ -55,7 +55,9 @@ class TestFormID(unittest.TestCase):
         loaded_form_id = json.loads(form_id_json)
 
         self.assertEqual(loaded_form_id['action'], form_id.action.get_path())
-        self.assertEqual(loaded_form_id['hosted_at_url'], form_id.hosted_at_url.get_path())
+        self.assertEqual(
+            loaded_form_id['hosted_at_url'],
+            form_id.hosted_at_url.get_path())
         self.assertEqual(loaded_form_id['inputs'], form_id.inputs)
         self.assertEqual(loaded_form_id['attributes'], form_id.attributes)
         self.assertEqual(loaded_form_id['method'], form_id.method)
@@ -178,8 +180,11 @@ class TestFormID(unittest.TestCase):
     def test_not_match_hosted_at_regex(self):
         user_configured_json = {'hosted_at_url': '/products/.*'}
         form_matcher = self.create_form_matcher(user_configured_json)
-        found_form_id = FormID(hosted_at_url=URL('http://w3af.org/another/product-132'),
-                               inputs=['comment', 'submit'])
+        found_form_id = FormID(
+            hosted_at_url=URL('http://w3af.org/another/product-132'),
+            inputs=[
+                'comment',
+                'submit'])
 
         match = found_form_id.matches(form_matcher)
 
@@ -237,11 +242,15 @@ class TestFormID(unittest.TestCase):
         user_value = '[{"action": "/foo", "method": "post"}, {"action": "/products/product-.*", "method": "get"}]'
         form_list = FormIDMatcherList(user_value)
 
-        found_form_id = FormID(action=URL('http://w3af.org/products/product-132'),
-                               inputs=['comment', 'submit'],
-                               hosted_at_url=self.HOSTED_AT_URL,
-                               method='post',
-                               attributes={'class': 'comment-css'})
+        found_form_id = FormID(
+            action=URL('http://w3af.org/products/product-132'),
+            inputs=[
+                'comment',
+                'submit'],
+            hosted_at_url=self.HOSTED_AT_URL,
+            method='post',
+            attributes={
+                'class': 'comment-css'})
 
         match = found_form_id.matches_one_of(form_list)
 
@@ -251,11 +260,15 @@ class TestFormID(unittest.TestCase):
         user_value = '[{"action": "/foo", "method": "post"}, {"action": "/products/product-.*", "method": "get"}]'
         form_list = FormIDMatcherList(user_value)
 
-        found_form_id = FormID(action=URL('http://w3af.org/products/product-132'),
-                               inputs=['comment', 'submit'],
-                               hosted_at_url=self.HOSTED_AT_URL,
-                               method='get',
-                               attributes={'class': 'comment-css'})
+        found_form_id = FormID(
+            action=URL('http://w3af.org/products/product-132'),
+            inputs=[
+                'comment',
+                'submit'],
+            hosted_at_url=self.HOSTED_AT_URL,
+            method='get',
+            attributes={
+                'class': 'comment-css'})
 
         match = found_form_id.matches_one_of(form_list)
 

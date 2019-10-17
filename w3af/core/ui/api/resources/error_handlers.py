@@ -70,7 +70,7 @@ def error_500_handler(error):
                             'function_name': function_name,
                             'exception_type': error.__class__.__name__,
                             'please': new_issue})
-    except Exception, e:
+    except Exception as e:
         # I don't want to fail in the exception handler
         response = jsonify({'code': 500,
                             'exception': str(error),

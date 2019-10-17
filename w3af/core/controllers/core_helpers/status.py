@@ -444,7 +444,8 @@ class CoreStatus(object):
             #     (see: show_progress_delta).
             #
             t_queued = (queue_size / output_speed) * adjustment.known
-            t_new = (input_speed * t_queued / output_speed) * adjustment.unknown
+            t_new = (input_speed * t_queued / output_speed) * \
+                adjustment.unknown
             eta_minutes = t_queued + t_new
         else:
             # This case is easier, we have an output speed which is
@@ -502,10 +503,12 @@ class CoreStatus(object):
                               fuzzable_request.get_uri())
 
         crawl_fuzzable_request = self.get_current_fuzzable_request('crawl')
-        crawl_fuzzable_request = serialize_fuzzable_request(crawl_fuzzable_request)
+        crawl_fuzzable_request = serialize_fuzzable_request(
+            crawl_fuzzable_request)
 
         audit_fuzzable_request = self.get_current_fuzzable_request('audit')
-        audit_fuzzable_request = serialize_fuzzable_request(audit_fuzzable_request)
+        audit_fuzzable_request = serialize_fuzzable_request(
+            audit_fuzzable_request)
 
         eta_seconds = self.get_eta()
         eta = self.epoch_eta_to_string(eta_seconds)
@@ -531,27 +534,27 @@ class CoreStatus(object):
 
             'queues':
                 {'crawl':
-                     {
-                         'input_speed': self.get_crawl_input_speed(),
-                         'output_speed': self.get_crawl_output_speed(),
-                         'length': self.get_crawl_qsize(),
-                         'processed_tasks': self.get_crawl_processed_tasks(),
-                     },
+                 {
+                     'input_speed': self.get_crawl_input_speed(),
+                     'output_speed': self.get_crawl_output_speed(),
+                     'length': self.get_crawl_qsize(),
+                     'processed_tasks': self.get_crawl_processed_tasks(),
+                 },
                  'audit':
                      {
                          'input_speed': self.get_audit_input_speed(),
                          'output_speed': self.get_audit_output_speed(),
                          'length': self.get_audit_qsize(),
                          'processed_tasks': self.get_audit_processed_tasks(),
-                     },
+                 },
                  'grep':
                      {
                          'input_speed': self.get_grep_input_speed(),
                          'output_speed': self.get_grep_output_speed(),
                          'length': self.get_grep_qsize(),
                          'processed_tasks': self.get_grep_processed_tasks(),
-                     }
-                },
+                 }
+                 },
 
             'eta':
                 {'crawl': self.epoch_eta_to_string(self.get_crawl_eta()),
@@ -583,7 +586,9 @@ class CoreStatus(object):
         if progress == 100 and self.any_consumer_running():
             progress = 99
 
-        om.out.debug('The scan will finish in %.2f seconds (%s%% done)' % (eta, progress))
+        om.out.debug(
+            'The scan will finish in %.2f seconds (%s%% done)' %
+            (eta, progress))
 
         return progress
 

@@ -29,8 +29,8 @@ from w3af.core.data.dc.utils.json_iter_setters import (json_iter_setters,
                                                        KEY_NUMBER, KEY_STRING,
                                                        KEY_BOOLEAN, KEY_ARRAY,
                                                        KEY_OBJECT, KEY_NULL)
-from w3af.core.data.dc.tests.test_json_container import (STRING, ARRAY, NUMBER,
-                                                         OBJECT, COMPLEX_OBJECT)
+from w3af.core.data.dc.tests.test_json_container import (
+    STRING, ARRAY, NUMBER, OBJECT, COMPLEX_OBJECT)
 
 
 class TestJSONIterSetters(unittest.TestCase):

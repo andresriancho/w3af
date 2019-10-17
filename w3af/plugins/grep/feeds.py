@@ -60,10 +60,14 @@ class feeds(GrepPlugin):
             desc = 'The URL "%s" is a %s version %s feed.'
             desc %= (uri, feed_type, version)
 
-            i = Info('Content feed resource', desc, response.id, self.get_name())
+            i = Info(
+                'Content feed resource',
+                desc,
+                response.id,
+                self.get_name())
             i.set_uri(uri)
             i.add_to_highlight(feed_type)
-            
+
             self.kb_append_uniq(self, 'feeds', i, 'URL')
 
     def get_long_desc(self):

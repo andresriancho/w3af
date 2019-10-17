@@ -63,7 +63,7 @@ class sitemap_xml(CrawlPlugin):
         om.out.debug('Parsing xml file with xml.dom.minidom.')
         try:
             dom = xml.dom.minidom.parseString(response.get_body())
-        except Exception, e:
+        except Exception as e:
             msg = 'Exception while parsing sitemap.xml from %s: "%s"'
             args = (response.get_url(), e)
             om.out.debug(msg % args)
@@ -75,7 +75,7 @@ class sitemap_xml(CrawlPlugin):
         for url in raw_url_list:
             try:
                 url = url.childNodes[0].data
-            except Exception, e:
+            except Exception as e:
                 msg = 'Sitemap file at %s has an invalid format: %s'
                 args = (response.get_url(), e)
                 om.out.debug(msg % args)
@@ -83,7 +83,7 @@ class sitemap_xml(CrawlPlugin):
 
             try:
                 url = URL(url)
-            except ValueError, ve:
+            except ValueError as ve:
                 msg = 'Sitemap file at %s has an invalid URL: "%s"'
                 args = (response.get_url(), ve)
                 om.out.debug(msg % args)

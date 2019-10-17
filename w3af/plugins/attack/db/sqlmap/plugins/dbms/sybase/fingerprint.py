@@ -18,6 +18,7 @@ from lib.core.settings import SYBASE_ALIASES
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.SYBASE)
@@ -53,7 +54,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
@@ -97,13 +99,15 @@ class Fingerprint(GenericFingerprint):
             infoMsg = "actively fingerprinting %s" % DBMS.SYBASE
             logger.info(infoMsg)
 
-            result = unArrayizeValue(inject.getValue("SUBSTRING(@@VERSION,1,1)"))
+            result = unArrayizeValue(
+                inject.getValue("SUBSTRING(@@VERSION,1,1)"))
 
             if result and result.isdigit():
                 Backend.setVersion(str(result))
             else:
                 for version in xrange(12, 16):
-                    result = inject.checkBooleanExpression("PATINDEX('%%/%d[./]%%',@@VERSION)>0" % version)
+                    result = inject.checkBooleanExpression(
+                        "PATINDEX('%%/%d[./]%%',@@VERSION)>0" % version)
 
                     if result:
                         Backend.setVersion(str(version))

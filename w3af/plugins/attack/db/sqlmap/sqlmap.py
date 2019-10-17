@@ -10,7 +10,8 @@ import sys
 sys.dont_write_bytecode = True
 
 try:
-    __import__("lib.utils.versioncheck")  # this has to be the first non-standard import
+    # this has to be the first non-standard import
+    __import__("lib.utils.versioncheck")
 except ImportError:
     exit("[!] wrong installation detected (missing modules). Visit 'https://github.com/sqlmapproject/sqlmap/#installation' for further details")
 
@@ -30,7 +31,10 @@ import time
 import traceback
 import warnings
 
-warnings.filterwarnings(action="ignore", message=".*was already imported", category=UserWarning)
+warnings.filterwarnings(
+    action="ignore",
+    message=".*was already imported",
+    category=UserWarning)
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
 from lib.core.data import logger
@@ -70,6 +74,7 @@ except KeyboardInterrupt:
 
     raise SystemExit
 
+
 def modulePath():
     """
     This will get us the program's directory, even if we are frozen
@@ -81,7 +86,9 @@ def modulePath():
     except NameError:
         _ = inspect.getsourcefile(modulePath)
 
-    return getUnicode(os.path.dirname(os.path.realpath(_)), encoding=sys.getfilesystemencoding() or UNICODE_ENCODING)
+    return getUnicode(os.path.dirname(os.path.realpath(_)),
+                      encoding=sys.getfilesystemencoding() or UNICODE_ENCODING)
+
 
 def checkEnvironment():
     try:
@@ -92,7 +99,8 @@ def checkEnvironment():
         logger.critical(errMsg)
         raise SystemExit
 
-    if distutils.version.LooseVersion(VERSION) < distutils.version.LooseVersion("1.0"):
+    if distutils.version.LooseVersion(
+            VERSION) < distutils.version.LooseVersion("1.0"):
         errMsg = "your runtime environment (e.g. PYTHONPATH) is "
         errMsg += "broken. Please make sure that you are not running "
         errMsg += "newer versions of sqlmap with runtime scripts for older "
@@ -105,7 +113,11 @@ def checkEnvironment():
         for _ in ("cmdLineOptions", "conf", "kb"):
             globals()[_] = getattr(sys.modules["lib.core.data"], _)
 
-        for _ in ("SqlmapBaseException", "SqlmapShellQuitException", "SqlmapSilentQuitException", "SqlmapUserQuitException"):
+        for _ in (
+            "SqlmapBaseException",
+            "SqlmapShellQuitException",
+            "SqlmapSilentQuitException",
+                "SqlmapUserQuitException"):
             globals()[_] = getattr(sys.modules["lib.core.exception"], _)
 
 
@@ -135,8 +147,13 @@ def main():
             setRestAPILog()
 
         conf.showTime = True
-        dataToStdout("[!] legal disclaimer: %s\n\n" % LEGAL_DISCLAIMER, forceOutput=True)
-        dataToStdout("[*] starting at %s\n\n" % time.strftime("%X"), forceOutput=True)
+        dataToStdout(
+            "[!] legal disclaimer: %s\n\n" %
+            LEGAL_DISCLAIMER, forceOutput=True)
+        dataToStdout(
+            "[*] starting at %s\n\n" %
+            time.strftime("%X"),
+            forceOutput=True)
 
         init()
 
@@ -204,7 +221,7 @@ def main():
     except SystemExit:
         pass
 
-    except:
+    except BaseException:
         print
         errMsg = unhandledExceptionMessage()
         excMsg = traceback.format_exc()
@@ -237,7 +254,8 @@ def main():
                 raise SystemExit
 
             elif all(_ in excMsg for _ in ("No such file", "_'", "self.get_prog_name()")):
-                errMsg = "corrupted installation detected ('%s'). " % excMsg.strip().split('\n')[-1]
+                errMsg = "corrupted installation detected ('%s'). " % excMsg.strip().split(
+                    '\n')[-1]
                 errMsg += "You should retrieve the latest development version from official GitHub "
                 errMsg += "repository at '%s'" % GIT_PAGE
                 logger.error(errMsg)
@@ -291,7 +309,8 @@ def main():
 
             elif "bad marshal data (unknown type code)" in excMsg:
                 match = re.search(r"\s*(.+)\s+ValueError", excMsg)
-                errMsg = "one of your .pyc files are corrupted%s" % (" ('%s')" % match.group(1) if match else "")
+                errMsg = "one of your .pyc files are corrupted%s" % (
+                    " ('%s')" % match.group(1) if match else "")
                 errMsg += ". Please delete .pyc files on your system to fix the problem"
                 logger.error(errMsg)
                 raise SystemExit
@@ -327,18 +346,28 @@ def main():
         kb.threadContinue = False
 
         if conf.get("showTime"):
-            dataToStdout("\n[*] shutting down at %s\n\n" % time.strftime("%X"), forceOutput=True)
+            dataToStdout(
+                "\n[*] shutting down at %s\n\n" %
+                time.strftime("%X"), forceOutput=True)
 
         kb.threadException = True
 
         if kb.get("tempDir"):
-            for prefix in (MKSTEMP_PREFIX.IPC, MKSTEMP_PREFIX.TESTING, MKSTEMP_PREFIX.COOKIE_JAR, MKSTEMP_PREFIX.BIG_ARRAY):
-                for filepath in glob.glob(os.path.join(kb.tempDir, "%s*" % prefix)):
+            for prefix in (
+                    MKSTEMP_PREFIX.IPC,
+                    MKSTEMP_PREFIX.TESTING,
+                    MKSTEMP_PREFIX.COOKIE_JAR,
+                    MKSTEMP_PREFIX.BIG_ARRAY):
+                for filepath in glob.glob(
+                    os.path.join(
+                        kb.tempDir, "%s*" %
+                        prefix)):
                     try:
                         os.remove(filepath)
                     except OSError:
                         pass
-            if not filter(None, (filepath for filepath in glob.glob(os.path.join(kb.tempDir, '*')) if not any(filepath.endswith(_) for _ in ('.lock', '.exe', '_')))):
+            if not filter(None, (filepath for filepath in glob.glob(os.path.join(
+                    kb.tempDir, '*')) if not any(filepath.endswith(_) for _ in ('.lock', '.exe', '_')))):
                 shutil.rmtree(kb.tempDir, ignore_errors=True)
 
         if conf.get("hashDB"):
@@ -349,7 +378,13 @@ def main():
 
         if conf.get("harFile"):
             with openFile(conf.harFile, "w+b") as f:
-                json.dump(conf.httpCollector.obtain(), fp=f, indent=4, separators=(',', ': '))
+                json.dump(
+                    conf.httpCollector.obtain(),
+                    fp=f,
+                    indent=4,
+                    separators=(
+                        ',',
+                        ': '))
 
         if cmdLineOptions.get("sqlmapShell"):
             cmdLineOptions.clear()
@@ -369,14 +404,17 @@ def main():
         # short delay for thread finalization
         try:
             _ = time.time()
-            while threading.activeCount() > 1 and (time.time() - _) > THREAD_FINALIZATION_TIMEOUT:
+            while threading.activeCount() > 1 and (
+                    time.time() - _) > THREAD_FINALIZATION_TIMEOUT:
                 time.sleep(0.01)
         except KeyboardInterrupt:
             pass
         finally:
-            # Reference: http://stackoverflow.com/questions/1635080/terminate-a-multi-thread-python-program
+            # Reference:
+            # http://stackoverflow.com/questions/1635080/terminate-a-multi-thread-python-program
             if threading.activeCount() > 1:
                 os._exit(0)
+
 
 if __name__ == "__main__":
     main()

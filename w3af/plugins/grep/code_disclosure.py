@@ -83,7 +83,7 @@ class code_disclosure(GrepPlugin):
         v = Vuln(name, desc, severity.LOW, response.id, self.get_name())
         v.set_url(response.get_url())
         v.add_to_highlight(match.group())
-        
+
         self.kb_append_uniq(self, 'code_disclosure', v, 'URL')
 
     def get_long_desc(self):

@@ -30,6 +30,7 @@ class Mutant(DiskItem):
     """
     This class is a wrapper for fuzzable requests that has been modified.
     """
+
     def __init__(self, freq):
         super(Mutant, self).__init__()
 
@@ -116,7 +117,8 @@ class Mutant(DiskItem):
 
     def __repr__(self):
         fmt = '<mutant-%s | %s | %s >'
-        return fmt % (self.get_mutant_type(), self.get_method(), self.get_uri())
+        return fmt % (self.get_mutant_type(),
+                      self.get_method(), self.get_uri())
 
     def get_original_response_body(self):
         """
@@ -165,7 +167,8 @@ class Mutant(DiskItem):
                 smart_str_ignore(dc_short))
 
         if token is not None:
-            msg += ' The modified parameter was "%s".' % smart_str_ignore(token.get_name())
+            msg += ' The modified parameter was "%s".' % smart_str_ignore(
+                token.get_name())
 
         return msg
 

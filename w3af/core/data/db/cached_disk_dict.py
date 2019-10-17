@@ -32,6 +32,7 @@ class CachedDiskDict(object):
     fast read / writes are required, and items can take considerable amounts
     of memory.
     """
+
     def __init__(self, max_in_memory=50, table_prefix=None):
         """
         :param max_in_memory: The max number of items to keep in memory

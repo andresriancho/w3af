@@ -31,6 +31,7 @@ class xss_protection_header(GrepPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def grep(self, request, response):
         """
         Plugin entry point.
@@ -52,7 +53,7 @@ class xss_protection_header(GrepPlugin):
                      response.id, self.get_name())
             i.add_to_highlight('X-XSS-Protection')
             i.set_uri(response.get_uri())
-            
+
             self.kb_append_uniq_group(self, 'xss_protection_header', i,
                                       group_klass=XSSProtectionInfoSet)
 

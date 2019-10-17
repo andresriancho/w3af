@@ -61,19 +61,20 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         orig_method = request.get_method()
         method = orig_method if orig_method in GET_HEAD else 'GET'
 
-        new_request = HTTPRequest(new_url_obj,
-                                  headers=new_headers,
-                                  origin_req_host=request.get_origin_req_host(),
-                                  method=method,
-                                  timeout=request.timeout,
-                                  unverifiable=True,
-                                  follow_redirects=True,
-                                  cookies=request.cookies,
-                                  cache=request.get_from_cache,
-                                  error_handling=request.error_handling,
-                                  retries=request.retries_left,
-                                  new_connection=request.new_connection,
-                                  use_basic_auth=request.use_basic_auth)
+        new_request = HTTPRequest(
+            new_url_obj,
+            headers=new_headers,
+            origin_req_host=request.get_origin_req_host(),
+            method=method,
+            timeout=request.timeout,
+            unverifiable=True,
+            follow_redirects=True,
+            cookies=request.cookies,
+            cache=request.get_from_cache,
+            error_handling=request.error_handling,
+            retries=request.retries_left,
+            new_connection=request.new_connection,
+            use_basic_auth=request.use_basic_auth)
 
         return new_request
 
@@ -125,7 +126,8 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         # XXX Probably want to forget about the state of the current
         # request, although that might interact poorly with other
         # handlers that also use handler-specific request attributes
-        new_request = self.create_redirect_request(request, response, new_url_obj)
+        new_request = self.create_redirect_request(
+            request, response, new_url_obj)
 
         # loop detection
         # .redirect_dict has a key url if url was previously visited.
@@ -194,6 +196,5 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
             return self.do_follow_redirect(request, response)
 
         return response
-    
-    https_response = http_response
 
+    https_response = http_response

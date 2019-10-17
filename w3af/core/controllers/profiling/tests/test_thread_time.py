@@ -58,4 +58,7 @@ class TestThreadTime(unittest.TestCase):
         spent_thread = thread_active_time() - start_thread
         spent_wall = time.time() - start_wall
 
-        self.assertAlmostEqual(spent_thread, spent_wall, delta=spent_wall * 0.1)
+        self.assertAlmostEqual(
+            spent_thread,
+            spent_wall,
+            delta=spent_wall * 0.1)

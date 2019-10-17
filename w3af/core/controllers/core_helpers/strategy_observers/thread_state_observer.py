@@ -37,9 +37,10 @@ class ThreadStateObserver(StrategyObserver):
     """
     ANALYZE_EVERY = 30
     STACK_TRACE_MIN_TIME = 120
-    DISCOVER_WORKER_RE = re.compile('<bound method CrawlInfrastructure._discover_worker'
-                                    ' of <CrawlInfrastructure\(CrawlInfraController,'
-                                    ' started daemon .*?\)>>')
+    DISCOVER_WORKER_RE = re.compile(
+        '<bound method CrawlInfrastructure._discover_worker'
+        ' of <CrawlInfrastructure\(CrawlInfraController,'
+        ' started daemon .*?\)>>')
 
     def __init__(self):
         super(ThreadStateObserver, self).__init__()
@@ -86,17 +87,17 @@ class ThreadStateObserver(StrategyObserver):
             if self.crawl_infra_thread is None:
 
                 pool = consumer.get_pool()
-                self.crawl_infra_thread = threading.Thread(target=self.thread_worker,
-                                                           args=(pool, 'CrawlInfraWorker'),
-                                                           name='CrawlInfraPoolStateObserver')
+                self.crawl_infra_thread = threading.Thread(
+                    target=self.thread_worker, args=(
+                        pool, 'CrawlInfraWorker'), name='CrawlInfraPoolStateObserver')
                 self.crawl_infra_thread.start()
 
         with self._worker_thread_lock:
             if self.worker_thread is None:
                 pool = consumer._w3af_core.worker_pool
-                self.worker_thread = threading.Thread(target=self.thread_worker,
-                                                      args=(pool, 'Worker'),
-                                                      name='WorkerPoolStateObserver')
+                self.worker_thread = threading.Thread(
+                    target=self.thread_worker, args=(
+                        pool, 'Worker'), name='WorkerPoolStateObserver')
                 self.worker_thread.start()
 
     def audit(self, consumer, *args):
@@ -162,7 +163,9 @@ class ThreadStateObserver(StrategyObserver):
             # Now the real deal
             #
             if pool is None:
-                self.write_to_log('The %s consumer finished all tasks and closed the pool.' % name)
+                self.write_to_log(
+                    'The %s consumer finished all tasks and closed the pool.' %
+                    name)
                 self.write_to_log('100%% of %s workers are idle.' % name)
                 break
 
@@ -343,8 +346,9 @@ class ThreadStateObserver(StrategyObserver):
             func_name = smart_str_ignore(worker_state['func_name'])
             func_name = self.clean_function_name(func_name)
 
-            message = ('Worker with ID %s(%s) has been running job %s for %.2f seconds.'
-                       ' The job is: %s(%s, kwargs=%s)')
+            message = (
+                'Worker with ID %s(%s) has been running job %s for %.2f seconds.'
+                ' The job is: %s(%s, kwargs=%s)')
             message %= (worker_state['name'],
                         worker_state['worker_id'],
                         worker_state['job'],

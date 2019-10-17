@@ -67,7 +67,7 @@ class private_ip(GrepPlugin):
         # Only run this once for each combination of URL and data sent to
         # that URL
         self._already_inspected.add((request.get_url(), request.get_data()))
-        
+
         self._analyze_headers(request, response)
         self._analyze_html(request, response)
 
@@ -100,7 +100,8 @@ class private_ip(GrepPlugin):
                 # I want to know the header name, this shouldn't consume much
                 # CPU since we're only doing it when the headers already match
                 # the initial regex run
-                header_name = self._get_header_name(response, ip_address, regex)
+                header_name = self._get_header_name(
+                    response, ip_address, regex)
 
                 desc = 'The URL "%s" returned the private IP address: "%s"'\
                        ' in the HTTP response header "%s"'
@@ -127,7 +128,7 @@ class private_ip(GrepPlugin):
 
         # Performance improvement!
         if not (('10.' in response) or ('172.' in response) or
-               ('192.168.' in response) or ('169.254.' in response)):
+                ('192.168.' in response) or ('169.254.' in response)):
             return
 
         for regex in self.RE_LIST:
@@ -177,7 +178,7 @@ class private_ip(GrepPlugin):
 
             try:
                 ip_address = socket.gethostbyname(requested_domain)
-            except:
+            except BaseException:
                 pass
             else:
                 self._ignore_if_match.add(ip_address)

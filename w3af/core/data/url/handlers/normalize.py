@@ -40,5 +40,5 @@ class NormalizeHandler(urllib2.BaseHandler):
             request.add_unredirected_header('Accept-Encoding', 'identity')
 
         return request
-    
+
     https_request = http_request

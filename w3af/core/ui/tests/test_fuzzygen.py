@@ -80,4 +80,3 @@ class TestAll(unittest.TestCase):
         fg = FuzzyGenerator("-$xrange(2)$$xrange(2)$-", "")
         self.assertEqual(list(fg.generate()), [
             ("-00-", ""), ("-01-", ""), ("-10-", ""), ("-11-", "")])
-

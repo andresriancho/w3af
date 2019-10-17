@@ -13,6 +13,7 @@ class SimpleQueueWithSize(SimpleQueue):
     def _make_methods(self):
         recv = self._reader.recv
         racquire, rrelease = self._rlock.acquire, self._rlock.release
+
         def get():
             racquire()
             try:
@@ -28,6 +29,7 @@ class SimpleQueueWithSize(SimpleQueue):
         else:
             send = self._writer.send
             wacquire, wrelease = self._wlock.acquire, self._wlock.release
+
             def put(obj):
                 wacquire()
                 try:
@@ -36,4 +38,3 @@ class SimpleQueueWithSize(SimpleQueue):
                     self._qsize += 1
                     wrelease()
             self.put = put
-

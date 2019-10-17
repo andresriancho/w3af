@@ -36,7 +36,7 @@ OBJECT_NULL = '{"key": null}'
 
 
 class TestJSONContainer(unittest.TestCase):
-    
+
     def test_basic(self):
         jcont = JSONContainer(COMPLEX_OBJECT)
         dcc_tokens = [(dcc, token) for dcc, token in jcont.iter_bound_tokens()]
@@ -132,17 +132,22 @@ class TestJSONContainer(unittest.TestCase):
         self.assertEquals(jcont.get_headers(), e_headers)
 
         jcont.set_header('X-Foo-Header', 'Bar')
-        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', 'Bar')]
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'),
+                     ('X-Foo-Header', 'Bar')]
         self.assertEquals(jcont.get_headers(), e_headers)
 
-        headers = {'Content-Type': 'application/vnd.w3af+json', 'X-Foo-Header': 'Bar'}
+        headers = {
+            'Content-Type': 'application/vnd.w3af+json',
+            'X-Foo-Header': 'Bar'}
         jcont = JSONContainer(COMPLEX_OBJECT, headers)
 
-        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', 'Bar')]
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'),
+                     ('X-Foo-Header', 'Bar')]
         self.assertEquals(jcont.get_headers(), e_headers)
 
         jcont.set_header('X-Foo-Header', '42')
-        e_headers = [('Content-Type', 'application/vnd.w3af+json'), ('X-Foo-Header', '42')]
+        e_headers = [('Content-Type', 'application/vnd.w3af+json'),
+                     ('X-Foo-Header', '42')]
         self.assertEquals(jcont.get_headers(), e_headers)
 
         jcont = JSONContainer(COMPLEX_OBJECT, None)
@@ -197,7 +202,8 @@ class TestJSONContainer(unittest.TestCase):
         original = JSONContainer(COMPLEX_OBJECT)
         original.set_header('X-Foo-Header', 'Bar')
 
-        e_headers = [('Content-Type', 'application/json'), ('X-Foo-Header', 'Bar')]
+        e_headers = [('Content-Type', 'application/json'),
+                     ('X-Foo-Header', 'Bar')]
         self.assertEquals(original.get_headers(), e_headers)
 
         clone = pickle.loads(pickle.dumps(original))

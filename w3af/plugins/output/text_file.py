@@ -68,19 +68,19 @@ class text_file(OutputPlugin):
         self._show_caller = False
 
     def _init(self):
-        
+
         self._initialized = True
-        
+
         self._output_file_name = os.path.expanduser(self._output_file_name)
         self._http_file_name = os.path.expanduser(self._http_file_name)
-        
+
         try:
-            self._log = open(self._output_file_name,  'w')
-        except IOError, io:
+            self._log = open(self._output_file_name, 'w')
+        except IOError as io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._output_file_name), io.strerror)
             raise BaseFrameworkException(msg % args)
-        except Exception, e:
+        except Exception as e:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._output_file_name), e)
             raise BaseFrameworkException(msg % args)
@@ -93,11 +93,11 @@ class text_file(OutputPlugin):
             # Images aren't ascii, so this file that logs every request/response,
             # will be binary.
             self._http = open(self._http_file_name, 'wb')
-        except IOError, io:
+        except IOError as io:
             msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._http_file_name), io.strerror)
             raise BaseFrameworkException(msg % args)
-        except Exception, e:
+        except Exception as e:
             msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
             args = (os.path.abspath(self._http_file_name), e)
             raise BaseFrameworkException(msg % args)
@@ -110,13 +110,14 @@ class text_file(OutputPlugin):
         """
         if self._log is None:
             return
-        
+
         try:
             self._log.write(msg)
-        except Exception, e:
+        except Exception as e:
             self._log = None
-            msg = ('An exception was raised while trying to write to the output'
-                   ' file "%s", error: "%s". Disabling output to this file.')
+            msg = (
+                'An exception was raised while trying to write to the output'
+                ' file "%s", error: "%s". Disabling output to this file.')
             om.out.error(msg % (self._output_file_name, e),
                          ignore_plugins={self.get_name()})
 
@@ -132,13 +133,14 @@ class text_file(OutputPlugin):
         """
         if self._http is None:
             return
-        
+
         try:
             self._http.write(msg)
-        except Exception, e:
+        except Exception as e:
             self._http = None
-            msg = ('An exception was raised while trying to write to the output'
-                   ' file "%s", error: "%s". Disabling output to this file.')
+            msg = (
+                'An exception was raised while trying to write to the output'
+                ' file "%s", error: "%s". Disabling output to this file.')
             om.out.error(msg % (self._http_file_name, e),
                          ignore_plugins={self.get_name()})
 
@@ -303,7 +305,11 @@ class text_file(OutputPlugin):
         ol.add(o)
 
         d = 'File name where this plugin will write HTTP requests and responses'
-        o = opt_factory('http_output_file', self._http_file_name, d, OUTPUT_FILE)
+        o = opt_factory(
+            'http_output_file',
+            self._http_file_name,
+            d,
+            OUTPUT_FILE)
         ol.add(o)
 
         return ol
@@ -333,7 +339,7 @@ class text_file(OutputPlugin):
         request_hdr = REQUEST_HEADER_FMT % (response.id, the_time)
         self._write_to_http_log(request_hdr)
         self._write_to_http_log(request.dump())
-        
+
         response_hdr = RESPONSE_HEADER_FMT % (response.id, the_time)
         self._write_to_http_log(response_hdr)
         self._write_to_http_log(response.dump())
@@ -351,7 +357,7 @@ class text_file(OutputPlugin):
             - output_file
             - http_output_file
             - verbose
-        
+
         Use `dev/null` as the value for any of the output file options to
         disable writing to that log.
         """

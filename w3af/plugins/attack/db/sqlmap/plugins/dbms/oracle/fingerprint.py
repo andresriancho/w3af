@@ -18,6 +18,7 @@ from lib.core.settings import ORACLE_ALIASES
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.ORACLE)
@@ -53,7 +54,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
@@ -84,7 +86,8 @@ class Fingerprint(GenericFingerprint):
             if conf.direct:
                 result = True
             else:
-                result = inject.checkBooleanExpression("LENGTH(SYSDATE)=LENGTH(SYSDATE)")
+                result = inject.checkBooleanExpression(
+                    "LENGTH(SYSDATE)=LENGTH(SYSDATE)")
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.ORACLE
@@ -105,7 +108,9 @@ class Fingerprint(GenericFingerprint):
             # Reference: https://en.wikipedia.org/wiki/Oracle_Database
             for version in ("12c", "11g", "10g", "9i", "8i"):
                 number = int(re.search(r"([\d]+)", version).group(1))
-                output = inject.checkBooleanExpression("%d=(SELECT SUBSTR((VERSION),1,%d) FROM SYS.PRODUCT_COMPONENT_VERSION WHERE ROWNUM=1)" % (number, 1 if number < 10 else 2))
+                output = inject.checkBooleanExpression(
+                    "%d=(SELECT SUBSTR((VERSION),1,%d) FROM SYS.PRODUCT_COMPONENT_VERSION WHERE ROWNUM=1)" %
+                    (number, 1 if number < 10 else 2))
 
                 if output:
                     Backend.setVersion(version)

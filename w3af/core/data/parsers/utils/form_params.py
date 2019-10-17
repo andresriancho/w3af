@@ -49,6 +49,7 @@ from w3af.core.data.parsers.utils.form_constants import (DEFAULT_FORM_ENCODING,
                                                          MODE_ALL, MODE_TB,
                                                          MODE_TMB, MODE_T,
                                                          MODE_B)
+from functools import reduce
 
 
 class FormParameters(OrderedDict):
@@ -88,9 +89,16 @@ class FormParameters(OrderedDict):
                             INPUT_TYPE_RADIO,
                             INPUT_TYPE_SELECT}
 
-    def __init__(self, init_vals=(), meta=None, encoding=DEFAULT_ENCODING,
-                 method='GET', action=None, form_encoding=DEFAULT_FORM_ENCODING,
-                 attributes=None, hosted_at_url=None):
+    def __init__(
+            self,
+            init_vals=(),
+            meta=None,
+            encoding=DEFAULT_ENCODING,
+            method='GET',
+            action=None,
+            form_encoding=DEFAULT_FORM_ENCODING,
+            attributes=None,
+            hosted_at_url=None):
         """
 
         :param init_vals: Initial form params
@@ -367,7 +375,8 @@ class FormParameters(OrderedDict):
             form_field = SelectFormField(input_name, input_values)
 
         elif input_type == INPUT_TYPE_RADIO:
-            match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_RADIO]
+            match_fields = [
+                ff for ff in snf if ff.input_type is INPUT_TYPE_RADIO]
 
             if match_fields:
                 form_field = match_fields[-1]
@@ -377,7 +386,8 @@ class FormParameters(OrderedDict):
                 form_field = RadioFormField(input_name, [input_value])
 
         elif input_type == INPUT_TYPE_CHECKBOX:
-            match_fields = [ff for ff in snf if ff.input_type is INPUT_TYPE_CHECKBOX]
+            match_fields = [
+                ff for ff in snf if ff.input_type is INPUT_TYPE_CHECKBOX]
 
             if match_fields:
                 form_field = match_fields[-1]
@@ -455,7 +465,8 @@ class FormParameters(OrderedDict):
             # Clone self, don't use copy.deepcopy b/c of perf
             self_variant = self.deepish_copy()
 
-            for option_name_index, option_value_index in enumerate(sample_path):
+            for option_name_index, option_value_index in enumerate(
+                    sample_path):
                 option_name = option_names[option_name_index]
                 try:
                     value = matrix[option_name_index][option_value_index]
@@ -552,7 +563,7 @@ class FormParameters(OrderedDict):
         # Hack to make the algorithm work.
         matrix.append([1])
 
-        get_count = lambda y: reduce(operator.mul, map(len, matrix[y + 1:]))
+        def get_count(y): return reduce(operator.mul, map(len, matrix[y + 1:]))
         remainder = path
         decoded_path = []
 

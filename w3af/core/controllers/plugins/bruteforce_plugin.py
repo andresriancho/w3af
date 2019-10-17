@@ -33,8 +33,8 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.misc.mask_password import mask_password_string
 from w3af.core.controllers.misc.safe_deepcopy import safe_deepcopy
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
-from w3af.core.controllers.bruteforce.bruteforcer import (UserPasswordBruteforcer,
-                                                          PasswordBruteforcer)
+from w3af.core.controllers.bruteforce.bruteforcer import (
+    UserPasswordBruteforcer, PasswordBruteforcer)
 
 
 class BruteforcePlugin(AuditPlugin):
@@ -45,7 +45,8 @@ class BruteforcePlugin(AuditPlugin):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
 
-    BASE_CFG_PATH = os.path.join(ROOT_PATH, 'core', 'controllers', 'bruteforce')
+    BASE_CFG_PATH = os.path.join(
+        ROOT_PATH, 'core', 'controllers', 'bruteforce')
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -204,7 +205,11 @@ class BruteforcePlugin(AuditPlugin):
         ol.add(o)
 
         d = 'Mask valid passwords found via brute-force with * when writing to report'
-        o = opt_factory('mask_password_report', self._mask_password_in_report, d, BOOL)
+        o = opt_factory(
+            'mask_password_report',
+            self._mask_password_in_report,
+            d,
+            BOOL)
         ol.add(o)
 
         d = 'Combo of username and password, file to use in bruteforcing'
@@ -236,14 +241,18 @@ class BruteforcePlugin(AuditPlugin):
         self._profiling_number = options_list['profiling_number'].get_value()
         self._combo_file = options_list['combo_file'].get_value()
         self._combo_separator = options_list['combo_separator'].get_value()
-        self._mask_password_in_report = options_list['mask_password_report'].get_value()
+        self._mask_password_in_report = options_list['mask_password_report'].get_value(
+        )
 
     def get_plugin_deps(self):
         """
         :return: A list with the names of the plugins that should be run before
                 the current one.
         """
-        return ['grep.password_profiling', 'grep.get_emails', 'grep.http_auth_detect']
+        return [
+            'grep.password_profiling',
+            'grep.get_emails',
+            'grep.http_auth_detect']
 
     def get_long_desc(self):
         """

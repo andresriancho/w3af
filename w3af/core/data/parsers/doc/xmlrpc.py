@@ -42,6 +42,7 @@ class XmlRpcReadHandler(ContentHandler):
     The user should call this function parse_xmlrpc and build_xmlrpc.
     The rest is for internal use.
     """
+
     def __init__(self):
         ContentHandler.__init__(self)
 
@@ -94,6 +95,7 @@ class XmlRpcWriteHandler(ContentHandler):
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest
     is for internal use.
     """
+
     def __init__(self, data_container):
         ContentHandler.__init__(self)
 
@@ -134,8 +136,8 @@ class XmlRpcWriteHandler(ContentHandler):
             if self._fuzzed_parameters[self._fuzzable_index][0] == 'base64':
                 enc_val = base64.b64encode(modified_value)
             else:
-                enc_val = cgi.escape(modified_value).encode('ascii',
-                                                            'xmlcharrefreplace')
+                enc_val = cgi.escape(modified_value).encode(
+                    'ascii', 'xmlcharrefreplace')
 
             self.fuzzed_xml_string += enc_val
 

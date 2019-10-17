@@ -7,7 +7,7 @@ See the file 'LICENSE' for copying permission
 
 try:
     import pyodbc
-except:
+except BaseException:
     pass
 
 import logging
@@ -18,6 +18,7 @@ from lib.core.exception import SqlmapConnectionException
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.core.settings import IS_WIN
 from plugins.generic.connector import Connector as GenericConnector
+
 
 class Connector(GenericConnector):
     """
@@ -41,8 +42,10 @@ class Connector(GenericConnector):
         self.checkFileDb()
 
         try:
-            self.connector = pyodbc.connect('Driver={Microsoft Access Driver (*.mdb)};Dbq=%s;Uid=Admin;Pwd=;' % self.db)
-        except (pyodbc.Error, pyodbc.OperationalError), msg:
+            self.connector = pyodbc.connect(
+                'Driver={Microsoft Access Driver (*.mdb)};Dbq=%s;Uid=Admin;Pwd=;' %
+                self.db)
+        except (pyodbc.Error, pyodbc.OperationalError) as msg:
             raise SqlmapConnectionException(msg[1])
 
         self.initCursor()
@@ -51,16 +54,22 @@ class Connector(GenericConnector):
     def fetchall(self):
         try:
             return self.cursor.fetchall()
-        except pyodbc.ProgrammingError, msg:
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
+        except pyodbc.ProgrammingError as msg:
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[1])
             return None
 
     def execute(self, query):
         try:
             self.cursor.execute(query)
-        except (pyodbc.OperationalError, pyodbc.ProgrammingError), msg:
-            logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
-        except pyodbc.Error, msg:
+        except (pyodbc.OperationalError, pyodbc.ProgrammingError) as msg:
+            logger.log(
+                logging.WARN if conf.dbmsHandler else logging.DEBUG,
+                "(remote) %s" %
+                msg[1])
+        except pyodbc.Error as msg:
             raise SqlmapConnectionException(msg[1])
 
         self.connector.commit()

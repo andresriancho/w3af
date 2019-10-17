@@ -28,6 +28,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 
 class HttpRawView(HttpEditor):
     """Raw view with HTTP Editor."""
+
     def __init__(self, w3af, parentView, editable=False):
         """Make object."""
         HttpEditor.__init__(self, w3af)

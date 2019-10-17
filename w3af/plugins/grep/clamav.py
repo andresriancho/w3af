@@ -43,13 +43,13 @@ class clamav(GrepPlugin):
 
     METHODS = ('GET',)
     HTTP_CODES = (200,)
-    
+
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._properly_configured = None
         self._config_check_lock = threading.RLock()
-        
+
         # User configured settings
         # Default for ubuntu installation
         self._clamd_socket = '/var/run/clamav/clamd.ctl'
@@ -58,7 +58,7 @@ class clamav(GrepPlugin):
         """
         Plugin entry point, send HTTP response bodies to ClamAV in an async
         way in order to avoid any delays in our process.
-        
+
         Keep in mind that I need to wait for all answers from clamd in end()
         before finishing the plugin and that (if possible) I shouldn't send
         the same stream twice.
@@ -72,13 +72,13 @@ class clamav(GrepPlugin):
         """
         if not self._is_properly_configured():
             return
-        
+
         if request.get_method() not in self.METHODS:
             return
 
         if response.get_code() not in self.HTTP_CODES:
             return
-        
+
         args = (request, response)
         self.worker_pool.apply_async(self._scan_http_response, args=args,
                                      callback=self._report_result)
@@ -91,19 +91,19 @@ class clamav(GrepPlugin):
             if self._properly_configured is not None:
                 # Return the cached response
                 return self._properly_configured
-            
+
             if self._connection_test():
                 msg = 'Using %s for scanning HTTP response bodies.'
                 om.out.information(msg % self._get_clamd_version())
                 self._properly_configured = True
-                
+
             else:
                 msg = ('The ClamAV plugin failed to connect to clamd using'
                        ' the provided unix socket: "%s". Please verify your'
                        ' configuration and try again.')
                 om.out.error(msg % self._clamd_socket)
                 self._properly_configured = False
-            
+
             return self._properly_configured
 
     def _connection_test(self):
@@ -113,9 +113,9 @@ class clamav(GrepPlugin):
         try:
             cd = self._get_connection()
             return cd.ping() is True
-        except:
+        except BaseException:
             return False
-    
+
     def _get_connection(self):
         """
         :return: A different connection for each time you call the method.
@@ -123,19 +123,19 @@ class clamav(GrepPlugin):
                  much sense; plus it adds complexity due to the threads.
         """
         return pyclamd.ClamdUnixSocket(filename=self._clamd_socket)
-    
+
     def _get_clamd_version(self):
         """
         :return: A string which contains the ClamAV version.
         """
         cd = self._get_connection()
         return cd.version()
-    
+
     def _scan_http_response(self, request, response):
         """
         Scans an HTTP response body for malware and stores any findings in
         the knowledge base.
-        
+
         :param request: The HTTP request
         :param response: The HTTP response
         :return: None
@@ -145,7 +145,7 @@ class clamav(GrepPlugin):
         try:
             cd = self._get_connection()
             result_dict = cd.scan_stream(body)
-        except Exception, e:
+        except Exception as e:
             msg = ('The ClamAV plugin failed to connect to clamd using'
                    ' the provided unix socket: "%s". Please verify your'
                    ' configuration and try again. The exception was: "%s".')
@@ -156,28 +156,29 @@ class clamav(GrepPlugin):
             result = self._parse_scan_result(result_dict)
 
         return response, result
-    
-    def _report_result(self, (response, scan_result)):
+
+    def _report_result(self, xxx_todo_changeme):
         """
         This method stores the scan result in the KB, called as a callback for
         the _scan_http_response method.
-        
+
         :param response: The HTTP response
         :param scan_result: The result object from _scan_http_response
         :return: None
         """
+        (response, scan_result) = xxx_todo_changeme
         if scan_result is None:
             return
 
         if scan_result.found:
-        
+
             desc = ('ClamAV identified malware at URL: "%s", the matched'
                     ' signature name is "%s".')
             desc %= (response.get_url(), scan_result.signature)
-    
+
             i = Info('Malware identified', desc, response.id, self.get_name())
             i.set_url(response.get_url())
-            
+
             self.kb_append(self, 'malware', i)
 
     def _parse_scan_result(self, result):
@@ -191,7 +192,7 @@ class clamav(GrepPlugin):
             signature = result['stream'][1]
             found = result['stream'][0] == 'FOUND'
             return ScanResult(found, signature)
-        except:
+        except BaseException:
             om.out.debug('Invalid response from clamd: %s' % result)
 
     def set_options(self, options_list):
@@ -212,25 +213,25 @@ class clamav(GrepPlugin):
         ol.add(o)
 
         return ol
-    
+
     def get_long_desc(self):
         """
         :return: A DETAILED description of the plugin functions and features.
         """
         return """
         Uses ClamAV to identify malware in your site.
-        
+
         In order to be able to use this plugin, you'll have to install ClamAV
         in your system, for Ubuntu the following commands should install ClamAV
         and start the daemon:
-        
+
         sudo apt-get install clamav-daemon clamav-freshclam clamav-unofficial-sigs
         sudo freshclam
         sudo service clamav-daemon start
-        
+
         To communicate with clamd the plugin uses an Unix socket, which can be
         configured by the user to point to the correct location.
-       
+
         This plugin was sponsored by http://scoresecure.com/ .
         """
 

@@ -34,6 +34,7 @@ class Preferences(object):
 
     It also support saving into files.
     """
+
     def __init__(self, label=None):
         self.sections = {}
         self.options = {}

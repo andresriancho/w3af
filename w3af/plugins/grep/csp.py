@@ -42,35 +42,35 @@ class csp(GrepPlugin):
         self._total_count = 0
         self._vulns = DiskList(table_prefix='csp')
         self._urls = ScalableBloomFilter()
-                
+
     def get_long_desc(self):
         return """
         This plugin identifies incorrect or too permissive CSP (Content Security Policy)
         headers returned by the web application under analysis.
 
-        Additional information: 
+        Additional information:
          * https://www.owasp.org/index.php/Content_Security_Policy
          * http://www.w3.org/TR/CSP
-        """        
+        """
 
     def grep(self, request, response):
         """
         Perform search on current HTTP request/response exchange.
         Store information about vulns for further global processing.
-        
+
         @param request: HTTP request
-        @param response: HTTP response  
+        @param response: HTTP response
         """
         # Check that current URL has not been already analyzed
         response_url = response.get_url().uri2url()
         if response_url in self._urls:
-            return        
+            return
 
         self._urls.add(response_url)
-                
+
         # Search issues using dedicated module
         csp_vulns = find_vulns(response)
-        
+
         # Analyze issue list
         if len(csp_vulns) > 0:
             vuln_store_item = DiskCSPVulnStoreItem(response_url,
@@ -81,7 +81,7 @@ class csp(GrepPlugin):
             # Increment the vulnerabilities counter
             for csp_directive_name in csp_vulns:
                 self._total_count += len(csp_vulns[csp_directive_name])
-                
+
     def end(self):
         """
         Perform global analysis for all vulnerabilities found.
@@ -89,7 +89,7 @@ class csp(GrepPlugin):
         # Check if vulns have been found
         if self._total_count == 0:
             return
-        
+
         # Parse vulns collection
         vuln_already_reported = []
 
@@ -122,7 +122,7 @@ class csp(GrepPlugin):
 
                     # Report vuln
                     self.kb_append(self, 'csp', v)
-                
+
         # Cleanup
         self._vulns.cleanup()
 
@@ -130,7 +130,7 @@ class csp(GrepPlugin):
         """
         Internal utility function to find all occurrences of a vuln
         into the global collection of vulns found by the plugin.
-        
+
         @param vuln_desc: Vulnerability description.
         @return: List of response ID for which the vuln is found.
         """
@@ -139,12 +139,12 @@ class csp(GrepPlugin):
         # Check input for quick exit
         if vuln_desc is None or vuln_desc.strip() == "":
             return list_resp_id
-       
+
         # Parse vulns collection
-        ref = vuln_desc.lower().strip()        
+        ref = vuln_desc.lower().strip()
         for vuln_store_item in self._vulns:
             for csp_directive_name, csp_vulns_list in vuln_store_item.csp_vulns.iteritems():
-                for csp_vuln in csp_vulns_list:        
+                for csp_vuln in csp_vulns_list:
                     if csp_vuln.desc.strip().lower() == ref:
                         if vuln_store_item.resp_id not in list_resp_id:
                             list_resp_id.append(vuln_store_item.resp_id)

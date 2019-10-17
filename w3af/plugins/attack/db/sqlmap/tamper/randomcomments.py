@@ -13,6 +13,7 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.LOW
 
+
 def tamper(payload, **kwargs):
     """
     Add random comments to SQL keywords
@@ -36,7 +37,8 @@ def tamper(payload, **kwargs):
                 _ = word[0]
 
                 for i in xrange(1, len(word) - 1):
-                    _ += "%s%s" % ("/**/" if randomRange(0, 1) else "", word[i])
+                    _ += "%s%s" % ("/**/" if randomRange(0, 1)
+                                   else "", word[i])
 
                 _ += word[-1]
 

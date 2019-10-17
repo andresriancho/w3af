@@ -72,4 +72,3 @@ class jetleak(InfrastructurePlugin):
         return """
         Detect CVE-2015-2080 Jetty vulnerability also known as JetLeak
         """
-

@@ -44,6 +44,7 @@ class one_to_many(object):
     This is a simple wrapper that translates one argument to many in a function
     call. Useful for passing to the threadpool map function.
     """
+
     def __init__(self, func):
         self.func_orig = func
 
@@ -60,6 +61,7 @@ class return_args(object):
     Utility function that returns the args in the result, useful when calling
     functions like imap_unordered().
     """
+
     def __init__(self, func, *args, **kwds):
         self.func = partial(func, *args, **kwds)
 
@@ -247,8 +249,16 @@ class Worker(object):
                 'job': self.job,
                 'worker_id': self.id}
 
-    def __call__(self, inqueue, outqueue, initializer=None, initargs=(), maxtasks=None):
-        assert maxtasks is None or (type(maxtasks) in (int, long) and maxtasks > 0)
+    def __call__(
+            self,
+            inqueue,
+            outqueue,
+            initializer=None,
+            initargs=(),
+            maxtasks=None):
+        assert maxtasks is None or (
+            type(maxtasks) in (
+                int, long) and maxtasks > 0)
 
         put = outqueue.put
         get = inqueue.get
@@ -282,7 +292,7 @@ class Worker(object):
 
             try:
                 result = (True, func(*args, **kwds))
-            except Exception, e:
+            except Exception as e:
                 add_traceback_string(e)
                 result = (False, e)
 

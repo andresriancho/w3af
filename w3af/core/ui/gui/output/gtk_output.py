@@ -42,15 +42,16 @@ class GtkOutput(OutputPlugin):
     """
     This is an observer which exposes an OutputPlugin API in order to be added
     to the output manager as one more plugin.
-    
+
     Please note that this is NOT a real plugin, as it can't be enabled/disabled
     by a user.
-    
+
     Any part of the GTK ui can subscribe to the messages that this object
-    receives, and will get all data that is sent to the output manager. 
+    receives, and will get all data that is sent to the output manager.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         pass
 
@@ -87,7 +88,11 @@ class GtkOutput(OutputPlugin):
         m = Message(ERROR, self._clean_string(msg_string), new_line)
         self._send_to_observers(m)
 
-    def vulnerability(self, msg_string, new_line=True, severity=severity.MEDIUM):
+    def vulnerability(
+            self,
+            msg_string,
+            new_line=True,
+            severity=severity.MEDIUM):
         """
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
@@ -109,19 +114,19 @@ class GtkOutput(OutputPlugin):
         Adds a message object to the queue.
         """
         to_remove = set()
-        
+
         for observer in observers.copy():
             try:
                 observer(m)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Observer function at "%s" failed with exception "%s".'\
                       ' Removing observer from list.'
                 om.out.error(msg % (observer, e))
                 to_remove.add(observer)
-        
+
         for broken_obs in to_remove:
             observers.remove(broken_obs)
-    
+
     def subscribe(self, observer):
         observers.add(observer)
 
@@ -134,7 +139,7 @@ class GtkOutput(OutputPlugin):
         observers = set()
 
 
-#pylint: disable=E1103
+# pylint: disable=E1103
 def subscribe_to_messages(observer_function):
     """
     Subscribe observer_function to the GtkOutput messages
@@ -159,7 +164,7 @@ def unsubscribe_to_messages(observer_function):
         if isinstance(plugin_inst, GtkOutput):
             plugin_inst.unsubscribe(observer_function)
             break
-#pylint: enable=E1103
+# pylint: enable=E1103
 
 
 class Message(object):

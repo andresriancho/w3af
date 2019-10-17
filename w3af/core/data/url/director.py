@@ -7,7 +7,11 @@ from urllib2 import (OpenerDirector, ProxyHandler, UnknownHandler, HTTPHandler,
 
 
 class CustomOpenerDirector(OpenerDirector):
-    def open(self, full_url, data=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
+    def open(
+            self,
+            full_url,
+            data=None,
+            timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         """
         Overriding to remove the timeout kwarg which was being used below to
         override my own HTTPRequest.timeout attribute.
@@ -25,7 +29,7 @@ class CustomOpenerDirector(OpenerDirector):
         protocol = req.get_type()
 
         # pre-process request
-        meth_name = protocol+"_request"
+        meth_name = protocol + "_request"
         for processor in self.process_request.get(protocol, []):
             meth = getattr(processor, meth_name)
             req = meth(req)
@@ -33,7 +37,7 @@ class CustomOpenerDirector(OpenerDirector):
         response = self._open(req, data)
 
         # post-process response
-        meth_name = protocol+"_response"
+        meth_name = protocol + "_response"
         for processor in self.process_response.get(protocol, []):
             meth = getattr(processor, meth_name)
             response = meth(req, response)

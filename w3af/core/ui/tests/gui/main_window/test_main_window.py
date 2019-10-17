@@ -25,9 +25,9 @@ from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestMainWindow(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'main_window', 'images')
-    
+
     def test_main_menu(self):
         self.hover('main-window-title')
         self.find('main-window-menu')
@@ -39,20 +39,19 @@ class TestMainWindow(XpresserUnittest):
         self.find('audit_plugin_type')
         self.double_click('audit_plugin_type_text')
         self.find('eval_plugin')
-        
+
         self.double_click('output_plugin_type_text')
         self.find('output_plugin_list')
-    
+
     def test_tab_navigation(self):
         self.sleep(1)
         self.click('log_tab')
         self.find('scan_not_started')
-        
+
         self.click('results_tab')
         self.find('scan_not_started')
 
         self.find('throbber_stopped')
-        
+
         self.click('exploit_tab')
         self.find('exploit_list')
-        

@@ -34,7 +34,7 @@ class TestStartUpConfig(unittest.TestCase):
     def tearDown(self):
         try:
             os.unlink(self.CFG_FILE)
-        except:
+        except BaseException:
             pass
 
     def test_save(self):
@@ -72,5 +72,6 @@ class TestStartUpConfig(unittest.TestCase):
         scfg = StartUpConfig(self.CFG_FILE)
         self.assertEqual(scfg.last_upd, date.today())
         self.assertEqual(scfg.accepted_disclaimer, True)
-        self.assertEqual(scfg.last_commit_id, '3f4808082c1943f964669af1a1c94245bab09c61')
+        self.assertEqual(scfg.last_commit_id,
+                         '3f4808082c1943f964669af1a1c94245bab09c61')
         self.assertEqual(scfg.freq, 'D')

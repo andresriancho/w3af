@@ -55,14 +55,15 @@ def build_params_monkey_patch(op):
         params[sanitized_name] = param
         params.add_alias(param.name, sanitized_name)
 
-    # Security parameters cannot override and been overridden by operation or path objects
+    # Security parameters cannot override and been overridden by operation or
+    # path objects
     new_params = {}
     new_param_aliases = {}
     for parameter in op.security_parameters:
         param_name = sanitize_name(parameter.name)
         """
         Removed this code:
-        
+
             if param_name in params:
                 raise SwaggerSchemaError(
                     "'{0}' security parameter is overriding a parameter defined in operation or path object".format(
@@ -73,7 +74,7 @@ def build_params_monkey_patch(op):
                 # not directly in params because different security requirements could share parameters
                 new_params[param_name] = parameter
                 new_param_aliases[parameter.name] = param_name
-        
+
         And replaced it with:
         """
         new_params[param_name] = parameter

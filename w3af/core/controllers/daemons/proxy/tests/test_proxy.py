@@ -43,9 +43,9 @@ class TestProxy(unittest.TestCase):
         self._proxy = Proxy(self.IP, 0, ExtendedUrllib(), ProxyHandler)
         self._proxy.start()
         self._proxy.wait_for_start()
-        
+
         port = self._proxy.get_port()
-        
+
         # Build the proxy opener
         proxy_url = 'http://%s:%s' % (self.IP, port)
         proxy_handler = urllib2.ProxyHandler({'http': proxy_url,
@@ -126,7 +126,7 @@ class TestProxy(unittest.TestCase):
         resp = urllib2.urlopen(get_moth_http()).read()
 
         self.assertEqual(resp, proxy_resp)
-    
+
     def test_stop_no_requests(self):
         """Test what happens if I stop the proxy without sending any requests
         through it"""
@@ -137,7 +137,7 @@ class TestProxy(unittest.TestCase):
         """Test what happens if I stop the proxy twice."""
         # Note that the test is completed by self._proxy.stop() in tearDown
         self._proxy.stop()
-    
+
     def tearDown(self):
         # Shutdown the proxy server
         self._proxy.stop()
@@ -147,7 +147,7 @@ class TestProxy(unittest.TestCase):
 
         try:
             self.proxy_opener.open(get_moth_http()).read()
-        except urllib2.HTTPError, hte:
+        except urllib2.HTTPError as hte:
             # By default urllib2 handles 500 errors as exceptions, so we match
             # against this exception object
             self.assertEqual(hte.code, 500)

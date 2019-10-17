@@ -37,6 +37,7 @@ class CrawlPlugin(Plugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def discover_wrapper(self, fuzzable_request, debugging_id):
         """
         Wrapper around the crawl method in order to perform some generic tasks.
@@ -54,7 +55,7 @@ class CrawlPlugin(Plugin):
 
         try:
             return self.crawl(fuzzable_request_copy, debugging_id)
-        except FourOhFourDetectionException, ffde:
+        except FourOhFourDetectionException as ffde:
             # We simply ignore any exceptions we find during the 404 detection
             # process. FYI: This doesn't break the xurllib error handling which
             # happens at lower layers.
@@ -78,19 +79,20 @@ class CrawlPlugin(Plugin):
 
     def get_type(self):
         return 'crawl'
-    
+
     def http_get_and_parse(self, url, *args, **kwargs):
         """
         Perform an HTTP GET to url, and if the response is not a 404 then put()
         a FuzzableRequest with the url in the output queue, so it can be
         parsed later by web_spider.py (or any other plugin which does parsing)
-        
+
         :return: The http response that was generated as a response to "GET url"
         """
         fr = FuzzableRequest(url, method='GET')
 
         on_success = kwargs.pop('on_success', None)
-        http_response = self._uri_opener.send_mutant(fr, cache=True, *args, **kwargs)
+        http_response = self._uri_opener.send_mutant(
+            fr, cache=True, *args, **kwargs)
 
         # The 204 check is because of Plugin.handle_url_error()
         if not is_404(http_response) and not http_response.get_code() == 204:
@@ -114,7 +116,8 @@ class CrawlPlugin(Plugin):
         fr = FuzzableRequest(url, method='GET')
 
         on_success = kwargs.pop('on_success', None)
-        http_response = self._uri_opener.send_mutant(fr, cache=True, *args, **kwargs)
+        http_response = self._uri_opener.send_mutant(
+            fr, cache=True, *args, **kwargs)
 
         if on_success is not None:
             on_success(http_response, url, *args)

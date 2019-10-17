@@ -51,6 +51,7 @@ class TestGoogle(unittest.TestCase):
     @see: test_GMobileSearch, test_GStandardSearch, test_GAjaxSearch below for
           tests on these particular search implementations.
     """
+
     def setUp(self):
         self.query, self.limit = random.choice([('big bang theory', 20),
                                                 ('two and half man', 20),
@@ -99,7 +100,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
     GoogleApiSearcher = None
 
     COUNT = 10
-    
+
     def setUp(self):
         self.opener = ExtendedUrllib()
 
@@ -110,14 +111,15 @@ class BaseGoogleAPISearch(unittest.TestCase):
     def test_len_link_results(self):
         if self.GoogleApiSearcher is None:
             return
-        
+
         keywords = ['pink', 'red', 'blue']
         random.shuffle(keywords)
         query = ' '.join(keywords)
         start = 0
         # pylint: disable=E1102
         # E1102: self.GoogleApiSearcher is not callable
-        searcher = self.GoogleApiSearcher(self.opener, query, start, self.COUNT)
+        searcher = self.GoogleApiSearcher(
+            self.opener, query, start, self.COUNT)
 
         self.assertEqual(searcher.status, IS_NEW)
 
@@ -151,13 +153,14 @@ class BaseGoogleAPISearch(unittest.TestCase):
     def test_links_results_domain(self):
         if self.GoogleApiSearcher is None:
             return
-        
+
         domain = "www.bonsai-sec.com"
         query = "site:%s" % domain
         start = 0
         # pylint: disable=E1102
         # E1102: self.GoogleApiSearcher is not callable
-        searcher = self.GoogleApiSearcher(self.opener, query, start, self.COUNT)
+        searcher = self.GoogleApiSearcher(
+            self.opener, query, start, self.COUNT)
 
         self.assertEqual(searcher.status, IS_NEW)
 

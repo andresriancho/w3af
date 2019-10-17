@@ -68,10 +68,10 @@ class AttackPlugin(Plugin, CommonAttackMethods):
 
     def get_exploitable_vulns(self):
         vulns = []
-        
+
         for location in self.get_kb_location():
             vulns.extend(kb.kb.get(location, location))
-        
+
         return vulns
 
     def can_exploit(self, vuln_to_exploit=None):
@@ -85,10 +85,10 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             error_msg = 'can_exploit requires an integer list got %s instead.'
             if not isinstance(vuln_to_exploit, list):
                 raise TypeError(error_msg % type(vuln_to_exploit))
-            
+
             if not all([isinstance(_id, int) for _id in vuln_to_exploit]):
                 raise TypeError(error_msg % type(vuln_to_exploit))
-        
+
         vulns = self.get_exploitable_vulns()
         if vuln_to_exploit is not None:
             vulns = [v for v in vulns if v.get_id() == vuln_to_exploit]
@@ -159,7 +159,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
 
         Then the exploit plugin that exploits os_commanding
         (attack.os_commanding) should return ['os_commanding',] in this method.
-        
+
         If there is more than one location the implementation should return
         ['a', 'b', ..., 'n']
         """

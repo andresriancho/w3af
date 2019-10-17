@@ -151,8 +151,8 @@ class TestCreateFuzzableRequestFromParts(unittest.TestCase):
 
         form_params = FormParameters()
         form_params.add_field_by_attr_items([('name', 'a'),
-                               ('type', 'text'),
-                               ('value', 'bcd')])
+                                             ('type', 'text'),
+                                             ('value', 'bcd')])
 
         expected_container = MultipartContainer(form_params)
         expected_headers = Headers([('content-type',

@@ -41,8 +41,8 @@ from w3af.core.data.parsers.mp_document_parser import mp_doc_parser
 from w3af.core.data.parsers.utils.cache_stats import CacheStats
 from w3af.core.data.parsers.document_parser import DocumentParser
 from w3af.core.data.db.disk_set import DiskSet
-from w3af.core.data.parsers.utils.response_uniq_id import (get_response_unique_id,
-                                                           get_body_unique_id)
+from w3af.core.data.parsers.utils.response_uniq_id import (
+    get_response_unique_id, get_body_unique_id)
 
 
 class ParserCache(CacheStats):
@@ -57,7 +57,7 @@ class ParserCache(CacheStats):
 
     def __init__(self):
         super(ParserCache, self).__init__()
-        
+
         self._cache = SynchronizedLRUDict(self.CACHE_SIZE)
         self._can_parse_cache = SynchronizedLRUDict(self.CACHE_SIZE * 10)
         self._parser_finished_events = {}
@@ -98,7 +98,8 @@ class ParserCache(CacheStats):
         :param http_response: The HTTP response to verify
         :return: True if we can parse this HTTP response
         """
-        cached_can_parse = self._can_parse_cache.get(http_response.get_id(), default=None)
+        cached_can_parse = self._can_parse_cache.get(
+            http_response.get_id(), default=None)
 
         if cached_can_parse is not None:
             return cached_can_parse
@@ -108,7 +109,7 @@ class ParserCache(CacheStats):
         #
         try:
             can_parse = DocumentParser.can_parse(http_response)
-        except:
+        except BaseException:
             # We catch all the exceptions here and just return False because
             # the real parsing procedure will (most likely) fail to parse
             # this response too.
@@ -165,7 +166,8 @@ class ParserCache(CacheStats):
             # There is one subprocess already processing this http response
             # body, the best thing to do here is to make this thread wait
             # until that process has finished
-            wait_result = parser_finished.wait(timeout=mp_doc_parser.PARSER_TIMEOUT)
+            wait_result = parser_finished.wait(
+                timeout=mp_doc_parser.PARSER_TIMEOUT)
             if not wait_result:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s". Waited more than %s sec.'
@@ -207,10 +209,10 @@ class ParserCache(CacheStats):
                 # Act just like when there is no parser
                 msg = 'Reached memory usage limit parsing "%s".' % http_response.get_url()
                 raise BaseFrameworkException(msg)
-            except ScanMustStopException, e:
+            except ScanMustStopException as e:
                 msg = 'The document parser is in an invalid state! %s'
                 raise ScanMustStopException(msg % e)
-            except:
+            except BaseException:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s".' % http_response.get_url()
                 raise BaseFrameworkException(msg)
@@ -231,7 +233,12 @@ class ParserCache(CacheStats):
         msg += detail
         om.out.debug(msg % http_response.get_uri())
 
-    def get_tags_by_filter(self, http_response, tags, yield_text=False, cache=True):
+    def get_tags_by_filter(
+            self,
+            http_response,
+            tags,
+            yield_text=False,
+            cache=True):
         """
         Get specific tags from http_response using the cache if possible
 
@@ -286,7 +293,8 @@ class ParserCache(CacheStats):
         hash_string = get_body_unique_id(http_response, prepend=args)
 
         if hash_string in self._parser_blacklist:
-            self._log_return_empty(http_response, 'HTTP response is blacklisted')
+            self._log_return_empty(
+                http_response, 'HTTP response is blacklisted')
             return []
 
         #
@@ -297,10 +305,12 @@ class ParserCache(CacheStats):
             # There is one subprocess already processing this http response
             # body, the best thing to do here is to make this thread wait
             # until that process has finished
-            wait_result = parser_finished.wait(timeout=mp_doc_parser.PARSER_TIMEOUT)
+            wait_result = parser_finished.wait(
+                timeout=mp_doc_parser.PARSER_TIMEOUT)
             if not wait_result:
                 # Act just like when there is no parser
-                self._log_return_empty(http_response, 'Timeout waiting for response')
+                self._log_return_empty(
+                    http_response, 'Timeout waiting for response')
                 return []
 
         # metric increase
@@ -329,7 +339,8 @@ class ParserCache(CacheStats):
                 self.add_to_blacklist(hash_string)
 
                 # Act just like when there is no parser
-                self._log_return_empty(http_response, 'Timeout waiting for get_tags_by_filter()')
+                self._log_return_empty(
+                    http_response, 'Timeout waiting for get_tags_by_filter()')
                 return []
             except MemoryError:
                 # We failed to get a parser for this HTTP response, we better
@@ -338,12 +349,13 @@ class ParserCache(CacheStats):
                 self.add_to_blacklist(hash_string)
 
                 # Act just like when there is no parser
-                self._log_return_empty(http_response, 'Reached memory usage limit')
+                self._log_return_empty(
+                    http_response, 'Reached memory usage limit')
                 return []
-            except ScanMustStopException, e:
+            except ScanMustStopException as e:
                 msg = 'The document parser is in an invalid state! %s'
                 raise ScanMustStopException(msg % e)
-            except Exception, e:
+            except Exception as e:
                 # Act just like when there is no parser
                 msg = 'Unhandled exception running get_tags_by_filter("%s"): %s'
                 args = (http_response.get_url(), e)
@@ -364,7 +376,7 @@ class ParserCache(CacheStats):
 def cleanup_pool():
     if 'dpc' in globals():
         dpc.clear()
-    
+
 
 if is_main_process():
     dpc = ParserCache()

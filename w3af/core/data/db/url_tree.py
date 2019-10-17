@@ -116,7 +116,8 @@ class URLTree(object):
         """
         tree_path = []
 
-        protocol_domain = u'%s://%s' % (url.get_protocol(), url.get_net_location())
+        protocol_domain = u'%s://%s' % (url.get_protocol(),
+                                        url.get_net_location())
         tree_path.append(protocol_domain)
 
         path = url.get_path()

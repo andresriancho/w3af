@@ -31,6 +31,7 @@ class table(object):
     a clever method of drawing the tables. Ok, clever enough for our purposes.
     :author: Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     """
+
     def __init__(self, rows):
         """
         :param rows: array of arrays
@@ -41,7 +42,12 @@ class table(object):
         self._colsRange = range(self._colsNum)
         self._separator = '|'
 
-    def draw(self, termWidth=terminal_width(), header=False, group=None, transf=None):
+    def draw(
+            self,
+            termWidth=terminal_width(),
+            header=False,
+            group=None,
+            transf=None):
         if len(self._rows) == 0:
             return
 
@@ -64,9 +70,9 @@ class table(object):
         ls = len(self._separator)
         space = termWidth - self._colsNum * (ls + 2) - ls  # Useful space
 
-        #maximal length of content for every column
-        maxLengths = [max([max(map(len, row[i].split('\n'))) for row in self._rows if len(row) > 0])
-                      for i in self._colsRange]
+        # maximal length of content for every column
+        maxLengths = [max([max(map(len, row[i].split('\n')))
+                           for row in self._rows if len(row) > 0]) for i in self._colsRange]
         sumMaxLen = sum(maxLengths)
 
         # We calculate the widthes in the proportion to they longest line
@@ -82,8 +88,8 @@ class table(object):
         This function acts as Robin Hood: it takes excess of space from the "richest" column and gives it
         to the poorest ones.
         """
-        minLengths = [max([max(map(len, row[i].split() + [''])) for row in self._rows if len(row) > 0])
-                      for i in range(self._colsNum)]
+        minLengths = [max([max(map(len, row[i].split() + ['']))
+                           for row in self._rows if len(row) > 0]) for i in range(self._colsNum)]
         shifts = [w - mw for mw, w in zip(minLengths, self._widthes)]
         #length = len(shifts)
         borrow = zip(self._colsRange, shifts)
@@ -118,7 +124,7 @@ class table(object):
     def draw_br(self, char='-'):
         ls = len(self._separator)
         om.out.console(self._separator + char * (self._tableWidth -
-                       2 * ls) + self._separator)
+                                                 2 * ls) + self._separator)
 
     def draw_row(self, row):
         if len(row) == 0:
@@ -128,11 +134,11 @@ class table(object):
                                                              self._widthes)]
         emptyLines = [' ' * w for w in self._widthes]
         maxHeight = max(map(len, columns))
-        columns = [col + [er] * (maxHeight - len(col)) for (col,
-                                                            er) in zip(columns, emptyLines)]
+        columns = [col + [er] * (maxHeight - len(col))
+                   for (col, er) in zip(columns, emptyLines)]
 
         # width = sum(widthes) + (len(columns)-1)*3 + 4
         s = self._separator
         for rowNum in range(0, maxHeight):
-            om.out.console(s + ' '
-                           + (' ' + s + ' ').join([col[rowNum] for col in columns]) + ' ' + s)
+            om.out.console(
+                s + ' ' + (' ' + s + ' ').join([col[rowNum] for col in columns]) + ' ' + s)

@@ -83,9 +83,16 @@ class oracle_discovery(CrawlPlugin):
 
             if mo:
                 desc = '"%s" version "%s" was detected at "%s".'
-                desc %= (mo.group(1).title(), mo.group(2).title(), response.get_url())
+                desc %= (
+                    mo.group(1).title(),
+                    mo.group(2).title(),
+                    response.get_url())
 
-                i = Info('Oracle Application Server', desc, response.id, self.get_name())
+                i = Info(
+                    'Oracle Application Server',
+                    desc,
+                    response.id,
+                    self.get_name())
                 i.set_url(response.get_url())
 
                 kb.kb.append(self, 'oracle_discovery', i)

@@ -45,6 +45,7 @@ class export_request(entries.RememberingWindow):
 
     :author: Andres Riancho < andres.riancho | gmail.com >
     """
+
     def __init__(self, w3af, initial_request=None):
         super(export_request, self).__init__(
             w3af, "exportreq", "w3af - Export Requests", "Export_Requests")
@@ -120,7 +121,7 @@ class export_request(entries.RememberingWindow):
 
         try:
             exported_request = func(self.http_request.get_text())
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             error_msg = str(w3)
             self.exported_text.set_text(error_msg)
         else:
@@ -131,8 +132,13 @@ class export_request(entries.RememberingWindow):
         Save the exported data to a file using a file chooser.
         """
         chooser = gtk.FileChooserDialog(
-            title='Save as...', action=gtk.FILE_CHOOSER_ACTION_SAVE,
-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+            title='Save as...',
+            action=gtk.FILE_CHOOSER_ACTION_SAVE,
+            buttons=(
+                gtk.STOCK_CANCEL,
+                gtk.RESPONSE_CANCEL,
+                gtk.STOCK_OPEN,
+                gtk.RESPONSE_OK))
 
         response = chooser.run()
         if response == gtk.RESPONSE_OK:
@@ -141,9 +147,14 @@ class export_request(entries.RememberingWindow):
             try:
                 fh = file(filename, 'w')
                 fh.write(self.exported_text.get_text())
-            except:
+            except BaseException:
                 msg = _("Failed to save exported data to file")
-                dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
+                dlg = gtk.MessageDialog(
+                    None,
+                    gtk.DIALOG_MODAL,
+                    gtk.MESSAGE_ERROR,
+                    gtk.BUTTONS_OK,
+                    msg)
                 opt = dlg.run()
                 dlg.destroy()
         elif response == gtk.RESPONSE_CANCEL:

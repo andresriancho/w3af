@@ -25,24 +25,24 @@ from w3af.core.ui.tests.wrappers.xpresser_unittest import XpresserUnittest
 
 
 class TestEncodeDecode(XpresserUnittest):
-    
+
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'encode_decode', 'images')
     EXTRA_IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'tools_menu', 'images')
-    
+
     def setUp(self):
         super(TestEncodeDecode, self).setUp()
         self.xp.load_images(self.EXTRA_IMAGES)
-        
+
     def test_encode_url_default(self):
         self.find('all-menu')
         self.click('encode-decode-icon')
         self.find('encode-decode-window-title')
 
         self.type('encode-me', False)
-        
+
         self.click('encode')
         self.find('encode_me_result')
-        
+
         self.click('close-with-cross')
 
     def test_encode_md5(self):
@@ -51,15 +51,15 @@ class TestEncodeDecode(XpresserUnittest):
         self.find('encode-decode-window-title')
 
         self.type('encode-me', False)
-        
+
         self.click('drop_down')
         self.click('md5_hash')
-        
+
         self.click('encode')
         self.find('md5_for_encode-me')
-        
+
         self.click('close-with-cross')
-    
+
     def test_decode_url(self):
         self.find('all-menu')
         self.click('encode-decode-icon')
@@ -67,10 +67,8 @@ class TestEncodeDecode(XpresserUnittest):
 
         self.click('bottom_text_input')
         self.type('hola%20mundo', False)
-        
+
         self.click('decode')
         self.find('decode_hola_mundo_result')
-        
-        self.click('close-with-cross')
 
-        
+        self.click('close-with-cross')

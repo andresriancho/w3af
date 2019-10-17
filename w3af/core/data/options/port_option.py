@@ -43,7 +43,7 @@ class PortOption(BaseOption):
             port = int(value)
             assert port > 0
             assert port < 65536
-        except:
+        except BaseException:
             msg = 'Invalid port specified, it needs to be a number between'\
                   ' 1 and 65535.'
             raise BaseFrameworkException(msg)

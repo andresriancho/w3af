@@ -94,7 +94,7 @@ class extrusionScanner(object):
                 serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             serversocket.bind(('', port))
             serversocket.listen(5)
-        except:
+        except BaseException:
             return False
         else:
             serversocket.close()
@@ -106,7 +106,8 @@ class extrusionScanner(object):
             return 1
         else:
             _, file_content, _ = self._selectExtrusionClient()
-            return self._transferHandler.estimate_transfer_time(len(file_content)) + 8
+            return self._transferHandler.estimate_transfer_time(
+                len(file_content)) + 8
 
     def get_inbound_port(self, desiredProtocol='TCP'):
         """
@@ -170,7 +171,8 @@ class extrusionScanner(object):
                         localPorts.append((port, protocol))
 
                 if not localPorts:
-                    raise BaseFrameworkException('All the inbound ports are in use.')
+                    raise BaseFrameworkException(
+                        'All the inbound ports are in use.')
                 else:
                     msg = 'The following ports are not bound to a local process'
                     msg += ' and can be used by w3af:'
@@ -206,8 +208,8 @@ class extrusionScanner(object):
         remoteFilename += '.' + extension
 
         # do the transfer
-        apply(self._transferHandler.transfer, (extrusionClient,
-              remoteFilename))
+        self._transferHandler.transfer(*(extrusionClient,
+                                         remoteFilename))
 
         return interpreter, remoteFilename
 
@@ -216,14 +218,14 @@ class extrusionScanner(object):
         A wrapper for executing commands
         """
         om.out.debug('Executing: ' + command)
-        response = apply(self._exec_method, (command,))
+        response = self._exec_method(*(command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response
 
     def can_scan(self):
         try:
             self._selectExtrusionClient()
-        except:
+        except BaseException:
             return False
         else:
             return True
@@ -238,7 +240,7 @@ class extrusionScanner(object):
             - bash sockets ?
             - gcc compiler ?
         """
-        ### TODO! Implement this!
+        # TODO! Implement this!
         if '6' in self._exec('python -c print+3+3'):
             # "python -c 'print 3+3'" fails with magic quotes on... but
             # this trick of the print+3+3 works ( returns 6 ) and ALSO evades
@@ -273,6 +275,7 @@ class extrusionScanner(object):
         res = self._exec(cmd)
 
         if 'OK.' not in res:
-            raise BaseFrameworkException('The extrusion client failed to execute.')
+            raise BaseFrameworkException(
+                'The extrusion client failed to execute.')
         else:
             om.out.debug('The extrusion client run as expected.')

@@ -80,7 +80,7 @@ class user_reports_bug(SimpleBaseWindow, GithubBugReport):
 
         self.vbox.pack_start(self.hbox, True, False)
 
-        #self.resize(400,450)
+        # self.resize(400,450)
         self.add(self.vbox)
         self.show_all()
 

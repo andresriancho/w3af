@@ -50,9 +50,9 @@ class ReadShell(Shell):
             _help = """\
             read:
                 The read command echoes the content of a file to the console. The
-                command takes only one parameter: the full path of the file to 
+                command takes only one parameter: the full path of the file to
                 read.
-            
+
             Examples:
                 read /etc/passwd
             """
@@ -61,7 +61,7 @@ class ReadShell(Shell):
             download:
                 The download command reads a file in the remote system and saves
                 it to the local filesystem.
-            
+
             Examples:
                 download /etc/passwd /tmp/passwd
             """
@@ -95,7 +95,7 @@ class ReadShell(Shell):
         else:
             try:
                 fh = file(local_filename, 'w')
-            except:
+            except BaseException:
                 return 'Failed to open local file for writing.'
             else:
                 fh.write(remote_content)
@@ -135,7 +135,7 @@ class ReadShell(Shell):
 
         elif return_err:
             return 'Command "%s" not found. Please type "help".' % command
-        
+
         return
 
     def identify_os(self):

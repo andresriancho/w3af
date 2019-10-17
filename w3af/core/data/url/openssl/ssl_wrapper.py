@@ -29,8 +29,8 @@ CERT_REQUIRED = ssl.CERT_REQUIRED
 _openssl_cert_reqs = {
     CERT_NONE: OpenSSL.SSL.VERIFY_NONE,
     CERT_OPTIONAL: OpenSSL.SSL.VERIFY_PEER,
-    CERT_REQUIRED: OpenSSL.SSL.VERIFY_PEER | \
-            OpenSSL.SSL.VERIFY_FAIL_IF_NO_PEER_CERT
+    CERT_REQUIRED: OpenSSL.SSL.VERIFY_PEER |
+    OpenSSL.SSL.VERIFY_FAIL_IF_NO_PEER_CERT
 }
 
 
@@ -59,6 +59,7 @@ class SSLSocket(object):
     [1] https://github.com/mpdehaan/certmaster/blob/master/certmaster/SSLConnection.py
     [2] https://github.com/andresriancho/w3af/issues/7989
     """
+
     def __init__(self, ssl_connection, sock):
         """
         :param ssl_connection: The established openssl connection
@@ -100,7 +101,7 @@ class SSLSocket(object):
 
             try:
                 self.shutdown()
-            except OpenSSL.SSL.Error, ssl_error:
+            except OpenSSL.SSL.Error as ssl_error:
                 message = str(ssl_error)
                 if not message:
                     # We get here when the remote end already closed the
@@ -128,7 +129,8 @@ class SSLSocket(object):
             # should be done on this socket
             return ''
         except OpenSSL.SSL.WantReadError:
-            rd, wd, ed = select.select([self.sock], [], [], self.sock.gettimeout())
+            rd, wd, ed = select.select(
+                [self.sock], [], [], self.sock.gettimeout())
             if not rd:
                 # empty string signalling that the other side has closed the
                 # connection or that some kind of error happen and no more reads
@@ -147,7 +149,8 @@ class SSLSocket(object):
             try:
                 return self.ssl_conn.send(data)
             except OpenSSL.SSL.WantWriteError:
-                _, wlist, _ = select.select([], [self.sock], [], self.sock.gettimeout())
+                _, wlist, _ = select.select(
+                    [], [self.sock], [], self.sock.gettimeout())
                 if not wlist:
                     raise socket.timeout()
                 continue
@@ -166,8 +169,8 @@ class SSLSocket(object):
             raise ssl.SSLError('No peer certificate')
 
         if binary_form:
-            return OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_ASN1,
-                                                   x509)
+            return OpenSSL.crypto.dump_certificate(
+                OpenSSL.crypto.FILETYPE_ASN1, x509)
 
         dns_name = []
         general_names = SubjectAltName()
@@ -239,7 +242,7 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
     if ca_certs:
         try:
             ctx.load_verify_locations(ca_certs, None)
-        except OpenSSL.SSL.Error, e:
+        except OpenSSL.SSL.Error as e:
             raise ssl.SSLError('Bad ca_certs: %r' % ca_certs, e)
 
     cnx = OpenSSL.SSL.Connection(ctx, sock)
@@ -286,6 +289,5 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
     sock.setblocking(1)
     ssl_socket = SSLSocket(cnx, sock)
     ssl_socket.settimeout(timeout)
-    
-    return ssl_socket
 
+    return ssl_socket

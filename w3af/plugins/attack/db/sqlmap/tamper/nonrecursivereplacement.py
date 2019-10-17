@@ -13,6 +13,7 @@ from lib.core.enums import PRIORITY
 
 __priority__ = PRIORITY.NORMAL
 
+
 def tamper(payload, **kwargs):
     """
     Replaces predefined SQL keywords with representations
@@ -29,13 +30,16 @@ def tamper(payload, **kwargs):
     keywords = ("UNION", "SELECT", "INSERT", "UPDATE", "FROM", "WHERE")
     retVal = payload
 
-    warnMsg = "currently only couple of keywords are being processed %s. " % str(keywords)
+    warnMsg = "currently only couple of keywords are being processed %s. " % str(
+        keywords)
     warnMsg += "You can set it manually according to your needs"
     singleTimeWarnMessage(warnMsg)
 
     if payload:
         for keyword in keywords:
             _ = random.randint(1, len(keyword) - 1)
-            retVal = re.sub(r"(?i)\b%s\b" % keyword, "%s%s%s" % (keyword[:_], keyword, keyword[_:]), retVal)
+            retVal = re.sub(r"(?i)\b%s\b" %
+                            keyword, "%s%s%s" %
+                            (keyword[:_], keyword, keyword[_:]), retVal)
 
     return retVal

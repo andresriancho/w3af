@@ -39,7 +39,7 @@ class TestFileUtils(unittest.TestCase):
         filename = os.path.join(ROOT_PATH, 'core', 'data', 'misc',
                                 'notexists.py')
         self.assertRaises(ValueError, days_since_file_update, filename, 0)
-        
+
     def test_days_since_file_update_false(self):
         filename = os.path.join(ROOT_PATH, 'core', 'data', 'misc',
                                 'file_utils.py')
@@ -47,11 +47,23 @@ class TestFileUtils(unittest.TestCase):
         self.assertFalse(result)
 
     def test_days_since_file_update_directory(self):
-        dir_name = os.path.join(ROOT_PATH, 'core', 'data', 'misc', 'tests', 'test_dir')
+        dir_name = os.path.join(
+            ROOT_PATH,
+            'core',
+            'data',
+            'misc',
+            'tests',
+            'test_dir')
         result = days_since_file_update(dir_name, 0)
         self.assertTrue(result)
 
     def test_get_days_since_last_update_directory(self):
-        dir_name = os.path.join(ROOT_PATH, 'core', 'data', 'misc', 'tests', 'test_dir')
+        dir_name = os.path.join(
+            ROOT_PATH,
+            'core',
+            'data',
+            'misc',
+            'tests',
+            'test_dir')
         dslu = get_days_since_last_update(dir_name)
         self.assertGreater(dslu, 0)

@@ -61,7 +61,7 @@ class ScanExceptionResourceTest(APIUnitTest):
                             u'function_name': u'exception_creator',
                             u'href': u'/scans/0/exceptions/0',
                             u'id': 0,
-                            #u'lineno': 123,
+                            # u'lineno': 123,
                             u'phase': u'phase',
                             u'plugin': u'plugin'}
         self.assertEqual(exception, expected_summary)

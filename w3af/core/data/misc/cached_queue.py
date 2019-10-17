@@ -57,6 +57,7 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
 
     Which allows users to understand how fast a queue is moving.
     """
+
     def __init__(self, maxsize=0, name='Unknown'):
         self.name = name
         self.max_in_memory = maxsize
@@ -93,7 +94,7 @@ class CachedQueue(Queue.Queue, QueueSpeedMeasurement):
     def _get_class_name(self, obj):
         try:
             return obj.__class__.__name__
-        except:
+        except BaseException:
             return type(obj)
 
     def _put(self, item):

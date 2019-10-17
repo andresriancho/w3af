@@ -41,6 +41,7 @@ class RESTAPIOutput(OutputPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self):
         super(RESTAPIOutput, self).__init__()
 
@@ -67,7 +68,7 @@ class RESTAPIOutput(OutputPlugin):
     def cleanup(self):
         try:
             self.log.close()
-        except:
+        except BaseException:
             # Just in case we call cleanup twice on the same shelve
             pass
 

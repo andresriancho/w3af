@@ -31,6 +31,7 @@ class pe(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
+
     def __init__(self, arch='32bit'):
         self._arch = arch
         self._shellcode = '\x90'
@@ -52,12 +53,13 @@ class pe(object):
         """
         try:
             template = file(self._templateFileName, 'r').read()
-        except Exception, e:
+        except Exception as e:
             raise BaseFrameworkException(
                 'Failed to open PE template file. Exception: ' + str(e))
         else:
             paddingLen = self._maxPayloadLen - len(self._shellcode)
-            executable = template.replace('\x90' * self._maxPayloadLen,
-                                          self._shellcode + '\x90' * paddingLen)
+            executable = template.replace(
+                '\x90' * self._maxPayloadLen,
+                self._shellcode + '\x90' * paddingLen)
 
         return executable

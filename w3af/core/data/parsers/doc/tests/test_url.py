@@ -46,7 +46,7 @@ class TestURLParser(unittest.TestCase):
     #
     def test_simplest_url(self):
         u = URL('http://w3af.com/foo/bar.txt')
-        
+
         self.assertEqual(u.path, '/foo/bar.txt')
         self.assertEqual(u.scheme, 'http')
         self.assertEqual(u.get_file_name(), 'bar.txt')
@@ -81,13 +81,13 @@ class TestURLParser(unittest.TestCase):
         Can't specify the path without a domain and protocol
         """
         self.assertRaises(ValueError, URL, '/')
-    
+
     def test_no_domain(self):
         """
         But we can't specify a URL without a domain!
         """
         self.assertRaises(ValueError, URL, 'http://')
-    
+
     def test_case_insensitive_proto(self):
         u = URL('HtTp://w3af.com/foo/bar.txt')
         self.assertEqual(u.scheme, 'http')
@@ -95,7 +95,7 @@ class TestURLParser(unittest.TestCase):
     def test_file_proto(self):
         u = URL('file://foo/bar.txt')
         self.assertEqual(u.scheme, 'file')
-        
+
     def test_path_root(self):
         u = URL('http://w3af.com/')
         self.assertEqual(u.path, '/')
@@ -133,14 +133,18 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(u.netloc, 'w3af.org')
 
     def test_invalid_encoding(self):
-        self.assertRaises(ValueError, URL, 'http://w3af.org/', encoding='x-euc-jp')
+        self.assertRaises(
+            ValueError,
+            URL,
+            'http://w3af.org/',
+            encoding='x-euc-jp')
 
     def test_invalid_no_port(self):
         self.assertRaises(ValueError, URL, "http://w3af.com:")
 
     def test_invalid_invalid_port(self):
         self.assertRaises(ValueError, URL, "http://w3af.com:998899")
-        
+
     #
     #    Decode tests
     #
@@ -231,47 +235,54 @@ class TestURLParser(unittest.TestCase):
         encoded = original.url_encode()
         decoded = URL(encoded).url_decode()
         self.assertEqual(original, decoded)
-    
+
     #
     #    Test get_directories
     #
     def test_get_directories_path_levels_1(self):
-        result = [i.url_string for i in URL('http://w3af.com/xyz/def/123/').get_directories()]
+        result = [i.url_string for i in URL(
+            'http://w3af.com/xyz/def/123/').get_directories()]
         expected = [u'http://w3af.com/xyz/def/123/',
                     u'http://w3af.com/xyz/def/',
                     u'http://w3af.com/xyz/',
                     u'http://w3af.com/']
         self.assertEqual(result, expected)
-    
+
     def test_get_directories_path_levels_2(self):
-        result = [i.url_string for i in URL('http://w3af.com/xyz/def/').get_directories()]
+        result = [i.url_string for i in URL(
+            'http://w3af.com/xyz/def/').get_directories()]
         expected = [u'http://w3af.com/xyz/def/',
                     u'http://w3af.com/xyz/',
                     u'http://w3af.com/']
         self.assertEqual(result, expected)
-    
+
     def test_get_directories_path_levels_3(self):
-        result = [i.url_string for i in URL('http://w3af.com/xyz/').get_directories()]
+        result = [i.url_string for i in URL(
+            'http://w3af.com/xyz/').get_directories()]
         expected = [u'http://w3af.com/xyz/', u'http://w3af.com/']
         self.assertEqual(result, expected)
-    
+
     def test_get_directories_path_levels_4(self):
-        result = [i.url_string for i in URL('http://w3af.com/').get_directories()]
+        result = [i.url_string for i in URL(
+            'http://w3af.com/').get_directories()]
         expected = [u'http://w3af.com/']
         self.assertEqual(result, expected)
 
     def test_get_directories_filename(self):
-        result = [i.url_string for i in URL('http://w3af.com/def.html').get_directories()]
+        result = [i.url_string for i in URL(
+            'http://w3af.com/def.html').get_directories()]
         expected = [u'http://w3af.com/']
         self.assertEqual(result, expected)
-    
+
     def test_get_directories_fname_qs(self):
         expected = [u'http://w3af.com/']
-        
-        result = [i.url_string for i in URL('http://w3af.com/def.html?id=5').get_directories()]
+
+        result = [i.url_string for i in URL(
+            'http://w3af.com/def.html?id=5').get_directories()]
         self.assertEqual(result, expected)
-        
-        result = [i.url_string for i in URL('http://w3af.com/def.html?id=/').get_directories()]
+
+        result = [i.url_string for i in URL(
+            'http://w3af.com/def.html?id=/').get_directories()]
         self.assertEqual(result, expected)
 
     #
@@ -281,15 +292,15 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/foo.bar')
         self.assertEqual(u.url_join('abc.html').url_string,
                          u'http://w3af.com/abc.html')
-        
+
         self.assertEqual(u.url_join('/abc.html').url_string,
                          u'http://w3af.com/abc.html')
-    
+
     def test_url_join_case02(self):
         u = URL('http://w3af.com/')
         self.assertEqual(u.url_join('/abc.html').url_string,
                          u'http://w3af.com/abc.html')
-        
+
         self.assertEqual(u.url_join('/def/abc.html').url_string,
                          u'http://w3af.com/def/abc.html')
 
@@ -297,7 +308,7 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/def/jkl/')
         self.assertEqual(u.url_join('/def/abc.html').url_string,
                          u'http://w3af.com/def/abc.html')
-        
+
         self.assertEqual(u.url_join('def/abc.html').url_string,
                          u'http://w3af.com/def/jkl/def/abc.html')
 
@@ -305,7 +316,7 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com:8080/')
         self.assertEqual(u.url_join('abc.html').url_string,
                          u'http://w3af.com:8080/abc.html')
-    
+
     def test_url_join_case05(self):
         u = URL('http://w3af.com/def/')
         self.assertEqual(u.url_join(u'тест').url_string,
@@ -323,8 +334,9 @@ class TestURLParser(unittest.TestCase):
 
     def test_url_join_case07(self):
         u = URL('http://w3af.com/')
-        self.assertEqual(u.url_join('http://w3af.org:8080/abc.html').url_string,
-                         u'http://w3af.org:8080/abc.html')
+        self.assertEqual(
+            u.url_join('http://w3af.org:8080/abc.html').url_string,
+            u'http://w3af.org:8080/abc.html')
 
     def test_url_join_with_query_string(self):
         u = URL('http://w3af.com/abc/?id=1')
@@ -334,7 +346,7 @@ class TestURLParser(unittest.TestCase):
     def test_parse_qs_case01(self):
         self.assertEqual(parse_qs('id=3'),
                          QueryString([(u'id', [u'3'])]))
-    
+
     def test_parse_qs_case02(self):
         qs = QueryString([(u'id', [u'3 1'])])
         parsed_qs = parse_qs('id=3+1')
@@ -360,18 +372,21 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(parse_qs('id=3&ff=4&id=5'),
                          QueryString([(u'id', [u'3', u'5']),
                                       (u'ff', [u'4'])]))
-    
+
     def test_parse_qs_case05(self):
         self.assertEqual(parse_qs('pname'),
                          QueryString([(u'pname', [u''])]))
-    
+
     def test_parse_qs_case06(self):
         expected_parsed_url = QueryString([(u'\u9834\u82f1',
                                             [u'\u75ab\u76ca'])],
                                           encoding='euc-jp')
-        self.assertEqual(parse_qs(u'%B1%D0%B1%D1=%B1%D6%B1%D7', encoding='euc-jp'),
-                         expected_parsed_url)
-    
+        self.assertEqual(
+            parse_qs(
+                u'%B1%D0%B1%D1=%B1%D6%B1%D7',
+                encoding='euc-jp'),
+            expected_parsed_url)
+
     def test_parse_qs_case07(self):
         self.assertRaises(TypeError, parse_qs, QueryString())
 
@@ -502,11 +517,11 @@ class TestURLParser(unittest.TestCase):
     def test_str_case01(self):
         self.assertEqual(str(URL('http://w3af.com/xyz.txt;id=1?file=2')),
                          'http://w3af.com/xyz.txt;id=1?file=2')
-    
+
     def test_str_normalize_on_init(self):
         self.assertEqual(str(URL('http://w3af.com:80/')),
                          'http://w3af.com/')
-    
+
     def test_str_special_encoding_filename(self):
         self.assertEqual(str(URL(u'http://w3af.com/indéx.html', 'latin1')),
                          u'http://w3af.com/indéx.html'.encode('latin1'))
@@ -516,17 +531,18 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(str(url), 'http://w3af.com/a/b/é.php?x=á')
 
     def test_str_special_encoding_query_string_urlencoded(self):
-        msg = ('Please note that this test does NOT make any sense.'
-               'Leaving this here just as a reminder to myself.'
-               ''
-               'When the document parser extracts a URL from the HTML page'
-               ' it will call BaseParser._decode_url() to URL-decode and'
-               ' utf-8 (or whatever encoding is specified in the headers)'
-               ' decode the string and then send unicode to URL.__init__.'
-               ''
-               'Thus, sending URL-encoded data to URL.__init__ like we do'
-               ' in this test does NOT make any sense and will yield unexpected'
-               ' results.')
+        msg = (
+            'Please note that this test does NOT make any sense.'
+            'Leaving this here just as a reminder to myself.'
+            ''
+            'When the document parser extracts a URL from the HTML page'
+            ' it will call BaseParser._decode_url() to URL-decode and'
+            ' utf-8 (or whatever encoding is specified in the headers)'
+            ' decode the string and then send unicode to URL.__init__.'
+            ''
+            'Thus, sending URL-encoded data to URL.__init__ like we do'
+            ' in this test does NOT make any sense and will yield unexpected'
+            ' results.')
 
         raise SkipTest(msg)
 
@@ -539,7 +555,7 @@ class TestURLParser(unittest.TestCase):
     def test_unicode(self):
         self.assertEqual(unicode(URL('http://w3af.com:80/')),
                          u'http://w3af.com/')
-        
+
         self.assertEqual(unicode(URL(u'http://w3af.com/indéx.html', 'latin1')),
                          u'http://w3af.com/indéx.html')
 
@@ -553,9 +569,10 @@ class TestURLParser(unittest.TestCase):
     def test_all_but_scheme(self):
         self.assertEqual(URL('https://w3af.com:443/xyz/').all_but_scheme(),
                          'w3af.com/xyz/')
-        
-        self.assertEqual(URL('https://w3af.com:443/xyz/file.asp').all_but_scheme(),
-                         'w3af.com/xyz/')
+
+        self.assertEqual(
+            URL('https://w3af.com:443/xyz/file.asp').all_but_scheme(),
+            'w3af.com/xyz/')
 
     #
     #    from_parts
@@ -567,7 +584,7 @@ class TestURLParser(unittest.TestCase):
                            None,
                            'a=b',
                            'frag')
-        
+
         self.assertEqual(u.path, '/foo/bar.txt')
         self.assertEqual(u.scheme, 'http')
         self.assertEqual(u.get_file_name(), 'bar.txt')
@@ -577,24 +594,30 @@ class TestURLParser(unittest.TestCase):
     #    get_domain_path
     #
     def test_get_domain_path(self):
-        self.assertEqual(URL('http://w3af.com/def/jkl/').get_domain_path().url_string,
-                         u'http://w3af.com/def/jkl/')
-        
-        self.assertEqual(URL('http://w3af.com/def.html').get_domain_path().url_string,
-                         u'http://w3af.com/')
-        
-        self.assertEqual(URL('http://w3af.com/xyz/def.html').get_domain_path().url_string,
-                         u'http://w3af.com/xyz/')
-        
-        self.assertEqual(URL('http://w3af.com:80/xyz/def.html').get_domain_path().url_string,
-                         u'http://w3af.com/xyz/')
-        
-        self.assertEqual(URL('http://w3af.com:443/xyz/def.html').get_domain_path().url_string,
-                         u'http://w3af.com:443/xyz/')
-        
-        self.assertEqual(URL('https://w3af.com:443/xyz/def.html').get_domain_path().url_string,
-                         u'https://w3af.com/xyz/')
-        
+        self.assertEqual(
+            URL('http://w3af.com/def/jkl/').get_domain_path().url_string,
+            u'http://w3af.com/def/jkl/')
+
+        self.assertEqual(
+            URL('http://w3af.com/def.html').get_domain_path().url_string,
+            u'http://w3af.com/')
+
+        self.assertEqual(
+            URL('http://w3af.com/xyz/def.html').get_domain_path().url_string,
+            u'http://w3af.com/xyz/')
+
+        self.assertEqual(
+            URL('http://w3af.com:80/xyz/def.html').get_domain_path().url_string,
+            u'http://w3af.com/xyz/')
+
+        self.assertEqual(
+            URL('http://w3af.com:443/xyz/def.html').get_domain_path().url_string,
+            u'http://w3af.com:443/xyz/')
+
+        self.assertEqual(
+            URL('https://w3af.com:443/xyz/def.html').get_domain_path().url_string,
+            u'https://w3af.com/xyz/')
+
         self.assertEqual(URL('http://w3af.com').get_domain_path().url_string,
                          u'http://w3af.com/')
 
@@ -606,11 +629,12 @@ class TestURLParser(unittest.TestCase):
         self.assertTrue(URL('http://w3af.com').is_valid_domain())
         self.assertTrue(URL('http://w3af.com:39').is_valid_domain())
         self.assertTrue(URL('http://w3af.com:3932').is_valid_domain())
-        self.assertTrue(URL('http://f.o.o.b.a.r.s.p.a.m.e.g.g.s').is_valid_domain())
+        self.assertTrue(
+            URL('http://f.o.o.b.a.r.s.p.a.m.e.g.g.s').is_valid_domain())
         self.assertTrue(URL('http://abc:3932').is_valid_domain())
         self.assertTrue(URL('http://abc.:3932').is_valid_domain())
         self.assertTrue(URL('https://_abc:3932').is_valid_domain())
-        
+
     def test_is_valid_domain_invalid(self):
         self.assertFalse(URL('http://aaa*a').is_valid_domain())
         self.assertFalse(URL('http://-sub.w3af.com:39').is_valid_domain())
@@ -624,16 +648,18 @@ class TestURLParser(unittest.TestCase):
     def test_get_path(self):
         self.assertEqual(URL('https://w3af.com:443/xyz/file.asp').get_path(),
                          '/xyz/file.asp')
-        
-        self.assertEqual(URL('https://w3af.com:443/xyz/file.asp?id=-2').get_path(),
-                         '/xyz/file.asp')
-        
+
+        self.assertEqual(
+            URL('https://w3af.com:443/xyz/file.asp?id=-2').get_path(),
+            '/xyz/file.asp')
+
         self.assertEqual(URL('https://w3af.com:443/xyz/').get_path(),
                          '/xyz/')
-        
-        self.assertEqual(URL('https://w3af.com:443/xyz/123/456/789/').get_path(),
-                         '/xyz/123/456/789/')
-        
+
+        self.assertEqual(
+            URL('https://w3af.com:443/xyz/123/456/789/').get_path(),
+            '/xyz/123/456/789/')
+
         self.assertEqual(URL('https://w3af.com:443/').get_path(), '/')
 
     #
@@ -642,60 +668,62 @@ class TestURLParser(unittest.TestCase):
     def test_get_params_string(self):
         self.assertEqual(URL(u'http://w3af.com/').get_params_string(),
                          u'')
-        
+
         self.assertEqual(URL(u'http://w3af.com/;id=1').get_params_string(),
                          u'id=1')
-        
-        self.assertEqual(URL(u'http://w3af.com/?id=3;id=1').get_params_string(),
-                         u'')
-        
-        self.assertEqual(URL(u'http://w3af.com/;id=1?id=3').get_params_string(),
-                         u'id=1')
-        
-        self.assertEqual(URL(u'http://w3af.com/foobar.html;id=1?id=3').get_params_string(),
-                         u'id=1')
+
+        self.assertEqual(
+            URL(u'http://w3af.com/?id=3;id=1').get_params_string(), u'')
+
+        self.assertEqual(
+            URL(u'http://w3af.com/;id=1?id=3').get_params_string(),
+            u'id=1')
+
+        self.assertEqual(
+            URL(u'http://w3af.com/foobar.html;id=1?id=3').get_params_string(),
+            u'id=1')
 
     #
     #    get_params
     #
     def test_get_params(self):
-        self.assertEqual(URL('http://w3af.com/xyz.txt;id=1?file=2').get_params(),
-                         {'id': '1'})
-        
+        self.assertEqual(
+            URL('http://w3af.com/xyz.txt;id=1?file=2').get_params(), {'id': '1'})
+
         self.assertEqual(URL('http://w3af.com/xyz.txt;id=1&file=2?file=2').get_params(),
                          {'id': '1', 'file': '2'})
-        
+
         self.assertEqual(URL('http://w3af.com/xyz.txt;id=1&file=2?spam=2').get_params(),
                          {'id': '1', 'file': '2'})
-                         
+
         self.assertEqual(URL('http://w3af.com/xyz.txt;id=1&file=2?spam=3').get_params(),
                          {'id': '1', 'file': '2'})
-    
+
     #
     #    get_net_location
     #
     def test_get_net_location(self):
         self.assertEqual(URL("http://1.2.3.4").get_net_location(),
                          '1.2.3.4')
-        
+
         self.assertEqual(URL("http://aaa.com:80").get_net_location(),
                          'aaa.com')
-        
+
         self.assertEqual(URL("http://aaa:443").get_net_location(),
                          'aaa:443')
-        
+
     #
     #    from_url
     #
     def test_from_url(self):
         o = URL('http://w3af.com/foo/bar.txt')
         u = URL.from_URL(o)
-        
+
         self.assertEqual(u.path, '/foo/bar.txt')
         self.assertEqual(u.scheme, 'http')
         self.assertEqual(u.get_file_name(), 'bar.txt')
         self.assertEqual(u.get_extension(), 'txt')
-        
+
         o = URL('w3af.com')
         u = URL.from_URL(o)
         self.assertEqual(u.get_domain(), 'w3af.com')
@@ -717,7 +745,7 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/foo/bar.txt?id=1')
         self.assertEqual(u.url_string,
                          u'http://w3af.com/foo/bar.txt?id=1')
-        
+
         u = URL('http://w3af.com/foo%20bar/bar.txt?id=1')
         self.assertEqual(u.url_string,
                          u'http://w3af.com/foo%20bar/bar.txt?id=1')
@@ -730,34 +758,33 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/foo/á.txt')
         self.assertEqual(u.url_encode(), u'http://w3af.com/foo/%C3%A1.txt')
 
-    
     #
     #    has_querystring
     #
     def test_has_query_string(self):
         u = URL('http://w3af.com/foo/bar.txt')
         self.assertFalse(u.has_query_string())
-        
+
         u = URL('http://w3af.com/foo/bar.txt?id=1')
         self.assertTrue(u.has_query_string())
-        
+
         u = URL('http://w3af.com/foo/bar.txt;par=3')
         self.assertFalse(u.has_query_string())
-    
+
     def test_get_query_string(self):
         self.assertEqual(URL(u'http://w3af.com/a/').querystring,
                          QueryString({}.items()))
-        
+
         self.assertEqual(URL(u'http://w3af.com/foo/bar.txt?id=3').querystring,
                          QueryString({u'id': [u'3']}.items()))
-        
+
         self.assertEqual(URL(u'http://w3af.com/foo/bar.txt?id=3&id=4').querystring,
                          QueryString({u'id': [u'3', u'4']}.items()))
-        
+
         url = URL(u'http://w3af.com/foo/bar.txt?id=3&ff=4&id=5')
-        self.assertEqual(url.querystring,
-                         QueryString({u'id': [u'3', u'5'], u'ff': [u'4']}.items()))
-        
+        self.assertEqual(url.querystring, QueryString(
+            {u'id': [u'3', u'5'], u'ff': [u'4']}.items()))
+
         self.assertEqual(url.querystring, parse_qs(str(url.querystring)))
 
     def test_uri2url(self):
@@ -769,17 +796,17 @@ class TestURLParser(unittest.TestCase):
         u = URL('http://w3af.com/foo/bar.txt?id=3#foobar')
         u.remove_fragment()
         self.assertEqual(u.url_string, u'http://w3af.com/foo/bar.txt?id=3')
-        
+
         u = URL('http://w3af.com/foo/bar.txt#foobar')
         orig_qs_id = id(u.querystring)
         u.remove_fragment()
         self.assertEqual(u.url_string, u'http://w3af.com/foo/bar.txt')
         self.assertEqual(id(u.querystring), orig_qs_id)
-    
+
     def test_get_port(self):
         self.assertEqual(URL('http://w3af.com/f00.b4r').get_port(), 80)
         self.assertEqual(URL('http://w3af.com:80/f00.b4r').get_port(), 80)
-        
+
         self.assertEqual(URL('http://w3af.com:443/f00.b4r').get_port(), 443)
         self.assertEqual(URL('https://w3af.com/f00.b4r').get_port(), 443)
         self.assertEqual(URL('https://w3af.com:443/f00.b4r').get_port(), 443)
@@ -794,7 +821,7 @@ class TestURLParser(unittest.TestCase):
                          '555555')
         self.assertEqual(URL('http://foo.bar.def/def/jkl/').get_domain(),
                          'foo.bar.def')
-    
+
     def test_set_domain(self):
         u = URL('http://w3af.com/def/jkl/')
         self.assertEqual(u.get_domain(), 'w3af.com')
@@ -817,7 +844,7 @@ class TestURLParser(unittest.TestCase):
     def test_set_domain_with_port(self):
         u = URL('http://w3af.com:443/def/jkl/')
         self.assertEqual(u.get_domain(), 'w3af.com')
-        
+
         u.set_domain('host.tld')
         self.assertEqual(u.get_net_location(), 'host.tld:443')
 
@@ -825,20 +852,26 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(URL("http://1.2.3.4").get_protocol(), 'http')
         self.assertEqual(URL("https://aaa.com:80").get_protocol(), 'https')
         self.assertEqual(URL("ftp://aaa:443").get_protocol(), 'ftp')
-    
+
     def test_set_protocol(self):
         u = URL("http://1.2.3.4")
         self.assertEqual(u.get_protocol(), 'http')
-        
+
         u.set_protocol('https')
         self.assertEqual(u.get_protocol(), 'https')
-    
+
     def test_get_root_domain(self):
         self.assertEqual(URL("http://1.2.3.4").get_root_domain(), '1.2.3.4')
-        self.assertEqual(URL("https://aaa.com:80").get_root_domain(), 'aaa.com')
+        self.assertEqual(
+            URL("https://aaa.com:80").get_root_domain(),
+            'aaa.com')
         self.assertEqual(URL("http://aaa.com").get_root_domain(), 'aaa.com')
-        self.assertEqual(URL("http://www.aaa.com").get_root_domain(), 'aaa.com')
-        self.assertEqual(URL("http://mail.aaa.com").get_root_domain(), 'aaa.com')
+        self.assertEqual(
+            URL("http://www.aaa.com").get_root_domain(),
+            'aaa.com')
+        self.assertEqual(
+            URL("http://mail.aaa.com").get_root_domain(),
+            'aaa.com')
         self.assertEqual(URL("http://spam.eggs.aaa.com").get_root_domain(),
                          'aaa.com')
         self.assertEqual(URL("http://spam.eggs.aaa.com.ar").get_root_domain(),
@@ -847,13 +880,15 @@ class TestURLParser(unittest.TestCase):
                          'aaa.com.ar')
         self.assertEqual(URL("http://foo.aaa.edu.sz").get_root_domain(),
                          'edu.sz')
-    
+
     def test_get_filename(self):
-        self.assertEqual(URL('https://w3af.com:443/xyz/def.html').get_file_name(),
-                         'def.html')
+        self.assertEqual(
+            URL('https://w3af.com:443/xyz/def.html').get_file_name(),
+            'def.html')
         self.assertEqual(URL('https://w3af.com:443/xyz/').get_file_name(), '')
-        self.assertEqual(URL('https://w3af.com:443/xyz/d').get_file_name(), 'd')
-    
+        self.assertEqual(
+            URL('https://w3af.com:443/xyz/d').get_file_name(), 'd')
+
     def test_set_filename(self):
         u = URL('https://w3af.com:443/xyz/def.html')
         u.set_file_name('abc.pdf')
@@ -875,12 +910,13 @@ class TestURLParser(unittest.TestCase):
         u.set_file_name('abc.pdf')
         self.assertEqual(u.url_string,
                          'https://w3af.com/abc.pdf')
-    
+
     def test_get_extension(self):
         self.assertEqual(URL('https://w3af.com:443/xyz/d').get_extension(), '')
         self.assertEqual(URL('https://w3af.com:443/xyz/').get_extension(), '')
-        self.assertEqual(URL('https://w3af.com:443/xyz/d.html').get_extension(),
-                         'html')
+        self.assertEqual(
+            URL('https://w3af.com:443/xyz/d.html').get_extension(),
+            'html')
 
     def test_set_extension(self):
         u = URL('https://www.w3af.com/xyz/foo')
@@ -899,81 +935,96 @@ class TestURLParser(unittest.TestCase):
         self.assertEqual(u.get_extension(), 'xml')
         self.assertEqual(u.url_string,
                          u'https://w3af.com/xyz/d.html.xml?id=3')
-    
+
     def test_get_path_without_filename(self):
         u = URL('https://w3af.com:443/xyz/file.asp')
         self.assertEqual(u.get_path_without_file(), '/xyz/')
-        
+
         u = URL('https://w3af.com:443/xyz/')
         self.assertEqual(u.get_path_without_file(), '/xyz/')
-        
+
         u = URL('https://w3af.com:443/xyz/123/456/789/')
         self.assertEqual(u.get_path_without_file(), '/xyz/123/456/789/')
-    
+
     def test_get_path_qs_simple(self):
         u = URL(u'https://w3af.com:443/xyz/123/456/789/')
         self.assertEqual(u.get_path(), u'/xyz/123/456/789/')
-        
+
         u = URL(u'https://w3af.com:443/xyz/123/456/789/')
         self.assertEqual(u.get_path_qs(), u'/xyz/123/456/789/')
-        
+
         u = URL(u'https://w3af.com:443/xyz/file.asp')
         self.assertEqual(u.get_path_qs(), u'/xyz/file.asp')
-        
+
         u = URL(u'https://w3af.com:443/xyz/file.asp?id=1')
         self.assertEqual(u.get_path_qs(), u'/xyz/file.asp?id=1')
 
     def test_get_path_qs_unicode(self):
         u = URL(u'https://domain/konto/insättning?amount=1&method=abc')
-        self.assertEqual(u.get_path_qs(), u'/konto/insättning?amount=1&method=abc')
+        self.assertEqual(
+            u.get_path_qs(),
+            u'/konto/insättning?amount=1&method=abc')
 
         u = URL(u'https://domain/konto/insättning;x=1?amount=1&method=abc')
-        self.assertEqual(u.get_path_qs(), u'/konto/insättning;x=1?amount=1&method=abc')
+        self.assertEqual(
+            u.get_path_qs(),
+            u'/konto/insättning;x=1?amount=1&method=abc')
 
         u = URL(u'https://domain/konto/insättning;insättning=1?amount=1&method=abc')
-        self.assertEqual(u.get_path_qs(), u'/konto/insättning;insättning=1?amount=1&method=abc')
+        self.assertEqual(
+            u.get_path_qs(),
+            u'/konto/insättning;insättning=1?amount=1&method=abc')
 
     def test_get_path_qs_string(self):
         u = URL('https://domain/konto/insättning?amount=1&method=abc')
-        self.assertEqual(smart_str(u.get_path_qs()), '/konto/insättning?amount=1&method=abc')
+        self.assertEqual(smart_str(u.get_path_qs()),
+                         '/konto/insättning?amount=1&method=abc')
 
         u = URL('https://domain/konto/insättning;x=1?amount=1&method=abc')
-        self.assertEqual(smart_str(u.get_path_qs()), '/konto/insättning;x=1?amount=1&method=abc')
+        self.assertEqual(smart_str(u.get_path_qs()),
+                         '/konto/insättning;x=1?amount=1&method=abc')
 
         u = URL('https://domain/konto/insättning;insättning=1?amount=1&method=abc')
-        self.assertEqual(smart_str(u.get_path_qs()), '/konto/insättning;insättning=1?amount=1&method=abc')
+        self.assertEqual(smart_str(u.get_path_qs()),
+                         '/konto/insättning;insättning=1?amount=1&method=abc')
 
     def test_has_params(self):
         self.assertFalse(URL('http://w3af.com/').has_params())
         self.assertFalse(URL('http://w3af.com/?id=3;id=1').has_params())
-        
+
         self.assertTrue(URL('http://w3af.com/;id=1').has_params())
         self.assertTrue(URL('http://w3af.com/;id=1?id=3').has_params())
-        self.assertTrue(URL('http://w3af.com/foobar.html;id=1?id=3').has_params())
+        self.assertTrue(
+            URL('http://w3af.com/foobar.html;id=1?id=3').has_params())
 
     def test_remove_params(self):
         self.assertEqual(URL('http://w3af.com/').remove_params().url_string,
                          u'http://w3af.com/')
-        self.assertEqual(URL('http://w3af.com/def.txt').remove_params().url_string,
-                         u'http://w3af.com/def.txt')
-        self.assertEqual(URL('http://w3af.com/;id=1').remove_params().url_string,
-                         u'http://w3af.com/')
-        self.assertEqual(URL('http://w3af.com/;id=1&file=2').remove_params().url_string,
-                         u'http://w3af.com/')
-        self.assertEqual(URL('http://w3af.com/;id=1?file=2').remove_params().url_string,
-                         u'http://w3af.com/?file=2')
-        self.assertEqual(URL('http://w3af.com/xyz.txt;id=1?file=2').remove_params().url_string,
-                         u'http://w3af.com/xyz.txt?file=2')
+        self.assertEqual(
+            URL('http://w3af.com/def.txt').remove_params().url_string,
+            u'http://w3af.com/def.txt')
+        self.assertEqual(
+            URL('http://w3af.com/;id=1').remove_params().url_string,
+            u'http://w3af.com/')
+        self.assertEqual(
+            URL('http://w3af.com/;id=1&file=2').remove_params().url_string,
+            u'http://w3af.com/')
+        self.assertEqual(
+            URL('http://w3af.com/;id=1?file=2').remove_params().url_string,
+            u'http://w3af.com/?file=2')
+        self.assertEqual(
+            URL('http://w3af.com/xyz.txt;id=1?file=2').remove_params().url_string,
+            u'http://w3af.com/xyz.txt?file=2')
 
     def test_set_params(self):
         u = URL('http://w3af.com/;id=1')
         u.set_param('file=2')
-        
+
         self.assertEqual(u.get_params_string(), 'file=2')
-        
+
         u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         u.set_param('file=3')
-        
+
         self.assertEqual(u.get_params_string(), 'file=3')
         self.assertEqual(u.get_path_qs(), '/xyz.txt;file=3?file=2')
 
@@ -986,13 +1037,13 @@ class TestURLParser(unittest.TestCase):
         u1 = URL('http://w3af.com/')
         u2 = URL('http://w3af.com/def.htm')
         test = [u1, u2]
-        self.assertEqual( len(list(set(test))), 2)
-    
+        self.assertEqual(len(list(set(test))), 2)
+
     def test_hash_equal(self):
         u1 = URL('http://w3af.com/')
         u2 = URL('http://w3af.com/')
         test = [u1, u2]
-        self.assertEqual( len(list(set(test))), 1)
+        self.assertEqual(len(list(set(test))), 1)
 
     def test_contains_true(self):
         u = URL('http://w3af.com/xyz.txt;id=1?file=2')
@@ -1016,7 +1067,7 @@ class TestURLParser(unittest.TestCase):
 
         u = URL('http://www.w3af.com/')
         self.assertRaises(TypeError, u.__add__, 1)
-    
+
     def test_radd(self):
         u = URL('http://www.w3af.com/')
         x = 'abc' + u
@@ -1028,9 +1079,9 @@ class TestURLParser(unittest.TestCase):
 
         u = URL('http://www.w3af.com/')
         self.assertRaises(TypeError, u.__radd__, 1)
-    
+
     def test_nonzero(self):
-        self.assertTrue( bool(URL('http://www.w3af.com')) )
+        self.assertTrue(bool(URL('http://www.w3af.com')))
 
     def test_file_url_full_path(self):
         u = URL('file:///etc/passwd')
@@ -1085,4 +1136,3 @@ class TestURLParser(unittest.TestCase):
     def test_copy(self):
         u = URL('http://www.w3af.com/?id=1&id=2')
         self.assertEqual(u, u.copy())
-

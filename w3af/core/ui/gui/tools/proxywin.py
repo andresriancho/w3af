@@ -30,7 +30,7 @@ from w3af.core.controllers.daemons.proxy import InterceptProxy
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               ProxyException)
 
-from w3af.core.data.options import option_types 
+from w3af.core.data.options import option_types
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 
@@ -54,6 +54,7 @@ class ProxiedRequests(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         """Constructor."""
         super(ProxiedRequests, self).__init__(w3af, 'proxytool',
@@ -61,9 +62,9 @@ class ProxiedRequests(entries.RememberingWindow):
                                               'Using_the_Proxy',
                                               onDestroy=self._close)
         self.w3af = w3af
-        
+
         self.def_padding = 5
-        
+
         self._uimanager = gtk.UIManager()
         accelgroup = self._uimanager.get_accel_group()
         self.add_accel_group(accelgroup)
@@ -114,24 +115,24 @@ class ProxiedRequests(entries.RememberingWindow):
         vbox = gtk.VBox()
         vbox.pack_start(self.reqresp, True, True)
         vbox.show()
-        
+
         # Notebook
         self.nb = gtk.Notebook()
         tabs = []
-        
+
         # Intercept
         tmp = gtk.Label(_("_Intercept"))
         tmp.set_use_underline(True)
         self.nb.append_page(vbox, tmp)
         tabs.append('Intercept')
-        
+
         # History
         self.httplog = httpLogTab.httpLogTab(w3af, time_refresh=True)
         tmp = gtk.Label(_("_History"))
         tmp.set_use_underline(True)
         self.nb.append_page(self.httplog, tmp)
         tabs.append('History')
-        
+
         # Options
         tmp = gtk.Label(_("_Options"))
         tmp.set_use_underline(True)
@@ -139,24 +140,24 @@ class ProxiedRequests(entries.RememberingWindow):
         tabs.append('Options')
         self.vbox.pack_start(self.nb, True, True, padding=self.def_padding)
         self.nb.show()
-        
+
         # Go to Home Tab
         self.nb.set_current_page(
             tabs.index(self.pref.get_value('proxy', 'home_tab')))
-        
+
         # Status bar for messages
         self.status_bar = StatusBar()
         self.vbox.pack_start(self.status_bar, False, False)
         self.status_bar.show()
-        
+
         self.proxy = None
-        
+
         # Finish it
         self.fuzzable = None
         self.waiting_requests = False
         self.keep_checking = False
         self.reload_options()
-        
+
         gobject.timeout_add(200, self._supervise_requests)
         self.show()
 
@@ -164,23 +165,23 @@ class ProxiedRequests(entries.RememberingWindow):
         """Init options."""
         self.like_initial = True
         self.pref = ConfigOptions(self.w3af, self, 'proxy_options')
-        
+
         # Proxy options
         proxy_options = OptionList()
-        
+
         d = _('Proxy IP address and port number')
         h = _('Local IP address where the proxy will listen for HTTP requests.')
         o = opt_factory('ipport', '127.0.0.1:8080', d, option_types.IPPORT,
                         help=h)
         proxy_options.add(o)
-        
+
         d = _('Regular expression for URLs to intercept')
         h = _('Regular expression to match against the URLs of HTTP requests'
               ' to decide if the request should be intercepted for analysis/'
               'modifications or not.')
         o = opt_factory('trap', ".*", d, option_types.REGEX, help=h)
         proxy_options.add(o)
-        
+
         d = _("HTTP methods to intercept")
         h = _('Comma separated list of HTTP methods to intercept')
         o = opt_factory('methodtrap', "GET,POST", d, option_types.LIST, help=h)
@@ -196,34 +197,37 @@ class ProxiedRequests(entries.RememberingWindow):
         views = ('Split', 'Tabbed')
         o = opt_factory("trap_view", views, d, option_types.COMBO)
         proxy_options.add(o)
-        
+
         d = _("Home tab")
         homes = ['Intercept', 'History', 'Options']
         o = opt_factory("home_tab", homes, d, option_types.COMBO)
         proxy_options.add(o)
-        
+
         self.pref.add_section('proxy', _('Proxy options'), proxy_options)
-        
+
         # HTTP editor options
         editor_options = OptionList()
-        
+
         o = opt_factory("wrap", True, _("Wrap long lines"), "boolean")
         editor_options.add(o)
-        
+
         o = opt_factory("highlight_current_line", True,
                         _("Highlight current line"), "boolean")
         editor_options.add(o)
-        
+
         o = opt_factory("highlight_syntax", True,
                         _("Highlight syntax"), "boolean")
         editor_options.add(o)
-        
+
         o = opt_factory("display_line_num", True,
                         _("Display line numbers"), "boolean")
         editor_options.add(o)
-        
-        self.pref.add_section('editor', _('HTTP editor options'), editor_options)
-        
+
+        self.pref.add_section(
+            'editor',
+            _('HTTP editor options'),
+            editor_options)
+
         # Load values from configfile
         self.pref.load_values()
         self.pref.show()
@@ -249,7 +253,7 @@ class ProxiedRequests(entries.RememberingWindow):
             self.w3af.mainwin.sb(_("Stopping local proxy"))
             if self.proxy:
                 self.proxy.stop()
-            
+
             try:
                 self._start_proxy()
             except ProxyException:
@@ -266,23 +270,28 @@ class ProxiedRequests(entries.RememberingWindow):
                 self.fuzzable = None
                 self.waiting_requests = True
                 self.keep_checking = True
-        
+
         # Config test
         try:
             self.proxy.set_what_to_trap(self.pref.get_value('proxy', 'trap'))
-            self.proxy.set_what_not_to_trap(self.pref.get_value('proxy', 'notrap'))
-            self.proxy.set_methods_to_trap(self.pref.get_value('proxy', 'methodtrap'))
-        except BaseFrameworkException, w3:
+            self.proxy.set_what_not_to_trap(
+                self.pref.get_value('proxy', 'notrap'))
+            self.proxy.set_methods_to_trap(
+                self.pref.get_value('proxy', 'methodtrap'))
+        except BaseFrameworkException as w3:
             self.show_alert(_("Invalid configuration!\n" + str(w3)))
 
         self._prev_ip_port = new_port
         httpeditor = self.reqresp.request.get_view_by_id('HttpRawView')
-        httpeditor.set_show_line_numbers(self.pref.get_value('editor',
-                                                             'display_line_num'))
-        httpeditor.set_highlight_current_line(self.pref.get_value('editor',
-                                                                  'highlight_current_line'))
-        httpeditor.set_highlight_syntax(self.pref.get_value('editor',
-                                                            'highlight_syntax'))
+        httpeditor.set_show_line_numbers(
+            self.pref.get_value(
+                'editor', 'display_line_num'))
+        httpeditor.set_highlight_current_line(
+            self.pref.get_value(
+                'editor', 'highlight_current_line'))
+        httpeditor.set_highlight_syntax(
+            self.pref.get_value(
+                'editor', 'highlight_syntax'))
         httpeditor.set_wrap(self.pref.get_value('editor', 'wrap'))
         self.pref.save()
 
@@ -301,12 +310,12 @@ class ProxiedRequests(entries.RememberingWindow):
         if not ip:
             ipport = self.pref.get_value('proxy', 'ipport')
             ip, port = ipport.split(":")
-            
+
         self.w3af.mainwin.sb(_("Starting local proxy"))
-        
+
         try:
             self.proxy = InterceptProxy(ip, int(port), self.w3af.uri_opener)
-        except ProxyException, w3:
+        except ProxyException as w3:
             if not silent:
                 self.show_alert(_(str(w3)))
             raise w3
@@ -395,10 +404,10 @@ class ProxiedRequests(entries.RememberingWindow):
         dlg.destroy()
         if opt != gtk.RESPONSE_YES:
             return False
-        
+
         if self.proxy:
             self.proxy.stop()
-            
+
         return True
 
     def _toggle_trap(self, widget):
@@ -408,10 +417,10 @@ class ProxiedRequests(entries.RememberingWindow):
 
         trapactive = widget.get_active()
         self.proxy.set_trap(trapactive)
-        
+
         status = 'Trap is %s' % ('on' if trapactive else 'off',)
         self.status_bar(status)
-        
+
         # Send all requests in queue if Intercept is switched off
         if not trapactive:
             res = self.reqresp.response.get_object()
@@ -419,4 +428,3 @@ class ProxiedRequests(entries.RememberingWindow):
             # If there is request to send, let's send it first
             if req and not res:
                 self._send(None)
-

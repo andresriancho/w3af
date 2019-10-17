@@ -36,7 +36,7 @@ class pdf(BasePwdProfilingPlugin):
     def _get_pdf_content(self, document_str):
         """
         Iterate through all PDF pages and extract text
-        
+
         :return: A list containing the words in the PDF
         """
         pdf_text = pdf_to_text(document_str)
@@ -55,7 +55,7 @@ class pdf(BasePwdProfilingPlugin):
         if response.content_type in ('application/x-pdf', 'application/pdf'):
             try:
                 words = self._get_pdf_content(response.get_body())
-            except:
+            except BaseException:
                 return None
             else:
                 res = {}

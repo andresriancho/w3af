@@ -3,8 +3,9 @@ import re
 from utils.output import KeyValueOutput
 
 
-FINISHED_BRUTEFORCE = [re.compile('Finished bruteforcing ".*?" \(spent (.*?)\)'),
-                       re.compile('Finished basic authentication bruteforce on ".*?" \(spent (.*?)\)')]
+FINISHED_BRUTEFORCE = [
+    re.compile('Finished bruteforcing ".*?" \(spent (.*?)\)'),
+    re.compile('Finished basic authentication bruteforce on ".*?" \(spent (.*?)\)')]
 
 
 def get_bruteforce_data(scan_log_filename, scan):

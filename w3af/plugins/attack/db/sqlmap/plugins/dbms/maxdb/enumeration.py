@@ -23,6 +23,7 @@ from lib.utils.brute import columnExists
 from lib.utils.pivotdumptable import pivotDumpTable
 from plugins.generic.enumeration import Enumeration as GenericEnumeration
 
+
 class Enumeration(GenericEnumeration):
     def __init__(self):
         GenericEnumeration.__init__(self)
@@ -45,7 +46,11 @@ class Enumeration(GenericEnumeration):
         rootQuery = queries[DBMS.MAXDB].dbs
         randStr = randomStr()
         query = rootQuery.inband.query
-        retVal = pivotDumpTable("(%s) AS %s" % (query, randStr), ['%s.schemaname' % randStr], blind=True)
+        retVal = pivotDumpTable(
+            "(%s) AS %s" %
+            (query, randStr), [
+                '%s.schemaname' %
+                randStr], blind=True)
 
         if retVal:
             kb.data.cachedDbs = retVal[0].values()[0]
@@ -73,15 +78,24 @@ class Enumeration(GenericEnumeration):
             dbs[dbs.index(db)] = safeSQLIdentificatorNaming(db)
 
         infoMsg = "fetching tables for database"
-        infoMsg += "%s: %s" % ("s" if len(dbs) > 1 else "", ", ".join(db if isinstance(db, basestring) else db[0] for db in sorted(dbs)))
+        infoMsg += "%s: %s" % ("s" if len(dbs) > 1 else "",
+                               ", ".join(
+            db if isinstance(
+                db,
+                basestring) else db[0] for db in sorted(dbs)))
         logger.info(infoMsg)
 
         rootQuery = queries[DBMS.MAXDB].tables
 
         for db in dbs:
             randStr = randomStr()
-            query = rootQuery.inband.query % (("'%s'" % db) if db != "USER" else 'USER')
-            retVal = pivotDumpTable("(%s) AS %s" % (query, randStr), ['%s.tablename' % randStr], blind=True)
+            query = rootQuery.inband.query % (
+                ("'%s'" % db) if db != "USER" else 'USER')
+            retVal = pivotDumpTable(
+                "(%s) AS %s" %
+                (query, randStr), [
+                    '%s.tablename' %
+                    randStr], blind=True)
 
             if retVal:
                 for table in retVal[0].values()[0]:
@@ -95,7 +109,12 @@ class Enumeration(GenericEnumeration):
 
         return kb.data.cachedTables
 
-    def getColumns(self, onlyColNames=False, colTuple=None, bruteForce=None, dumpMode=False):
+    def getColumns(
+            self,
+            onlyColNames=False,
+            colTuple=None,
+            bruteForce=None,
+            dumpMode=False):
         self.forceDbmsEnum()
 
         if conf.db is None or conf.db == CURRENT_DB:
@@ -108,7 +127,7 @@ class Enumeration(GenericEnumeration):
             conf.db = self.getCurrentDb()
 
         elif conf.db is not None:
-            if  ',' in conf.db:
+            if ',' in conf.db:
                 errMsg = "only one database name is allowed when enumerating "
                 errMsg += "the tables' columns"
                 raise SqlmapMissingMandatoryOptionException(errMsg)
@@ -121,7 +140,8 @@ class Enumeration(GenericEnumeration):
             colList = []
 
         if conf.excludeCol:
-            colList = [_ for _ in colList if _ not in conf.excludeCol.split(',')]
+            colList = [
+                _ for _ in colList if _ not in conf.excludeCol.split(',')]
 
         for col in colList:
             colList[colList.index(col)] = safeSQLIdentificatorNaming(col)
@@ -138,7 +158,8 @@ class Enumeration(GenericEnumeration):
                     tblList = tblList[0]
             else:
                 errMsg = "unable to retrieve the tables "
-                errMsg += "on database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
+                errMsg += "on database '%s'" % unsafeSQLIdentificatorNaming(
+                    conf.db)
                 raise SqlmapNoneDataException(errMsg)
 
         for tbl in tblList:
@@ -165,14 +186,17 @@ class Enumeration(GenericEnumeration):
                             columns[colName] = colType
 
                     if conf.db in kb.data.cachedColumns:
-                        kb.data.cachedColumns[safeSQLIdentificatorNaming(conf.db)][safeSQLIdentificatorNaming(tbl, True)] = columns
+                        kb.data.cachedColumns[safeSQLIdentificatorNaming(
+                            conf.db)][safeSQLIdentificatorNaming(tbl, True)] = columns
                     else:
-                        kb.data.cachedColumns[safeSQLIdentificatorNaming(conf.db)] = {safeSQLIdentificatorNaming(tbl, True): columns}
+                        kb.data.cachedColumns[safeSQLIdentificatorNaming(conf.db)] = {
+                            safeSQLIdentificatorNaming(tbl, True): columns}
 
                 return kb.data.cachedColumns
 
             message = "do you want to use common column existence check? [y/N/q] "
-            choice = readInput(message, default='Y' if 'Y' in message else 'N').upper()
+            choice = readInput(
+                message, default='Y' if 'Y' in message else 'N').upper()
 
             if choice == 'N':
                 return
@@ -185,35 +209,48 @@ class Enumeration(GenericEnumeration):
 
         for tbl in tblList:
             if conf.db is not None and len(kb.data.cachedColumns) > 0 \
-              and conf.db in kb.data.cachedColumns and tbl in \
-              kb.data.cachedColumns[conf.db]:
+                    and conf.db in kb.data.cachedColumns and tbl in \
+                    kb.data.cachedColumns[conf.db]:
                 infoMsg = "fetched tables' columns on "
-                infoMsg += "database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
+                infoMsg += "database '%s'" % unsafeSQLIdentificatorNaming(
+                    conf.db)
                 logger.info(infoMsg)
 
                 return {conf.db: kb.data.cachedColumns[conf.db]}
 
             if dumpMode and colList:
                 table = {}
-                table[safeSQLIdentificatorNaming(tbl)] = dict((_, None) for _ in colList)
-                kb.data.cachedColumns[safeSQLIdentificatorNaming(conf.db)] = table
+                table[safeSQLIdentificatorNaming(tbl)] = dict(
+                    (_, None) for _ in colList)
+                kb.data.cachedColumns[safeSQLIdentificatorNaming(
+                    conf.db)] = table
                 continue
 
             infoMsg = "fetching columns "
             infoMsg += "for table '%s' " % unsafeSQLIdentificatorNaming(tbl)
-            infoMsg += "on database '%s'" % unsafeSQLIdentificatorNaming(conf.db)
+            infoMsg += "on database '%s'" % unsafeSQLIdentificatorNaming(
+                conf.db)
             logger.info(infoMsg)
 
             randStr = randomStr()
-            query = rootQuery.inband.query % (unsafeSQLIdentificatorNaming(tbl), ("'%s'" % unsafeSQLIdentificatorNaming(conf.db)) if unsafeSQLIdentificatorNaming(conf.db) != "USER" else 'USER')
-            retVal = pivotDumpTable("(%s) AS %s" % (query, randStr), ['%s.columnname' % randStr, '%s.datatype' % randStr, '%s.len' % randStr], blind=True)
+            query = rootQuery.inband.query % (unsafeSQLIdentificatorNaming(tbl), ("'%s'" % unsafeSQLIdentificatorNaming(
+                conf.db)) if unsafeSQLIdentificatorNaming(conf.db) != "USER" else 'USER')
+            retVal = pivotDumpTable(
+                "(%s) AS %s" %
+                (query, randStr), [
+                    '%s.columnname' %
+                    randStr, '%s.datatype' %
+                    randStr, '%s.len' %
+                    randStr], blind=True)
 
             if retVal:
                 table = {}
                 columns = {}
 
-                for columnname, datatype, length in zip(retVal[0]["%s.columnname" % randStr], retVal[0]["%s.datatype" % randStr], retVal[0]["%s.len" % randStr]):
-                    columns[safeSQLIdentificatorNaming(columnname)] = "%s(%s)" % (datatype, length)
+                for columnname, datatype, length in zip(
+                        retVal[0]["%s.columnname" % randStr], retVal[0]["%s.datatype" % randStr], retVal[0]["%s.len" % randStr]):
+                    columns[safeSQLIdentificatorNaming(
+                        columnname)] = "%s(%s)" % (datatype, length)
 
                 table[tbl] = columns
                 kb.data.cachedColumns[conf.db] = table

@@ -50,12 +50,12 @@ class IPPortOption(BaseOption):
             if not is_ip_address(ip):
                 msg = 'Invalid IP address specified ("%s")' % ip
                 raise BaseFrameworkException(msg)
-            
+
             try:
                 port = int(port)
                 assert port > 0
                 assert port < 65536
-            except:
+            except BaseException:
                 msg = 'Invalid port specified, it needs to be a number between'\
                       ' 1 and 65535.'
                 raise BaseFrameworkException(msg)

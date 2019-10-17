@@ -56,7 +56,8 @@ class html(BasePwdProfilingPlugin):
         def filter_by_len(x):
             return len(x) > 3
 
-        for tag in parser_cache.dpc.get_tags_by_filter(response, None, yield_text=True):
+        for tag in parser_cache.dpc.get_tags_by_filter(
+                response, None, yield_text=True):
 
             text = tag.text
 

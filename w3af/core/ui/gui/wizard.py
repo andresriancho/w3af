@@ -63,7 +63,7 @@ class QuestOptions(gtk.VBox):
             #       To get more info:
             try:
                 opt.widg
-            except Exception, e:
+            except Exception as e:
                 raise Exception(str(e) + ' || ' + opt.get_name())
             # end of debugging code
 
@@ -121,6 +121,7 @@ class Wizard(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af, wizard):
         super(Wizard, self).__init__(
             w3af, "wizard", "w3af Wizard: " + wizard.get_name(), "Wizards",
@@ -230,9 +231,10 @@ class Wizard(entries.RememberingWindow):
     def _buildFinal(self):
         """End titles window."""
         self.qtitle.set_markup("<b>The wizard has finished</b>")
-        self.quest.set_text("There are no more questions, you correctly created a new "
-                            "configuration for w3af.\n\nPlease provide a name and a "
-                            "description for the new profile:")
+        self.quest.set_text(
+            "There are no more questions, you correctly created a new "
+            "configuration for w3af.\n\nPlease provide a name and a "
+            "description for the new profile:")
         self.panel.ask_final()
         self.nextbtn.set_label("  Save  ")
         self.finalQ = True
@@ -240,6 +242,7 @@ class Wizard(entries.RememberingWindow):
 
 class SimpleRadioButton(gtk.VBox):
     """Simple to use radiobutton."""
+
     def __init__(self, callback):
         super(SimpleRadioButton, self).__init__()
         self.selected = None
@@ -265,6 +268,7 @@ class WizardChooser(entries.RememberingWindow):
 
     :author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     """
+
     def __init__(self, w3af):
         super(WizardChooser, self).__init__(
             w3af, "wizardchooser", "w3af - Wizard Chooser", "Wizards",
@@ -333,8 +337,9 @@ class WizardChooser(entries.RememberingWindow):
     def _getWizards(self):
         """Returns the existing wizards."""
         wizs = []
-        wizard_path = os.path.join(ROOT_PATH, 'core/controllers/wizard/wizards')
-        
+        wizard_path = os.path.join(
+            ROOT_PATH, 'core/controllers/wizard/wizards')
+
         for arch in os.listdir(wizard_path):
             if arch.endswith(".py") and not arch.startswith("__"):
                 base = arch[:-3]

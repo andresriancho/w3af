@@ -31,6 +31,7 @@ class HistorySuggestion(object):
 
     It's also responsible of loading and saving the info in a file.
     """
+
     def __init__(self, filename):
         # Where the history items will be stored
         self.filename = filename
@@ -45,14 +46,14 @@ class HistorySuggestion(object):
             #
             try:
                 self.history = msgpack.load(file(filename, 'rb'), raw=False)
-            except:
+            except BaseException:
                 #
                 # The history file might still be in pickle format, we read
                 # it and migrate to msgpack
                 #
                 try:
                     self.history = cPickle.load(file(filename, 'rb'))
-                except:
+                except BaseException:
                     #
                     # Well... the file is completely broken, just write an
                     # empty string to it using msgpack to have a nicer run

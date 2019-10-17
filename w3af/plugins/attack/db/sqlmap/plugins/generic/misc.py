@@ -28,6 +28,7 @@ from lib.core.exception import SqlmapNoneDataException
 from lib.core.exception import SqlmapUnsupportedFeatureException
 from lib.request import inject
 
+
 class Miscellaneous:
     """
     This class defines miscellaneous functionalities for plugins.
@@ -43,7 +44,10 @@ class Miscellaneous:
             debugMsg += "commands' output"
             logger.debug(debugMsg)
 
-            _ = unArrayizeValue(inject.getValue("SELECT SERVERPROPERTY('ErrorLogFileName')", safeCharEncode=False))
+            _ = unArrayizeValue(
+                inject.getValue(
+                    "SELECT SERVERPROPERTY('ErrorLogFileName')",
+                    safeCharEncode=False))
 
             if _:
                 conf.tmpPath = ntpath.dirname(_)
@@ -70,7 +74,9 @@ class Miscellaneous:
         conf.tmpPath = normalizePath(conf.tmpPath)
         conf.tmpPath = ntToPosixSlashes(conf.tmpPath)
 
-        singleTimeDebugMessage("going to use '%s' as temporary files directory" % conf.tmpPath)
+        singleTimeDebugMessage(
+            "going to use '%s' as temporary files directory" %
+            conf.tmpPath)
 
         hashDBWrite(HASHDB_KEYS.CONF_TMP_PATH, conf.tmpPath)
 
@@ -95,13 +101,21 @@ class Miscellaneous:
         else:
             raise SqlmapUnsupportedFeatureException("unsupported DBMS")
 
-        query = queries[Backend.getIdentifiedDbms()].substring.query % (queries[Backend.getIdentifiedDbms()].banner.query, first, last)
+        query = queries[Backend.getIdentifiedDbms()].substring.query % (
+            queries[Backend.getIdentifiedDbms()].banner.query, first, last)
 
         if conf.direct:
             query = "SELECT %s" % query
 
         kb.bannerFp["dbmsVersion"] = unArrayizeValue(inject.getValue(query))
-        kb.bannerFp["dbmsVersion"] = (kb.bannerFp["dbmsVersion"] or "").replace(',', "").replace('-', "").replace(' ', "")
+        kb.bannerFp["dbmsVersion"] = (
+            kb.bannerFp["dbmsVersion"] or "").replace(
+            ',',
+            "").replace(
+            '-',
+            "").replace(
+                ' ',
+            "")
 
     def delRemoteFile(self, filename):
         if not filename:
@@ -121,9 +135,13 @@ class Miscellaneous:
         inject.goStacked("DROP TABLE %s" % tblName, silent=True)
 
         if Backend.isDbms(DBMS.MSSQL) and tblName == self.cmdTblName:
-            inject.goStacked("CREATE TABLE %s(id INT PRIMARY KEY IDENTITY, %s %s)" % (tblName, tblField, tblType))
+            inject.goStacked(
+                "CREATE TABLE %s(id INT PRIMARY KEY IDENTITY, %s %s)" %
+                (tblName, tblField, tblType))
         else:
-            inject.goStacked("CREATE TABLE %s(%s %s)" % (tblName, tblField, tblType))
+            inject.goStacked(
+                "CREATE TABLE %s(%s %s)" %
+                (tblName, tblField, tblType))
 
     def cleanup(self, onlyFileTbl=False, udfDict=None, web=False):
         """

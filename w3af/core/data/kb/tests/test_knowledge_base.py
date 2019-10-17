@@ -64,14 +64,14 @@ class TestKnowledgeBase(unittest.TestCase):
 
     def test_default_get(self):
         self.assertEqual(kb.get('a', 'b'), [])
-    
+
     def test_default_raw_read(self):
         self.assertEqual(kb.raw_read('a', 'b'), [])
 
     def test_raw_read_error(self):
         kb.append('a', 'b', MockInfo())
         kb.append('a', 'b', MockInfo())
-        self.assertRaises(RuntimeError, kb.raw_read,'a', 'b')
+        self.assertRaises(RuntimeError, kb.raw_read, 'a', 'b')
 
     def test_default_first_saved(self):
         kb.raw_write('a', 'b', 'c')
@@ -82,24 +82,24 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         i2 = MockInfo()
         i3 = MockInfo()
-        
+
         kb.append('a', 'b', i1)
         kb.append('a', 'b', i2)
         kb.append('a', 'b', i3)
-        
+
         self.assertEqual(kb.get('a', 'b'), [i1, i2, i3])
 
     def test_append(self):
         i1 = MockInfo()
         i2 = MockInfo()
         i3 = MockInfo()
-        
+
         kb.append('a', 'b', i1)
         kb.append('a', 'b', i1)
         kb.append('a', 'b', i1)
         kb.append('a', 'b', i2)
         kb.append('a', 'b', i3)
-        
+
         self.assertEqual(kb.get('a', 'b'), [i1, i1, i1, i2, i3])
 
     def test_append_uniq_var_default(self):
@@ -146,7 +146,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, ])
-        
+
     def test_append_uniq_var_not_uniq_diff_url(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -248,13 +248,13 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i1, filter_by='URL')
         kb.append_uniq('a', 'b', i2, filter_by='URL')
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
-        
+
     def test_append_save(self):
         i1 = MockInfo()
-        
+
         kb.append('a', 'b', i1)
         kb.raw_write('a', 'b', 3)
-        
+
         self.assertEqual(kb.raw_read('a', 'b'), 3)
 
     def test_save_append(self):
@@ -264,12 +264,12 @@ class TestKnowledgeBase(unittest.TestCase):
         """
         i0 = MockInfo()
         self.assertRaises(TypeError, kb.raw_write, 'a', 'b', i0)
-        
+
         i1 = MockInfo()
         i2 = MockInfo()
         kb.append('a', 'b', i1)
         kb.append('a', 'b', i2)
-        
+
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
     def test_all_of_klass(self):
@@ -292,7 +292,10 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         kb.append('a', 'b', i1)
 
-        uniq_ids = [u for u in kb.get_all_uniq_ids_iter(include_ids=[i1.get_uniq_id()])]
+        uniq_ids = [
+            u for u in kb.get_all_uniq_ids_iter(
+                include_ids=[
+                    i1.get_uniq_id()])]
 
         self.assertEqual(uniq_ids, [i1.get_uniq_id()])
 
@@ -300,7 +303,8 @@ class TestKnowledgeBase(unittest.TestCase):
         i1 = MockInfo()
         kb.append('a', 'b', i1)
 
-        uniq_ids = [u for u in kb.get_all_uniq_ids_iter(include_ids=[str(uuid.uuid4())])]
+        uniq_ids = [u for u in kb.get_all_uniq_ids_iter(
+            include_ids=[str(uuid.uuid4())])]
 
         self.assertEqual(uniq_ids, [])
 
@@ -339,8 +343,10 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append('4', '2', vset)
 
         all_findings = kb.get_all_findings()
-        all_findings_except_v1 = kb.get_all_findings(exclude_ids=(v1.get_uniq_id(),))
-        all_findings_except_v1_v2 = kb.get_all_findings(exclude_ids=(v1.get_uniq_id(), vset.get_uniq_id()))
+        all_findings_except_v1 = kb.get_all_findings(
+            exclude_ids=(v1.get_uniq_id(),))
+        all_findings_except_v1_v2 = kb.get_all_findings(
+            exclude_ids=(v1.get_uniq_id(), vset.get_uniq_id()))
 
         self.assertEqual(all_findings, [i1, iset, v1, vset])
         self.assertEqual(all_findings_except_v1, [i1, iset, vset])
@@ -374,13 +380,13 @@ class TestKnowledgeBase(unittest.TestCase):
         kb = DBKnowledgeBase()
         kb.setup()
         table_name = kb.table_name
-        
+
         db = get_default_persistent_db_instance()
-        
+
         self.assertTrue(db.table_exists(table_name))
-        
+
         kb.remove()
-        
+
         self.assertFalse(db.table_exists(table_name))
 
     def test_observer_append(self):
@@ -417,99 +423,99 @@ class TestKnowledgeBase(unittest.TestCase):
     def test_observer_multiple_observers(self):
         observer1 = Mock()
         observer2 = Mock()
-        
+
         kb.add_observer(observer1)
         kb.add_observer(observer2)
         kb.raw_write('a', 'b', 1)
 
         observer1.append.assert_called_once_with('a', 'b', 1, ignore_type=True)
         observer2.append.assert_called_once_with('a', 'b', 1, ignore_type=True)
-        
+
     def test_pickleable_info(self):
         original_info = MockInfo()
-        
+
         kb.append('a', 'b', original_info)
         unpickled_info = kb.get('a', 'b')[0]
-        
+
         self.assertEqual(original_info, unpickled_info)
 
     def test_pickleable_vuln(self):
         original_vuln = MockVuln()
-        
+
         kb.append('a', 'b', original_vuln)
         unpickled_vuln = kb.get('a', 'b')[0]
-        
+
         self.assertEqual(original_vuln, unpickled_vuln)
-        
+
     def test_pickleable_shells(self):
         pool = Pool(1)
         xurllib = ExtendedUrllib()
-        
+
         original_shell = Shell(MockVuln(), xurllib, pool)
-        
+
         kb.append('a', 'b', original_shell)
         unpickled_shell = kb.get('a', 'b')[0]
-        
+
         self.assertEqual(original_shell, unpickled_shell)
         self.assertEqual(unpickled_shell.worker_pool, None)
         self.assertEqual(unpickled_shell._uri_opener, None)
-        
+
         pool.terminate()
         pool.join()
         xurllib.end()
-        
+
     def test_pickleable_shells_get_all(self):
         class FakeCore(object):
             worker_pool = Pool(1)
             uri_opener = ExtendedUrllib()
-        
+
         core = FakeCore()
         original_shell = Shell(MockVuln(), core.uri_opener, core.worker_pool)
-        
+
         kb.append('a', 'b', original_shell)
         unpickled_shell = list(kb.get_all_shells(core))[0]
-        
+
         self.assertEqual(original_shell, unpickled_shell)
         self.assertEqual(unpickled_shell.worker_pool, core.worker_pool)
         self.assertEqual(unpickled_shell._uri_opener, core.uri_opener)
-        
+
         core.worker_pool.terminate()
         core.worker_pool.join()
         core.uri_opener.end()
-    
+
     def test_get_by_uniq_id(self):
         i1 = MockInfo()
         kb.append('a', 'b', i1)
 
         i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
         self.assertEqual(i1_copy, i1)
-    
+
     def test_get_by_uniq_id_not_exists(self):
         self.assertIs(kb.get_by_uniq_id(hash('foo')), None)
-        
+
     def test_get_by_uniq_id_duplicated_ignores_second(self):
         """
         TODO: Analyze this case, i1 and i2 have both the same ID because they
               have all the same information (this is very very uncommon in a
               real w3af run).
-              
+
               Note that in the get_by_uniq_id call i2 is not returned.
         """
         i1 = MockInfo()
         i2 = MockInfo()
         kb.append('a', 'b', i1)
         kb.append('a', 'b', i2)
-        
+
         i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
         self.assertEqual(i1_copy, i1)
-    
+
     def test_raw_write_list(self):
         """
         Test for _get_uniq_id which needs to be able to hash any object type.
         """
         kb.raw_write('a', 'b', [1, 2, 3])
         self.assertEqual(kb.raw_read('a', 'b'), [1, 2, 3])
-    
+
     def test_kb_list_shells_empty(self):
         self.assertEqual(kb.get_all_shells(), [])
 
@@ -694,8 +700,11 @@ class TestKnowledgeBase(unittest.TestCase):
         freq = FuzzableRequest(url)
         exploit_mutant = QSMutant.create_mutants(freq, [''], [], False, {})[0]
 
-        shell = PortScanShell(vuln, w3af_core.uri_opener, w3af_core.worker_pool,
-                              exploit_mutant)
+        shell = PortScanShell(
+            vuln,
+            w3af_core.uri_opener,
+            w3af_core.worker_pool,
+            exploit_mutant)
         kb.append('a', 'b', shell)
 
         shells = kb.get_all_shells(w3af_core=w3af_core)
@@ -736,7 +745,9 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIs(unpickled_shell.worker_pool, w3af_core.worker_pool)
         self.assertEqual(unpickled_shell.STR_DELIM, shell.STR_DELIM)
         self.assertEqual(unpickled_shell.TRUE_COND, shell.TRUE_COND)
-        self.assertEqual(unpickled_shell.is_error_resp.use_difflib, use_difflib)
+        self.assertEqual(
+            unpickled_shell.is_error_resp.use_difflib,
+            use_difflib)
         self.assertEqual(unpickled_shell.is_error_resp.url_opener,
                          w3af_core.uri_opener)
 
@@ -782,10 +793,10 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append('a', 'b', vuln)
         kb_vuln = kb.get_one('a', 'b')
 
-        #pylint: disable=E1103
+        # pylint: disable=E1103
         self.assertEqual(kb_vuln.get_uniq_id(), vuln.get_uniq_id())
         self.assertEqual(kb_vuln, vuln)
-        #pylint: enable=E1103
+        # pylint: enable=E1103
 
     def test_get_one_none_found(self):
         empty_list = kb.get_one('a', 'b')
@@ -822,7 +833,8 @@ class TestKnowledgeBase(unittest.TestCase):
         def multi_append():
             for i in xrange(InfoSet.MAX_INFO_INSTANCES * 2):
                 vuln = MockVuln()
-                kb.append_uniq_group('a', 'b', vuln, group_klass=MockInfoSetTrue)
+                kb.append_uniq_group(
+                    'a', 'b', vuln, group_klass=MockInfoSetTrue)
 
             info_set_list = kb.get('a', 'b')
 
@@ -852,8 +864,8 @@ class TestKnowledgeBase(unittest.TestCase):
         #
         vuln = MockVuln(name='Foos')
 
-        info_set_a, created = kb.append_uniq_group('a', 'b', vuln,
-                                                   group_klass=MockInfoSetNames)
+        info_set_a, created = kb.append_uniq_group(
+            'a', 'b', vuln, group_klass=MockInfoSetNames)
 
         self.assertTrue(created)
 
@@ -891,8 +903,8 @@ class TestKnowledgeBase(unittest.TestCase):
 
         # Now some rounds of testing
         for _ in xrange(5):
-            info_set_after, _ = kb.append_uniq_group('a', 'b', vuln,
-                                                     group_klass=MockInfoSetNames)
+            info_set_after, _ = kb.append_uniq_group(
+                'a', 'b', vuln, group_klass=MockInfoSetNames)
 
             self.assertEqual(info_set_before.get_uniq_id(),
                              info_set_after.get_uniq_id())

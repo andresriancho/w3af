@@ -17,6 +17,7 @@ from lib.core.settings import SQLITE_ALIASES
 from lib.request import inject
 from plugins.generic.fingerprint import Fingerprint as GenericFingerprint
 
+
 class Fingerprint(GenericFingerprint):
     def __init__(self):
         GenericFingerprint.__init__(self, DBMS.SQLITE)
@@ -52,7 +53,8 @@ class Fingerprint(GenericFingerprint):
         htmlErrorFp = Format.getErrorParsedDBMSes()
 
         if htmlErrorFp:
-            value += "\n%shtml error message fingerprint: %s" % (blank, htmlErrorFp)
+            value += "\n%shtml error message fingerprint: %s" % (
+                blank, htmlErrorFp)
 
         return value
 
@@ -74,13 +76,15 @@ class Fingerprint(GenericFingerprint):
         infoMsg = "testing %s" % DBMS.SQLITE
         logger.info(infoMsg)
 
-        result = inject.checkBooleanExpression("LAST_INSERT_ROWID()=LAST_INSERT_ROWID()")
+        result = inject.checkBooleanExpression(
+            "LAST_INSERT_ROWID()=LAST_INSERT_ROWID()")
 
         if result:
             infoMsg = "confirming %s" % DBMS.SQLITE
             logger.info(infoMsg)
 
-            result = inject.checkBooleanExpression("SQLITE_VERSION()=SQLITE_VERSION()")
+            result = inject.checkBooleanExpression(
+                "SQLITE_VERSION()=SQLITE_VERSION()")
 
             if not result:
                 warnMsg = "the back-end DBMS is not %s" % DBMS.SQLITE

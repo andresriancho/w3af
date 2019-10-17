@@ -48,7 +48,8 @@ class proxy(ExploitResult, CommonAttackMethods):
 
         :return: None
         """
-        raise BaseFrameworkException('You should implement the end method of classes that inherit from "proxy"')
+        raise BaseFrameworkException(
+            'You should implement the end method of classes that inherit from "proxy"')
 
     def get_name(self):
         """
@@ -56,9 +57,11 @@ class proxy(ExploitResult, CommonAttackMethods):
 
         :return: The name of the proxy (rfi_proxy, dav_proxy, etc.)
         """
-        raise BaseFrameworkException('You should implement the get_name method of classes that inherit from "proxy"')
+        raise BaseFrameworkException(
+            'You should implement the get_name method of classes that inherit from "proxy"')
 
     def __repr__(self):
-        return '<proxy server at: ' + self._proxyDaemon.get_bind_ip() + ':' + str(self._proxyDaemon.get_bind_port()) + '>'
+        return '<proxy server at: ' + self._proxyDaemon.get_bind_ip() + ':' + \
+            str(self._proxyDaemon.get_bind_port()) + '>'
 
     __str__ = __repr__

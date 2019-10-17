@@ -57,7 +57,7 @@ class ConsoleTestHelper(unittest.TestCase):
         self.mock_sys()
 
     def tearDown(self):
-        #sys.exit.assert_called_once_with(0)
+        # sys.exit.assert_called_once_with(0)
         self.restore_sys()
         self._mock_stdout.clear()
 
@@ -111,7 +111,7 @@ class ConsoleTestHelper(unittest.TestCase):
 
     def all_expected_substring_in_output(self, expected):
         for e_substring in expected:
-            
+
             for output_line in self._mock_stdout.messages:
                 if e_substring in output_line:
                     break
@@ -128,7 +128,7 @@ class ConsoleTestHelper(unittest.TestCase):
                     return True
 
         return False
-    
+
     def generate_msg(self, line):
         msg = '"%s" was not found in:\n%s'
         return msg % (line, ''.join(self._mock_stdout.messages))

@@ -9,6 +9,7 @@ from lib.core.settings import WAF_ATTACK_VECTORS
 
 __product__ = "UTM Web Protection (Sophos)"
 
+
 def detect(get_page):
     retval = False
 

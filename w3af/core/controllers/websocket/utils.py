@@ -124,7 +124,8 @@ def negotiate_websocket_version(uri_opener, websocket_url):
             # websocket protocol" to "here is my 404 page"
             #
             # Another option is that we're connecting to the web socket using
-            # an origin that's not allowed, in some cases that's a 403 forbidden
+            # an origin that's not allowed, in some cases that's a 403
+            # forbidden
             continue
 
     # I want to be very friendly and when I'm not aware of the real version just

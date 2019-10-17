@@ -133,7 +133,9 @@ class web_spider(CrawlPlugin):
 
             # Form exclusion #15161
             form_id_json = form_params.get_form_id().to_json()
-            om.out.debug('A new form was found! Form-id is: "%s"' % form_id_json)
+            om.out.debug(
+                'A new form was found! Form-id is: "%s"' %
+                form_id_json)
 
             if not self._should_analyze_url(form_params.get_action()):
                 continue
@@ -169,7 +171,7 @@ class web_spider(CrawlPlugin):
             return
 
         self._target_domain = targets[0].get_domain()
-                
+
     def _urls_to_verify_generator(self, resp, fuzzable_req):
         """
         Yields tuples containing:
@@ -184,7 +186,7 @@ class web_spider(CrawlPlugin):
         gen = itertools.chain(self._url_path_url_generator(resp, fuzzable_req),
                               self._body_url_generator(resp, fuzzable_req),
                               headers_url_generator(resp, fuzzable_req))
-        
+
         for ref, fuzzable_req, original_resp, possibly_broken in gen:
             if self._should_verify_extracted_url(ref, original_resp):
                 yield ref, fuzzable_req, original_resp, possibly_broken
@@ -236,7 +238,7 @@ class web_spider(CrawlPlugin):
         #
         try:
             doc_parser = parser_cache.dpc.get_document_parser_for(resp)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             om.out.debug('Failed to find a suitable document parser. '
                          'Exception "%s"' % w3)
         else:
@@ -449,10 +451,11 @@ class web_spider(CrawlPlugin):
 
             om.out.information('The following is a list of broken links that'
                                ' were found by the web_spider plugin:')
-            for broken, where in unique_justseen(self._broken_links.ordered_iter()):
+            for broken, where in unique_justseen(
+                    self._broken_links.ordered_iter()):
                 om.out.information('- %s [ referenced from: %s ]' %
                                    (broken, where))
-        
+
         self._broken_links.cleanup()
 
     def _is_forward(self, reference):
@@ -494,7 +497,12 @@ class web_spider(CrawlPlugin):
              ' ignore these files using `ignore_regex`, but configuring'
              ' this parameter is easier and performs case insensitive'
              ' matching.')
-        o = opt_factory('ignore_extensions', self._ignore_extensions, d, LIST, help=h)
+        o = opt_factory(
+            'ignore_extensions',
+            self._ignore_extensions,
+            d,
+            LIST,
+            help=h)
         ol.add(o)
 
         return ol
@@ -514,7 +522,8 @@ class web_spider(CrawlPlugin):
         self._compile_re()
 
         self._ignore_extensions = options_list['ignore_extensions'].get_value()
-        self._ignore_extensions = [ext.lower() for ext in self._ignore_extensions]
+        self._ignore_extensions = [ext.lower()
+                                   for ext in self._ignore_extensions]
 
     def _compile_re(self):
         """
@@ -559,7 +568,7 @@ class web_spider(CrawlPlugin):
         follow_regex is '.*' (everything is followed). Both regular expressions
         are compiled with Python's re module and applied to URLs (with query
         string included).
-        
+
         The ignore_extensions configuration parameter is commonly used to ignore
         static files such as zip, jpeg, pdf, etc.
         """

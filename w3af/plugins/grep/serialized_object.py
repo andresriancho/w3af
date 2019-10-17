@@ -64,7 +64,8 @@ class serialized_object(GrepPlugin):
         :param response: The HTTP response object
         :return: None, results are saved to the kb.
         """
-        for parameter_name, parameter_value in self._get_all_parameters(request):
+        for parameter_name, parameter_value in self._get_all_parameters(
+                request):
 
             # Performance enhancement
             if self._should_skip_analysis(parameter_value):
@@ -116,8 +117,14 @@ class serialized_object(GrepPlugin):
 
         return False
 
-    def _analyze_param(self, request, response, parameter_name, parameter_value,
-                       language, serialized_object_re):
+    def _analyze_param(
+            self,
+            request,
+            response,
+            parameter_name,
+            parameter_value,
+            language,
+            serialized_object_re):
         """
         Check if one parameter holds a serialized object
 
@@ -131,11 +138,13 @@ class serialized_object(GrepPlugin):
         """
         try:
             match_object = serialized_object_re.search(parameter_value)
-        except Exception, e:
+        except Exception as e:
             args = (e, parameter_value)
-            om.out.debug('An exception was found while trying to find a'
-                         ' serialized object in a parameter value. The exception'
-                         ' is: "%s", and the parameter value is: "%r"' % args)
+            om.out.debug(
+                'An exception was found while trying to find a'
+                ' serialized object in a parameter value. The exception'
+                ' is: "%s", and the parameter value is: "%r"' %
+                args)
             return
 
         if not match_object:
@@ -149,7 +158,12 @@ class serialized_object(GrepPlugin):
                 ' indicator of potential insecure deserialization issues.')
         desc %= (language, request.get_url(), parameter_name)
 
-        v = Vuln('Serialized object', desc, severity.LOW, response.id, self.get_name())
+        v = Vuln(
+            'Serialized object',
+            desc,
+            severity.LOW,
+            response.id,
+            self.get_name())
 
         v.set_url(response.get_url())
         v.add_to_highlight(parameter_value)
@@ -197,9 +211,9 @@ class serialized_object(GrepPlugin):
         """
         return """
         This plugin identifies serialized objects in HTTP request parameters.
-        
+
         While sending serialized objects in HTTP requests is not a vulnerability
-        by itself, these objects could be abused by an attacker to perform 
+        by itself, these objects could be abused by an attacker to perform
         attacks such as PHP Object Injection.
         """
 
