@@ -30,13 +30,15 @@ class TestWSDLFinder(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'crawl': (PluginConfig('wsdl_finder'),
-                                  PluginConfig('web_spider',
-                                               (
-                                               'only_forward', True, PluginConfig.BOOL))),
-                        }
-        }
-    }
+            'plugins': {
+                'crawl': (
+                    PluginConfig('wsdl_finder'),
+                    PluginConfig(
+                        'web_spider',
+                        ('only_forward',
+                         True,
+                         PluginConfig.BOOL))),
+            }}}
 
     @attr('ci_fails')
     def test_wsdl_found(self):

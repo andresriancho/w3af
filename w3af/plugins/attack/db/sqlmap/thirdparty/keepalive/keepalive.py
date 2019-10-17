@@ -12,9 +12,9 @@
 #   Lesser General Public License for more details.
 #
 #   You should have received a copy of the GNU Lesser General Public
-#   License along with this library; if not, write to the 
-#      Free Software Foundation, Inc., 
-#      59 Temple Place, Suite 330, 
+#   License along with this library; if not, write to the
+#      Free Software Foundation, Inc.,
+#      59 Temple Place, Suite 330,
 #      Boston, MA  02111-1307  USA
 
 # This file was part of urlgrabber, a high-level cross-protocol url-grabber
@@ -28,7 +28,7 @@
 >>> keepalive_handler = HTTPHandler()
 >>> opener = urllib2.build_opener(keepalive_handler)
 >>> urllib2.install_opener(opener)
->>> 
+>>>
 >>> fo = urllib2.urlopen('http://www.python.org')
 
 If a connection to a given host is requested, and all of the existing
@@ -113,24 +113,29 @@ import thread
 DEBUG = None
 
 import sys
-if sys.version_info < (2, 4): HANDLE_ERRORS = 1
-else: HANDLE_ERRORS = 0
+if sys.version_info < (2, 4):
+    HANDLE_ERRORS = 1
+else:
+    HANDLE_ERRORS = 0
+
 
 class ConnectionManager:
     """
     The connection manager must be able to:
       * keep track of all existing
       """
+
     def __init__(self):
         self._lock = thread.allocate_lock()
-        self._hostmap = {} # map hosts to a list of connections
-        self._connmap = {} # map connections to host
-        self._readymap = {} # map connection to ready state
+        self._hostmap = {}  # map hosts to a list of connections
+        self._connmap = {}  # map connections to host
+        self._readymap = {}  # map connection to ready state
 
     def add(self, host, connection, ready):
         self._lock.acquire()
         try:
-            if not self._hostmap.has_key(host): self._hostmap[host] = []
+            if host not in self._hostmap:
+                self._hostmap[host] = []
             self._hostmap[host].append(connection)
             self._connmap[connection] = host
             self._readymap[connection] = ready
@@ -148,19 +153,22 @@ class ConnectionManager:
                 del self._connmap[connection]
                 del self._readymap[connection]
                 self._hostmap[host].remove(connection)
-                if not self._hostmap[host]: del self._hostmap[host]
+                if not self._hostmap[host]:
+                    del self._hostmap[host]
         finally:
             self._lock.release()
 
     def set_ready(self, connection, ready):
-        try: self._readymap[connection] = ready
-        except KeyError: pass
+        try:
+            self._readymap[connection] = ready
+        except KeyError:
+            pass
 
     def get_ready_conn(self, host):
         conn = None
         self._lock.acquire()
         try:
-            if self._hostmap.has_key(host):
+            if host in self._hostmap:
                 for c in self._hostmap[host]:
                     if self._readymap[c]:
                         self._readymap[c] = 0
@@ -176,11 +184,12 @@ class ConnectionManager:
         else:
             return dict(self._hostmap)
 
+
 class KeepAliveHandler:
     def __init__(self):
         self._cm = ConnectionManager()
 
-    #### Connection Management
+    # Connection Management
     def open_connections(self):
         """return a list of connected hosts and the number of connections
         to each.  [('foo.com:80', 2), ('bar.org', 1)]"""
@@ -207,10 +216,11 @@ class KeepAliveHandler:
         self._cm.set_ready(connection, 1)
 
     def _remove_connection(self, host, connection, close=0):
-        if close: connection.close()
+        if close:
+            connection.close()
         self._cm.remove(connection)
 
-    #### Transaction Execution
+    # Transaction Execution
     def do_open(self, req):
         host = req.host
         if not host:
@@ -223,7 +233,8 @@ class KeepAliveHandler:
 
                 # if this response is non-None, then it worked and we're
                 # done.  Break out, skipping the else block.
-                if r: break
+                if r:
+                    break
 
                 # connection is bad - possibly closed by server
                 # discard it and ask for the next free connection
@@ -233,19 +244,22 @@ class KeepAliveHandler:
             else:
                 # no (working) free connections were found.  Create a new one.
                 h = self._get_connection(host)
-                if DEBUG: DEBUG.info("creating new connection to %s (%d)",
-                                     host, id(h))
+                if DEBUG:
+                    DEBUG.info("creating new connection to %s (%d)",
+                               host, id(h))
                 self._cm.add(host, h, 0)
                 self._start_transaction(h, req)
                 r = h.getresponse()
-        except (socket.error, httplib.HTTPException), err:
+        except (socket.error, httplib.HTTPException) as err:
             raise urllib2.URLError(err)
 
-        if DEBUG: DEBUG.info("STATUS: %s, %s", r.status, r.reason)
+        if DEBUG:
+            DEBUG.info("STATUS: %s, %s", r.status, r.reason)
 
         # if not a persistent connection, don't try to reuse it
         if r.will_close:
-            if DEBUG: DEBUG.info('server will close connection, discarding')
+            if DEBUG:
+                DEBUG.info('server will close connection, discarding')
             self._cm.remove(h)
 
         r._handler = self
@@ -276,7 +290,7 @@ class KeepAliveHandler:
             # worked.  We'll check the version below, too.
         except (socket.error, httplib.HTTPException):
             r = None
-        except:
+        except BaseException:
             # adding this block just in case we've missed
             # something we will still raise the exception, but
             # lets try and close the connection and remove it
@@ -286,8 +300,9 @@ class KeepAliveHandler:
             # same exception was raised, etc.  The tradeoff is
             # that it's now possible this call will raise
             # a DIFFERENT exception
-            if DEBUG: DEBUG.error("unexpected exception - closing " + \
-                                  "connection to %s (%d)", host, id(h))
+            if DEBUG:
+                DEBUG.error("unexpected exception - closing " +
+                            "connection to %s (%d)", host, id(h))
             self._cm.remove(h)
             h.close()
             raise
@@ -297,11 +312,13 @@ class KeepAliveHandler:
             # bad header back.  This is most likely to happen if
             # the socket has been closed by the server since we
             # last used the connection.
-            if DEBUG: DEBUG.info("failed to re-use connection to %s (%d)",
-                                 host, id(h))
+            if DEBUG:
+                DEBUG.info("failed to re-use connection to %s (%d)",
+                           host, id(h))
             r = None
         else:
-            if DEBUG: DEBUG.info("re-using connection to %s (%d)", host, id(h))
+            if DEBUG:
+                DEBUG.info("re-using connection to %s (%d)", host, id(h))
 
         return r
 
@@ -310,27 +327,40 @@ class KeepAliveHandler:
             if req.has_data():
                 data = req.data
                 if hasattr(req, 'selector'):
-                    h.putrequest(req.get_method() or 'POST', req.selector, skip_host=req.has_header("Host"), skip_accept_encoding=req.has_header("Accept-encoding"))
+                    h.putrequest(
+                        req.get_method() or 'POST',
+                        req.selector,
+                        skip_host=req.has_header("Host"),
+                        skip_accept_encoding=req.has_header("Accept-encoding"))
                 else:
-                    h.putrequest(req.get_method() or 'POST', req.get_selector(), skip_host=req.has_header("Host"), skip_accept_encoding=req.has_header("Accept-encoding"))
-                if not req.headers.has_key('Content-type'):
+                    h.putrequest(
+                        req.get_method() or 'POST',
+                        req.get_selector(),
+                        skip_host=req.has_header("Host"),
+                        skip_accept_encoding=req.has_header("Accept-encoding"))
+                if 'Content-type' not in req.headers:
                     h.putheader('Content-type',
                                 'application/x-www-form-urlencoded')
-                if not req.headers.has_key('Content-length'):
+                if 'Content-length' not in req.headers:
                     h.putheader('Content-length', '%d' % len(data))
             else:
                 if hasattr(req, 'selector'):
-                    h.putrequest(req.get_method() or 'GET', req.selector, skip_host=req.has_header("Host"), skip_accept_encoding=req.has_header("Accept-encoding"))
+                    h.putrequest(req.get_method() or 'GET', req.selector, skip_host=req.has_header(
+                        "Host"), skip_accept_encoding=req.has_header("Accept-encoding"))
                 else:
-                    h.putrequest(req.get_method() or 'GET', req.get_selector(), skip_host=req.has_header("Host"), skip_accept_encoding=req.has_header("Accept-encoding"))
-        except (socket.error, httplib.HTTPException), err:
+                    h.putrequest(
+                        req.get_method() or 'GET',
+                        req.get_selector(),
+                        skip_host=req.has_header("Host"),
+                        skip_accept_encoding=req.has_header("Accept-encoding"))
+        except (socket.error, httplib.HTTPException) as err:
             raise urllib2.URLError(err)
 
-        if not req.headers.has_key('Connection'):
+        if 'Connection' not in req.headers:
             req.headers['Connection'] = 'keep-alive'
 
         for args in self.parent.addheaders:
-            if not req.headers.has_key(args[0]):
+            if args[0] not in req.headers:
                 h.putheader(*args)
         for k, v in req.headers.items():
             h.putheader(k, v)
@@ -341,6 +371,7 @@ class KeepAliveHandler:
     def _get_connection(self, host):
         return NotImplementedError
 
+
 class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
     def __init__(self):
         KeepAliveHandler.__init__(self)
@@ -350,6 +381,7 @@ class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
 
     def _get_connection(self, host):
         return HTTPConnection(host)
+
 
 class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
     def __init__(self, ssl_factory=None):
@@ -366,8 +398,11 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         return self.do_open(req)
 
     def _get_connection(self, host):
-        try: return self._ssl_factory.get_https_connection(host)
-        except AttributeError: return HTTPSConnection(host)
+        try:
+            return self._ssl_factory.get_https_connection(host)
+        except AttributeError:
+            return HTTPSConnection(host)
+
 
 class HTTPResponse(httplib.HTTPResponse):
     # we need to subclass HTTPResponse in order to
@@ -388,21 +423,20 @@ class HTTPResponse(httplib.HTTPResponse):
     # Both readline and readlines have been stolen with almost no
     # modification from socket.py
 
-
     def __init__(self, sock, debuglevel=0, strict=0, method=None):
-        if method: # the httplib in python 2.3 uses the method arg
+        if method:  # the httplib in python 2.3 uses the method arg
             httplib.HTTPResponse.__init__(self, sock, debuglevel, method)
-        else: # 2.2 doesn't
+        else:  # 2.2 doesn't
             httplib.HTTPResponse.__init__(self, sock, debuglevel)
         self.fileno = sock.fileno
         self.code = None
         self._method = method
         self._rbuf = b""
         self._rbufsize = 8096
-        self._handler = None # inserted by the handler later
+        self._handler = None  # inserted by the handler later
         self._host = None    # (same)
         self._url = None     # (same)
-        self._connection = None # (same)
+        self._connection = None  # (same)
 
     _raw_read = httplib.HTTPResponse.read
 
@@ -427,7 +461,7 @@ class HTTPResponse(httplib.HTTPResponse):
     def read(self, amt=None):
         # the _rbuf test is only in this first if for speed.  It's not
         # logically necessary
-        if self._rbuf and not amt is None:
+        if self._rbuf and amt is not None:
             L = len(self._rbuf)
             if amt > L:
                 amt -= L
@@ -445,22 +479,28 @@ class HTTPResponse(httplib.HTTPResponse):
         i = self._rbuf.find('\n')
         while i < 0 and not (0 < limit <= len(self._rbuf)):
             new = self._raw_read(self._rbufsize)
-            if not new: break
+            if not new:
+                break
             i = new.find('\n')
-            if i >= 0: i = i + len(self._rbuf)
+            if i >= 0:
+                i = i + len(self._rbuf)
             self._rbuf = self._rbuf + new
-        if i < 0: i = len(self._rbuf)
-        else: i = i+1
-        if 0 <= limit < len(self._rbuf): i = limit
+        if i < 0:
+            i = len(self._rbuf)
+        else:
+            i = i + 1
+        if 0 <= limit < len(self._rbuf):
+            i = limit
         data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
         return data
 
-    def readlines(self, sizehint = 0):
+    def readlines(self, sizehint=0):
         total = 0
         list = []
-        while 1:
+        while True:
             line = self.readline()
-            if not line: break
+            if not line:
+                break
             list.append(line)
             total += len(line)
             if sizehint and total >= sizehint:
@@ -472,12 +512,14 @@ class HTTPConnection(httplib.HTTPConnection):
     # use the modified response class
     response_class = HTTPResponse
 
+
 class HTTPSConnection(httplib.HTTPSConnection):
     response_class = HTTPResponse
 
 #########################################################################
-#####   TEST FUNCTIONS
+# TEST FUNCTIONS
 #########################################################################
+
 
 def error_handler(url):
     global HANDLE_ERRORS
@@ -493,9 +535,11 @@ def error_handler(url):
             fo = urllib2.urlopen(url)
             foo = fo.read()
             fo.close()
-            try: status, reason = fo.status, fo.reason
-            except AttributeError: status, reason = None, None
-        except IOError, e:
+            try:
+                status, reason = fo.status, fo.reason
+            except AttributeError:
+                status, reason = None, None
+        except IOError as e:
             print "  EXCEPTION: %s" % e
             raise
         else:
@@ -504,6 +548,7 @@ def error_handler(url):
     hosts = keepalive_handler.open_connections()
     print "open connections:", hosts
     keepalive_handler.close_all()
+
 
 def continuity(url):
     import md5
@@ -530,13 +575,16 @@ def continuity(url):
 
     fo = urllib2.urlopen(url)
     foo = ''
-    while 1:
+    while True:
         f = fo.readline()
-        if f: foo = foo + f
-        else: break
+        if f:
+            foo = foo + f
+        else:
+            break
     fo.close()
     m = md5.new(foo)
     print format % ('keepalive readline', m.hexdigest())
+
 
 def comp(N, url):
     print '  making %i connections to:\n  %s' % (N, url)
@@ -554,14 +602,16 @@ def comp(N, url):
     urllib2.install_opener(opener)
     t2 = fetch(N, url)
     print '  TIME: %.3f s' % t2
-    print '  improvement factor: %.2f' % (t1/t2, )
+    print '  improvement factor: %.2f' % (t1 / t2, )
+
 
 def fetch(N, url, delay=0):
     import time
     lens = []
     starttime = time.time()
     for i in range(N):
-        if delay and i > 0: time.sleep(delay)
+        if delay and i > 0:
+            time.sleep(delay)
         fo = urllib2.urlopen(url)
         foo = fo.read()
         fo.close()
@@ -576,9 +626,11 @@ def fetch(N, url, delay=0):
 
     return diff
 
+
 def test_timeout(url):
     global DEBUG
     dbbackup = DEBUG
+
     class FakeLogger:
         def debug(self, msg, *args): print msg % args
         info = warning = error = debug
@@ -612,8 +664,9 @@ def test_timeout(url):
 
 def test(url, N=10):
     print "checking error hander (do this on a non-200)"
-    try: error_handler(url)
-    except IOError, e:
+    try:
+        error_handler(url)
+    except IOError as e:
         print "exiting - exception will prevent further tests"
         sys.exit()
     print
@@ -626,13 +679,14 @@ def test(url, N=10):
     print "performing dropped-connection check"
     test_timeout(url)
 
+
 if __name__ == '__main__':
     import time
     import sys
     try:
         N = int(sys.argv[1])
         url = sys.argv[2]
-    except:
+    except BaseException:
         print "%s <integer> <url>" % sys.argv[0]
     else:
         test(url, N)

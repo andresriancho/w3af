@@ -42,7 +42,7 @@ class Payload(object):
                  provided by the shell_obj.
         """
         available_syscalls = self.get_shell_syscalls()
-        
+
         run_options = self.get_payload_implemented_methods()
 
         return available_syscalls.intersection(run_options)
@@ -57,7 +57,7 @@ class Payload(object):
         try:
             return payload_handler.exec_payload(self.shell, payload_name,
                                                 args, use_api=True)
-        except:
+        except BaseException:
             #
             #    Run the payload name with any shell that has the capabilities
             #    we need, not the one we're already using (that failed because
@@ -66,7 +66,7 @@ class Payload(object):
             try:
                 return payload_handler.exec_payload(None, payload_name, args,
                                                     use_api=True)
-            except:
+            except BaseException:
                 msg = 'The payload you are trying to run ("%s") can not be' \
                       ' run because it is trying to call another payload'\
                       ' ("%s") which is failing because there are no shells'\
@@ -147,21 +147,21 @@ class Payload(object):
         :return: A set with the syscalls that the shell implements
         """
         available_syscalls = []
-        
+
         for syscall in SYSCALL_LIST:
-            
+
             try:
                 getattr(self.shell, syscall)
             except AttributeError:
                 pass
             else:
                 available_syscalls.append(syscall)
-        
+
         available_syscalls = [_filter(syscall) for syscall in available_syscalls
                               if _filter(syscall) is not None]
-        
+
         return set(available_syscalls)
-    
+
     def get_payload_implemented_methods(self):
         """
         :return: A list of all methods that the current payload implements,
@@ -169,18 +169,18 @@ class Payload(object):
                  methods run_execute and run_read exist.
         """
         implemented_methods = []
-        
+
         for syscall in SYSCALL_LIST:
-            
+
             implemented_method = 'run_' + syscall
-            
+
             try:
                 getattr(self, implemented_method)
             except AttributeError:
                 pass
             else:
                 implemented_methods.append(syscall)
-        
+
         return set(implemented_methods)
 
 

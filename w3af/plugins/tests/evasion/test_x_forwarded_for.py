@@ -28,17 +28,17 @@ from w3af.plugins.evasion.x_forwarded_for import x_forwarded_for
 
 
 class TestXForwardedFor(unittest.TestCase):
-    
+
     def test_no_modification(self):
         xff = x_forwarded_for()
 
         u = URL('http://www.w3af.com/')
         headers = Headers([('X-Forwarded-For', '127.0.0.1')])
         r = HTTPRequest(u, headers=headers)
-        
-        modified_request = xff.modify_request( r )
+
+        modified_request = xff.modify_request(r)
         modified_headers = modified_request.get_headers()
-        
+
         self.assertIn('X-forwarded-for', modified_headers)
         self.assertEqual(modified_headers['X-forwarded-for'],
                          u'127.0.0.1', modified_headers)
@@ -48,10 +48,10 @@ class TestXForwardedFor(unittest.TestCase):
 
         u = URL('http://www.w3af.com/')
         r = HTTPRequest(u)
-        
+
         modified_request = xff.modify_request(r)
         modified_headers = modified_request.get_headers()
-        
+
         self.assertIn('X-forwarded-for', modified_headers)
         self.assertEqual(modified_headers['X-forwarded-for'],
                          u'163.7.70.57', modified_headers)

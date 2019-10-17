@@ -26,10 +26,10 @@ from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 
 class TestSQLMapUpdate(unittest.TestCase):
     """Verify that we have an updated version of sqlmap within w3af"""
-    
+
     def test_updated(self):
         days = get_days_since_last_update(SQLMapWrapper.SQLMAP_LOCATION)
-        
+
         # See http://nuclearsquid.com/writings/subtree-merging-and-you/
         #     https://www.kernel.org/pub/software/scm/git/docs/howto/using-merge-subtree.html
         #
@@ -45,14 +45,15 @@ class TestSQLMapUpdate(unittest.TestCase):
                           ' --prefix=w3af/plugins/attack/db/sqlmap/'
                           ' --squash sqlmap master')
         setup_str = ''.join(['    %s\n' % scmd for scmd in setup_commands])
-        
+
         maintain_commands = ('git subtree pull'
                              ' --prefix=w3af/plugins/attack/db/sqlmap'
                              ' --squash sqlmap master',
 
                              'git push')
-        maintain_str = ''.join(['    %s\n' % mcmd for mcmd in maintain_commands])
-        
+        maintain_str = ''.join(['    %s\n' %
+                                mcmd for mcmd in maintain_commands])
+
         msg = ('\nYou need to update the sqlmap installation that\'s embedded'
                ' with w3af. If you run "git remote" and sqlmap appears in the'
                ' output just run:\n'
@@ -61,5 +62,5 @@ class TestSQLMapUpdate(unittest.TestCase):
                '%s')
 
         msg %= (maintain_str, setup_str)
-        
+
         self.assertLess(days, 30, msg)

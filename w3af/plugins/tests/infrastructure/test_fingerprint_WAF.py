@@ -27,8 +27,8 @@ class WAFTest(object):
 
     _run_configs = {
         'cfg': {
-        'target': target_url,
-        'plugins': {'infrastructure': (PluginConfig('fingerprint_WAF'),)}
+            'target': target_url,
+            'plugins': {'infrastructure': (PluginConfig('fingerprint_WAF'),)}
         }
     }
 

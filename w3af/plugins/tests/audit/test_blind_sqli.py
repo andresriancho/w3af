@@ -26,7 +26,7 @@ from w3af.core.controllers.ci.wavsep import get_wavsep_http
 
 CONFIG = {'audit': (PluginConfig('blind_sqli'),),
           'crawl': (PluginConfig('web_spider',
-                    ('only_forward', True, PluginConfig.BOOL)),)}
+                                 ('only_forward', True, PluginConfig.BOOL)),)}
 
 
 class TestDjangoBlindSQLI(PluginTest):
@@ -47,12 +47,14 @@ class TestDjangoBlindSQLI(PluginTest):
         self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_single_quote(self):
-        target_url = get_moth_http('/audit/blind_sqli/where_string_single_qs.py')
+        target_url = get_moth_http(
+            '/audit/blind_sqli/where_string_single_qs.py')
         qs = '?uname=pablo'
         self._scan_single_quote(target_url, qs)
 
     def test_single_quote_non_true_value_as_init(self):
-        target_url = get_moth_http('/audit/blind_sqli/where_string_single_qs.py')
+        target_url = get_moth_http(
+            '/audit/blind_sqli/where_string_single_qs.py')
         qs = '?uname=foobar39'
         self._scan_single_quote(target_url, qs)
 
@@ -87,7 +89,8 @@ class TestDjangoBlindSQLI(PluginTest):
 
     def test_found_exploit_blind_sqli_form_GET(self):
         # Run the scan
-        target = get_moth_http('/audit/blind_sqli/blind_where_integer_form_get.py')
+        target = get_moth_http(
+            '/audit/blind_sqli/blind_where_integer_form_get.py')
         self._scan(target, CONFIG)
 
         # Assert the general results
@@ -120,11 +123,19 @@ class TestOldMothBlindSQLI(PluginTest):
     target_url = get_w3af_moth_http(base_path)
 
     config = {
-        'audit': (PluginConfig('blind_sqli'),),
-
-        'crawl': (PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL),
-                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+        'audit': (
+            PluginConfig('blind_sqli'),
+        ),
+        'crawl': (
+            PluginConfig(
+                'web_spider',
+                ('only_forward',
+                 True,
+                 PluginConfig.BOOL),
+                ('ignore_regex',
+                 '.*(asp|aspx)',
+                 PluginConfig.STR)),
+        ),
     }
 
     def test_found_blind_sqli_old_moth(self):

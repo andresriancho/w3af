@@ -34,15 +34,15 @@ class Testwordpress_fingerprint(PluginTest):
         'direct': {
             'target': wordpress_url,
             'plugins': {
-        'crawl': (PluginConfig('wordpress_fingerprint',),)
+                'crawl': (PluginConfig('wordpress_fingerprint',),)
             },
         },
         'crawl': {
             'target': moth_url,
             'plugins': {
-        'crawl': (PluginConfig('wordpress_fingerprint',),
-                  PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL)))
+                'crawl': (PluginConfig('wordpress_fingerprint',),
+                          PluginConfig('web_spider',
+                                       ('only_forward', True, PluginConfig.BOOL)))
 
             },
         }
@@ -79,8 +79,8 @@ class Testwordpress_fingerprint(PluginTest):
         self.assertEqual(descriptions, expected_descriptions)
 
     def test_xml_parsing_case01(self):
-        wordpress_fingerprint_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
-                                                                           'wordpress_fingerprint')
+        wordpress_fingerprint_inst = self.w3afcore.plugins.get_plugin_inst(
+            'crawl', 'wordpress_fingerprint')
 
         wp_fingerprints = wordpress_fingerprint_inst._get_wp_fingerprints()
         self.assertGreater(len(wp_fingerprints), 20)
@@ -91,7 +91,8 @@ class Testwordpress_fingerprint(PluginTest):
         self.assertIn(wp_file_fp, wp_fingerprints)
 
     def test_updated_wp_versions_xml(self):
-        wp_fp_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'wordpress_fingerprint')
+        wp_fp_inst = self.w3afcore.plugins.get_plugin_inst(
+            'crawl', 'wordpress_fingerprint')
         url = 'https://github.com/wpscanteam/wpscan/blob/master/data.zip?raw=true'
 
         wp_versions_file = wp_fp_inst.WP_VERSIONS_XML
@@ -106,11 +107,11 @@ class Testwordpress_fingerprint(PluginTest):
               'git push\n'\
               'cd -'
         self.assertFalse(is_older, msg % url)
-        
+
     def test_updated_release_db(self):
 
-        wpfp_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
-                                                          'wordpress_fingerprint')
+        wpfp_inst = self.w3afcore.plugins.get_plugin_inst(
+            'crawl', 'wordpress_fingerprint')
 
         wp_releases_file = wpfp_inst._release_db
         is_older = days_since_file_update(wp_releases_file, 30)

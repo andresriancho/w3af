@@ -89,10 +89,10 @@ class TestCrawlExceptions(PluginTest):
 
         caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
         self.assertEqual(len(caught_exceptions), 1)
-        
+
         edata = caught_exceptions[0]
         self.assertEqual(edata.get_where(), 'crawl.failing_spider:45')
-        
+
         # I tried to make some more advanced unittests here, but it was
         # very difficult to get a result that was NOT random from failing_spider
         # + exception_handler .

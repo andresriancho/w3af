@@ -16,7 +16,8 @@ if subprocess.mswindows:
     # Reference: https://gist.github.com/vsajip/758430
     #            https://github.com/ipython/ipython/issues/4252
     #            https://msdn.microsoft.com/en-us/library/windows/desktop/ms686047%28v=vs.85%29.aspx
-    ctypes.windll.kernel32.SetConsoleTextAttribute.argtypes = [ctypes.wintypes.HANDLE, ctypes.wintypes.WORD]
+    ctypes.windll.kernel32.SetConsoleTextAttribute.argtypes = [
+        ctypes.wintypes.HANDLE, ctypes.wintypes.WORD]
     ctypes.windll.kernel32.SetConsoleTextAttribute.restype = ctypes.wintypes.BOOL
 
 
@@ -68,7 +69,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
             raise
         except IOError:
             pass
-        except:
+        except BaseException:
             self.handleError(record)
 
     if not subprocess.mswindows:
@@ -97,7 +98,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
             if fd is not None:
                 fd = fd()
 
-                if fd in (1, 2): # stdout or stderr
+                if fd in (1, 2):  # stdout or stderr
                     h = ctypes.windll.kernel32.GetStdHandle(-10 - fd)
 
             while parts:
@@ -119,13 +120,14 @@ class ColorizingStreamHandler(logging.StreamHandler):
                             elif 30 <= p <= 37:
                                 color |= self.nt_color_map[p - 30]
                             elif p == 1:
-                                color |= 0x08 # foreground intensity on
-                            elif p == 0: # reset to default color
+                                color |= 0x08  # foreground intensity on
+                            elif p == 0:  # reset to default color
                                 color = 0x07
                             else:
-                                pass # error condition ignored
+                                pass  # error condition ignored
 
-                        ctypes.windll.kernel32.SetConsoleTextAttribute(h, color)
+                        ctypes.windll.kernel32.SetConsoleTextAttribute(
+                            h, color)
 
     def colorize(self, message, record):
         if record.levelno in self.level_map and self.is_tty:
@@ -148,8 +150,8 @@ class ColorizingStreamHandler(logging.StreamHandler):
                 else:
                     prefix = ""
 
-                message = "%s%s" % (prefix, ''.join((self.csi, ';'.join(params),
-                                   'm', message, self.reset)))
+                message = "%s%s" % (prefix, ''.join(
+                    (self.csi, ';'.join(params), 'm', message, self.reset)))
 
         return message
 

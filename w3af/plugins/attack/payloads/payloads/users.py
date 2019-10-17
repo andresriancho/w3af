@@ -6,6 +6,7 @@ class users(Payload):
     """
     This payload shows users name
     """
+
     def api_read(self):
         result = {}
 
@@ -19,14 +20,14 @@ class users(Payload):
                         desc = splitted_line[-3]
                         directory = splitted_line[-2]
                         shell = splitted_line[-1]
-                    except:
+                    except BaseException:
                         pass
                     else:
                         desc = desc.replace(',,,', '')
                         if not directory.endswith('/'):
                             directory += '/'
-                        result[user] = {'home':
-                                        directory, 'shell': shell, 'desc': desc}
+                        result[user] = {
+                            'home': directory, 'shell': shell, 'desc': desc}
 
         return result
 

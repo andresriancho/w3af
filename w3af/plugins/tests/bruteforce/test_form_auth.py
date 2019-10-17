@@ -54,19 +54,21 @@ class GenericFormAuthTest(PluginTest):
 
 
 class FormAuthTest(GenericFormAuthTest):
-    
+
     BASE_PATH = os.path.join(ROOT_PATH, 'plugins', 'tests', 'bruteforce')
-    
+
     target_post_url = get_moth_http('/bruteforce/form/guessable_login_form.py')
-    target_get_url = get_moth_http('/bruteforce/form/guessable_login_form_get.py')
-    target_password_only_url = get_moth_http('/bruteforce/form/guessable_pass_only.py')
+    target_get_url = get_moth_http(
+        '/bruteforce/form/guessable_login_form_get.py')
+    target_password_only_url = get_moth_http(
+        '/bruteforce/form/guessable_pass_only.py')
     target_negative_url = get_moth_http('/bruteforce/form/impossible.py')
 
     target_web_spider_url = get_moth_http('/bruteforce/form/')
 
     negative_test = {
         'crawl': (PluginConfig('web_spider',
-                              ('only_forward', True, PluginConfig.BOOL),),),
+                               ('only_forward', True, PluginConfig.BOOL),),),
         'bruteforce': (PluginConfig('form_auth',
 
                                     ('users_file',
@@ -159,17 +161,17 @@ class TestFormAuthFailedLoginMatchTrivial(GenericFormAuthTest):
         return 200, response_headers, body
 
     MOCK_RESPONSES = [
-              MockResponse(url=target_url,
-                           body=FORM,
-                           status=200,
-                           method='GET',
-                           content_type='text/html'),
+        MockResponse(url=target_url,
+                     body=FORM,
+                     status=200,
+                     method='GET',
+                     content_type='text/html'),
 
-              MockResponse(url=login_url,
-                           body=request_callback,
-                           method='POST',
-                           content_type='text/html',
-                           status=200),
+        MockResponse(url=login_url,
+                     body=request_callback,
+                     method='POST',
+                     content_type='text/html',
+                     status=200),
 
     ]
 
@@ -220,17 +222,17 @@ class TestFormAuthFailedLoginMatchWithStaticLargeResponse(GenericFormAuthTest):
         return 200, response_headers, body
 
     MOCK_RESPONSES = [
-              MockResponse(url=target_url,
-                           body=FORM,
-                           status=200,
-                           method='GET',
-                           content_type='text/html'),
+        MockResponse(url=target_url,
+                     body=FORM,
+                     status=200,
+                     method='GET',
+                     content_type='text/html'),
 
-              MockResponse(url=login_url,
-                           body=request_callback,
-                           method='POST',
-                           content_type='text/html',
-                           status=200),
+        MockResponse(url=login_url,
+                     body=request_callback,
+                     method='POST',
+                     content_type='text/html',
+                     status=200),
 
     ]
 
@@ -249,7 +251,8 @@ class TestFormAuthFailedLoginMatchWithStaticLargeResponse(GenericFormAuthTest):
         self.assertEquals(vuln['pass'], 'admin')
 
 
-class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse(GenericFormAuthTest):
+class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse(
+        GenericFormAuthTest):
 
     target_url = u'http://w3af.org/'
     login_url = u'http://w3af.org/login'
@@ -283,17 +286,17 @@ class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse(GenericFormAuthT
         return 200, response_headers, body
 
     MOCK_RESPONSES = [
-              MockResponse(url=target_url,
-                           body=FORM,
-                           status=200,
-                           method='GET',
-                           content_type='text/html'),
+        MockResponse(url=target_url,
+                     body=FORM,
+                     status=200,
+                     method='GET',
+                     content_type='text/html'),
 
-              MockResponse(url=login_url,
-                           body=request_callback,
-                           method='POST',
-                           content_type='text/html',
-                           status=200),
+        MockResponse(url=login_url,
+                     body=request_callback,
+                     method='POST',
+                     content_type='text/html',
+                     status=200),
 
     ]
 
@@ -315,7 +318,8 @@ class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse(GenericFormAuthT
         self.assertEquals(vuln['pass'], 'admin')
 
 
-class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponseShortSuccess(GenericFormAuthTest):
+class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponseShortSuccess(
+        GenericFormAuthTest):
 
     target_url = u'http://w3af.org/'
     login_url = u'http://w3af.org/login'
@@ -347,17 +351,17 @@ class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponseShortSuccess(Gene
         return 200, response_headers, body
 
     MOCK_RESPONSES = [
-              MockResponse(url=target_url,
-                           body=FORM,
-                           status=200,
-                           method='GET',
-                           content_type='text/html'),
+        MockResponse(url=target_url,
+                     body=FORM,
+                     status=200,
+                     method='GET',
+                     content_type='text/html'),
 
-              MockResponse(url=login_url,
-                           body=request_callback,
-                           method='POST',
-                           content_type='text/html',
-                           status=200),
+        MockResponse(url=login_url,
+                     body=request_callback,
+                     method='POST',
+                     content_type='text/html',
+                     status=200),
 
     ]
 
@@ -405,7 +409,8 @@ class TestFormAuthFailedLoginMatchWithCAPTCHA(GenericFormAuthTest):
         klass = TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse
 
         body = '%s\n%s\n%s' % (klass.HEADER,
-                               'Invalid username / password %s' % random.randint(1, 10000),
+                               'Invalid username / password %s' % random.randint(1,
+                                                                                 10000),
                                klass.FOOTER)
 
         if username == 'admin':
@@ -414,7 +419,9 @@ class TestFormAuthFailedLoginMatchWithCAPTCHA(GenericFormAuthTest):
 
             if captcha_count > 2:
                 body = '%s\n%s\n%s' % (klass.HEADER,
-                                       'Now you need to complete a CAPTCHA %s' % random.randint(1, 10000),
+                                       'Now you need to complete a CAPTCHA %s' % random.randint(
+                                           1,
+                                           10000),
                                        klass.FOOTER)
             else:
                 if password == 'will-not-guess-not-in-password-file':
@@ -423,17 +430,17 @@ class TestFormAuthFailedLoginMatchWithCAPTCHA(GenericFormAuthTest):
         return 200, response_headers, body
 
     MOCK_RESPONSES = [
-              MockResponse(url=target_url,
-                           body=FORM,
-                           status=200,
-                           method='GET',
-                           content_type='text/html'),
+        MockResponse(url=target_url,
+                     body=FORM,
+                     status=200,
+                     method='GET',
+                     content_type='text/html'),
 
-              MockResponse(url=login_url,
-                           body=request_callback,
-                           method='POST',
-                           content_type='text/html',
-                           status=200),
+        MockResponse(url=login_url,
+                     body=request_callback,
+                     method='POST',
+                     content_type='text/html',
+                     status=200),
 
     ]
 

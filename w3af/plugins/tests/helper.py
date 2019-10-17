@@ -86,10 +86,10 @@ class PluginTest(unittest.TestCase):
         if self.MOCK_RESPONSES:
             httpretty.reset()
             httpretty.enable()
-            
+
             try:
                 url = URL(self.target_url)
-            except ValueError, ve:
+            except ValueError as ve:
                 msg = ('When using MOCK_RESPONSES you need to set the'
                        ' target_url attribute to a valid URL, exception was:'
                        ' "%s".')
@@ -110,7 +110,8 @@ class PluginTest(unittest.TestCase):
         else:
             re_str = "%s://%s:%s/(.*)" % (proto, domain, port)
 
-        all_methods = set(mock_resp.method for mock_resp in self.MOCK_RESPONSES)
+        all_methods = set(
+            mock_resp.method for mock_resp in self.MOCK_RESPONSES)
 
         for http_method in all_methods:
             httpretty.register_uri(http_method,
@@ -226,7 +227,7 @@ class PluginTest(unittest.TestCase):
             try:
                 response = urllib2.urlopen(target.url_string)
                 response.read()
-            except urllib2.URLError, e:
+            except urllib2.URLError as e:
                 if hasattr(e, 'code'):
                     # pylint: disable=E1101
                     if e.code in (404, 403, 401):
@@ -237,8 +238,8 @@ class PluginTest(unittest.TestCase):
                     # pylint: enable=E1101
 
                 self.assertTrue(False, msg % (target, e.reason))
-            
-            except Exception, e:
+
+            except Exception as e:
                 self.assertTrue(False, msg % (target, e))
 
     def _scan(self,
@@ -271,16 +272,16 @@ class PluginTest(unittest.TestCase):
     def _set_target(self, target, verify_targets):
         if not isinstance(target, (basestring, tuple)):
             raise TypeError('Expected basestring or tuple in scan target.')
-        
+
         if isinstance(target, tuple):
             target = tuple([URL(u) for u in target])
-            
+
         elif isinstance(target, basestring):
             target = (URL(target),)
-        
+
         if verify_targets and not self.MOCK_RESPONSES:
             self._verify_targets_up(target)
-        
+
         target_opts = create_target_option_list(*target)
         self.w3afcore.target.set_options(target_opts)
 
@@ -295,8 +296,8 @@ class PluginTest(unittest.TestCase):
                 if pcfg.name == 'all':
                     continue
 
-                plugin_instance = self.w3afcore.plugins.get_plugin_inst(ptype,
-                                                                        pcfg.name)
+                plugin_instance = self.w3afcore.plugins.get_plugin_inst(
+                    ptype, pcfg.name)
                 default_option_list = plugin_instance.get_options()
                 unit_test_options = pcfg.options
 
@@ -373,7 +374,8 @@ class PluginTest(unittest.TestCase):
         #   Now we assert the unknowns
         #
         all_known_urls = self.kb.get_all_known_urls()
-        all_known_files = [u.get_path().replace(self.base_path, '') for u in all_known_urls]
+        all_known_files = [u.get_path().replace(self.base_path, '')
+                           for u in all_known_urls]
 
         expected = [path for path, param in expected_path_param]
 
@@ -489,7 +491,8 @@ class PluginConfig(object):
 class ReadExploitTest(PluginTest):
     def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
         self.w3afcore.uri_opener.set_exploit_mode(True)
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack', exploit_plugin)
+        plugin = self.w3afcore.plugins.get_plugin_inst(
+            'attack', exploit_plugin)
 
         self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
 
@@ -511,17 +514,17 @@ class ReadExploitTest(PluginTest):
         payload = shell.generic_user_input('payload',
                                            ['apache_config_directory'])
         self.assertTrue(payload is None)
-        
+
         if isinstance(shell, ReadShell):
             _help = shell.help(None)
             self.assertNotIn('execute', _help)
             self.assertNotIn('upload', _help)
             self.assertIn('read', _help)
-            
+
             _help = shell.help('read')
             self.assertIn('read', _help)
             self.assertIn('/etc/passwd', _help)
-        
+
         return shell
 
 
@@ -529,21 +532,21 @@ class ExecExploitTest(ReadExploitTest):
     def _exploit_vuln(self, vuln_to_exploit_id, exploit_plugin):
         shell = super(ExecExploitTest, self)._exploit_vuln(vuln_to_exploit_id,
                                                            exploit_plugin)
-        
+
         etc_passwd = shell.generic_user_input('e', ['cat', '/etc/passwd'])
         self.assertIn('root', etc_passwd)
         self.assertIn('/bin/bash', etc_passwd)
-        
+
         _help = shell.help(None)
         self.assertIn('execute', _help)
         self.assertIn('upload', _help)
         self.assertIn('read', _help)
-        
+
         _help = shell.help('read')
         self.assertIn('read', _help)
         self.assertIn('/etc/passwd', _help)
 
-        
+
 @attr('root')
 def onlyroot(meth):
     """
@@ -569,16 +572,16 @@ def create_target_option_list(*target):
     opt = opt_factory('target', '', '', URL_LIST)
     opt.set_value(','.join([u.url_string for u in target]))
     opts.add(opt)
-    
+
     opt = opt_factory('target_os', ('unknown', 'unix', 'windows'), '', 'combo')
     opts.add(opt)
-    
+
     opt = opt_factory('target_framework',
                       ('unknown', 'php', 'asp', 'asp.net',
                        'java', 'jsp', 'cfm', 'ruby', 'perl'),
                       '', 'combo')
     opts.add(opt)
-    
+
     return opts
 
 

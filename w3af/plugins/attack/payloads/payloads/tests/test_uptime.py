@@ -26,8 +26,15 @@ class test_uptime(PayloadTestHelper):
 
     # This is how it looks, but I want to have something generic so I don't use much
     # of this EXPECTED_RESULT dict, just the keys
-    EXPECTED_RESULT = {'idletime': {'hours': '141', 'minutes': '43', 'seconds': '30'},
-                       'uptime': {'hours': '144', 'minutes': '12', 'seconds': '2'}}
+    EXPECTED_RESULT = {
+        'idletime': {
+            'hours': '141',
+            'minutes': '43',
+            'seconds': '30'},
+        'uptime': {
+            'hours': '144',
+            'minutes': '12',
+            'seconds': '2'}}
 
     def test_uptime(self):
         result = exec_payload(self.shell, 'uptime', use_api=True)

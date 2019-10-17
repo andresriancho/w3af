@@ -7,6 +7,7 @@ class hostname(Payload):
     """
     This payload shows the server hostname
     """
+
     def api_read(self):
         result = {}
         result['hostname'] = []
@@ -27,10 +28,16 @@ class hostname(Payload):
         result['hostname'] = []
 
         def parse_iis6_log(iis6_log):
-            root1 = re.findall('(?<=OC_COMPLETE_INSTALLATION:m_csMachineName=)(.*?) ', iis6_log, re.MULTILINE)
+            root1 = re.findall(
+                '(?<=OC_COMPLETE_INSTALLATION:m_csMachineName=)(.*?) ',
+                iis6_log,
+                re.MULTILINE)
             root2 = re.findall('(?<=OC_QUEUE_FILE_OPS:m_csMachineName=)(.*?) ',
                                iis6_log, re.MULTILINE)
-            root3 = re.findall('(?<=OC_COMPLETE_INSTALLATION:m_csMachineName=)(.*?) ', iis6_log, re.MULTILINE)
+            root3 = re.findall(
+                '(?<=OC_COMPLETE_INSTALLATION:m_csMachineName=)(.*?) ',
+                iis6_log,
+                re.MULTILINE)
             root = root1 + root2 + root3
             if root:
                 return root

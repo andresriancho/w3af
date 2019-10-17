@@ -7,6 +7,7 @@ class kernel_version(Payload):
     """
     This payload shows Kernel version
     """
+
     def api_read(self):
         result = {}
         result['kernel_version'] = ''

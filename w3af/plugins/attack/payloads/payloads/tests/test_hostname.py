@@ -27,7 +27,7 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 class test_hostname(PayloadTestHelper):
 
-    EXPECTED_RESULT = {'hostname': [socket.gethostname(),]}
+    EXPECTED_RESULT = {'hostname': [socket.gethostname(), ]}
 
     @attr('ci_fails')
     def test_hostname(self):

@@ -6,6 +6,7 @@ class domainname(Payload):
     """
     This payload shows server domain name.
     """
+
     def api_read(self):
         result = {}
         result['domain_name'] = ''

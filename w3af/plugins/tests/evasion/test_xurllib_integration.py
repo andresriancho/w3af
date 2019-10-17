@@ -32,13 +32,13 @@ from w3af.plugins.evasion.self_reference import self_reference
 @attr('moth')
 @skip('URL normalization breaks evasion. @see: 4fa67fbb')
 class TestXurllibIntegration(unittest.TestCase):
-    
+
     def test_send_mangled(self):
         xurllib = ExtendedUrllib()
-        
+
         xurllib.set_evasion_plugins([self_reference(), ])
         url = URL('http://moth/')
-        
+
         http_response = xurllib.GET(url)
         self.assertEqual(http_response.get_url().url_string,
                          u'http://moth/./')

@@ -36,10 +36,10 @@ class TestWordnet(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                        'crawl': (PluginConfig('wordnet',
-                                               ('wn_results', 20, PluginConfig.INT)),
-                                  PluginConfig('web_spider',
-                                               ('only_forward', True, PluginConfig.BOOL)))
+                'crawl': (PluginConfig('wordnet',
+                                       ('wn_results', 20, PluginConfig.INT)),
+                          PluginConfig('web_spider',
+                                       ('only_forward', True, PluginConfig.BOOL)))
             },
         }
     }
@@ -50,13 +50,13 @@ class TestWordnet(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         expected_urls = (
-                         '', 'azure.html', 'blue.html', 'green.html', 'hide.py',
-                         'red.html', 'show.py', 'show.py?os=linux',
-                         'show.py?os=unix', 'show.py?os=windows',
+            '', 'azure.html', 'blue.html', 'green.html', 'hide.py',
+            'red.html', 'show.py', 'show.py?os=linux',
+            'show.py?os=unix', 'show.py?os=windows',
         )
 
         frs = kb.kb.get_all_known_fuzzable_requests()
-        
+
         self.assertEquals(
             set(fr.get_uri().url_string for fr in frs),
             set((self.target_url + end) for end in expected_urls)
@@ -65,6 +65,6 @@ class TestWordnet(PluginTest):
     def test_search_wordnet(self):
         wn = wordnet()
         wn_result = wn._search_wn('blue')
-        
+
         self.assertEqual(len(wn_result), wn._wordnet_results)
         self.assertIn('red', wn_result)

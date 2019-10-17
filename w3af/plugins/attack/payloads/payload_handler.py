@@ -93,7 +93,7 @@ def get_payload_instance(payload_name, shell_obj):
     __import__(name)
     module = sys.modules[name]
     klass = getattr(module, payload_name)
-    return apply(klass, (shell_obj, ))
+    return klass(*(shell_obj, ))
 
 
 def get_payload_desc(payload_name):
@@ -104,7 +104,7 @@ def get_payload_desc(payload_name):
     class FakePayload(object):
         def __init__(self):
             self.worker_pool = None
-            
+
     payload = get_payload_instance(payload_name, FakePayload())
     return payload.get_desc()
 
@@ -117,7 +117,7 @@ def get_payload_list():
     True
     """
     result = []
-    py_list = [x for x in os.listdir(PAYLOAD_PATH) if 
+    py_list = [x for x in os.listdir(PAYLOAD_PATH) if
                x.endswith('.py') and x != '__init__.py']
     for p in py_list:
         p = p.replace('.py', '')

@@ -1,13 +1,14 @@
 import re
 from w3af.plugins.attack.payloads.base_payload import Payload
 
-#TODO: TEST
+# TODO: TEST
 
 
 class iis_root_directory(Payload):
     """
     This payload finds IIS Root Directories where websites are hosted.
     """
+
     def api_read(self):
         self.result = {}
         files = []
@@ -19,7 +20,10 @@ class iis_root_directory(Payload):
                 '(?<=m_csPathWWWRoot=)(.*?) ', iis6_log, re.MULTILINE)
             root3 = re.findall(
                 '(?<=VRoot to create:/=)(.*?),', iis6_log, re.MULTILINE)
-            root4 = re.findall('(?<=iis_www:CreateMDVRootTree():Start.LM/W3SVC/1./.)(.*?),', iis6_log, re.MULTILINE)
+            root4 = re.findall(
+                '(?<=iis_www:CreateMDVRootTree():Start.LM/W3SVC/1./.)(.*?),',
+                iis6_log,
+                re.MULTILINE)
             root = root1 + root2 + root3 + root4
             if root:
                 self.result['iis_root_directory'] = root

@@ -33,7 +33,7 @@ class TestWordpressEnumerateUsers(PluginTest):
         'direct': {
             'target': wordpress_url,
             'plugins': {
-        'crawl': (PluginConfig('wordpress_enumerate_users',),)
+                'crawl': (PluginConfig('wordpress_enumerate_users',),)
             },
         },
     }

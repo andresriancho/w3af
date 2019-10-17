@@ -13,6 +13,7 @@ class rootkit_hunter(Payload):
     This payload checks for current rootkits, trojans, backdoors and local
     xploits installed on system.
     """
+
     def _read_with_progress(self, filename):
         #   "progress bar"
         self.k -= 1
@@ -30,9 +31,15 @@ class rootkit_hunter(Payload):
         #    Rootkit Hunter Shell Script by Michael Boelen
         #
         #    TODO: Find a way to keep the DB updated!
-        for fname in file(os.path.join(ROOT_PATH, 'plugins', 'attack',
-                                       'payloads', 'payloads', 'rootkit_hunter',
-                                       'rootkit_hunter_files.db')):
+        for fname in file(
+            os.path.join(
+                ROOT_PATH,
+                'plugins',
+                'attack',
+                'payloads',
+                'payloads',
+                'rootkit_hunter',
+                'rootkit_hunter_files.db')):
             fname = fname.strip()
             if fname and not fname.startswith('#'):
                 yield fname
@@ -79,7 +86,9 @@ class rootkit_hunter(Payload):
 
         read_file = return_args(self._read_with_progress)
         fname_iter = self.fname_generator()
-        for (file_name,), content in self.worker_pool.imap_unordered(read_file, fname_iter):
+        for (
+                file_name,), content in self.worker_pool.imap_unordered(
+                read_file, fname_iter):
             if content:
                 self.result['backdoor_files'].append(file_name)
 

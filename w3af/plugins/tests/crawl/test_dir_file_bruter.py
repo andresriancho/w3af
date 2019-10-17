@@ -62,14 +62,14 @@ class TestDirFileBruter(PluginTest):
     _run_directory_files = {
         'target': directory_url,
         'plugins': {'crawl': (PluginConfig('dir_file_bruter',
-                                           
+
                                            ('dir_wordlist',
                                             DIR_DB_PATH,
                                             PluginConfig.INPUT_FILE),
                                            ('bf_directories',
                                             True,
                                             PluginConfig.BOOL),
-                                           
+
                                            ('file_wordlist',
                                             FILE_DB_PATH,
                                             PluginConfig.INPUT_FILE),
@@ -78,18 +78,18 @@ class TestDirFileBruter(PluginTest):
                                             PluginConfig.BOOL),
                                            ),)}
     }
-    
+
     _run_recursive = {
         'target': directory_url,
         'plugins': {'crawl': (PluginConfig('dir_file_bruter',
-                                           
+
                                            ('dir_wordlist',
                                             DIR_DB_PATH,
                                             PluginConfig.INPUT_FILE),
                                            ('bf_directories',
                                             True,
                                             PluginConfig.BOOL),
-                                           
+
                                            ('be_recursive',
                                             True,
                                             PluginConfig.BOOL)
@@ -108,7 +108,7 @@ class TestDirFileBruter(PluginTest):
 
         expected_urls = ('/iamhidden.txt', '/')
         self.assertAllURLsFound(expected_urls)
-    
+
     def test_directories_files(self):
         self._scan(self._run_directory_files['target'],
                    self._run_directory_files['plugins'])

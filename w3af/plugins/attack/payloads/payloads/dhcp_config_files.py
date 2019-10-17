@@ -6,6 +6,7 @@ class dhcp_config_files(Payload):
     """
     This payload shows DHCP Server configuration files
     """
+
     def api_read(self):
         result = {}
         files = []

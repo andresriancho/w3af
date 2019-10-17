@@ -10,6 +10,7 @@ from lib.core.data import conf
 from lib.core.datatype import AttribDict
 from lib.core.settings import EXCLUDE_UNESCAPE
 
+
 class Unescaper(AttribDict):
     def escape(self, expression, quote=True, dbms=None):
         if conf.noEscape:
@@ -30,5 +31,6 @@ class Unescaper(AttribDict):
             return self[identifiedDbms](expression, quote=quote)
         else:
             return expression
+
 
 unescaper = Unescaper()

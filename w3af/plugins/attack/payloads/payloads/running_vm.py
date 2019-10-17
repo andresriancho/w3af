@@ -7,6 +7,7 @@ class running_vm(Payload):
     """
     This payload check if the Server is running through a VM
     """
+
     def fname_generator(self):
         candidates = []
         candidates.append('0000:00:0f.0')
@@ -90,7 +91,7 @@ class running_vm(Payload):
     def api_win_read(self):
         result = []
         iis6log_content = self.shell.read('/windows/iis6.log')
-        #if 'VMWare'
+        # if 'VMWare'
 
     def run_read(self):
         api_result = self.api_read()

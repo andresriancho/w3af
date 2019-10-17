@@ -7,6 +7,7 @@ class mail_config_files(Payload):
     """
     This payload shows mail configuration files
     """
+
     def api_read(self):
         result = {}
         files = []

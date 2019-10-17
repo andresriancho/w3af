@@ -72,7 +72,8 @@ class TestPhishTankParseMethods(unittest.TestCase):
                 # accessed
                 elem.clear()
 
-                # Also eliminate now-empty references from the root node to elem
+                # Also eliminate now-empty references from the root node to
+                # elem
                 while elem.getprevious() is not None:
                     del elem.getparent()[0]
 

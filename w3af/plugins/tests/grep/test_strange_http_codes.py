@@ -87,11 +87,12 @@ class test_strange_http_codes(unittest.TestCase):
         info_sets = kb.kb.get('strange_http_codes', 'strange_http_codes')
         self.assertEquals(len(info_sets), 1, info_sets)
 
-        expected_desc = (u'The remote web server sent 2 HTTP responses with'
-                         u' the uncommon response status code 666 using "OK"'
-                         u' as message. The first ten URLs which sent the' 
-                         u' uncommon status code are:\n' 
-                         u' - http://www.w3af.com/2\n - http://www.w3af.com/1\n')
+        expected_desc = (
+            u'The remote web server sent 2 HTTP responses with'
+            u' the uncommon response status code 666 using "OK"'
+            u' as message. The first ten URLs which sent the'
+            u' uncommon status code are:\n'
+            u' - http://www.w3af.com/2\n - http://www.w3af.com/1\n')
         info_set = info_sets[0]
         self.assertEqual(info_set.get_id(), [1, 2])
         self.assertEqual(info_set.get_desc(), expected_desc)

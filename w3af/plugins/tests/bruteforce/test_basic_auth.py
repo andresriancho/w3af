@@ -42,29 +42,39 @@ class TestBasicAuth(PluginTest):
         'positive': {
             'target': None,
             'plugins': {
-                'bruteforce': (PluginConfig('basic_auth',
-                                            ('users_file', small_users_positive,
-                                             PluginConfig.STR),
-                                            (
-                                            'passwd_file', small_passwords, PluginConfig.STR),),
-                               ),
-                'grep': (PluginConfig('http_auth_detect'),),
-            }
-        },
-
+                'bruteforce': (
+                    PluginConfig(
+                        'basic_auth',
+                        ('users_file',
+                         small_users_positive,
+                         PluginConfig.STR),
+                        ('passwd_file',
+                         small_passwords,
+                         PluginConfig.STR),
+                    ),
+                ),
+                'grep': (
+                    PluginConfig('http_auth_detect'),
+                ),
+            }},
         'negative': {
             'target': None,
             'plugins': {
-                'bruteforce': (PluginConfig('basic_auth',
-                                            ('users_file', small_users_negative,
-                                             PluginConfig.STR),
-                                            (
-                                            'passwd_file', small_passwords, PluginConfig.STR),),
-                               ),
-                'grep': (PluginConfig('http_auth_detect'),),
-            }
-        }
-    }
+                'bruteforce': (
+                    PluginConfig(
+                        'basic_auth',
+                        ('users_file',
+                         small_users_negative,
+                         PluginConfig.STR),
+                        ('passwd_file',
+                         small_passwords,
+                         PluginConfig.STR),
+                    ),
+                ),
+                'grep': (
+                    PluginConfig('http_auth_detect'),
+                ),
+            }}}
 
     @attr('smoke')
     def test_found_credentials(self):

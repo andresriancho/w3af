@@ -6,6 +6,7 @@ class read_mail(Payload):
     """
     This payload shows local emails stored on /var/mail/
     """
+
     def fname_generator(self):
         directory_list = []
         directory_list.append('/var/mail/')

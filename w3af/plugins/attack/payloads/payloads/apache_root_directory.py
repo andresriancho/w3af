@@ -10,6 +10,7 @@ class apache_root_directory(Payload):
     """
     This payload finds Apache Root Directories where websites are hosted.
     """
+
     def api_read(self):
         result = {}
         directory = []
@@ -36,7 +37,7 @@ class apache_root_directory(Payload):
 
         apache_config_files = self.exec_payload('apache_config_files')
         apache_config_files = apache_config_files['apache_config']
-        
+
         if apache_config_files:
             for file in apache_config_files:
                 file_content = self.shell.read(file)

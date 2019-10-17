@@ -37,9 +37,12 @@ class TestFoundAFD(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse(target_url, 'Home page'),
-                      MockResponse(BAD_SIG_URI, 'Blocked by WAF'),
-                      MockResponse(re.compile(target_url + '.*'), 'Another page')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            target_url, 'Home page'), MockResponse(
+            BAD_SIG_URI, 'Blocked by WAF'), MockResponse(
+                re.compile(
+                    target_url + '.*'), 'Another page')]
 
     def test_afd_found_http(self):
         cfg = self._run_configs['cfg']
@@ -80,9 +83,12 @@ class TestAFDShortResponses(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse(target_url, 'hello world'),
-                      MockResponse(BAD_SIG_URI, MOD_SECURITY_ANSWER, status=403),
-                      MockResponse(re.compile(target_url + '\?.*'), 'hello world')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            target_url, 'hello world'), MockResponse(
+            BAD_SIG_URI, MOD_SECURITY_ANSWER, status=403), MockResponse(
+                re.compile(
+                    target_url + '\?.*'), 'hello world')]
 
     def test_afd_found(self):
         cfg = self._run_configs['cfg']
@@ -103,9 +109,12 @@ class TestFoundHttpsAFD(TestFoundAFD):
 
     target_url = 'https://httpretty/'
 
-    MOCK_RESPONSES = [MockResponse(target_url, 'Home page'),
-                      MockResponse(BAD_SIG_URI, 'Blocked by WAF'),
-                      MockResponse(re.compile(target_url + '.*'), 'Another page')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            target_url, 'Home page'), MockResponse(
+            BAD_SIG_URI, 'Blocked by WAF'), MockResponse(
+                re.compile(
+                    target_url + '.*'), 'Another page')]
 
 
 class TestNotFoundAFD(PluginTest):

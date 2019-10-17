@@ -23,18 +23,18 @@ import unittest
 from mock import MagicMock
 
 from w3af.plugins.attack.payloads.base_payload import Payload
-from w3af.plugins.attack.payloads.payloads.tests.test_payload_handler import (FakeReadShell,
-                                                                         FakeExecShell)
+from w3af.plugins.attack.payloads.payloads.tests.test_payload_handler import (
+    FakeReadShell, FakeExecShell)
 
 
 class TestBasePayload(unittest.TestCase):
-    
+
     def setUp(self):
         self.bp = Payload(FakeReadShell())
-    
+
     def test_can_run(self):
         self.assertEqual(self.bp.can_run(), set())
-    
+
     def test_run_only_read(self):
         bp = Payload(FakeReadShell())
         self.assertRaises(AttributeError, bp.run, 'filename')
@@ -43,25 +43,24 @@ class TestBasePayload(unittest.TestCase):
         class Executable(Payload):
             called_run_execute = False
             called_api_execute = False
-            
+
             def run_execute(self, cmd):
                 self.called_run_execute = True
                 self.shell.execute(cmd)
 
             def api_execute(self, cmd):
                 self.called_api_execute = True
-        
+
         shell = FakeExecShell()
         shell.execute = MagicMock(return_value='')
-        
+
         executable = Executable(shell)
-        
+
         self.assertEqual(self.bp.can_run(), set())
-        
+
         executable.run('command')
         self.assertTrue(executable.called_run_execute)
         self.assertEqual(executable.shell.execute.call_count, 1)
 
         executable.run_api('command')
         self.assertTrue(executable.called_api_execute)
-        

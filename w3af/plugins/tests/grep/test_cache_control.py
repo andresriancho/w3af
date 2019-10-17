@@ -50,10 +50,10 @@ class TestCacheControl(unittest.TestCase):
         headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
-        
+
         self.plugin.grep(request, resp)
         self.plugin.end()
-        
+
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
@@ -67,10 +67,10 @@ class TestCacheControl(unittest.TestCase):
         headers = Headers([('content-type', 'image/jpeg')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
-        
+
         self.plugin.grep(request, resp)
         self.plugin.end()
-        
+
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
@@ -84,13 +84,13 @@ class TestCacheControl(unittest.TestCase):
         headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
-        
+
         self.plugin.grep(request, resp)
         self.plugin.end()
-        
+
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
-        
+
     def test_cache_control_correct_headers(self):
         """
         Sensitive content with cache control headers so NO BUG is stored in KB.
@@ -102,10 +102,10 @@ class TestCacheControl(unittest.TestCase):
                            ('Cache-Control', 'No-store')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
-        
+
         self.plugin.grep(request, resp)
         self.plugin.end()
-        
+
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
@@ -118,15 +118,15 @@ class TestCacheControl(unittest.TestCase):
         meta_2 = '<meta http-equiv="Cache-Control" content="no-store">'
         html = '<html><head>%s%s</head><body>%s</body></html>'
         response_body = html % (meta_1, meta_2, body)
-        
+
         url = URL('https://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, response_body, headers, url, url, _id=1)
-        
+
         self.plugin.grep(request, resp)
         self.plugin.end()
-        
+
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 0)
 
@@ -142,13 +142,13 @@ class TestCacheControl(unittest.TestCase):
                            ('Cache-Control', 'Store')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
-        
+
         self.plugin.grep(request, resp)
         self.plugin.end()
-        
+
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 1)
-        
+
     def test_cache_control_no_headers(self):
         """
         Sensitive content without cache control headers so bug is stored in KB.
@@ -158,12 +158,14 @@ class TestCacheControl(unittest.TestCase):
         headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
         resp = HTTPResponse(200, body, headers, url, url, _id=1)
-        
+
         self.plugin.grep(request, resp)
         self.plugin.end()
-        
+
         infos = kb.kb.get('cache_control', 'cache_control')
         self.assertEquals(len(infos), 1)
-        
+
         info = infos[0]
-        self.assertEqual(info.get_name(), 'Missing cache control for HTTPS content')
+        self.assertEqual(
+            info.get_name(),
+            'Missing cache control for HTTPS content')

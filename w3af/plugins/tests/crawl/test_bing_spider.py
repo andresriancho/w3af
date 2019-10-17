@@ -41,7 +41,11 @@ class TestBingSpider(PluginTest):
         'blog', 'es/clients/', '',
     )
 
-    MOCK_RESPONSES = [MockResponse(target_url_fmt % eu, 'Response body.') for eu in EXPECTED_URLS]
+    MOCK_RESPONSES = [
+        MockResponse(
+            target_url_fmt %
+            eu,
+            'Response body.') for eu in EXPECTED_URLS]
 
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
@@ -50,6 +54,7 @@ class TestBingSpider(PluginTest):
         urls = self.kb.get_all_known_urls()
 
         found_urls = set(str(u) for u in urls),
-        expected_urls = set((self.target_url + end) for end in self.EXPECTED_URLS)
-        
+        expected_urls = set((self.target_url + end)
+                            for end in self.EXPECTED_URLS)
+
         self.assertEquals(found_urls, expected_urls)

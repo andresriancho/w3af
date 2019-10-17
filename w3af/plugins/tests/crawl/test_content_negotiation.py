@@ -30,11 +30,14 @@ class TestContentNegotiation(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'crawl': (PluginConfig('content_negotiation'),
-                                  PluginConfig('web_spider',
-                                               ('only_forward', True, PluginConfig.BOOL)))}
-        }
-    }
+            'plugins': {
+                'crawl': (
+                    PluginConfig('content_negotiation'),
+                    PluginConfig(
+                        'web_spider',
+                        ('only_forward',
+                         True,
+                         PluginConfig.BOOL)))}}}
 
     @attr('ci_fails')
     def test_content_negotiation_find_urls(self):

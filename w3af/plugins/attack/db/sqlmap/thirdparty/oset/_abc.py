@@ -16,6 +16,7 @@ if sys.version_info > (2, 6):
 class _C:
     pass
 
+
 _InstanceType = type(_C())
 
 
@@ -65,8 +66,8 @@ class ABCMeta(type):
         cls = super(ABCMeta, mcls).__new__(mcls, name, bases, namespace)
         # Compute set of abstract method names
         abstracts = set(name
-                     for name, value in namespace.items()
-                     if getattr(value, "__isabstractmethod__", False))
+                        for name, value in namespace.items()
+                        if getattr(value, "__isabstractmethod__", False))
         for base in bases:
             for name in getattr(base, "__abstractmethods__", set()):
                 value = getattr(cls, name, None)
@@ -116,7 +117,7 @@ class ABCMeta(type):
         if subtype is subclass or subclass is None:
             if (cls._abc_negative_cache_version ==
                 ABCMeta._abc_invalidation_counter and
-                subtype in cls._abc_negative_cache):
+                    subtype in cls._abc_negative_cache):
                 return False
             # Fall back to the subclass check.
             return cls.__subclasscheck__(subtype)
@@ -215,6 +216,7 @@ class Iterable:
             if _hasattr(C, "__iter__"):
                 return True
         return NotImplemented
+
 
 Iterable.register(str)
 
@@ -322,7 +324,7 @@ class Set(Sized, Iterable, Container):
         freedom for __eq__ or __hash__.  We match the algorithm used
         by the built-in frozenset type.
         """
-        MAX = sys.maxint
+        MAX = sys.maxsize
         MASK = 2 * MAX + 1
         n = len(self)
         h = 1927868237 * (n + 1)
@@ -338,6 +340,7 @@ class Set(Sized, Iterable, Container):
         if h == -1:
             h = 590923713
         return h
+
 
 Set.register(frozenset)
 
@@ -402,6 +405,7 @@ class MutableSet(Set):
         for value in it:
             self.discard(value)
         return self
+
 
 MutableSet.register(set)
 
@@ -470,6 +474,7 @@ class OrderedSet(MutableSet):
     def __del__(self):
         if all([KEY, PREV, NEXT]):
             self.clear()                    # remove circular references
+
 
 if __name__ == '__main__':
     print(OrderedSet('abracadaba'))

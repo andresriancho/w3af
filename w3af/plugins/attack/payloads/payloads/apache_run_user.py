@@ -7,6 +7,7 @@ class apache_run_user(Payload):
     """
     Get apache process user.
     """
+
     def api_read(self):
         result = {}
         result['apache_run_user'] = []

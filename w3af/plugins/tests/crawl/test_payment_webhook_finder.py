@@ -34,7 +34,8 @@ def fill_kb_with_cgi_urls(target_url, add_url):
     :param add_url: The method to use to write to the KB
     :return: None
     """
-    for i in xrange(payment_webhook_finder.MIN_URL_COUNT_FOR_EXTENSION_FILTER + 1):
+    for i in xrange(
+            payment_webhook_finder.MIN_URL_COUNT_FOR_EXTENSION_FILTER + 1):
         url_str = '%s%s.cgi' % (target_url, i)
         url = URL(url_str)
         add_url(url)
@@ -43,19 +44,23 @@ def fill_kb_with_cgi_urls(target_url, add_url):
 class TestPaymentWebHookFinderGET(PluginTest):
     target_url = 'http://httpretty/'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='index home page',
-                                   method='GET',
-                                   status=200),
-                      MockResponse('http://httpretty/cgi-bin/paymentsuccessful.cgi',
-                                   body='hidden',
-                                   method='GET',
-                                   status=200),
-                      MockResponse('http://httpretty/.*',
-                                   body='Not found',
-                                   method='POST',
-                                   status=404),
-                      ]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='index home page',
+            method='GET',
+            status=200),
+        MockResponse(
+            'http://httpretty/cgi-bin/paymentsuccessful.cgi',
+            body='hidden',
+            method='GET',
+            status=200),
+        MockResponse(
+            'http://httpretty/.*',
+            body='Not found',
+            method='POST',
+            status=404),
+    ]
 
     _run_config = {
         'target': target_url,
@@ -76,19 +81,23 @@ class TestPaymentWebHookFinderGET(PluginTest):
 class TestPaymentWebHookFinderPOST(PluginTest):
     target_url = 'http://httpretty/'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='index home page',
-                                   method='GET',
-                                   status=200),
-                      MockResponse('http://httpretty/cgi-bin/paymentsuccessful.cgi',
-                                   body='hidden',
-                                   method='POST',
-                                   status=200),
-                      MockResponse('http://httpretty/.*',
-                                   body='Not found',
-                                   method='POST',
-                                   status=404),
-                      ]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='index home page',
+            method='GET',
+            status=200),
+        MockResponse(
+            'http://httpretty/cgi-bin/paymentsuccessful.cgi',
+            body='hidden',
+            method='POST',
+            status=200),
+        MockResponse(
+            'http://httpretty/.*',
+            body='Not found',
+            method='POST',
+            status=404),
+    ]
 
     _run_config = {
         'target': target_url,
@@ -104,4 +113,3 @@ class TestPaymentWebHookFinderPOST(PluginTest):
         urls = [url.url_string for url in urls]
 
         self.assertIn(self.target_url + 'cgi-bin/paymentsuccessful.cgi', urls)
-

@@ -16,6 +16,7 @@ from lib.core.enums import HASHDB_KEYS
 from lib.core.enums import OS
 from lib.core.settings import SUPPORTED_DBMS
 
+
 def setDbms(dbms):
     """
     @param dbms: database management system to be set into the knowledge
@@ -36,6 +37,7 @@ def setDbms(dbms):
         hashDBWrite(HASHDB_KEYS.DBMS, kb.resolutionDbms)
 
     logger.info("the back-end DBMS is %s" % Backend.getDbms())
+
 
 def setOs():
     """
@@ -65,7 +67,11 @@ def setOs():
         infoMsg += " %s" % kb.osVersion
 
     if "sp" in kb.bannerFp:
-        kb.osSP = int(Format.humanize(kb.bannerFp["sp"]).replace("Service Pack ", ""))
+        kb.osSP = int(
+            Format.humanize(
+                kb.bannerFp["sp"]).replace(
+                "Service Pack ",
+                ""))
 
     elif "sp" not in kb.bannerFp and Backend.isOs(OS.WINDOWS):
         kb.osSP = 0

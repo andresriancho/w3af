@@ -20,7 +20,7 @@ if len(sys.argv) > 0:
                         print item
                 else:
                     items.append(item)
-            except:
+            except BaseException:
                 pass
 
     with open(sys.argv[1], 'w+') as f:

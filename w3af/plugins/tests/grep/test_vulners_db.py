@@ -25,16 +25,19 @@ class TestVulnersDB(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='',
-                                   method='GET',
-                                   status=200,
-                                   headers={'content-length': '0',
-                                            'server': 'Microsoft-IIS/7.5',
-                                            'x-aspnet-version': '2.0.50727',
-                                            'x-powered-by': 'ASP.NET',
-                                            'microsoftsharepointteamservices': '14.0.0.4762'}),
-                      ]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='',
+            method='GET',
+            status=200,
+            headers={
+                'content-length': '0',
+                'server': 'Microsoft-IIS/7.5',
+                'x-aspnet-version': '2.0.50727',
+                'x-powered-by': 'ASP.NET',
+                'microsoftsharepointteamservices': '14.0.0.4762'}),
+    ]
 
     _run_configs = {
         'cfg': {
@@ -73,10 +76,10 @@ class TestVulnersDB(PluginTest):
         self.assertEqual(vuln.get_name(), 'CVE-2012-2531')
         self.assertEqual(vuln.get_url().url_string, 'http://httpretty/')
 
-        expected_desc = (u'Vulners plugin detected software with known vulnerabilities.'
-                         u' The identified vulnerability is "CVE-2012-2531".\n'
-                         u'\n'
-                         u' The first ten URLs where vulnerable software was detected are:\n'
-                         u' - http://httpretty/\n')
+        expected_desc = (
+            u'Vulners plugin detected software with known vulnerabilities.'
+            u' The identified vulnerability is "CVE-2012-2531".\n'
+            u'\n'
+            u' The first ten URLs where vulnerable software was detected are:\n'
+            u' - http://httpretty/\n')
         self.assertEqual(vuln.get_desc(with_id=False), expected_desc)
-

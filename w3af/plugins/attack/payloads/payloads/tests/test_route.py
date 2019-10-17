@@ -52,7 +52,7 @@ class test_route(PayloadTestHelper):
             self.assertEqual(dest.count('.'), 3)
             self.assertEqual(gw.count('.'), 3)
             self.assertEqual(mask.count('.'), 3)
-            
+
             self.assertTrue(iface.startswith('eth') or
                             iface.startswith('wlan') or
                             iface.startswith('ppp') or

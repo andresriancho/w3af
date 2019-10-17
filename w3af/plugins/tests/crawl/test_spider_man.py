@@ -54,7 +54,7 @@ class BrowserThread(Process):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 s.connect(('127.0.0.1', self.proxy_port))
-            except:
+            except BaseException:
                 time.sleep(0.5)
             else:
                 break
@@ -64,7 +64,7 @@ class BrowserThread(Process):
         proxy_support = urllib2.ProxyHandler(proxy_cfg)
         opener = urllib2.build_opener(proxy_support)
         # Avoid this, it might influence other tests!
-        #urllib2.install_opener(opener)
+        # urllib2.install_opener(opener)
 
         all_urls = BROWSE_URLS
 
@@ -75,7 +75,7 @@ class BrowserThread(Process):
                 req = urllib2.Request(url, payload)
                 try:
                     response = opener.open(req)
-                except Exception, ex:
+                except Exception as ex:
                     self.responses.append(str(ex))
                 else:
                     self.responses.append(response.read())
@@ -87,14 +87,14 @@ class BrowserThread(Process):
 
                 try:
                     response = opener.open(full_url)
-                except Exception, ex:
+                except Exception as ex:
                     self.responses.append(str(ex))
                 else:
                     self.responses.append(response.read())
 
         try:
             response = opener.open(TERMINATE_URL.url_string)
-        except Exception, ex:
+        except Exception as ex:
             self.responses.append(str(ex))
         else:
             self.responses.append(response.read())
@@ -151,11 +151,11 @@ class TestHTTPSpiderman(TestSpiderman):
         port = get_unused_port()
 
         run_config = {
-                'target': get_moth_http(),
-                'plugins': {'crawl': (PluginConfig('spider_man',
-                                                   ('listen_port', port,
-                                                    PluginConfig.INT),
-                                                   ),)}
+            'target': get_moth_http(),
+            'plugins': {'crawl': (PluginConfig('spider_man',
+                                               ('listen_port', port,
+                                                PluginConfig.INT),
+                                               ),)}
         }
 
         self.generic_spiderman_run(run_config, get_moth_http, port)
@@ -167,11 +167,11 @@ class TestHTTPSSpiderman(TestSpiderman):
         port = get_unused_port()
 
         run_config = {
-                'target': get_moth_https(),
-                'plugins': {'crawl': (PluginConfig('spider_man',
-                                                   ('listen_port', port,
-                                                    PluginConfig.INT),
-                                                   ),)}
+            'target': get_moth_https(),
+            'plugins': {'crawl': (PluginConfig('spider_man',
+                                               ('listen_port', port,
+                                                PluginConfig.INT),
+                                               ),)}
         }
 
         self.generic_spiderman_run(run_config, get_moth_https, port)

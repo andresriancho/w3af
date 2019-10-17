@@ -7,6 +7,7 @@ class smb_config_files(Payload):
     """
     This payload shows SMB configuration files
     """
+
     def api_read(self):
         result = {}
         files = []

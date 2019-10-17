@@ -14,6 +14,7 @@ from lib.core.data import logger
 from lib.core.data import paths
 from lib.core.settings import UNICODE_ENCODING
 
+
 def profile(profileOutputFile=None, dotOutputFile=None, imageOutputFile=None):
     """
     This will run the program and present profiling data in a nice looking graph
@@ -25,21 +26,26 @@ def profile(profileOutputFile=None, dotOutputFile=None, imageOutputFile=None):
         import gobject
         import gtk
         import pydot
-    except ImportError, e:
-        errMsg = "profiling requires third-party libraries ('%s') " % getUnicode(e, UNICODE_ENCODING)
+    except ImportError as e:
+        errMsg = "profiling requires third-party libraries ('%s') " % getUnicode(
+            e, UNICODE_ENCODING)
         errMsg += "(Hint: 'sudo apt-get install python-pydot python-pyparsing python-profiler graphviz')"
         logger.error(errMsg)
 
         return
 
     if profileOutputFile is None:
-        profileOutputFile = os.path.join(paths.SQLMAP_OUTPUT_PATH, "sqlmap_profile.raw")
+        profileOutputFile = os.path.join(
+            paths.SQLMAP_OUTPUT_PATH, "sqlmap_profile.raw")
 
     if dotOutputFile is None:
-        dotOutputFile = os.path.join(paths.SQLMAP_OUTPUT_PATH, "sqlmap_profile.dot")
+        dotOutputFile = os.path.join(
+            paths.SQLMAP_OUTPUT_PATH,
+            "sqlmap_profile.dot")
 
     if imageOutputFile is None:
-        imageOutputFile = os.path.join(paths.SQLMAP_OUTPUT_PATH, "sqlmap_profile.png")
+        imageOutputFile = os.path.join(
+            paths.SQLMAP_OUTPUT_PATH, "sqlmap_profile.png")
 
     if os.path.exists(profileOutputFile):
         os.remove(profileOutputFile)
@@ -76,7 +82,8 @@ def profile(profileOutputFile=None, dotOutputFile=None, imageOutputFile=None):
     # http://code.google.com/p/pydot/
     pydotGraph = pydot.graph_from_dot_file(dotOutputFile)
 
-    # Reference: http://stackoverflow.com/questions/38176472/graph-write-pdfiris-pdf-attributeerror-list-object-has-no-attribute-writ
+    # Reference:
+    # http://stackoverflow.com/questions/38176472/graph-write-pdfiris-pdf-attributeerror-list-object-has-no-attribute-writ
     if isinstance(pydotGraph, list):
         pydotGraph = pydotGraph[0]
 

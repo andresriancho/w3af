@@ -56,13 +56,18 @@ class TestFindVhosts(PluginTest):
 
         info = infos[0]
         self.assertEqual('Virtual host identified', info.get_name())
-        self.assertTrue('the virtual host name is: "intranet"' in info.get_desc(), info.get_desc())
+        self.assertTrue(
+            'the virtual host name is: "intranet"' in info.get_desc(),
+            info.get_desc())
 
 
 class TestFindVhostsInHTML(PluginTest):
     target_url = 'http://w3af.org'
 
-    MOCK_RESPONSES = [MockResponse(target_url, '<a href="http://intranet/">x</a>')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            target_url,
+            '<a href="http://intranet/">x</a>')]
 
     _run_configs = {
         'cfg': {

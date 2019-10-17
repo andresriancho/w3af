@@ -52,7 +52,9 @@ class TestUnSSL(PluginTest):
 
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals(vuln.get_name(), 'Secure content over insecure channel')
+        self.assertEquals(
+            vuln.get_name(),
+            'Secure content over insecure channel')
         self.assertEquals(vuln.get_url().url_string, 'http://httpretty/')
 
 

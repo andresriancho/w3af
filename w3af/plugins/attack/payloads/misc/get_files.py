@@ -26,7 +26,7 @@ def get_files(file_content):
     if files:
         #files = check_files(files)
         for file in files:
-            #get_files(file)
+            # get_files(file)
             files.append(file)
         return files
     else:

@@ -7,6 +7,7 @@ class apache_ssl(Payload):
     """
     This payload shows Apache SSL Certificate & Key
     """
+
     def api_read(self):
         result = {}
         result['apache_ssl_certificate'] = {}

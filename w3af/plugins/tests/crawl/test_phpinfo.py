@@ -28,7 +28,13 @@ class TestPHPInfo516(PluginTest):
 
     target_url = 'http://httpretty/'
 
-    PHPINFO = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'phpinfo', 'phpinfo-5.1.6.html')
+    PHPINFO = os.path.join(
+        ROOT_PATH,
+        'plugins',
+        'tests',
+        'crawl',
+        'phpinfo',
+        'phpinfo-5.1.6.html')
 
     MOCK_RESPONSES = [MockResponse('http://httpretty/',
                                    body='index home page',
@@ -58,7 +64,7 @@ class TestPHPInfo516(PluginTest):
 
         info_urls = [i.get_url().url_string for i in infos]
         self.assertIn(self.target_url + 'phpversion.php', info_urls)
-        
+
         found_infos = set([i.get_name() for i in infos])
 
         expected_infos = {'PHP register_globals: On',
@@ -71,12 +77,30 @@ class TestPHPInfo516(PluginTest):
 
 
 class TestPHPInfo4311(TestPHPInfo516):
-    PHPINFO = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'phpinfo', 'phpinfo-4.3.11.html')
+    PHPINFO = os.path.join(
+        ROOT_PATH,
+        'plugins',
+        'tests',
+        'crawl',
+        'phpinfo',
+        'phpinfo-4.3.11.html')
 
 
 class TestPHPInfo513rc4dev(TestPHPInfo516):
-    PHPINFO = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'phpinfo', 'phpinfo-5.1.3-rc4dev.html')
+    PHPINFO = os.path.join(
+        ROOT_PATH,
+        'plugins',
+        'tests',
+        'crawl',
+        'phpinfo',
+        'phpinfo-5.1.3-rc4dev.html')
 
 
 class TestPHPInfo433(TestPHPInfo516):
-    PHPINFO = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'phpinfo', 'phpinfo-4.3.3.html')
+    PHPINFO = os.path.join(
+        ROOT_PATH,
+        'plugins',
+        'tests',
+        'crawl',
+        'phpinfo',
+        'phpinfo-4.3.3.html')

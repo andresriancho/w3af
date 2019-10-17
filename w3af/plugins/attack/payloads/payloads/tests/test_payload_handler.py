@@ -23,11 +23,11 @@ import unittest
 import os
 
 from w3af.plugins.attack.payloads.payload_handler import (payload_to_file,
-                                                     is_payload,
-                                                     exec_payload,
-                                                     runnable_payloads,
-                                                     get_payload_instance,
-                                                     get_payload_list)
+                                                          is_payload,
+                                                          exec_payload,
+                                                          runnable_payloads,
+                                                          get_payload_instance,
+                                                          get_payload_list)
 
 from w3af import ROOT_PATH
 from w3af.core.data.kb.exec_shell import ExecShell
@@ -39,8 +39,8 @@ class TestPayloadHandler(unittest.TestCase):
 
     def test_payload_to_file(self):
         cpu_info_file = payload_to_file('cpu_info')
-        expected_file = os.path.join(ROOT_PATH,
-                                     'plugins/attack/payloads/payloads/cpu_info.py')
+        expected_file = os.path.join(
+            ROOT_PATH, 'plugins/attack/payloads/payloads/cpu_info.py')
         self.assertEqual(cpu_info_file, expected_file)
 
     def test_get_payload_list(self):
@@ -128,11 +128,11 @@ class TestPayloadHandler(unittest.TestCase):
 class FakeExecShell(ExecShell):
     # pylint: disable=E0202
     worker_pool = None
-    
+
     def __init__(self):
-        vuln = MockVuln()       
+        vuln = MockVuln()
         super(FakeExecShell, self).__init__(vuln, None, None)
-    
+
     def execute(self, command):
         return commands.getoutput(command)
 
@@ -148,7 +148,7 @@ class FakeReadShell(ReadShell):
     worker_pool = None
 
     def __init__(self):
-        vuln = MockVuln()       
+        vuln = MockVuln()
         super(FakeReadShell, self).__init__(vuln, None, None)
 
     def read(self, filename):

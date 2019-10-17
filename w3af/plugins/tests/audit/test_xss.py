@@ -43,7 +43,9 @@ class TestXSS(PluginTest):
 
     WAVSEP_BASE = '/wavsep/active/Reflected-XSS/RXSS-Detection-Evaluation-GET/'
     WAVSEP_PATH = get_wavsep_http(WAVSEP_BASE)
-    WAVSEP_2919 = get_wavsep_http('%sCase16-Js2ScriptSupportingProperty.jsp' % WAVSEP_BASE)
+    WAVSEP_2919 = get_wavsep_http(
+        '%sCase16-Js2ScriptSupportingProperty.jsp' %
+        WAVSEP_BASE)
 
     _run_configs = {
         'cfg': {
@@ -55,7 +57,7 @@ class TestXSS(PluginTest):
                          ('persistent_xss', True, PluginConfig.BOOL)),
                 ),
                 'crawl': (PluginConfig('web_spider',
-                          ('only_forward', True, PluginConfig.BOOL)),)
+                                       ('only_forward', True, PluginConfig.BOOL)),)
             },
         },
 
@@ -115,11 +117,11 @@ class TestXSS(PluginTest):
 
         xss_vulns = self.kb.get('xss', 'xss')
         kb_data = self.normalize_kb_data(xss_vulns)
-        
+
         EXPECTED = [('simple_xss.py', 'text', ['text']), ]
         expected_data = self.normalize_expected_data(self.XSS_URL_SMOKE,
                                                      EXPECTED)
-        
+
         self.assertEquals(
             set(expected_data),
             set(kb_data),
@@ -150,14 +152,14 @@ class TestXSS(PluginTest):
         """
         Avoiding false positives in the case where the payload is echoed back
         inside an attribute and the quotes are removed.
-        
+
         :see: https://github.com/andresriancho/w3af/pull/499
         """
         cfg = self._run_configs['smoke']
         self._scan(self.XSS_PATH + '499_check.py?text=1', cfg['plugins'])
 
         xss_vulns = self.kb.get('xss', 'xss')
-        
+
         self.assertEquals(0, len(xss_vulns), xss_vulns)
 
     def scan_file_upload_fuzz_files(self):
@@ -204,10 +206,10 @@ class TestXSS(PluginTest):
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.XSS_PATH, cfg['plugins'])
-        
+
         xss_vulns = self.kb.get('xss', 'xss')
         kb_data = self.normalize_kb_data(xss_vulns)
-        
+
         expected = [
             # Trivial
             ('simple_xss.py', 'text', ['text']),
@@ -233,7 +235,7 @@ class TestXSS(PluginTest):
 
             # Persistent XSS
             ('persistent_xss_form.py', 'text', ['Submit', 'text']),
-            
+
             # XSS with CSP
             ('xss_with_safe_csp.py', 'text', ['text']),
             ('xss_with_weak_csp.py', 'text', ['text']),
@@ -245,12 +247,12 @@ class TestXSS(PluginTest):
             set(expected_data),
             set(kb_data),
         )
-        
+
         # Now we want to verify that the vulnerability with safe CSP has lower
         # severity than the one with weak CSP
         csp_vulns = [v for v in xss_vulns if 'csp.py' in v.get_url()]
         self.assertEqual(len(csp_vulns), 2)
-        
+
         severities = [v.get_severity() for v in csp_vulns]
         self.assertEqual(set(severities),
                          {severity.MEDIUM, severity.LOW},
@@ -260,10 +262,10 @@ class TestXSS(PluginTest):
     def test_found_xss_with_redirect(self):
         cfg = self._run_configs['cfg']
         self._scan(self.XSS_302_URL, cfg['plugins'])
-        
+
         xss_vulns = self.kb.get('xss', 'xss')
         kb_data = self.normalize_kb_data(xss_vulns)
-        
+
         expected = [
             ('302.php', 'x', ('x',)),
             ('302.php', 'a', ('a',)),
@@ -275,7 +277,7 @@ class TestXSS(PluginTest):
         ]
         expected_data = self.normalize_expected_data(self.XSS_302_URL,
                                                      expected)
-        
+
         self.assertEquals(
             set(expected_data),
             set(kb_data),
@@ -284,10 +286,10 @@ class TestXSS(PluginTest):
     def test_found_wavsep_get_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.WAVSEP_PATH, cfg['plugins'])
-        
+
         xss_vulns = self.kb.get('xss', 'xss')
         kb_data = self.normalize_kb_data(xss_vulns)
-        
+
         expected = [
             ('Case01-Tag2HtmlPageScope.jsp', 'userinput', ['userinput']),
             ('Case02-Tag2TagScope.jsp', 'userinput', ['userinput']),
@@ -323,10 +325,10 @@ class TestXSS(PluginTest):
             ('Case31-Tag2HtmlPageScopeDuringException.jsp', 'userinput', ['userinput']),
             ('Case32-Tag2HtmlPageScopeValidViewstateRequired.jsp', 'userinput', ['userinput', '__VIEWSTATE']),
         ]
-        
+
         expected_data = self.normalize_expected_data(self.WAVSEP_PATH,
                                                      expected)
-        
+
         self.assertEquals(
             set(expected_data),
             set(kb_data),

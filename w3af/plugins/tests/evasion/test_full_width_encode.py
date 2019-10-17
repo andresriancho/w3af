@@ -27,26 +27,26 @@ from w3af.plugins.evasion.full_width_encode import full_width_encode
 
 
 class TestEvasion(unittest.TestCase):
-    
+
     def test_no_modification(self):
         fwe = full_width_encode()
 
         u = URL('http://www.w3af.com/')
-        r = HTTPRequest( u )
-        self.assertEqual(fwe.modify_request( r ).url_object.url_string,
+        r = HTTPRequest(u)
+        self.assertEqual(fwe.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/')
 
     def test_modify_path_filename(self):
         fwe = full_width_encode()
-        
+
         u = URL('http://www.w3af.com/hola-mundo')
-        r = HTTPRequest( u )
-        self.assertEqual(fwe.modify_request( r ).url_object.url_string,
-                         u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f')
+        r = HTTPRequest(u)
+        self.assertEqual(
+            fwe.modify_request(r).url_object.url_string,
+            u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f')
 
         #
         #    The plugins should not modify the original request
         #
         self.assertEqual(u.url_string,
                          u'http://www.w3af.com/hola-mundo')
-        

@@ -86,12 +86,17 @@ class TestFalsePositiveFindBackdoor2017_2(PluginTest):
 
     APACHE_403 = get_apache_403('/forbidden/foobar', domain)
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty-mock/',
-                                   '<a href="/forbidden/">403</a>'),
-                      MockResponse('http://httpretty-mock/forbidden/c99shell.php',
-                                   '<HTML><title>c99shell</title>'),
-                      MockResponse(re.compile('http://.*?/forbidden/.*'),
-                                   APACHE_403, status=403)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty-mock/',
+            '<a href="/forbidden/">403</a>'),
+        MockResponse(
+            'http://httpretty-mock/forbidden/c99shell.php',
+            '<HTML><title>c99shell</title>'),
+        MockResponse(
+            re.compile('http://.*?/forbidden/.*'),
+            APACHE_403,
+            status=403)]
 
     def test_2017_false_positive_backdoor_2(self):
         cfg = run_configs['crawl']
@@ -100,4 +105,3 @@ class TestFalsePositiveFindBackdoor2017_2(PluginTest):
         vulns = self.kb.get('find_backdoors', 'backdoors')
 
         self.assertEqual(len(vulns), 1, vulns)
-

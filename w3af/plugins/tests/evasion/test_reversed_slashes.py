@@ -27,33 +27,32 @@ from w3af.plugins.evasion.reversed_slashes import reversed_slashes
 
 
 class TestEvasion(unittest.TestCase):
-    
+
     def test_no_modification(self):
         rs = reversed_slashes()
 
         u = URL('http://www.w3af.com/')
-        r = HTTPRequest( u )
-        self.assertEqual(rs.modify_request( r ).url_object.url_string,
+        r = HTTPRequest(u)
+        self.assertEqual(rs.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/')
 
     def test_path_file(self):
         rs = reversed_slashes()
-        
+
         u = URL('http://www.w3af.com/abc/def.htm')
-        r = HTTPRequest( u )
-        self.assertEqual(rs.modify_request( r ).url_object.url_string,
+        r = HTTPRequest(u)
+        self.assertEqual(rs.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/abc\\def.htm')
 
     def test_long_path_file(self):
         rs = reversed_slashes()
-        
+
         u = URL('http://www.w3af.com/abc/123/def.htm')
-        r = HTTPRequest( u )
-        self.assertEqual(rs.modify_request( r ).url_object.url_string,
+        r = HTTPRequest(u)
+        self.assertEqual(rs.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/abc\\123\\def.htm')
         #
         #    The plugins should not modify the original request
         #
         self.assertEqual(u.url_string,
                          u'http://www.w3af.com/abc/123/def.htm')
-

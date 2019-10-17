@@ -27,9 +27,8 @@ from w3af.plugins.audit.sqli import sqli
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.open_api import OpenAPI
-from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (IntParamQueryString,
-                                                                              NestedModel,
-                                                                              PetstoreSimpleModel)
+from w3af.core.data.parsers.doc.open_api.tests.example_specifications import (
+    IntParamQueryString, NestedModel, PetstoreSimpleModel)
 
 API_KEY = '0x12345'
 
@@ -51,9 +50,12 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
         }
     }
 
-    MOCK_RESPONSES = [MockResponse('http://w3af.org/swagger.json?api_key=%s' % API_KEY,
-                                   IntParamQueryString().get_specification(),
-                                   content_type='application/json')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://w3af.org/swagger.json?api_key=%s' %
+            API_KEY,
+            IntParamQueryString().get_specification(),
+            content_type='application/json')]
 
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
@@ -76,7 +78,9 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
         self.assertEqual(len(fuzzable_requests), 4)
 
         # Remove the /swagger.json and /
-        fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/swagger.json', '/')]
+        fuzzable_requests = [
+            f for f in fuzzable_requests if f.get_url().get_path() not in (
+                '/swagger.json', '/')]
 
         # Order them to be able to easily assert things
         def by_path(fra, frb):
@@ -127,9 +131,12 @@ class HeaderAuthenticatedMockResponse(MockResponse):
             response_headers.update({'status': 401})
             return 401, response_headers, 'Missing authentication'
 
-        return super(HeaderAuthenticatedMockResponse, self).get_response(http_request,
-                                                                         uri,
-                                                                         response_headers)
+        return super(
+            HeaderAuthenticatedMockResponse,
+            self).get_response(
+            http_request,
+            uri,
+            response_headers)
 
 
 class TestOpenAPINestedModelSpec(PluginTest):
@@ -171,14 +178,16 @@ class TestOpenAPINestedModelSpec(PluginTest):
 
             return self.status, response_headers, response_body
 
-    MOCK_RESPONSES = [HeaderAuthenticatedMockResponse('http://w3af.org/openapi.json',
-                                                      NestedModel().get_specification(),
-                                                      content_type='application/json'),
-
-                      SQLIMockResponse(re.compile('http://w3af.org/api/pets.*'),
-                                       body=None,
-                                       method='GET',
-                                       status=200)]
+    MOCK_RESPONSES = [
+        HeaderAuthenticatedMockResponse(
+            'http://w3af.org/openapi.json',
+            NestedModel().get_specification(),
+            content_type='application/json'),
+        SQLIMockResponse(
+            re.compile('http://w3af.org/api/pets.*'),
+            body=None,
+            method='GET',
+            status=200)]
 
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
@@ -201,7 +210,9 @@ class TestOpenAPINestedModelSpec(PluginTest):
         self.assertEqual(len(fuzzable_requests), 3)
 
         # Remove the /openapi.json and /
-        fuzzable_requests = [f for f in fuzzable_requests if f.get_url().get_path() not in ('/openapi.json', '/')]
+        fuzzable_requests = [
+            f for f in fuzzable_requests if f.get_url().get_path() not in (
+                '/openapi.json', '/')]
 
         # Order them to be able to easily assert things
         def by_path(fra, frb):
@@ -299,10 +310,11 @@ class TestOpenAPIRaisesWarningIfParsingError(PluginTest):
             ' the parser were:\n'
             '\n'
             ' - The OpenAPI specification at http://w3af.org/openapi.json is not in'
-            ' JSON or YAML format'
-        )
+            ' JSON or YAML format')
 
-        self.assertEqual(info.get_name(), 'Failed to parse Open API specification')
+        self.assertEqual(
+            info.get_name(),
+            'Failed to parse Open API specification')
         self.assertEqual(info.get_desc(with_id=False), expected_desc)
 
 
@@ -398,20 +410,21 @@ class TestOpenAPIFuzzURLParts(PluginTest):
 
             return status, response_headers, response_body
 
-    MOCK_RESPONSES = [MockResponse('http://petstore.swagger.io/openapi.json',
-                                   PetstoreSimpleModel().get_specification(),
-                                   content_type='application/json'),
-
-                      SQLIMockResponse(re.compile('http://petstore.swagger.io/api/pets.*'),
-                                       body='{}',
-                                       method='GET',
-                                       status=200),
-
-                      SQLIMockResponse(re.compile('http://petstore.swagger.io/api/pets.*'),
-                                       body='{}',
-                                       method='POST',
-                                       status=200)
-                      ]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://petstore.swagger.io/openapi.json',
+            PetstoreSimpleModel().get_specification(),
+            content_type='application/json'),
+        SQLIMockResponse(
+            re.compile('http://petstore.swagger.io/api/pets.*'),
+            body='{}',
+            method='GET',
+            status=200),
+        SQLIMockResponse(
+            re.compile('http://petstore.swagger.io/api/pets.*'),
+            body='{}',
+            method='POST',
+            status=200)]
 
     def test_fuzzing_parameters_in_path(self):
         #
@@ -437,4 +450,6 @@ class TestOpenAPIFuzzURLParts(PluginTest):
 
         vuln = vulns[0]
         self.assertEquals(vuln.get_method(), 'GET')
-        self.assertEquals(vuln.get_url().url_string, TestOpenAPIFuzzURLParts.vulnerable_url)
+        self.assertEquals(
+            vuln.get_url().url_string,
+            TestOpenAPIFuzzURLParts.vulnerable_url)

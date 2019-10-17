@@ -31,7 +31,7 @@ class TestWordpressPathDisclosure(PluginTest):
         'direct': {
             'target': wordpress_url,
             'plugins': {
-        'crawl': (PluginConfig('wordpress_fullpathdisclosure',),)
+                'crawl': (PluginConfig('wordpress_fullpathdisclosure',),)
             },
         },
     }
@@ -47,5 +47,7 @@ class TestWordpressPathDisclosure(PluginTest):
         info = infos[0]
 
         self.assertEqual(info.get_name(), 'WordPress path disclosure')
-        self.assertEqual(info.get_url().url_string,
-                         self.wordpress_url + 'wp-content/plugins/akismet/akismet.php')
+        self.assertEqual(
+            info.get_url().url_string,
+            self.wordpress_url +
+            'wp-content/plugins/akismet/akismet.php')

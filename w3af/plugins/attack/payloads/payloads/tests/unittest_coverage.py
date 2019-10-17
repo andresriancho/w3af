@@ -27,7 +27,12 @@ from nose.plugins.skip import SkipTest
 from w3af import ROOT_PATH
 from w3af.plugins.attack.payloads.payload_handler import get_payload_list
 
-PAYLOAD_PATH = os.path.join(ROOT_PATH, 'plugins', 'attack', 'payloads', 'payloads')
+PAYLOAD_PATH = os.path.join(
+    ROOT_PATH,
+    'plugins',
+    'attack',
+    'payloads',
+    'payloads')
 TEST_PATH = os.path.join(PAYLOAD_PATH, 'tests')
 
 UNABLE_TO_TEST = ('metasploit', 'msf_linux_x86_meterpreter_reverse',
@@ -44,7 +49,8 @@ class TestUnittestCoverage(unittest.TestCase):
     def test_nothing_in_unable_to_test(self):
         if len(UNABLE_TO_TEST) > 0:
             # TODO: In vdaemon.py we have subprocess.Popen( ['gnome-terminal', '-e', msfcli_command] )
-            #       which makes the payloads in UNABLE_TO_TEST very very very difficult to test
+            # which makes the payloads in UNABLE_TO_TEST very very very
+            # difficult to test
             raise SkipTest()
 
     def _analyze_unittests(self):

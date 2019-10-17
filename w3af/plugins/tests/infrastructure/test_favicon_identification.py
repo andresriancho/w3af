@@ -30,10 +30,11 @@ class TestFaviconIdentification(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': None,
-        'plugins': {'infrastructure': (PluginConfig('favicon_identification'),)}
-        }
-    }
+            'target': None,
+            'plugins': {
+                'infrastructure': (
+                    PluginConfig('favicon_identification'),
+                )}}}
 
     @attr('ci_fails')
     def test_no_favicon_identification_http(self):

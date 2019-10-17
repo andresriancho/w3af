@@ -64,6 +64,6 @@ class TestLang(PluginTest):
     def test_id_en_crawl(self):
         cfg = self._run_configs['crawl']
         self._scan(self.langs_url % 'en', cfg['plugins'])
-        
+
         lang = self.kb.raw_read('lang', 'lang')
         self.assertEquals('en', lang)

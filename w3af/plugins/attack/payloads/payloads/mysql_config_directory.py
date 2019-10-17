@@ -8,6 +8,7 @@ class mysql_config_directory(Payload):
     """
     This payload finds MySQL configuration directory.
     """
+
     def api_read(self):
         result = {'directory': []}
         paths = []

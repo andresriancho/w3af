@@ -27,13 +27,13 @@ class test_netcat_installed(PayloadTestHelper):
     EXISTS_EXPECTED_RESULT = {'netcat_installed': True,
                               'path': '/bin/netcat',
                               'supports_shell_bind': False}
-    
+
     NOTEXISTS_EXPECTED_RESULT = {'netcat_installed': False,
                                  'path': None,
                                  'supports_shell_bind': False}
 
     def test_netcat_installed(self):
         result = exec_payload(self.shell, 'netcat_installed', use_api=True)
-        
+
         self.assertIn(result, [self.EXISTS_EXPECTED_RESULT,
                                self.NOTEXISTS_EXPECTED_RESULT])

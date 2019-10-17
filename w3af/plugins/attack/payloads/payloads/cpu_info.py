@@ -7,6 +7,7 @@ class cpu_info(Payload):
     """
     This payload shows CPU Model and Core info.
     """
+
     def api_read(self):
         result = {}
 

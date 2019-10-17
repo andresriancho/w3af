@@ -6,6 +6,7 @@ class get_hashes(Payload):
     """
     Get the hashes from the /etc/shadow and /etc/passwd files (if any).
     """
+
     def api_read(self):
         result = {}
 
@@ -18,7 +19,7 @@ class get_hashes(Payload):
                 try:
                     user = line.split(':')[0]
                     uhash = line.split(':')[1]
-                except:
+                except BaseException:
                     pass
                 else:
                     if len(uhash) != 1:

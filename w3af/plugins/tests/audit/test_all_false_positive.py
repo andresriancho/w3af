@@ -57,8 +57,8 @@ class TestAllFP(PluginTest):
 
             infos = [str(i) for i in self.kb.get_all_findings()]
 
-            msg_i = 'audit.%s found a vulnerability in "%s"' % (audit_plugin,
-                                                                ','.join(infos))
+            msg_i = 'audit.%s found a vulnerability in "%s"' % (
+                audit_plugin, ','.join(infos))
             self.assertEquals(len(infos), 0, msg_i)
 
             # I tried to do this in the right way, with nosetests test

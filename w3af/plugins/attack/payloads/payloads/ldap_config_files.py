@@ -6,6 +6,7 @@ class ldap_config_files(Payload):
     """
     This payload shows LDAP configuration files
     """
+
     def api_read(self):
         result = {}
         files = []

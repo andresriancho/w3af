@@ -25,7 +25,7 @@ import w3af.core.controllers.output_manager as om
 
 
 def read_debug(fn):
-    
+
     @wraps(fn)
     def new(self, filename):
         #   Run the original function

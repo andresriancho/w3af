@@ -29,8 +29,8 @@ class TestSharedHosting(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': base_url,
-        'plugins': {'infrastructure': (PluginConfig('shared_hosting'),)}
+            'target': base_url,
+            'plugins': {'infrastructure': (PluginConfig('shared_hosting'),)}
         }
     }
 

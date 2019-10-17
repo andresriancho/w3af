@@ -5,6 +5,7 @@ class ftp_config_files(Payload):
     """
     This payload shows FTP Server configuration files
     """
+
     def fname_generator(self):
         yield '/etc/ftpd/ftpaccess'
         yield '/etc/ftpd/ftpconversions'

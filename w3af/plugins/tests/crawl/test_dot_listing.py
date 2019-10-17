@@ -37,11 +37,26 @@ class TestDotListing(PluginTest):
         }
     }
 
-    DOT_LISTING = file(os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'dot_listing', 'listing_test_1.txt')).read()
+    DOT_LISTING = file(
+        os.path.join(
+            ROOT_PATH,
+            'plugins',
+            'tests',
+            'crawl',
+            'dot_listing',
+            'listing_test_1.txt')).read()
 
-    MOCK_RESPONSES = [MockResponse('http://mock/.listing', DOT_LISTING),
-                      MockResponse('http://mock/wasadhiya-7.mp3', 'Secret file'),
-                      MockResponse('http://mock/', 'Not here', status=404)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://mock/.listing',
+            DOT_LISTING),
+        MockResponse(
+            'http://mock/wasadhiya-7.mp3',
+            'Secret file'),
+        MockResponse(
+            'http://mock/',
+            'Not here',
+            status=404)]
 
     def test_dot_listing(self):
         cfg = self._run_configs['cfg']
@@ -62,7 +77,8 @@ class TestDotListing(PluginTest):
         )
 
     def test_listing_extraction(self):
-        listing_files_path = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'dot_listing')
+        listing_files_path = os.path.join(
+            ROOT_PATH, 'plugins', 'tests', 'crawl', 'dot_listing')
         file_name_fmt = 'listing_test_%s.txt'
 
         dot_listing_inst = dot_listing()
@@ -75,7 +91,8 @@ class TestDotListing(PluginTest):
             file_name = file_name_fmt % i
             file_path = os.path.join(listing_files_path, file_name)
             file_content = file(file_path).read()
-            for user, group, filename in dot_listing_inst._extract_info_from_listing(file_content):
+            for user, group, filename in dot_listing_inst._extract_info_from_listing(
+                    file_content):
                 users.add(user)
                 groups.add(group)
                 files.add(filename)

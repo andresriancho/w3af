@@ -81,8 +81,8 @@ class TestGHDB(PluginTest):
 
                 google_result = GoogleResult(
                     URL('http://moth/w3af/crawl/ghdb/'))
-                google_mock_method.side_effect = [[], ] * 50 + [[google_result, ]] +\
-                                                 [[], ] * 50000
+                google_mock_method.side_effect = [
+                    [], ] * 50 + [[google_result, ]] + [[], ] * 50000
 
                 # Scan
                 cfg = self._run_configs['cfg']

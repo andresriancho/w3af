@@ -55,6 +55,7 @@ class TestUserDir(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         users = self.kb.get('user_dir', 'users')
-        scan_results = set([(i.get_name(), i.get_url().url_string) for i in users])
+        scan_results = set(
+            [(i.get_name(), i.get_url().url_string) for i in users])
 
         self.assertEqual(self.EXPECTED_RESULTS, scan_results)

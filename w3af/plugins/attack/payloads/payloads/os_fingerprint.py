@@ -6,6 +6,7 @@ class os_fingerprint(Payload):
     """
     This payload detect OS.
     """
+
     def api_read(self):
         result = {}
 

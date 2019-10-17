@@ -28,7 +28,7 @@ class test_log_reader(PayloadTestHelper):
     EXPECTED_RESULT = set(['/var/log/wtmp',
                            '/var/log/dpkg.log',
                            # The permissions changed and now we can't read it
-                           # '/var/log/apt/term.log', 
+                           # '/var/log/apt/term.log',
                            '/var/log/boot.log',
                            '/var/log/faillog'])
 

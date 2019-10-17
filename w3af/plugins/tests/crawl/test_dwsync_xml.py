@@ -58,4 +58,3 @@ class TestDWSyncXML(PluginTest):
             set(str(u) for u in urls),
             set((self.target_url + end) for end in expected_urls)
         )
-

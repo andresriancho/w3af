@@ -36,12 +36,15 @@ from lib.core.optiondict import optDict
 from lib.core.settings import UNICODE_ENCODING
 from lib.parse.cmdline import cmdLineParser
 
+
 class Failures(object):
     failedItems = None
     failedParseOn = None
     failedTraceBack = None
 
+
 _failures = Failures()
+
 
 def smokeTest():
     """
@@ -56,7 +59,8 @@ def smokeTest():
             continue
 
         for filename in files:
-            if os.path.splitext(filename)[1].lower() == ".py" and filename != "__init__.py":
+            if os.path.splitext(filename)[1].lower(
+            ) == ".py" and filename != "__init__.py":
                 length += 1
 
     for root, _, files in os.walk(paths.SQLMAP_ROOT_PATH):
@@ -64,17 +68,19 @@ def smokeTest():
             continue
 
         for filename in files:
-            if os.path.splitext(filename)[1].lower() == ".py" and filename != "__init__.py":
+            if os.path.splitext(filename)[1].lower(
+            ) == ".py" and filename != "__init__.py":
                 path = os.path.join(root, os.path.splitext(filename)[0])
                 path = path.replace(paths.SQLMAP_ROOT_PATH, '.')
                 path = path.replace(os.sep, '.').lstrip('.')
                 try:
                     __import__(path)
                     module = sys.modules[path]
-                except Exception, msg:
+                except Exception as msg:
                     retVal = False
                     dataToStdout("\r")
-                    errMsg = "smoke test failed at importing module '%s' (%s):\n%s" % (path, os.path.join(root, filename), msg)
+                    errMsg = "smoke test failed at importing module '%s' (%s):\n%s" % (
+                        path, os.path.join(root, filename), msg)
                     logger.error(errMsg)
                 else:
                     # Run doc tests
@@ -84,8 +90,11 @@ def smokeTest():
                         retVal = False
 
                 count += 1
-                status = '%d/%d (%d%%) ' % (count, length, round(100.0 * count / length))
-                dataToStdout("\r[%s] [INFO] complete: %s" % (time.strftime("%X"), status))
+                status = '%d/%d (%d%%) ' % (count, length,
+                                            round(100.0 * count / length))
+                dataToStdout(
+                    "\r[%s] [INFO] complete: %s" %
+                    (time.strftime("%X"), status))
 
     clearConsoleLine()
     if retVal:
@@ -95,10 +104,11 @@ def smokeTest():
 
     return retVal
 
+
 def adjustValueType(tagName, value):
     for family in optDict.keys():
         for name, type_ in optDict[family].items():
-            if type(type_) == tuple:
+            if isinstance(type_, tuple):
                 type_ = type_[0]
             if tagName == name:
                 if type_ == "boolean":
@@ -109,6 +119,7 @@ def adjustValueType(tagName, value):
                     value = float(value)
                 break
     return value
+
 
 def liveTest():
     """
@@ -127,16 +138,20 @@ def liveTest():
     if element:
         for item in element:
             for child in item.childNodes:
-                if child.nodeType == child.ELEMENT_NODE and child.hasAttribute("value"):
-                    global_[child.tagName] = adjustValueType(child.tagName, child.getAttribute("value"))
+                if child.nodeType == child.ELEMENT_NODE and child.hasAttribute(
+                        "value"):
+                    global_[child.tagName] = adjustValueType(
+                        child.tagName, child.getAttribute("value"))
 
     element = livetests.getElementsByTagName("vars")
     if element:
         for item in element:
             for child in item.childNodes:
-                if child.nodeType == child.ELEMENT_NODE and child.hasAttribute("value"):
+                if child.nodeType == child.ELEMENT_NODE and child.hasAttribute(
+                        "value"):
                     var = child.getAttribute("value")
-                    vars_[child.tagName] = randomStr(6) if var == "random" else var
+                    vars_[child.tagName] = randomStr(
+                        6) if var == "random" else var
 
     for case in livetests.getElementsByTagName("case"):
         parse_from_console_output = False
@@ -151,22 +166,30 @@ def liveTest():
         if case.hasAttribute("name"):
             name = case.getAttribute("name")
 
-        if conf.runCase and ((conf.runCase.isdigit() and conf.runCase != count) or not re.search(conf.runCase, name, re.DOTALL)):
+        if conf.runCase and (
+            (conf.runCase.isdigit() and conf.runCase != count) or not re.search(
+                conf.runCase,
+                name,
+                re.DOTALL)):
             continue
 
         if case.getElementsByTagName("switches"):
             for child in case.getElementsByTagName("switches")[0].childNodes:
-                if child.nodeType == child.ELEMENT_NODE and child.hasAttribute("value"):
+                if child.nodeType == child.ELEMENT_NODE and child.hasAttribute(
+                        "value"):
                     value = replaceVars(child.getAttribute("value"), vars_)
-                    switches[child.tagName] = adjustValueType(child.tagName, value)
+                    switches[child.tagName] = adjustValueType(
+                        child.tagName, value)
 
         if case.getElementsByTagName("parse"):
-            for item in case.getElementsByTagName("parse")[0].getElementsByTagName("item"):
+            for item in case.getElementsByTagName(
+                    "parse")[0].getElementsByTagName("item"):
                 if item.hasAttribute("value"):
                     value = replaceVars(item.getAttribute("value"), vars_)
 
                 if item.hasAttribute("console_output"):
-                    parse_from_console_output = bool(item.getAttribute("console_output"))
+                    parse_from_console_output = bool(
+                        item.getAttribute("console_output"))
 
                 parse.append((value, parse_from_console_output))
 
@@ -178,7 +201,12 @@ def liveTest():
 
         initCase(switches, count)
 
-        test_case_fd = codecs.open(os.path.join(paths.SQLMAP_OUTPUT_PATH, "test_case"), "wb", UNICODE_ENCODING)
+        test_case_fd = codecs.open(
+            os.path.join(
+                paths.SQLMAP_OUTPUT_PATH,
+                "test_case"),
+            "wb",
+            UNICODE_ENCODING)
         test_case_fd.write("%s\n" % name)
 
         try:
@@ -196,7 +224,8 @@ def liveTest():
             errMsg = "test failed"
 
             if _failures.failedItems:
-                errMsg += " at parsing items: %s" % ", ".join(i for i in _failures.failedItems)
+                errMsg += " at parsing items: %s" % ", ".join(
+                    i for i in _failures.failedItems)
 
             errMsg += " - scan folder: %s" % paths.SQLMAP_OUTPUT_PATH
             errMsg += " - traceback: %s" % bool(_failures.failedTraceBack)
@@ -208,12 +237,22 @@ def liveTest():
             test_case_fd.write("%s\n" % errMsg)
 
             if _failures.failedParseOn:
-                console_output_fd = codecs.open(os.path.join(paths.SQLMAP_OUTPUT_PATH, "console_output"), "wb", UNICODE_ENCODING)
+                console_output_fd = codecs.open(
+                    os.path.join(
+                        paths.SQLMAP_OUTPUT_PATH,
+                        "console_output"),
+                    "wb",
+                    UNICODE_ENCODING)
                 console_output_fd.write(_failures.failedParseOn)
                 console_output_fd.close()
 
             if _failures.failedTraceBack:
-                traceback_fd = codecs.open(os.path.join(paths.SQLMAP_OUTPUT_PATH, "traceback"), "wb", UNICODE_ENCODING)
+                traceback_fd = codecs.open(
+                    os.path.join(
+                        paths.SQLMAP_OUTPUT_PATH,
+                        "traceback"),
+                    "wb",
+                    UNICODE_ENCODING)
                 traceback_fd.write(_failures.failedTraceBack)
                 traceback_fd.close()
 
@@ -234,18 +273,26 @@ def liveTest():
 
     return retVal
 
+
 def initCase(switches, count):
     _failures.failedItems = []
     _failures.failedParseOn = None
     _failures.failedTraceBack = None
 
-    paths.SQLMAP_OUTPUT_PATH = tempfile.mkdtemp(prefix="%s%d-" % (MKSTEMP_PREFIX.TESTING, count))
-    paths.SQLMAP_DUMP_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "dump")
-    paths.SQLMAP_FILES_PATH = os.path.join(paths.SQLMAP_OUTPUT_PATH, "%s", "files")
+    paths.SQLMAP_OUTPUT_PATH = tempfile.mkdtemp(
+        prefix="%s%d-" %
+        (MKSTEMP_PREFIX.TESTING, count))
+    paths.SQLMAP_DUMP_PATH = os.path.join(
+        paths.SQLMAP_OUTPUT_PATH, "%s", "dump")
+    paths.SQLMAP_FILES_PATH = os.path.join(
+        paths.SQLMAP_OUTPUT_PATH, "%s", "files")
 
-    logger.debug("using output directory '%s' for this test case" % paths.SQLMAP_OUTPUT_PATH)
+    logger.debug(
+        "using output directory '%s' for this test case" %
+        paths.SQLMAP_OUTPUT_PATH)
 
-    LOGGER_HANDLER.stream = sys.stdout = tempfile.SpooledTemporaryFile(max_size=0, mode="w+b", prefix="sqlmapstdout-")
+    LOGGER_HANDLER.stream = sys.stdout = tempfile.SpooledTemporaryFile(
+        max_size=0, mode="w+b", prefix="sqlmapstdout-")
 
     cmdLineOptions = cmdLineParser()
 
@@ -257,8 +304,10 @@ def initCase(switches, count):
     initOptions(cmdLineOptions, True)
     init()
 
+
 def cleanCase():
     shutil.rmtree(paths.SQLMAP_OUTPUT_PATH, True)
+
 
 def runCase(parse):
     retVal = True
@@ -271,9 +320,9 @@ def runCase(parse):
         result = start()
     except KeyboardInterrupt:
         pass
-    except SqlmapBaseException, e:
+    except SqlmapBaseException as e:
         handled_exception = e
-    except Exception, e:
+    except Exception as e:
         unhandled_exception = e
     finally:
         sys.stdout.seek(0)
@@ -281,10 +330,12 @@ def runCase(parse):
         LOGGER_HANDLER.stream = sys.stdout = sys.__stdout__
 
     if unhandled_exception:
-        _failures.failedTraceBack = "unhandled exception: %s" % str(traceback.format_exc())
+        _failures.failedTraceBack = "unhandled exception: %s" % str(
+            traceback.format_exc())
         retVal = None
     elif handled_exception:
-        _failures.failedTraceBack = "handled exception: %s" % str(traceback.format_exc())
+        _failures.failedTraceBack = "handled exception: %s" % str(
+            traceback.format_exc())
         retVal = None
     elif result is False:  # this means no SQL injection has been detected - if None, ignore
         retVal = False
@@ -314,6 +365,7 @@ def runCase(parse):
         _failures.failedParseOn = console
 
     return retVal
+
 
 def replaceVars(item, vars_):
     retVal = item

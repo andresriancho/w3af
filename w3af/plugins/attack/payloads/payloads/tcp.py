@@ -7,6 +7,7 @@ class tcp(Payload):
     """
     This payload shows TCP socket information
     """
+
     def api_read(self):
         result = {}
 
@@ -44,7 +45,7 @@ class tcp(Payload):
             return '.'.join(q)
 
         etc = self.shell.read('/etc/passwd')
-        #TODO: Read UDP and TCP6?
+        # TODO: Read UDP and TCP6?
         parsed_info = parse_tcp(self.shell.read('/proc/net/tcp'))
 
         for parsed_line in parsed_info:
@@ -67,9 +68,13 @@ class tcp(Payload):
 
                 if parsed_line[0] != 'sl':
                     key = str(parsed_line[0].replace(':', ''))
-                    result[key] = {'local_address': parsed_line[1], 'rem_address': parsed_line[2],
-                                   'st': parsed_line[3], 'uid': parsed_line[7], 'inode': parsed_line[11]}
-            except:
+                    result[key] = {
+                        'local_address': parsed_line[1],
+                        'rem_address': parsed_line[2],
+                        'st': parsed_line[3],
+                        'uid': parsed_line[7],
+                        'inode': parsed_line[11]}
+            except BaseException:
                 pass
 
         return result
@@ -82,7 +87,7 @@ class tcp(Payload):
         else:
             rows = []
             rows.append(['Id', 'Local Address',
-                        'Remote Address', 'Status', 'User', 'Inode'])
+                         'Remote Address', 'Status', 'User', 'Inode'])
             rows.append([])
 
             for key in api_result:

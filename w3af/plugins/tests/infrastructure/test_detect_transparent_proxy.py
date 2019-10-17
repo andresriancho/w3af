@@ -29,9 +29,10 @@ class TestDetectTransparentProxy(PluginTest):
     _run_config = {
         'cfg': {
             'target': target_url,
-            'plugins': {'infrastructure': (PluginConfig('detect_transparent_proxy'),)}
-        }
-    }
+            'plugins': {
+                'infrastructure': (
+                    PluginConfig('detect_transparent_proxy'),
+                )}}}
 
     @attr('ci_fails')
     def test_transparent_proxy(self):

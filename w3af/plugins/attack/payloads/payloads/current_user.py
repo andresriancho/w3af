@@ -7,6 +7,7 @@ class current_user(Payload):
     """
     This payload shows current username & folder on the system.
     """
+
     def api_read(self):
         result = {}
         result['current'] = {}

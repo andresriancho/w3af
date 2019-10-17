@@ -7,6 +7,7 @@ class filesystem(Payload):
     """
     This payload shows filesystem info.
     """
+
     def api_read(self):
         result = {}
         files = []

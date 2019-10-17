@@ -49,10 +49,13 @@ class TestMetaGenerator(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
-    @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @patch(
+        'w3af.plugins.grep.meta_generator.is_404',
+        side_effect=repeat(False))
     def test_detects_meta_tags_with_generator(self, *args):
         request = FuzzableRequest(self.url)
-        response = self._generate_response('<meta name="generator" content="wordpress 1.2.3">')
+        response = self._generate_response(
+            '<meta name="generator" content="wordpress 1.2.3">')
 
         self.plugin.grep(request, response)
 
@@ -63,17 +66,22 @@ class TestMetaGenerator(unittest.TestCase):
 
         self.assertEquals(info_set.get_url(), self.url)
 
-        expected_desc = (u'The application returned 1 HTTP responses containing the'
-                         u' generator meta tag value "wordpress 1.2.3". The first'
-                         u' ten URLs  that match are:\n - http://www.w3af.com/\n')
+        expected_desc = (
+            u'The application returned 1 HTTP responses containing the'
+            u' generator meta tag value "wordpress 1.2.3". The first'
+            u' ten URLs  that match are:\n - http://www.w3af.com/\n')
         self.assertEquals(info_set.get_desc(), expected_desc)
 
-    @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @patch(
+        'w3af.plugins.grep.meta_generator.is_404',
+        side_effect=repeat(False))
     def test_groups_findings(self, *args):
         request = FuzzableRequest(self.url)
 
-        response_1 = self._generate_response('<meta name="generator" content="wordpress 1.2.3">')
-        response_2 = self._generate_response('<meta name="generator" content="wordpress 1.2.4">')
+        response_1 = self._generate_response(
+            '<meta name="generator" content="wordpress 1.2.3">')
+        response_2 = self._generate_response(
+            '<meta name="generator" content="wordpress 1.2.4">')
 
         self.plugin.grep(request, response_1)
         self.plugin.grep(request, response_2)
@@ -87,20 +95,25 @@ class TestMetaGenerator(unittest.TestCase):
 
         self.assertEquals(urls, {self.url, self.url})
 
-        expected_desc_1 = (u'The application returned 1 HTTP responses containing the'
-                           u' generator meta tag value "wordpress 1.2.3". The first'
-                           u' ten URLs  that match are:\n - http://www.w3af.com/\n')
+        expected_desc_1 = (
+            u'The application returned 1 HTTP responses containing the'
+            u' generator meta tag value "wordpress 1.2.3". The first'
+            u' ten URLs  that match are:\n - http://www.w3af.com/\n')
 
-        expected_desc_2 = (u'The application returned 1 HTTP responses containing the'
-                           u' generator meta tag value "wordpress 1.2.4". The first'
-                           u' ten URLs  that match are:\n - http://www.w3af.com/\n')
+        expected_desc_2 = (
+            u'The application returned 1 HTTP responses containing the'
+            u' generator meta tag value "wordpress 1.2.4". The first'
+            u' ten URLs  that match are:\n - http://www.w3af.com/\n')
 
         self.assertEquals(descs, {expected_desc_1, expected_desc_2})
 
-    @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @patch(
+        'w3af.plugins.grep.meta_generator.is_404',
+        side_effect=repeat(False))
     def test_avoid_false_positive_0(self, *args):
         request = FuzzableRequest(self.url)
-        response = self._generate_response('<meta name="not-a-generator" content="wordpress 1.2.3">')
+        response = self._generate_response(
+            '<meta name="not-a-generator" content="wordpress 1.2.3">')
 
         self.plugin.grep(request, response)
 
@@ -108,7 +121,9 @@ class TestMetaGenerator(unittest.TestCase):
 
         self.assertEqual(len(info_sets), 0)
 
-    @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @patch(
+        'w3af.plugins.grep.meta_generator.is_404',
+        side_effect=repeat(False))
     def test_avoid_false_positive_1(self, *args):
         request = FuzzableRequest(self.url)
         response = self._generate_response('<meta name="generator">')
@@ -119,7 +134,9 @@ class TestMetaGenerator(unittest.TestCase):
 
         self.assertEqual(len(info_sets), 0)
 
-    @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @patch(
+        'w3af.plugins.grep.meta_generator.is_404',
+        side_effect=repeat(False))
     def test_avoid_false_positive_2(self, *args):
         request = FuzzableRequest(self.url)
         response = self._generate_response('<meta name="generator" name="">')

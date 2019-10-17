@@ -11,7 +11,7 @@ class users_config_files(Payload):
     def fname_generator(self):
         users_result = self.exec_payload('users')
 
-        #=======================================================================
+        #======================================================================
         # users_config_files.append('/etc/sudoers')
         # users_config_files.append('/etc/inittab')
         # users_config_files.append('/etc/crontab')
@@ -21,7 +21,7 @@ class users_config_files(Payload):
         # users_config_files.append('/etc/pam.conf')
         # #TODO PUT IN APACHE
         # users_config_files.append('/etc/libapache2-mod-jk/workers.properties')
-        #=======================================================================
+        #======================================================================
 
         files = ['.bashrc', '.bashrc~', '.bash_history', '.bash_profile',
                  '.gtk-bookmarks', '.conkyrc', '.my.cnf', '.mysql_history',

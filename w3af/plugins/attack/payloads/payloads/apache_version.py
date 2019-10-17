@@ -7,6 +7,7 @@ class apache_version(Payload):
     """
     This payload shows Apache Version
     """
+
     def api_read(self):
         result = {}
         result['version'] = []
@@ -23,7 +24,8 @@ class apache_version(Payload):
             else:
                 return ''
 
-        for version in parse_apache_binary(self.shell.read('/usr/sbin/apache2')):
+        for version in parse_apache_binary(
+                self.shell.read('/usr/sbin/apache2')):
             result['version'].append(version)
 
         for version in parse_apache_binary(self.shell.read('/usr/sbin/httpd')):

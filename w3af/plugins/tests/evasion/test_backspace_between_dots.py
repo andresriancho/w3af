@@ -29,9 +29,9 @@ from w3af.plugins.evasion.backspace_between_dots import backspace_between_dots
 
 @skip('URL normalization breaks evasion. @see: 4fa67fbb')
 class TestEvasion(unittest.TestCase):
-    
+
     def test_no_modification(self):
-        
+
         bbd = backspace_between_dots()
 
         u = URL('http://www.w3af.com/')
@@ -40,18 +40,18 @@ class TestEvasion(unittest.TestCase):
                          u'http://www.w3af.com/')
 
     def test_modify_basic(self):
-        
+
         bbd = backspace_between_dots()
-        
+
         u = URL('http://www.w3af.com/../')
         r = HTTPRequest(u)
         self.assertEqual(bbd.modify_request(r).url_object.url_string,
                          u'http://www.w3af.com/.%41%08./')
 
     def test_modify_with_filename(self):
-        
+
         bbd = backspace_between_dots()
-        
+
         u = URL('http://www.w3af.com/abc/def/.././jkl.htm')
         r = HTTPRequest(u)
         self.assertEqual(bbd.modify_request(r).url_object.url_string,

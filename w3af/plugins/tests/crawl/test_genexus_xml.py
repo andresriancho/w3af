@@ -51,7 +51,7 @@ class TestGenexusXML(PluginTest):
                             <ObjLink>hmaster.aspx</ObjLink>
                         </Object>
                     </Objects>"""
-    
+
     DEVELOPER_MENU_XML = """
     <?xml version="1.0" encoding="iso-8859-1"?>
     <Objects>
@@ -76,7 +76,7 @@ class TestGenexusXML(PluginTest):
                       MockResponse('http://httpretty-mock/foobar.aspx',
                                    'Exists')]
 
-    def test_genexus_xml(self):                
+    def test_genexus_xml(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
@@ -85,7 +85,7 @@ class TestGenexusXML(PluginTest):
         dev_info = dev_infos[0]
         self.assertEqual(dev_info.get_url().url_string,
                          'http://httpretty-mock/DeveloperMenu.xml')
-        
+
         exec_infos = self.kb.get('genexus_xml', 'execute.xml')
         self.assertEqual(len(exec_infos), 1)
         exec_info = exec_infos[0]

@@ -29,8 +29,8 @@ class TestDomainDot(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': None,
-        'plugins': {'infrastructure': (PluginConfig('domain_dot'),)}
+            'target': None,
+            'plugins': {'infrastructure': (PluginConfig('domain_dot'),)}
         }
     }
 

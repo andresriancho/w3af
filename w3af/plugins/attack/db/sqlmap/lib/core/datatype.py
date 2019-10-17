@@ -8,6 +8,7 @@ See the file 'LICENSE' for copying permission
 import copy
 import types
 
+
 class AttribDict(dict):
     """
     This class defines the sqlmap object, inheriting from Python data
@@ -73,13 +74,18 @@ class AttribDict(dict):
         for attr in dir(self):
             if not attr.startswith('_'):
                 value = getattr(self, attr)
-                if not isinstance(value, (types.BuiltinFunctionType, types.FunctionType, types.MethodType)):
+                if not isinstance(
+                    value,
+                    (types.BuiltinFunctionType,
+                     types.FunctionType,
+                     types.MethodType)):
                     setattr(retVal, attr, copy.deepcopy(value, memo))
 
         for key, value in self.items():
             retVal.__setitem__(key, copy.deepcopy(value, memo))
 
         return retVal
+
 
 class InjectionDict(AttribDict):
     def __init__(self):

@@ -7,6 +7,7 @@ class gcc_version(Payload):
     """
     This payload shows the current GCC Version
     """
+
     def api_read(self):
         result = {}
 

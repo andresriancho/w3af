@@ -37,7 +37,7 @@ class TestPhishtank(PluginTest):
     def test_phishtank_no_match(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
-        
+
         phishtank_inst.crawl(FuzzableRequest(URL(self.safe_url)))
         vulns = self.kb.get('phishtank', 'phishtank')
 
@@ -66,7 +66,7 @@ class TestPhishtank(PluginTest):
     def test_phishtank_match_url(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
-        
+
         vuln_url = URL(self.get_vulnerable_url())
         phishtank_inst.crawl(FuzzableRequest(vuln_url))
 

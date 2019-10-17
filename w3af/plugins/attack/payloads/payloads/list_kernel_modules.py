@@ -7,6 +7,7 @@ class list_kernel_modules(Payload):
     """
     This payload displays a list of all modules loaded into the kernel
     """
+
     def api_read(self):
         result = {}
 
@@ -37,8 +38,7 @@ class list_kernel_modules(Payload):
             rows.append(['Module', 'Used by'])
             rows.append([])
 
-            modules = api_result.keys()
-            modules.sort()
+            modules = sorted(api_result.keys())
 
             for module in modules:
                 used = api_result[module]['used']

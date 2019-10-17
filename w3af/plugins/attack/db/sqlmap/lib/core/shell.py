@@ -35,8 +35,9 @@ try:
                         matches.append(word)
 
             return matches
-except:
+except BaseException:
     readline._readline = None
+
 
 def readlineAvailable():
     """
@@ -46,11 +47,13 @@ def readlineAvailable():
 
     return readline._readline is not None
 
+
 def clearHistory():
     if not readlineAvailable():
         return
 
     readline.clear_history()
+
 
 def saveHistory(completion=None):
     if not readlineAvailable():
@@ -66,15 +69,17 @@ def saveHistory(completion=None):
     try:
         with open(historyPath, "w+"):
             pass
-    except:
+    except BaseException:
         pass
 
     readline.set_history_length(MAX_HISTORY_LENGTH)
     try:
         readline.write_history_file(historyPath)
-    except IOError, msg:
-        warnMsg = "there was a problem writing the history file '%s' (%s)" % (historyPath, msg)
+    except IOError as msg:
+        warnMsg = "there was a problem writing the history file '%s' (%s)" % (
+            historyPath, msg)
         logger.warn(warnMsg)
+
 
 def loadHistory(completion=None):
     if not readlineAvailable():
@@ -92,9 +97,11 @@ def loadHistory(completion=None):
     if os.path.exists(historyPath):
         try:
             readline.read_history_file(historyPath)
-        except IOError, msg:
-            warnMsg = "there was a problem loading the history file '%s' (%s)" % (historyPath, msg)
+        except IOError as msg:
+            warnMsg = "there was a problem loading the history file '%s' (%s)" % (
+                historyPath, msg)
             logger.warn(warnMsg)
+
 
 def autoCompletion(completion=None, os=None, commands=None):
     if not readlineAvailable():
@@ -104,20 +111,20 @@ def autoCompletion(completion=None, os=None, commands=None):
         if os == OS.WINDOWS:
             # Reference: http://en.wikipedia.org/wiki/List_of_DOS_commands
             completer = CompleterNG({
-                                      "copy": None, "del": None, "dir": None,
-                                      "echo": None, "md": None, "mem": None,
-                                      "move": None, "net": None, "netstat -na": None,
-                                      "ver": None, "xcopy": None, "whoami": None,
-                                    })
+                "copy": None, "del": None, "dir": None,
+                "echo": None, "md": None, "mem": None,
+                "move": None, "net": None, "netstat -na": None,
+                "ver": None, "xcopy": None, "whoami": None,
+            })
 
         else:
             # Reference: http://en.wikipedia.org/wiki/List_of_Unix_commands
             completer = CompleterNG({
-                                      "cp": None, "rm": None, "ls": None,
-                                      "echo": None, "mkdir": None, "free": None,
-                                      "mv": None, "ifconfig": None, "netstat -natu": None,
-                                      "pwd": None, "uname": None, "id": None,
-                                    })
+                "cp": None, "rm": None, "ls": None,
+                "echo": None, "mkdir": None, "free": None,
+                "mv": None, "ifconfig": None, "netstat -natu": None,
+                "pwd": None, "uname": None, "id": None,
+            })
 
         readline.set_completer(completer.complete)
         readline.parse_and_bind("tab: complete")

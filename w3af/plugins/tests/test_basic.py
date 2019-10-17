@@ -67,7 +67,8 @@ class TestBasic(unittest.TestCase):
 
         for plugin_type in self.plugin_types:
             self.plugins[plugin_type] = []
-            for plugin_name in self.w3afcore.plugins.get_plugin_list(plugin_type):
+            for plugin_name in self.w3afcore.plugins.get_plugin_list(
+                    plugin_type):
                 plugin = self.w3afcore.plugins.get_plugin_inst(
                     plugin_type, plugin_name)
                 self.plugins[plugin_type].append(plugin)
@@ -105,20 +106,21 @@ class TestBasic(unittest.TestCase):
                     self.assertTrue(isinstance(dep, basestring))
                     plugin_type, plugin_name = dep.split('.')
 
-                    self.assertTrue(plugin_type in self.w3afcore.plugins.get_plugin_types())
+                    self.assertTrue(
+                        plugin_type in self.w3afcore.plugins.get_plugin_types())
 
                     msg = '%s is not of type %s in %s plugin dependency.' % (
                         plugin_name, plugin_type, plugin)
-                    self.assertIn(plugin_name,
-                                  self.w3afcore.plugins.get_plugin_list(plugin_type),
-                                  msg)
+                    self.assertIn(
+                        plugin_name,
+                        self.w3afcore.plugins.get_plugin_list(plugin_type),
+                        msg)
 
     def test_plugin_desc(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
                 self.assertTrue(isinstance(plugin.get_plugin_deps(), list))
 
-                
                 self.assertTrue(isinstance(plugin.get_desc(), basestring))
                 msg = 'Description "%s" (len:%s) for %s.%s is too short'
                 self.assertGreaterEqual(len(plugin.get_desc()), 20,
@@ -126,9 +128,9 @@ class TestBasic(unittest.TestCase):
                                                len(plugin.get_desc()),
                                                plugin_type,
                                                plugin.get_name()))
-                
+
                 self.assertTrue(isinstance(plugin.get_long_desc(), basestring))
-                
+
                 msg = 'Long description "%s" for %s.%s is too short'
                 self.assertGreater(len(plugin.get_long_desc()), 50,
                                    msg % (plugin.get_long_desc(),
@@ -145,84 +147,83 @@ class TestBasic(unittest.TestCase):
 
     def test_no_kb_access_from_plugin(self):
         audit_path = os.path.join(ROOT_PATH, 'plugins', 'audit')
-        
+
         for audit_plugin in os.listdir(audit_path):
             if not audit_plugin.endswith('.py'):
                 continue
-            
+
             joined_entry = os.path.join(ROOT_PATH, 'plugins', 'audit',
                                         audit_plugin)
-            
+
             if os.path.isdir(joined_entry):
                 continue
-            
+
             plugin_code = file(joined_entry).read()
-            
+
             if 'kb.kb.append' in plugin_code:
                 msg = '%s plugin is directly writing to the kb instead of'\
                       ' going through kb_append_uniq or kb_append.'
                 self.assertTrue(False, msg % audit_plugin)
-        
+
     def test_plugin_is_of_correct_type(self):
-        
+
         def defined_in_subclass(klass, attr):
             any_klass_method = getattr(klass, attr, None)
-            
+
             if any_klass_method is None:
                 # Not defined in class or parent class
                 return False
-            
+
             for base_klass in klass.__class__.__bases__:
-                
+
                 base_method = getattr(base_klass, attr, None)
                 if base_method is None:
                     # In some cases one of the base classes does not
                     # implement all methods
                     continue
-                
+
                 if any_klass_method.__func__ is not base_method.__func__:
                     return True
-                
+
             return False
-        
-        
+
         ALL_TYPES_ATTRS = ('_uri_opener', 'output_queue', '_plugin_lock',
                            'get_type')
-        
+
         TYPES_AND_ATTRS = {'attack': ['_generate_shell', 'get_attack_type',
                                       'get_root_probability', 'get_kb_location'],
-                           'audit': ['audit',],
+                           'audit': ['audit', ],
                            'auth': ['login', 'logout', 'has_active_session'],
-                           'bruteforce': ['audit',],
+                           'bruteforce': ['audit', ],
                            'crawl': ['crawl'],
                            'evasion': ['get_priority', 'modify_request'],
                            'grep': ['grep'],
-                           'infrastructure': ['discover',],
+                           'infrastructure': ['discover', ],
                            'mangle': ['mangle_request', 'mangle_response'],
                            'output': ['debug', 'information', 'error',
                                       'vulnerability', 'console']}
-        
+
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
-                
+
                 ptype = PLUGIN_TYPES[plugin_type]
                 msg = '%s is not of expected type %s' % (plugin, ptype)
-                
+
                 self.assertTrue(isinstance(plugin, ptype), msg)
                 self.assertEqual(plugin.get_type(), plugin_type, msg)
 
                 # Also assert that the plugin called <Type>Plugin.__init__(self)
                 # and that the corresponding attrs are there
                 for attr in ALL_TYPES_ATTRS:
-                    msg = 'Plugin %s doesn\'t have attribute %s: %r' % (plugin.get_name(),
-                                                                     attr,
-                                                                     dir(plugin))
-                    self.assertTrue(getattr(plugin, attr, False) != False, msg)
-                
+                    msg = 'Plugin %s doesn\'t have attribute %s: %r' % (
+                        plugin.get_name(), attr, dir(plugin))
+                    self.assertTrue(getattr(plugin, attr, False), msg)
+
                 # Verify that the current plugin, and not the parent, defined
                 # the required methods
                 for attr in TYPES_AND_ATTRS[plugin.get_type()]:
-                    msg = 'Plugin %s doesn\'t have attribute %s.' % (plugin.get_name(), attr)
+                    msg = 'Plugin %s doesn\'t have attribute %s.' % (
+                        plugin.get_name(), attr)
                     self.assertTrue(defined_in_subclass(plugin, attr), msg)
 
 
@@ -230,8 +231,8 @@ class TestFailOnInvalidURL(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': None,
-        'plugins': {'infrastructure': (PluginConfig('hmap'),)}
+            'target': None,
+            'plugins': {'infrastructure': (PluginConfig('hmap'),)}
         }
     }
 

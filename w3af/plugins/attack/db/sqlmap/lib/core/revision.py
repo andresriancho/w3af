@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 
+
 def getRevisionNumber():
     """
     Returns abbreviated commit hash number as retrieved with "git rev-parse --short HEAD"
@@ -35,7 +36,9 @@ def getRevisionNumber():
                 content = f.read()
                 filePath = None
                 if content.startswith("ref: "):
-                    filePath = os.path.join(_, ".git", content.replace("ref: ", "")).strip()
+                    filePath = os.path.join(
+                        _, ".git", content.replace(
+                            "ref: ", "")).strip()
                 else:
                     match = re.match(r"(?i)[0-9a-f]{32}", content)
                     retVal = match.group(0) if match else None
@@ -44,7 +47,11 @@ def getRevisionNumber():
             break
 
     if not retVal:
-        process = subprocess.Popen("git rev-parse --verify HEAD", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            "git rev-parse --verify HEAD",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
         stdout, _ = process.communicate()
         match = re.search(r"(?i)[0-9a-f]{32}", stdout or "")
         retVal = match.group(0) if match else None

@@ -28,11 +28,10 @@ from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
 class test_get_source_code(PayloadTestHelper):
 
-    EXPECTED_RESULT = {"https://moth/w3af/audit/local_file_read/local_file_read.php":
-                       (
-                       '/var/www/moth/w3af/audit/local_file_read/local_file_read.php',
-                       'tmp__random__/var/www/moth/w3af/audit/local_file_read/local_file_read.php')
-                       }
+    EXPECTED_RESULT = {
+        "https://moth/w3af/audit/local_file_read/local_file_read.php": (
+            '/var/www/moth/w3af/audit/local_file_read/local_file_read.php',
+            'tmp__random__/var/www/moth/w3af/audit/local_file_read/local_file_read.php')}
 
     CONTENT = "echo file_get_contents( $_REQUEST['file'] );"
 

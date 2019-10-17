@@ -44,7 +44,7 @@ class TestSQLI(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('sqli', 'sqli')
-        
+
         self.assertEquals(1, len(vulns))
 
         # Now some tests around specific details of the found vuln
@@ -60,11 +60,19 @@ class TestSQLMapTestEnv(PluginTest):
     target_url = get_sqlmap_testenv_http(base_path)
 
     config = {
-        'audit': (PluginConfig('sqli'),),
-
-        'crawl': (PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL),
-                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+        'audit': (
+            PluginConfig('sqli'),
+        ),
+        'crawl': (
+            PluginConfig(
+                'web_spider',
+                ('only_forward',
+                 True,
+                 PluginConfig.BOOL),
+                ('ignore_regex',
+                 '.*(asp|aspx)',
+                 PluginConfig.STR)),
+        ),
     }
 
     def test_found_sqli_in_testenv(self):
@@ -150,12 +158,19 @@ class TestSQLMapTestEnv(PluginTest):
 
 class WAVSEPTest(PluginTest):
     config = {
-        'audit': (PluginConfig('sqli'),
-                  PluginConfig('blind_sqli')),
-
-        'crawl': (PluginConfig('web_spider',
-                               ('only_forward', True, PluginConfig.BOOL),
-                               ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
+        'audit': (
+            PluginConfig('sqli'),
+            PluginConfig('blind_sqli')),
+        'crawl': (
+            PluginConfig(
+                'web_spider',
+                ('only_forward',
+                 True,
+                 PluginConfig.BOOL),
+                ('ignore_regex',
+                 '.*(asp|aspx)',
+                 PluginConfig.STR)),
+        ),
     }
 
 
@@ -175,18 +190,24 @@ class TestWAVSEPError(WAVSEPTest):
             (u'Case03-InjectionInCalc-String-BooleanExploit-With200Errors.jsp', u'username'),
             (u'Case04-InjectionInUpdate-String-CommandInjection-With200Errors.jsp', u'msg'),
             (u'Case05-InjectionInSearchOrderBy-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'orderby'),
-            (u'Case06-InjectionInView-Numeric-PermissionBypass-With200Errors.jsp', u'transactionId'),
+            (u'Case06-InjectionInView-Numeric-PermissionBypass-With200Errors.jsp',
+             u'transactionId'),
             (u'Case07-InjectionInSearch-Numeric-UnionExploit-With200Errors.jsp', u'msgId'),
             (u'Case08-InjectionInCalc-Numeric-BooleanExploit-With200Errors.jsp', u'minBalanace'),
             (u'Case09-InjectionInUpdate-Numeric-CommandInjection-With200Errors.jsp', u'msgid'),
             (u'Case10-InjectionInSearchOrderBy-Numeric-BinaryDeliberateRuntimeError-With200Errors.jsp', u'orderby'),
-            (u'Case11-InjectionInView-Date-PermissionBypass-With200Errors.jsp', u'transactionDate'),
-            (u'Case12-InjectionInSearch-Date-UnionExploit-With200Errors.jsp', u'transactionDate'),
-            (u'Case13-InjectionInCalc-Date-BooleanExploit-With200Errors.jsp', u'transactionDate'),
-            (u'Case14-InjectionInUpdate-Date-CommandInjection-With200Errors.jsp', u'transactionDate'),
+            (u'Case11-InjectionInView-Date-PermissionBypass-With200Errors.jsp',
+             u'transactionDate'),
+            (u'Case12-InjectionInSearch-Date-UnionExploit-With200Errors.jsp',
+             u'transactionDate'),
+            (u'Case13-InjectionInCalc-Date-BooleanExploit-With200Errors.jsp',
+             u'transactionDate'),
+            (u'Case14-InjectionInUpdate-Date-CommandInjection-With200Errors.jsp',
+             u'transactionDate'),
 
             # These are detected using blind SQL injection plugin:
-            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-With200Errors.jsp', u'transactionDate'),
+            (u'Case15-InjectionInSearch-DateWithoutQuotes-UnionExploit-With200Errors.jsp',
+             u'transactionDate'),
             (u'Case16-InjectionInView-NumericWithoutQuotes-PermissionBypass-With200Errors.jsp', u'transactionId'),
             (u'Case17-InjectionInSearch-NumericWithoutQuotes-UnionExploit-With200Errors.jsp', u'msgId'),
             (u'Case18-InjectionInCalc-NumericWithoutQuotes-BooleanExploit-With200Errors.jsp', u'minBalanace'),

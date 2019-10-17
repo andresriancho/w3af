@@ -16,6 +16,7 @@ class spider(Payload):
 
     Usage: spider <recursion_level>
     """
+
     def api_read(self, recursion_level):
 
         def extract_files_from_payloads():
@@ -76,9 +77,19 @@ class spider(Payload):
             """
             :return: True if the file seems interesting
             """
-            keyword_list = ['passwords', 'passwd', 'password', 'access', 'auth',
-                            'authentication', 'authenticate', 'secret', 'key',
-                            'keys', 'permissions', 'perm']
+            keyword_list = [
+                'passwords',
+                'passwd',
+                'password',
+                'access',
+                'auth',
+                'authentication',
+                'authenticate',
+                'secret',
+                'key',
+                'keys',
+                'permissions',
+                'perm']
 
             for key in keyword_list:
                 if key in filename or key in file_content:
@@ -88,7 +99,7 @@ class spider(Payload):
 
         try:
             recursion_level = int(recursion_level)
-        except:
+        except BaseException:
             ValueError('recursion_level needs to be an integer.')
 
         self.result = {}

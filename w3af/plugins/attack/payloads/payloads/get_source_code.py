@@ -13,11 +13,12 @@ class get_source_code(Payload):
 
     Usage: get_source_code <output_directory>
     """
+
     def api_read(self, output_directory):
         if not os.path.isdir(output_directory):
             try:
                 os.makedirs(output_directory)
-            except:
+            except BaseException:
                 msg = 'The output directory "%s" does not exist and was'\
                       ' unable to create it.'
                 raise ValueError(msg % output_directory)
@@ -48,7 +49,8 @@ class get_source_code(Payload):
                     #
 
                     # Create the file path to be written to disk
-                    # FIXME: The webroot[1:] only works in Linux. For windows with C:\ it won't work
+                    # FIXME: The webroot[1:] only works in Linux. For windows
+                    # with C:\ it won't work
                     local_full_path = os.path.join(
                         output_directory, webroot[1:], relative_path_file)
 

@@ -30,8 +30,8 @@ class TestFindJBoss(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': target_url,
-        'plugins': {'infrastructure': (PluginConfig('find_jboss'),)}
+            'target': target_url,
+            'plugins': {'infrastructure': (PluginConfig('find_jboss'),)}
         }
     }
 

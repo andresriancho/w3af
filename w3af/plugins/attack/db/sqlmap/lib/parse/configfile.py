@@ -21,6 +21,7 @@ from lib.core.optiondict import optDict
 
 config = None
 
+
 def configFileProxy(section, option, datatype):
     """
     Parse configuration file and save settings into the configuration
@@ -32,16 +33,23 @@ def configFileProxy(section, option, datatype):
     if config.has_option(section, option):
         try:
             if datatype == OPTION_TYPE.BOOLEAN:
-                value = config.getboolean(section, option) if config.get(section, option) else False
+                value = config.getboolean(
+                    section, option) if config.get(
+                    section, option) else False
             elif datatype == OPTION_TYPE.INTEGER:
-                value = config.getint(section, option) if config.get(section, option) else 0
+                value = config.getint(
+                    section, option) if config.get(
+                    section, option) else 0
             elif datatype == OPTION_TYPE.FLOAT:
-                value = config.getfloat(section, option) if config.get(section, option) else 0.0
+                value = config.getfloat(
+                    section, option) if config.get(
+                    section, option) else 0.0
             else:
                 value = config.get(section, option)
-        except ValueError, ex:
+        except ValueError as ex:
             errMsg = "error occurred while processing the option "
-            errMsg += "'%s' in provided configuration file ('%s')" % (option, getUnicode(ex))
+            errMsg += "'%s' in provided configuration file ('%s')" % (
+                option, getUnicode(ex))
             raise SqlmapSyntaxException(errMsg)
 
         if value:
@@ -53,6 +61,7 @@ def configFileProxy(section, option, datatype):
         debugMsg += "'%s') into the configuration file, " % section
         debugMsg += "ignoring. Skipping to next."
         logger.debug(debugMsg)
+
 
 def configFileParser(configFile):
     """
@@ -71,8 +80,9 @@ def configFileParser(configFile):
     try:
         config = UnicodeRawConfigParser()
         config.readfp(configFP)
-    except Exception, ex:
-        errMsg = "you have provided an invalid and/or unreadable configuration file ('%s')" % getSafeExString(ex)
+    except Exception as ex:
+        errMsg = "you have provided an invalid and/or unreadable configuration file ('%s')" % getSafeExString(
+            ex)
         raise SqlmapSyntaxException(errMsg)
 
     if not config.has_section("Target"):
@@ -81,8 +91,20 @@ def configFileParser(configFile):
 
     mandatory = False
 
-    for option in ("direct", "url", "logFile", "bulkFile", "googleDork", "requestFile", "sitemapUrl", "wizard"):
-        if config.has_option("Target", option) and config.get("Target", option) or cmdLineOptions.get(option):
+    for option in (
+        "direct",
+        "url",
+        "logFile",
+        "bulkFile",
+        "googleDork",
+        "requestFile",
+        "sitemapUrl",
+            "wizard"):
+        if config.has_option(
+                "Target",
+                option) and config.get(
+                "Target",
+                option) or cmdLineOptions.get(option):
             mandatory = True
             break
 

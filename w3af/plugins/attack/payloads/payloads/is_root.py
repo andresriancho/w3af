@@ -5,6 +5,7 @@ class is_root(Payload):
     """
     Return True if the remote user has root privileges.
     """
+
     def api_read(self):
 
         shadow = self.shell.read('/etc/shadow')

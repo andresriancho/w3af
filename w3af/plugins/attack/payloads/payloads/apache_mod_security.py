@@ -7,6 +7,7 @@ class apache_mod_security(Payload):
     """
     This payload shows ModSecurity version,rules and configuration files.
     """
+
     def api_read(self):
         result = {}
         result['file'] = {}

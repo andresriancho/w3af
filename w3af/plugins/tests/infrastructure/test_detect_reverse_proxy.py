@@ -30,10 +30,11 @@ class TestDetectReverseProxy(PluginTest):
 
     _run_configs = {
         'cfg': {
-        'target': None,
-        'plugins': {'infrastructure': (PluginConfig('detect_reverse_proxy'),)}
-        }
-    }
+            'target': None,
+            'plugins': {
+                'infrastructure': (
+                    PluginConfig('detect_reverse_proxy'),
+                )}}}
 
     @attr('ci_fails')
     def test_detect_reverse_proxy(self):

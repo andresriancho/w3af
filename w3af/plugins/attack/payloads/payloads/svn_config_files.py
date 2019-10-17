@@ -8,6 +8,7 @@ class svn_config_files(Payload):
     """
     This payload shows SVN Server configuration files
     """
+
     def fname_generator(self, users_info, apache_config_directory,
                         apache_config_files):
         yield '/etc/httpd/conf.d/subversion.conf'
@@ -44,7 +45,9 @@ class svn_config_files(Payload):
         for directory in apache_config_directory:
             yield directory + 'mods-enabled/dav_svn.conf'
 
-        for folder in kb.kb.raw_read('password_profiling', 'password_profiling'):
+        for folder in kb.kb.raw_read(
+            'password_profiling',
+                'password_profiling'):
             yield '/srv/svn/' + folder.lower() + '/conf/svnserve.conf'
             yield '/srv/svn/' + folder.lower() + '/conf/passwd'
 

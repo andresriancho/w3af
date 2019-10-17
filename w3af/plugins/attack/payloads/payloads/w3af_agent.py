@@ -12,6 +12,7 @@ class w3af_agent(Payload):
 
     Usage: w3af_agent <your_ip_address>
     """
+
     def api_execute(self, ip_address):
         """
         Start a w3afAgent, to do this, I must transfer the agent client to the
@@ -24,7 +25,7 @@ class w3af_agent(Payload):
 
         try:
             agentManager = w3afAgentManager(self.shell.execute, ip_address)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             return 'Error' + str(w3)
         else:
             agentManager.run()

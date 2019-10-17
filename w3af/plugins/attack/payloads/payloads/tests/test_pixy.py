@@ -39,6 +39,7 @@ class test_pixy(PayloadTestHelper):
 
     @attr('ci_fails')
     def test_a_positive_test(self):
-        raise SkipTest('A positive test is needed here, BUT think twice about it'
-                       ' since pixy is not supported anymore, and PHP SCA is getting'
-                       ' much better, so we might just deprecate all the pixy stuff.')
+        raise SkipTest(
+            'A positive test is needed here, BUT think twice about it'
+            ' since pixy is not supported anymore, and PHP SCA is getting'
+            ' much better, so we might just deprecate all the pixy stuff.')

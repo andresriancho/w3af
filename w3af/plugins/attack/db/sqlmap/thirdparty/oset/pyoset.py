@@ -80,4 +80,5 @@ class OrderedSet(MutableSet):
         if all([KEY, PREV, NEXT]):
             self.clear()                    # remove circular references
 
+
 oset = OrderedSet

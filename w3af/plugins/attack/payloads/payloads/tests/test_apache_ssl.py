@@ -36,4 +36,5 @@ class test_apache_ssl(PayloadTestHelper):
 
     @attr('ci_fails')
     def test_a_positive_test(self):
-        raise SkipTest('FIXME: I need a positive test where SSL cert and keys are found.')
+        raise SkipTest(
+            'FIXME: I need a positive test where SSL cert and keys are found.')

@@ -7,6 +7,7 @@ class ssh_config_files(Payload):
     """
     This payload shows SSH Server configuration files
     """
+
     def api_read(self):
         result = {}
         files = []

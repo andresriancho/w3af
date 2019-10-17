@@ -28,15 +28,17 @@ class test_apache_mod_security(PayloadTestHelper):
     EXPECTED_RESULT = {'file': {'/etc/apache2/mods-available/mod-security.conf':
                                 u'<IfModule security2_module>\n\t# Default ...'},
                        'version': {u'2.6.3 ': 'Yes'}}
-    
+
     maxDiff = None
-    
+
     @attr('ci_fails')
     def test_apache_mod_security(self):
         result = exec_payload(self.shell, 'apache_mod_security', use_api=True)
-        
+
         self.assertEquals(self.EXPECTED_RESULT['version'], result['version'])
-        self.assertIn('/etc/apache2/mods-available/mod-security.conf', result['file'])
-        
+        self.assertIn(
+            '/etc/apache2/mods-available/mod-security.conf',
+            result['file'])
+
         file_content = result['file']['/etc/apache2/mods-available/mod-security.conf']
         self.assertIn('<IfModule security2_module>', file_content)

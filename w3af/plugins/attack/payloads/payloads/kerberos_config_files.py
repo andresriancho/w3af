@@ -7,13 +7,14 @@ class kerberos_config_files(Payload):
     """
     This payload shows Kerberos configuration files
     """
+
     def api_read(self):
         result = {}
         files = []
 
         files.append('/etc/krb5.conf')
         files.append('/etc/krb5/krb5.conf')
-        #files.append('c:\winnt\krb5.ini')
+        # files.append('c:\winnt\krb5.ini')
 
         for file in files:
             content = self.shell.read(file)

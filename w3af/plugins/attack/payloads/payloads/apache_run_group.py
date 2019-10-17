@@ -7,6 +7,7 @@ class apache_run_group(Payload):
     """
     Get apache process group.
     """
+
     def api_read(self):
         result = {}
         result['apache_run_group'] = []
@@ -28,7 +29,7 @@ class apache_run_group(Payload):
                     result['apache_run_group'].append(group)
 
                 # TODO:
-                #group.append(parse_group_environ(open('/proc/PIDAPACHE/environ').read()))
+                # group.append(parse_group_environ(open('/proc/PIDAPACHE/environ').read()))
 
         return result
 

@@ -111,4 +111,3 @@ class TestSSLCertificate(PluginTest):
         self.assertEqual(len(ssl_v2), 0)
         self.assertEqual(len(ssl_soon_expire), 0)
         self.assertEqual(len(certificate), 1)
-

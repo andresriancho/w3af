@@ -68,8 +68,8 @@ class TestWebSpider(PluginTest):
 
         # Add the webroot to the list of expected files
         expected_files.append('')
-        expected_urls = set(URL(base_directory).url_join(end).url_string for end
-                            in expected_files)
+        expected_urls = set(URL(base_directory).url_join(
+            end).url_string for end in expected_files)
 
         # pylint: disable=E1101
         # Pylint fails to detect the object types that come out of the KB
@@ -82,7 +82,7 @@ class TestWebSpider(PluginTest):
     def test_spider_found_urls(self):
         config = self._run_configs['basic']
         expected_files = ['1.html', '2.html', '3.html', '4.html',
-                          'd%20f/index.html', 'a%20b.html', 'd%20f/',]
+                          'd%20f/index.html', 'a%20b.html', 'd%20f/', ]
         start_url = self.follow_links_url
 
         self.generic_scan(config, self.follow_links_url,
@@ -166,8 +166,10 @@ class TestWebSpider(PluginTest):
 
         urls = self.kb.get_all_known_urls()
 
-        found = set(str(u) for u in urls if inner_pages in str(u) and str(u).endswith('.php'))
-        expected = set((self.wivet + inner_pages + end) for end in EXPECTED_URLS)
+        found = set(str(u) for u in urls if inner_pages in str(u)
+                    and str(u).endswith('.php'))
+        expected = set((self.wivet + inner_pages + end)
+                       for end in EXPECTED_URLS)
 
         self.assertEquals(found, expected)
 
@@ -267,8 +269,8 @@ class TestRelativePathsIn404(PluginTest):
                           '/galeria/',
                           '/i18n/setlang/',
                           '/reserva/resumen/']
-        expected_urls = set(URL(self.target_url).url_join(end).url_string for end
-                            in expected_files)
+        expected_urls = set(URL(self.target_url).url_join(
+            end).url_string for end in expected_files)
 
         # pylint: disable=E1101
         # Pylint fails to detect the object types that come out of the KB
@@ -322,18 +324,26 @@ class TestFormExclusions(PluginTest):
         'plugins': {'crawl': (PluginConfig('web_spider'),)}
     }
 
-    MOCK_RESPONSES = [MockResponse('http://mock/',
-                                   '<html>'
-                                   ''
-                                   '<form action="/out/" method="POST">'
-                                   '<input name="x" /></form>'
-                                   ''
-                                   '<form action="/in/" method="POST">'
-                                   '<input name="x" /></form>'
-                                   ''
-                                   '</html>'),
-                      MockResponse('http://mock/out/', 'Thanks.', method='POST'),
-                      MockResponse('http://mock/in/', 'Thanks.', method='POST')]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://mock/',
+            '<html>'
+            ''
+            '<form action="/out/" method="POST">'
+            '<input name="x" /></form>'
+            ''
+            '<form action="/in/" method="POST">'
+            '<input name="x" /></form>'
+            ''
+            '</html>'),
+        MockResponse(
+            'http://mock/out/',
+            'Thanks.',
+            method='POST'),
+        MockResponse(
+            'http://mock/in/',
+            'Thanks.',
+            method='POST')]
 
     def test_form_exclusions(self):
         user_value = '[{"action": "/out.*"}]'
@@ -346,8 +356,8 @@ class TestFormExclusions(PluginTest):
         # Define the expected/desired output
         expected_files = ['',
                           '/in/']
-        expected_urls = set(URL(self.target_url).url_join(end).url_string for end
-                            in expected_files)
+        expected_urls = set(URL(self.target_url).url_join(
+            end).url_string for end in expected_files)
 
         # pylint: disable=E1101
         # Pylint fails to detect the object types that come out of the KB

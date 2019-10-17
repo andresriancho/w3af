@@ -6,6 +6,7 @@ class route(Payload):
     """
     This payload shows the IP Routing Table.
     """
+
     def api_read(self):
 
         def parse_route(net_route):
@@ -58,7 +59,7 @@ class route(Payload):
             rows.append([])
             for a_route in api_result['route']:
                 rows.append([a_route['Iface'], a_route['Destination'],
-                            a_route['Gateway'], a_route['Mask']])
+                             a_route['Gateway'], a_route['Mask']])
 
             result_table = table(rows)
             result_table.draw(80)

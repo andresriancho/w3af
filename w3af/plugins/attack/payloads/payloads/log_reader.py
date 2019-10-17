@@ -7,6 +7,7 @@ class log_reader(Payload):
     """
     This payload finds different readable logs on the filesystem.
     """
+
     def fname_generator(self):
         logs = []
 
@@ -58,7 +59,7 @@ class log_reader(Payload):
         logs.append('/var/log/apache2/access_log')
         logs.append('/var/log/apache2/modsec_audit.log')
         logs.append('/var/log/tomcat6/catalina.out')
-        #TODO: Append date!
+        # TODO: Append date!
         logs.append('/var/log/tomcat6/localhost.')
         logs.append('/var/log/tomcat6/catalina.')
 

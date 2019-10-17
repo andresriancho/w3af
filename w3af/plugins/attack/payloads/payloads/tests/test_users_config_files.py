@@ -28,6 +28,6 @@ class TestUsersConfigFiles(PayloadTestHelper):
 
     def test_users_config_files(self):
         result = exec_payload(self.shell, 'users_config_files', use_api=True)
-        
+
         for cfg_file in self.EXPECTED_RESULT:
             self.assertIn(cfg_file, result.keys())
