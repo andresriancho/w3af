@@ -19,6 +19,7 @@ MSSQL_XML = os.path.abspath("../../xml/banner/mssql.xml")
 # Url to update Microsoft SQL Server XML versions file from
 MSSQL_VERSIONS_URL = "http://www.sqlsecurity.com/FAQs/SQLServerVersionDatabase/tabid/63/Default.aspx"
 
+
 def updateMSSQLXML():
     if not os.path.exists(MSSQL_XML):
         errMsg = "[ERROR] file '%s' does not exist. Please run the script from its parent directory" % MSSQL_XML
@@ -43,7 +44,10 @@ def updateMSSQLXML():
 
         return
 
-    releases = re.findall("class=\"BCC_DV_01DarkBlueTitle\">SQL Server\s(.+?)\sBuilds", mssqlVersionsHtmlString, re.I)
+    releases = re.findall(
+        "class=\"BCC_DV_01DarkBlueTitle\">SQL Server\s(.+?)\sBuilds",
+        mssqlVersionsHtmlString,
+        re.I)
     releasesCount = len(releases)
 
     # Create the minidom document
@@ -66,15 +70,20 @@ def updateMSSQLXML():
         signatures.setAttribute("release", release)
         root.appendChild(signatures)
 
-        startIdx = mssqlVersionsHtmlString.index("SQL Server %s Builds" % releases[index])
+        startIdx = mssqlVersionsHtmlString.index(
+            "SQL Server %s Builds" % releases[index])
 
         if index == releasesCount - 1:
             stopIdx = len(mssqlVersionsHtmlString)
         else:
-            stopIdx = mssqlVersionsHtmlString.index("SQL Server %s Builds" % releases[index + 1])
+            stopIdx = mssqlVersionsHtmlString.index(
+                "SQL Server %s Builds" % releases[index + 1])
 
         mssqlVersionsReleaseString = mssqlVersionsHtmlString[startIdx:stopIdx]
-        servicepackVersion = re.findall("</td><td>(7\.0|2000|2005|2008|2008 R2)*(.*?)</td><td.*?([\d\.]+)</td>[\r]*\n", mssqlVersionsReleaseString, re.I)
+        servicepackVersion = re.findall(
+            "</td><td>(7\.0|2000|2005|2008|2008 R2)*(.*?)</td><td.*?([\d\.]+)</td>[\r]*\n",
+            mssqlVersionsReleaseString,
+            re.I)
 
         for servicePack, version in servicepackVersion:
             if servicePack.startswith(" "):
@@ -132,6 +141,7 @@ def updateMSSQLXML():
 
     infoMsg = "[INFO] done. retrieved data parsed and saved into '%s'" % MSSQL_XML
     print infoMsg
+
 
 if __name__ == "__main__":
     updateMSSQLXML()

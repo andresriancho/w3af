@@ -20,10 +20,12 @@ CONFIG_FILE = 'sqlharvest.cfg'
 TABLES_FILE = 'tables.txt'
 USER_AGENT = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; AskTB5.3)'
 SEARCH_URL = 'http://www.google.com/m?source=mobileproducts&dc=gorganic'
-MAX_FILE_SIZE = 2 * 1024 * 1024  # if a result (.sql) file for downloading is more than 2MB in size just skip it
+# if a result (.sql) file for downloading is more than 2MB in size just skip it
+MAX_FILE_SIZE = 2 * 1024 * 1024
 QUERY = 'CREATE TABLE ext:sql'
 REGEX_URLS = r';u=([^"]+?)&amp;q='
 REGEX_RESULT = r'(?i)CREATE TABLE\s*(/\*.*\*/)?\s*(IF NOT EXISTS)?\s*(?P<result>[^\(;]+)'
+
 
 def main():
     tables = dict()
@@ -47,11 +49,11 @@ def main():
 
     try:
         with open(TABLES_FILE, 'r') as f:
-            for line in f.xreadlines():
+            for line in f:
                 if len(line) > 0 and ',' in line:
                     temp = line.split(',')
                     tables[temp[0]] = int(temp[1])
-    except:
+    except BaseException:
         pass
 
     socket.setdefaulttimeout(TIMEOUT)
@@ -64,7 +66,10 @@ def main():
             files = []
 
             try:
-                conn = opener.open("%s&q=%s&start=%d&sa=N" % (SEARCH_URL, QUERY.replace(' ', '+'), i * 10))
+                conn = opener.open(
+                    "%s&q=%s&start=%d&sa=N" %
+                    (SEARCH_URL, QUERY.replace(
+                        ' ', '+'), i * 10))
                 page = conn.read()
                 for match in re.finditer(REGEX_URLS, page):
                     files.append(urllib.unquote(match.group(1)))
@@ -75,7 +80,7 @@ def main():
             except KeyboardInterrupt:
                 raise
 
-            except Exception, msg:
+            except Exception as msg:
                 print msg
 
             if abort:
@@ -93,7 +98,8 @@ def main():
                     response = urllib2.urlopen(req)
 
                     if "Content-Length" in response.headers:
-                        if int(response.headers.get("Content-Length")) > MAX_FILE_SIZE:
+                        if int(
+                                response.headers.get("Content-Length")) > MAX_FILE_SIZE:
                             continue
 
                     page = response.read()
@@ -102,9 +108,15 @@ def main():
 
                     for match in re.finditer(REGEX_RESULT, page):
                         counter += 1
-                        table = match.group("result").strip().strip("`\"'").replace('"."', ".").replace("].[", ".").strip('[]')
+                        table = match.group("result").strip().strip("`\"'").replace(
+                            '"."', ".").replace("].[", ".").strip('[]')
 
-                        if table and not any(_ in table for _ in ('>', '<', '--', ' ')):
+                        if table and not any(
+                            _ in table for _ in (
+                                '>',
+                                '<',
+                                '--',
+                                ' ')):
                             found = True
                             sys.stdout.write('*')
 
@@ -118,7 +130,7 @@ def main():
                 except KeyboardInterrupt:
                     raise
 
-                except Exception, msg:
+                except Exception as msg:
                     print msg
 
             else:
@@ -136,6 +148,7 @@ def main():
         config.set("options", "index", str(i + 1))
         with open(CONFIG_FILE, 'w+') as f:
             config.write(f)
+
 
 if __name__ == "__main__":
     main()

