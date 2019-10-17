@@ -96,11 +96,14 @@ class TestClickJackingCSPNone(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='Hello world',
-                                   method='GET',
-                                   headers={'Content-Security-Policy': "frame-ancestors 'none';"},
-                                   status=200)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='Hello world',
+            method='GET',
+            headers={
+                'Content-Security-Policy': "frame-ancestors 'none';"},
+            status=200)]
 
     _run_configs = {
         'cfg': {
@@ -128,11 +131,14 @@ class TestClickJackingCSPWildcard(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='Hello world',
-                                   method='GET',
-                                   headers={'Content-Security-Policy': "frame-ancestors '*';"},
-                                   status=200)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='Hello world',
+            method='GET',
+            headers={
+                'Content-Security-Policy': "frame-ancestors '*';"},
+            status=200)]
 
     _run_configs = {
         'cfg': {
@@ -160,11 +166,14 @@ class TestClickJackingCSPSpecificDomain(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='Hello world',
-                                   method='GET',
-                                   headers={'Content-Security-Policy': "frame-ancestors 'somesite.com';"},
-                                   status=200)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='Hello world',
+            method='GET',
+            headers={
+                'Content-Security-Policy': "frame-ancestors 'somesite.com';"},
+            status=200)]
 
     _run_configs = {
         'cfg': {
@@ -192,11 +201,14 @@ class TestClickJackingCSPSelf(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='Hello world',
-                                   method='GET',
-                                   headers={'Content-Security-Policy': "frame-ancestors 'self';"},
-                                   status=200)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='Hello world',
+            method='GET',
+            headers={
+                'Content-Security-Policy': "frame-ancestors 'self';"},
+            status=200)]
 
     _run_configs = {
         'cfg': {
@@ -224,11 +236,14 @@ class TestClickJackingCSPSelfAndSpecificDomain(PluginTest):
 
     target_url = 'http://httpretty'
 
-    MOCK_RESPONSES = [MockResponse('http://httpretty/',
-                                   body='Hello world',
-                                   method='GET',
-                                   headers={'Content-Security-Policy': "frame-ancestors self 'somesite.com';"},
-                                   status=200)]
+    MOCK_RESPONSES = [
+        MockResponse(
+            'http://httpretty/',
+            body='Hello world',
+            method='GET',
+            headers={
+                'Content-Security-Policy': "frame-ancestors self 'somesite.com';"},
+            status=200)]
 
     _run_configs = {
         'cfg': {

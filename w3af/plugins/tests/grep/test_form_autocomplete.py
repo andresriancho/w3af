@@ -58,8 +58,7 @@ class TestFormAutocomplete(PluginTest):
                             'form-on-field-on.html',
                             'form-two-fields.html']
 
-        filenames = [vuln.get_url().get_file_name() for vuln in vulns]
-        filenames.sort()
+        filenames = sorted([vuln.get_url().get_file_name() for vuln in vulns])
         expected_results.sort()
 
         self.assertEquals(expected_results, filenames)

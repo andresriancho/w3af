@@ -54,7 +54,7 @@ class TestCSRF(PluginTest):
 
     def setUp(self):
         super(TestCSRF, self).setUp()
-        
+
         self.csrf_plugin = csrf()
         self.uri_opener = ExtendedUrllib()
         self.csrf_plugin.set_url_opener(self.uri_opener)
@@ -68,14 +68,14 @@ class TestCSRF(PluginTest):
             # See https://github.com/andresriancho/w3af/issues/120
             # '/w3af/audit/csrf/vulnerable-token-ignored/buy.php',
         ]
-        
+
         # Run the scan
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
         vulns = self.kb.get('csrf', 'csrf')
-        
+
         self.assertEquals(set(expected),
                           set([v.get_url().get_path() for v in vulns]))
         self.assertTrue(
@@ -115,9 +115,10 @@ class TestCSRF(PluginTest):
         suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertFalse(suitable)
 
-        url_sends_cookie = URL(get_w3af_moth_http('/w3af/core/cookie_handler/set-cookie.php'))
+        url_sends_cookie = URL(get_w3af_moth_http(
+            '/w3af/core/cookie_handler/set-cookie.php'))
         self.uri_opener.GET(url_sends_cookie)
-        
+
         # Still false because it doesn't have any QS or POST data
         url = URL('http://moth/')
         req = FuzzableRequest(url, method='GET')
@@ -141,12 +142,13 @@ class TestCSRF(PluginTest):
         # True, items in DC, POST (passes strict mode) and cookies
         url = URL('http://moth/')
         form_params = FormParameters()
-        form_params.add_field_by_attr_items([('name', 'test'), ('type', 'text')])
+        form_params.add_field_by_attr_items(
+            [('name', 'test'), ('type', 'text')])
         form = URLEncodedForm(form_params)
         req = FuzzableRequest(url, method='POST', post_data=form)
         suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertTrue(suitable)
-        
+
         self.csrf_plugin._strict_mode = False
 
         # True now that we have strict mode off, cookies and QS
@@ -156,37 +158,47 @@ class TestCSRF(PluginTest):
         self.assertTrue(suitable)
 
     def test_is_origin_checked_true_case01(self):
-        url = URL(get_w3af_moth_http('/w3af/audit/csrf/referer/buy.php?shares=123'))
-        headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer/')])
+        url = URL(get_w3af_moth_http(
+            '/w3af/audit/csrf/referer/buy.php?shares=123'))
+        headers = Headers(
+            [('Referer', 'http://moth/w3af/audit/csrf/referer/')])
         freq = FuzzableRequest(url, method='GET', headers=headers)
-        
+
         orig_response = self.uri_opener.send_mutant(freq)
-        
-        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
+
+        origin_checked = self.csrf_plugin._is_origin_checked(
+            freq, orig_response, None)
         self.assertTrue(origin_checked)
 
     def test_is_origin_checked_true_case02(self):
-        url = URL(get_w3af_moth_http('/w3af/audit/csrf/referer-rnd/buy.php?shares=123'))
-        headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
+        url = URL(get_w3af_moth_http(
+            '/w3af/audit/csrf/referer-rnd/buy.php?shares=123'))
+        headers = Headers(
+            [('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
         freq = FuzzableRequest(url, method='GET', headers=headers)
-        
+
         orig_response = self.uri_opener.send_mutant(freq)
-        
-        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
+
+        origin_checked = self.csrf_plugin._is_origin_checked(
+            freq, orig_response, None)
         self.assertTrue(origin_checked)
 
     def test_is_origin_checked_false(self):
-        url = URL(get_w3af_moth_http('/w3af/audit/csrf/vulnerable/buy.php?shares=123'))
-        headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
+        url = URL(get_w3af_moth_http(
+            '/w3af/audit/csrf/vulnerable/buy.php?shares=123'))
+        headers = Headers(
+            [('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
         freq = FuzzableRequest(url, method='GET', headers=headers)
-        
+
         orig_response = self.uri_opener.send_mutant(freq)
-        
-        origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
+
+        origin_checked = self.csrf_plugin._is_origin_checked(
+            freq, orig_response, None)
         self.assertFalse(origin_checked)
 
     def test_is_token_checked_true(self):
-        generator = URL(get_w3af_moth_http('/w3af/audit/csrf/secure-replay-allowed/'))
+        generator = URL(get_w3af_moth_http(
+            '/w3af/audit/csrf/secure-replay-allowed/'))
         http_response = self.uri_opener.GET(generator)
 
         # Please note that this freq holds a fresh/valid CSRF token
@@ -209,7 +221,8 @@ class TestCSRF(PluginTest):
         This covers the case where there is a token but for some reason it
         is NOT verified by the web application.
         """
-        generator = URL(get_w3af_moth_http('/w3af/audit/csrf/vulnerable-token-ignored/'))
+        generator = URL(get_w3af_moth_http(
+            '/w3af/audit/csrf/vulnerable-token-ignored/'))
         http_response = self.uri_opener.GET(generator)
 
         # Please note that this freq holds a fresh/valid CSRF token
@@ -223,7 +236,8 @@ class TestCSRF(PluginTest):
         original_response = self.uri_opener.send_mutant(freq)
 
         token = {'token': 'cc2544ba4af772c31bc3da928e4e33a8'}
-        checked = self.csrf_plugin._is_token_checked(freq, token, original_response)
+        checked = self.csrf_plugin._is_token_checked(
+            freq, token, original_response)
         self.assertFalse(checked)
 
 
@@ -233,25 +247,34 @@ class TestLowLevelCSRF(unittest.TestCase):
         self.csrf_plugin = csrf()
 
     def test_is_csrf_token_true_case01(self):
-        self.assertTrue(self.csrf_plugin.is_csrf_token('token', 'f842eb01b87a8ee18868d3bf80a558f3'))
+        self.assertTrue(self.csrf_plugin.is_csrf_token(
+            'token', 'f842eb01b87a8ee18868d3bf80a558f3'))
 
     def test_is_csrf_token_true_case02(self):
-        self.assertTrue(self.csrf_plugin.is_csrf_token('secret', 'f842eb01b87a8ee18868d3bf80a558f3'))
+        self.assertTrue(self.csrf_plugin.is_csrf_token(
+            'secret', 'f842eb01b87a8ee18868d3bf80a558f3'))
 
     def test_is_csrf_token_true_case03(self):
-        self.assertTrue(self.csrf_plugin.is_csrf_token('csrf', 'f842eb01b87a8ee18868d3bf80a558f3'))
+        self.assertTrue(self.csrf_plugin.is_csrf_token(
+            'csrf', 'f842eb01b87a8ee18868d3bf80a558f3'))
 
     def test_is_csrf_token_false_case01(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('token', ''))
-    
+
     def test_is_csrf_token_false_case02(self):
-        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'helloworld'))
+        self.assertFalse(
+            self.csrf_plugin.is_csrf_token(
+                'secret', 'helloworld'))
 
     def test_is_csrf_token_false_case03(self):
-        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'helloworld123'))
+        self.assertFalse(
+            self.csrf_plugin.is_csrf_token(
+                'secret', 'helloworld123'))
 
     def test_is_csrf_token_false_case04(self):
-        self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'hello world 123'))
+        self.assertFalse(
+            self.csrf_plugin.is_csrf_token(
+                'secret', 'hello world 123'))
 
     def test_is_csrf_token_false_long(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'A' * 513))
@@ -273,7 +296,7 @@ class TestLowLevelCSRF(unittest.TestCase):
         query_string = parse_qs('secret=f842eb01b87a8ee18868d3bf80a558f3')
         freq = FuzzableRequest(url, method='GET')
         freq.set_querystring(query_string)
-        
+
         token = self.csrf_plugin._find_csrf_token(freq)
         self.assertIn('secret', token)
 
@@ -292,6 +315,6 @@ class TestLowLevelCSRF(unittest.TestCase):
         query_string = parse_qs('secret=not a token')
         freq = FuzzableRequest(url, method='GET')
         freq.set_querystring(query_string)
-        
+
         token = self.csrf_plugin._find_csrf_token(freq)
         self.assertIn('secret', token)

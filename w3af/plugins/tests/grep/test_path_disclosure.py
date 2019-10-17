@@ -34,7 +34,7 @@ class TestPathDisclosure(unittest.TestCase):
 
     def setUp(self):
         kb.kb.cleanup()
-        
+
         self.plugin = path_disclosure()
         self.url = URL('http://www.w3af.com/foo/bar.py')
         self.header = Headers([('content-type', 'text/html')])
@@ -95,7 +95,8 @@ class TestPathDisclosure(unittest.TestCase):
     def test_path_disclosure_false_positive_not_starting_with(self):
         kb.kb.add_url(URL('http://mock/js/banner.js'))
 
-        res = self._create_response('header /images/banners/home/internet.jpg footer')
+        res = self._create_response(
+            'header /images/banners/home/internet.jpg footer')
         self.plugin.grep(self.request, res)
 
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
@@ -113,7 +114,8 @@ class TestPathDisclosure(unittest.TestCase):
     def test_path_disclosure_tag_text_quotes(self):
         kb.kb.add_url(self.url)
 
-        res = self._create_response('<a ...>Error at "/var/www/foo/bar.py"</a>')
+        res = self._create_response(
+            '<a ...>Error at "/var/www/foo/bar.py"</a>')
         self.plugin.grep(self.request, res)
 
         infos = kb.kb.get('path_disclosure', 'path_disclosure')

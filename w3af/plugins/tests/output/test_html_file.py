@@ -76,7 +76,7 @@ class TestHTMLOutput(PluginTest):
             set(sorted([v.get_url() for v in xss_vulns])),
             set(sorted([v.get_url() for v in file_vulns]))
         )
-        
+
         self._validate_xhtml()
 
     def _from_html_get_vulns(self):
@@ -112,31 +112,64 @@ class TestHTMLOutput(PluginTest):
         else:
             if hasattr(parser, 'error_log'):
                 self.assertFalse(len(parser.error_log), generate_msg(parser))
-        
+
     def tearDown(self):
         super(TestHTMLOutput, self).tearDown()
         try:
             os.remove(self.OUTPUT_FILE)
-        except:
+        except BaseException:
             pass
 
 
 class TestHTMLRendering(PluginTest):
 
-    CONTEXT = {'target_urls': ['http://w3af.com/', 'http://w3af.com/blog'],
-               'target_domain': 'w3af.com',
-               'enabled_plugins': {'audit': ['xss'],
-                                   'crawl': ['web_spider']},
-               'findings': [MockVuln('SQL injection', None, 'High', 1, 'sqli'),
-                            MockVuln('XSS-2', None, 'Medium', [], 'xss'),
-                            MockVuln('XSS-3', None, 'Low', [], 'xss'),
-                            MockVuln('XSS-4', None, 'Information', 4, 'xss')],
-               'debug_log': [('Fri Mar 13 14:11:58 2015', 'debug', 'Log 1' * 40),
-                             ('Fri Mar 13 14:11:59 2015', 'debug', 'Log 2'),
-                             ('Fri Mar 13 14:11:59 2015', 'error', 'Log 3' * 5)],
-               'known_urls': [URL('http://w3af.com'),
-                              URL('http://w3af.com/blog'),
-                              URL('http://w3af.com/oss')]}
+    CONTEXT = {
+        'target_urls': [
+            'http://w3af.com/',
+            'http://w3af.com/blog'],
+        'target_domain': 'w3af.com',
+        'enabled_plugins': {
+            'audit': ['xss'],
+            'crawl': ['web_spider']},
+        'findings': [
+            MockVuln(
+                'SQL injection',
+                None,
+                'High',
+                1,
+                'sqli'),
+            MockVuln(
+                'XSS-2',
+                None,
+                'Medium',
+                [],
+                'xss'),
+            MockVuln(
+                'XSS-3',
+                None,
+                'Low',
+                [],
+                'xss'),
+            MockVuln(
+                'XSS-4',
+                None,
+                'Information',
+                4,
+                'xss')],
+        'debug_log': [
+            ('Fri Mar 13 14:11:58 2015',
+             'debug',
+             'Log 1' * 40),
+            ('Fri Mar 13 14:11:59 2015',
+             'debug',
+             'Log 2'),
+            ('Fri Mar 13 14:11:59 2015',
+             'error',
+             'Log 3' * 5)],
+        'known_urls': [
+            URL('http://w3af.com'),
+            URL('http://w3af.com/blog'),
+            URL('http://w3af.com/oss')]}
 
     def setUp(self):
         super(TestHTMLRendering, self).setUp()
@@ -174,4 +207,8 @@ class TestHTMLRendering(PluginTest):
         self.assertTrue(result)
 
         output.seek(0)
-        file(os.path.expanduser(self.plugin._output_file_name), 'w').write(output.read())
+        file(
+            os.path.expanduser(
+                self.plugin._output_file_name),
+            'w').write(
+            output.read())

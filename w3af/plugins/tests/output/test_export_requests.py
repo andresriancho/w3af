@@ -69,5 +69,5 @@ class TestExportRequests(PluginTest):
         super(TestExportRequests, self).tearDown()
         try:
             os.remove('output-fr.b64')
-        except:
+        except BaseException:
             pass
