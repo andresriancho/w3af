@@ -171,7 +171,7 @@ def write_instructions_to_console(
     print(msg % script_path)
 
 
-def dependency_check(dependency_set=CORE, exit_on_failure=True):
+def dependency_check(dependency_set=CORE, exit_on_failure=False):
     """
     This function verifies that the dependencies that are needed by the
     framework core are met.

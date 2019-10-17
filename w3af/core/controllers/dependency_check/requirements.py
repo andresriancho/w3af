@@ -116,3 +116,5 @@ GUI_PIP_EXTRAS = [PIPDependency('xdot', 'xdot', '0.6')]
 
 GUI_PIP_PACKAGES = CORE_PIP_PACKAGES[:]
 GUI_PIP_PACKAGES.extend(GUI_PIP_EXTRAS)
+#hack
+GUI_PIP_PACKAGES = []
