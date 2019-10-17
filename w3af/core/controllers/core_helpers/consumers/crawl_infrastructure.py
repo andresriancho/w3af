@@ -356,8 +356,8 @@ class CrawlInfrastructure(BaseConsumer):
         # Now I simply print the list that I have after the filter.
         om.out.information('The list of fuzzable requests is:')
 
-        tmp_fr = [u'- %s' % unicode(fr) for fr in all_known_fuzzable_requests]
-        tmp_fr.sort()
+        tmp_fr = sorted([u'- %s' % unicode(fr)
+                         for fr in all_known_fuzzable_requests])
         map(om.out.information, tmp_fr)
 
     def _should_stop_discovery(self):
