@@ -10,6 +10,7 @@ import urllib2
 
 from lib.core.data import conf
 
+
 class HTTPSPKIAuthHandler(urllib2.HTTPSHandler):
     def __init__(self, auth_file):
         urllib2.HTTPSHandler.__init__(self)
@@ -19,5 +20,10 @@ class HTTPSPKIAuthHandler(urllib2.HTTPSHandler):
         return self.do_open(self.getConnection, req)
 
     def getConnection(self, host, timeout=None):
-        # Reference: https://docs.python.org/2/library/ssl.html#ssl.SSLContext.load_cert_chain
-        return httplib.HTTPSConnection(host, cert_file=self.auth_file, key_file=self.auth_file, timeout=conf.timeout)
+        # Reference:
+        # https://docs.python.org/2/library/ssl.html#ssl.SSLContext.load_cert_chain
+        return httplib.HTTPSConnection(
+            host,
+            cert_file=self.auth_file,
+            key_file=self.auth_file,
+            timeout=conf.timeout)

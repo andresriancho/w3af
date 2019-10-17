@@ -24,7 +24,19 @@ try:
 except ImportError:
     pass
 
-_protocols = filter(None, (getattr(ssl, _, None) for _ in ("PROTOCOL_TLSv1_2", "PROTOCOL_TLSv1_1", "PROTOCOL_TLSv1", "PROTOCOL_SSLv3", "PROTOCOL_SSLv23", "PROTOCOL_SSLv2")))
+_protocols = filter(
+    None,
+    (getattr(
+        ssl,
+        _,
+        None) for _ in (
+            "PROTOCOL_TLSv1_2",
+            "PROTOCOL_TLSv1_1",
+            "PROTOCOL_TLSv1",
+            "PROTOCOL_SSLv3",
+            "PROTOCOL_SSLv23",
+        "PROTOCOL_SSLv2")))
+
 
 class HTTPSConnection(httplib.HTTPSConnection):
     """
@@ -38,7 +50,8 @@ class HTTPSConnection(httplib.HTTPSConnection):
 
     def connect(self):
         def create_sock():
-            sock = socket.create_connection((self.host, self.port), self.timeout)
+            sock = socket.create_connection(
+                (self.host, self.port), self.timeout)
             if getattr(self, "_tunnel_host", None):
                 self.sock = sock
                 self._tunnel()
@@ -48,12 +61,20 @@ class HTTPSConnection(httplib.HTTPSConnection):
 
         # Reference(s): https://docs.python.org/2/library/ssl.html#ssl.SSLContext
         #               https://www.mnot.net/blog/2014/12/27/python_2_and_tls_sni
-        if re.search(r"\A[\d.]+\Z", self.host) is None and kb.tlsSNI.get(self.host) != False and hasattr(ssl, "SSLContext"):
-            for protocol in filter(lambda _: _ >= ssl.PROTOCOL_TLSv1, _protocols):
+        if re.search(
+                r"\A[\d.]+\Z",
+                self.host) is None and kb.tlsSNI.get(
+                self.host) and hasattr(
+                ssl,
+                "SSLContext"):
+            for protocol in filter(
+                    lambda _: _ >= ssl.PROTOCOL_TLSv1,
+                    _protocols):
                 try:
                     sock = create_sock()
                     context = ssl.SSLContext(protocol)
-                    _ = context.wrap_socket(sock, do_handshake_on_connect=True, server_hostname=self.host)
+                    _ = context.wrap_socket(
+                        sock, do_handshake_on_connect=True, server_hostname=self.host)
                     if _:
                         success = True
                         self.sock = _
@@ -62,9 +83,11 @@ class HTTPSConnection(httplib.HTTPSConnection):
                         break
                     else:
                         sock.close()
-                except (ssl.SSLError, socket.error, httplib.BadStatusLine), ex:
+                except (ssl.SSLError, socket.error, httplib.BadStatusLine) as ex:
                     self._tunnel_host = None
-                    logger.debug("SSL connection error occurred ('%s')" % getSafeExString(ex))
+                    logger.debug(
+                        "SSL connection error occurred ('%s')" %
+                        getSafeExString(ex))
 
             if kb.tlsSNI.get(self.host) is None:
                 kb.tlsSNI[self.host] = success
@@ -73,7 +96,8 @@ class HTTPSConnection(httplib.HTTPSConnection):
             for protocol in _protocols:
                 try:
                     sock = create_sock()
-                    _ = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=protocol)
+                    _ = ssl.wrap_socket(
+                        sock, self.key_file, self.cert_file, ssl_version=protocol)
                     if _:
                         success = True
                         self.sock = _
@@ -82,25 +106,32 @@ class HTTPSConnection(httplib.HTTPSConnection):
                         break
                     else:
                         sock.close()
-                except (ssl.SSLError, socket.error, httplib.BadStatusLine), ex:
+                except (ssl.SSLError, socket.error, httplib.BadStatusLine) as ex:
                     self._tunnel_host = None
-                    logger.debug("SSL connection error occurred ('%s')" % getSafeExString(ex))
+                    logger.debug(
+                        "SSL connection error occurred ('%s')" %
+                        getSafeExString(ex))
 
         if not success:
             errMsg = "can't establish SSL connection"
             # Reference: https://docs.python.org/2/library/ssl.html
-            if distutils.version.LooseVersion(PYVERSION) < distutils.version.LooseVersion("2.7.9"):
+            if distutils.version.LooseVersion(
+                    PYVERSION) < distutils.version.LooseVersion("2.7.9"):
                 errMsg += " (please retry with Python >= 2.7.9)"
             raise SqlmapConnectionException(errMsg)
 
+
 class HTTPSHandler(urllib2.HTTPSHandler):
     def https_open(self, req):
-        return self.do_open(HTTPSConnection if ssl else httplib.HTTPSConnection, req)
+        return self.do_open(
+            HTTPSConnection if ssl else httplib.HTTPSConnection, req)
 
 # Bug fix (http://bugs.python.org/issue17849)
 
+
 def _(self, *args):
     return self._readline()
+
 
 httplib.LineAndFileWrapper._readline = httplib.LineAndFileWrapper.readline
 httplib.LineAndFileWrapper.readline = _

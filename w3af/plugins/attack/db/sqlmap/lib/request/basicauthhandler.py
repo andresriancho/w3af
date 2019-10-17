@@ -7,11 +7,13 @@ See the file 'LICENSE' for copying permission
 
 import urllib2
 
+
 class SmartHTTPBasicAuthHandler(urllib2.HTTPBasicAuthHandler):
     """
     Reference: http://selenic.com/hg/rev/6c51a5056020
     Fix for a: http://bugs.python.org/issue8797
     """
+
     def __init__(self, *args, **kwargs):
         urllib2.HTTPBasicAuthHandler.__init__(self, *args, **kwargs)
         self.retried_req = set()
@@ -30,10 +32,10 @@ class SmartHTTPBasicAuthHandler(urllib2.HTTPBasicAuthHandler):
             self.retried_count = 0
         else:
             if self.retried_count > 5:
-                raise urllib2.HTTPError(req.get_full_url(), 401, "basic auth failed",
-                                headers, None)
+                raise urllib2.HTTPError(
+                    req.get_full_url(), 401, "basic auth failed", headers, None)
             else:
                 self.retried_count += 1
 
         return urllib2.HTTPBasicAuthHandler.http_error_auth_reqed(
-                        self, auth_header, host, req, headers)
+            self, auth_header, host, req, headers)

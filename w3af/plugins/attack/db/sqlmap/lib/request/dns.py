@@ -11,6 +11,7 @@ import socket
 import threading
 import time
 
+
 class DNSQuery(object):
     """
     Used for making fake DNS resolution responses based on received
@@ -44,18 +45,27 @@ class DNSQuery(object):
         retVal = ""
 
         if self._query:
-            retVal += self._raw[:2]                                             # Transaction ID
-            retVal += "\x85\x80"                                                # Flags (Standard query response, No error)
-            retVal += self._raw[4:6] + self._raw[4:6] + "\x00\x00\x00\x00"      # Questions and Answers Counts
-            retVal += self._raw[12:(12 + self._raw[12:].find("\x00") + 5)]      # Original Domain Name Query
-            retVal += "\xc0\x0c"                                                # Pointer to domain name
+            # Transaction ID
+            retVal += self._raw[:2]
+            # Flags (Standard query response, No error)
+            retVal += "\x85\x80"
+            # Questions and Answers Counts
+            retVal += self._raw[4:6] + self._raw[4:6] + "\x00\x00\x00\x00"
+            # Original Domain Name Query
+            retVal += self._raw[12:(12 + self._raw[12:].find("\x00") + 5)]
+            # Pointer to domain name
+            retVal += "\xc0\x0c"
             retVal += "\x00\x01"                                                # Type A
             retVal += "\x00\x01"                                                # Class IN
-            retVal += "\x00\x00\x00\x20"                                        # TTL (32 seconds)
-            retVal += "\x00\x04"                                                # Data length
-            retVal += "".join(chr(int(_)) for _ in resolution.split('.'))       # 4 bytes of IP
+            # TTL (32 seconds)
+            retVal += "\x00\x00\x00\x20"
+            # Data length
+            retVal += "\x00\x04"
+            retVal += "".join(chr(int(_))
+                              for _ in resolution.split('.'))       # 4 bytes of IP
 
         return retVal
+
 
 class DNSServer(object):
     def __init__(self):
@@ -63,7 +73,8 @@ class DNSServer(object):
         self._requests = []
         self._lock = threading.Lock()
         try:
-            self._socket = socket._orig_socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self._socket = socket._orig_socket(
+                socket.AF_INET, socket.SOCK_DGRAM)
         except AttributeError:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -76,13 +87,15 @@ class DNSServer(object):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("", 53))
-            s.send("6509012000010000000000010377777706676f6f676c6503636f6d00000100010000291000000000000000".decode("hex"))  # A www.google.com
+            s.send("6509012000010000000000010377777706676f6f676c6503636f6d00000100010000291000000000000000".decode(
+                "hex"))  # A www.google.com
             response = s.recv(512)
-        except:
+        except BaseException:
             pass
         finally:
             if response and "google" in response:
-                raise socket.error("another DNS service already running on *:53")
+                raise socket.error(
+                    "another DNS service already running on *:53")
 
     def pop(self, prefix=None, suffix=None):
         """
@@ -94,7 +107,8 @@ class DNSServer(object):
 
         with self._lock:
             for _ in self._requests:
-                if prefix is None and suffix is None or re.search(r"%s\..+\.%s" % (prefix, suffix), _, re.I):
+                if prefix is None and suffix is None or re.search(
+                        r"%s\..+\.%s" % (prefix, suffix), _, re.I):
                     retVal = _
                     self._requests.remove(_)
                     break
@@ -129,6 +143,7 @@ class DNSServer(object):
         thread.daemon = True
         thread.start()
 
+
 if __name__ == "__main__":
     server = None
     try:
@@ -149,7 +164,7 @@ if __name__ == "__main__":
 
             time.sleep(1)
 
-    except socket.error, ex:
+    except socket.error as ex:
         if 'Permission' in str(ex):
             print "[x] Please run with sudo/Administrator privileges"
         else:

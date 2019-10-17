@@ -5,6 +5,7 @@ Copyright (c) 2006-2017 sqlmap developers (http://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
+
 def cachedmethod(f, cache={}):
     """
     Method with a cached content
@@ -17,7 +18,7 @@ def cachedmethod(f, cache={}):
             key = hash((f, tuple(args), frozenset(kwargs.items())))
             if key not in cache:
                 cache[key] = f(*args, **kwargs)
-        except:
+        except BaseException:
             key = hash("".join(str(_) for _ in (f, args, kwargs)))
             if key not in cache:
                 cache[key] = f(*args, **kwargs)

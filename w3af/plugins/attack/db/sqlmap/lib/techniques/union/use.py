@@ -58,9 +58,15 @@ from lib.core.unescaper import unescaper
 from lib.request.connect import Connect as Request
 from lib.utils.progress import ProgressBar
 from thirdparty.odict.odict import OrderedDict
+from functools import reduce
+
 
 def _oneShotUnionUse(expression, unpack=True, limited=False):
-    retVal = hashDBRetrieve("%s%s" % (conf.hexConvert or False, expression), checkConf=True)  # as UNION data is stored raw unconverted
+    retVal = hashDBRetrieve(
+        "%s%s" %
+        (conf.hexConvert or False,
+         expression),
+        checkConf=True)  # as UNION data is stored raw unconverted
 
     threadData = getCurrentThreadData()
     threadData.resumed = retVal is not None
@@ -69,19 +75,42 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
         vector = kb.injection.data[PAYLOAD.TECHNIQUE.UNION].vector
 
         if not kb.rowXmlMode:
-            injExpression = unescaper.escape(agent.concatQuery(expression, unpack))
+            injExpression = unescaper.escape(
+                agent.concatQuery(expression, unpack))
             kb.unionDuplicates = vector[7]
             kb.forcePartialUnion = vector[8]
-            query = agent.forgeUnionQuery(injExpression, vector[0], vector[1], vector[2], vector[3], vector[4], vector[5], vector[6], None, limited)
-            where = PAYLOAD.WHERE.NEGATIVE if conf.limitStart or conf.limitStop else vector[6]
+            query = agent.forgeUnionQuery(
+                injExpression,
+                vector[0],
+                vector[1],
+                vector[2],
+                vector[3],
+                vector[4],
+                vector[5],
+                vector[6],
+                None,
+                limited)
+            where = PAYLOAD.WHERE.NEGATIVE if conf.limitStart or conf.limitStop else vector[
+                6]
         else:
             where = vector[6]
-            query = agent.forgeUnionQuery(expression, vector[0], vector[1], vector[2], vector[3], vector[4], vector[5], vector[6], None, False)
+            query = agent.forgeUnionQuery(
+                expression,
+                vector[0],
+                vector[1],
+                vector[2],
+                vector[3],
+                vector[4],
+                vector[5],
+                vector[6],
+                None,
+                False)
 
         payload = agent.payload(newValue=query, where=where)
 
         # Perform the request
-        page, headers, _ = Request.queryPage(payload, content=True, raise404=False)
+        page, headers, _ = Request.queryPage(
+            payload, content=True, raise404=False)
 
         incrementCounter(PAYLOAD.TECHNIQUE.UNION)
 
@@ -89,14 +118,28 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
             # Parse the returned page to get the exact UNION-based
             # SQL injection output
             def _(regex):
-                return reduce(lambda x, y: x if x is not None else y, (\
-                        extractRegexResult(regex, removeReflectiveValues(page, payload), re.DOTALL | re.IGNORECASE), \
-                        extractRegexResult(regex, removeReflectiveValues(listToStrValue(headers.headers \
-                        if headers else None), payload, True), re.DOTALL | re.IGNORECASE)), \
-                        None)
+                return reduce(
+                    lambda x,
+                    y: x if x is not None else y,
+                    (extractRegexResult(
+                        regex,
+                        removeReflectiveValues(
+                            page,
+                            payload),
+                        re.DOTALL | re.IGNORECASE),
+                        extractRegexResult(
+                        regex,
+                        removeReflectiveValues(
+                            listToStrValue(
+                                headers.headers if headers else None),
+                            payload,
+                            True),
+                        re.DOTALL | re.IGNORECASE)),
+                    None)
 
             # Automatically patching last char trimming cases
-            if kb.chars.stop not in (page or "") and kb.chars.stop[:-1] in (page or ""):
+            if kb.chars.stop not in (
+                    page or "") and kb.chars.stop[:-1] in (page or ""):
                 warnMsg = "automatically patching output having last char trimmed"
                 singleTimeWarnMessage(warnMsg)
                 page = page.replace(kb.chars.stop[:-1], kb.chars.stop)
@@ -106,13 +149,15 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
             output = extractRegexResult(r"(?P<result>(<row.+?/>)+)", page)
             if output:
                 try:
-                    root = xml.etree.ElementTree.fromstring("<root>%s</root>" % output.encode(UNICODE_ENCODING))
+                    root = xml.etree.ElementTree.fromstring(
+                        "<root>%s</root>" % output.encode(UNICODE_ENCODING))
                     retVal = ""
                     for column in kb.dumpColumns:
                         base64 = True
                         for child in root:
                             value = child.attrib.get(column, "").strip()
-                            if value and not re.match(r"\A[a-zA-Z0-9+/]+={0,2}\Z", value):
+                            if value and not re.match(
+                                    r"\A[a-zA-Z0-9+/]+={0,2}\Z", value):
                                 base64 = False
                                 break
 
@@ -124,15 +169,18 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
 
                         if base64:
                             for child in root:
-                                child.attrib[column] = child.attrib.get(column, "").decode("base64") or NULL
+                                child.attrib[column] = child.attrib.get(
+                                    column, "").decode("base64") or NULL
 
                     for child in root:
                         row = []
                         for column in kb.dumpColumns:
                             row.append(child.attrib.get(column, NULL))
-                        retVal += "%s%s%s" % (kb.chars.start, kb.chars.delimiter.join(row), kb.chars.stop)
+                        retVal += "%s%s%s" % (kb.chars.start,
+                                              kb.chars.delimiter.join(row),
+                                              kb.chars.stop)
 
-                except:
+                except BaseException:
                     pass
                 else:
                     retVal = getUnicode(retVal)
@@ -140,11 +188,14 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
         if retVal is not None:
             retVal = getUnicode(retVal, kb.pageEncoding)
 
-            # Special case when DBMS is Microsoft SQL Server and error message is used as a result of UNION injection
+            # Special case when DBMS is Microsoft SQL Server and error message
+            # is used as a result of UNION injection
             if Backend.isDbms(DBMS.MSSQL) and wasLastResponseDBMSError():
                 retVal = htmlunescape(retVal).replace("<br>", "\n")
 
-            hashDBWrite("%s%s" % (conf.hexConvert or False, expression), retVal)
+            hashDBWrite(
+                "%s%s" %
+                (conf.hexConvert or False, expression), retVal)
 
         elif not kb.rowXmlMode:
             trimmed = _("%s(?P<result>.*?)<" % (kb.chars.start))
@@ -160,6 +211,7 @@ def _oneShotUnionUse(expression, unpack=True, limited=False):
 
     return retVal
 
+
 def configUnion(char=None, columns=None):
     def _configUnionChar(char):
         if not isinstance(char, basestring):
@@ -168,7 +220,10 @@ def configUnion(char=None, columns=None):
         kb.uChar = char
 
         if conf.uChar is not None:
-            kb.uChar = char.replace("[CHAR]", conf.uChar if conf.uChar.isdigit() else "'%s'" % conf.uChar.strip("'"))
+            kb.uChar = char.replace(
+                "[CHAR]",
+                conf.uChar if conf.uChar.isdigit() else "'%s'" %
+                conf.uChar.strip("'"))
 
     def _configUnionCols(columns):
         if not isinstance(columns, basestring):
@@ -181,7 +236,8 @@ def configUnion(char=None, columns=None):
             colsStart, colsStop = columns, columns
 
         if not colsStart.isdigit() or not colsStop.isdigit():
-            raise SqlmapSyntaxException("--union-cols must be a range of integers")
+            raise SqlmapSyntaxException(
+                "--union-cols must be a range of integers")
 
         conf.uColsStart, conf.uColsStop = int(colsStart), int(colsStop)
 
@@ -192,6 +248,7 @@ def configUnion(char=None, columns=None):
 
     _configUnionChar(char)
     _configUnionCols(conf.uCols or columns)
+
 
 def unionUse(expression, unpack=True, dump=False):
     """
@@ -212,7 +269,8 @@ def unionUse(expression, unpack=True, dump=False):
     width = getConsoleWidth()
     start = time.time()
 
-    _, _, _, _, _, expressionFieldsList, expressionFields, _ = agent.getFields(origExpr)
+    _, _, _, _, _, expressionFieldsList, expressionFields, _ = agent.getFields(
+        origExpr)
 
     # Set kb.partRun in case the engine is called from the API
     kb.partRun = getPartRun(alias=False) if conf.api else None
@@ -224,7 +282,8 @@ def unionUse(expression, unpack=True, dump=False):
         value = parseUnionPage(output)
         kb.rowXmlMode = False
 
-    if expressionFieldsList and len(expressionFieldsList) > 1 and "ORDER BY" in expression.upper():
+    if expressionFieldsList and len(
+            expressionFieldsList) > 1 and "ORDER BY" in expression.upper():
         # Removed ORDER BY clause because UNION does not play well with it
         expression = re.sub(r"(?i)\s*ORDER BY\s+[\w,]+", "", expression)
         debugMsg = "stripping ORDER BY clause from statement because "
@@ -236,18 +295,20 @@ def unionUse(expression, unpack=True, dump=False):
     # SQL limiting the query output one entry at a time
     # NOTE: we assume that only queries that get data from a table can
     # return multiple entries
-    if value is None and (kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.NEGATIVE or \
-       kb.forcePartialUnion or \
-       (dump and (conf.limitStart or conf.limitStop)) or "LIMIT " in expression.upper()) and \
-       " FROM " in expression.upper() and ((Backend.getIdentifiedDbms() \
-       not in FROM_DUMMY_TABLE) or (Backend.getIdentifiedDbms() in FROM_DUMMY_TABLE \
-       and not expression.upper().endswith(FROM_DUMMY_TABLE[Backend.getIdentifiedDbms()]))) \
-       and not re.search(SQL_SCALAR_REGEX, expression, re.I):
-        expression, limitCond, topLimit, startLimit, stopLimit = agent.limitCondition(expression, dump)
+    if value is None and (kb.injection.data[PAYLOAD.TECHNIQUE.UNION].where == PAYLOAD.WHERE.NEGATIVE or
+                          kb.forcePartialUnion or
+                          (dump and (conf.limitStart or conf.limitStop)) or "LIMIT " in expression.upper()) and \
+        " FROM " in expression.upper() and ((Backend.getIdentifiedDbms()
+                                             not in FROM_DUMMY_TABLE) or (Backend.getIdentifiedDbms() in FROM_DUMMY_TABLE
+                                                                          and not expression.upper().endswith(FROM_DUMMY_TABLE[Backend.getIdentifiedDbms()]))) \
+            and not re.search(SQL_SCALAR_REGEX, expression, re.I):
+        expression, limitCond, topLimit, startLimit, stopLimit = agent.limitCondition(
+            expression, dump)
 
         if limitCond:
             # Count the number of SQL query entries output
-            countedExpression = expression.replace(expressionFields, queries[Backend.getIdentifiedDbms()].count.query % ('*' if len(expressionFieldsList) > 1 else expressionFields), 1)
+            countedExpression = expression.replace(expressionFields, queries[Backend.getIdentifiedDbms(
+            )].count.query % ('*' if len(expressionFieldsList) > 1 else expressionFields), 1)
 
             if " ORDER BY " in countedExpression.upper():
                 _ = countedExpression.upper().rindex(" ORDER BY ")
@@ -288,9 +349,11 @@ def unionUse(expression, unpack=True, dump=False):
                 threadData = getCurrentThreadData()
 
                 try:
-                    threadData.shared.limits = iter(xrange(startLimit, stopLimit))
+                    threadData.shared.limits = iter(
+                        xrange(startLimit, stopLimit))
                 except OverflowError:
-                    errMsg = "boundary limits (%d,%d) are too large. Please rerun " % (startLimit, stopLimit)
+                    errMsg = "boundary limits (%d,%d) are too large. Please rerun " % (
+                        startLimit, stopLimit)
                     errMsg += "with switch '--fresh-queries'"
                     raise SqlmapDataException(errMsg)
 
@@ -299,10 +362,12 @@ def unionUse(expression, unpack=True, dump=False):
                 threadData.shared.buffered = []
                 threadData.shared.counter = 0
                 threadData.shared.lastFlushed = startLimit - 1
-                threadData.shared.showEta = conf.eta and (stopLimit - startLimit) > 1
+                threadData.shared.showEta = conf.eta and (
+                    stopLimit - startLimit) > 1
 
                 if threadData.shared.showEta:
-                    threadData.shared.progress = ProgressBar(maxValue=(stopLimit - startLimit))
+                    threadData.shared.progress = ProgressBar(
+                        maxValue=(stopLimit - startLimit))
 
                 if stopLimit > TURN_OFF_RESUME_INFO_LIMIT:
                     kb.suppressResumeInfo = True
@@ -330,57 +395,94 @@ def unionUse(expression, unpack=True, dump=False):
                             else:
                                 field = None
 
-                            limitedExpr = agent.limitQuery(num, expression, field)
-                            output = _oneShotUnionUse(limitedExpr, unpack, True)
+                            limitedExpr = agent.limitQuery(
+                                num, expression, field)
+                            output = _oneShotUnionUse(
+                                limitedExpr, unpack, True)
 
                             if not kb.threadContinue:
                                 break
 
                             if output:
                                 with kb.locks.value:
-                                    if all(_ in output for _ in (kb.chars.start, kb.chars.stop)):
+                                    if all(
+                                        _ in output for _ in (
+                                            kb.chars.start,
+                                            kb.chars.stop)):
                                         items = parseUnionPage(output)
 
                                         if threadData.shared.showEta:
-                                            threadData.shared.progress.progress(time.time() - valueStart, threadData.shared.counter)
+                                            threadData.shared.progress.progress(
+                                                time.time() - valueStart, threadData.shared.counter)
                                         if isListLike(items):
-                                            # in case that we requested N columns and we get M!=N then we have to filter a bit
-                                            if len(items) > 1 and len(expressionFieldsList) > 1:
-                                                items = [item for item in items if isListLike(item) and len(item) == len(expressionFieldsList)]
-                                            items = [_ for _ in flattenValue(items)]
-                                            if len(items) > len(expressionFieldsList):
+                                            # in case that we requested N
+                                            # columns and we get M!=N then we
+                                            # have to filter a bit
+                                            if len(items) > 1 and len(
+                                                    expressionFieldsList) > 1:
+                                                items = [item for item in items if isListLike(
+                                                    item) and len(item) == len(expressionFieldsList)]
+                                            items = [
+                                                _ for _ in flattenValue(items)]
+                                            if len(items) > len(
+                                                    expressionFieldsList):
                                                 filtered = OrderedDict()
                                                 for item in items:
-                                                    key = re.sub(r"[^A-Za-z0-9]", "", item).lower()
-                                                    if key not in filtered or re.search(r"[^A-Za-z0-9]", item):
+                                                    key = re.sub(
+                                                        r"[^A-Za-z0-9]", "", item).lower()
+                                                    if key not in filtered or re.search(
+                                                            r"[^A-Za-z0-9]", item):
                                                         filtered[key] = item
                                                 items = filtered.values()
                                             items = [items]
                                         index = None
-                                        for index in xrange(1 + len(threadData.shared.buffered)):
-                                            if index < len(threadData.shared.buffered) and threadData.shared.buffered[index][0] >= num:
+                                        for index in xrange(
+                                                1 + len(threadData.shared.buffered)):
+                                            if index < len(
+                                                    threadData.shared.buffered) and threadData.shared.buffered[index][0] >= num:
                                                 break
-                                        threadData.shared.buffered.insert(index or 0, (num, items))
+                                        threadData.shared.buffered.insert(
+                                            index or 0, (num, items))
                                     else:
                                         index = None
                                         if threadData.shared.showEta:
-                                            threadData.shared.progress.progress(time.time() - valueStart, threadData.shared.counter)
-                                        for index in xrange(1 + len(threadData.shared.buffered)):
-                                            if index < len(threadData.shared.buffered) and threadData.shared.buffered[index][0] >= num:
+                                            threadData.shared.progress.progress(
+                                                time.time() - valueStart, threadData.shared.counter)
+                                        for index in xrange(
+                                                1 + len(threadData.shared.buffered)):
+                                            if index < len(
+                                                    threadData.shared.buffered) and threadData.shared.buffered[index][0] >= num:
                                                 break
-                                        threadData.shared.buffered.insert(index or 0, (num, None))
+                                        threadData.shared.buffered.insert(
+                                            index or 0, (num, None))
 
-                                        items = output.replace(kb.chars.start, "").replace(kb.chars.stop, "").split(kb.chars.delimiter)
+                                        items = output.replace(
+                                            kb.chars.start,
+                                            "").replace(
+                                            kb.chars.stop,
+                                            "").split(
+                                            kb.chars.delimiter)
 
-                                    while threadData.shared.buffered and (threadData.shared.lastFlushed + 1 >= threadData.shared.buffered[0][0] or len(threadData.shared.buffered) > MAX_BUFFERED_PARTIAL_UNION_LENGTH):
+                                    while threadData.shared.buffered and (
+                                        threadData.shared.lastFlushed +
+                                        1 >= threadData.shared.buffered[0][0] or len(
+                                            threadData.shared.buffered) > MAX_BUFFERED_PARTIAL_UNION_LENGTH):
                                         threadData.shared.lastFlushed, _ = threadData.shared.buffered[0]
                                         if not isNoneValue(_):
-                                            threadData.shared.value.extend(arrayizeValue(_))
+                                            threadData.shared.value.extend(
+                                                arrayizeValue(_))
                                         del threadData.shared.buffered[0]
 
-                                if conf.verbose == 1 and not (threadData.resumed and kb.suppressResumeInfo) and not threadData.shared.showEta:
-                                    _ = ','.join("\"%s\"" % _ for _ in flattenValue(arrayizeValue(items))) if not isinstance(items, basestring) else items
-                                    status = "[%s] [INFO] %s: %s" % (time.strftime("%X"), "resumed" if threadData.resumed else "retrieved", _ if kb.safeCharEncode else safecharencode(_))
+                                if conf.verbose == 1 and not (
+                                        threadData.resumed and kb.suppressResumeInfo) and not threadData.shared.showEta:
+                                    _ = ','.join(
+                                        "\"%s\"" %
+                                        _ for _ in flattenValue(
+                                            arrayizeValue(items))) if not isinstance(
+                                        items,
+                                        basestring) else items
+                                    status = "[%s] [INFO] %s: %s" % (time.strftime(
+                                        "%X"), "resumed" if threadData.resumed else "retrieved", _ if kb.safeCharEncode else safecharencode(_))
 
                                     if len(status) > width:
                                         status = "%s..." % status[:width - 3]
@@ -413,7 +515,8 @@ def unionUse(expression, unpack=True, dump=False):
     duration = calculateDeltaSeconds(start)
 
     if not kb.bruteMode:
-        debugMsg = "performed %d queries in %.2f seconds" % (kb.counters[PAYLOAD.TECHNIQUE.UNION], duration)
+        debugMsg = "performed %d queries in %.2f seconds" % (
+            kb.counters[PAYLOAD.TECHNIQUE.UNION], duration)
         logger.debug(debugMsg)
 
     return value

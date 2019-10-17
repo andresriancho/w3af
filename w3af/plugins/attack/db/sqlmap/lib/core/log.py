@@ -31,13 +31,18 @@ try:
         LOGGER_HANDLER = logging.StreamHandler(sys.stdout)
     else:
         LOGGER_HANDLER = ColorizingStreamHandler(sys.stdout)
-        LOGGER_HANDLER.level_map[logging.getLevelName("PAYLOAD")] = (None, "cyan", False)
-        LOGGER_HANDLER.level_map[logging.getLevelName("TRAFFIC OUT")] = (None, "magenta", False)
-        LOGGER_HANDLER.level_map[logging.getLevelName("TRAFFIC IN")] = ("magenta", None, False)
+        LOGGER_HANDLER.level_map[logging.getLevelName(
+            "PAYLOAD")] = (None, "cyan", False)
+        LOGGER_HANDLER.level_map[logging.getLevelName(
+            "TRAFFIC OUT")] = (None, "magenta", False)
+        LOGGER_HANDLER.level_map[logging.getLevelName(
+            "TRAFFIC IN")] = ("magenta", None, False)
 except ImportError:
     LOGGER_HANDLER = logging.StreamHandler(sys.stdout)
 
-FORMATTER = logging.Formatter("\r[%(asctime)s] [%(levelname)s] %(message)s", "%H:%M:%S")
+FORMATTER = logging.Formatter(
+    "\r[%(asctime)s] [%(levelname)s] %(message)s",
+    "%H:%M:%S")
 
 LOGGER_HANDLER.setFormatter(FORMATTER)
 LOGGER.addHandler(LOGGER_HANDLER)

@@ -10,6 +10,7 @@ import urllib2
 
 from lib.core.exception import SqlmapConnectionException
 
+
 class HTTPRangeHandler(urllib2.BaseHandler):
     """
     Handler that enables HTTP Range headers.

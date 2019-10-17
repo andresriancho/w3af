@@ -12,6 +12,7 @@ from lib.core.common import getSafeExString
 from lib.core.exception import SqlmapDataException
 from lib.core.exception import SqlmapInstallationException
 
+
 class Wordlist(object):
     """
     Iterator for looping over a large dictionaries
@@ -43,11 +44,12 @@ class Wordlist(object):
             if os.path.splitext(self.current)[1].lower() == ".zip":
                 try:
                     _ = zipfile.ZipFile(self.current, 'r')
-                except zipfile.error, ex:
+                except zipfile.error as ex:
                     errMsg = "something appears to be wrong with "
-                    errMsg += "the file '%s' ('%s'). Please make " % (self.current, getSafeExString(ex))
+                    errMsg += "the file '%s' ('%s'). Please make " % (
+                        self.current, getSafeExString(ex))
                     errMsg += "sure that you haven't made any changes to it"
-                    raise SqlmapInstallationException, errMsg
+                    raise SqlmapInstallationException(errMsg)
                 if len(_.namelist()) == 0:
                     errMsg = "no file(s) inside '%s'" % self.current
                     raise SqlmapDataException(errMsg)
@@ -69,11 +71,12 @@ class Wordlist(object):
             self.counter += 1
             try:
                 retVal = self.iter.next().rstrip()
-            except zipfile.error, ex:
+            except zipfile.error as ex:
                 errMsg = "something appears to be wrong with "
-                errMsg += "the file '%s' ('%s'). Please make " % (self.current, getSafeExString(ex))
+                errMsg += "the file '%s' ('%s'). Please make " % (
+                    self.current, getSafeExString(ex))
                 errMsg += "sure that you haven't made any changes to it"
-                raise SqlmapInstallationException, errMsg
+                raise SqlmapInstallationException(errMsg)
             except StopIteration:
                 self.adjust()
                 retVal = self.iter.next().rstrip()

@@ -7,6 +7,7 @@ See the file 'LICENSE' for copying permission
 
 import urllib2
 
+
 class MethodRequest(urllib2.Request):
     """
     Used to create HEAD/PUT/DELETE/... requests with urllib2

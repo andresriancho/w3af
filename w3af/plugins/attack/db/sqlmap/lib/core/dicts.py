@@ -183,18 +183,66 @@ DB2_PRIVS = {
 DUMP_REPLACEMENTS = {" ": NULL, "": BLANK}
 
 DBMS_DICT = {
-    DBMS.MSSQL: (MSSQL_ALIASES, "python-pymssql", "https://github.com/pymssql/pymssql", "mssql+pymssql"),
-    DBMS.MYSQL: (MYSQL_ALIASES, "python-pymysql", "https://github.com/petehunt/PyMySQL/", "mysql"),
-    DBMS.PGSQL: (PGSQL_ALIASES, "python-psycopg2", "http://initd.org/psycopg/", "postgresql"),
-    DBMS.ORACLE: (ORACLE_ALIASES, "python cx_Oracle", "http://cx-oracle.sourceforge.net/", "oracle"),
-    DBMS.SQLITE: (SQLITE_ALIASES, "python-sqlite", "http://packages.ubuntu.com/quantal/python-sqlite", "sqlite"),
-    DBMS.ACCESS: (ACCESS_ALIASES, "python-pyodbc", "https://github.com/mkleehammer/pyodbc", "access"),
-    DBMS.FIREBIRD: (FIREBIRD_ALIASES, "python-kinterbasdb", "http://kinterbasdb.sourceforge.net/", "firebird"),
-    DBMS.MAXDB: (MAXDB_ALIASES, None, None, "maxdb"),
-    DBMS.SYBASE: (SYBASE_ALIASES, "python-pymssql", "https://github.com/pymssql/pymssql", "sybase"),
-    DBMS.DB2: (DB2_ALIASES, "python ibm-db", "https://github.com/ibmdb/python-ibmdb", "ibm_db_sa"),
-    DBMS.HSQLDB: (HSQLDB_ALIASES, "python jaydebeapi & python-jpype", "https://pypi.python.org/pypi/JayDeBeApi/ & http://jpype.sourceforge.net/", None),
-    DBMS.INFORMIX: (INFORMIX_ALIASES, "python ibm-db", "https://github.com/ibmdb/python-ibmdb", "ibm_db_sa"),
+    DBMS.MSSQL: (
+        MSSQL_ALIASES,
+        "python-pymssql",
+        "https://github.com/pymssql/pymssql",
+        "mssql+pymssql"),
+    DBMS.MYSQL: (
+        MYSQL_ALIASES,
+        "python-pymysql",
+        "https://github.com/petehunt/PyMySQL/",
+        "mysql"),
+    DBMS.PGSQL: (
+        PGSQL_ALIASES,
+        "python-psycopg2",
+        "http://initd.org/psycopg/",
+        "postgresql"),
+    DBMS.ORACLE: (
+        ORACLE_ALIASES,
+        "python cx_Oracle",
+        "http://cx-oracle.sourceforge.net/",
+        "oracle"),
+    DBMS.SQLITE: (
+        SQLITE_ALIASES,
+        "python-sqlite",
+        "http://packages.ubuntu.com/quantal/python-sqlite",
+        "sqlite"),
+    DBMS.ACCESS: (
+        ACCESS_ALIASES,
+        "python-pyodbc",
+        "https://github.com/mkleehammer/pyodbc",
+        "access"),
+    DBMS.FIREBIRD: (
+        FIREBIRD_ALIASES,
+        "python-kinterbasdb",
+        "http://kinterbasdb.sourceforge.net/",
+        "firebird"),
+    DBMS.MAXDB: (
+        MAXDB_ALIASES,
+        None,
+        None,
+        "maxdb"),
+    DBMS.SYBASE: (
+        SYBASE_ALIASES,
+        "python-pymssql",
+        "https://github.com/pymssql/pymssql",
+        "sybase"),
+    DBMS.DB2: (
+        DB2_ALIASES,
+        "python ibm-db",
+        "https://github.com/ibmdb/python-ibmdb",
+        "ibm_db_sa"),
+    DBMS.HSQLDB: (
+        HSQLDB_ALIASES,
+        "python jaydebeapi & python-jpype",
+        "https://pypi.python.org/pypi/JayDeBeApi/ & http://jpype.sourceforge.net/",
+        None),
+    DBMS.INFORMIX: (
+        INFORMIX_ALIASES,
+        "python ibm-db",
+        "https://github.com/ibmdb/python-ibmdb",
+        "ibm_db_sa"),
 }
 
 FROM_DUMMY_TABLE = {
@@ -208,54 +256,54 @@ FROM_DUMMY_TABLE = {
 }
 
 SQL_STATEMENTS = {
-    "SQL SELECT statement":  (
-            "select ",
-            "show ",
-            " top ",
-            " distinct ",
-            " from ",
-            " from dual",
-            " where ",
-            " group by ",
-            " order by ",
-            " having ",
-            " limit ",
-            " offset ",
-            " union all ",
-            " rownum as ",
-            "(case ",        ),
+    "SQL SELECT statement": (
+        "select ",
+        "show ",
+        " top ",
+        " distinct ",
+        " from ",
+        " from dual",
+        " where ",
+        " group by ",
+        " order by ",
+        " having ",
+        " limit ",
+        " offset ",
+        " union all ",
+        " rownum as ",
+        "(case ",),
 
-    "SQL data definition":   (
+    "SQL data definition": (
         "create ",
         "declare ",
         "drop ",
         "truncate ",
-        "alter ",            ),
+        "alter ",),
 
     "SQL data manipulation": (
-            "bulk ",
-            "insert ",
-            "update ",
-            "delete ",
-            "merge ",
-            "load ",         ),
+        "bulk ",
+        "insert ",
+        "update ",
+        "delete ",
+        "merge ",
+        "load ",),
 
-    "SQL data control":      (
-            "grant ",
-            "revoke ",       ),
+    "SQL data control": (
+        "grant ",
+        "revoke ",),
 
-    "SQL data execution":    (
-            "exec ",
-            "execute ",
-            "values ", 
-            "call ",         ),
+    "SQL data execution": (
+        "exec ",
+        "execute ",
+        "values ",
+        "call ",),
 
-    "SQL transaction":       (
-            "start transaction ",
-            "begin work ",
-            "begin transaction ",
-            "commit ",
-            "rollback ",     ),
+    "SQL transaction": (
+        "start transaction ",
+        "begin work ",
+        "begin transaction ",
+        "commit ",
+        "rollback ",),
 }
 
 POST_HINT_CONTENT_TYPES = {
@@ -279,11 +327,13 @@ DEPRECATED_OPTIONS = {
 }
 
 DUMP_DATA_PREPROCESS = {
-    DBMS.ORACLE: {"XMLTYPE": "(%s).getStringVal()"},  # Reference: https://www.tibcommunity.com/docs/DOC-3643
+    # Reference: https://www.tibcommunity.com/docs/DOC-3643
+    DBMS.ORACLE: {"XMLTYPE": "(%s).getStringVal()"},
     DBMS.MSSQL: {"IMAGE": "CONVERT(VARBINARY(MAX),%s)"},
 }
 
 DEFAULT_DOC_ROOTS = {
     OS.WINDOWS: ("C:/xampp/htdocs/", "C:/wamp/www/", "C:/Inetpub/wwwroot/"),
-    OS.LINUX: ("/var/www/", "/var/www/html", "/usr/local/apache2/htdocs", "/var/www/nginx-default", "/srv/www")  # Reference: https://wiki.apache.org/httpd/DistrosDefaultLayout
+    # Reference: https://wiki.apache.org/httpd/DistrosDefaultLayout
+    OS.LINUX: ("/var/www/", "/var/www/html", "/usr/local/apache2/htdocs", "/var/www/nginx-default", "/srv/www")
 }

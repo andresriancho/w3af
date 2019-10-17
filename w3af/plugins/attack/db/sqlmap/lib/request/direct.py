@@ -28,13 +28,15 @@ from lib.core.enums import TIMEOUT_STATE
 from lib.core.settings import UNICODE_ENCODING
 from lib.utils.timeout import timeout
 
+
 def direct(query, content=True):
     select = True
     query = agent.payloadDirect(query)
     query = agent.adjustLateValues(query)
     threadData = getCurrentThreadData()
 
-    if Backend.isDbms(DBMS.ORACLE) and query.upper().startswith("SELECT ") and " FROM " not in query.upper():
+    if Backend.isDbms(DBMS.ORACLE) and query.upper().startswith(
+            "SELECT ") and " FROM " not in query.upper():
         query = "%s FROM DUAL" % query
 
     for sqlTitle, sqlStatements in SQL_STATEMENTS.items():
@@ -52,9 +54,12 @@ def direct(query, content=True):
     start = time.time()
 
     if not select and "EXEC " not in query.upper():
-        timeout(func=conf.dbmsConnector.execute, args=(query,), duration=conf.timeout, default=None)
+        timeout(func=conf.dbmsConnector.execute, args=(
+            query,), duration=conf.timeout, default=None)
     elif not (output and "sqlmapoutput" not in query and "sqlmapfile" not in query):
-        output, state = timeout(func=conf.dbmsConnector.select, args=(query,), duration=conf.timeout, default=None)
+        output, state = timeout(
+            func=conf.dbmsConnector.select, args=(
+                query,), duration=conf.timeout, default=None)
         if state == TIMEOUT_STATE.NORMAL:
             hashDBWrite(query, output, True)
         elif state == TIMEOUT_STATE.TIMEOUT:

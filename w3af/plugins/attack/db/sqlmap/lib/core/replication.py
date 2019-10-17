@@ -15,6 +15,7 @@ from lib.core.exception import SqlmapGenericException
 from lib.core.exception import SqlmapValueException
 from lib.core.settings import UNICODE_ENCODING
 
+
 class Replication(object):
     """
     This class holds all methods/classes used for database
@@ -27,7 +28,7 @@ class Replication(object):
             self.connection = sqlite3.connect(dbpath)
             self.connection.isolation_level = None
             self.cursor = self.connection.cursor()
-        except sqlite3.OperationalError, ex:
+        except sqlite3.OperationalError as ex:
             errMsg = "error occurred while opening a replication "
             errMsg += "file '%s' ('%s')" % (self.filepath, getSafeExString(ex))
             raise SqlmapConnectionException(errMsg)
@@ -52,7 +53,13 @@ class Replication(object):
         This class defines methods used to manipulate table objects.
         """
 
-        def __init__(self, parent, name, columns=None, create=True, typeless=False):
+        def __init__(
+                self,
+                parent,
+                name,
+                columns=None,
+                create=True,
+                typeless=False):
             self.parent = parent
             self.name = unsafeSQLIdentificatorNaming(name)
             self.columns = columns
@@ -60,11 +67,23 @@ class Replication(object):
                 try:
                     self.execute('DROP TABLE IF EXISTS "%s"' % self.name)
                     if not typeless:
-                        self.execute('CREATE TABLE "%s" (%s)' % (self.name, ','.join('"%s" %s' % (unsafeSQLIdentificatorNaming(colname), coltype) for colname, coltype in self.columns)))
+                        self.execute(
+                            'CREATE TABLE "%s" (%s)' %
+                            (self.name,
+                             ','.join(
+                                 '"%s" %s' %
+                                 (unsafeSQLIdentificatorNaming(colname),
+                                  coltype) for colname,
+                                 coltype in self.columns)))
                     else:
-                        self.execute('CREATE TABLE "%s" (%s)' % (self.name, ','.join('"%s"' % unsafeSQLIdentificatorNaming(colname) for colname in self.columns)))
-                except Exception, ex:
-                    errMsg = "problem occurred ('%s') while initializing the sqlite database " % getSafeExString(ex, UNICODE_ENCODING)
+                        self.execute(
+                            'CREATE TABLE "%s" (%s)' %
+                            (self.name, ','.join(
+                                '"%s"' %
+                                unsafeSQLIdentificatorNaming(colname) for colname in self.columns)))
+                except Exception as ex:
+                    errMsg = "problem occurred ('%s') while initializing the sqlite database " % getSafeExString(
+                        ex, UNICODE_ENCODING)
                     errMsg += "located at '%s'" % self.parent.dbpath
                     raise SqlmapGenericException(errMsg)
 
@@ -74,7 +93,13 @@ class Replication(object):
             """
 
             if len(values) == len(self.columns):
-                self.execute('INSERT INTO "%s" VALUES (%s)' % (self.name, ','.join(['?'] * len(values))), safechardecode(values))
+                self.execute(
+                    'INSERT INTO "%s" VALUES (%s)' %
+                    (self.name,
+                     ','.join(
+                         ['?'] *
+                         len(values))),
+                    safechardecode(values))
             else:
                 errMsg = "wrong number of columns used in replicating insert"
                 raise SqlmapValueException(errMsg)
@@ -82,8 +107,9 @@ class Replication(object):
         def execute(self, sql, parameters=[]):
             try:
                 self.parent.cursor.execute(sql, parameters)
-            except sqlite3.OperationalError, ex:
-                errMsg = "problem occurred ('%s') while accessing sqlite database " % getSafeExString(ex, UNICODE_ENCODING)
+            except sqlite3.OperationalError as ex:
+                errMsg = "problem occurred ('%s') while accessing sqlite database " % getSafeExString(
+                    ex, UNICODE_ENCODING)
                 errMsg += "located at '%s'. Please make sure that " % self.parent.dbpath
                 errMsg += "it's not used by some other program"
                 raise SqlmapGenericException(errMsg)
@@ -111,7 +137,11 @@ class Replication(object):
         """
         This function creates Table instance with current connection settings.
         """
-        return Replication.Table(parent=self, name=tblname, columns=columns, typeless=typeless)
+        return Replication.Table(
+            parent=self,
+            name=tblname,
+            columns=columns,
+            typeless=typeless)
 
     def __del__(self):
         self.cursor.close()

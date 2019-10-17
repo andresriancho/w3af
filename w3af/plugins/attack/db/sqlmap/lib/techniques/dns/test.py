@@ -19,7 +19,13 @@ def dnsTest(payload):
     logger.info("testing for data retrieval through DNS channel")
 
     randInt = randomInt()
-    kb.dnsTest = dnsUse(payload, "SELECT %d%s" % (randInt, FROM_DUMMY_TABLE.get(Backend.getIdentifiedDbms(), ""))) == str(randInt)
+    kb.dnsTest = dnsUse(
+        payload,
+        "SELECT %d%s" %
+        (randInt,
+         FROM_DUMMY_TABLE.get(
+             Backend.getIdentifiedDbms(),
+             ""))) == str(randInt)
 
     if not kb.dnsTest:
         errMsg = "data retrieval through DNS channel failed"

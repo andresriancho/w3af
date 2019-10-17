@@ -29,9 +29,18 @@ from lib.core.settings import UPPER_RATIO_BOUND
 from lib.core.settings import URI_HTTP_HEADER
 from lib.core.threads import getCurrentThreadData
 
+
 def comparison(page, headers, code=None, getRatioValue=False, pageLength=None):
-    _ = _adjust(_comparison(page, headers, code, getRatioValue, pageLength), getRatioValue)
+    _ = _adjust(
+        _comparison(
+            page,
+            headers,
+            code,
+            getRatioValue,
+            pageLength),
+        getRatioValue)
     return _
+
 
 def _adjust(condition, getRatioValue):
     if not any((conf.string, conf.notString, conf.regexp, conf.code)):
@@ -41,15 +50,19 @@ def _adjust(condition, getRatioValue):
         # itself
         retVal = not condition if kb.negativeLogic and condition is not None and not getRatioValue else condition
     else:
-        retVal = condition if not getRatioValue else (MAX_RATIO if condition else MIN_RATIO)
+        retVal = condition if not getRatioValue else (
+            MAX_RATIO if condition else MIN_RATIO)
 
     return retVal
+
 
 def _comparison(page, headers, code, getRatioValue, pageLength):
     threadData = getCurrentThreadData()
 
     if kb.testMode:
-        threadData.lastComparisonHeaders = listToStrValue(_ for _ in headers.headers if not _.startswith("%s:" % URI_HTTP_HEADER)) if headers else ""
+        threadData.lastComparisonHeaders = listToStrValue(
+            _ for _ in headers.headers if not _.startswith(
+                "%s:" % URI_HTTP_HEADER)) if headers else ""
         threadData.lastComparisonPage = page
         threadData.lastComparisonCode = code
 
@@ -57,7 +70,10 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
         return None
 
     if any((conf.string, conf.notString, conf.regexp)):
-        rawResponse = "%s%s" % (listToStrValue(_ for _ in headers.headers if not _.startswith("%s:" % URI_HTTP_HEADER)) if headers else "", page)
+        rawResponse = "%s%s" % (listToStrValue(
+            _ for _ in headers.headers if not _.startswith(
+                "%s:" % URI_HTTP_HEADER)) if headers else "",
+            page)
 
         # String to match in page when the query is True and/or valid
         if conf.string:
@@ -67,7 +83,8 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
         if conf.notString:
             return conf.notString not in rawResponse
 
-        # Regular expression to match in page when the query is True and/or valid
+        # Regular expression to match in page when the query is True and/or
+        # valid
         if conf.regexp:
             return re.search(conf.regexp, rawResponse, re.I | re.M) is not None
 
@@ -80,7 +97,8 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
 
     if page:
         # In case of an DBMS error page return None
-        if kb.errorIsNone and (wasLastResponseDBMSError() or wasLastResponseHTTPError()) and not kb.negativeLogic:
+        if kb.errorIsNone and (wasLastResponseDBMSError(
+        ) or wasLastResponseHTTPError()) and not kb.negativeLogic:
             return None
 
         # Dynamic content lines to be excluded before comparison
@@ -106,9 +124,11 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
         # Preventing "Unicode equal comparison failed to convert both arguments to Unicode"
         # (e.g. if one page is PDF and the other is HTML)
         if isinstance(seqMatcher.a, str) and isinstance(page, unicode):
-            page = page.encode(kb.pageEncoding or DEFAULT_PAGE_ENCODING, 'ignore')
+            page = page.encode(
+                kb.pageEncoding or DEFAULT_PAGE_ENCODING, 'ignore')
         elif isinstance(seqMatcher.a, unicode) and isinstance(page, str):
-            seqMatcher.a = seqMatcher.a.encode(kb.pageEncoding or DEFAULT_PAGE_ENCODING, 'ignore')
+            seqMatcher.a = seqMatcher.a.encode(
+                kb.pageEncoding or DEFAULT_PAGE_ENCODING, 'ignore')
 
         if seqMatcher.a and page and seqMatcher.a == page:
             ratio = 1
@@ -123,8 +143,10 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
                 seq1 = extractRegexResult(HTML_TITLE_REGEX, seqMatcher.a)
                 seq2 = extractRegexResult(HTML_TITLE_REGEX, page)
             else:
-                seq1 = getFilteredPageContent(seqMatcher.a, True) if conf.textOnly else seqMatcher.a
-                seq2 = getFilteredPageContent(page, True) if conf.textOnly else page
+                seq1 = getFilteredPageContent(
+                    seqMatcher.a, True) if conf.textOnly else seqMatcher.a
+                seq2 = getFilteredPageContent(
+                    page, True) if conf.textOnly else page
 
             if seq1 is None or seq2 is None:
                 return None
@@ -142,7 +164,9 @@ def _comparison(page, headers, code, getRatioValue, pageLength):
     if kb.matchRatio is None:
         if ratio >= LOWER_RATIO_BOUND and ratio <= UPPER_RATIO_BOUND:
             kb.matchRatio = ratio
-            logger.debug("setting match ratio for current parameter to %.3f" % kb.matchRatio)
+            logger.debug(
+                "setting match ratio for current parameter to %.3f" %
+                kb.matchRatio)
 
     if kb.testMode:
         threadData.lastComparisonRatio = ratio

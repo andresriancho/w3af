@@ -7,7 +7,7 @@ See the file 'LICENSE' for copying permission
 
 try:
     import cPickle as pickle
-except:
+except BaseException:
     import pickle
 finally:
     import pickle as picklePy
@@ -21,6 +21,8 @@ import sys
 from lib.core.settings import IS_WIN
 from lib.core.settings import UNICODE_ENCODING
 from lib.core.settings import PICKLE_REDUCE_WHITELIST
+from functools import reduce
+
 
 def base64decode(value):
     """
@@ -32,6 +34,7 @@ def base64decode(value):
 
     return base64.b64decode(value)
 
+
 def base64encode(value):
     """
     Encodes string value from plain to Base64 format
@@ -41,6 +44,7 @@ def base64encode(value):
     """
 
     return base64.b64encode(value)
+
 
 def base64pickle(value):
     """
@@ -54,17 +58,21 @@ def base64pickle(value):
 
     try:
         retVal = base64encode(pickle.dumps(value, pickle.HIGHEST_PROTOCOL))
-    except:
+    except BaseException:
         warnMsg = "problem occurred while serializing "
         warnMsg += "instance of a type '%s'" % type(value)
         singleTimeWarnMessage(warnMsg)
 
         try:
             retVal = base64encode(pickle.dumps(value))
-        except:
-            retVal = base64encode(pickle.dumps(str(value), pickle.HIGHEST_PROTOCOL))
+        except BaseException:
+            retVal = base64encode(
+                pickle.dumps(
+                    str(value),
+                    pickle.HIGHEST_PROTOCOL))
 
     return retVal
+
 
 def base64unpickle(value, unsafe=False):
     """
@@ -80,7 +88,7 @@ def base64unpickle(value, unsafe=False):
         if len(self.stack) > 1:
             func = self.stack[-2]
             if func not in PICKLE_REDUCE_WHITELIST:
-                raise Exception, "abusing reduce() is bad, Mkay!"
+                raise Exception("abusing reduce() is bad, Mkay!")
         self.load_reduce()
 
     def loads(str):
@@ -94,10 +102,11 @@ def base64unpickle(value, unsafe=False):
 
     try:
         retVal = loads(base64decode(value))
-    except TypeError: 
+    except TypeError:
         retVal = loads(base64decode(bytes(value)))
 
     return retVal
+
 
 def hexdecode(value):
     """
@@ -110,6 +119,7 @@ def hexdecode(value):
     value = value.lower()
     return (value[2:] if value.startswith("0x") else value).decode("hex")
 
+
 def hexencode(value, encoding=None):
     """
     Encodes string value from plain to hex format
@@ -119,6 +129,7 @@ def hexencode(value, encoding=None):
     """
 
     return unicodeencode(value, encoding).encode("hex")
+
 
 def unicodeencode(value, encoding=None):
     """
@@ -136,6 +147,7 @@ def unicodeencode(value, encoding=None):
             retVal = value.encode(UNICODE_ENCODING, "replace")
     return retVal
 
+
 def utf8encode(value):
     """
     Returns 8-bit string representation of the supplied UTF-8 value
@@ -145,6 +157,7 @@ def utf8encode(value):
     """
 
     return unicodeencode(value, "utf-8")
+
 
 def utf8decode(value):
     """
@@ -156,6 +169,7 @@ def utf8decode(value):
 
     return value.decode("utf-8")
 
+
 def htmlunescape(value):
     """
     Returns (basic conversion) HTML unescaped value
@@ -166,18 +180,22 @@ def htmlunescape(value):
 
     retVal = value
     if value and isinstance(value, basestring):
-        codes = (("&lt;", '<'), ("&gt;", '>'), ("&quot;", '"'), ("&nbsp;", ' '), ("&amp;", '&'), ("&apos;", "'"))
+        codes = (("&lt;", '<'), ("&gt;", '>'), ("&quot;", '"'),
+                 ("&nbsp;", ' '), ("&amp;", '&'), ("&apos;", "'"))
         retVal = reduce(lambda x, y: x.replace(y[0], y[1]), codes, retVal)
         try:
-            retVal = re.sub(r"&#x([^ ;]+);", lambda match: unichr(int(match.group(1), 16)), retVal)
+            retVal = re.sub(
+                r"&#x([^ ;]+);", lambda match: unichr(int(match.group(1), 16)), retVal)
         except ValueError:
             pass
     return retVal
+
 
 def singleTimeWarnMessage(message):  # Cross-linked function
     sys.stdout.write(message)
     sys.stdout.write("\n")
     sys.stdout.flush()
+
 
 def stdoutencode(data):
     retVal = None
@@ -202,10 +220,12 @@ def stdoutencode(data):
             retVal = output
         else:
             retVal = data.encode(sys.stdout.encoding)
-    except:
-        retVal = data.encode(UNICODE_ENCODING) if isinstance(data, unicode) else data
+    except BaseException:
+        retVal = data.encode(UNICODE_ENCODING) if isinstance(
+            data, unicode) else data
 
     return retVal
+
 
 def jsonize(data):
     """
@@ -216,6 +236,7 @@ def jsonize(data):
     """
 
     return json.dumps(data, sort_keys=False, indent=4)
+
 
 def dejsonize(data):
     """
