@@ -210,8 +210,11 @@ class OutputManager(Process):
         self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
-            pool.apply_async(func=self.__inner_flush_plugin_output,
+            try:
+               pool.apply_async(func=self.__inner_flush_plugin_output,
                              args=(o_plugin,))
+            except AssertionError:
+               None
 
     def __inner_flush_plugin_output(self, o_plugin):
         """
