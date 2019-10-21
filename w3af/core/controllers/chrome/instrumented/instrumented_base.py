@@ -223,15 +223,24 @@ class InstrumentedChromeBase(object):
 
         if self.chrome_conn is not None:
             try:
+                # Close the browser in a clean way
+                self.chrome_conn.Browser.close()
+            except Exception as e:
+                msg = 'Failed call Browser.close(), exception: "%s" (did: %s)'
+                args = (e, self.debugging_id)
+                om.out.debug(msg % args)
+
+            try:
                 with AllLoggingDisabled():
                     self.chrome_conn.close()
-            except Exception, e:
+            except Exception as e:
                 msg = 'Failed to close chrome connection, exception: "%s" (did: %s)'
                 args = (e, self.debugging_id)
                 om.out.debug(msg % args)
 
         if self.chrome_process is not None:
             try:
+                # Kill the PID (if the process still exists after Browser.close())
                 self.chrome_process.terminate()
             except Exception, e:
                 msg = 'Failed to terminate chrome process, exception: "%s" (did: %s)'

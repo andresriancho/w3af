@@ -209,6 +209,7 @@ class CoreStrategy(object):
                 msg = '%s consumer terminate() raised exception: "%s"'
                 args = (consumer_inst.get_name(), e)
                 om.out.debug(msg % args)
+                import traceback; traceback.print_exc()
             else:
                 spent = time.time() - start
                 args = (consumer, spent)

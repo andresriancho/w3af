@@ -81,7 +81,7 @@ class ChromeProcess(object):
              '--disable-http2',
     ]
 
-    DEVTOOLS_PORT_RE = re.compile('DevTools listening on ws://127.0.0.1:(\d*?)/devtools/')
+    DEVTOOLS_PORT_RE = re.compile(r'DevTools listening on ws://127.0.0.1:(\d*?)/devtools/')
     START_TIMEOUT_SEC = 5.0
 
     def __init__(self):
@@ -184,10 +184,16 @@ class ChromeProcess(object):
 
         while self.proc is not None and self.proc.poll() is None:
 
-            read_ready, write_ready, _ = select.select([stdout_r, stderr_r],
-                                                       [],
-                                                       [],
-                                                       0.2)
+            try:
+                read_ready, write_ready, _ = select.select([stdout_r, stderr_r],
+                                                           [],
+                                                           [],
+                                                           0.2)
+            except ValueError as e:
+                msg = 'Failed to read ChromeProcess stdout / stderr using select.select(): %s'
+                args = (e, )
+                om.out.debug(msg % args)
+                break
 
             for fd in read_ready:
                 data = os.read(fd, 1024)
@@ -228,14 +234,15 @@ class ChromeProcess(object):
 
     def terminate(self):
         self.devtools_port = 0
-
+        om.out.debug('terminate. - self.proc: %s' % self.proc)
         if self.proc is not None:
             try:
                 os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
-            except OSError:
+            except OSError as e:
                 # In some cases the process is already dead, calling terminate()
                 # will try to kill a process that doesn't exist anymore
                 pass
+                om.out.debug('terminate. - failed to kill process: %s' % e)
             finally:
                 # Before the code contained:
                 #
@@ -244,6 +251,7 @@ class ChromeProcess(object):
                 # But doing that prevented me to read the last bytes from the
                 # chrome process in run()
                 pass
+                om.out.debug('terminate. - success')
 
         if self.thread is not None:
             self.thread.join()
