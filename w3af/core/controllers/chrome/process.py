@@ -234,7 +234,7 @@ class ChromeProcess(object):
 
     def terminate(self):
         self.devtools_port = 0
-        om.out.debug('terminate. - self.proc: %s' % self.proc)
+
         if self.proc is not None:
             try:
                 os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
@@ -242,7 +242,6 @@ class ChromeProcess(object):
                 # In some cases the process is already dead, calling terminate()
                 # will try to kill a process that doesn't exist anymore
                 pass
-                om.out.debug('terminate. - failed to kill process: %s' % e)
             finally:
                 # Before the code contained:
                 #
@@ -251,7 +250,6 @@ class ChromeProcess(object):
                 # But doing that prevented me to read the last bytes from the
                 # chrome process in run()
                 pass
-                om.out.debug('terminate. - success')
 
         if self.thread is not None:
             self.thread.join()
