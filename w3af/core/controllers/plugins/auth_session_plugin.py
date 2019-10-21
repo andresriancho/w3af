@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 
 class AuthSessionPlugin(AuthPlugin):
@@ -62,7 +63,7 @@ class AuthSessionPlugin(AuthPlugin):
         self._log_http_response(http_response)
 
         body = http_response.get_body()
-        logged_in = self.check_string in body
+        logged_in = smart_str_ignore(self.check_string) in smart_str_ignore(body)
 
         msg_yes = 'User "%s" is currently logged into the application'
         msg_yes %= (self.username,)
