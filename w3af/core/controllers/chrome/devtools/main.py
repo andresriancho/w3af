@@ -356,6 +356,13 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         try:
             super(DebugChromeInterface, self).close()
         finally:
+            try:
+                # Just in case the close() call failed, make sure we shutdown
+                # the websocket connection to prevent leaking connections
+                self.ws.shutdown()
+            except:
+                pass
+
             # This will force the thread to stop (see while self.ws in run())
             self.ws = None
 
