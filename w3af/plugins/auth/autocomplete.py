@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.data.parsers.parser_cache as parser_cache
 
-from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
+from w3af.core.controllers.plugins.auth_session_plugin import AuthSessionPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -31,13 +31,13 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-class autocomplete(AuthPlugin):
+class autocomplete(AuthSessionPlugin):
     """
     Fill and submit login forms
     """
 
     def __init__(self):
-        AuthPlugin.__init__(self)
+        AuthSessionPlugin.__init__(self)
 
         # User configured settings
         self.username = ''
@@ -97,45 +97,6 @@ class autocomplete(AuthPlugin):
 
         self._log_debug('Login success for user %s' % self.username)
         return True
-
-    def has_active_session(self):
-        """
-        Check user session.
-        """
-        # Create a new debugging ID for each has_active_session() run
-        self._new_debugging_id()
-
-        msg = 'Checking if session for user %s is active'
-        self._log_debug(msg % self.username)
-
-        try:
-            http_response = self._uri_opener.GET(self.check_url,
-                                                 grep=False,
-                                                 cache=False,
-                                                 follow_redirects=True,
-                                                 debugging_id=self._debugging_id)
-        except Exception, e:
-            msg = 'Failed to check if session is active because of exception: %s'
-            self._log_debug(msg % e)
-            return False
-
-        self._log_http_response(http_response)
-
-        body = http_response.get_body()
-        logged_in = self.check_string in body
-
-        msg_yes = 'User "%s" is currently logged into the application'
-        msg_yes %= (self.username,)
-
-        msg_no = ('User "%s" is NOT logged into the application, the'
-                  ' `check_string` was not found in the HTTP response'
-                  ' with ID %s.')
-        msg_no %= (self.username, http_response.id)
-
-        msg = msg_yes if logged_in else msg_no
-        self._log_debug(msg)
-
-        return logged_in
 
     def logout(self):
         """

@@ -1,5 +1,5 @@
 """
-AuthPlugin.py
+auth_plugin.py
 
 Copyright 2011 Andres Riancho
 

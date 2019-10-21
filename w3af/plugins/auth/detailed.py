@@ -23,15 +23,13 @@ from urllib import quote_plus
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
+from w3af.core.controllers.plugins.auth_session_plugin import AuthSessionPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
-
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.url.handlers.redirect import GET_HEAD_CODES
 
 
-class detailed(AuthPlugin):
+class detailed(AuthSessionPlugin):
     """
     Detailed authentication plugin.
     """
@@ -39,7 +37,7 @@ class detailed(AuthPlugin):
     MAX_REDIRECTS = 10
 
     def __init__(self):
-        AuthPlugin.__init__(self)
+        AuthSessionPlugin.__init__(self)
 
         # User configuration
         self.username = ''
@@ -114,45 +112,6 @@ class detailed(AuthPlugin):
         User logout
         """
         return None
-
-    def has_active_session(self):
-        """
-        Check user session
-        """
-        # Create a new debugging ID for each has_active_session() run
-        self._new_debugging_id()
-
-        msg = 'Checking if session for user %s is active'
-        self._log_debug(msg % self.username)
-
-        try:
-            http_response = self._uri_opener.GET(self.check_url,
-                                                 grep=False,
-                                                 cache=False,
-                                                 follow_redirects=True,
-                                                 debugging_id=self._debugging_id)
-        except Exception, e:
-            msg = 'Failed to check if session is active because of exception: %s'
-            self._log_debug(msg % e)
-            return False
-
-        self._log_http_response(http_response)
-
-        body = http_response.get_body()
-        logged_in = self.check_string in body
-
-        msg_yes = 'User "%s" is currently logged into the application'
-        msg_yes %= (self.username,)
-
-        msg_no = ('User "%s" is NOT logged into the application, the'
-                  ' `check_string` was not found in the HTTP response'
-                  ' with ID %s.')
-        msg_no %= (self.username, http_response.id)
-
-        msg = msg_yes if logged_in else msg_no
-        self._log_debug(msg)
-
-        return logged_in
 
     def _get_data_from_format(self):
         """
