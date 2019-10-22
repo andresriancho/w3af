@@ -96,7 +96,20 @@ class InstrumentedChromeBase(object):
         chrome_process.set_proxy(proxy_host, proxy_port)
 
         chrome_process.start()
-        chrome_process.wait_for_start()
+
+        if not chrome_process.wait_for_start():
+            stdout = '\n'.join(chrome_process.stdout)
+            stderr = '\n'.join(chrome_process.stderr)
+            args = (chrome_process.START_TIMEOUT_SEC, stdout, stderr)
+
+            msg = ('Chrome process failed to start in %s seconds. The process'
+                   ' stdout and stderr are:\n'
+                   '\n'
+                   '%s\n'
+                   '\n'
+                   '%s')
+
+            raise InstrumentedChromeException(msg % args)
 
         return chrome_process
 
