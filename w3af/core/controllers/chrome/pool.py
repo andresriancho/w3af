@@ -244,8 +244,7 @@ class ChromePool(object):
         om.out.debug(msg % args)
 
         if chrome.free_count > self.MAX_TASKS:
-            om.out.debug('Removing %s from pool. MAX_TASKS exceeded.' % chrome)
-            self.remove(chrome)
+            self.remove(chrome, 'MAX_TASKS exceeded')
             return
 
         if chrome in self._in_use.copy():
@@ -256,22 +255,23 @@ class ChromePool(object):
             om.out.debug('Chrome pool bug! Called free() on an instance that'
                          ' is not marked as in-use by the pool internals.')
 
-    def remove(self, chrome):
+    def remove(self, chrome, reason):
         self._in_use.discard(chrome)
         self._free.discard(chrome)
         chrome.terminate()
 
-        om.out.debug('Removed %s from pool' % chrome)
+        args = (chrome, reason)
+        om.out.debug('Removed %s from pool, reason: %s' % args)
 
     def terminate(self):
         om.out.debug('Calling terminate on all chrome instances')
 
         while len(self._free) or len(self._in_use):
             for chrome in self._free.copy():
-                self.remove(chrome)
+                self.remove(chrome, 'terminate')
 
             for chrome in self._in_use.copy():
-                self.remove(chrome)
+                self.remove(chrome, 'terminate')
 
         om.out.debug('All chrome instances have been terminated')
 

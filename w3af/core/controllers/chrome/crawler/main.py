@@ -109,7 +109,7 @@ class ChromeCrawler(object):
 
             # Since we got an error we remove this chrome instance from the
             # pool it might be in an error state
-            self._pool.remove(chrome)
+            self._pool.remove(chrome, 'failed to load about:blank')
 
             raise ChromeCrawlerException('Failed to load about:blank in chrome browser')
 
@@ -189,7 +189,7 @@ class ChromeCrawler(object):
 
             took_line.send()
 
-            self._pool.remove(chrome)
+            self._pool.remove(chrome, 'failed to crawl')
 
             # We want to raise exceptions in order for them to reach
             # the framework's exception handler
@@ -276,7 +276,7 @@ class ChromeCrawler(object):
 
             # Since we got an error we remove this chrome instance from the pool
             # it might be in an error state
-            self._pool.remove(chrome)
+            self._pool.remove(chrome, 'failed to load URL')
 
             args = (url, chrome, cie)
             raise ChromeCrawlerException('Failed to load %s using %s: "%s"' % args)
@@ -296,7 +296,7 @@ class ChromeCrawler(object):
 
             # Since we got an error we remove this chrome instance from the pool
             # it might be in an error state
-            self._pool.remove(chrome)
+            self._pool.remove(chrome, 'exception raised')
 
             args = (url, chrome, cie)
             msg = ('Exception raised while waiting for page load of %s '
@@ -331,7 +331,7 @@ class ChromeCrawler(object):
 
             # Since we got an error we remove this chrome instance from the
             # pool it might be in an error state
-            self._pool.remove(chrome)
+            self._pool.remove(chrome, 'failed to stop')
 
             raise ChromeCrawlerException('Failed to stop chrome browser')
 
