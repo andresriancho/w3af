@@ -94,8 +94,13 @@ class KeepAliveHandler(object):
         host is the host:port spec, as in 'www.cnn.com:8080' as passed in.
         no error occurs if there is no connection to that host.
         """
+        closed_connections = 0
+
         for conn in self._cm.get_all(host):
             self._cm.remove_connection(conn, reason='close connection')
+            closed_connections += 1
+
+        return closed_connections
 
     def close_all(self):
         """
