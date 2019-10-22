@@ -380,4 +380,3 @@ class HTTPSConnection(SSLNegotiatorConnection):
         self.is_fresh = True
         self.current_request_start = None
         self.connection_manager_move_ts = None
-
