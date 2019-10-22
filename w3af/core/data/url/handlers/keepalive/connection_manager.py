@@ -146,19 +146,21 @@ class ConnectionManager(object):
 
         if connection_info:
             connection_info = ' '.join(connection_info)
-            om.out.debug('Connections with more in use time: %s' % connection_info)
+            args = (host_port, connection_info)
+            om.out.debug('Connections with more in use time for %s: %s' % args)
             return
 
         if not top_offenders:
             om.out.debug('There are no connections marked as in use in the'
-                         ' connection pool at this time')
+                         ' connection pool for %s at this time' % host_port)
             return
 
         without_request_start = ' '.join([conn.id for conn in top_offenders])
+        args = (host_port, without_request_start)
         msg = ('Connections with more in use time: No connections marked'
                ' as in_use have started to send the first byte. They are'
-               ' in_use but still inactive. The in_use connections are: %s'
-               % without_request_start)
+               ' in_use but still inactive. The in_use connections for %s'
+               ' are: %s' % args)
         om.out.debug(msg)
 
     def get_free_connection_to_close(self):
