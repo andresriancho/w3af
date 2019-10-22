@@ -16,7 +16,7 @@ class ConnectionManager(object):
         * Control the size of the pool.
     """
     # Max connections allowed per host
-    MAX_CONNECTIONS = 50
+    MAX_CONNECTIONS_PER_HOST = 50
 
     # Used in get_available_connection
     GET_AVAILABLE_CONNECTION_RETRY_SECS = 0.05
@@ -103,7 +103,7 @@ class ConnectionManager(object):
         # General stats
         free = len(self.get_all_free_for_host_port(host_port))
         in_use = list(self.get_all_used_for_host_port(host_port))
-        args = (host_port, free, len(in_use), self.MAX_CONNECTIONS, len(in_use) + free)
+        args = (host_port, free, len(in_use), self.MAX_CONNECTIONS_PER_HOST, len(in_use) + free)
 
         msg = '%s connection pool stats (free:%s / in_use:%s / max:%s / total:%s)'
         return msg % args
@@ -260,9 +260,9 @@ class ConnectionManager(object):
             # pool and, only if the pool is full, re-use the existing connections
             #
             # FIXME: Doing this here without a lock leads to a situation where
-            #        the total connections exceed the MAX_CONNECTIONS
+            #        the total connections exceeds MAX_CONNECTIONS_PER_HOST
             #
-            if conn_total < self.MAX_CONNECTIONS:
+            if conn_total < self.MAX_CONNECTIONS_PER_HOST:
                 conn = self._create_new_connection(req, conn_factory, host_port, conn_total)
 
                 self._log_waited_time_for_conn(waited_time_for_conn)
@@ -337,12 +337,12 @@ class ConnectionManager(object):
             #
             # We should wait a little and try again
             #
-            msg = ('Will not create a new connection because MAX_CONNECTIONS'
+            msg = ('Will not create a new connection because MAX_CONNECTIONS_PER_HOST'
                    ' (%s) for host %s was reached. Waiting for a connection'
                    ' to be released to send HTTP request %s. %s')
 
             stats = self.get_connection_pool_stats(host_port)
-            args = (self.MAX_CONNECTIONS, host_port, req, stats)
+            args = (self.MAX_CONNECTIONS_PER_HOST, host_port, req, stats)
 
             debug(msg % args)
 
@@ -355,7 +355,7 @@ class ConnectionManager(object):
                ' server is slow (or applying QoS to IP addresses flagged'
                ' as attackers) or the configured number of threads in w3af'
                ' is too high compared with the connection manager'
-               ' MAX_CONNECTIONS.')
+               ' MAX_CONNECTIONS_PER_HOST.')
         raise ConnectionPoolException(msg % self.GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME)
 
     def cleanup_broken_connections(self):

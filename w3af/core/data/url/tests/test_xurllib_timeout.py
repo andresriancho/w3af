@@ -222,7 +222,7 @@ class TestXUrllibTimeout(unittest.TestCase):
         # These make sure that the HTTP connection pool is full, this is
         # required because we want to check if the timeout applies to
         # existing connections, not new ones
-        for _ in xrange(ConnectionManager.MAX_CONNECTIONS):
+        for _ in xrange(ConnectionManager.MAX_CONNECTIONS_PER_HOST):
             self.uri_opener.GET(url)
 
         # Make sure we reached the desired timeout after our HTTP
