@@ -261,7 +261,7 @@ class ChromePool(object):
         self._free.discard(chrome)
         chrome.terminate()
 
-        om.out.debug('Removing %s from pool' % chrome)
+        om.out.debug('Removed %s from pool' % chrome)
 
     def terminate(self):
         om.out.debug('Calling terminate on all chrome instances')
