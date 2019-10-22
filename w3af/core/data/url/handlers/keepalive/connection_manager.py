@@ -18,6 +18,9 @@ class ConnectionManager(object):
     # Max connections allowed per host
     MAX_CONNECTIONS_PER_HOST = 50
 
+    # Max connections allowed to any host
+    MAX_CONNECTIONS = MAX_CONNECTIONS_PER_HOST * 4
+
     # Used in get_available_connection
     GET_AVAILABLE_CONNECTION_RETRY_SECS = 0.05
     GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME = 60.00
@@ -99,13 +102,35 @@ class ConnectionManager(object):
 
         return new_conn
 
-    def get_connection_pool_stats(self, host_port):
-        # General stats
-        free = len(self.get_all_free_for_host_port(host_port))
-        in_use = list(self.get_all_used_for_host_port(host_port))
-        args = (host_port, free, len(in_use), self.MAX_CONNECTIONS_PER_HOST, len(in_use) + free)
+    def get_host_connection_pool_stats(self, host_port):
+        """
+        Host stats for the pool
+        """
+        free_for_host = len(self.get_all_free_for_host_port(host_port))
+        in_use_for_host = len(self.get_all_used_for_host_port(host_port))
 
-        msg = '%s connection pool stats (free:%s / in_use:%s / max:%s / total:%s)'
+        args = (host_port,
+                free_for_host,
+                in_use_for_host,
+                free_for_host + in_use_for_host,
+                self.MAX_CONNECTIONS_PER_HOST)
+
+        msg = '%s connection pool stats (free: %s, in_use: %s, usage: %s / %s).'
+        return msg % args
+
+    def get_general_connection_pool_stats(self):
+        """
+        General stats for the pool
+        """
+        all_free = len(self._free_conns)
+        all_in_use = len(self._used_conns)
+
+        args = (all_free,
+                all_in_use,
+                all_free + all_in_use,
+                self.MAX_CONNECTIONS,)
+
+        msg = 'General connection pool stats (free: %s, in_use: %s, usage: %s / %s).'
         return msg % args
 
     def log_stats(self, host_port):
@@ -120,7 +145,10 @@ class ConnectionManager(object):
         if self.request_counter % self.LOG_STATS_EVERY != 0:
             return
 
-        stats = self.get_connection_pool_stats(host_port)
+        stats = self.get_host_connection_pool_stats(host_port)
+        om.out.debug(stats)
+
+        stats = self.get_general_connection_pool_stats()
         om.out.debug(stats)
 
         # Connection in use time stats
@@ -165,21 +193,29 @@ class ConnectionManager(object):
 
     def get_free_connection_to_close(self):
         """
-        Find a connection that is in self._free and return it.
+        Find the connection that has been in self._free the longest and return it
+
         :return: An HTTP connection that will be closed
         """
-        try:
-            return self._free_conns.pop()
-        except KeyError:
-            return None
+        max_in_free_state = 0
+        conn_to_close = None
+        now = time.time()
+
+        for conn in self._free_conns.copy():
+            in_free_state = now - conn.connection_manager_move_ts
+            if in_free_state > max_in_free_state:
+                conn_to_close = conn
+                max_in_free_state = in_free_state
+
+        return conn_to_close
 
     def _reuse_connection(self, req, host_port):
         """
         Find an existing connection to reuse
 
         :param req: HTTP request
-        :param host: The host to connect to
-        :return:
+        :param host_port: The host and port to connect to
+        :return: A connection instance to use in a new HTTP request
         """
         for conn in self.get_all_free_for_host_port(host_port):
             try:
@@ -252,78 +288,65 @@ class ConnectionManager(object):
             #
             self.cleanup_broken_connections()
 
-            conn_total = self.get_connections_total(host_port)
-
             #
-            # If the connection pool is not full let's try to create a new connection
-            # this is the default case, we want to quickly populate the connection
-            # pool and, only if the pool is full, re-use the existing connections
+            # If the user is not specifying that he needs a new HTTP connection
+            # for this request then check if we can reuse an existing free
+            # connection from the connection pool
             #
-            # FIXME: Doing this here without a lock leads to a situation where
-            #        the total connections exceeds MAX_CONNECTIONS_PER_HOST
+            # By default req.new_connection is False, meaning that we'll most
+            # likely re-use the connections
             #
-            if conn_total < self.MAX_CONNECTIONS_PER_HOST:
-                conn = self._create_new_connection(req, conn_factory, host_port, conn_total)
-
-                self._log_waited_time_for_conn(waited_time_for_conn)
-                return conn
-
-            if req.new_connection:
-                #
-                # The user is requesting a new HTTP connection, this is a rare
-                # case because req.new_connection is False by default.
-                #
-                # Before this feature was used together with req.timeout, but
-                # now it is not required anymore.
-                #
-                # This code path is reached when there is no more space in the
-                # connection pool, but because new_connection is set, it is
-                # possible to force a free connection to be closed:
-                #
-                if len(self._free_conns) > len(self._used_conns):
-                    #
-                    # Close one of the free connections and create a new one.
-                    #
-                    # Close an existing free connection because the framework
-                    # is not using them (more free than used), this action should
-                    # not degrade the connection pool performance
-                    #
-                    conn = self.get_free_connection_to_close()
-
-                    if conn is not None:
-                        self.remove_connection(conn, reason='need fresh connection')
-
-                        self._log_waited_time_for_conn(waited_time_for_conn)
-                        return self._create_new_connection(req,
-                                                           conn_factory,
-                                                           host_port,
-                                                           conn_total)
-
-                msg = ('The HTTP request %s has new_connection set to True.'
-                       ' This forces the ConnectionManager to wait until a'
-                       ' new connection can be created. No pre-existing'
-                       ' connections can be reused.')
-                args = (req,)
-                debug(msg % args)
-
-            else:
-                #
-                # If the user is not specifying that he needs a new HTTP
-                # connection for this request then check if we can reuse an
-                # existing free connection from the connection pool
-                #
-                # By default req.new_connection is False, meaning that we'll
-                # most likely re-use the connections
-                #
-                # A user sets req.new_connection to True when he wants to
-                # do something special with the connection. In the past a
-                # new_connection was set to True when a timeout was specified,
-                # that is not required anymore!
-                #
+            # A user sets req.new_connection to True when he wants to do something
+            # special with the connection.
+            #
+            if not req.new_connection:
                 conn = self._reuse_connection(req, host_port)
+
                 if conn is not None:
                     self._log_waited_time_for_conn(waited_time_for_conn)
                     return conn
+
+            #
+            # All the code paths below will create a new connection, which respects
+            # the caller's req.new_connection setting
+            #
+            # There is no free connection we can reuse, we'll have to create a new
+            # one in the connection pool (if the pool has space).
+            #
+            # Doing this here without a lock leads to a situation where the total
+            # connections exceeds MAX_CONNECTIONS_PER_HOST. The problem is that
+            # adding a lock will impact the framework performance...
+            #
+            conn_count_per_host = self.get_connection_count(host_port)
+            conn_count = self.get_connection_count(None)
+
+            if conn_count_per_host < self.MAX_CONNECTIONS_PER_HOST and conn_count < self.MAX_CONNECTIONS:
+                self._log_waited_time_for_conn(waited_time_for_conn)
+                return self._create_new_connection(req,
+                                                   conn_factory,
+                                                   host_port,
+                                                   conn_count_per_host)
+
+            #
+            # The number of connections to a specific host can be lower than
+            # MAX_CONNECTIONS_PER_HOST but MAX_CONNECTIONS (for all hosts) might
+            # have been reached because of connections to other hosts being idle
+            # in free state
+            #
+            # Find a free connection we can close using get_free_connection_to_close(),
+            # close it, and create a new connection to our target host
+            #
+            if conn_count_per_host < self.MAX_CONNECTIONS_PER_HOST:
+                conn = self.get_free_connection_to_close()
+
+                if conn is not None:
+                    self.remove_connection(conn, reason='idle connection to another host')
+
+                    self._log_waited_time_for_conn(waited_time_for_conn)
+                    return self._create_new_connection(req,
+                                                       conn_factory,
+                                                       host_port,
+                                                       conn_count_per_host)
 
             #
             # Well, the connection pool for this host is full AND there are
@@ -337,12 +360,19 @@ class ConnectionManager(object):
             #
             # We should wait a little and try again
             #
-            msg = ('Will not create a new connection because MAX_CONNECTIONS_PER_HOST'
-                   ' (%s) for host %s was reached. Waiting for a connection'
-                   ' to be released to send HTTP request %s. %s')
+            msg = ('Will NOT create a new connection because MAX_CONNECTIONS_PER_HOST'
+                   ' (%s) for host %s or MAX_CONNECTIONS (%s) was reached. Waiting for'
+                   ' a connection to be freed to send HTTP request %s. %s %s')
 
-            stats = self.get_connection_pool_stats(host_port)
-            args = (self.MAX_CONNECTIONS_PER_HOST, host_port, req, stats)
+            host_stats = self.get_host_connection_pool_stats(host_port)
+            general_stats = self.get_general_connection_pool_stats()
+
+            args = (self.MAX_CONNECTIONS_PER_HOST,
+                    host_port,
+                    self.MAX_CONNECTIONS,
+                    req,
+                    host_stats,
+                    general_stats)
 
             debug(msg % args)
 
@@ -458,7 +488,7 @@ class ConnectionManager(object):
 
         return conns
 
-    def get_connections_total(self, host_port=None):
+    def get_connection_count(self, host_port=None):
         """
         If <host> is None return the grand total of open connections;
         otherwise return the total of created conns for <host>.

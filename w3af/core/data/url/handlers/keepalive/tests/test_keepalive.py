@@ -252,7 +252,7 @@ class TestConnectionMgr(unittest.TestCase):
         bad_conn = Mock()
         self.cm.replace_connection(bad_conn, self.request, cf)
         bad_conn = self.cm.get_available_connection(self.request, cf)
-        old_len = self.cm.get_connections_total()
+        old_len = self.cm.get_connection_count()
 
         # Replace bad with a new one
         new_conn = self.cm.replace_connection(bad_conn, self.request, cf)
@@ -261,14 +261,14 @@ class TestConnectionMgr(unittest.TestCase):
         self.assertNotEquals(bad_conn, new_conn)
 
         # The len must be the same
-        self.assertEquals(self.cm.get_connections_total(), old_len)
+        self.assertEquals(self.cm.get_connection_count(), old_len)
 
     def test_remove_conn(self):
-        self.assertEqual(self.cm.get_connections_total(), 0)
+        self.assertEqual(self.cm.get_connection_count(), 0)
 
         conn = self.cm.get_available_connection(self.request, lambda h: Mock())
-        self.assertEqual(self.cm.get_connections_total(), 1)
+        self.assertEqual(self.cm.get_connection_count(), 1)
 
         self.cm.remove_connection(conn, reason='unittest')
 
-        self.assertEqual(self.cm.get_connections_total(), 0)
+        self.assertEqual(self.cm.get_connection_count(), 0)
