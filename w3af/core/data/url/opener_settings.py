@@ -364,6 +364,12 @@ class OpenerSettings(Configurable):
 
         self.need_update = True
 
+    def get_keep_alive_handlers(self):
+        return {
+            self._ka_http,
+            self._ka_https
+        }
+
     def build_openers(self):
         # Instantiate the handlers passing the proxy as parameter
         self._ka_http = HTTPHandler()
